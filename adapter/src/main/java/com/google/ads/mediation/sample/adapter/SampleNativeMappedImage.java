@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ads.mediation.sample.customevent;
+package com.google.ads.mediation.sample.adapter;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -22,8 +22,8 @@ import android.net.Uri;
 import com.google.android.gms.ads.formats.NativeAd;
 
 /**
- * A simple class that fits the the {@link NativeAd.Image} interface and can be filled with assets
- * returned by the Sample SDK.
+ * A simple class that fits the the {@link NativeAd.Image} abstract class and can be filled with
+ * assets returned by the Sample SDK.
  */
 public class SampleNativeMappedImage extends NativeAd.Image {
 

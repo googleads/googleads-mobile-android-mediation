@@ -14,48 +14,44 @@
  * limitations under the License.
  */
 
-package com.google.ads.mediation.sample.customevent;
+package com.google.ads.mediation.sample.adapter;
 
 import android.os.Bundle;
 import android.view.View;
 
-import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
+import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
 import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.NativeContentAdMapper;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAppInstallAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
+ * A {@link NativeContentAdMapper} extension to map {@link SampleNativeContentAd} instances to
+ * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeContentAd} interface.
  */
-public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
+public class SampleNativeContentAdMapper extends NativeContentAdMapper {
 
-    private final SampleNativeAppInstallAd mSampleAd;
+    private SampleNativeContentAd mSampleAd;
 
-    public SampleNativeAppInstallAdMapper(SampleNativeAppInstallAd ad) {
+    public SampleNativeContentAdMapper(SampleNativeContentAd ad) {
         mSampleAd = ad;
+
+        setAdvertiser(mSampleAd.getAdvertiser());
         setHeadline(mSampleAd.getHeadline());
         setBody(mSampleAd.getBody());
         setCallToAction(mSampleAd.getCallToAction());
-        setStarRating(mSampleAd.getStarRating());
-        setStore(mSampleAd.getStoreName());
-        setIcon(new SampleNativeMappedImage(ad.getAppIcon(), ad.getAppIconUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+
+        setLogo(new SampleNativeMappedImage(ad.getLogo(), ad.getLogoUri(),
+                SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
         imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+                SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
         setImages(imagesList);
 
-        NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        String priceString = formatter.format(mSampleAd.getPrice());
-        setPrice(priceString);
-
         Bundle extras = new Bundle();
-        extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
+        extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);
 
         setOverrideClickHandling(false);

@@ -14,80 +14,85 @@
  * limitations under the License.
  */
 
-package com.google.ads.mediation.sample.customevent;
+package com.google.ads.mediation.sample.adapter;
 
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
 import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
 import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
+import com.google.android.gms.ads.mediation.MediationNativeListener;
 
 /**
  * A {@link SampleNativeAdListener} that forwards events to AdMob's
- * {@link CustomEventNativeListener}.
+ * {@link MediationNativeListener}.
  */
-public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
-    private CustomEventNativeListener mNativeListener;
+public class SampleNativeMediationEventForwarder extends SampleNativeAdListener {
+    private MediationNativeListener mNativeListener;
+    private SampleAdapter mAdapter;
 
     /**
-     * Creates a new {@code SampleNativeEventForwarder}.
+     * Creates a new {@code SampleNativeMediationEventForwarder}.
      *
-     * @param listener An AdMob Mediation {@link CustomEventNativeListener} that should receive
+     * @param listener An AdMob Mediation {@link MediationNativeListener} that should receive
      *                 forwarded events.
+     *
+     * @param adapter A {@link SampleAdapter} mediation adapter.
      */
-    public SampleCustomNativeEventForwarder(CustomEventNativeListener listener) {
+    public SampleNativeMediationEventForwarder(
+            MediationNativeListener listener, SampleAdapter adapter) {
         this.mNativeListener = listener;
+        this.mAdapter = adapter;
     }
 
     @Override
     public void onNativeAppInstallAdFetched(SampleNativeAppInstallAd ad) {
-        // If the mediated network only ever returns URLs for images, this is an appropriate place
-        // to automatically download the image files if the publisher has indicated via the
-        // NativeAdOptions object that the custom event should do so.
+        // If your network only ever returns URLs for images, this is an appropriate place to
+        // automatically download the image files if the publisher has indicated via the
+        // NativeAdOptions object that the adapter should do so.
         //
         // For example, if the publisher set the NativeAdOption's shouldReturnUrlsForImageAssets
-        // property to false, and the mediated network returns images only as URLs rather than
-        // downloading them itself, the forwarder should:
+        // property to false, and your network returns images only as URLs rather than downloading
+        // them itself, the forwarder should:
         //
         // 1. Initiate HTTP downloads of the image assets from the returned URLs using Volley or
         //    another, similar mechanism.
         // 2. Wait for all the requests to complete.
-        // 3. Give the mediated network's native ad object and the image assets to your mapper class
-        //    (each custom event defines its own mapper classes, so you can add a parameter for this
-        //    to the constructor.
+        // 3. Give your network's native ad object and the image assets to your mapper class (each
+        //    adapter defines its own mapper classes, so you can add a parameter for this to the
+        //    constructor.
         // 4. Call the MediationNativeListener's onAdLoaded method and give it a reference to your
-        //    custom event and the mapped native ad, as seen below.
+        //    adapter and the mapped native ad, as seen below.
         //
         // The important thing is to make sure that the publisher's wishes in regard to automatic
         // image downloading are respected, and that any additional downloads take place *before*
         // the mapped native ad object is returned to the Google Mobile Ads SDK via the
         // onAdLoaded method.
         SampleNativeAppInstallAdMapper mapper = new SampleNativeAppInstallAdMapper(ad);
-        mNativeListener.onAdLoaded(mapper);
+        mNativeListener.onAdLoaded(mAdapter, mapper);
     }
 
     @Override
     public void onNativeContentAdFetched(SampleNativeContentAd ad) {
         // The note above about automatically downloading images also applies to content ads.
         SampleNativeContentAdMapper mapper = new SampleNativeContentAdMapper(ad);
-        mNativeListener.onAdLoaded(mapper);
+        mNativeListener.onAdLoaded(mAdapter, mapper);
     }
 
     @Override
     public void onAdFetchFailed(SampleErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 break;
             case BAD_REQUEST:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
                 break;
             case NETWORK_ERROR:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
+                mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
                 break;
             case NO_INVENTORY:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+                mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
                 break;
         }
     }

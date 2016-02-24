@@ -30,6 +30,20 @@
             android:layout_marginTop="@dimen/activity_vertical_margin" />
 
         <TextView
+            android:id="@+id/adapternative_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="SampleAdapter Native Ad"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <FrameLayout
+            android:id="@+id/adapternative_framelayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin" />
+
+        <TextView
             android:id="@+id/customeventbanner_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

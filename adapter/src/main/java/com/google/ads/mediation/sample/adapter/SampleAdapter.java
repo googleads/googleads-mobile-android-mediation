@@ -16,21 +16,29 @@
 
 package com.google.ads.mediation.sample.adapter;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.View;
+
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
 import com.google.ads.mediation.sample.sdk.SampleInterstitial;
+import com.google.ads.mediation.sample.sdk.SampleNativeAdLoader;
+import com.google.ads.mediation.sample.sdk.SampleNativeAdRequest;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-
-import android.content.Context;
-import android.os.Bundle;
-import android.view.View;
+import com.google.android.gms.ads.mediation.MediationNativeAdapter;
+import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
 /**
  * A mediation adapter for the Sample ad network. This class can be used as a reference to help
@@ -39,7 +47,22 @@ import android.view.View;
  * NOTE: The audience for this sample is mediation ad networks who are trying to build an ad network
  * adapter, not an app developer trying to integrate Google Mobile Ads into their application.
  */
-public class SampleAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
+public class SampleAdapter implements MediationBannerAdapter, MediationInterstitialAdapter,
+        MediationNativeAdapter {
+
+    /**
+     * Example of an extra field that publishers can use for a Native ad. In this example, the
+     * String is added to a {@link Bundle} in {@link SampleNativeAppInstallAdMapper} and
+     * {@link SampleNativeContentAdMapper}.
+     */
+    public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
+
+    /**
+     * The pixel-to-dpi scale for images downloaded from the sample SDK's URL values. Scale value
+     * is set in {@link SampleNativeMappedImage}.
+     */
+    public static final double SAMPLE_SDK_IMAGE_SCALE = 1.0;
+
     /**
      * Your network probably depends on one or more identifiers that publishers need to provide.
      * Create the keys that your require. For AdMob, only an ad unit ID is required. The key(s) can
@@ -48,10 +71,11 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
      * Once the AdMob front-end is appropriately configured, the publisher will enter the key/value
      * pair(s) that you require. When your adapter is invoked, you will be provided a {@link Bundle}
      * in {@link #requestBannerAd(Context, MediationBannerListener, Bundle, AdSize,
-     * MediationAdRequest, Bundle)} and {@link #requestInterstitialAd(Context,
-     * MediationInterstitialListener, Bundle, MediationAdRequest, Bundle)} populated with the
-     * expected key/value pair(s) from the server. These value(s) should be used to make an ad
-     * request.
+     * MediationAdRequest, Bundle)}, {@link #requestInterstitialAd(Context,
+     * MediationInterstitialListener, Bundle, MediationAdRequest, Bundle)} and
+     * {@link #requestNativeAd(Context, MediationNativeListener, Bundle, NativeMediationAdRequest,
+     * Bundle)} populated with the expected key/value pair(s) from the server. These value(s) should
+     * be used to make an ad request.
      */
     private static final String SAMPLE_AD_UNIT_KEY = "ad_unit";
 
@@ -110,15 +134,6 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          * 1. Create your banner view.
          * 2. Set your ad network's listener.
          * 3. Make an ad request.
-         *
-         * When setting your ad network's listener, don't forget to send the following callbacks:
-         *
-         * listener.onAdLoaded(this);
-         * listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_*);
-         * listener.onAdClicked(this);
-         * listener.onAdOpened(this);
-         * listener.onAdLeftApplication(this);
-         * listener.onAdClosed(this);
          */
 
         // Create the SampleAdView.
@@ -130,10 +145,22 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
 
-        mSampleAdView.setSize(new SampleAdSize(adSize.getWidth(), adSize.getHeight()));
+        // Internally, smart banners use constants to represent their ad size, which means a call to
+        // AdSize.getHeight could return a negative value. You can accommodate this by using
+        // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
+        // the device's display metrics.
+        int widthInPixels = adSize.getWidthInPixels(context);
+        int heightInPixels = adSize.getHeightInPixels(context);
+        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+        int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+        int heightInDp = Math.round(heightInPixels / displayMetrics.density);
 
-        // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
-        // is handled by SampleBannerEventFowarder.
+        mSampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
+
+        /**
+         * Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
+         * is handled by {@link SampleMediationBannerEventForwarder}.
+         */
         mSampleAdView.setAdListener(new SampleMediationBannerEventForwarder(listener, this));
 
         // Make an ad request.
@@ -175,14 +202,6 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          * 1. Create your interstitial ad.
          * 2. Set your ad network's listener.
          * 3. Make an ad request.
-         *
-         * When setting your ad network's listener, don't forget to send the following callbacks:
-         *
-         * listener.onAdLoaded(this);
-         * listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_*);
-         * listener.onAdOpened(this);
-         * listener.onAdLeftApplication(this);
-         * listener.onAdClosed(this);
          */
 
         // Create the SampleInterstitial.
@@ -194,8 +213,10 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
 
-        // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
-        // is handled by SampleInterstitialEventFowarder.
+        /**
+         * Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
+         * is handled by {@link SampleMediationInterstitialEventForwarder}.
+         */
         mSampleInterstitial.setAdListener(
                 new SampleMediationInterstitialEventForwarder(listener, this));
 
@@ -207,6 +228,61 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
     public void showInterstitial() {
         // Show your interstitial ad.
         mSampleInterstitial.show();
+    }
+
+    @Override
+    public void requestNativeAd(Context context,
+                                MediationNativeListener listener,
+                                Bundle serverParameters,
+                                NativeMediationAdRequest mediationAdRequest,
+                                Bundle mediationExtras) {
+        /*
+         * In this method, you should:
+         *
+         * 1. Create a SampleNativeAdLoader
+         * 2. Set the native ad listener
+         * 3. Set native ad options (optional assets)
+         * 4. Make an ad request.
+         */
+
+        SampleNativeAdLoader loader = new SampleNativeAdLoader(context);
+        if (serverParameters.containsKey(SAMPLE_AD_UNIT_KEY)) {
+            loader.setAdUnit(serverParameters.getString(SAMPLE_AD_UNIT_KEY));
+        } else {
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        }
+
+        /**
+         * Set the native ad listener and forward callbacks to mediation. The callback forwarding
+         * is handled by {@link SampleNativeMediationEventForwarder}.
+         */
+        loader.setNativeAdListener(new SampleNativeMediationEventForwarder(listener, this));
+        SampleNativeAdRequest request = new SampleNativeAdRequest();
+        NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
+
+        if (options != null) {
+            // Set the request option for automatically downloading images.
+            //
+            // NOTE: if your network doesn't have an option like this, and instead only ever returns
+            // URLs for images, your adapter will need to download image assets on behalf of the
+            // publisher if the NativeAdOptions shouldReturnUrlsForImageAssets property is false.
+            // See the SampleNativeMediationEventForwarder for information on how to do so.
+            request.setShouldDownloadImages(!options.shouldReturnUrlsForImageAssets());
+        }
+
+        // Set App Install and Content Ad requests.
+        //
+        // NOTE: Care needs to be taken to make sure the adapter respects the publisher's wishes
+        // in regard to native ad formats. For example, if your ad network only provides app install
+        // ads, and the publisher requests content ads alone, the adapter must report an error by
+        // calling the listener's onAdFailedToLoad method with an error code of
+        // AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad anyway,
+        // and then attempt to map it to the content ad format.
+        request.setAppInstallAdsRequested(mediationAdRequest.isAppInstallAdRequested());
+        request.setContentAdsRequested(mediationAdRequest.isContentAdRequested());
+
+        // Make an ad request.
+        loader.fetchAd(request);
     }
 
 }

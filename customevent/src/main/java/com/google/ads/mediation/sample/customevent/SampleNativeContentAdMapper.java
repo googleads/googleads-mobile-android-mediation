@@ -16,12 +16,12 @@
 
 package com.google.ads.mediation.sample.customevent;
 
+import android.os.Bundle;
+import android.view.View;
+
 import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
-
-import android.os.Bundle;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +42,12 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
         setBody(mSampleAd.getBody());
         setCallToAction(mSampleAd.getCallToAction());
 
-        setLogo(new SampleNativeMappedImage(ad.getLogo(), ad.getLogoUri()));
+        setLogo(new SampleNativeMappedImage(ad.getLogo(), ad.getLogoUri(),
+                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
-        imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri()));
+        imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
+                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
         setImages(imagesList);
 
         Bundle extras = new Bundle();

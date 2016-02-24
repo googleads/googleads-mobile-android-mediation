@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ads.mediation.sample.customevent;
+package com.google.ads.mediation.sample.adapter;
 
 import android.os.Bundle;
 import android.view.View;
@@ -43,11 +43,11 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setStarRating(mSampleAd.getStarRating());
         setStore(mSampleAd.getStoreName());
         setIcon(new SampleNativeMappedImage(ad.getAppIcon(), ad.getAppIconUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+                SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
         imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+                SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
         setImages(imagesList);
 
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
@@ -55,7 +55,7 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setPrice(priceString);
 
         Bundle extras = new Bundle();
-        extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
+        extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);
 
         setOverrideClickHandling(false);

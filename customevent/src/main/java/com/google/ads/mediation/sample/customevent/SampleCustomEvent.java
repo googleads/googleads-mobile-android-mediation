@@ -16,6 +16,11 @@
 
 package com.google.ads.mediation.sample.customevent;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
@@ -33,9 +38,6 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialL
 import com.google.android.gms.ads.mediation.customevent.CustomEventNative;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
 
-import android.content.Context;
-import android.os.Bundle;
-
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
  * mediation adapter.
@@ -43,7 +45,18 @@ import android.os.Bundle;
 public class SampleCustomEvent implements CustomEventBanner, CustomEventInterstitial,
         CustomEventNative {
 
+    /**
+     * Example of an extra field that publishers can use for a Native ad. In this example, the
+     * String is added to a {@link Bundle} in {@link SampleNativeAppInstallAdMapper} and
+     * {@link SampleNativeContentAdMapper}.
+     */
     public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
+
+    /**
+     * The pixel-to-dpi scale for images downloaded from the sample SDK's URL values. Scale value
+     * is set in {@link SampleNativeMappedImage}.
+     */
+    public static final double SAMPLE_SDK_IMAGE_SCALE = 1.0;
 
     /**
      * The {@link SampleAdView} representing a banner ad.
@@ -83,7 +96,6 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         // The sample ad network doesn't have an onResume method, so it does nothing.
     }
 
-
     @Override
     public void requestBannerAd(Context context,
                                 CustomEventBannerListener listener,
@@ -113,7 +125,17 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         // Assumes that the serverParameter is the AdUnit for the Sample Network.
         mSampleAdView.setAdUnit(serverParameter);
 
-        mSampleAdView.setSize(new SampleAdSize(size.getWidth(), size.getHeight()));
+        // Internally, smart banners use constants to represent their ad size, which means a call to
+        // AdSize.getHeight could return a negative value. You can accommodate this by using
+        // AdSize.getHeightInPixels and AdSize.getWidthInPixels instead, and then adjusting to match
+        // the device's display metrics.
+        int widthInPixels = size.getWidthInPixels(context);
+        int heightInPixels = size.getHeightInPixels(context);
+        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+        int widthInDp = Math.round(widthInPixels / displayMetrics.density);
+        int heightInDp = Math.round(heightInPixels / displayMetrics.density);
+
+        mSampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
 
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventFowarder.
@@ -182,23 +204,40 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
                                 String serverParameter,
                                 NativeMediationAdRequest nativeMediationAdRequest,
                                 Bundle extras) {
+        // Create one of the Sample SDK's ad loaders from which to request ads.
         SampleNativeAdLoader loader = new SampleNativeAdLoader(context);
         loader.setAdUnit(serverParameter);
         loader.setNativeAdListener(new SampleCustomNativeEventForwarder(customEventNativeListener));
 
+        // Create a native request to give to the SampleNativeAdLoader.
         SampleNativeAdRequest request = new SampleNativeAdRequest();
         NativeAdOptions options = nativeMediationAdRequest.getNativeAdOptions();
 
+        // While the Google Mobile Ads SDK offers several options to use when requesting native ads,
+        // for simplicity's sake, the Sample SDK only handles one. It's set here if included in the
+        // mediation request.
         if (options != null) {
-            request.setShouldDownloadImages(options.shouldReturnUrlsForImageAssets());
-        } else {
-            // Set a default value for the one native ad option the Sample SDK supports.
-            request.setShouldDownloadImages(true);
+            // Set the request option for automatically downloading images.
+            //
+            // NOTE: if the mediated network doesn't have an option like this, and instead only ever
+            // returns URLs for images, your adapter will need to download image assets on behalf of
+            // the publisher if the NativeAdOptions shouldReturnUrlsForImageAssets property is
+            // false. See the SampleNativeMediationEventForwarder for information on how to do so.
+            request.setShouldDownloadImages(!options.shouldReturnUrlsForImageAssets());
         }
 
+        // Set App Install and Content Ad requests.
+        //
+        // NOTE: Care needs to be taken to make sure the custom event respects the publisher's
+        // wishes in regard to native ad formats. For example, if the mediated ad network only
+        // provides app install ads, and the publisher requests content ads alone, the custom event
+        // must report an error by calling the listener's onAdFailedToLoad method with an error code
+        // of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
+        // anyway, and then attempt to map it to the content ad format.
         request.setAppInstallAdsRequested(nativeMediationAdRequest.isAppInstallAdRequested());
         request.setContentAdsRequested(nativeMediationAdRequest.isContentAdRequested());
 
+        // Begin a request.
         loader.fetchAd(request);
     }
 }

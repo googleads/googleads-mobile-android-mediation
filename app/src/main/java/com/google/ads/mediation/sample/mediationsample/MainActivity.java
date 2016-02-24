@@ -16,6 +16,16 @@
 
 package com.google.ads.mediation.sample.mediationsample;
 
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.ads.mediation.sample.customevent.SampleCustomEvent;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -27,16 +37,6 @@ import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.NativeAppInstallAdView;
 import com.google.android.gms.ads.formats.NativeContentAd;
 import com.google.android.gms.ads.formats.NativeContentAdView;
-
-import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.RatingBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -58,9 +58,18 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mCustomEventButton = (Button) findViewById(R.id.customevent_button);
-        mAdapterButton = (Button) findViewById(R.id.adapter_button);
+        /**
+         * Sample Custom Event.
+         * 1) Create the sample custom event banner.
+         * 2) Set up the on click listener for the sample custom event interstitial button.
+         * 3) Create the sample custom event interstitial.
+         */
+        // Sample custom event banner.
+        AdView mCustomEventAdView = (AdView) findViewById(R.id.customevent_adview);
+        mCustomEventAdView.loadAd(new AdRequest.Builder().build());
 
+        // Sample custom event interstitial button.
+        mCustomEventButton = (Button) findViewById(R.id.customevent_button);
         mCustomEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,21 +79,7 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        mAdapterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mAdapterInterstitial.isLoaded()) {
-                    mAdapterInterstitial.show();
-                }
-            }
-        });
-
-        AdView mCustomEventAdView = (AdView) findViewById(R.id.customevent_adview);
-        mCustomEventAdView.loadAd(new AdRequest.Builder().build());
-
-        AdView mAdapterAdView = (AdView) findViewById(R.id.adapter_adview);
-        mAdapterAdView.loadAd(new AdRequest.Builder().build());
-
+        // Sample custom event interstitial.
         mCustomEventInterstitial = new InterstitialAd(this);
         mCustomEventInterstitial.setAdUnitId(
                 getResources().getString(R.string.customevent_interstitial_ad_unit_id));
@@ -112,7 +107,30 @@ public class MainActivity extends ActionBarActivity {
                 mCustomEventInterstitial.loadAd(new AdRequest.Builder().build());
             }
         });
+        mCustomEventInterstitial.loadAd(new AdRequest.Builder().build());
 
+        /**
+         * Sample Adapter.
+         * 1) Create the sample adapter banner.
+         * 2) Set up the on click listener for the sample adapter interstitial button.
+         * 3) Create the sample adapter interstitial.
+         */
+        // Sample adapter banner.
+        AdView mAdapterAdView = (AdView) findViewById(R.id.adapter_adview);
+        mAdapterAdView.loadAd(new AdRequest.Builder().build());
+
+        // Sample adapter interstitial button.
+        mAdapterButton = (Button) findViewById(R.id.adapter_button);
+        mAdapterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mAdapterInterstitial.isLoaded()) {
+                    mAdapterInterstitial.show();
+                }
+            }
+        });
+
+        // Sample adapter interstitial.
         mAdapterInterstitial = new InterstitialAd(this);
         mAdapterInterstitial.setAdUnitId(
                 getResources().getString(R.string.adapter_interstitial_ad_unit_id));
@@ -140,11 +158,12 @@ public class MainActivity extends ActionBarActivity {
                 mAdapterInterstitial.loadAd(new AdRequest.Builder().build());
             }
         });
-
-        mCustomEventInterstitial.loadAd(new AdRequest.Builder().build());
         mAdapterInterstitial.loadAd(new AdRequest.Builder().build());
 
-        AdLoader loader = new AdLoader.Builder(this,
+        /**
+         * Sample Custom Event Native ad.
+         */
+        AdLoader customEventNativeLoader = new AdLoader.Builder(this,
                 getResources().getString(R.string.customevent_native_ad_unit_id))
                 .forAppInstallAd(new NativeAppInstallAd.OnAppInstallAdLoadedListener() {
                     @Override
@@ -178,8 +197,46 @@ public class MainActivity extends ActionBarActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 }).build();
+        customEventNativeLoader.loadAd(new AdRequest.Builder().build());
 
-        loader.loadAd(new AdRequest.Builder().build());
+        /**
+         * Sample Adapter Native ad.
+         */
+        AdLoader adapterNativeLoader = new AdLoader.Builder(this,
+                getResources().getString(R.string.adapter_native_ad_unit_id))
+                .forAppInstallAd(new NativeAppInstallAd.OnAppInstallAdLoadedListener() {
+                    @Override
+                    public void onAppInstallAdLoaded(NativeAppInstallAd ad) {
+                        FrameLayout frameLayout =
+                                (FrameLayout) findViewById(R.id.adapternative_framelayout);
+                        NativeAppInstallAdView adView = (NativeAppInstallAdView) getLayoutInflater()
+                                .inflate(R.layout.ad_app_install, null);
+                        populateAppInstallAdView(ad, adView);
+                        frameLayout.removeAllViews();
+                        frameLayout.addView(adView);
+                    }
+                })
+                .forContentAd(new NativeContentAd.OnContentAdLoadedListener() {
+                    @Override
+                    public void onContentAdLoaded(NativeContentAd ad) {
+                        FrameLayout frameLayout =
+                                (FrameLayout) findViewById(R.id.adapternative_framelayout);
+                        NativeContentAdView adView = (NativeContentAdView) getLayoutInflater()
+                                .inflate(R.layout.ad_content, null);
+                        populateContentAdView(ad, adView);
+                        frameLayout.removeAllViews();
+                        frameLayout.addView(adView);
+                    }
+                })
+                .withAdListener(new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(int errorCode) {
+                        Toast.makeText(MainActivity.this,
+                                "Sample adapter native ad failed with code: " + errorCode,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }).build();
+        adapterNativeLoader.loadAd(new AdRequest.Builder().build());
     }
 
     /**
@@ -203,21 +260,40 @@ public class MainActivity extends ActionBarActivity {
         adView.setStarRatingView(adView.findViewById(R.id.appinstall_stars));
         adView.setStoreView(adView.findViewById(R.id.appinstall_store));
 
+        // Some assets are guaranteed to be in every NativeAppInstallAd.
         ((TextView) adView.getHeadlineView()).setText(nativeAppInstallAd.getHeadline());
         ((TextView) adView.getBodyView()).setText(nativeAppInstallAd.getBody());
-        ((TextView) adView.getPriceView()).setText(nativeAppInstallAd.getPrice());
-        ((TextView) adView.getStoreView()).setText(nativeAppInstallAd.getStore());
         ((Button) adView.getCallToActionView()).setText(nativeAppInstallAd.getCallToAction());
         ((ImageView) adView.getIconView()).setImageDrawable(nativeAppInstallAd.getIcon()
                 .getDrawable());
-        ((RatingBar) adView.getStarRatingView())
-                .setRating(nativeAppInstallAd.getStarRating().floatValue());
 
         List<NativeAd.Image> images = nativeAppInstallAd.getImages();
 
         if (images.size() > 0) {
-            ((ImageView) adView.getImageView())
-                    .setImageDrawable(images.get(0).getDrawable());
+            ((ImageView) adView.getImageView()).setImageDrawable(images.get(0).getDrawable());
+        }
+
+        // Some aren't guaranteed, however, and should be checked.
+        if (nativeAppInstallAd.getPrice() == null) {
+            adView.getPriceView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getPriceView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getPriceView()).setText(nativeAppInstallAd.getPrice());
+        }
+
+        if (nativeAppInstallAd.getStore() == null) {
+            adView.getStoreView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getStoreView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getStoreView()).setText(nativeAppInstallAd.getStore());
+        }
+
+        if (nativeAppInstallAd.getStarRating() == null) {
+            adView.getStarRatingView().setVisibility(View.INVISIBLE);
+        } else {
+            ((RatingBar) adView.getStarRatingView())
+                    .setRating(nativeAppInstallAd.getStarRating().floatValue());
+            adView.getStarRatingView().setVisibility(View.VISIBLE);
         }
 
         // Handle the fact that this could be a Sample SDK native ad, which includes a
@@ -250,6 +326,7 @@ public class MainActivity extends ActionBarActivity {
         adView.setLogoView(adView.findViewById(R.id.contentad_logo));
         adView.setAdvertiserView(adView.findViewById(R.id.contentad_advertiser));
 
+        // Some assets are guaranteed to be in every NativeContentAd.
         ((TextView) adView.getHeadlineView()).setText(nativeContentAd.getHeadline());
         ((TextView) adView.getBodyView()).setText(nativeContentAd.getBody());
         ((TextView) adView.getCallToActionView()).setText(nativeContentAd.getCallToAction());
@@ -257,16 +334,19 @@ public class MainActivity extends ActionBarActivity {
 
         List<NativeAd.Image> images = nativeContentAd.getImages();
 
-        if (images != null && images.size() > 0) {
-            ((ImageView) adView.getImageView())
-                    .setImageDrawable(images.get(0).getDrawable());
+        if (images.size() > 0) {
+            ((ImageView) adView.getImageView()).setImageDrawable(images.get(0).getDrawable());
         }
 
+        // Some aren't guaranteed, however, and should be checked.
         NativeAd.Image logoImage = nativeContentAd.getLogo();
 
-        if (logoImage != null) {
+        if (logoImage == null) {
+            adView.getLogoView().setVisibility(View.INVISIBLE);
+        } else {
             ((ImageView) adView.getLogoView())
                     .setImageDrawable(logoImage.getDrawable());
+            adView.getLogoView().setVisibility(View.VISIBLE);
         }
 
         // Handle the fact that this could be a Sample SDK native ad, which includes a
