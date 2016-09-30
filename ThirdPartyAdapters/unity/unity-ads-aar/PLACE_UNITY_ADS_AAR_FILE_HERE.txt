@@ -1,0 +1,4 @@
+The aar file for the Unity Ads Android SDK should be placed in this directory.
+For details on where to get the latest release, see this GitHub repo:
+
+https://github.com/Unity-Technologies/unity-ads-android

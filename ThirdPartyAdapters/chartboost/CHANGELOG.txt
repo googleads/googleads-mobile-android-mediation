@@ -1,0 +1,12 @@
+**********
+1.1.0
+**********
+
+- Removed Chartboost Ad Location from Chartboost extras. Ad Location is now
+specified in the AdMob console when configuring Chartboost for mediation.
+
+**********
+1.0.0
+**********
+
+- Initial release. Supports reward-based video ads and interstitial ads.

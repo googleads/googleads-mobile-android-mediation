@@ -1,0 +1,15 @@
+**********
+2.0.2.0
+**********
+
+- Changed the version naming system to
+  [Unity Ads SDK version].[adapter patch version].
+- Updated the minimum required Unity Ads SDK to v2.0.2.
+- Updated the minimum required Google Mobile Ads SDK to v9.0.0.
+- Apps are no longer required to call UnityAds.changeActivity(this).
+
+**********
+1.0.0
+**********
+
+- Initial release. Supports reward-based video ads and interstitial ads.
