@@ -114,7 +114,7 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion("Unreleased");
+        mediationMetaData.setVersion("2.0.5.0");
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());
@@ -123,23 +123,23 @@ public final class UnitySingleton {
     }
 
     /**
-     * This method will load Unity ads for a given Zone ID and send the ad loaded event if the
-     * ads have already loaded for that zone.
+     * This method will load Unity ads for a given Placement ID and send the ad loaded event if the
+     * ads have already loaded.
      *
-     * @param zoneId   Unity Ads Zone ID for which to load ad.
      * @param delegate Used to forward Unity Ads events to the adapter.
      */
-    protected static void loadAd(String zoneId, UnityAdapterDelegate delegate) {
+    protected static void loadAd(UnityAdapterDelegate delegate) {
         // Unity ads does not have a load method and ads begin to load when initialize is called.
         // So, we check if unity ads is initialized to determine whether or not the ads are loading.
         // If Unity Ads is initialized, we call the appropriate callbacks by checking the isReady
         // method. If ads are currently being loaded, wait for the callbacks from
         // unitySingletonListenerInstance.
         if (UnityAds.isInitialized()) {
-            if (UnityAds.isReady(zoneId)) {
-                delegate.onUnityAdsReady(zoneId);
+            if (UnityAds.isReady(delegate.getPlacementId())) {
+                delegate.onUnityAdsReady(delegate.getPlacementId());
             } else {
-                delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR, zoneId);
+                delegate.onUnityAdsError(
+                        UnityAds.UnityAdsError.INTERNAL_ERROR, delegate.getPlacementId());
             }
         }
     }
@@ -147,16 +147,15 @@ public final class UnitySingleton {
     /**
      * This method will show an Unity Ad.
      *
-     * @param zoneId   Unity Ads Zone ID for which to show ad.
      * @param delegate Used to forward Unity Ads events to the adapter.
      * @param activity An Android {@link Activity} required to show an ad.
      */
-    protected static void showAd(String zoneId, UnityAdapterDelegate delegate, Activity activity) {
+    protected static void showAd(UnityAdapterDelegate delegate, Activity activity) {
         mAdShowingAdapterDelegate = new WeakReference<>(delegate);
 
         // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
         // Unity Ads fails to shown an ad).
-        UnityAds.show(activity, zoneId);
+        UnityAds.show(activity, delegate.getPlacementId());
     }
 
     /**
@@ -167,53 +166,53 @@ public final class UnitySingleton {
     private static final class UnitySingletonListener implements IUnityAdsListener {
 
         @Override
-        public void onUnityAdsReady(String zoneId) {
-            // Unity Ads is ready to show ads for the given zoneId, send ready callback to the
+        public void onUnityAdsReady(String placementId) {
+            // Unity Ads is ready to show ads for the given placementId, send ready callback to the
             // appropriate delegates.
             Iterator<WeakReference<UnityAdapterDelegate>> iterator =
                     mUnityAdapterDelegatesSet.iterator();
             while (iterator.hasNext()) {
                 UnityAdapterDelegate delegate = iterator.next().get();
-                if (delegate != null && delegate.getZoneId().equals(zoneId)) {
-                    delegate.onUnityAdsReady(zoneId);
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityAdsReady(placementId);
                     iterator.remove();
                 }
             }
         }
 
         @Override
-        public void onUnityAdsStart(String zoneId) {
+        public void onUnityAdsStart(String placementId) {
             // Unity Ads video ad started, send video started event to currently showing
             // adapter's delegate.
             if (mAdShowingAdapterDelegate != null) {
                 UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
                 if (delegate != null) {
-                    delegate.onUnityAdsStart(zoneId);
+                    delegate.onUnityAdsStart(placementId);
                 }
             }
         }
 
         @Override
-        public void onUnityAdsFinish(String zoneId, UnityAds.FinishState finishState) {
+        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
             // An Unity Ads ad has been closed, forward the finish event to the currently showing
             // adapter's delegate.
             if (mAdShowingAdapterDelegate != null) {
                 UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
                 if (delegate != null) {
-                    delegate.onUnityAdsFinish(zoneId, finishState);
+                    delegate.onUnityAdsFinish(placementId, finishState);
                 }
             }
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String zoneId) {
-            // An error occured with Unity Ads, send error event to the appropriate delegates.
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
+            // An error occurred with Unity Ads, send error event to the appropriate delegates.
             Iterator<WeakReference<UnityAdapterDelegate>> iterator =
                     mUnityAdapterDelegatesSet.iterator();
             while (iterator.hasNext()) {
                 UnityAdapterDelegate delegate = iterator.next().get();
-                if (delegate != null && delegate.getZoneId().equals(zoneId)) {
-                    delegate.onUnityAdsError(unityAdsError, zoneId);
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityAdsError(unityAdsError, placementId);
                     iterator.remove();
                 }
             }

@@ -46,9 +46,17 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
     private static final String KEY_GAME_ID = "gameId";
 
     /**
-     * Key to obtain Zone ID, used to set the type of ad to be shown.
+     * Key to obtain Placement ID, used to set the type of ad to be shown. Unity Ads has changed
+     * the name from Zone ID to Placement ID in Unity Ads SDK 2.0.0. To maintain backwards
+     * compatibility the key is not changed.
      */
-    private static final String KEY_ZONE_ID = "zoneId";
+    private static final String KEY_PLACEMENT_ID = "zoneId";
+
+    /**
+     * Flag to keep track of whether or not the Unity rewarded video ad adapter has been
+     * initialized.
+     */
+    private boolean mIsRewardedVideoAdAdapterInitialized;
 
     /**
      * Flag to determine whether or not the adapter is loading ads.
@@ -68,9 +76,9 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
 
     /**
-     * Zone ID used to determine what type of ad to load.
+     * Placement ID used to determine what type of ad to load.
      */
-    private String mZoneId;
+    private String mPlacementId;
 
     /**
      * An Android {@link Activity} weak reference used to show ads.
@@ -83,13 +91,13 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
      */
     private UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
         @Override
-        public String getZoneId() {
-            return mZoneId;
+        public String getPlacementId() {
+            return mPlacementId;
         }
 
         @Override
-        public void onUnityAdsReady(String zoneId) {
-            // Unity Ads is ready to show ads for the given zoneId. Send Ad Loaded event if the
+        public void onUnityAdsReady(String placementId) {
+            // Unity Ads is ready to show ads for the given placementId. Send Ad Loaded event if the
             // adapter is currently loading ads.
             if (mIsLoading) {
                 if (mMediationInterstitialListener != null) {
@@ -103,7 +111,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         @Override
-        public void onUnityAdsStart(String zoneId) {
+        public void onUnityAdsStart(String placementId) {
             // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
             // video adapter.
             if (mMediationRewardedVideoAdListener != null) {
@@ -112,7 +120,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         @Override
-        public void onUnityAdsFinish(String zoneId, UnityAds.FinishState finishState) {
+        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
             // Unity Ads ad closed.
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
@@ -129,7 +137,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String zoneId) {
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
             // Send Ad Failed to load event only if the adapter is currently loading ads.
             if (mIsLoading) {
                 if (mMediationInterstitialListener != null) {
@@ -144,6 +152,25 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             }
         }
     };
+
+    /**
+     * Checks whether or not the provided Unity Ads IDs are valid.
+     *
+     * @param gameId      Unity Ads Game ID to be verified.
+     * @param placementId Unity Ads Placement ID to be verified.
+     * @return {@code true} if all the IDs provided are valid.
+     */
+    private static boolean isValidIds(String gameId, String placementId) {
+        if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
+            String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
+                    ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
+            Log.w(TAG, ids + " cannot be empty.");
+
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * Unity Ads requires an Activity context to Initialize. This method will return false if
@@ -175,11 +202,8 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         mMediationInterstitialListener = mediationInterstitialListener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
-        mZoneId = serverParameters.getString(KEY_ZONE_ID);
-        if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(mZoneId)) {
-            String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(mZoneId)
-                    ? "Game ID and Zone ID" : "Game ID" : "Zone ID";
-            Log.w(TAG, ids + " cannot be empty.");
+        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (!isValidIds(gameId, mPlacementId)) {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -203,9 +227,9 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         // Storing a weak reference to the Activity.
         mActivityWeakReference = new WeakReference<>((Activity) context);
 
-        // Unity Ads initialized successfully, request UnitySingleton to load ads for mZoneId.
+        // Unity Ads initialized successfully, request UnitySingleton to load ads for mPlacementId.
         mIsLoading = true;
-        UnitySingleton.loadAd(mZoneId, mUnityAdapterDelegate);
+        UnitySingleton.loadAd(mUnityAdapterDelegate);
     }
 
     @Override
@@ -224,7 +248,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         // Request UnitySingleton to show interstitial ads.
-        UnitySingleton.showAd(mZoneId, mUnityAdapterDelegate, activity);
+        UnitySingleton.showAd(mUnityAdapterDelegate, activity);
     }
 
     @Override
@@ -237,11 +261,8 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         mMediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
-        mZoneId = serverParameters.getString(KEY_ZONE_ID);
-        if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(mZoneId)) {
-            String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(mZoneId)
-                    ? "Game ID and Zone ID" : "Game ID" : "Zone ID";
-            Log.w(TAG, ids + " cannot be empty.");
+        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (!isValidIds(gameId, mPlacementId)) {
             if (mMediationRewardedVideoAdListener != null) {
                 mMediationRewardedVideoAdListener.onInitializationFailed(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -265,6 +286,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         // Storing a weak reference to the Activity.
         mActivityWeakReference = new WeakReference<>((Activity) context);
 
+        mIsRewardedVideoAdAdapterInitialized = true;
         mMediationRewardedVideoAdListener.onInitializationSucceeded(this);
     }
 
@@ -272,9 +294,16 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
     public void loadAd(MediationAdRequest mediationAdRequest,
                        Bundle serverParameters,
                        Bundle networkExtras) {
-        // Request UnitySingleton to load ads for mZoneId.
+        // Request UnitySingleton to load ads for mPlacementId.
         mIsLoading = true;
-        UnitySingleton.loadAd(mZoneId, mUnityAdapterDelegate);
+        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (!isValidIds(serverParameters.getString(KEY_GAME_ID), mPlacementId)) {
+            mMediationRewardedVideoAdListener.onAdFailedToLoad(
+                    UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        UnitySingleton.loadAd(mUnityAdapterDelegate);
     }
 
     @Override
@@ -292,12 +321,12 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         // Request UnitySingleton to show video ads.
-        UnitySingleton.showAd(mZoneId, mUnityAdapterDelegate, activity);
+        UnitySingleton.showAd(mUnityAdapterDelegate, activity);
     }
 
     @Override
     public boolean isInitialized() {
-        return UnityAds.isInitialized();
+        return mIsRewardedVideoAdAdapterInitialized && UnityAds.isInitialized();
     }
 
     @Override

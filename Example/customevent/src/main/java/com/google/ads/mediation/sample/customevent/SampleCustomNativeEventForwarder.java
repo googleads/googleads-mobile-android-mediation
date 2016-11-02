@@ -21,6 +21,7 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
 import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
 import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
 
 /**
@@ -29,6 +30,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListene
  */
 public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
     private CustomEventNativeListener mNativeListener;
+    private NativeAdOptions mNativeAdOptions;
 
     /**
      * Creates a new {@code SampleNativeEventForwarder}.
@@ -36,8 +38,10 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
      * @param listener An AdMob Mediation {@link CustomEventNativeListener} that should receive
      *                 forwarded events.
      */
-    public SampleCustomNativeEventForwarder(CustomEventNativeListener listener) {
+    public SampleCustomNativeEventForwarder(CustomEventNativeListener listener,
+                                            NativeAdOptions adOptions) {
         this.mNativeListener = listener;
+        this.mNativeAdOptions = adOptions;
     }
 
     @Override
@@ -71,7 +75,8 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
             mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        SampleNativeAppInstallAdMapper mapper = new SampleNativeAppInstallAdMapper(ad);
+        SampleNativeAppInstallAdMapper mapper =
+                new SampleNativeAppInstallAdMapper(ad, mNativeAdOptions);
         mNativeListener.onAdLoaded(mapper);
     }
 
@@ -101,7 +106,7 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
             mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        SampleNativeContentAdMapper mapper = new SampleNativeContentAdMapper(ad);
+        SampleNativeContentAdMapper mapper = new SampleNativeContentAdMapper(ad, mNativeAdOptions);
         mNativeListener.onAdLoaded(mapper);
     }
 

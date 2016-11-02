@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 /**
  * A native ad object that holds assets for a sample content ad.
@@ -35,6 +36,7 @@ public class SampleNativeContentAd {
     private Drawable mLogo;
     private Uri mLogoUri;
     private String mDegreeOfAwesomeness;
+    private ImageView mInformationIcon;
 
     public SampleNativeContentAd() {
     }
@@ -109,6 +111,14 @@ public class SampleNativeContentAd {
 
     public void setLogoUri(Uri logoUri) {
         this.mLogoUri = logoUri;
+    }
+
+    public ImageView getInformationIcon() {
+        return mInformationIcon;
+    }
+
+    public void setInformationIcon(ImageView informationIcon) {
+        this.mInformationIcon = informationIcon;
     }
 
     public void handleClick(View view) {

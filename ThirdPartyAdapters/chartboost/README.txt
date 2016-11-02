@@ -11,11 +11,14 @@ Requirements:
 - Chartboost SDK
 
 Instructions:
-- Add the adapter jar into your Android project.
+- Add the compile dependency with the latest version of the Unity Ads adapter in
+  the build.gradle file:
+  dependencies {
+    compile 'com.google.ads.mediation:chartboost:6.6.0.0'
+  }
 - Add the Chartboost SDK into your Android project (Detailed instructions on how
   to import Chartboost SDK are available at:
-  https://answers.chartboost.com/hc/en-us/articles/201219545-Android-Integration
-  #quickstart).
+  https://answers.chartboost.com/hc/en-us/articles/201219545-Android-Integration#quickstart).
 - Enable the Ad network in the Ad Network Mediation UI.
 
 Additional Code Required:
@@ -96,6 +99,11 @@ AdRequest adRequest = new AdRequest.Builder()
                     .addNetworkExtrasBundle(ChartboostAdapter.class, bundle)
                     .build();
 
+Note:
+- Earlier versions of the adapters can be found at:
+  https://bintray.com/google/mobile-ads-adapters-android/com.google.ads.mediation.chartboost/
+- If you prefer using a jar file, you could extract the classes.jar file from
+  the aar using a standard zip extract tool.
+
 The latest documentation and code samples for the Google Mobile Ads SDK are
-available at:
-https://developers.google.com/admob/android/quick-start
+available at: https://firebase.google.com/docs/admob/android/quick-start

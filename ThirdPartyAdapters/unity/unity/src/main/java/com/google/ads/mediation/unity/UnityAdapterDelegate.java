@@ -23,7 +23,8 @@ import com.unity3d.ads.IUnityAdsListener;
 public interface UnityAdapterDelegate extends IUnityAdsListener {
 
     /**
-     * @return the Unity Ads Zone ID associated with the adapter that implements this interface.
+     * @return the Unity Ads Placement ID associated with the adapter that implements this
+     * interface.
      */
-    String getZoneId();
+    String getPlacementId();
 }

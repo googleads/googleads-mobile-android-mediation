@@ -38,7 +38,7 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
     /**
      * The current version of the adapter.
      */
-    protected static final String ADAPTER_VERSION_NAME = "1.1.0";
+    protected static final String ADAPTER_VERSION_NAME = "6.6.0.0";
 
     /**
      * Key to obtain App ID, required for initializing Chartboost SDK.

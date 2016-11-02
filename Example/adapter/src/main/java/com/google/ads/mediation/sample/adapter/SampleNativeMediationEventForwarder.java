@@ -76,7 +76,8 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        SampleNativeAppInstallAdMapper mapper = new SampleNativeAppInstallAdMapper(ad);
+        SampleNativeAppInstallAdMapper mapper =
+                new SampleNativeAppInstallAdMapper(ad, mAdapter.getNativeAdOptions());
         mNativeListener.onAdLoaded(mAdapter, mapper);
     }
 
@@ -106,7 +107,8 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        SampleNativeContentAdMapper mapper = new SampleNativeContentAdMapper(ad);
+        SampleNativeContentAdMapper mapper =
+                new SampleNativeContentAdMapper(ad, mAdapter.getNativeAdOptions());
         mNativeListener.onAdLoaded(mAdapter, mapper);
     }
 

@@ -16,8 +16,13 @@
 
 package com.google.ads.mediation.sample.sdk;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import java.util.Random;
 
@@ -118,6 +123,8 @@ public class SampleNativeAdLoader {
                     .getDrawable(R.drawable.sample_app_image));
         }
 
+        fakeAd.setInformationIcon(createInformationIconImageView());
+
         return fakeAd;
     }
 
@@ -127,6 +134,7 @@ public class SampleNativeAdLoader {
         fakeAd.setHeadline("Sample Content!");
         fakeAd.setBody("This is a sample ad, so there's no real content. In the event of a real "
                 + "ad, though, some persuasive text would appear here.");
+        fakeAd.setAdvertiser("The very best advertiser!");
         fakeAd.setCallToAction("Take Action!");
         fakeAd.setDegreeOfAwesomeness("Fairly Awesome");
 
@@ -139,6 +147,42 @@ public class SampleNativeAdLoader {
                     .getDrawable(R.drawable.sample_content_ad_image));
         }
 
+        fakeAd.setInformationIcon(createInformationIconImageView());
+
         return fakeAd;
+    }
+
+    /**
+     * Creates and returns an information icon image view.
+     *
+     * @return information icon image view.
+     */
+    private ImageView createInformationIconImageView() {
+        ImageView informationIconImageView = new ImageView(mContext);
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        informationIconImageView.setLayoutParams(params);
+        informationIconImageView.setImageResource(R.drawable.ic_info_outline_black_24px);
+
+        informationIconImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                new AlertDialog.Builder(mContext)
+                        .setTitle("Sample SDK")
+                        .setMessage("This is a sample ad from the Sample SDK.")
+                        .setNeutralButton(android.R.string.ok,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                        .show();
+            }
+        });
+
+        return informationIconImageView;
     }
 }

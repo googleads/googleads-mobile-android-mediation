@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 /**
  * A native ad object that holds assets for a sample app install ad.
@@ -37,6 +38,7 @@ public class SampleNativeAppInstallAd {
     private String mStoreName;
     private Double mPrice;
     private String mDegreeOfAwesomeness;
+    private ImageView mInformationIcon;
 
     public String getHeadline() {
         return mHeadline;
@@ -124,6 +126,14 @@ public class SampleNativeAppInstallAd {
 
     public void setAppIconUri(Uri mAppIconUri) {
         this.mAppIconUri = mAppIconUri;
+    }
+
+    public ImageView getInformationIcon() {
+        return mInformationIcon;
+    }
+
+    public void setInformationIcon(ImageView informationIcon) {
+        this.mInformationIcon = informationIcon;
     }
 
     public void handleClick(View view) {

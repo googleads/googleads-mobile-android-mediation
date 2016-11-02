@@ -103,6 +103,15 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
     private SampleMediationRewardedVideoEventForwarder mRewardedVideoEventForwarder;
 
     /**
+     * Contains publisher preferences for native ads.
+     */
+    private NativeAdOptions mNativeAdOptions;
+
+    protected NativeAdOptions getNativeAdOptions() {
+        return mNativeAdOptions;
+    }
+
+    /**
      * The adapter is being destroyed. Perform any necessary cleanup here.
      */
     @Override
@@ -324,17 +333,17 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         request.setShouldDownloadMultipleImages(false);
         request.setPreferredImageOrientation(SampleNativeAdRequest.IMAGE_ORIENTATION_ANY);
 
-        NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
+        mNativeAdOptions = mediationAdRequest.getNativeAdOptions();
 
-        if (options != null) {
+        if (mNativeAdOptions != null) {
             // If the NativeAdOptions' shouldReturnUrlsForImageAssets is true, the adapter should
             // send just the URLs for the images.
-            request.setShouldDownloadImages(!options.shouldReturnUrlsForImageAssets());
+            request.setShouldDownloadImages(!mNativeAdOptions.shouldReturnUrlsForImageAssets());
 
             // If your network does not support any of the following options, please make sure
             // that it is documented in your adapter's documentation.
-            request.setShouldDownloadMultipleImages(options.shouldRequestMultipleImages());
-            switch (options.getImageOrientation()) {
+            request.setShouldDownloadMultipleImages(mNativeAdOptions.shouldRequestMultipleImages());
+            switch (mNativeAdOptions.getImageOrientation()) {
                 case NativeAdOptions.ORIENTATION_LANDSCAPE:
                     request.setPreferredImageOrientation(
                             SampleNativeAdRequest.IMAGE_ORIENTATION_LANDSCAPE);

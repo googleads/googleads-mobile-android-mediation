@@ -45,6 +45,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListene
  */
 public class SampleCustomEvent implements CustomEventBanner, CustomEventInterstitial,
         CustomEventNative {
+    protected static final String TAG = SampleCustomEvent.class.getSimpleName();
 
     /**
      * Example of an extra field that publishers can use for a Native ad. In this example, the
@@ -208,7 +209,6 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         // Create one of the Sample SDK's ad loaders from which to request ads.
         SampleNativeAdLoader loader = new SampleNativeAdLoader(context);
         loader.setAdUnit(serverParameter);
-        loader.setNativeAdListener(new SampleCustomNativeEventForwarder(customEventNativeListener));
 
         // Create a native request to give to the SampleNativeAdLoader.
         SampleNativeAdRequest request = new SampleNativeAdRequest();
@@ -265,6 +265,9 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         }
         request.setAppInstallAdsRequested(nativeMediationAdRequest.isAppInstallAdRequested());
         request.setContentAdsRequested(nativeMediationAdRequest.isContentAdRequested());
+
+        loader.setNativeAdListener(
+                new SampleCustomNativeEventForwarder(customEventNativeListener, options));
 
         // Begin a request.
         loader.fetchAd(request);
