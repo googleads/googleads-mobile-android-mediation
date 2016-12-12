@@ -1,0 +1,176 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.2"
+}
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+/**
+ * Extra properties used by the project.
+ */
+ext {
+    // String property to store version name.
+    stringVersion = "3.0.6.0"
+    // String property to store group id.
+    stringGroupId = "com.jirbo.adcolony"
+    // String property used to set the name of the Jar created by makeJar task.
+    stringJarName = 'AdColonyAdapter.jar'
+    // String property used to set the name of the archive created by makeZip task.
+    stringZipName = 'AdapterAdColonyAndroid-' + stringVersion
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+    compile 'com.adcolony:sdk:3.0.6'
+    compile 'com.google.android.gms:play-services-ads:9.8.0'
+}
+
+/**
+ * Delete task to delete any previously generated .jar files by makeJar task. makeJar depends on
+ * this task.
+ */
+task clearJar(type: Delete) {
+    // Targets to be deleted.
+    delete('build/libs/' + stringJarName)
+}
+
+/**
+ * Copy task used to copy the build files. This task depends on clearJar and build tasks.
+ */
+task makeJar(type: Copy) {
+    // Targets to be copied from.
+    from('build/intermediates/bundles/release/')
+    // Targets to copy into.
+    into('build/libs/')
+    // Files to include.
+    include('classes.jar')
+    // Rename file.
+    rename('classes.jar', stringJarName)
+}
+
+/**
+ * Add dependency tasks for makeJar.
+ */
+makeJar.dependsOn(clearJar, build)
+
+/**
+ * Delete task to delete any previously generated .zip files by makeZip task. makeZip depends on
+ * this task.
+ */
+task clearZip(type: Delete) {
+    // Targets to be deleted.
+    delete('build/libs/' + stringZipName + '.zip')
+}
+
+/**
+ * Zip task to make a zip archive. This task depends on makeJar and clearZip tasks.
+ */
+task makeZip(type: Zip) {
+    // Targets to be added to the zip archive.
+    from('build/libs/' + stringJarName, '../README.md', '../CHANGELOG.md')
+    // Root directory name for the zip archive.
+    into(stringZipName)
+    // Name of the zip archive.
+    archiveName stringZipName + '.zip'
+    // Destination directory in which the archive needs to be saved.
+    destinationDir file('build/libs')
+}
+
+/**
+ * Add dependency tasks for makeZip.
+ */
+makeZip.dependsOn(makeJar, clearZip)
+
+/**
+ * Jar task to make a sources jar.
+ */
+task sourcesJar (type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+ * Publish closure consisting of maven publications that will be published using bintrayUpload.
+ */
+publishing {
+    publications {
+        adColonyPublications(MavenPublication) {
+            groupId = stringGroupId
+            artifactId = project.name
+            version = stringVersion
+
+            // Add the aar artifact to publication.
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+
+            // Add the sources jar artifact to the publication.
+            artifact(sourcesJar)
+        }
+    }
+}
+
+/**
+ * Bintray closure needed to run the buntrayUpload task.
+ *
+ * Usage:
+ * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
+ *
+ * The Bintray User ID and API key can be added to your system environment variables as BINTRAY_USER
+ * and BINTRAY_API_KEY respectively, and the command could be reduced to:
+ * ./gradlew bintrayUpload
+ */
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser')
+            : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey')
+            : System.getenv('BINTRAY_API_KEY')
+    publications = ['adColonyPublications']
+
+    dryRun = false // Deploy after running.
+    publish = false // Don't auto publish after deploying.
+
+    pkg {
+        repo = 'mobile-ads-adapters-android'
+        name = "${stringGroupId}.${project.name}" // Display name for the package.
+        userOrg = 'google'
+        desc = 'AdColony adapter for Google Mobile Ads mediation.'
+        licenses = ['Apache-2.0']
+        websiteUrl = 'https://firebase.google.com/docs/admob/android/mediation'
+        vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
+        issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
+        githubRepo = 'googleads/googleads-mobile-android-mediation'
+        githubReleaseNotesFile = 'ThirdPartyAdapters/adcolony/CHANGELOG.txt'
+        version {
+            name = stringVersion
+        }
+    }
+}
+
+/**
+ * Add dependency tasks for bintrayUpload. The project needs to be built before bintrayUpload
+ * task is run.
+ */
+bintrayUpload.dependsOn(clean, build)
+bintrayUpload.mustRunAfter build
+build.mustRunAfter clean
