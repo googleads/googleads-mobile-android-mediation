@@ -5,7 +5,7 @@ apply plugin: 'com.android.library'
  */
 ext {
     // String property to store version name.
-    stringVersion = "11.9.0.0"
+    stringVersion = "11.9.1.0"
     // String property used to set the name of the Jar created by makeJar task.
     stringJarName = 'TapjoyAdapter.jar'
     // String property used to set the name of the archive created by makeZip task.
