@@ -30,7 +30,8 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 	private  static final String SDK_KEY_SERVER_PARAMETER_KEY = "sdkKey";
 	private static final String PLACEMENT_NAME_SERVER_PARAMETER_KEY = "placementName";
 	private static final String MEDIATION_AGENT = "admob";
-	private static final String ADAPTER_VERSION = "1.0.0";
+	private static final String AD_MOB_ADAPTER_VERSION = "11.9.1.0";
+	private static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0";
 
 	private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -293,7 +294,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 			}
 		});
 		videoPlacement.setMediationName(MEDIATION_AGENT);
-		videoPlacement.setAdapterVersion(ADAPTER_VERSION);
+		videoPlacement.setAdapterVersion(TAPJOY_INTERNAL_ADAPTER_VERSION);
 		videoPlacement.setVideoListener(this);
 
 		requestVideoPlacementContent();
@@ -369,7 +370,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 			}
 		});
 		interstitialPlacement.setMediationName(MEDIATION_AGENT);
-		interstitialPlacement.setAdapterVersion(ADAPTER_VERSION);
+		interstitialPlacement.setAdapterVersion(TAPJOY_INTERNAL_ADAPTER_VERSION);
 
 		requestInterstitialPlacementContent();
 	}
@@ -464,7 +465,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 
 		@Override
 		public int getAmount() {
-			// // Tapjoy only supports fixed rewards and doesn't provide a reward amount.
+			// Tapjoy only supports fixed rewards and doesn't provide a reward amount.
 			return 0;
 		}
 	}
