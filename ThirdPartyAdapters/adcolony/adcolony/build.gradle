@@ -11,7 +11,7 @@ ext {
     // String property to store version name.
     stringVersion = "3.0.6.0"
     // String property to store group id.
-    stringGroupId = "com.jirbo.adcolony"
+    stringGroupId = "com.google.ads.mediation"
     // String property used to set the name of the Jar created by makeJar task.
     stringJarName = 'AdColonyAdapter.jar'
     // String property used to set the name of the archive created by makeZip task.
@@ -43,8 +43,8 @@ android {
 }
 
 dependencies {
-    compile 'com.adcolony:sdk:3.0.6'
-    compile 'com.google.android.gms:play-services-ads:9.8.0'
+    provided 'com.adcolony:sdk:3.0.6'
+    provided 'com.google.android.gms:play-services-ads:10.0.1'
 }
 
 /**
@@ -160,7 +160,7 @@ bintray {
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
-        githubReleaseNotesFile = 'ThirdPartyAdapters/adcolony/CHANGELOG.txt'
+        githubReleaseNotesFile = 'ThirdPartyAdapters/adcolony/CHANGELOG.md'
         version {
             name = stringVersion
         }
