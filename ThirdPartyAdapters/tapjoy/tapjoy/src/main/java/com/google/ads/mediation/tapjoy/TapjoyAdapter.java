@@ -30,8 +30,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 	private  static final String SDK_KEY_SERVER_PARAMETER_KEY = "sdkKey";
 	private static final String PLACEMENT_NAME_SERVER_PARAMETER_KEY = "placementName";
 	private static final String MEDIATION_AGENT = "admob";
-	private static final String AD_MOB_ADAPTER_VERSION = "11.9.1.0";
-	private static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0";
+	private static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0"; // only used internally for Tapjoy SDK
 
 	private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
