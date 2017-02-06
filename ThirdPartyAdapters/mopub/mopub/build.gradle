@@ -1,0 +1,39 @@
+apply plugin: 'com.android.library'
+
+/**
+ * Extra properties used by the project.
+ */
+ext {
+    // String property to store version name.
+    stringVersion = "x.y.z.0"
+    // String property to store group id.
+    stringGroupId = "com.google.ads.mediation"
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 25
+        versionCode 1
+        versionName stringVersion
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
+    compile('com.mopub:mopub-sdk:4.11.0@aar') {
+        transitive = true
+    }
+}
