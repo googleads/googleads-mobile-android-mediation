@@ -9,6 +9,8 @@ SDK in Google Play services.
 - Tapjoy SDK 11.9.1 or later
 
 ## Instructions
+
+### Android Studio Integration
 - Add the compile dependency with the latest version of the Tapjoy adapter
   in the **build.gradle** file
   <pre><code>dependencies {
@@ -20,6 +22,17 @@ SDK in Google Play services.
 - Enable the Tapjoy ad network in the AdMob dashboard. See the
   [mediation set up guide](https://support.google.com/admob/answer/3124703?hl=en&ref_topic=3063091)
   for details.
+
+### Unity Integration
+- Import the Google Mobile Ads Unity plugin into your game. The
+  [Get Started guide](https://firebase.google.com/docs/admob/unity/start#import_the_plugin_into_your_game)
+  contains detailed instructions on how to import the plugin.
+- Import the Tapjoy Android adapter into your game.
+- Import the Tapjoy Android SDK into your game.
+- Import the Tapjoy Unity Plugin from
+  [Tapjoy Unity integration guide.](http://dev.tapjoy.com/sdk-integration/unity/)
+    - Only import the files under Assets/Plugins/Android/Assets from the
+      Tapjoy Unity plugin. Uncheck the checkboxes for all other files.
 
 ## Additional Code Required
 - Add the following activities to your manifest:
@@ -41,7 +54,7 @@ SDK in Google Play services.
 	  android:hardwareAccelerated="true" /&gt;</code></pre>
 
 - Make sure the following permissions are enabled in your **AndroidManifest.xml**
-  file.  
+  file.
   <pre><code>&lt;uses-permission android:name="android.permission.INTERNET"/&gt;</code></pre>
 
  ## Using TapjoyExtrasBundleBuilder
@@ -57,19 +70,18 @@ SDK in Google Play services.
             .addNetworkExtrasBundle(TapjoyAdapter.class, extras)
             .build());</code></pre>
 
-**Notes:** 
-- Different Placements must be used to load multiple ad units simultaneously. 
+**Notes:**
+- Different Placements must be used to load multiple ad units simultaneously.
   For example: when creating multiple instances of TapjoyAdapter,
-  each instance will need to use a different adUnitID on init. If the same 
-  adUnitID  is used, only one instance will be able to load/show, the second 
+  each instance will need to use a different adUnitID on init. If the same
+  adUnitID  is used, only one instance will be able to load/show, the second
   instance will do nothing.
 - The Tapjoy SDK does not pass specific reward values for rewarded
   video ads, the adapter defaults to a reward of type "" with value 0. Please
   override the reward value in the AdMob console.
   For more information on setting reward values for AdMob ad units, see the
-  Rewarded Interstitial section of this article 
+  Rewarded Interstitial section of this article
   [Help Center Article](https://support.google.com/admob/answer/3052638).
-
 - If you prefer using a jar file, you could extract the classes.jar file from
   the aar using a standard zip extract tool.
 
