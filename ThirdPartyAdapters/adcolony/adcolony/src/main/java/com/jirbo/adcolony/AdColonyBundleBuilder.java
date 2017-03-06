@@ -2,29 +2,33 @@ package com.jirbo.adcolony;
 
 import android.os.Bundle;
 
+/**
+ * This is a helper class that helps publishers in creating a AdColony network-specific parameters
+ * that can be used by the adapter to customize requests.
+ */
 public class AdColonyBundleBuilder {
     private static String _zoneId;
     private static boolean _showPreAdPopup;
     private static boolean _showPostAdPopup;
     private static String _userId;
 
-    static public void setZoneId(String requestedZone) {
+    public static void setZoneId(String requestedZone) {
         _zoneId = requestedZone;
     }
 
-    static public void setUserId(String userIdValue) {
+    public static void setUserId(String userIdValue) {
         _userId = userIdValue;
     }
 
-    static public void setShowPrePopup(boolean showPrePopupValue) {
+    public static void setShowPrePopup(boolean showPrePopupValue) {
         _showPreAdPopup = showPrePopupValue;
     }
 
-    static public void setShowPostPopup(boolean showPostPopupValue) {
+    public static void setShowPostPopup(boolean showPostPopupValue) {
         _showPostAdPopup = showPostPopupValue;
     }
 
-    static public Bundle build() {
+    public static Bundle build() {
         Bundle bundle = new Bundle();
         bundle.putString("zone_id", _zoneId);
         bundle.putString("user_id", _userId);

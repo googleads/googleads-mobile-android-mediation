@@ -1,5 +1,8 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 6.6.1.0
+- Verified compatibility with Chartboost SDK 6.6.1.
+
 ## 6.6.0.0
 - Changed the version naming system to
   [Chartboost SDK version].[adapter patch version].

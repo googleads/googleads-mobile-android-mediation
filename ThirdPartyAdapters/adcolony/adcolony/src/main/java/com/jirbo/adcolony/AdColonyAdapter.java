@@ -16,7 +16,12 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 
 import java.util.ArrayList;
 
-public class AdColonyAdapter implements MediationInterstitialAdapter, MediationRewardedVideoAdAdapter {
+/**
+ * A {@link com.google.android.gms.ads.mediation.MediationAdapter} used to mediate interstitial ads
+ * and rewarded video ads from AdColony.
+ */
+public class AdColonyAdapter implements MediationInterstitialAdapter,
+        MediationRewardedVideoAdAdapter {
     // Google-AdMob listeners
     private MediationRewardedVideoAdListener _mediationRewardedVideoAdListener;
 
@@ -27,7 +32,9 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
     private AdColonyAdListener _adColonyInterstitialListener;
     private AdColonyAdListener _adColonyRewardedInterstitialListener;
 
-    /************** MediationAdapter Methods *************/
+    /**************
+     * MediationAdapter Methods
+     *************/
 
     @Override
     public void onDestroy() {
@@ -55,22 +62,30 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
         // AdColony SDK will handle this here
     }
 
-    /*************** MediationInterstitialAdapter methods ***************/
+    /***************
+     * MediationInterstitialAdapter methods
+     ***************/
 
     @Override
-    public void requestInterstitialAd(Context context, MediationInterstitialListener mediationInterstitialListener,
-                                      Bundle serverParams, MediationAdRequest mediationAdRequest,
+    public void requestInterstitialAd(Context context,
+                                      MediationInterstitialListener mediationInterstitialListener,
+                                      Bundle serverParams,
+                                      MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        _adColonyInterstitialListener = new AdColonyAdListener(this, mediationInterstitialListener);
+        _adColonyInterstitialListener =
+                new AdColonyAdListener(this, mediationInterstitialListener);
         // initialize AdColony
-        boolean success = AdColonyManager.getInstance().configureAdColony(context, serverParams, mediationAdRequest, mediationExtras);
+        boolean success = AdColonyManager.getInstance()
+                .configureAdColony(context, serverParams, mediationAdRequest, mediationExtras);
 
         // if we were unable to configure, notify the listener
         if (success) {
             // configuration is successful
             // retrieve zones and request interstitial ad
-            ArrayList<String> newZoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
-            String requestedZone = AdColonyManager.getInstance().getZoneFromRequest(newZoneList, mediationExtras);
+            ArrayList<String> newZoneList =
+                    AdColonyManager.getInstance().parseZoneList(serverParams);
+            String requestedZone =
+                    AdColonyManager.getInstance().getZoneFromRequest(newZoneList, mediationExtras);
 
             if (requestedZone != null) {
                 // we have a valid zoneId -- request the ad
@@ -82,7 +97,8 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
         }
 
         if (!success) {
-            mediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            mediationInterstitialListener
+                    .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
@@ -91,34 +107,44 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
         showAdColonyInterstitial();
     }
 
-    /*************** MediationRewardedVideoAdapter methods ***************/
+    /***************
+     * MediationRewardedVideoAdapter methods
+     ***************/
     @Override
     public void initialize(Context context, MediationAdRequest mediationAdRequest, String userId,
                            MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
                            Bundle serverParams, Bundle networkExtras) {
         this._mediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
-        _adColonyRewardedInterstitialListener = new AdColonyAdListener(this, mediationRewardedVideoAdListener);
-        boolean success = AdColonyManager.getInstance().configureAdColony(context, serverParams, mediationAdRequest, networkExtras);
+        _adColonyRewardedInterstitialListener =
+                new AdColonyAdListener(this, mediationRewardedVideoAdListener);
+        boolean success = AdColonyManager.getInstance()
+                .configureAdColony(context, serverParams, mediationAdRequest, networkExtras);
         if (success) {
             AdColonyManager.getInstance().rewardedAdsConfigured = true;
             this._mediationRewardedVideoAdListener.onInitializationSucceeded(this);
         } else {
-            this._mediationRewardedVideoAdListener.onInitializationFailed(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            this._mediationRewardedVideoAdListener
+                    .onInitializationFailed(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
     @Override
-    public void loadAd(MediationAdRequest mediationAdRequest, Bundle serverParams, Bundle networkExtras) {
+    public void loadAd(MediationAdRequest mediationAdRequest,
+                       Bundle serverParams,
+                       Bundle networkExtras) {
         boolean showPrePopup = false;
         boolean showPostPopup = false;
-        boolean success = AdColonyManager.getInstance().configureAdColony(null, serverParams, mediationAdRequest, networkExtras);
+        boolean success = AdColonyManager.getInstance()
+                .configureAdColony(null, serverParams, mediationAdRequest, networkExtras);
 
         // retrieve the appropriate zone for this ad-request
-        ArrayList<String> listFromServerParams = AdColonyManager.getInstance().parseZoneList(serverParams);
-        String requestedZone = AdColonyManager.getInstance().getZoneFromRequest(listFromServerParams, networkExtras);
+        ArrayList<String> listFromServerParams =
+                AdColonyManager.getInstance().parseZoneList(serverParams);
+        String requestedZone = AdColonyManager
+                .getInstance().getZoneFromRequest(listFromServerParams, networkExtras);
 
         if (networkExtras != null) {
-            showPrePopup= networkExtras.getBoolean("show_pre_popup", false);
+            showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
             showPostPopup = networkExtras.getBoolean("show_post_popup", false);
         }
         // update the reward listener if it had not been set before
@@ -133,14 +159,17 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
             AdColonyAdOptions adOptions = new AdColonyAdOptions();
             adOptions.enableConfirmationDialog(showPrePopup);
             adOptions.enableResultsDialog(showPostPopup);
-            AdColony.requestInterstitial(requestedZone, _adColonyRewardedInterstitialListener, adOptions);
+            AdColony.requestInterstitial(requestedZone,
+                    _adColonyRewardedInterstitialListener,
+                    adOptions);
         } else {
             // cannot request an ad without a valid zone.
             success = false;
         }
 
         if (!success) {
-            _mediationRewardedVideoAdListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            _mediationRewardedVideoAdListener
+                    .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
@@ -154,7 +183,9 @@ public class AdColonyAdapter implements MediationInterstitialAdapter, MediationR
         return AdColonyManager.getInstance().rewardedAdsConfigured;
     }
 
-    /*************** shared private methods ***************/
+    /***************
+     * shared private methods
+     ***************/
 
     private void showAdColonyInterstitial() {
         if (_adcAd != null) {

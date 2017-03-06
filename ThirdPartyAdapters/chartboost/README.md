@@ -12,7 +12,7 @@ SDK in Google Play services.
 - Add the compile dependency with the latest version of the Chartboost adapter
   in the **build.gradle** file
   <pre><code>dependencies {
-    compile 'com.google.ads.mediation:chartboost:6.6.0.0'
+    compile 'com.google.ads.mediation:chartboost:6.6.1.0'
   }</code></pre>
 - Add the Chartboost SDK into your Android project. The
   [quick start guide](https://answers.chartboost.com/hc/en-us/articles/201219545-Android-Integration#quickstart)

@@ -36,22 +36,22 @@ SDK in Google Play services.
 
 ## Additional Code Required
 - Add the following activities to your manifest:
-	<pre><code>&lt;activity
-	  android:name="com.tapjoy.TJAdUnitActivity"
-	  android:configChanges="orientation|keyboardHidden|screenSize"
-	  android:hardwareAccelerated="true"
-	  android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" /&gt;
-	&lt;activity
-	  android:name="com.tapjoy.mraid.view.ActionHandler"
-	  android:configChanges="orientation|keyboardHidden|screenSize" /&gt;
-	&lt;activity
-	  android:name="com.tapjoy.mraid.view.Browser"
-	  android:configChanges="orientation|keyboardHidden|screenSize" /&gt;
-	&lt;activity
-	  android:name="com.tapjoy.TJContentActivity"
-	  android:configChanges="orientation|keyboardHidden|screenSize"
-	  android:theme="@android:style/Theme.Translucent.NoTitleBar"
-	  android:hardwareAccelerated="true" /&gt;</code></pre>
+  <pre><code>&lt;activity
+    android:name="com.tapjoy.TJAdUnitActivity"
+    android:configChanges="orientation|keyboardHidden|screenSize"
+    android:hardwareAccelerated="true"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" /&gt;
+  &lt;activity
+    android:name="com.tapjoy.mraid.view.ActionHandler"
+    android:configChanges="orientation|keyboardHidden|screenSize" /&gt;
+  &lt;activity
+    android:name="com.tapjoy.mraid.view.Browser"
+    android:configChanges="orientation|keyboardHidden|screenSize" /&gt;
+  &lt;activity
+    android:name="com.tapjoy.TJContentActivity"
+    android:configChanges="orientation|keyboardHidden|screenSize"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar"
+    android:hardwareAccelerated="true" /&gt;</code></pre>
 
 - Make sure the following permissions are enabled in your **AndroidManifest.xml**
   file.

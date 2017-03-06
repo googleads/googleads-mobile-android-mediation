@@ -1,8 +1,19 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 2.0.8.0
+- Verified compatibility with Unity Ads SDK 2.0.8.
+
+## 2.0.7.0
+- Using Unity Ads's click reporting (AdMob and Unity Ads click statistics will
+  match up).
+- Added onAdLeftApplication callback support.
+
+## 2.0.6.0
+- Verified compatibility with Unity Ads SDK 2.0.6.
+
 ## 2.0.5.0
 - The adapters can now be added as a compile dependency by adding the following
-  to the build.gradle file's dependencies tag:  
+  to the build.gradle file's dependencies tag:
   `compile 'com.google.ads.mediation:unity:2.0.5.0'`
 - Moved to distributing the adapter as an aar instead of a jar file
   (see README for additional instructions).

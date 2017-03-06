@@ -16,6 +16,7 @@ package com.google.ads.mediation.chartboost;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.util.Log;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost.CBFramework;
@@ -31,6 +32,7 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * The {@link ChartboostAdapter} class is used to load Chartboost rewarded-based video &
  * interstitial ads and mediate the callbacks between Chartboost SDK and Google Mobile Ads SDK.
  */
+@Keep
 public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
         MediationInterstitialAdapter {
     protected static final String TAG = ChartboostAdapter.class.getSimpleName();
@@ -38,7 +40,7 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
     /**
      * The current version of the adapter.
      */
-    protected static final String ADAPTER_VERSION_NAME = "6.6.0.0";
+    public static final String ADAPTER_VERSION_NAME = "6.6.1.0";
 
     /**
      * Key to obtain App ID, required for initializing Chartboost SDK.

@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "2.0.5.0"
+    stringVersion = "2.0.8.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // String property used to set the name of the Jar created by makeJar task.
@@ -19,11 +19,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.0'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName stringVersion
     }
@@ -37,64 +37,8 @@ android {
 
 dependencies {
     compile project(':unity-ads-aar')
-    compile 'com.google.android.gms:play-services-ads:9.0.0'
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
 }
-
-/**
- * Delete task to delete any previously generated .jar files by makeJar task. makeJar depends on
- * this task.
- */
-task clearJar(type: Delete) {
-    // Targets to be deleted.
-    delete('build/libs/' + stringJarName)
-}
-
-/**
- * Copy task used to copy the build files. This task depends on clearJar and build tasks.
- */
-task makeJar(type: Copy) {
-    // Targets to be copied from.
-    from('build/intermediates/bundles/release/')
-    // Targets to copy into.
-    into('build/libs/')
-    // Files to include.
-    include('classes.jar')
-    // Rename file.
-    rename('classes.jar', stringJarName)
-}
-
-/**
- * Add dependency tasks for makeJar.
- */
-makeJar.dependsOn(clearJar, build)
-
-/**
- * Delete task to delete any previously generated .zip files by makeZip task. makeZip depends on
- * this task.
- */
-task clearZip(type: Delete) {
-    // Targets to be deleted.
-    delete('build/libs/' + stringZipName + '.zip')
-}
-
-/**
- * Zip task to make a zip archive. This task depends on makeJar and clearZip tasks.
- */
-task makeZip(type: Zip) {
-    // Targets to be added to the zip archive.
-    from('build/libs/' + stringJarName, '../README.txt', '../CHANGELOG.txt')
-    // Root directory name for the zip archive.
-    into(stringZipName)
-    // Name of the zip archive.
-    archiveName stringZipName + '.zip'
-    // Destination directory in which the archive needs to be saved.
-    destinationDir file('build/libs')
-}
-
-/**
- * Add dependency tasks for makeZip.
- */
-makeZip.dependsOn(makeJar, clearZip)
 
 /**
  * Jar task to make a sources jar.
@@ -149,11 +93,11 @@ bintray {
         userOrg = 'google'
         desc = 'Unity Ads adapter for Google Mobile Ads mediation.'
         licenses = ['Apache-2.0']
-        websiteUrl = 'https://github.com/googleads/googleads-mobile-android-mediation'
+        websiteUrl = 'https://firebase.google.com/docs/admob/android/mediation'
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
-        githubReleaseNotesFile = 'ThirdPartyAdapters/unity/CHANGELOG.txt'
+        githubReleaseNotesFile = 'ThirdPartyAdapters/unity/CHANGELOG.md'
         version {
             name = stringVersion
         }
