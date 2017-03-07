@@ -1,11 +1,11 @@
-# This is the changelog for your adapter. Each release should have an entry that
-# lists the version along with the changes it introduces. See the other
-# changelog files in this repo for examples (and be sure to delete these
-# instructions before you push!).
+***********
+4.12.0.
+***********
 
-# [NETWORK NAME] Adapter for Google Mobile Ads SDK for Android Changelog
+- Added support for MoPub native ads.
 
-## x.y.z.0
+***********
+Previous
+***********
 
-- First release!
-- Adds support for banners, interstitials, etc.
+- Support for MoPub banner and interstitial ads.

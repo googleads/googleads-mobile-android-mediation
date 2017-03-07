@@ -1,32 +1,30 @@
-################################################################
-# Instructions on the different pieces of this file:
-################################################################
-#
-# TODO: Resolve all TODOs in this file
-# TODO: Delete these instructions
-################################################################
+===================================================
+MoPub Adapter for Google Mobile Ads SDK for Android
+===================================================
 
-# [NETWORK NAME] Adapter for Google Mobile Ads SDK for Android # TODO
+This is an adapter to be used in conjunction with the Google Mobile Ads SDK in
+Google Play Services.
 
-This is an adapter to be used in conjunction with the Google Mobile Ads SDK.
+Requirements:
+- Android SDK 2.3 (API level 9) and up.
+- Google Mobile Ads SDK version 9.6.1 and up.
+- MoPub SDK 4.9.0 and up.
 
-## Requirements
-- Android SDK [MIN SDK VERSION] or later # TODO
-- Google Play services [MIN SDK VERSION] or later # TODO
-- [NETWORK NAME] SDK [MIN SDK VERSION] or later #TODO
+Instructions:
+- Add the adapter jar into your Android project.
+- Add the MoPub SDK to your project (detailed instructions on how to add MoPub
+SDK are availbale at:
+https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started).
+- Enable the ad network in the AdMob dashboard (a guide on how to set up AdMob
+mediation is available at:
+https://support.google.com/admob/answer/3124703?hl=en&ref_topic=3063091).
 
-## Instructions
+Native Ads Notes:
+- MoPub has 5 assets including icon, title, description, main image and CTA
+text.
+- Currently MoPub adapter is built to return install ads via Google mediation.
+If you are requesting content ads only, there will be no ads returned.
 
-## Additional Code Required # TODO
-- Optional, remove if no additional code is required
-
-## Using ExtrasBundleBuilder # TODO
-- Optional, remove if the adapter does not use any extra parameters.
-
-## Notes #TODO
-- Include anything else a potential publisher would need to know.
-- Include instructions on how to build the adapter from source.
-
-See the
-[quick start guide](https://firebase.google.com/docs/admob/android/quick-start)
-for the latest documentation and code samples for the Google Mobile Ads SDK.
+Impression and Click Tracking:
+- MoPub and Google SDKs will be tracking impressions and clicks in their own way
+and so please expect discrepancies.
