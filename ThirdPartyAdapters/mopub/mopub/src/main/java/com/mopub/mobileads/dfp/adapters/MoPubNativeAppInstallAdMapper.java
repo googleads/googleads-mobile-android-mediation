@@ -29,15 +29,16 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
     private StaticNativeAd mMopubNativeAdData;
     private int privacyIconPlacement;
     private ImageView privacyInformationIconImageView;
-    public static final int DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP = 20;
+    private int mPrivacyIconSize;
 
     public MoPubNativeAppInstallAdMapper(StaticNativeAd ad, HashMap<String, Drawable>
-            drawableMap, int privacyIconPlacementParam) {
+            drawableMap, int privacyIconPlacementParam, int privacyIconSize) {
         mMopubNativeAdData = ad;
         setHeadline(mMopubNativeAdData.getTitle());
         setBody(mMopubNativeAdData.getText());
         setCallToAction(mMopubNativeAdData.getCallToAction());
         privacyIconPlacement = privacyIconPlacementParam;
+        mPrivacyIconSize = privacyIconSize;
 
         if (drawableMap!=null) {
             setIcon(new MoPubNativeMappedImage(drawableMap.get(DownloadDrawablesAsync.KEY_ICON),
@@ -122,7 +123,7 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
             ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
 
             float scale = context.getResources().getDisplayMetrics().density;
-            int icon_size_px = (int) (DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP * scale + 0.5);
+            int icon_size_px = (int) (mPrivacyIconSize * scale + 0.5);
             FrameLayout.LayoutParams params =
                     new FrameLayout.LayoutParams(icon_size_px, icon_size_px);
 

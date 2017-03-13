@@ -45,7 +45,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     public static final double DEFAULT_MOPUB_IMAGE_SCALE = 1;
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
     private int privacyIconPlacement;
+    private int mPrivacyIconSize;
 
+    private static final int MINIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 10;
+    private static final int DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP = 20;
+    private static final int MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 30;
 
     @Override
     public void onDestroy() {
@@ -94,6 +98,19 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             return;
         }
 
+        if (mediationExtras != null) {
+            int iconSizeExtra = mediationExtras.getInt(BundleBuilder.ARG_PRIVACY_ICON_SIZE_DP);
+            if (iconSizeExtra < MINIMUM_MOPUB_PRIVACY_ICON_SIZE_DP) {
+                mPrivacyIconSize = MINIMUM_MOPUB_PRIVACY_ICON_SIZE_DP;
+            } else if (iconSizeExtra > MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP) {
+                mPrivacyIconSize = MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP;
+            } else {
+                mPrivacyIconSize = iconSizeExtra;
+            }
+        } else {
+            mPrivacyIconSize = DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP;
+        }
+
         MoPubNative.MoPubNativeNetworkListener moPubNativeNetworkListener = new MoPubNative.MoPubNativeNetworkListener() {
 
             @Override
@@ -102,9 +119,12 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 if (adData instanceof StaticNativeAd) {
                     final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
 
-                    if(options!=null && options.shouldReturnUrlsForImageAssets()){
-                        final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper = new
-                                MoPubNativeAppInstallAdMapper(staticNativeAd, null, privacyIconPlacement);
+                    if (options != null && options.shouldReturnUrlsForImageAssets()) {
+                        final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
+                                new MoPubNativeAppInstallAdMapper(staticNativeAd,
+                                        null,
+                                        privacyIconPlacement,
+                                        mPrivacyIconSize);
                         listener.onAdLoaded(MoPubAdapter.this, moPubNativeAppInstallAdMapper);
                         return;
                     }
@@ -127,7 +147,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
                             final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
                                     new MoPubNativeAppInstallAdMapper(staticNativeAd,
-                                            drawableMap, privacyIconPlacement);
+                                            drawableMap,
+                                            privacyIconPlacement,
+                                            mPrivacyIconSize);
                             listener.onAdLoaded(MoPubAdapter.this, moPubNativeAppInstallAdMapper);
                         }
 
@@ -363,5 +385,40 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
     }
 
+    /**
+     * The {@link BundleBuilder} class is used to create a NetworkExtras bundle which can be passed
+     * to the adapter to make network-specific customizations.
+     */
+    public static final class BundleBuilder {
+
+        /**
+         * Key to add and obtain {@link #mPrivacyIconSizeDp}.
+         */
+        private static final String ARG_PRIVACY_ICON_SIZE_DP = "privacy_icon_size_dp";
+
+        /**
+         * MoPub's privacy icon size in dp.
+         */
+        private int mPrivacyIconSizeDp;
+
+        /**
+         * Sets the privacy icon size in dp.
+         */
+        public BundleBuilder setPrivacyIconSize(int iconSizeDp) {
+            mPrivacyIconSizeDp = iconSizeDp;
+            return BundleBuilder.this;
+        }
+
+        /**
+         * Constructs a Bundle with the specified extras.
+         *
+         * @return a {@link Bundle} containing the specified extras.
+         */
+        public Bundle build() {
+            Bundle bundle = new Bundle();
+            bundle.putInt(ARG_PRIVACY_ICON_SIZE_DP, mPrivacyIconSizeDp);
+            return bundle;
+        }
+    }
 }
 
