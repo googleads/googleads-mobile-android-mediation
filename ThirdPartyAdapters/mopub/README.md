@@ -18,10 +18,7 @@ This is an adapter to be used in conjunction with the Google Mobile Ads SDK.
   guide contains detailed instructions on how to add MoPub SDK to your project.
 - Enable the ad network in the AdMob dashboard. See the
   [mediation set up guide](https://support.google.com/admob/answer/3124703?hl=en&ref_topic=3063091)
-  for details..
-
-## Additional Code Required # TODO
-- Optional, remove if no additional code is required
+  for details.
 
 ## Using MoPubAdapter.BundleBuilder
 - The MoPubAdapter.BundleBuilder class can be used to create a bundle with
