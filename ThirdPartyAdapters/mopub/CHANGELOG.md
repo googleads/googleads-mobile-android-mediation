@@ -2,6 +2,7 @@
 
 ## 4.12.0.0
 - Added support for MoPub native ads.
+- Updated interstitials and banners per Google's latest mediation apis
 
 ## Previous
 - Support for MoPub banner and interstitial ads.
