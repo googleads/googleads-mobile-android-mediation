@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "2.0.8.0"
+    stringVersion = "2.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // String property used to set the name of the Jar created by makeJar task.
@@ -22,7 +22,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.2'
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
         versionName stringVersion
@@ -37,7 +37,7 @@ android {
 
 dependencies {
     compile project(':unity-ads-aar')
-    compile 'com.google.android.gms:play-services-ads:10.0.1'
+    compile 'com.google.android.gms:play-services-ads:10.2.0'
 }
 
 /**

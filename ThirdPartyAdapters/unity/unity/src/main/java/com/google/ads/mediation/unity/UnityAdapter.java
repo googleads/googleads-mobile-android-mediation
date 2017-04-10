@@ -140,6 +140,15 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         @Override
+        public void onUnityAdsPlacementStateChanged(String placementId,
+                                                    UnityAds.PlacementState oldState,
+                                                    UnityAds.PlacementState newState) {
+            // This callback is not forwarded to the adapter by the UnitySingleton and the
+            // adapter should use the onUnityAdsReady and onUnityAdsError callbacks to forward
+            // Unity Ads SDK state to Google Mobile Ads SDK.
+        }
+
+        @Override
         public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
             // Unity Ads ad closed.
             if (mMediationInterstitialListener != null) {

@@ -4,7 +4,7 @@ This is an adapter to be used in conjunction with the Google Mobile Ads
 SDK in Google Play services.
 
 ## Requirements
-- Android SDK 3.2 or later
+- Android SDK 4.0 (API level 14) or later
 - Google Play services 8.3 or later
 - Chartboost SDK
 
@@ -12,7 +12,7 @@ SDK in Google Play services.
 - Add the compile dependency with the latest version of the Chartboost adapter
   in the **build.gradle** file
   <pre><code>dependencies {
-    compile 'com.google.ads.mediation:chartboost:6.6.1.0'
+    compile 'com.google.ads.mediation:chartboost:6.6.3.0'
   }</code></pre>
 - Add the Chartboost SDK into your Android project. The
   [quick start guide](https://answers.chartboost.com/hc/en-us/articles/201219545-Android-Integration#quickstart)

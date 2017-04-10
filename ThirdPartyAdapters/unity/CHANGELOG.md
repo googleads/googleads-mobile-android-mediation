@@ -1,5 +1,8 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 2.1.0.0
+- Updated the adapter to make it compatible with Unity Ads SDK 2.1.0.
+
 ## 2.0.8.0
 - Verified compatibility with Unity Ads SDK 2.0.8.
 

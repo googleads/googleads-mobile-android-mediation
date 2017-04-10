@@ -6,6 +6,10 @@ import android.net.Uri;
 
 import com.google.android.gms.ads.formats.NativeAd;
 
+/**
+ * A {@link com.google.android.gms.ads.formats.NativeAd.Image} used to map MoPub native image asset
+ * to a Google native image asset.
+ */
 public class MoPubNativeMappedImage extends NativeAd.Image {
 
     private Drawable mDrawable;

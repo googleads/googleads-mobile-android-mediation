@@ -20,7 +20,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
+/**
+ * An {@link AsyncTask} used to load native ad images.
+ */
 public class DownloadDrawablesAsync extends AsyncTask<Object, Void, HashMap<String, Drawable>> {
 
     public static final String KEY_IMAGE = "image_key";
@@ -39,7 +41,6 @@ public class DownloadDrawablesAsync extends AsyncTask<Object, Void, HashMap<Stri
         HashMap<String, URL> urlsMap = (HashMap<String, URL>) params[0];
         ExecutorService executorService = Executors.newCachedThreadPool();
 
-        // Here we are using Future to download images, you can use your download logic.
         Future<Drawable> imageDrawableFuture =
                 getDrawableFuture(urlsMap.get(KEY_IMAGE), executorService);
         Future<Drawable> iconDrawableFuture =

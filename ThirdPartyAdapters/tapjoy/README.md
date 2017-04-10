@@ -4,7 +4,7 @@ This is an adapter to be used in conjunction with the Google Mobile Ads
 SDK in Google Play services.
 
 ## Requirements
-- Android SDK 2.2 or later
+- Android SDK 4.0 (API level 14) or later
 - Google Play services 8.3 or later
 - Tapjoy SDK 11.9.1 or later
 
@@ -14,7 +14,7 @@ SDK in Google Play services.
 - Add the compile dependency with the latest version of the Tapjoy adapter
   in the **build.gradle** file
   <pre><code>dependencies {
-    compile 'com.google.ads.mediation:tapjoy:11.9.1.0'
+    compile 'com.google.ads.mediation:tapjoy:11.10.0.0'
   }</code></pre>
 - Add the Tapjoy SDK into your Android project. The
   [quick start guide](http://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/)

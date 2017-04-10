@@ -4,15 +4,15 @@ This is an adapter to be used in conjunction with the Google Mobile Ads
 SDK in Google Play services.
 
 ## Requirements
-- Android SDK 2.3 (API level 9) or later.
+- Android SDK 4.0 (API level 14) or later.
 - Google Mobile Ads SDK to v9.0.0 or later.
-- Unity Ads SDK v2.0.6 or later.
+- Unity Ads SDK v2.0.7 or later.
 
 ## Instructions
 - Add the compile dependency with the latest version of the Unity Ads adapter in
   the **build.gradle** file:
   <pre><code>dependencies {
-    compile 'com.google.ads.mediation:unity:2.0.8.0'
+    compile 'com.google.ads.mediation:unity:2.1.0.0'
   }</code></pre>
 - Import the Unity Ads library project into your Android project. The
   [integration guide](http://unityads.unity3d.com/help/monetization/integration-guide-android)

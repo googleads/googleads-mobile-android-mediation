@@ -4,7 +4,9 @@ import android.graphics.drawable.Drawable;
 
 import java.util.HashMap;
 
-// Create an interface to send callbacks when image download finishes.
+/**
+ * Interface to send callbacks when {@link DownloadDrawablesAsync} finishes downloading images.
+ */
 public interface DrawableDownloadListener {
 
     // A success callback.

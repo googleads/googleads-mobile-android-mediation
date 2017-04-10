@@ -114,7 +114,7 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion("2.0.8.0");
+        mediationMetaData.setVersion("2.1.0.0");
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());
@@ -202,6 +202,14 @@ public final class UnitySingleton {
                     delegate.onUnityAdsClick(placementId);
                 }
             }
+        }
+
+        @Override
+        public void onUnityAdsPlacementStateChanged(String placementId,
+                                                    UnityAds.PlacementState oldState,
+                                                    UnityAds.PlacementState newState) {
+            // The onUnityAdsReady and onUnityAdsError callback methods are used to forward Unity
+            // Ads SDK states to the adapters. No need to forward this callback to the adapters.
         }
 
         @Override
