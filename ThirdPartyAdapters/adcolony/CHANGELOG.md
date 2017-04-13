@@ -1,5 +1,8 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.0.6.1
+- Fixed issues in AdColonyAdListener
+
 ## 3.0.6.0
 - Changed the version naming system to
   [AdColony SDK version].[adapter patch version].
