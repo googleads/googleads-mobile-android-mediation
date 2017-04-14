@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.1.1.0"
+    stringVersion = "3.1.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // String property used to set the name of the Jar created by makeJar task.
@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    provided 'com.adcolony:sdk:3.1.1'
+    provided 'com.adcolony:sdk:3.1.2'
     provided 'com.google.android.gms:play-services-ads:10.2.0'
 }
 

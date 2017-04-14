@@ -1,5 +1,9 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.1.2.0
+- Fixed possible NullPointerExceptions.
+- Verified compatibility with AdColony SDK version 3.1.2.
+
 ## 3.1.1.0
 - Verified compatibility with AdColony SDK version 3.1.1.
 
