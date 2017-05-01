@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "11.10.0.0"
+    stringVersion = "11.10.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // String property used to set the name of the Jar created by makeJar task.
@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    compile 'com.tapjoy:tapjoy-android-sdk:11.10.0'
+    compile 'com.tapjoy:tapjoy-android-sdk:11.10.1'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

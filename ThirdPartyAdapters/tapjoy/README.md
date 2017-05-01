@@ -14,7 +14,7 @@ SDK in Google Play services.
 - Add the compile dependency with the latest version of the Tapjoy adapter
   in the **build.gradle** file
   <pre><code>dependencies {
-    compile 'com.google.ads.mediation:tapjoy:11.10.0.0'
+    compile 'com.google.ads.mediation:tapjoy:11.10.1.0'
   }</code></pre>
 - Add the Tapjoy SDK into your Android project. The
   [quick start guide](http://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/)
