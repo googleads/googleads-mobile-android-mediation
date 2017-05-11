@@ -512,7 +512,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
         @Override
         public int getAmount() {
             // Tapjoy only supports fixed rewards and doesn't provide a reward amount.
-            return 0;
+            return 1;
         }
     }
 

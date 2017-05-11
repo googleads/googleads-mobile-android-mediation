@@ -9,23 +9,20 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "11.10.1.0"
+    stringVersion = "4.22.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        versionName stringVersion
     }
     buildTypes {
         release {
@@ -33,19 +30,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
-        abortOnError false
-    }
 }
 
 dependencies {
-    compile 'com.tapjoy:tapjoy-android-sdk:11.10.1'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-ads:10.2.4'
-    testCompile 'junit:junit:4.12'
+    compile 'com.google.android.gms:play-services-ads:10.2.1'
+    compile 'com.facebook.android:audience-network-sdk:4.22.0'
 }
 
 /**
@@ -61,7 +50,7 @@ task sourcesJar (type: Jar) {
  */
 publishing {
     publications {
-        tapjoyPublications(MavenPublication) {
+        facebookPublications(MavenPublication) {
             groupId = stringGroupId
             artifactId = project.name
             version = stringVersion
@@ -90,7 +79,7 @@ bintray {
             : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey')
             : System.getenv('BINTRAY_API_KEY')
-    publications = ['tapjoyPublications']
+    publications = ['facebookPublications']
 
     dryRun = false // Deploy after running.
     publish = false // Don't auto publish after deploying.
@@ -99,13 +88,12 @@ bintray {
         repo = 'mobile-ads-adapters-android'
         name = "${stringGroupId}.${project.name}" // Display name for the package.
         userOrg = 'google'
-        desc = 'Tapjoy adapter for Google Mobile Ads mediation.'
+        desc = 'Facebook adapter for Google Mobile Ads mediation.'
         licenses = ['Apache-2.0']
         websiteUrl = 'https://firebase.google.com/docs/admob/android/mediation'
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
-        githubReleaseNotesFile = 'ThirdPartyAdapters/tapjoy/CHANGELOG.md'
         version {
             name = stringVersion
         }
