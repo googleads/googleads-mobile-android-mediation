@@ -67,6 +67,12 @@ public final class InMobiAdapter
 
     private Boolean isOnlyUrl = false;
 
+    /**
+     * Flag to keep track of whether or not the InMobi rewarded video ad adapter has been
+     * initialized.
+     */
+    private boolean mIsRewardedVideoAdAdapterInitialized;
+
 
     @Override
     public void showInterstitial() {
@@ -264,7 +270,7 @@ public final class InMobiAdapter
             activity = (Activity) context;
         } else {
             Log.w("InMobiAdapter", "Context not an Activity. Returning error!");
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
@@ -422,7 +428,7 @@ public final class InMobiAdapter
             activity = (Activity) context;
         } else {
             Log.w("InMobiAdapter", "Context not an Activity. Returning error!");
-            mediationRewardedVideoAdListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
+            mediationRewardedVideoAdListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
@@ -550,6 +556,7 @@ public final class InMobiAdapter
                     }
                 });
 
+        mIsRewardedVideoAdAdapterInitialized = true;
         this.rewardedVideoAdListener.onInitializationSucceeded(this);
 
         if (mediationAdRequest.getKeywords() != null) {
@@ -590,7 +597,7 @@ public final class InMobiAdapter
 
     @Override
     public boolean isInitialized() {
-        return isAppInitialized;
+        return mIsRewardedVideoAdAdapterInitialized && isAppInitialized;
     }
 
 
@@ -630,7 +637,7 @@ public final class InMobiAdapter
          */
 
         if (!serveAnyAd) {
-            this.nativeListener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+            this.nativeListener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
