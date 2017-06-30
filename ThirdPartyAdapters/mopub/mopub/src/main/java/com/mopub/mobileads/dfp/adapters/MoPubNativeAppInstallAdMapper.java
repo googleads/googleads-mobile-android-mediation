@@ -155,7 +155,7 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
             privacyInformationIconImageView.setLayoutParams(params);
             adView.requestLayout();
         } else {
-            Log.d("MoPub", "Failed to show AdChoices icon.");
+            Log.d(MoPubAdapter.TAG, "Failed to show AdChoices icon.");
         }
 
 

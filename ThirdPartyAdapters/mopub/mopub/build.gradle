@@ -9,14 +9,14 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.13.0.0"
+    stringVersion = "4.15.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "25.0.3"
 
     defaultConfig {
         minSdkVersion 16
@@ -36,8 +36,8 @@ android {
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services-ads:10.2.0'
-    compile('com.mopub:mopub-sdk:4.13.0@aar') {
+    compile 'com.google.android.gms:play-services-ads:11.0.1'
+    compile('com.mopub:mopub-sdk:4.15.0@aar') {
         transitive = true
     }
 }
@@ -95,7 +95,7 @@ bintray {
         userOrg = 'google'
         desc = 'MoPub adapter for Google Mobile Ads mediation.'
         licenses = ['Apache-2.0']
-        websiteUrl = 'https://firebase.google.com/docs/admob/android/mediation'
+        websiteUrl = 'https://developers.google.com/admob/android/mediation/mopub'
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'

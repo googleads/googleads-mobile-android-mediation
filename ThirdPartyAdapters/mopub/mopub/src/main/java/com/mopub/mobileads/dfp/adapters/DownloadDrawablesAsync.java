@@ -56,7 +56,7 @@ public class DownloadDrawablesAsync extends AsyncTask<Object, Void, HashMap<Stri
             drawablesMap.put(KEY_ICON, iconDrawable);
             return drawablesMap;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Log.d("MoPub", "Native ad images failed to download");
+            Log.d(MoPubAdapter.TAG, "Native ad images failed to download");
             return null;
         }
     }

@@ -42,8 +42,11 @@ import java.util.HashMap;
  */
 public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdapter,
         MediationInterstitialAdapter {
+    public static final String TAG = MoPubAdapter.class.getSimpleName();
 
     private MoPubView mMoPubView;
+    private AdSize mAdSize;
+
     private MoPubInterstitial mMoPubInterstitial;
     private static final String MOPUB_NATIVE_CEVENT_VERSION = "tp:google_mediating_mopub";
     public static final double DEFAULT_MOPUB_IMAGE_SCALE = 1;
@@ -94,8 +97,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         if (!mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest
                 .isContentAdRequested()) {
-            Log.d("MoPub", "MoPub will be able to serve only install ads in the mediation " +
-                    "currently.");
+            Log.d(TAG, "Currently, MoPub only serves native app install ads. Apps requesting "
+                    + "content ads alone will not receive ads from this adapter.");
             listener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -142,7 +145,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
                             } catch (MalformedURLException e) {
                                 //return added with fail callbacks - rupa
-                                Log.d("MoPub", "Invalid ad response received from MoPub. Image URLs"
+                                Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
                                         + " are invalid");
                                 listener.onAdFailedToLoad(MoPubAdapter.this,
                                         AdRequest.ERROR_CODE_INTERNAL_ERROR);
@@ -203,7 +206,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 };
 
         if (adunit == null) {
-            Log.d("MoPub", "Adunit id is invalid. So failing the request.");
+            Log.d(TAG, "Ad unit id is invalid. So failing the request.");
             listener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -242,6 +245,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         String adunit = bundle.getString(MOPUB_AD_UNIT_KEY);
 
+        mAdSize = adSize;
         mMoPubView = new MoPubView(context);
         mMoPubView.setBannerAdListener(new MBannerListener(mediationBannerListener));
         mMoPubView.setAdUnitId(adunit);
@@ -327,6 +331,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         @Override
         public void onBannerLoaded(MoPubView moPubView) {
+            if (!(mAdSize.getWidth() == moPubView.getAdWidth()
+                    && mAdSize.getHeight() == moPubView.getAdHeight())) {
+                Log.w(TAG, "The banner ad size loaded does not match the request size. Update the"
+                        + " ad size on your MoPub UI to match the request size.");
+            }
             mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
 
         }
