@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "11.10.1.0"
+    stringVersion = "11.11.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -24,8 +24,6 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -39,13 +37,9 @@ android {
 }
 
 dependencies {
-    compile 'com.tapjoy:tapjoy-android-sdk:11.10.1'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    compile 'com.tapjoy:tapjoy-android-sdk:11.11.0'
     compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-ads:10.2.4'
-    testCompile 'junit:junit:4.12'
+    compile 'com.google.android.gms:play-services-ads:11.0.1'
 }
 
 /**

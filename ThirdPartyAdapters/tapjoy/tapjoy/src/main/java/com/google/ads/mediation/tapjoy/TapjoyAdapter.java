@@ -445,18 +445,33 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
 
     @Override
     public void onVideoStart(TJPlacement tjPlacement) {
-        mediationRewardedVideoAdListener.onVideoStarted(TapjoyAdapter.this);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mediationRewardedVideoAdListener.onVideoStarted(TapjoyAdapter.this);
+            }
+        });
     }
 
     @Override
     public void onVideoError(TJPlacement tjPlacement, String s) {
-        mediationRewardedVideoAdListener
-                .onAdFailedToLoad(TapjoyAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mediationRewardedVideoAdListener
+                        .onAdFailedToLoad(TapjoyAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+        });
     }
 
     @Override
     public void onVideoComplete(TJPlacement tjPlacement) {
-        mediationRewardedVideoAdListener.onRewarded(this, new TapjoyReward());
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mediationRewardedVideoAdListener.onRewarded(TapjoyAdapter.this, new TapjoyReward());
+            }
+        });
     }
 
 
