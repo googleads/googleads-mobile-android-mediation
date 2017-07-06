@@ -20,6 +20,21 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.google.android.gms:play-services-ads:10.2.1'
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.google.android.gms:play-services-ads:10.2.4'
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.inmobi.monetization:inmobi-ads:6.2.3'
 }
+
+task clearJar(type: Delete) {
+    delete 'build/libs/libadapterinmobi.jar'
+}
+
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('build/libs/')
+    include('classes.jar')
+    rename('classes.jar', 'libadapterinmobi.jar')
+}
+
+makeJar.dependsOn(clearJar, build)
