@@ -17,8 +17,8 @@ allprojects {
         jcenter()
 
         maven {
-          url 'https://jitpack.io'
-        } // remove later
+            url  "http://vungle.bintray.com/com.vungle"
+        }
     }
 }
 
