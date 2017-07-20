@@ -15,10 +15,6 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-
-        maven {
-            url  "http://vungle.bintray.com/com.vungle"
-        }
     }
 }
 

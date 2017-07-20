@@ -36,6 +36,6 @@ android {
 }
 
 dependencies {
-    compile 'com.vungle:publisher-sdk-android-release:5.1.0@aar'
+    compile 'com.vungle:publisher-sdk-android:5.1.0:release@aar'
     compile 'com.google.android.gms:play-services:10.2.4'
 }
