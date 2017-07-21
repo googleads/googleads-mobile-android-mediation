@@ -23,7 +23,7 @@ class VungleManager implements VungleAdEventListener {
 
     private static final String TAG = VungleManager.class.getSimpleName();
 
-    private static final String VERSION = "3.0.0";
+    private static final String VERSION = "5.1.0";
 
     private static VungleManager instance;
     private VunglePub mVunglePub;
@@ -31,18 +31,17 @@ class VungleManager implements VungleAdEventListener {
     private boolean isInitialising = false;
     private String appId;
     private String[] placements;
-    private Context ctx;
     private Handler handler = new Handler(Looper.getMainLooper());
 
     private Map<String, VungleListener> listeners;
 
-    static VungleManager getInstance(String appId, String[] placements, Context ctx){
+    static VungleManager getInstance(String appId, String[] placements){
         if (instance == null)
-            instance = new VungleManager(appId, placements, ctx);
+            instance = new VungleManager(appId, placements);
         return instance;
     }
 
-    private VungleManager(String appId, String[] placements, Context ctx){
+    private VungleManager(String appId, String[] placements){
         listeners = new HashMap<>();
 
         Injector injector = Injector.getInstance();
@@ -51,7 +50,6 @@ class VungleManager implements VungleAdEventListener {
 
         this.appId = appId;
         this.placements = placements;
-        this.ctx = ctx;
 
         mVunglePub = VunglePub.getInstance();
     }
@@ -70,7 +68,7 @@ class VungleManager implements VungleAdEventListener {
         return placements[0];
     }
 
-    void init() {
+    void init(Context context) {
         if (mVunglePub.isInitialized()) {
             for (VungleListener cb: listeners.values()) {
                 if (cb.isWaitingInit()) {
@@ -84,7 +82,7 @@ class VungleManager implements VungleAdEventListener {
             return;
         isInitialising = true;
 
-        mVunglePub.init(ctx, appId, placements, new VungleInitListener() {
+        mVunglePub.init(context, appId, placements, new VungleInitListener() {
             @Override
             public void onSuccess() {
                 handler.post(new Runnable() {
