@@ -2,10 +2,9 @@ package com.vungle.mediation;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -15,9 +14,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private MediationInterstitialListener mMediationInterstitialListener;
-    private VungleManager mVunglePub;
+    private VungleManager mVungleManager;
     private AdConfig adConfig;
     private final String ID = "interstitial";
+    private static int counter = 0;
+    private String adapterId;
     private String placementForPlay;
 
     private final VungleListener vungleListener = new VungleListener() {
@@ -46,7 +47,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
         void onInitialized(boolean isSuccess) {
             if (mMediationInterstitialListener != null) {
                 if (!isSuccess){
-                    mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, 0);
+                    mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 } else {
                     loadAd();
                 }
@@ -69,57 +70,69 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        String[] placements = mediationExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
-        if (placements == null || placements.length == 0) {
-            Log.e(TAG, "Placements should be specified!");
+        String[] placements;
+        if (mediationExtras != null) {
+            placements = mediationExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
+            if (placements == null || placements.length == 0) {
+                Log.e(TAG, "Placements should be specified!");
+                if (mediationInterstitialListener != null) {
+                    mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                }
+                return;
+            }
+        } else {
+            Log.e(TAG, "mediationExtras is null.");
             if (mediationInterstitialListener != null)
-                mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, 0);
+                mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
         mMediationInterstitialListener = mediationInterstitialListener;
         String appId = serverParameters.getString("appid");
-        mVunglePub = VungleManager.getInstance(appId, placements, context);
+        mVungleManager = VungleManager.getInstance(appId, placements);
 
-        placementForPlay = mVunglePub.findPlacemnt(mediationExtras);
+        placementForPlay = mVungleManager.findPlacemnt(mediationExtras);
         adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
-        mVunglePub.addListener(ID, vungleListener);
-        if (mVunglePub.isInitialized()) {
+        adapterId = ID + String.valueOf(counter);
+        counter++;
+
+        mVungleManager.addListener(adapterId, vungleListener);
+        if (mVungleManager.isInitialized()) {
             loadAd();
         } else {
             vungleListener.setWaitingInit(true);
-            mVunglePub.init();
+            mVungleManager.init(context);
         }
     }
 
     private void loadAd() {
-        if (mVunglePub.isAdPlayable(placementForPlay)) {
+        if (mVungleManager.isAdPlayable(placementForPlay)) {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
             }
         } else {
             vungleListener.waitForAd(placementForPlay);
-            mVunglePub.loadAd(placementForPlay);
+            mVungleManager.loadAd(placementForPlay);
         }
     }
 
     @Override
     public void showInterstitial() {
-        mVunglePub.playAd(placementForPlay, adConfig, ID);
+        mVungleManager.playAd(placementForPlay, adConfig, adapterId);
     }
 
     @Override
     public void onDestroy() {
-        mVunglePub.removeListener(ID);
+        mVungleManager.removeListener(adapterId);
     }
 
     @Override
     public void onPause() {
-        mVunglePub.onPause();
+        mVungleManager.onPause();
     }
 
     @Override
     public void onResume() {
-        mVunglePub.onResume();
+        mVungleManager.onResume();
     }
 }
