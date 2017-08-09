@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by vineet.srivastava on 5/2/16.
+ * An {@link AsyncTask} used to load images for InMobi native adapter.
  */
 class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, Drawable>> {
 
@@ -32,7 +32,7 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
 
     private final DrawableDownloadListener mListener;
 
-    private final InMobiMemoryCache memoryCache = new InMobiMemoryCache();
+    private final InMobiMemoryCache mMemoryCache = new InMobiMemoryCache();
 
     public ImageDownloaderAsyncTask(DrawableDownloadListener listener) {
         mListener = listener;
@@ -60,20 +60,20 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
         Drawable iconDrawable;
 
         try {
-            if (null != memoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE))))
-                imageDrawable = memoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE)));
+            if (null != mMemoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE))))
+                imageDrawable = mMemoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE)));
             else {
                 imageDrawable = getDrawableFuture(urlsMap.get(KEY_IMAGE), executorService).get
                         (DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                //Add Screenshot to Memory Cache so that it is not needed to be downloaded later
-                memoryCache.put(String.valueOf(urlsMap.get(KEY_IMAGE)), imageDrawable);
+                // Add Screenshot to Memory Cache so that it is not needed to be downloaded later.
+                mMemoryCache.put(String.valueOf(urlsMap.get(KEY_IMAGE)), imageDrawable);
             }
-            if (null != memoryCache.get(String.valueOf(urlsMap.get(KEY_ICON))))
-                iconDrawable = memoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
+            if (null != mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON))))
+                iconDrawable = mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
             else {
                 iconDrawable = getDrawableFuture(urlsMap.get(KEY_ICON), executorService).get
                         (DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                memoryCache.put(String.valueOf(urlsMap.get(KEY_ICON)), iconDrawable);
+                mMemoryCache.put(String.valueOf(urlsMap.get(KEY_ICON)), iconDrawable);
             }
 
             HashMap<String, Drawable> drawableHashMap = new HashMap<>();
@@ -128,14 +128,10 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
 
 
     interface DrawableDownloadListener {
-
         // A success callback.
-
         void onDownloadSuccess(HashMap<String, Drawable> drawableMap);
 
         // A failure callback.
-
         void onDownloadFailure();
-
     }
 }

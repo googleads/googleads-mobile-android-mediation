@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.google.ads.mediation.inmobi;
 
 import android.os.Build;
@@ -24,7 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * @author yogeesh.rajendra@com.google.ads.mediation.inmobi.com
+ * This class contains the utility methods used by InMobi adapter.
  */
 class InMobiAdapterUtils {
 
@@ -118,7 +115,9 @@ class InMobiAdapterUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (!Objects.equals(city, "") && !Objects.equals(state, "") && !Objects.equals(country, "")) {
+            if (!Objects.equals(city, "")
+                    && !Objects.equals(state, "")
+                    && !Objects.equals(country, "")) {
                 InMobiSdk.setLocationWithCityStateCountry(city, state, country);
             }
         }
@@ -233,39 +232,6 @@ class InMobiAdapterUtils {
         }
         return LogLevel.NONE;
     }
-
-//    /**
-//     * This method returns a boolean if true means the Ad is InMobi performance Ad
-//     * ------------------------------------------------------------------------
-//     * Warning ! : 															   |
-//     * ------------------------------------------------------------------------
-//     * For mediation the key value pairs should be as per contract and the 	   |
-//     * decision here is based key "package_name"							   |
-//     * ------------------------------------------------------------------------
-//     *
-//     * @param imNativeAd
-//     * @return isInMobiPerformanceAd
-//     */
-//    public static Boolean isPerformanceAd(InMobiNative imNativeAd) {
-//
-//        Boolean isInMobiPerformanceAd = false;
-//
-//        Object pubContent = imNativeAd.getAdContent();
-//
-//        try {
-//            JSONObject payLoad = new JSONObject(pubContent.toString());
-//            //set description of Ad
-//            String packageName = payLoad.getString(InMobiNetworkValues.PACKAGE_NAME);
-//            if (null != packageName && !packageName.isEmpty()) {
-//                isInMobiPerformanceAd = true;
-//            }
-//        } catch (JSONException e) {
-//            Log.d("[InMobiAdapterUtils : Error parsing pubContent]:", e.getMessage());
-//        }
-//
-//        return isInMobiPerformanceAd;
-//    }
-
 
     public static <T> T mandatoryChecking(@Nullable T x, String param) throws
             MandatoryParamException {

@@ -1,6 +1,3 @@
-/**
- * Class responsible to fit AdMob image to the InMobi image standards
- */
 package com.google.ads.mediation.inmobi;
 
 import android.graphics.drawable.Drawable;
@@ -9,34 +6,34 @@ import android.net.Uri;
 import com.google.android.gms.ads.formats.NativeAd;
 
 /**
- * @author yogeesh.rajendra@com.google.ads.mediation.inmobi.com
- *
+ * A {@link com.google.android.gms.ads.formats.NativeAd.Image} used to map InMobi native image asset
+ * to Google native image asset.
  */
 class InMobiNativeMappedImage extends NativeAd.Image {
 
-    private final Drawable inMobiDrawable;
-    private final Uri inmobiImageUri;
-    private final double inMobiScale;
+    private final Drawable mInMobiDrawable;
+    private final Uri mInmobiImageUri;
+    private final double mInMobiScale;
 
     public InMobiNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
-        inMobiDrawable = drawable;
-        inmobiImageUri = imageUri;
-        inMobiScale = scale;
+        mInMobiDrawable = drawable;
+        mInmobiImageUri = imageUri;
+        mInMobiScale = scale;
     }
 
     @Override
     public Drawable getDrawable() {
-        return inMobiDrawable;
+        return mInMobiDrawable;
     }
 
     @Override
     public Uri getUri() {
-        return inmobiImageUri;
+        return mInmobiImageUri;
     }
 
     @Override
     public double getScale() {
-        return inMobiScale;
+        return mInMobiScale;
     }
 
 }

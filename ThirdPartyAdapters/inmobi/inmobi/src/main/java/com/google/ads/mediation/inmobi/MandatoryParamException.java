@@ -1,7 +1,7 @@
 package com.google.ads.mediation.inmobi;
 
 /**
- * Created by niranjan.agrawal on 5/12/16.
+ * An {@link Exception} which is thrown when a mandatory param is not present.
  */
 class MandatoryParamException extends Exception {
 

@@ -3,7 +3,6 @@ package com.google.ads.mediation.inmobi;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,7 +31,6 @@ import com.inmobi.ads.InMobiBanner.BannerAdListener;
 import com.inmobi.ads.InMobiInterstitial;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
-import com.inmobi.sdk.InMobiSdk.LogLevel;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,32 +38,32 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * InMobi Adapter for AdMob Mediation. This class should not be used directly
- * by publishers.
+ * InMobi Adapter for AdMob Mediation used to load and show banner, interstitial, rewarded video and
+ * native ads. This class should not be used directly by publishers.
  */
-public final class InMobiAdapter
-        implements
-        MediationInterstitialAdapter,
-        MediationBannerAdapter, MediationRewardedVideoAdAdapter, MediationNativeAdapter {
+public final class InMobiAdapter implements MediationBannerAdapter, MediationInterstitialAdapter,
+        MediationRewardedVideoAdAdapter, MediationNativeAdapter {
+    private static final String TAG = InMobiAdapter.class.getSimpleName();
 
     // Callback listeners.
-    private MediationBannerListener bannerListener;
-    private MediationInterstitialListener interstitialListener;
-    private MediationRewardedVideoAdListener rewardedVideoAdListener;
-    private MediationNativeListener nativeListener;
+    private MediationBannerListener mBannerListener;
+    private MediationInterstitialListener mInterstitialListener;
+    private MediationRewardedVideoAdListener mRewardedVideoAdListener;
+    private MediationNativeListener mNativeListener;
 
-    private InMobiInterstitial adInterstitial;
-    private InMobiInterstitial adRewarded;
-    private FrameLayout wrappedAdView;
-    private static Boolean disableHardwareFlag = false;
-    private static Boolean isAppInitialized = false;
-    private String key = "";
-    private String value = "";
+    private InMobiInterstitial mAdInterstitial;
+    private InMobiInterstitial mAdRewarded;
+    private FrameLayout mWrappedAdView;
 
-    private final InMobiAdapter self = this;
-    private NativeMediationAdRequest _nativeMedAdReq;
+    private static Boolean sDisableHardwareFlag = false;
+    private static Boolean sIsAppInitialized = false;
 
-    private Boolean isOnlyUrl = false;
+    private String mKey = "";
+    private String mValue = "";
+
+    private NativeMediationAdRequest mNativeMedAdReq;
+
+    private Boolean mIsOnlyUrl = false;
 
     /**
      * Flag to keep track of whether or not the InMobi rewarded video ad adapter has been
@@ -73,21 +71,46 @@ public final class InMobiAdapter
      */
     private boolean mIsRewardedVideoAdAdapterInitialized;
 
+    private void isTaggedForChildDirectedTreatment(MediationAdRequest mediationAdRequest,
+                                                   HashMap<String, String> paramMap) {
+        if (mediationAdRequest.taggedForChildDirectedTreatment()
+                == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            paramMap.put("coppa", "1");
+        } else
+            paramMap.put("coppa", "0");
+    }
 
-    @Override
-    public void showInterstitial() {
-        if (adInterstitial.isReady()) {
-            Log.d("InMobiAdapter", "Ad is ready to show");
-            adInterstitial.show();
+    /**
+     * Converts a {@link com.inmobi.ads.InMobiAdRequestStatus.StatusCode} to Google Mobile
+     * Ads SDK readable error code.
+     *
+     * @param statusCode the {@link com.inmobi.ads.InMobiAdRequestStatus.StatusCode} to be
+     *                   converted.
+     * @return an {@link AdRequest} error code.
+     */
+    private static int getAdRequestErrorCode(InMobiAdRequestStatus.StatusCode statusCode) {
+        switch (statusCode) {
+            case INTERNAL_ERROR:
+                return AdRequest.ERROR_CODE_INTERNAL_ERROR;
+            case AD_ACTIVE:
+            case REQUEST_INVALID:
+            case REQUEST_PENDING:
+            case EARLY_REFRESH_REQUEST:
+            case MISSING_REQUIRED_DEPENDENCIES:
+                return AdRequest.ERROR_CODE_INVALID_REQUEST;
+            case REQUEST_TIMED_OUT:
+            case NETWORK_UNREACHABLE:
+                return AdRequest.ERROR_CODE_NETWORK_ERROR;
+            case NO_FILL:
+            case SERVER_ERROR:
+            case AD_NO_LONGER_AVAILABLE:
+            case NO_ERROR:
+            default:
+                return AdRequest.ERROR_CODE_NO_FILL;
         }
     }
 
-
-    @Override
-    public View getBannerView() {
-        return wrappedAdView;
-    }
-
+    //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
     }
@@ -99,23 +122,24 @@ public final class InMobiAdapter
     @Override
     public void onResume() {
     }
+    //endregion
 
+    //region MediationBannerAdapter implementation.
     @Override
-    public void requestBannerAd(Context context, MediationBannerListener listener,
-                                Bundle serverParameters, AdSize mediationAdSize,
-                                MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
-        if (!isAppInitialized && serverParameters != null) {
-            Log.d("InMobiAdapter", serverParameters.getString("accountid"));
-            Log.d("InMobiAdapter", serverParameters.getString("placementid"));
+    public void requestBannerAd(Context context,
+                                MediationBannerListener listener,
+                                Bundle serverParameters,
+                                AdSize mediationAdSize,
+                                MediationAdRequest mediationAdRequest,
+                                Bundle mediationExtras) {
+        if (!sIsAppInitialized && serverParameters != null) {
+            Log.d(TAG, serverParameters.getString("accountid"));
+            Log.d(TAG, serverParameters.getString("placementid"));
 
             InMobiSdk.init(context, serverParameters.getString("accountid"));
-            isAppInitialized = true;
+            sIsAppInitialized = true;
         }
-        if (Build.VERSION.SDK_INT < 14) {
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-        this.bannerListener = listener;
+        this.mBannerListener = listener;
 
         FrameLayout.LayoutParams wrappedLayoutParams = new FrameLayout.LayoutParams(
                 mediationAdSize.getWidthInPixels(context),
@@ -123,28 +147,27 @@ public final class InMobiAdapter
         InMobiBanner adView;
         if (serverParameters != null) {
             if (context instanceof Activity) {
-
-                adView = new InMobiBanner((Activity) context, Long.parseLong(serverParameters.getString
-                        ("placementid")));
+                adView = new InMobiBanner((Activity) context,
+                        Long.parseLong(serverParameters.getString("placementid")));
             } else {
-                adView = new InMobiBanner(context, Long.parseLong(serverParameters.getString
-                        ("placementid")));
+                adView = new InMobiBanner(context,
+                        Long.parseLong(serverParameters.getString("placementid")));
             }
         } else {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        // Turn off automatic refresh
-        //adView.setRefreshInterval(-1);
+
+        // Turn off automatic refresh.
         adView.setEnableAutoRefresh(false);
-        // Turn off the animation
+        // Turn off the animation.
         adView.setAnimationType(AnimationType.ANIMATION_OFF);
         if (mediationAdRequest.getKeywords() != null) {
             adView.setKeywords(TextUtils.join(", ",
                     mediationAdRequest.getKeywords()));
         }
 
-        // request params
+        // Create request params.
         HashMap<String, String> paramMap = new HashMap<>();
         paramMap.put("tp", "c_admob");
 
@@ -156,17 +179,16 @@ public final class InMobiAdapter
             mediationExtras = new Bundle();
         }
         adView.setListener(new BannerAdListener() {
-
             @Override
-            public void onUserLeftApplication(InMobiBanner arg0) {
-                Log.d("InMobiAdapter", "onUserLeftApplication");
-                bannerListener.onAdLeftApplication(InMobiAdapter.this);
+            public void onUserLeftApplication(InMobiBanner inMobiBanner) {
+                Log.d(TAG, "onUserLeftApplication");
+                mBannerListener.onAdLeftApplication(InMobiAdapter.this);
             }
 
             @Override
-            public void onAdRewardActionCompleted(InMobiBanner arg0,
+            public void onAdRewardActionCompleted(InMobiBanner inMobiBanner,
                                                   Map<Object, Object> rewards) {
-                Log.d("InMobiAdapter", "InMobi Banner onRewardActionCompleted.");
+                Log.d(TAG, "InMobi Banner onRewardActionCompleted.");
 
                 if (rewards != null) {
                     Iterator<Object> iterator = rewards.keySet().iterator();
@@ -175,130 +197,109 @@ public final class InMobiAdapter
                         String value = rewards.get(key).toString();
                         Log.d("Rewards: ", key + ":" + value);
                     }
-
                 }
             }
 
             @Override
-            public void onAdLoadSucceeded(InMobiBanner arg0) {
+            public void onAdLoadSucceeded(InMobiBanner inMobiBanner) {
                 System.out.println("onLoadSucceeded");
-                Log.d("InMobiAdapter", "onAdLoadSucceeded");
+                Log.d(TAG, "onAdLoadSucceeded");
 
-                bannerListener.onAdLoaded(InMobiAdapter.this);
+                mBannerListener.onAdLoaded(InMobiAdapter.this);
             }
 
             @Override
-            public void onAdLoadFailed(InMobiBanner arg0, InMobiAdRequestStatus arg1) {
-                switch (arg1.getStatusCode()) {
-                    case INTERNAL_ERROR:
-                        bannerListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-
-                    case REQUEST_INVALID:
-                        bannerListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INVALID_REQUEST);
-                        break;
-
-                    case NETWORK_UNREACHABLE:
-                        bannerListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_NETWORK_ERROR);
-                        break;
-
-                    case NO_FILL:
-                        bannerListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_NO_FILL);
-                        break;
-
-                    default:
-                        bannerListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-
-                }
-                Log.d("InMobiBanner", arg1.getMessage());
+            public void onAdLoadFailed(InMobiBanner inMobiBanner,
+                                       InMobiAdRequestStatus requestStatus) {
+                mBannerListener.onAdFailedToLoad(
+                        InMobiAdapter.this, getAdRequestErrorCode(requestStatus.getStatusCode()));
+                Log.d(TAG, "onAdLoadFailed: " + requestStatus.getMessage());
             }
 
             @Override
-            public void onAdDisplayed(InMobiBanner arg0) {
-                Log.d("InMobiAdapter", "onAdDismissed");
-                bannerListener.onAdOpened(InMobiAdapter.this);
+            public void onAdDisplayed(InMobiBanner inMobiBanner) {
+                Log.d(TAG, "onAdDismissed");
+                mBannerListener.onAdOpened(InMobiAdapter.this);
             }
 
             @Override
-            public void onAdDismissed(InMobiBanner arg0) {
-                Log.d("InMobiAdapter", "onAdDismissed");
-                bannerListener.onAdClosed(InMobiAdapter.this);
+            public void onAdDismissed(InMobiBanner inMobiBanner) {
+                Log.d(TAG, "onAdDismissed");
+                mBannerListener.onAdClosed(InMobiAdapter.this);
             }
 
             @Override
-            public void onAdInteraction(InMobiBanner arg0,
-                                        Map<Object, Object> arg1) {
+            public void onAdInteraction(InMobiBanner inMobiBanner,
+                                        Map<Object, Object> map) {
                 Log.d("onBannerInteraction", "onBannerInteraction called");
-                bannerListener.onAdClicked(InMobiAdapter.this);
+                mBannerListener.onAdClicked(InMobiAdapter.this);
             }
         });
-        if (InMobiAdapter.disableHardwareFlag) {
+
+        if (InMobiAdapter.sDisableHardwareFlag) {
             adView.disableHardwareAcceleration();
         }
         /*
          * We wrap the ad View in a FrameLayout to ensure that it's the right
-		 * size. Without this the ad takes up the maximum width possible,
-		 * causing artifacts on high density screens (like the Galaxy Nexus) or
-		 * in landscape view. If the underlying library sets the appropriate
-		 * size instead of match_parent, this wrapper can be removed.
-		 */
-        wrappedAdView = new FrameLayout(context);
-        wrappedAdView.setLayoutParams(wrappedLayoutParams);
-        adView.setLayoutParams(new LinearLayout.LayoutParams(mediationAdSize.getWidthInPixels
-                (context), mediationAdSize.getHeightInPixels(context)));
-        wrappedAdView.addView(adView);
+         * size. Without this the ad takes up the maximum width possible,
+         * causing artifacts on high density screens (like the Galaxy Nexus) or
+         * in landscape view. If the underlying library sets the appropriate
+         * size instead of match_parent, this wrapper can be removed.
+         */
+        mWrappedAdView = new FrameLayout(context);
+        mWrappedAdView.setLayoutParams(wrappedLayoutParams);
+        adView.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        mediationAdSize.getWidthInPixels(context),
+                        mediationAdSize.getHeightInPixels(context)));
+        mWrappedAdView.addView(adView);
         InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
         adView.load();
     }
 
     @Override
-    public void requestInterstitialAd(Context context,
-                                      MediationInterstitialListener listener, Bundle
-                                              serverParameters,
-                                      MediationAdRequest mediationAdRequest, Bundle
-                                              mediationExtras) {
+    public View getBannerView() {
+        return mWrappedAdView;
+    }
+    //endregion
 
+    //region MediationInterstitialAdapter implementation.
+    @Override
+    public void requestInterstitialAd(Context context,
+                                      MediationInterstitialListener listener,
+                                      Bundle serverParameters,
+                                      MediationAdRequest mediationAdRequest,
+                                      Bundle mediationExtras) {
         final Activity activity;
 
         if (context instanceof Activity) {
             activity = (Activity) context;
         } else {
-            Log.w("InMobiAdapter", "Context not an Activity. Returning error!");
+            Log.w(TAG, "Context not an Activity. Returning error!");
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        if (!isAppInitialized) {
+        if (!sIsAppInitialized) {
             InMobiSdk.init(context, serverParameters.getString("accountid"));
-            isAppInitialized = true;
+            sIsAppInitialized = true;
         }
 
-        // We dont support android version below 4.0
-        if (Build.VERSION.SDK_INT < 14) {
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-        this.interstitialListener = listener;
+        this.mInterstitialListener = listener;
 
-        adInterstitial = new InMobiInterstitial(activity, Long.parseLong(serverParameters
+        mAdInterstitial = new InMobiInterstitial(activity, Long.parseLong(serverParameters
                 .getString("placementid")), new InMobiInterstitial.InterstitialAdListener2() {
 
             @Override
             public void onUserLeftApplication(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "onUserLeftApplication");
-                interstitialListener.onAdLeftApplication(InMobiAdapter.this);
+                Log.d(TAG, "onUserLeftApplication");
+                mInterstitialListener.onAdLeftApplication(InMobiAdapter.this);
             }
 
             @Override
             public void onAdRewardActionCompleted(InMobiInterstitial inMobiInterstitial,
                                                   Map<Object, Object> rewards) {
-                Log.d("InMobiAdapter", "InMobi Interstitial onRewardActionCompleted.");
+                Log.d(TAG, "InMobi Interstitial onRewardActionCompleted.");
 
                 if (rewards != null) {
                     for (Object reward : rewards.keySet()) {
@@ -311,84 +312,59 @@ public final class InMobiAdapter
 
             @Override
             public void onAdDisplayFailed(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "Ad Display failed.");
+                Log.d(TAG, "Ad Display failed.");
             }
 
             @Override
             public void onAdWillDisplay(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "Ad Will Display.");
+                Log.d(TAG, "Ad Will Display.");
+                // Using onAdDisplayed to send the onAdOpened callback.
             }
 
             @Override
             public void onAdLoadSucceeded(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "onAdLoadSucceeded");
-                interstitialListener.onAdLoaded(InMobiAdapter.this);
+                Log.d(TAG, "onAdLoadSucceeded");
+                mInterstitialListener.onAdLoaded(InMobiAdapter.this);
             }
 
             @Override
             public void onAdLoadFailed(InMobiInterstitial inMobiInterstitial,
-                                       InMobiAdRequestStatus arg1) {
-                switch (arg1.getStatusCode()) {
-
-                    case INTERNAL_ERROR:
-                        interstitialListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-                    case REQUEST_INVALID:
-                        interstitialListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INVALID_REQUEST);
-                        break;
-
-                    case NETWORK_UNREACHABLE:
-                        interstitialListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_NETWORK_ERROR);
-                        break;
-
-                    case NO_FILL:
-                        interstitialListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_NO_FILL);
-                        break;
-
-
-                    default:
-                        interstitialListener.onAdFailedToLoad(InMobiAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-                }
-                Log.d("InMobiAdapter", "onAdLoadFailed");
+                                       InMobiAdRequestStatus requestStatus) {
+                mInterstitialListener.onAdFailedToLoad(
+                        InMobiAdapter.this, getAdRequestErrorCode(requestStatus.getStatusCode()));
+                Log.d(TAG, "onAdLoadFailed: " + requestStatus.getMessage());
 
             }
 
             @Override
             public void onAdReceived(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "InMobi Ad server responded with an Ad.");
+                Log.d(TAG, "InMobi Ad server responded with an Ad.");
             }
 
             @Override
             public void onAdDisplayed(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "onAdDisplayed");
-                interstitialListener.onAdOpened(InMobiAdapter.this);
+                Log.d(TAG, "onAdDisplayed");
+                mInterstitialListener.onAdOpened(InMobiAdapter.this);
 
             }
 
             @Override
             public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
-                Log.d("InMobiAdapter", "onAdDismissed");
-                interstitialListener.onAdClosed(InMobiAdapter.this);
+                Log.d(TAG, "onAdDismissed");
+                mInterstitialListener.onAdClosed(InMobiAdapter.this);
             }
 
             @Override
             public void onAdInteraction(InMobiInterstitial inMobiInterstitial,
                                         Map<Object, Object> objectObjectMap) {
-                Log.d("InMobiAdapter",
+                Log.d(TAG,
                         "InterstitialInteraction");
-                interstitialListener.onAdClicked(InMobiAdapter.this);
+                mInterstitialListener.onAdClicked(InMobiAdapter.this);
             }
         });
 
         if (mediationAdRequest.getKeywords() != null) {
-            adInterstitial.setKeywords(TextUtils.join(", ",
-                    mediationAdRequest.getKeywords()));
+            mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
         }
 
         // request params
@@ -397,29 +373,34 @@ public final class InMobiAdapter
 
         isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
 
-        adInterstitial.setExtras(paramMap);
+        mAdInterstitial.setExtras(paramMap);
 
-        if (InMobiAdapter.disableHardwareFlag) {
-            adInterstitial.disableHardwareAcceleration();
+        if (InMobiAdapter.sDisableHardwareFlag) {
+            mAdInterstitial.disableHardwareAcceleration();
         }
         InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
-        adInterstitial.load();
-    }
-
-    private void isTaggedForChildDirectedTreatment(MediationAdRequest mediationAdRequest,
-                                                   HashMap<String, String> paramMap) {
-        if (mediationAdRequest.taggedForChildDirectedTreatment() == 1) {
-            paramMap.put("coppa", "1");
-        } else
-            paramMap.put("coppa", "0");
+        mAdInterstitial.load();
     }
 
     @Override
-    public void initialize(Context context, MediationAdRequest mediationAdRequest, String s,
+    public void showInterstitial() {
+        if (mAdInterstitial.isReady()) {
+            Log.d(TAG, "Ad is ready to show");
+            mAdInterstitial.show();
+        }
+    }
+    //endregion
+
+    //region MediationRewardedVideoAdAdapter implementation.
+    @Override
+    public void initialize(Context context,
+                           MediationAdRequest mediationAdRequest,
+                           String unused,
                            MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
-                           Bundle serverParameters, Bundle networkExtras) {
-        Log.d("InMobiAdapter", "initialize called from InMobiAdapter.");
-        this.rewardedVideoAdListener = mediationRewardedVideoAdListener;
+                           Bundle serverParameters,
+                           Bundle networkExtras) {
+        Log.d(TAG, "initialize called from InMobiAdapter.");
+        this.mRewardedVideoAdListener = mediationRewardedVideoAdListener;
         String accountId = serverParameters.getString("accountid");
 
         Activity activity;
@@ -427,44 +408,45 @@ public final class InMobiAdapter
         if (context instanceof Activity) {
             activity = (Activity) context;
         } else {
-            Log.w("InMobiAdapter", "Context not an Activity. Returning error!");
-            mediationRewardedVideoAdListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            Log.w(TAG, "Context not an Activity. Returning error!");
+            mediationRewardedVideoAdListener
+                    .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        if (!isAppInitialized) {
+        if (!sIsAppInitialized) {
             InMobiSdk.init(context, accountId);
-            isAppInitialized = true;
+            sIsAppInitialized = true;
         }
 
         String placementId = serverParameters.getString("placementid");
-        adRewarded = new InMobiInterstitial(activity, Long.parseLong(placementId), new
+        mAdRewarded = new InMobiInterstitial(activity, Long.parseLong(placementId), new
                 InMobiInterstitial.InterstitialAdListener2() {
                     @Override
                     public void onAdRewardActionCompleted(InMobiInterstitial inMobiInterstitial,
                                                           Map<Object, Object> rewards) {
-                        Log.d("InMobiAdapter", "InMobi RewardedVideo onRewardActionCompleted.");
+                        Log.d(TAG, "InMobi RewardedVideo onRewardActionCompleted.");
                         if (null != rewards) {
                             for (Object reward : rewards.keySet()) {
-                                key = reward.toString();
-                                value = rewards.get(key).toString();
-                                Log.d("Rewards: ", key + ":" + value);
+                                mKey = reward.toString();
+                                mValue = rewards.get(mKey).toString();
+                                Log.d("Rewards: ", mKey + ":" + mValue);
                             }
                         }
 
-                        rewardedVideoAdListener.onRewarded(InMobiAdapter.this, new RewardItem() {
+                        mRewardedVideoAdListener.onRewarded(InMobiAdapter.this, new RewardItem() {
                             @Override
                             public String getType() {
-                                return key;
+                                return mKey;
                             }
 
                             @Override
                             public int getAmount() {
-                                if (null != value && !"".equalsIgnoreCase(value)) {
+                                if (null != mValue && !"".equalsIgnoreCase(mValue)) {
                                     try {
-                                        return Integer.parseInt(value);
+                                        return Integer.parseInt(mValue);
                                     } catch (NumberFormatException nfe) {
-                                        Log.e("InMobiAdapter", "Reward value should be of type " +
+                                        Log.e(TAG, "Reward value should be of type " +
                                                 "integer:" + nfe.getMessage());
                                         nfe.printStackTrace();
                                         return 0;
@@ -477,92 +459,68 @@ public final class InMobiAdapter
 
                     @Override
                     public void onAdDisplayFailed(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "Ad Display failed.");
+                        Log.d(TAG, "Ad Display failed.");
                     }
 
                     @Override
                     public void onAdWillDisplay(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "Ad Will Display.");
+                        Log.d(TAG, "Ad Will Display.");
                     }
 
                     @Override
                     public void onAdDisplayed(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "onAdDisplayed");
-                        rewardedVideoAdListener.onAdOpened(InMobiAdapter.this);
-                        rewardedVideoAdListener.onVideoStarted(InMobiAdapter.this);
+                        Log.d(TAG, "onAdDisplayed");
+                        mRewardedVideoAdListener.onAdOpened(InMobiAdapter.this);
+                        mRewardedVideoAdListener.onVideoStarted(InMobiAdapter.this);
                     }
 
                     @Override
                     public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "onAdDismissed");
-                        rewardedVideoAdListener.onAdClosed(InMobiAdapter.this);
+                        Log.d(TAG, "onAdDismissed");
+                        mRewardedVideoAdListener.onAdClosed(InMobiAdapter.this);
                     }
 
                     @Override
                     public void onAdInteraction(InMobiInterstitial inMobiInterstitial, Map<Object,
                             Object> map) {
-                        Log.d("InMobiAdapter",
+                        Log.d(TAG,
                                 "onInterstitialInteraction called");
-                        rewardedVideoAdListener.onAdClicked(InMobiAdapter.this);
+                        mRewardedVideoAdListener.onAdClicked(InMobiAdapter.this);
                     }
 
                     @Override
                     public void onAdLoadSucceeded(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "onAdLoadSucceeded");
-                        rewardedVideoAdListener.onAdLoaded(InMobiAdapter.this);
+                        Log.d(TAG, "onAdLoadSucceeded");
+                        mRewardedVideoAdListener.onAdLoaded(InMobiAdapter.this);
                     }
 
                     @Override
                     public void onAdLoadFailed(InMobiInterstitial inMobiInterstitial,
                                                InMobiAdRequestStatus inMobiAdRequestStatus) {
-                        switch (inMobiAdRequestStatus.getStatusCode()) {
-
-                            case INTERNAL_ERROR:
-                                rewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                break;
-                            case REQUEST_INVALID:
-                                rewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-                                break;
-
-                            case NETWORK_UNREACHABLE:
-                                rewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_NETWORK_ERROR);
-                                break;
-
-                            case NO_FILL:
-                                rewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_NO_FILL);
-                                break;
-
-                            default:
-                                rewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                break;
-                        }
-                        Log.d("InMobiAdapter", "onAdLoadFailed");
+                        mRewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
+                                getAdRequestErrorCode(inMobiAdRequestStatus.getStatusCode()));
+                        Log.d(TAG, "onAdLoadFailed: " + inMobiAdRequestStatus.getMessage());
                     }
 
                     @Override
                     public void onAdReceived(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "InMobi Ad server responded with an Ad.");
+                        Log.d(TAG, "InMobi Ad server responded with an Ad.");
                     }
 
                     @Override
                     public void onUserLeftApplication(InMobiInterstitial inMobiInterstitial) {
-                        Log.d("InMobiAdapter", "onUserLeftApplication");
-                        rewardedVideoAdListener.onAdLeftApplication(InMobiAdapter.this);
+                        Log.d(TAG, "onUserLeftApplication");
+                        mRewardedVideoAdListener.onAdLeftApplication(InMobiAdapter.this);
                     }
                 });
 
         mIsRewardedVideoAdAdapterInitialized = true;
-        this.rewardedVideoAdListener.onInitializationSucceeded(this);
+        this.mRewardedVideoAdListener.onInitializationSucceeded(this);
 
         if (mediationAdRequest.getKeywords() != null) {
-            Log.d("InMobiAdapter", "keyword is present:" + mediationAdRequest.getKeywords()
+            Log.d(TAG, "keyword is present:" + mediationAdRequest.getKeywords()
                     .toString());
-            adRewarded.setKeywords(TextUtils.join(", ",
+            mAdRewarded.setKeywords(TextUtils.join(", ",
                     mediationAdRequest.getKeywords()));
         }
 
@@ -571,92 +529,82 @@ public final class InMobiAdapter
 
         isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
 
-        adRewarded.setExtras(paramMap);
+        mAdRewarded.setExtras(paramMap);
 
-        if (InMobiAdapter.disableHardwareFlag) {
-            adRewarded.disableHardwareAcceleration();
+        if (InMobiAdapter.sDisableHardwareFlag) {
+            mAdRewarded.disableHardwareAcceleration();
         }
         InMobiAdapterUtils.buildAdRequest(mediationAdRequest, networkExtras);
-
     }
 
     @Override
-    public void loadAd(MediationAdRequest mediationAdRequest, Bundle serverParameters, Bundle
-            networkExtras) {
-        if (adRewarded != null) {
-            adRewarded.load();
+    public void loadAd(MediationAdRequest mediationAdRequest,
+                       Bundle serverParameters,
+                       Bundle networkExtras) {
+        if (mAdRewarded != null) {
+            mAdRewarded.load();
         }
     }
 
     @Override
     public void showVideo() {
-        if (adRewarded.isReady()) {
-            adRewarded.show();
+        if (mAdRewarded.isReady()) {
+            mAdRewarded.show();
         }
     }
 
     @Override
     public boolean isInitialized() {
-        return mIsRewardedVideoAdAdapterInitialized && isAppInitialized;
+        return mIsRewardedVideoAdAdapterInitialized && sIsAppInitialized;
     }
+    //endregion
 
-
+    //region MediationNativeAdapter implementation.
     @Override
-    /**
-     * Override method to Mediate Native Ads from InMobi
-     */
-    public void requestNativeAd(final Context context, MediationNativeListener listener, Bundle
-            serverParameters,
-                                NativeMediationAdRequest mediationAdRequest, Bundle
-                                        mediationExtras) {
+    public void requestNativeAd(final Context context,
+                                MediationNativeListener listener,
+                                Bundle serverParameters,
+                                NativeMediationAdRequest mediationAdRequest,
+                                Bundle mediationExtras) {
+        this.mNativeMedAdReq = mediationAdRequest;
 
-        this._nativeMedAdReq = mediationAdRequest;
-
-		/* Logging few initial info */
-
-        if (!isAppInitialized && serverParameters != null) {
+        /* Logging few initial info */
+        if (!sIsAppInitialized && serverParameters != null) {
             InMobiSdk.init(context, serverParameters.getString("accountid"));
-            isAppInitialized = true;
+            sIsAppInitialized = true;
         }
 
-        InMobiSdk.setLogLevel(LogLevel.DEBUG);
+        this.mNativeListener = listener;
 
-        if (Build.VERSION.SDK_INT < 14) {
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
+        final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested()
+                && mediationAdRequest.isContentAdRequested());
 
-        this.nativeListener = listener;
-
-        final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested() &&
-                mediationAdRequest.isContentAdRequested());
-
-        /**
+        /*
          * InMobi Adapter will serve ad only if publisher requests for both AppInstall and Content
          * Ads else we will give No-Fill to Publisher
          */
-
         if (!serveAnyAd) {
-            this.nativeListener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            this.mNativeListener
+                    .onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        InMobiNative adNative = new InMobiNative(Long.parseLong(serverParameters.getString
-                ("placementid")),
+        InMobiNative adNative = new InMobiNative(
+                Long.parseLong(serverParameters.getString("placementid")),
                 new InMobiNative.NativeAdListener() {
 
                     @Override
-                    public void onUserLeftApplication(InMobiNative arg0) {
-                        Log.d("InMobiAdapter", "onUserLeftApplication");
-                        nativeListener.onAdClicked(InMobiAdapter.this);
-                        nativeListener.onAdOpened(InMobiAdapter.this);
-                        nativeListener.onAdLeftApplication(InMobiAdapter.this);
+                    public void onUserLeftApplication(InMobiNative inMobiNative) {
+                        Log.d(TAG, "onUserLeftApplication");
+                        mNativeListener.onAdClicked(InMobiAdapter.this);
+                        mNativeListener.onAdOpened(InMobiAdapter.this);
+                        mNativeListener.onAdLeftApplication(InMobiAdapter.this);
                     }
 
                     @Override
                     public void onAdLoadSucceeded(final InMobiNative imNativeAd) {
                         System.out.println(" [ InMobi Native Ad ] : onAdLoadSucceeded ");
-                        Log.d("InMobiAdapter", "onAdLoadSucceeded");
+                        Log.d(TAG, "onAdLoadSucceeded");
 
                         //If no add stop at this point
                         if (null == imNativeAd) {
@@ -664,69 +612,48 @@ public final class InMobiAdapter
                         }
 
                         //This setting decides whether to download images or not
-
-                        NativeAdOptions nativeAdOptions = self._nativeMedAdReq.getNativeAdOptions();
+                        NativeAdOptions nativeAdOptions =
+                                InMobiAdapter.this.mNativeMedAdReq.getNativeAdOptions();
 
 
                         if (null != nativeAdOptions)
-                            isOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
+                            mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
 
-                        InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper = new
-                                InMobiAppInstallNativeAdMapper(InMobiAdapter.this,
-                                imNativeAd, isOnlyUrl, nativeListener);
+                        InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
+                                new InMobiAppInstallNativeAdMapper(
+                                        InMobiAdapter.this,
+                                        imNativeAd,
+                                        mIsOnlyUrl,
+                                        mNativeListener);
                         inMobiAppInstallNativeAdMapper.mapAppInstallAd();
                     }
 
                     @Override
-                    public void onAdLoadFailed(InMobiNative arg0, InMobiAdRequestStatus arg1) {
-                        switch (arg1.getStatusCode()) {
-                            case INTERNAL_ERROR:
-                                nativeListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                break;
-
-                            case REQUEST_INVALID:
-                                nativeListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-                                break;
-
-                            case NETWORK_UNREACHABLE:
-                                nativeListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_NETWORK_ERROR);
-                                break;
-
-                            case NO_FILL:
-                                nativeListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_NO_FILL);
-                                break;
-
-                            default:
-                                nativeListener.onAdFailedToLoad(InMobiAdapter.this,
-                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                break;
-
-                        }
-                        Log.d(" InMobiNativeAd ", arg1.getMessage());
+                    public void onAdLoadFailed(InMobiNative inMobiNative,
+                                               InMobiAdRequestStatus requestStatus) {
+                        mNativeListener.onAdFailedToLoad(InMobiAdapter.this,
+                                getAdRequestErrorCode(requestStatus.getStatusCode()));
+                        Log.d(TAG, "onAdLoadFailed: " + requestStatus.getMessage());
                     }
 
                     @Override
-                    public void onAdDisplayed(InMobiNative arg0) {
-                        Log.d("InMobiAdapter", "onAdDisplayed");
-                        nativeListener.onAdOpened(InMobiAdapter.this);
+                    public void onAdDisplayed(InMobiNative inMobiNative) {
+                        Log.d(TAG, "onAdDisplayed");
+                        mNativeListener.onAdOpened(InMobiAdapter.this);
                     }
 
                     @Override
-                    public void onAdDismissed(InMobiNative arg0) {
-                        Log.d("InMobiAdapter", "onAdDismissed");
-                        nativeListener.onAdClosed(InMobiAdapter.this);
+                    public void onAdDismissed(InMobiNative inMobiNative) {
+                        Log.d(TAG, "onAdDismissed");
+                        mNativeListener.onAdClosed(InMobiAdapter.this);
                     }
                 });
 
         adNative.setNativeAdEventListener(new InMobiNative.NativeAdEventsListener() {
             @Override
             public void onAdImpressed(InMobiNative inMobiNative) {
-                Log.d("InMobiAdapter", "InMobi impression recorded successfully");
-                nativeListener.onAdImpression(InMobiAdapter.this);
+                Log.d(TAG, "InMobi impression recorded successfully");
+                mNativeListener.onAdImpression(InMobiAdapter.this);
             }
         });
 
@@ -736,11 +663,11 @@ public final class InMobiAdapter
             adNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
         }
 
-		/*
+        /*
          *  extra request params : Add any other extra request params here
-		 *  #1. Explicitly setting mediation supply parameter to AdMob
-		 *  #2. Landing url
-		 */
+         *  #1. Explicitly setting mediation supply parameter to AdMob
+         *  #2. Landing url
+         */
         HashMap<String, String> paramMap = new HashMap<>();
 
         paramMap.put("tp", "c_admob");
@@ -752,6 +679,6 @@ public final class InMobiAdapter
         InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
 
         adNative.load();
-
     }
+    //endregion
 }
