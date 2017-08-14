@@ -18,38 +18,42 @@ import com.vungle.publisher.inject.Injector;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * A helper class to load and show Vungle ads and keep track of multiple
+ * {@link VungleInterstitialAdapter} instances.
+ */
 class VungleManager implements VungleAdEventListener {
 
     private static final String TAG = VungleManager.class.getSimpleName();
 
     private static final String VERSION = "5.1.0";
 
-    private static VungleManager instance;
+    private static VungleManager sInstance;
     private VunglePub mVunglePub;
-    private String currentPlayId = null;
-    private boolean isInitialising = false;
-    private String appId;
-    private String[] placements;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private String mCurrentPlayId = null;
+    private boolean mIsInitialising = false;
+    private String mAppId;
+    private String[] mPlacements;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
-    private Map<String, VungleListener> listeners;
+    private Map<String, VungleListener> mListeners;
 
-    static VungleManager getInstance(String appId, String[] placements){
-        if (instance == null)
-            instance = new VungleManager(appId, placements);
-        return instance;
+    static VungleManager getInstance(String appId, String[] placements) {
+        if (sInstance == null) {
+            sInstance = new VungleManager(appId, placements);
+        }
+        return sInstance;
     }
 
-    private VungleManager(String appId, String[] placements){
-        listeners = new HashMap<>();
+    private VungleManager(String appId, String[] placements) {
+        mListeners = new HashMap<>();
 
         Injector injector = Injector.getInstance();
         injector.setWrapperFramework(WrapperFramework.admob);
         injector.setWrapperFrameworkVersion(VERSION.replace('.', '_'));
 
-        this.appId = appId;
-        this.placements = placements;
+        this.mAppId = appId;
+        this.mPlacements = placements;
 
         mVunglePub = VunglePub.getInstance();
     }
@@ -58,19 +62,20 @@ class VungleManager implements VungleAdEventListener {
         return mVunglePub.isInitialized();
     }
 
-    String findPlacemnt(Bundle bundle){
-        if (bundle == null)
-            return placements[0];
-        int ind = bundle.getInt(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT_INDEX, 0);
-        if (ind < placements.length){
-            return placements[ind];
+    String findPlacemnt(Bundle bundle) {
+        if (bundle == null) {
+            return mPlacements[0];
         }
-        return placements[0];
+        int ind = bundle.getInt(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT_INDEX, 0);
+        if (ind < mPlacements.length) {
+            return mPlacements[ind];
+        }
+        return mPlacements[0];
     }
 
     void init(Context context) {
         if (mVunglePub.isInitialized()) {
-            for (VungleListener cb: listeners.values()) {
+            for (VungleListener cb : mListeners.values()) {
                 if (cb.isWaitingInit()) {
                     cb.setWaitingInit(false);
                     cb.onInitialized(mVunglePub.isInitialized());
@@ -78,19 +83,20 @@ class VungleManager implements VungleAdEventListener {
             }
             return;
         }
-        if (isInitialising)
+        if (mIsInitialising) {
             return;
-        isInitialising = true;
+        }
+        mIsInitialising = true;
 
-        mVunglePub.init(context, appId, placements, new VungleInitListener() {
+        mVunglePub.init(context, mAppId, mPlacements, new VungleInitListener() {
             @Override
             public void onSuccess() {
-                handler.post(new Runnable() {
+                mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        isInitialising = false;
+                        mIsInitialising = false;
                         mVunglePub.clearAndSetEventListeners(VungleManager.this);
-                        for (VungleListener cb: listeners.values()){
+                        for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
                                 cb.onInitialized(mVunglePub.isInitialized());
@@ -102,11 +108,11 @@ class VungleManager implements VungleAdEventListener {
 
             @Override
             public void onFailure(Throwable throwable) {
-                handler.post(new Runnable() {
+                mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        isInitialising = false;
-                        for (VungleListener cb: listeners.values()){
+                        mIsInitialising = false;
+                        for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
                                 cb.onInitialized(mVunglePub.isInitialized());
@@ -118,29 +124,30 @@ class VungleManager implements VungleAdEventListener {
         });
     }
 
-    void removeListener(String id){
-        if (listeners.containsKey(id)){
-            listeners.remove(id);
+    void removeListener(String id) {
+        if (mListeners.containsKey(id)) {
+            mListeners.remove(id);
         }
     }
 
-    void addListener(String id, VungleListener listener){
+    void addListener(String id, VungleListener listener) {
         removeListener(id);
-        listeners.put(id, listener);
+        mListeners.put(id, listener);
     }
 
-    void playAd(String placement, AdConfig cfg, String id){
-        if (currentPlayId != null)
+    void playAd(String placement, AdConfig cfg, String id) {
+        if (mCurrentPlayId != null) {
             return;
-        currentPlayId = id;
+        }
+        mCurrentPlayId = id;
         mVunglePub.playAd(placement, cfg);
     }
 
-    void onPause(){
+    void onPause() {
         mVunglePub.onPause();
     }
 
-    void onResume(){
+    void onResume() {
         mVunglePub.onResume();
     }
 
@@ -148,56 +155,63 @@ class VungleManager implements VungleAdEventListener {
         return mVunglePub.isAdPlayable(placement);
     }
 
-    void loadAd(String placement){
-        if (mVunglePub.isAdPlayable(placement)){
+    void loadAd(String placement) {
+        if (mVunglePub.isAdPlayable(placement)) {
             notifyAdIsReady(placement);
             return;
         }
         mVunglePub.loadAd(placement);
     }
 
-    private void notifyAdIsReady(String placement){
-        for(VungleListener cb : listeners.values()){
-            try{
-                if (cb.getWaitingForPlacement() != null && cb.getWaitingForPlacement().equals(placement)){
+    private void notifyAdIsReady(String placement) {
+        for (VungleListener cb : mListeners.values()) {
+            try {
+                if (cb.getWaitingForPlacement() != null
+                        && cb.getWaitingForPlacement().equals(placement)) {
                     cb.onAdAvailable();
                     cb.waitForAd(null);
                 }
-            }catch(Exception e){
-                Log.w(TAG, e);
+            } catch (Exception exception) {
+                Log.w(TAG, exception);
             }
         }
     }
 
+    //region VungleAdEventListener implementation.
     @Override
-    public void onAdEnd(final @NonNull String placement, final boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
-        handler.post(new Runnable() {
+    public void onAdEnd(final @NonNull String placement,
+                        final boolean wasSuccessfulView,
+                        final boolean wasCallToActionClicked) {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
-                for(Map.Entry<String, VungleListener> entry : listeners.entrySet()){
-                    try{
-                        if (currentPlayId == null || currentPlayId.equals(entry.getKey()))
-                            entry.getValue().onAdEnd(placement, wasSuccessfulView, wasCallToActionClicked);
-                    }catch(Exception e){
-                        Log.w(TAG, e);
+                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                    try {
+                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
+                            entry.getValue()
+                                    .onAdEnd(placement, wasSuccessfulView, wasCallToActionClicked);
+                        }
+                    } catch (Exception exception) {
+                        Log.w(TAG, exception);
                     }
                 }
-                currentPlayId = null;
+                mCurrentPlayId = null;
             }
         });
     }
 
     @Override
     public void onAdStart(final @NonNull String placement) {
-        handler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
-                for(Map.Entry<String, VungleListener> entry : listeners.entrySet()){
-                    try{
-                        if (currentPlayId == null || currentPlayId.equals(entry.getKey()))
+                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                    try {
+                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
                             entry.getValue().onAdStart(placement);
-                    }catch(Exception e){
-                        Log.w(TAG, e);
+                        }
+                    } catch (Exception exception) {
+                        Log.w(TAG, exception);
                     }
                 }
             }
@@ -206,31 +220,34 @@ class VungleManager implements VungleAdEventListener {
 
     @Override
     public void onUnableToPlayAd(final @NonNull String placement, String reason) {
-        handler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
-                for(Map.Entry<String, VungleListener> entry : listeners.entrySet()){
-                    try{
-                        if (currentPlayId == null || currentPlayId.equals(entry.getKey()))
+                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                    try {
+                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
                             entry.getValue().onAdFail(placement);
-                    }catch(Exception e){
-                        Log.w(TAG, e);
+                        }
+                    } catch (Exception exception) {
+                        Log.w(TAG, exception);
                     }
                 }
-                currentPlayId = null;
+                mCurrentPlayId = null;
             }
         });
     }
 
     @Override
     public void onAdAvailabilityUpdate(final @NonNull String placement, boolean isAdAvailable) {
-        if (!isAdAvailable)
+        if (!isAdAvailable) {
             return;
-        handler.post(new Runnable() {
+        }
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 notifyAdIsReady(placement);
             }
         });
     }
+    //endregion
 }

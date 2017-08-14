@@ -9,14 +9,9 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "6.6.3.0"
+    stringVersion = "7.0.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
-    // String property used to set the name of the Jar created by makeJar task.
-    stringJarName = 'ChartboostAdapter.jar'
-    // String property used to set the name of the archive created by makeZip
-    // task.
-    stringZipName = 'AdapterChartboostAndroid-' + stringVersion
 }
 
 android {
@@ -41,7 +36,7 @@ dependencies {
     // Adding Chartboost SDK as a provided dependency makes sure that the jar is not included in the
     // AAR.
     provided files('libs/chartboost.jar')
-    compile 'com.google.android.gms:play-services-ads:10.2.0'
+    compile 'com.google.android.gms:play-services-ads:11.0.2'
 }
 
 /**
