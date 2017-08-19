@@ -40,7 +40,7 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
     /**
      * The current version of the adapter.
      */
-    public static final String ADAPTER_VERSION_NAME = "6.6.3.0";
+    public static final String ADAPTER_VERSION_NAME = "7.0.0.0";
 
     /**
      * Key to obtain App ID, required for initializing Chartboost SDK.
@@ -265,12 +265,15 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
                 return AdRequest.ERROR_CODE_NETWORK_ERROR;
             case INVALID_LOCATION:
             case VIDEO_ID_MISSING:
+            case HARDWARE_ACCELERATION_DISABLED:
             case FIRST_SESSION_INTERSTITIALS_DISABLED:
                 return AdRequest.ERROR_CODE_INVALID_REQUEST;
             case NO_AD_FOUND:
+            case ASSET_MISSING:
             case VIDEO_UNAVAILABLE:
-            case EMPTY_LOCAL_AD_LIST:
             case EMPTY_LOCAL_VIDEO_LIST:
+            case PENDING_IMPRESSION_ERROR:
+            case VIDEO_UNAVAILABLE_FOR_CURRENT_ORIENTATION:
             default:
                 return AdRequest.ERROR_CODE_NO_FILL;
         }

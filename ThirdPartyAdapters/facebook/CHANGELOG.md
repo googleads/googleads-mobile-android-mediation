@@ -1,5 +1,16 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.25.0.0
+- Fixed an issue where incorrectly sized banners were being returned.
+- Updated the adapter's view tracking for native ads to register individual
+  asset views with the Facebook SDK rather than the entire ad view. This means
+  that background (or "whitespace") clicks on the native ad will no longer
+  result in clickthroughs.
+- Verified compatibility with Facebook SDK v4.25.0.
+
+## 4.24.0.0
+- Verified compatibility with Facebook SDK v4.24.0.
+
 ## 4.23.0.0
 - Verified compatibility with Facebook SDK v4.23.0.
 

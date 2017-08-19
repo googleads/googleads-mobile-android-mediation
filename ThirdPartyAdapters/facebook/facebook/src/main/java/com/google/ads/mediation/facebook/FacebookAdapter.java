@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdChoicesView;
 import com.facebook.ads.AdError;
@@ -29,9 +30,12 @@ import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdViewAttributes;
+import com.facebook.ads.RewardedVideoAd;
+import com.facebook.ads.RewardedVideoAdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.formats.NativeAppInstallAdView;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -41,6 +45,10 @@ import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
+import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,7 +68,8 @@ import java.util.concurrent.TimeoutException;
  */
 @Keep
 public final class FacebookAdapter
-        implements MediationInterstitialAdapter, MediationBannerAdapter, MediationNativeAdapter {
+        implements MediationBannerAdapter, MediationInterstitialAdapter,
+        MediationRewardedVideoAdAdapter, MediationNativeAdapter {
 
     public static final String KEY_AD_VIEW_ATTRIBUTES = "ad_view_attributes";
     public static final String KEY_AUTOPLAY = "autoplay";
@@ -89,11 +98,27 @@ public final class FacebookAdapter
 
     private MediationBannerListener mBannerListener;
     private MediationInterstitialListener mInterstitialListener;
+
+    /**
+     * Mediation rewarded video ad listener used to forward reward-based video ad events from
+     * Facebook SDK to Google Mobile Ads SDK.
+     */
+    private MediationRewardedVideoAdListener mRewardedListener;
     private MediationNativeListener mNativeListener;
     private AdView mAdView;
     private RelativeLayout mWrappedAdView;
     private InterstitialAd mInterstitialAd;
+
+    /**
+     * Facebook rewarded video ad instance.
+     */
+    private RewardedVideoAd mRewardedVideoAd;
     private NativeAd mNativeAd;
+
+    /**
+     * Flag to determine whether or not the rewarded video adapter has been initialized.
+     */
+    private boolean mIsInitialized;
 
     /**
      * Flag to determine whether or not an impression callback from Facebook SDK has already been
@@ -107,6 +132,7 @@ public final class FacebookAdapter
      */
     private boolean mIsAdChoicesIconExpandable = true;
 
+    //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
         if (mAdView != null) {
@@ -130,12 +156,9 @@ public final class FacebookAdapter
     public void onResume() {
         // Do nothing.
     }
+    //endregion
 
-    @Override
-    public View getBannerView() {
-        return mWrappedAdView;
-    }
-
+    //region MediationBannerAdapter implementation.
     @Override
     public void requestBannerAd(Context context,
                                 MediationBannerListener listener,
@@ -144,23 +167,19 @@ public final class FacebookAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         mBannerListener = listener;
-        if (context == null || serverParameters == null || adSize == null) {
-            String str = "context";
-            if (serverParameters == null) {
-                str = "serverParameters";
-            } else if (adSize == null) {
-                str = "adSize";
-            }
-            Log.w(TAG, "Fail to request banner ad, " + str + " is null");
-            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        if (!isValidRequestParameters(context, serverParameters)) {
+            mBannerListener.onAdFailedToLoad(
+                    FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        if (adSize == null) {
+            Log.w(TAG, "Fail to request banner ad, adSize is null");
+            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        if (placementId == null) {
-            Log.w(TAG, "Fail to request banner Ad, placementId is null");
-            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            return;
-        }
+
         com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
         if (facebookAdSize == null) {
             Log.w(TAG,
@@ -171,14 +190,21 @@ public final class FacebookAdapter
         mAdView = new AdView(context, placementId, facebookAdSize);
         mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
-        RelativeLayout.LayoutParams wrappedLayoutParams = new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
                 adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
         mWrappedAdView = new RelativeLayout(context);
-        mWrappedAdView.setLayoutParams(wrappedLayoutParams);
+        mAdView.setLayoutParams(adViewLayoutParams);
         mWrappedAdView.addView(mAdView);
         mAdView.loadAd();
     }
 
+    @Override
+    public View getBannerView() {
+        return mWrappedAdView;
+    }
+    //endregion
+
+    //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener listener,
@@ -186,18 +212,13 @@ public final class FacebookAdapter
                                       MediationAdRequest adRequest,
                                       Bundle mediationExtras) {
         mInterstitialListener = listener;
-        if (context == null || serverParameters == null) {
-            String str = (context == null) ? "context" : "serverParameters";
-            Log.w(TAG, "Fail to request interstitial ad, " + str + " is null");
-            mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        if (!isValidRequestParameters(context, serverParameters)) {
+            mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        if (placementId == null) {
-            Log.w(TAG, "Fail to request interstitial Ad, placementId is null");
-            mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            return;
-        }
+
         mInterstitialAd = new InterstitialAd(context, placementId);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
@@ -210,7 +231,76 @@ public final class FacebookAdapter
             mInterstitialAd.show();
         }
     }
+    //endregion
 
+    //region MediationRewardedVideoAdAdapter implementation.
+    @Override
+    public void initialize(Context context,
+                           MediationAdRequest mediationAdRequest,
+                           String unused,
+                           MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
+                           Bundle serverParameters,
+                           Bundle networkExtras) {
+        mRewardedListener = mediationRewardedVideoAdListener;
+        if (!isValidRequestParameters(context, serverParameters)) {
+            mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
+        mRewardedVideoAd = new RewardedVideoAd(context, placementId);
+        mRewardedVideoAd.setAdListener(new RewardedVideoListener());
+        mIsInitialized = true;
+        mRewardedListener.onInitializationSucceeded(this);
+    }
+
+    @Override
+    public void loadAd(MediationAdRequest mediationAdRequest,
+                       Bundle serverParameters,
+                       Bundle networkExtras) {
+        if (mRewardedVideoAd == null) {
+            Log.w(TAG, "Failed to request rewarded video ad, adapter has not been initialized.");
+            mIsInitialized = false;
+            if (mRewardedListener != null) {
+                mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+        } else {
+            if (mRewardedVideoAd.isAdLoaded()) {
+                mRewardedListener.onAdLoaded(this);
+            } else {
+                buildAdRequest(mediationAdRequest);
+                mRewardedVideoAd.loadAd();
+            }
+        }
+    }
+
+    @Override
+    public void showVideo() {
+        if (mRewardedVideoAd != null && mRewardedVideoAd.isAdLoaded()) {
+            mRewardedVideoAd.show();
+            // Facebook's rewarded video listener does not have an equivalent callback for
+            // onAdOpened() but an ad is shown immediately after calling show(), so sending an
+            // onAdOpened callback.
+            mRewardedListener.onAdOpened(FacebookAdapter.this);
+            mRewardedListener.onVideoStarted(FacebookAdapter.this);
+        } else {
+            // No ads to show, but already sent onAdLoaded. Log a warning and send ad opened and
+            // ad closed callbacks.
+            Log.w(TAG, "No ads to show.");
+            if (mRewardedListener != null) {
+                mRewardedListener.onAdOpened(this);
+                mRewardedListener.onAdClosed(this);
+            }
+        }
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return mIsInitialized;
+    }
+    //endregion
+
+    //region MediationNativeAdapter implementation.
     @Override
     public void requestNativeAd(Context context,
                                 MediationNativeListener listener,
@@ -218,9 +308,7 @@ public final class FacebookAdapter
                                 NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         mNativeListener = listener;
-        if (context == null || serverParameters == null) {
-            String str = (context == null) ? "context" : "serverParameters";
-            Log.w(TAG, "Failed to request native ad, " + str + " is null");
+        if (!isValidRequestParameters(context, serverParameters)) {
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -235,11 +323,7 @@ public final class FacebookAdapter
         }
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        if (placementId == null) {
-            Log.w(TAG, "Failed to request native ad, placementId is null");
-            mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
+
         // Get the optional extras if set by the publisher.
         if (mediationExtras != null) {
             mIsAdChoicesIconExpandable = mediationExtras.getBoolean(
@@ -250,32 +334,73 @@ public final class FacebookAdapter
         buildAdRequest(mediationAdRequest);
         mNativeAd.loadAd();
     }
+    //endregion
 
+    //region Common methods.
+
+    /**
+     * Checks whether or not the request parameters needed to load Facebook ads are null.
+     *
+     * @param context          an Android {@link Context}.
+     * @param serverParameters a {@link Bundle} containing server parameters needed to request ads
+     *                         from Facebook.
+     * @return {@code false} if any of the request parameters are null.
+     */
+    private static boolean isValidRequestParameters(Context context, Bundle serverParameters) {
+        if (context == null) {
+            Log.w(TAG, "Failed to request ad, Context is null.");
+            return false;
+        }
+
+        if (serverParameters == null) {
+            Log.w(TAG, "Failed to request ad, serverParameters is null.");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(serverParameters.getString(PLACEMENT_PARAMETER))) {
+            Log.w(TAG, "Failed to request ad, placementId is null or empty.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Converts an {@link AdError} code to Google Mobile Ads SDK readable error code.
+     *
+     * @param adError the {@link AdError} to be converted.
+     * @return an {@link AdRequest} error code.
+     */
     private int convertErrorCode(AdError adError) {
         if (adError == null) {
             return AdRequest.ERROR_CODE_INTERNAL_ERROR;
         }
         int errorCode = adError.getErrorCode();
-        if (errorCode == AdError.INTERNAL_ERROR_CODE || errorCode == AdError.SERVER_ERROR_CODE) {
-            return AdRequest.ERROR_CODE_INTERNAL_ERROR;
-        } else if (errorCode == AdError.NETWORK_ERROR_CODE) {
-            return AdRequest.ERROR_CODE_NETWORK_ERROR;
-        } else if (errorCode == AdError.LOAD_TOO_FREQUENTLY_ERROR_CODE) {
-            return AdRequest.ERROR_CODE_INVALID_REQUEST;
-        } else {
-            return AdRequest.ERROR_CODE_NO_FILL;
+        switch (errorCode) {
+            case AdError.NETWORK_ERROR_CODE:
+            case AdError.SERVER_ERROR_CODE:
+                return AdRequest.ERROR_CODE_NETWORK_ERROR;
+            case AdError.NO_FILL_ERROR_CODE:
+                return AdRequest.ERROR_CODE_NO_FILL;
+            case AdError.LOAD_TOO_FREQUENTLY_ERROR_CODE:
+                return AdRequest.ERROR_CODE_INVALID_REQUEST;
+            case AdError.INTERNAL_ERROR_CODE:
+            default:
+                return AdRequest.ERROR_CODE_INTERNAL_ERROR;
         }
     }
 
     private void buildAdRequest(MediationAdRequest adRequest) {
         if (adRequest != null) {
             AdSettings.setIsChildDirected((adRequest.taggedForChildDirectedTreatment()
-                    == adRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE));
+                    == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE));
         }
     }
+    //endregion
 
+    //region Banner adapter utility classes.
     private class BannerListener implements AdListener {
-        private BannerListener() {}
+        private BannerListener() {
+        }
 
         @Override
         public void onAdClicked(Ad ad) {
@@ -306,9 +431,12 @@ public final class FacebookAdapter
                     FacebookAdapter.this, convertErrorCode(adError));
         }
     }
+    //endregion
 
+    //region Interstitial adapter utility classes.
     private class InterstitialListener implements InterstitialAdListener {
-        private InterstitialListener() {}
+        private InterstitialListener() {
+        }
 
         @Override
         public void onAdClicked(Ad ad) {
@@ -348,7 +476,79 @@ public final class FacebookAdapter
             FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
         }
     }
+    //endregion
 
+    //region Rewarded video adapter utility classes.
+
+    /**
+     * A {@link RewardedVideoAdListener} used to listen to rewarded video ad events from Facebook
+     * SDK and forward to Google Mobile Ads SDK using {@link #mRewardedListener}
+     */
+    private class RewardedVideoListener implements RewardedVideoAdListener {
+        private RewardedVideoListener() {
+        }
+
+        @Override
+        public void onRewardedVideoCompleted() {
+            // Facebook SDK doesn't provide a reward value. The publisher is expected to
+            // override the reward in AdMob UI.
+            mRewardedListener.onRewarded(FacebookAdapter.this, new FacebookReward());
+        }
+
+        @Override
+        public void onError(Ad ad, AdError adError) {
+            String errorMessage = adError.getErrorMessage();
+            if (!TextUtils.isEmpty(errorMessage)) {
+                Log.w(TAG, errorMessage);
+            }
+
+            mRewardedListener.onAdFailedToLoad(FacebookAdapter.this, convertErrorCode(adError));
+        }
+
+        @Override
+        public void onAdLoaded(Ad ad) {
+            mRewardedListener.onAdLoaded(FacebookAdapter.this);
+        }
+
+        @Override
+        public void onAdClicked(Ad ad) {
+            mRewardedListener.onAdClicked(FacebookAdapter.this);
+            mRewardedListener.onAdLeftApplication(FacebookAdapter.this);
+        }
+
+        @Override
+        public void onLoggingImpression(Ad ad) {
+            // Google Mobile Ads SDK does its own impression tracking for rewarded video ads.
+        }
+
+        @Override
+        public void onRewardedVideoClosed() {
+            mRewardedListener.onAdClosed(FacebookAdapter.this);
+        }
+    }
+
+    /**
+     * An implementation of {@link RewardItem} that will be given to the app when a Facebook reward
+     * is granted. Because the FAN SDK doesn't provide reward amounts and types, defaults are used
+     * here.
+     */
+    private class FacebookReward implements RewardItem {
+
+        @Override
+        public String getType() {
+            // Facebook SDK does not provide a reward type.
+            return "";
+        }
+
+        @Override
+        public int getAmount() {
+            // Facebook SDK does not provide reward amount, default to 1.
+            return 1;
+        }
+    }
+    //endregion
+
+    //region Native adapter utility methods and classes.
     private class NativeListener implements AdListener {
         private NativeAd mNativeAd;
         private NativeMediationAdRequest mMediationAdRequest;
@@ -607,7 +807,47 @@ public final class FacebookAdapter
 
             // Facebook does its own click handling.
             setOverrideClickHandling(true);
-            mNativeAd.registerViewForInteraction(view);
+
+            if (view instanceof NativeAppInstallAdView) {
+                NativeAppInstallAdView appInstallAdView = (NativeAppInstallAdView) view;
+                ArrayList<View> assetViews = new ArrayList<>();
+
+                if (appInstallAdView.getHeadlineView() != null) {
+                    assetViews.add(appInstallAdView.getHeadlineView());
+                }
+
+                if (appInstallAdView.getBodyView() != null) {
+                    assetViews.add(appInstallAdView.getBodyView());
+                }
+
+                if (appInstallAdView.getCallToActionView() != null) {
+                    assetViews.add(appInstallAdView.getCallToActionView());
+                }
+
+                if (appInstallAdView.getIconView() != null) {
+                    assetViews.add(appInstallAdView.getIconView());
+                }
+
+                if (appInstallAdView.getImageView() != null) {
+                    assetViews.add(appInstallAdView.getImageView());
+                }
+
+                if (appInstallAdView.getPriceView() != null) {
+                    assetViews.add(appInstallAdView.getPriceView());
+                }
+
+                if (appInstallAdView.getStarRatingView() != null) {
+                    assetViews.add(appInstallAdView.getStarRatingView());
+                }
+
+                if (appInstallAdView.getStoreView() != null) {
+                    assetViews.add(appInstallAdView.getStoreView());
+                }
+
+                mNativeAd.registerViewForInteraction(view, assetViews);
+            } else {
+                Log.w(TAG, "Failed to register view for interaction.");
+            }
         }
 
         @Override
@@ -830,4 +1070,5 @@ public final class FacebookAdapter
          */
         void onMappingFailed();
     }
+    //endregion
 }
