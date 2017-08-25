@@ -26,7 +26,6 @@ class VungleManager implements VungleAdEventListener {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-    static final String PLACEMENTS_DELIMITER = ",";
 
     private static final String VERSION = "5.1.0";
 
@@ -64,7 +63,7 @@ class VungleManager implements VungleAdEventListener {
         return mVunglePub.isInitialized();
     }
 
-    String findPlacement(Bundle networkExtras, Bundle serverParameters){
+    String findPlacement(Bundle networkExtras, Bundle serverParameters) {
         String placement = null;
         if (networkExtras != null && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
             placement = networkExtras.getString(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT);

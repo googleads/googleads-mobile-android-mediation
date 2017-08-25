@@ -31,28 +31,14 @@ class AdapterParametersParser {
 
     public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
         String[] placements = null;
-        if (networkExtras != null)
+        if (networkExtras != null) {
             placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
+        }
 
         String appId = serverParameters.getString("appid");
         if (appId == null || appId.isEmpty()) {
             Log.e(TAG, "Vungle app ID should be specified!");
             throw new IllegalArgumentException();
-        }
-
-        if (appId.contains(VungleManager.PLACEMENTS_DELIMITER)) {
-            String[] parts = appId.split(VungleManager.PLACEMENTS_DELIMITER);
-            appId = parts[0];
-            HashSet<String> allPlacements = new HashSet<>();
-            for (int i = 1; i < parts.length; i++) {
-                if (!parts[i].isEmpty())
-                    allPlacements.add(parts[i]);
-            }
-            if (allPlacements.size() > 0 && placements != null)
-                Log.i(TAG, "'allPlacements' had a value in both serverParameters and networkExtras. Used combined value");
-            if (placements != null)
-                allPlacements.addAll(Arrays.asList(placements));
-            placements = allPlacements.toArray(new String[allPlacements.size()]);
         }
 
         if (placements == null || placements.length == 0) {
