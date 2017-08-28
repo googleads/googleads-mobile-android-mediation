@@ -25,6 +25,7 @@ import java.util.Map;
 class VungleManager implements VungleAdEventListener {
 
     private static final String TAG = VungleManager.class.getSimpleName();
+    private static final String PLAYING_PLACEMENT = "placementID";
 
     private static final String VERSION = "5.1.0";
 
@@ -62,15 +63,22 @@ class VungleManager implements VungleAdEventListener {
         return mVunglePub.isInitialized();
     }
 
-    String findPlacemnt(Bundle bundle) {
-        if (bundle == null) {
-            return mPlacements[0];
+    String findPlacement(Bundle networkExtras, Bundle serverParameters) {
+        String placement = null;
+        if (networkExtras != null && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
+            placement = networkExtras.getString(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT);
         }
-        int ind = bundle.getInt(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT_INDEX, 0);
-        if (ind < mPlacements.length) {
-            return mPlacements[ind];
+        if (serverParameters != null && serverParameters.containsKey(PLAYING_PLACEMENT)) {
+            if (placement != null) {
+                Log.i(TAG, "'placementID' had a value in both serverParameters and networkExtras. Used one from serverParameters");
+            }
+            placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
-        return mPlacements[0];
+        if (placement == null) {
+            placement = mPlacements[0];
+            Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements': %s", placement));
+        }
+        return placement;
     }
 
     void init(Context context) {
@@ -166,8 +174,7 @@ class VungleManager implements VungleAdEventListener {
     private void notifyAdIsReady(String placement) {
         for (VungleListener cb : mListeners.values()) {
             try {
-                if (cb.getWaitingForPlacement() != null
-                        && cb.getWaitingForPlacement().equals(placement)) {
+                if (cb.getWaitingForPlacement() != null && cb.getWaitingForPlacement().equals(placement)) {
                     cb.onAdAvailable();
                     cb.waitForAd(null);
                 }

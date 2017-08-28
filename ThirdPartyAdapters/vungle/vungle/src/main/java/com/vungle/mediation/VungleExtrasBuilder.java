@@ -15,7 +15,7 @@ public final class VungleExtrasBuilder {
     static final String EXTRA_USER_ID = "userId";
     static final String EXTRA_SOUND_ENABLED = "soundEnabled";
     static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
-    static final String EXTRA_PLAY_PLACEMENT_INDEX = "playPlacement";
+    static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
 
     private final Bundle mBundle = new Bundle();
     private String[] mAllPlacements = new String[0];
@@ -26,22 +26,7 @@ public final class VungleExtrasBuilder {
     }
 
     public VungleExtrasBuilder setPlayingPlacement(@NonNull String placement) {
-        for (int i = 0; i < mAllPlacements.length; i++) {
-            if (placement.equals(mAllPlacements[i])) {
-                mBundle.putInt(EXTRA_PLAY_PLACEMENT_INDEX, i);
-                return this;
-            }
-        }
-        mBundle.putInt(EXTRA_PLAY_PLACEMENT_INDEX, 0);
-        return this;
-    }
-
-    public VungleExtrasBuilder setPlayingPlacement(int placementNum) {
-        if (placementNum < mAllPlacements.length) {
-            mBundle.putInt(EXTRA_PLAY_PLACEMENT_INDEX, placementNum);
-            return this;
-        }
-        mBundle.putInt(EXTRA_PLAY_PLACEMENT_INDEX, 0);
+        mBundle.putString(EXTRA_PLAY_PLACEMENT, placement);
         return this;
     }
 

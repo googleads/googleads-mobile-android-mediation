@@ -14,6 +14,9 @@ import com.vungle.publisher.AdConfig;
  * A {@link MediationInterstitialAdapter} used to load and show Vungle interstitial ads using
  * Google Mobile Ads SDK mediation.
  */
+import java.util.ArrayList;
+import java.util.List;
+
 public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
     private static final String TAG = VungleManager.class.getSimpleName();
@@ -78,43 +81,27 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        String[] placements;
-        if (mediationExtras != null) {
-            placements = mediationExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
-            if (placements == null || placements.length == 0) {
-                Log.e(TAG, "Placements should be specified!");
-                if (mediationInterstitialListener != null) {
-                    mediationInterstitialListener.onAdFailedToLoad(
-                            VungleInterstitialAdapter.this,
-                            AdRequest.ERROR_CODE_INVALID_REQUEST);
-                }
-                return;
+        try {
+            AdapterParametersParser.Config config = AdapterParametersParser.parse(mediationExtras, serverParameters);
+            mMediationInterstitialListener = mediationInterstitialListener;
+            mVungleManager = VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+
+            mPlacementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
+            mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+
+            mAdapterId = mId + String.valueOf(sCounter);
+            sCounter++;
+
+            mVungleManager.addListener(mAdapterId, mVungleListener);
+            if (mVungleManager.isInitialized()) {
+                loadAd();
+            } else {
+                mVungleListener.setWaitingInit(true);
+                mVungleManager.init(context);
             }
-        } else {
-            Log.e(TAG, "mediationExtras is null.");
-            if (mediationInterstitialListener != null) {
-                mediationInterstitialListener.onAdFailedToLoad(
-                        VungleInterstitialAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-            return;
-        }
-        mMediationInterstitialListener = mediationInterstitialListener;
-        String appId = serverParameters.getString("appid");
-        mVungleManager = VungleManager.getInstance(appId, placements);
-
-        mPlacementForPlay = mVungleManager.findPlacemnt(mediationExtras);
-        mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
-
-        mAdapterId = mId + String.valueOf(sCounter);
-        sCounter++;
-
-        mVungleManager.addListener(mAdapterId, mVungleListener);
-        if (mVungleManager.isInitialized()) {
-            loadAd();
-        } else {
-            mVungleListener.setWaitingInit(true);
-            mVungleManager.init(context);
+        } catch (IllegalArgumentException _) {
+            if (mediationInterstitialListener != null)
+                mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
@@ -131,21 +118,25 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
     @Override
     public void showInterstitial() {
-        mVungleManager.playAd(mPlacementForPlay, mAdConfig, mAdapterId);
+        if (mVungleManager != null)
+            mVungleManager.playAd(mPlacementForPlay, mAdConfig, mAdapterId);
     }
 
     @Override
     public void onDestroy() {
-        mVungleManager.removeListener(mAdapterId);
+        if (mVungleManager != null)
+            mVungleManager.removeListener(mAdapterId);
     }
 
     @Override
     public void onPause() {
-        mVungleManager.onPause();
+        if (mVungleManager != null)
+            mVungleManager.onPause();
     }
 
     @Override
     public void onResume() {
-        mVungleManager.onResume();
+        if (mVungleManager != null)
+            mVungleManager.onResume();
     }
 }

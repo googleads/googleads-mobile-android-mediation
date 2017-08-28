@@ -12,6 +12,9 @@ import android.util.Log;
 
 import com.vungle.publisher.AdConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A {@link MediationRewardedVideoAdAdapter} to load and show Vungle rewarded video ads using
  * Google Mobile Ads SDK mediation.
@@ -105,57 +108,42 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onDestroy() {
-        mVungleManager.removeListener(mId);
+        if (mVungleManager != null)
+            mVungleManager.removeListener(mId);
         mInitialized = false;
     }
 
     @Override
     public void onPause() {
-        mVungleManager.onPause();
+        if (mVungleManager != null)
+            mVungleManager.onPause();
     }
 
     @Override
     public void onResume() {
-        mVungleManager.onResume();
+        if (mVungleManager != null)
+            mVungleManager.onResume();
     }
 
     @Override
     public void initialize(Context context, MediationAdRequest adRequest, String unused,
                            MediationRewardedVideoAdListener listener, Bundle serverParameters,
                            Bundle networkExtras) {
-        String[] placements;
-        if (networkExtras != null) {
-            placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
-
-            if (placements == null || placements.length == 0) {
-                Log.e(TAG, "Placements should be specified!");
-                if (listener != null) {
-                    listener.onInitializationFailed(
-                            VungleAdapter.this,
-                            AdRequest.ERROR_CODE_INVALID_REQUEST);
-                }
-                return;
+        try {
+            AdapterParametersParser.Config config = AdapterParametersParser.parse(networkExtras, serverParameters);
+            mMediationRewardedVideoAdListener = listener;
+            mVungleManager = VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+            mVungleManager.addListener(mId, mVungleListener);
+            if (mVungleManager.isInitialized()) {
+                mInitialized = true;
+                mMediationRewardedVideoAdListener.onInitializationSucceeded(VungleAdapter.this);
+            } else {
+                mVungleListener.setWaitingInit(true);
+                mVungleManager.init(context);
             }
-        } else {
-            Log.e(TAG, "networkExtras is null.");
-            if (listener != null) {
-                listener.onInitializationFailed(
-                        VungleAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-            return;
-        }
-
-        mMediationRewardedVideoAdListener = listener;
-        String appId = serverParameters.getString("appid");
-        mVungleManager = VungleManager.getInstance(appId, placements);
-        mVungleManager.addListener(mId, mVungleListener);
-        if (mVungleManager.isInitialized()) {
-            mInitialized = true;
-            mMediationRewardedVideoAdListener.onInitializationSucceeded(VungleAdapter.this);
-        } else {
-            mVungleListener.setWaitingInit(true);
-            mVungleManager.init(context);
+        } catch (IllegalArgumentException _) {
+            if (listener != null)
+                listener.onInitializationFailed(VungleAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
@@ -167,24 +155,15 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
     @Override
     public void loadAd(MediationAdRequest adRequest, Bundle serverParameters,
                        Bundle networkExtras) {
-        if (networkExtras != null) {
-            mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(networkExtras);
-            mPlacementForPlay = mVungleManager.findPlacemnt(networkExtras);
-            if (mVungleManager.isAdPlayable(mPlacementForPlay)) {
-                if (mMediationRewardedVideoAdListener != null) {
-                    mMediationRewardedVideoAdListener.onAdLoaded(VungleAdapter.this);
-                }
-            } else {
-                mVungleListener.waitForAd(mPlacementForPlay);
-                mVungleManager.loadAd(mPlacementForPlay);
+        mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(networkExtras);
+        mPlacementForPlay = mVungleManager.findPlacement(networkExtras, serverParameters);
+        if (mVungleManager.isAdPlayable(mPlacementForPlay)) {
+            if (mMediationRewardedVideoAdListener != null) {
+                mMediationRewardedVideoAdListener.onAdLoaded(VungleAdapter.this);
             }
         } else {
-            Log.e(TAG, "'playPlacement' should be specified!");
-            if (mMediationRewardedVideoAdListener != null) {
-                mMediationRewardedVideoAdListener.onAdFailedToLoad(
-                        VungleAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
+            mVungleListener.waitForAd(mPlacementForPlay);
+            mVungleManager.loadAd(mPlacementForPlay);
         }
     }
 
