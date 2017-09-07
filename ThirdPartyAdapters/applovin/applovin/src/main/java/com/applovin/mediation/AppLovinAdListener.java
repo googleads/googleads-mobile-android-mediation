@@ -140,7 +140,6 @@ class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardLis
                 if ( isRewarded )
                 {
                     rewardedListener.onAdOpened( adapter );
-                    reward = null;
                 }
                 else
                 {
@@ -169,6 +168,7 @@ class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardLis
             if ( isRewarded )
             {
                 rewardedListener.onAdClosed( adapter );
+                reward = null;
             }
             else
             {
