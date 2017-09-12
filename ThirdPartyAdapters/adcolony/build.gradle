@@ -8,7 +8,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -24,6 +24,9 @@ allprojects {
         }
         maven {
             url 'https://maven.fabric.io/public'
+        }
+        maven {
+            url 'https://maven.google.com'
         }
     }
 }
