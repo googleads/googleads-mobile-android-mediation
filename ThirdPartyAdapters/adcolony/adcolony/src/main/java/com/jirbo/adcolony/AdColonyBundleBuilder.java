@@ -6,6 +6,7 @@ public class AdColonyBundleBuilder {
     private static String _zoneId;
     private static boolean _showPreAdPopup;
     private static boolean _showPostAdPopup;
+    private static boolean _testMode;
     private static String _userId;
 
     static public void setZoneId(String requestedZone) {
@@ -24,12 +25,17 @@ public class AdColonyBundleBuilder {
         _showPostAdPopup = showPostPopupValue;
     }
 
+    static public void setTestModeEnabled(boolean enabled) {
+        _testMode = enabled;
+    }
+
     static public Bundle build() {
         Bundle bundle = new Bundle();
         bundle.putString("zone_id", _zoneId);
         bundle.putString("user_id", _userId);
         bundle.putBoolean("show_pre_popup", _showPreAdPopup);
         bundle.putBoolean("show_post_popup", _showPostAdPopup);
+        bundle.putBoolean("test_mode", _testMode);
         return bundle;
     }
 }
