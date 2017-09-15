@@ -12,7 +12,7 @@ SDK in Google Play services.
 - Add the compile dependency with the latest version of the AdColony adapter in the *build.gradle* file:
 ```
 dependencies {
-  compile 'com.google.ads.mediation:adcolony:3.0.6.0'
+  compile 'com.google.ads.mediation:adcolony:3.2.1.0'
 }
 ```
 - To add AdColony to your mediation layer, you will need to create an app on the AdColony [dashboard.](https://clients.adcolony.com/apps) For help with setting up an AdColony app, follow steps 1-3 in [Setting up AdColony Apps](http://support.adcolony.com/customer/portal/articles/761987-setting-up-apps-zones).
