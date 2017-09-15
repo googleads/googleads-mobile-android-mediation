@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.0.6.0"
+    stringVersion = "3.2.1.0"
     // String property to store group id.
     stringGroupId = "com.jirbo.adcolony"
     // String property used to set the name of the Jar created by makeJar task.
@@ -19,12 +19,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 
@@ -43,8 +43,8 @@ android {
 }
 
 dependencies {
-    compile 'com.adcolony:sdk:3.0.6'
-    compile 'com.google.android.gms:play-services-ads:9.8.0'
+    provided 'com.adcolony:sdk:3.2.1'
+    provided 'com.google.android.gms:play-services-ads:10.2.1'
 }
 
 /**
