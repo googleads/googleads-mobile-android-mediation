@@ -48,7 +48,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private AdSize mAdSize;
 
     private MoPubInterstitial mMoPubInterstitial;
-    private static final String MOPUB_NATIVE_CEVENT_VERSION = "tp:google_mediating_mopub";
+    private static final String MOPUB_NATIVE_CEVENT_VERSION = "gmext";
     public static final double DEFAULT_MOPUB_IMAGE_SCALE = 1;
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
     private int privacyIconPlacement;
