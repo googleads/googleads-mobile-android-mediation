@@ -282,7 +282,7 @@ public final class FacebookAdapter
                 mRewardedListener.onAdLoaded(this);
             } else {
                 buildAdRequest(mediationAdRequest);
-                mRewardedVideoAd.loadAd();
+                mRewardedVideoAd.loadAd(true);
             }
         }
     }

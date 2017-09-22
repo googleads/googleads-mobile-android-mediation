@@ -1,5 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.26.0.0
+- Added support for native video ads.
+- Verified compatibility with Facebook SDK v4.26.0.
+
 ## 4.25.0.0
 - Fixed an issue where incorrectly sized banners were being returned.
 - Updated the adapter's view tracking for native ads to register individual
