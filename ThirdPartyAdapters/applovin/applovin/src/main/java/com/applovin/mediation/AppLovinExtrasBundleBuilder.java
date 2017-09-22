@@ -11,16 +11,16 @@ public class AppLovinExtrasBundleBuilder {
     /**
      * An extra value used to mute the audio for video ads
      */
-    private static boolean muteAudio;
+    private boolean mMuteAudio;
 
-    public static void setMuteAudio(boolean mute)
-    {
-        muteAudio = mute;
+    public AppLovinExtrasBundleBuilder setMuteAudio(boolean mute) {
+        mMuteAudio = mute;
+        return this;
     }
 
-    public static Bundle build() {
+    public Bundle build() {
         Bundle extras = new Bundle();
-        extras.putBoolean( MUTE_AUDIO, muteAudio );
+        extras.putBoolean(MUTE_AUDIO, mMuteAudio);
         return extras;
     }
 }
