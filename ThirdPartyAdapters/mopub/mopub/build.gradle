@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.16.0.0"
+    stringVersion = "4.16.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
     compile 'com.google.android.gms:play-services-ads:11.0.4'
-    compile('com.mopub:mopub-sdk:4.16.0@aar') {
+    compile('com.mopub:mopub-sdk:4.16.1@aar') {
         transitive = true
     }
 }
