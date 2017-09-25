@@ -86,7 +86,7 @@ class AdColonyManager {
             }
         } else {
             // convert _configuredListOfZones into array
-            String[] zones = 
+            String[] zones =
                     _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
 
             // instantiate app options if null so that we can always send mediation network info
