@@ -17,6 +17,7 @@ package com.google.ads.mediation.unity;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -36,6 +37,7 @@ import java.lang.ref.WeakReference;
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
  * Mobile Ads SDK and Unity Ads SDK.
  */
+@Keep
 public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationInterstitialAdapter,
         OnContextChangedListener {
     public static final String TAG = UnityAdapter.class.getSimpleName();
@@ -117,6 +119,33 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             if (mMediationRewardedVideoAdListener != null) {
                 mMediationRewardedVideoAdListener.onVideoStarted(UnityAdapter.this);
             }
+        }
+
+        @Override
+        public void onUnityAdsClick(String s) {
+            // Unity Ads ad clicked.
+            if (mMediationInterstitialListener != null) {
+                mMediationInterstitialListener.onAdClicked(UnityAdapter.this);
+                // Unity Ads doesn't provide a "leaving application" event, so assuming that the
+                // user is leaving the application when a click is received, forwarding an on ad
+                // left application event.
+                mMediationInterstitialListener.onAdLeftApplication(UnityAdapter.this);
+            } else if (mMediationRewardedVideoAdListener != null) {
+                mMediationRewardedVideoAdListener.onAdClicked(UnityAdapter.this);
+                // Unity Ads doesn't provide a "leaving application" event, so assuming that the
+                // user is leaving the application when a click is received, forwarding an on ad
+                // left application event.
+                mMediationRewardedVideoAdListener.onAdLeftApplication(UnityAdapter.this);
+            }
+        }
+
+        @Override
+        public void onUnityAdsPlacementStateChanged(String placementId,
+                                                    UnityAds.PlacementState oldState,
+                                                    UnityAds.PlacementState newState) {
+            // This callback is not forwarded to the adapter by the UnitySingleton and the
+            // adapter should use the onUnityAdsReady and onUnityAdsError callbacks to forward
+            // Unity Ads SDK state to Google Mobile Ads SDK.
         }
 
         @Override

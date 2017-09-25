@@ -9,13 +9,9 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.2.1.0"
+    stringVersion = "3.2.1.1"
     // String property to store group id.
-    stringGroupId = "com.jirbo.adcolony"
-    // String property used to set the name of the Jar created by makeJar task.
-    stringJarName = 'AdColonyAdapter.jar'
-    // String property used to set the name of the archive created by makeZip task.
-    stringZipName = 'AdapterAdColonyAndroid-' + stringVersion
+    stringGroupId = "com.google.ads.mediation"
 }
 
 android {
@@ -44,64 +40,8 @@ android {
 
 dependencies {
     provided 'com.adcolony:sdk:3.2.1'
-    provided 'com.google.android.gms:play-services-ads:10.2.1'
+    provided 'com.google.android.gms:play-services-ads:11.2.0'
 }
-
-/**
- * Delete task to delete any previously generated .jar files by makeJar task. makeJar depends on
- * this task.
- */
-task clearJar(type: Delete) {
-    // Targets to be deleted.
-    delete('build/libs/' + stringJarName)
-}
-
-/**
- * Copy task used to copy the build files. This task depends on clearJar and build tasks.
- */
-task makeJar(type: Copy) {
-    // Targets to be copied from.
-    from('build/intermediates/bundles/release/')
-    // Targets to copy into.
-    into('build/libs/')
-    // Files to include.
-    include('classes.jar')
-    // Rename file.
-    rename('classes.jar', stringJarName)
-}
-
-/**
- * Add dependency tasks for makeJar.
- */
-makeJar.dependsOn(clearJar, build)
-
-/**
- * Delete task to delete any previously generated .zip files by makeZip task. makeZip depends on
- * this task.
- */
-task clearZip(type: Delete) {
-    // Targets to be deleted.
-    delete('build/libs/' + stringZipName + '.zip')
-}
-
-/**
- * Zip task to make a zip archive. This task depends on makeJar and clearZip tasks.
- */
-task makeZip(type: Zip) {
-    // Targets to be added to the zip archive.
-    from('build/libs/' + stringJarName, '../README.md', '../CHANGELOG.md')
-    // Root directory name for the zip archive.
-    into(stringZipName)
-    // Name of the zip archive.
-    archiveName stringZipName + '.zip'
-    // Destination directory in which the archive needs to be saved.
-    destinationDir file('build/libs')
-}
-
-/**
- * Add dependency tasks for makeZip.
- */
-makeZip.dependsOn(makeJar, clearZip)
 
 /**
  * Jar task to make a sources jar.
@@ -160,7 +100,7 @@ bintray {
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
-        githubReleaseNotesFile = 'ThirdPartyAdapters/adcolony/CHANGELOG.txt'
+        githubReleaseNotesFile = 'ThirdPartyAdapters/adcolony/CHANGELOG.md'
         version {
             name = stringVersion
         }

@@ -17,7 +17,7 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -49,7 +49,7 @@ import java.util.List;
  * A simple {@link android.app.Activity} that displays adds using the sample adapter and sample
  * custom event.
  */
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "SampleApp";
 

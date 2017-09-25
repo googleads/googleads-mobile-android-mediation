@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.1'
+        classpath 'com.android.tools.build:gradle:2.3.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -16,4 +16,17 @@ allprojects {
     repositories {
         jcenter()
     }
+}
+
+ext {
+    minSdkVersion = 14
+    compileSdkVersion = 25
+    targetSdkVersion = 25
+    tools = '25.0.2'
+
+    support = '25.3.1'
+    appcompatV7 = "com.android.support:appcompat-v7:$support"
+
+    play = '10.2.4'
+    playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }

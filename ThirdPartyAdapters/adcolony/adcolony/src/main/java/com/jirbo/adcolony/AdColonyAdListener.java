@@ -1,11 +1,19 @@
 package com.jirbo.adcolony;
 
-import com.adcolony.sdk.*;
+import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyInterstitial;
+import com.adcolony.sdk.AdColonyInterstitialListener;
+import com.adcolony.sdk.AdColonyRewardListener;
+import com.adcolony.sdk.AdColonyZone;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
-class AdColonyAdListener extends AdColonyInterstitialListener implements AdColonyRewardListener  {
+/**
+ * The {@link AdColonyAdListener} class is used to forward Interstitial ad and Rewarded video ad
+ * events from AdColony SDK to Google Mobile Ads SDK.
+ */
+class AdColonyAdListener extends AdColonyInterstitialListener implements AdColonyRewardListener {
     private MediationInterstitialListener _mediationInterstitialListener;
     private MediationRewardedVideoAdListener _mediationRewardedVideoAdListener;
     private AdColonyAdapter _adapter;
@@ -104,9 +112,11 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
             _adapter.setAd(null);
             if (_rewarded) {
                 AdColony.removeRewardListener();
-                _mediationRewardedVideoAdListener.onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
+                _mediationRewardedVideoAdListener
+                        .onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
             } else {
-                _mediationInterstitialListener.onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
+                _mediationInterstitialListener
+                        .onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
             }
         }
     }
@@ -114,7 +124,8 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onReward(com.adcolony.sdk.AdColonyReward reward) {
         if (_adapter != null) {
-            AdColonyReward adReward = new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
+            AdColonyReward adReward =
+                    new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
             _mediationRewardedVideoAdListener.onRewarded(_adapter, adReward);
         }
     }

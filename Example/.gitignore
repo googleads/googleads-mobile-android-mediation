@@ -3,5 +3,4 @@
 build/
 *.iml
 local.properties
-gradle-wrapper.jar
 /libs

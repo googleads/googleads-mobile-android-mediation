@@ -19,6 +19,7 @@ package com.google.ads.mediation.sample.customevent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.util.DisplayMetrics;
 
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
@@ -42,7 +43,12 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListene
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
  * mediation adapter.
+ *
+ * Since the custom event is not directly referenced by the Google Mobile Ads SDK and is instead
+ * instantiated with reflection, it's possible that ProGuard might remove it. Use the {@link Keep}}
+ * annotation to make sure that the adapter is not removed when minifying the project.
  */
+@Keep
 public class SampleCustomEvent implements CustomEventBanner, CustomEventInterstitial,
         CustomEventNative {
     protected static final String TAG = SampleCustomEvent.class.getSimpleName();

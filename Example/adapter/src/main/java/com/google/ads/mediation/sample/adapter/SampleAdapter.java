@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -53,7 +54,12 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * <p/>
  * NOTE: The audience for this sample is mediation ad networks who are trying to build an ad network
  * adapter, not an app developer trying to integrate Google Mobile Ads into their application.
+ * <p/>
+ * Since the adapter is not directly referenced by the Google Mobile Ads SDK and is instead
+ * instantiated with reflection, it's possible that ProGuard might remove it. Use the {@link Keep}}
+ * annotation to make sure that the adapter is not removed when minifying the project.
  */
+@Keep
 public class SampleAdapter implements MediationBannerAdapter, MediationInterstitialAdapter,
         MediationNativeAdapter, MediationRewardedVideoAdAdapter, OnContextChangedListener {
     protected static final String TAG = SampleAdapter.class.getSimpleName();

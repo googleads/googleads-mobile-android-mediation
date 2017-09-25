@@ -17,8 +17,8 @@ package com.google.ads.mediation.unity;
 import android.app.Activity;
 import android.util.Log;
 
-import com.unity3d.ads.IUnityAdsListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.lang.ref.WeakReference;
@@ -114,7 +114,7 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion("2.0.5.0");
+        mediationMetaData.setVersion("2.1.1.0");
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());
@@ -163,11 +163,11 @@ public final class UnitySingleton {
      * to forward events from Unity Ads SDK to {@link UnityAdapter} based on the delegates added
      * to {@link #mUnityAdapterDelegatesSet} and which adapter is currently showing an ad.
      */
-    private static final class UnitySingletonListener implements IUnityAdsListener {
+    private static final class UnitySingletonListener implements IUnityAdsExtendedListener {
 
         @Override
         public void onUnityAdsReady(String placementId) {
-            // Unity Ads is ready to show ads for the given placementId, send ready callback to the
+            // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
             // appropriate delegates.
             Iterator<WeakReference<UnityAdapterDelegate>> iterator =
                     mUnityAdapterDelegatesSet.iterator();
@@ -182,7 +182,7 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityAdsStart(String placementId) {
-            // Unity Ads video ad started, send video started event to currently showing
+            // Unity Ads video ad started. Send video started event to currently showing
             // adapter's delegate.
             if (mAdShowingAdapterDelegate != null) {
                 UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
@@ -193,8 +193,28 @@ public final class UnitySingleton {
         }
 
         @Override
+        public void onUnityAdsClick(String placementId) {
+            // An Unity Ads ad has been clicked. Send ad clicked event to currently showing
+            // adapter's delegate.
+            if (mAdShowingAdapterDelegate != null) {
+                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+                if (delegate != null) {
+                    delegate.onUnityAdsClick(placementId);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityAdsPlacementStateChanged(String placementId,
+                                                    UnityAds.PlacementState oldState,
+                                                    UnityAds.PlacementState newState) {
+            // The onUnityAdsReady and onUnityAdsError callback methods are used to forward Unity
+            // Ads SDK states to the adapters. No need to forward this callback to the adapters.
+        }
+
+        @Override
         public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-            // An Unity Ads ad has been closed, forward the finish event to the currently showing
+            // An Unity Ads ad has been closed. Forward the finish event to the currently showing
             // adapter's delegate.
             if (mAdShowingAdapterDelegate != null) {
                 UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
@@ -206,7 +226,7 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            // An error occurred with Unity Ads, send error event to the appropriate delegates.
+            // An error occurred with Unity Ads. Send error event to the appropriate delegates.
             Iterator<WeakReference<UnityAdapterDelegate>> iterator =
                     mUnityAdapterDelegatesSet.iterator();
             while (iterator.hasNext()) {

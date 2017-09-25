@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-
+/**
+ * A helper class used by the {@link AdColonyAdapter}.
+ */
 class AdColonyManager {
     private static AdColonyManager _instance = null;
     private ArrayList<String> _configuredListOfZones;
@@ -84,7 +86,8 @@ class AdColonyManager {
             }
         } else {
             // convert _configuredListOfZones into array
-            String[] zones = _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
+            String[] zones = 
+                    _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
 
             // instantiate app options if null so that we can always send mediation network info
             if (appOptions == null) {
@@ -104,7 +107,8 @@ class AdColonyManager {
      * @param networkExtras -- possible network parameters sent from AdMob
      * @return a valid AppOptions object or null if nothing valid was passed from AdMob
      */
-    private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest, Bundle networkExtras) {
+     private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
+                                                Bundle networkExtras) {
         AdColonyAppOptions options = new AdColonyAppOptions();
         boolean updatedOptions = false;
 
@@ -151,7 +155,7 @@ class AdColonyManager {
                     long day = (1000 * 60 * 60 * 24);
                     long yearsPassed = diff / day / 365;
                     updatedOptions = true;
-                    userMetadata.setUserAge((int)yearsPassed);
+                    userMetadata.setUserAge((int) yearsPassed);
                 }
             }
             options.setUserMetadata(userMetadata);
