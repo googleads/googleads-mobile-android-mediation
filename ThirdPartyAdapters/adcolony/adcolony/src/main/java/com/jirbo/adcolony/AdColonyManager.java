@@ -86,8 +86,16 @@ class AdColonyManager {
             }
         } else {
             // convert _configuredListOfZones into array
-            String[] zones =
+            String[] zones = 
                     _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
+
+            // instantiate app options if null so that we can always send mediation network info
+            if (appOptions == null) {
+                appOptions = new AdColonyAppOptions();
+            }
+
+            // always set mediation network info
+            appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
             _isConfigured = AdColony.configure((Activity) _context, appOptions, appId, zones);
         }
         return _isConfigured;
@@ -108,6 +116,11 @@ class AdColonyManager {
             String userId = networkExtras.getString("user_id");
             if (userId != null) {
                 options.setUserID(userId);
+                updatedOptions = true;
+            }
+            if (networkExtras.containsKey("test_mode")) {
+                boolean testMode = networkExtras.getBoolean("test_mode");
+                options.setTestModeEnabled(testMode);
                 updatedOptions = true;
             }
         }
