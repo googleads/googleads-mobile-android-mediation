@@ -1,5 +1,8 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.2.1.1
+- Updated Adapter to support new features in AdColony SDK version 3.2.1.
+
 ## 3.2.1.0
 - Verified compatibility with AdColony SDK version 3.2.1.
 
