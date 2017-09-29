@@ -243,12 +243,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             @Override
             public void onImpression(View view) {
                 listener.onAdImpression(MoPubAdapter.this);
+                listener.onAdOpened(MoPubAdapter.this);
                 Log.d(TAG, "onImpression");
             }
 
             @Override
             public void onClick(View view) {
                 listener.onAdClicked(MoPubAdapter.this);
+                listener.onAdLeftApplication(MoPubAdapter.this);
                 Log.d(TAG, "onClick");
             }
         };
