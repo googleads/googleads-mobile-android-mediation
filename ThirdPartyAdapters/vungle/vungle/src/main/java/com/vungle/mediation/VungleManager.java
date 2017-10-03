@@ -27,7 +27,7 @@ class VungleManager implements VungleAdEventListener {
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
 
-    private static final String VERSION = "5.1.0";
+    private static final String VERSION = "5.3.0";
 
     private static VungleManager sInstance;
     private VunglePub mVunglePub;
