@@ -48,7 +48,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private AdSize mAdSize;
 
     private MoPubInterstitial mMoPubInterstitial;
-    private static final String MOPUB_NATIVE_CEVENT_VERSION = "tp:google_mediating_mopub";
+    private static final String MOPUB_NATIVE_CEVENT_VERSION = "gmext";
     public static final double DEFAULT_MOPUB_IMAGE_SCALE = 1;
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
     private int privacyIconPlacement;
@@ -57,6 +57,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private static final int MINIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 10;
     private static final int DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP = 20;
     private static final int MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 30;
+
+    public NativeAd.MoPubNativeEventListener moPubNativeEventListener;
 
     @Override
     public void onDestroy() {
@@ -121,6 +123,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
                     @Override
                     public void onNativeLoad(NativeAd nativeAd) {
+                        // Setting a native event listener for MoPub's impression & click events
+                        nativeAd.setMoPubNativeEventListener(moPubNativeEventListener);
+
                         BaseNativeAd adData = nativeAd.getBaseNativeAd();
                         if (adData instanceof StaticNativeAd) {
                             final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
@@ -144,7 +149,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                         new URL(staticNativeAd.getMainImageUrl()));
 
                             } catch (MalformedURLException e) {
-                                //return added with fail callbacks - rupa
                                 Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
                                         + " are invalid");
                                 listener.onAdFailedToLoad(MoPubAdapter.this,
@@ -233,6 +237,23 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         moPubNative.makeRequest(requestParameters);
 
+        // Forwarding MoPub's impression and click events to AdMob
+        moPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
+
+            @Override
+            public void onImpression(View view) {
+                listener.onAdImpression(MoPubAdapter.this);
+                Log.d(TAG, "onImpression");
+            }
+
+            @Override
+            public void onClick(View view) {
+                listener.onAdClicked(MoPubAdapter.this);
+                listener.onAdOpened(MoPubAdapter.this);
+                listener.onAdLeftApplication(MoPubAdapter.this);
+                Log.d(TAG, "onClick");
+            }
+        };
     }
 
     @Override
@@ -339,7 +360,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
 
         }
-
     }
 
 
@@ -470,4 +490,3 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         }
     }
 }
-
