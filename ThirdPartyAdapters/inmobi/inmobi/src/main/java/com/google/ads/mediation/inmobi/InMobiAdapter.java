@@ -621,7 +621,6 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
                     @Override
                     public void onAdFullScreenDisplayed(InMobiNative inMobiNative) {
-                        Log.d(TAG, "onUserLeftApplication");
                         mNativeListener.onAdOpened(InMobiAdapter.this);
                     }
 
