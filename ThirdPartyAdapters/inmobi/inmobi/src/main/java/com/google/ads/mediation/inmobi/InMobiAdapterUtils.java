@@ -13,7 +13,6 @@ import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.Ethnicity;
 import com.inmobi.sdk.InMobiSdk.Gender;
 import com.inmobi.sdk.InMobiSdk.HouseHoldIncome;
-import com.inmobi.sdk.InMobiSdk.ImIdType;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
 
 import java.util.Calendar;
@@ -105,10 +104,6 @@ class InMobiAdapterUtils {
                     InMobiSdk.setLogLevel(getLogLevel(value));
                 else
                     InMobiSdk.setLogLevel(LogLevel.NONE);
-            } else if (key.equals(InMobiNetworkKeys.ImIdType_LOGIN)) {
-                InMobiSdk.addIdType(ImIdType.LOGIN, value);
-            } else if (key.equals(InMobiNetworkKeys.ImIdType_SESSION)) {
-                InMobiSdk.addIdType(ImIdType.SESSION, value);
             } else if (key.equals(InMobiNetworkKeys.INTERESTS)) {
                 InMobiSdk.setInterests(value);
             }
@@ -152,18 +147,22 @@ class InMobiAdapterUtils {
 
     private static AgeGroup getAgeGroup(String value) {
         switch (value) {
-            case InMobiNetworkValues.ABOVE_55:
-                return AgeGroup.ABOVE_55;
+            case InMobiNetworkValues.ABOVE_65:
+                return AgeGroup.ABOVE_65;
             case InMobiNetworkValues.BELOW_18:
                 return AgeGroup.BELOW_18;
-            case InMobiNetworkValues.BETWEEN_18_AND_20:
-                return AgeGroup.BETWEEN_18_AND_20;
-            case InMobiNetworkValues.BETWEEN_21_AND_24:
-                return AgeGroup.BETWEEN_21_AND_24;
-            case InMobiNetworkValues.BETWEEN_25_AND_34:
-                return AgeGroup.BETWEEN_25_AND_34;
-            case InMobiNetworkValues.BETWEEN_35_AND_54:
-                return AgeGroup.BETWEEN_35_AND_54;
+            case InMobiNetworkValues.BETWEEN_18_AND_24:
+                return AgeGroup.BETWEEN_18_AND_24;
+            case InMobiNetworkValues.BETWEEN_25_AND_29:
+                return AgeGroup.BETWEEN_25_AND_29;
+            case InMobiNetworkValues.BETWEEN_30_AND_34:
+                return AgeGroup.BETWEEN_30_AND_34;
+            case InMobiNetworkValues.BETWEEN_35_AND_44:
+                return AgeGroup.BETWEEN_35_AND_44;
+            case InMobiNetworkValues.BETWEEN_45_AND_54:
+                return AgeGroup.BETWEEN_45_AND_54;
+            case InMobiNetworkValues.BETWEEN_55_AND_65:
+                return AgeGroup.BETWEEN_55_AND_65;
         }
         return null;
     }
