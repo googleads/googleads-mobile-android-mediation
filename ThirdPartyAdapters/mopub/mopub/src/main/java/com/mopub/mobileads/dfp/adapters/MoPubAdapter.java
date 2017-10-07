@@ -58,7 +58,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private static final int DEFAULT_MOPUB_PRIVACY_ICON_SIZE_DP = 20;
     private static final int MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 30;
 
-    public NativeAd.MoPubNativeEventListener moPubNativeEventListener;
+    private NativeAd.MoPubNativeEventListener mMoPubNativeEventListener;
 
     @Override
     public void onDestroy() {
@@ -124,7 +124,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                     @Override
                     public void onNativeLoad(NativeAd nativeAd) {
                         // Setting a native event listener for MoPub's impression & click events
-                        nativeAd.setMoPubNativeEventListener(moPubNativeEventListener);
+                        nativeAd.setMoPubNativeEventListener(mMoPubNativeEventListener);
 
                         BaseNativeAd adData = nativeAd.getBaseNativeAd();
                         if (adData instanceof StaticNativeAd) {
@@ -238,7 +238,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         moPubNative.makeRequest(requestParameters);
 
         // Forwarding MoPub's impression and click events to AdMob
-        moPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
+        mMoPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
 
             @Override
             public void onImpression(View view) {
