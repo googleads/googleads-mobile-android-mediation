@@ -75,12 +75,13 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter
 
 		NativeAd nativeAd = new NativeAd(slotId, context.getApplicationContext());
 
+		boolean autoLoadImages = true;
 		if (options != null)
 		{
-			boolean autoLoadImages = options.shouldReturnUrlsForImageAssets();
-			Log.d(TAG, "Set autoload images to " + !autoLoadImages);
-			nativeAd.setAutoLoadImages(!autoLoadImages);
+			autoLoadImages = !options.shouldReturnUrlsForImageAssets();
+			Log.d(TAG, "Set autoload images to " + autoLoadImages);
 		}
+		nativeAd.setAutoLoadImages(autoLoadImages);
 
 		CustomParams params = nativeAd.getCustomParams();
 		Log.d(TAG, "Set gender to " + gender);
