@@ -322,43 +322,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter
 				return;
 			}
 
-			String navigationType = banner.getNavigationType();
-
-			NativeAdMapper nativeAdMapper;
-
-			if (resources == null || nativeMediationAdRequest == null)
-			{
-				Log.d(TAG, "Failed to load: resources or nativeMediationAdRequest null");
-				mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-				return;
-			}
-
-			if (NavigationType.STORE.equals(navigationType) || NavigationType.DEEPLINK.equals(navigationType))
-			{
-				if (!nativeMediationAdRequest.isAppInstallAdRequested())
-				{
-					Log.d(TAG, "No ad: AdMob request was without install ad flag, " +
-							"but MyTarged responded with " + navigationType + " navigation type");
-					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
-															 AdRequest.ERROR_CODE_NO_FILL);
-					return;
-				}
-				nativeAdMapper = new MyTargetNativeInstallAdMapper(nativeAd, resources);
-			}
-			else
-			{
-				if (!nativeMediationAdRequest.isContentAdRequested())
-				{
-					Log.d(TAG, "No ad: AdMob request was without content ad flag, " +
-							"but MyTarged responded with " + navigationType + " navigation type");
-					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
-															 AdRequest.ERROR_CODE_NO_FILL);
-					return;
-				}
-				nativeAdMapper = new MyTargetNativeContentAdMapper(nativeAd, resources);
-			}
-			Log.d(TAG, "Ad loaded succesfully");
-			mediationNativeListener.onAdLoaded(MyTargetNativeAdapter.this, nativeAdMapper);
+			mapAd(nativeAd, banner);
 		}
 
 		@Override
@@ -382,6 +346,69 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter
 		{
 			Log.d(TAG, "Ad show");
 			mediationNativeListener.onAdImpression(MyTargetNativeAdapter.this);
+		}
+
+		private void mapAd(final @NonNull NativeAd nativeAd,
+						   final @NonNull NativePromoBanner banner)
+		{
+			if (resources == null || nativeMediationAdRequest == null)
+			{
+				Log.d(TAG, "Failed to load: resources or nativeMediationAdRequest null");
+				mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
+														 AdRequest.ERROR_CODE_INTERNAL_ERROR);
+				return;
+			}
+
+			NativeAdMapper nativeAdMapper;
+			String navigationType = banner.getNavigationType();
+
+			if (NavigationType.STORE.equals(navigationType)
+					|| NavigationType.DEEPLINK.equals(navigationType))
+			{
+				if (!nativeMediationAdRequest.isAppInstallAdRequested())
+				{
+					Log.d(TAG, "No ad: AdMob request was without install ad flag, " +
+							"but MyTarget responded with " + navigationType + " navigation type");
+					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
+															 AdRequest.ERROR_CODE_NO_FILL);
+					return;
+				}
+
+				if (banner.getTitle() == null || banner.getDescription() == null
+						|| banner.getImage() == null || banner.getIcon() == null
+						|| banner.getCtaText() == null)
+				{
+					Log.d(TAG, "No ad: Some of the Always Included assets are not available for the ad");
+					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
+															 AdRequest.ERROR_CODE_NO_FILL);
+					return;
+				}
+
+				nativeAdMapper = new MyTargetNativeInstallAdMapper(nativeAd, resources);
+			}
+			else
+			{
+				if (!nativeMediationAdRequest.isContentAdRequested())
+				{
+					Log.d(TAG, "No ad: AdMob request was without content ad flag, " +
+							"but MyTarget responded with " + navigationType + " navigation type");
+					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
+															 AdRequest.ERROR_CODE_NO_FILL);
+					return;
+				}
+				if (banner.getTitle() == null || banner.getDescription() == null ||
+						banner.getImage() == null || banner.getCtaText() == null ||
+						banner.getDomain() == null)
+				{
+					Log.d(TAG, "No ad: Some of the Always Included assets are not available for the ad");
+					mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this,
+															 AdRequest.ERROR_CODE_NO_FILL);
+					return;
+				}
+				nativeAdMapper = new MyTargetNativeContentAdMapper(nativeAd, resources);
+			}
+			Log.d(TAG, "Ad loaded successfully");
+			mediationNativeListener.onAdLoaded(MyTargetNativeAdapter.this, nativeAdMapper);
 		}
 	}
 }

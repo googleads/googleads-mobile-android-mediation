@@ -23,6 +23,8 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter
 	@Nullable
 	private InterstitialAd interstitial;
 	private boolean initialized;
+	@Nullable
+	private MediationRewardedVideoAdListener listener;
 
 	@Override
 	public void initialize(Context context,
@@ -32,6 +34,7 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter
 						   Bundle serverParameters,
 						   Bundle mediationExtras)
 	{
+		listener = mediationRewardedVideoAdListener;
 		int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
 		Log.d(TAG, "Requesting rewarded mediation, slotId: " + slotId);
 
@@ -102,6 +105,14 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter
 		if (interstitial != null)
 		{
 			interstitial.load();
+		}
+		else
+		{
+			Log.d(TAG, "Ad failed to load: interstitial is null");
+			if (listener != null)
+			{
+				listener.onAdFailedToLoad(MyTargetRewardedAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+			}
 		}
 	}
 

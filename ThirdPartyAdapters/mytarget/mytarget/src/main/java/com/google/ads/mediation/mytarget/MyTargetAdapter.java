@@ -276,6 +276,7 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 		public void onLoad(final MyTargetView view)
 		{
 			Log.d(TAG, "Banner mediation Ad loaded");
+			view.start();
 			listener.onAdLoaded(MyTargetAdapter.this);
 		}
 
@@ -315,10 +316,6 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 		public void onLoad(final InterstitialAd ad)
 		{
 			Log.d(TAG, "Interstitial mediation Ad loaded");
-			if (myTargetView != null)
-			{
-				myTargetView.start();
-			}
 			listener.onAdLoaded(MyTargetAdapter.this);
 		}
 
