@@ -1,12 +1,14 @@
 package com.google.ads.mediation.inmobi;
 
-import android.graphics.drawable.Drawable;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.inmobi.ads.InMobiNative;
@@ -17,9 +19,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by vineet.srivastava on 5/2/16.
@@ -43,7 +43,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     }
 
     //Map InMobi Native Ad to AdMob App Install Ad
-    void mapAppInstallAd() {
+    void mapAppInstallAd(final Context context) {
         JSONObject payLoad;
         HashMap<String, URL> map;
         final Uri imageUri;
@@ -77,59 +77,16 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             map = new HashMap<>();
 
             //app icon
-            JSONObject iconObject = InMobiAdapterUtils.mandatoryChecking(payLoad.getJSONObject
-                    (InMobiNetworkValues.ICON), InMobiNetworkValues.ICON);
-            URL iconURL = new URL(iconObject.getString(InMobiNetworkValues.URL));
+            URL iconURL = new URL(mInMobiNative.getAdIconUrl());
             iconUri = Uri.parse(iconURL.toURI().toString());
-            if(iconObject.has( InMobiNetworkValues.ASPECT_RATIO )){
-                iconScale = Double.parseDouble( iconObject.getString(InMobiNetworkValues.ASPECT_RATIO) );
-            }
-            else {
-                Double width = Double.parseDouble(iconObject.getString(InMobiNetworkValues.WIDTH));
-                Double height = Double.parseDouble(iconObject.getString(InMobiNetworkValues.HEIGHT));
-                if( width > 0  && height > 0 ){
-                    iconScale = width / height;
-                }
-                else {
-                    iconScale = 0.0;
-                }
-            }
+            iconScale = 1.0;
             if (!this.mIsOnlyURL)
                 map.put(ImageDownloaderAsyncTask.KEY_ICON, iconURL);
             else {
                 setIcon(new InMobiNativeMappedImage(null, iconUri, iconScale));
             }
 
-            //screenshots
-
-            JSONObject imageObject = InMobiAdapterUtils.mandatoryChecking(payLoad.getJSONObject
-                    (InMobiNetworkValues.SCREENSHOTS), InMobiNetworkValues.SCREENSHOTS);
-            URL imageURL = new URL(imageObject.getString(InMobiNetworkValues.URL));
-            imageUri = Uri.parse(imageURL.toURI().toString());
-            if(imageObject.has( InMobiNetworkValues.ASPECT_RATIO )){
-                imageScale = Double.parseDouble(  imageObject.getString(InMobiNetworkValues.ASPECT_RATIO) );
-            }
-            else {
-                Double width = Double.parseDouble(imageObject.getString(InMobiNetworkValues.WIDTH));
-                Double height = Double.parseDouble(imageObject.getString(InMobiNetworkValues.HEIGHT));
-                if( width > 0  && height > 0 ){
-                    imageScale = width / height;
-                }
-                else {
-                    imageScale = 0.0;
-                }
-            }
-            if (!this.mIsOnlyURL)
-                map.put(ImageDownloaderAsyncTask.KEY_IMAGE, imageURL);
-            else {
-                List<NativeAd.Image> imagesList = new ArrayList<>();
-                imagesList.add(new InMobiNativeMappedImage(null, imageUri, imageScale));
-                setImages(imagesList);
-            }
-            int length = payLoad.getString(InMobiNetworkValues.IMPRESSION_TRACKERS).length();
-            mImpressionTrackers = payLoad.getString(InMobiNetworkValues.IMPRESSION_TRACKERS).substring(2,length-2).split("\",\"");
-
-        } catch (MandatoryParamException | JSONException | MalformedURLException |
+        } catch (MandatoryParamException | MalformedURLException |
                 URISyntaxException e) {
             e.printStackTrace();
             mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
@@ -152,48 +109,26 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             e.printStackTrace();
         }
 
-
-        //Download Drawables
-        if (!this.mIsOnlyURL) {
-            new ImageDownloaderAsyncTask(new ImageDownloaderAsyncTask.DrawableDownloadListener() {
-                @Override
-                public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
-                    Drawable iconDrawable = drawableMap.get(ImageDownloaderAsyncTask.KEY_ICON);
-                    setIcon(new InMobiNativeMappedImage(iconDrawable, iconUri,
-                            iconScale));
-
-                    Drawable imageDrawable = drawableMap.get(ImageDownloaderAsyncTask.KEY_IMAGE);
-                    List<NativeAd.Image> imagesList = new ArrayList<>();
-                    imagesList.add(new InMobiNativeMappedImage(imageDrawable, imageUri,
-                            imageScale));
-                    setImages(imagesList);
-
-                    if ((null != iconDrawable) || (null != imageDrawable)) {
-                        mMediationNativeListener.onAdLoaded(mInMobiAdapter,
-                                InMobiAppInstallNativeAdMapper.this);
-                    } else {
-                        mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter,
-                                AdRequest.ERROR_CODE_NETWORK_ERROR);
-                    }
-                }
-
-                @Override
-                public void onDownloadFailure() {
-                    mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest
-                            .ERROR_CODE_NO_FILL);
-                }
-            }).execute(map);
-        } else {
-            mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
-        }
-
+        //Add primary view as media view
+        final RelativeLayout rl = new RelativeLayout(context);
+        rl.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) );
+        rl.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                View pv = mInMobiNative.getPrimaryViewOfWidth( null, rl, rl.getWidth());
+                rl.addView(pv);
+                rl.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+        setMediaView( rl );
+        setHasVideoContent(true);
         setOverrideClickHandling(false);
-        setOverrideImpressionRecording(false);
+        mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
+
     }
 
     @Override
     public void recordImpression() {
-        new ImpressionBeaconAsyncTask().execute(this.mImpressionTrackers);
     }
 
     @Override
@@ -208,6 +143,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
 
     @Override
     public void untrackView(View view) {
+        mInMobiNative.destroy();
     }
 
 }

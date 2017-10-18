@@ -597,7 +597,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                         imNativeAd,
                                         mIsOnlyUrl,
                                         mNativeListener);
-                        inMobiAppInstallNativeAdMapper.mapAppInstallAd();
+                        inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
                     }
 
                     @Override
