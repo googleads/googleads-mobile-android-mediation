@@ -110,17 +110,17 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         }
 
         //Add primary view as media view
-        final RelativeLayout rl = new RelativeLayout(context);
-        rl.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) );
-        rl.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        final RelativeLayout placeHolderView = new RelativeLayout(context);
+        placeHolderView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) );
+        placeHolderView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                View pv = mInMobiNative.getPrimaryViewOfWidth( null, rl, rl.getWidth());
-                rl.addView(pv);
-                rl.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                View primaryView = mInMobiNative.getPrimaryViewOfWidth( null, placeHolderView, placeHolderView.getWidth());
+                placeHolderView.addView(primaryView);
+                placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
-        setMediaView( rl );
+        setMediaView( placeHolderView );
         setHasVideoContent(true);
         setOverrideClickHandling(false);
         mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
