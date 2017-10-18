@@ -25,11 +25,14 @@ Open source adapters for mediating the following networks via the Google Mobile
 Ads SDK:
 
 * AdColony
+* AppLovin
 * Chartboost
 * Facebook Audience Network
+* InMobi
 * MoPub
 * Tapjoy
 * Unity Ads
+* Vungle
 
 For prebuilt versions of these adapters, see the
 [AdMob Mediation Networks page](https://firebase.google.com/docs/admob/android/mediation-networks).
