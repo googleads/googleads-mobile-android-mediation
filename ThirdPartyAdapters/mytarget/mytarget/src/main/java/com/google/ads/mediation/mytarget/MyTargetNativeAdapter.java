@@ -34,6 +34,12 @@ import java.util.GregorianCalendar;
 
 public class MyTargetNativeAdapter implements MediationNativeAdapter
 {
+	public static final String EXTRA_KEY_AGE_RESTRICTIONS = "ageRestrictions";
+	public static final String EXTRA_KEY_ADVERTISING_LABEL = "advertisingLabel";
+	public static final String EXTRA_KEY_CATEGORY = "category";
+	public static final String EXTRA_KEY_SUBCATEGORY = "subcategory";
+	public static final String EXTRA_KEY_VOTES = "votes";
+
 	private static final String PARAM_NATIVE_TYPE_REQUEST = "at";
 	private static final String PARAM_INSTALL_ONLY = "1";
 	private static final String PARAM_CONTENT_ONLY = "2";
@@ -209,6 +215,19 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter
 			}
 			setAdvertiser(banner.getDomain());
 			setHasVideoContent(false);
+
+			Bundle extras = new Bundle();
+			final String ageRestrictions = banner.getAgeRestrictions();
+			if (!TextUtils.isEmpty(ageRestrictions))
+			{
+				extras.putString(EXTRA_KEY_AGE_RESTRICTIONS, ageRestrictions);
+			}
+			final String advertisingLabel = banner.getAdvertisingLabel();
+			if (!TextUtils.isEmpty(advertisingLabel))
+			{
+				extras.putString(EXTRA_KEY_ADVERTISING_LABEL, advertisingLabel);
+			}
+			setExtras(extras);
 		}
 
 		@Override
@@ -257,6 +276,34 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter
 			setStore(null);
 			setPrice(null);
 			setHasVideoContent(false);
+
+			Bundle extras = new Bundle();
+			final String ageRestrictions = banner.getAgeRestrictions();
+			if (!TextUtils.isEmpty(ageRestrictions))
+			{
+				extras.putString(EXTRA_KEY_AGE_RESTRICTIONS, ageRestrictions);
+			}
+			final String advertisingLabel = banner.getAdvertisingLabel();
+			if (!TextUtils.isEmpty(advertisingLabel))
+			{
+				extras.putString(EXTRA_KEY_ADVERTISING_LABEL, advertisingLabel);
+			}
+			final String category = banner.getCategory();
+			if (!TextUtils.isEmpty(category))
+			{
+				extras.putString(EXTRA_KEY_CATEGORY, category);
+			}
+			final String subCategory = banner.getSubcategory();
+			if (!TextUtils.isEmpty(subCategory))
+			{
+				extras.putString(EXTRA_KEY_SUBCATEGORY, subCategory);
+			}
+			final int votes = banner.getVotes();
+			if (votes > 0)
+			{
+				extras.putInt(EXTRA_KEY_VOTES, votes);
+			}
+			setExtras(extras);
 		}
 
 		@Override
