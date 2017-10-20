@@ -25,6 +25,7 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.google.ads.mediation.sample.sdk.SampleMediaView;
 import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -65,6 +66,16 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
         extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);
 
+        SampleMediaView mediaView = mSampleAd.getMediaView();
+
+        // Some ads from Sample SDK has video assets and some do not.
+        if(mediaView != null) {
+            setMediaView(mediaView);
+            setHasVideoContent(true);
+        } else {
+            setHasVideoContent(false);
+        }
+
         setOverrideClickHandling(false);
         setOverrideImpressionRecording(false);
     }
@@ -100,6 +111,8 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
          * in the publisher’s preferred corner. If a preferred corner is not set, AdChoices
          * should be rendered in the top right corner.
          */
+
+        mSampleAd.registerNativeAdView(view);
 
         if (!(view instanceof ViewGroup)) {
             Log.w(SampleAdapter.TAG, "Failed to show information icon. Ad view not a ViewGroup.");

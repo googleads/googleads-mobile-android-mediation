@@ -17,6 +17,7 @@
 package com.google.ads.mediation.sample.adapter;
 
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
+import com.google.ads.mediation.sample.sdk.SampleMediaView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
 import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
 import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
@@ -76,6 +77,15 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
+
+        // It is important that video events be forwarded from the mediated SDK to the Google
+        // Mobile Ads SDK. This example has a SampleMediaViewEventForwarder class to do the job.
+        SampleMediaView mediaView = ad.getMediaView();
+        if (mediaView != null) {
+            mediaView.setMediaViewListener(
+                    new SampleMediaViewEventForwarder(mNativeListener, mAdapter, mediaView));
+        }
+
         SampleNativeAppInstallAdMapper mapper =
                 new SampleNativeAppInstallAdMapper(ad, mAdapter.getNativeAdOptions());
         mNativeListener.onAdLoaded(mAdapter, mapper);
@@ -107,6 +117,15 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             mNativeListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
+
+        // It is important that video events be forwarded from the mediated SDK to the Google
+        // Mobile Ads SDK. This example has a SampleMediaViewEventForwarder class to do the job.
+        SampleMediaView mediaView = ad.getMediaView();
+        if (mediaView != null) {
+            mediaView.setMediaViewListener(
+                    new SampleMediaViewEventForwarder(mNativeListener, mAdapter, mediaView));
+        }
+
         SampleNativeContentAdMapper mapper =
                 new SampleNativeContentAdMapper(ad, mAdapter.getNativeAdOptions());
         mNativeListener.onAdLoaded(mAdapter, mapper);
