@@ -2,6 +2,7 @@ package com.google.ads.mediation.inmobi;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -117,7 +118,12 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             public void onGlobalLayout() {
                 View primaryView = mInMobiNative.getPrimaryViewOfWidth( null, placeHolderView, placeHolderView.getWidth());
                 placeHolderView.addView(primaryView);
-                placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+                else{
+                    placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
             }
         });
         setMediaView( placeHolderView );
