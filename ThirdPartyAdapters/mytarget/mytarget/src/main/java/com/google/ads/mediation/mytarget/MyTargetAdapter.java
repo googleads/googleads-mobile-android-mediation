@@ -25,334 +25,300 @@ import java.util.GregorianCalendar;
 /**
  * Mediation adapter for myTarget.
  */
+public class MyTargetAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
 
-public class MyTargetAdapter implements MediationBannerAdapter, MediationInterstitialAdapter
-{
-	private static final @NonNull String TAG = "MyTargetAdapter";
+    @NonNull
+    private static final String TAG = "MyTargetAdapter";
 
-	private @Nullable MyTargetView myTargetView;
-	private @Nullable InterstitialAd interstitial;
+    @Nullable
+    private MyTargetView mMyTargetView;
 
-	@Override
-	public void requestBannerAd(Context context,
-								MediationBannerListener mediationBannerListener,
-								Bundle serverParameters,
-								AdSize adSize,
-								MediationAdRequest mediationAdRequest,
-								Bundle mediationExtras)
-	{
-		int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
-		Log.d(TAG, "Requesting myTarget banner mediation, slotId: " + slotId);
-		if (slotId < 0)
-		{
-			if (mediationBannerListener != null)
-			{
-				mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this,
-														 AdRequest.ERROR_CODE_INVALID_REQUEST);
-			}
-			return;
-		}
+    @Nullable
+    private InterstitialAd mInterstitial;
 
-		if (adSize == null)
-		{
-			Log.w(TAG, "Failed to request ad, AdSize is null.");
-			if (mediationBannerListener != null)
-			{
-				mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this,
-														 AdRequest.ERROR_CODE_INVALID_REQUEST);
-			}
-			return;
-		}
+    @Override
+    public void requestBannerAd(Context context,
+                                MediationBannerListener mediationBannerListener,
+                                Bundle serverParameters,
+                                AdSize adSize,
+                                MediationAdRequest mediationAdRequest,
+                                Bundle mediationExtras) {
+        int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
+        Log.d(TAG, "Requesting myTarget banner mediation, slotId: " + slotId);
+        if (slotId < 0) {
+            if (mediationBannerListener != null) {
+                mediationBannerListener.onAdFailedToLoad(
+                        MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
 
-		MyTargetBannerListener bannerListener = null;
-		if (mediationBannerListener != null)
-		{
-			bannerListener = new MyTargetBannerListener(mediationBannerListener);
-		}
+        if (adSize == null) {
+            Log.w(TAG, "Failed to request ad, AdSize is null.");
+            if (mediationBannerListener != null) {
+                mediationBannerListener.onAdFailedToLoad(
+                        MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
 
-		if (AdSize.MEDIUM_RECTANGLE.equals(adSize))
-		{
-			Log.d(TAG, "Loading myTarget banner, size: 300x250");
-			loadBanner(bannerListener, mediationAdRequest, slotId,
-					   MyTargetView.AdSize.BANNER_300x250, context);
-		}
-		else if (AdSize.LEADERBOARD.equals(adSize))
-		{
-			Log.d(TAG, "Loading myTarget banner, size: 728x90");
-			loadBanner(bannerListener, mediationAdRequest, slotId,
-					   MyTargetView.AdSize.BANNER_728x90, context);
-		}
-		else if (AdSize.BANNER.equals(adSize))
-		{
-			Log.d(TAG, "Loading myTarget banner, size: 320x50");
-			loadBanner(bannerListener, mediationAdRequest, slotId,
-					   MyTargetView.AdSize.BANNER_320x50, context);
-		}
-		else
-		{
-			Log.w(TAG, "AdSize " + adSize.toString() + " is not currently supported");
-			if (mediationBannerListener != null)
-			{
-				mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this,
-														 AdRequest.ERROR_CODE_NO_FILL);
-			}
-		}
+        MyTargetBannerListener bannerListener = null;
+        if (mediationBannerListener != null) {
+            bannerListener = new MyTargetBannerListener(mediationBannerListener);
+        }
 
-	}
+        if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
+            Log.d(TAG, "Loading myTarget banner, size: 300x250");
+            loadBanner(bannerListener,
+                    mediationAdRequest,
+                    slotId,
+                    MyTargetView.AdSize.BANNER_300x250,
+                    context);
+        } else if (AdSize.LEADERBOARD.equals(adSize)) {
+            Log.d(TAG, "Loading myTarget banner, size: 728x90");
+            loadBanner(bannerListener,
+                    mediationAdRequest,
+                    slotId,
+                    MyTargetView.AdSize.BANNER_728x90,
+                    context);
+        } else if (AdSize.BANNER.equals(adSize)) {
+            Log.d(TAG, "Loading myTarget banner, size: 320x50");
+            loadBanner(bannerListener,
+                    mediationAdRequest,
+                    slotId,
+                    MyTargetView.AdSize.BANNER_320x50,
+                    context);
+        } else {
+            Log.w(TAG, "AdSize " + adSize.toString() + " is not currently supported");
+            if (mediationBannerListener != null) {
+                mediationBannerListener
+                        .onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+            }
+        }
 
-	@Override
-	public View getBannerView()
-	{
-		return myTargetView;
-	}
+    }
 
-	@Override
-	public void requestInterstitialAd(Context context,
-									  MediationInterstitialListener mediationInterstitialListener,
-									  Bundle serverParameters,
-									  MediationAdRequest mediationAdRequest,
-									  Bundle mediationExtras)
-	{
-		int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
-		Log.d(TAG, "Requesting myTarget interstitial mediation, slotId: " + slotId);
+    @Override
+    public View getBannerView() {
+        return mMyTargetView;
+    }
 
-		if (slotId < 0)
-		{
-			if (mediationInterstitialListener != null)
-			{
-				mediationInterstitialListener.onAdFailedToLoad(MyTargetAdapter.this,
-															   AdRequest.ERROR_CODE_INVALID_REQUEST);
-			}
-			return;
-		}
+    @Override
+    public void requestInterstitialAd(Context context,
+                                      MediationInterstitialListener mediationInterstitialListener,
+                                      Bundle serverParameters,
+                                      MediationAdRequest mediationAdRequest,
+                                      Bundle mediationExtras) {
+        int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
+        Log.d(TAG, "Requesting myTarget interstitial mediation, slotId: " + slotId);
 
-		MyTargetInterstitialListener bannerListener = null;
-		if (mediationInterstitialListener != null)
-		{
-			bannerListener = new MyTargetInterstitialListener(mediationInterstitialListener);
-		}
+        if (slotId < 0) {
+            if (mediationInterstitialListener != null) {
+                mediationInterstitialListener.onAdFailedToLoad(
+                        MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
 
-		if (interstitial != null)
-		{
-			interstitial.destroy();
-		}
+        MyTargetInterstitialListener bannerListener = null;
+        if (mediationInterstitialListener != null) {
+            bannerListener = new MyTargetInterstitialListener(mediationInterstitialListener);
+        }
 
-		interstitial = new InterstitialAd(slotId, context);
-		CustomParams params = interstitial.getCustomParams();
-		params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
-		if (mediationAdRequest != null)
-		{
-			int gender = mediationAdRequest.getGender();
-			Log.d(TAG, "Set gender to " + gender);
-			params.setGender(gender);
-			Date date = mediationAdRequest.getBirthday();
-			if (date != null && date.getTime() != -1)
-			{
-				GregorianCalendar calendar = new GregorianCalendar();
-				GregorianCalendar calendarNow = new GregorianCalendar();
+        if (mInterstitial != null) {
+            mInterstitial.destroy();
+        }
 
-				calendar.setTimeInMillis(date.getTime());
-				int a = calendarNow.get(GregorianCalendar.YEAR) -
-						calendar.get(GregorianCalendar.YEAR);
-				if (a >= 0)
-				{
-					Log.d(TAG, "Set age to " + a);
-					params.setAge(a);
-				}
-			}
-		}
-		interstitial.setListener(bannerListener);
-		interstitial.load();
-	}
+        mInterstitial = new InterstitialAd(slotId, context);
+        CustomParams params = mInterstitial.getCustomParams();
+        params.setCustomParam(
+                MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
+        if (mediationAdRequest != null) {
+            int gender = mediationAdRequest.getGender();
+            Log.d(TAG, "Set gender to " + gender);
+            params.setGender(gender);
+            Date date = mediationAdRequest.getBirthday();
+            if (date != null && date.getTime() != -1) {
+                GregorianCalendar calendar = new GregorianCalendar();
+                GregorianCalendar calendarNow = new GregorianCalendar();
 
-	@Override
-	public void showInterstitial()
-	{
-		if (interstitial != null)
-		{
-			interstitial.show();
-		}
-	}
+                calendar.setTimeInMillis(date.getTime());
+                int age = calendarNow.get(GregorianCalendar.YEAR)
+                        - calendar.get(GregorianCalendar.YEAR);
+                if (age >= 0) {
+                    Log.d(TAG, "Set age to " + age);
+                    params.setAge(age);
+                }
+            }
+        }
+        mInterstitial.setListener(bannerListener);
+        mInterstitial.load();
+    }
 
-	@Override
-	public void onDestroy()
-	{
-		if (myTargetView != null)
-		{
-			myTargetView.destroy();
-		}
-		if (interstitial != null)
-		{
-			interstitial.destroy();
-		}
-	}
+    @Override
+    public void showInterstitial() {
+        if (mInterstitial != null) {
+            mInterstitial.show();
+        }
+    }
 
-	@Override
-	public void onPause()
-	{
-		if (myTargetView != null)
-		{
-			myTargetView.pause();
-		}
-	}
+    @Override
+    public void onDestroy() {
+        if (mMyTargetView != null) {
+            mMyTargetView.destroy();
+        }
+        if (mInterstitial != null) {
+            mInterstitial.destroy();
+        }
+    }
 
-	@Override
-	public void onResume()
-	{
-		if (myTargetView != null)
-		{
-			myTargetView.resume();
-		}
-	}
+    @Override
+    public void onPause() {
+        if (mMyTargetView != null) {
+            mMyTargetView.pause();
+        }
+    }
 
-	/**
-	 * Starts loading banner
-	 *
-	 * @param myTargetBannerListener listener for ad callbacks
-	 * @param mediationAdRequest     Google mediation request
-	 * @param slotId                 myTarget slot ID
-	 * @param adSize                 myTarget banner size
-	 * @param context                app context
-	 */
-	private void loadBanner(@Nullable MyTargetBannerListener myTargetBannerListener,
-							@Nullable MediationAdRequest mediationAdRequest,
-							int slotId,
-							int adSize,
-							@NonNull Context context)
-	{
-		if (myTargetView != null)
-		{
-			myTargetView.destroy();
-		}
+    @Override
+    public void onResume() {
+        if (mMyTargetView != null) {
+            mMyTargetView.resume();
+        }
+    }
 
-		myTargetView = new MyTargetView(context);
+    /**
+     * Starts loading banner.
+     *
+     * @param myTargetBannerListener listener for ad callbacks
+     * @param mediationAdRequest     Google mediation request
+     * @param slotId                 myTarget slot ID
+     * @param adSize                 myTarget banner size
+     * @param context                app context
+     */
+    private void loadBanner(@Nullable MyTargetBannerListener myTargetBannerListener,
+                            @Nullable MediationAdRequest mediationAdRequest,
+                            int slotId,
+                            int adSize,
+                            @NonNull Context context) {
+        if (mMyTargetView != null) {
+            mMyTargetView.destroy();
+        }
 
-		myTargetView.init(slotId, adSize, false);
+        mMyTargetView = new MyTargetView(context);
 
-		CustomParams params = myTargetView.getCustomParams();
-		if (mediationAdRequest != null)
-		{
-			int gender = mediationAdRequest.getGender();
-			params.setGender(gender);
-			Log.d(TAG, "Set gender to " + gender);
+        mMyTargetView.init(slotId, adSize, false);
 
-			Date date = mediationAdRequest.getBirthday();
-			if (date != null && date.getTime() != -1)
-			{
-				GregorianCalendar calendar = new GregorianCalendar();
-				GregorianCalendar calendarNow = new GregorianCalendar();
+        CustomParams params = mMyTargetView.getCustomParams();
+        if (mediationAdRequest != null) {
+            int gender = mediationAdRequest.getGender();
+            params.setGender(gender);
+            Log.d(TAG, "Set gender to " + gender);
 
-				calendar.setTimeInMillis(date.getTime());
-				int a = calendarNow.get(GregorianCalendar.YEAR) -
-						calendar.get(GregorianCalendar.YEAR);
-				if (a >= 0)
-				{
-					Log.d(TAG, "Set age to " + a);
-					params.setAge(a);
-				}
-			}
-		}
+            Date date = mediationAdRequest.getBirthday();
+            if (date != null && date.getTime() != -1) {
+                GregorianCalendar calendar = new GregorianCalendar();
+                GregorianCalendar calendarNow = new GregorianCalendar();
 
-		params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
-		myTargetView.setListener(myTargetBannerListener);
-		myTargetView.load();
-	}
+                calendar.setTimeInMillis(date.getTime());
+                int age = calendarNow.get(GregorianCalendar.YEAR) -
+                        calendar.get(GregorianCalendar.YEAR);
+                if (age >= 0) {
+                    Log.d(TAG, "Set age to " + age);
+                    params.setAge(age);
+                }
+            }
+        }
 
-	/**
-	 * A {@link MyTargetBannerListener} used to forward myTarget banner events to Google
-	 */
-	private class MyTargetBannerListener implements MyTargetViewListener
-	{
+        params.setCustomParam(
+                MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
+        mMyTargetView.setListener(myTargetBannerListener);
+        mMyTargetView.load();
+    }
 
-		@NonNull
-		private final MediationBannerListener listener;
+    /**
+     * A {@link MyTargetBannerListener} used to forward myTarget banner events to Google.
+     */
+    private class MyTargetBannerListener implements MyTargetViewListener {
 
-		MyTargetBannerListener(final @NonNull MediationBannerListener listener)
-		{
-			this.listener = listener;
-		}
+        @NonNull
+        private final MediationBannerListener listener;
 
-		@Override
-		public void onLoad(final MyTargetView view)
-		{
-			Log.d(TAG, "Banner mediation Ad loaded");
-			view.start();
-			listener.onAdLoaded(MyTargetAdapter.this);
-		}
+        MyTargetBannerListener(final @NonNull MediationBannerListener listener) {
+            this.listener = listener;
+        }
 
-		@Override
-		public void onNoAd(final String s, final MyTargetView view)
-		{
-			Log.d(TAG, "Banner mediation Ad failed to load: " + s);
-			listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
-		}
+        @Override
+        public void onLoad(final MyTargetView view) {
+            Log.d(TAG, "Banner mediation Ad loaded");
+            view.start();
+            listener.onAdLoaded(MyTargetAdapter.this);
+        }
 
-		@Override
-		public void onClick(final MyTargetView view)
-		{
-			Log.d(TAG, "Banner mediation Ad clicked");
-			listener.onAdClicked(MyTargetAdapter.this);
-			listener.onAdOpened(MyTargetAdapter.this);
-			// click redirects user to Google Play, or web browser, so we can notify
-			// about left application
-			listener.onAdLeftApplication(MyTargetAdapter.this);
-		}
-	}
+        @Override
+        public void onNoAd(final String reason, final MyTargetView view) {
+            Log.d(TAG, "Banner mediation Ad failed to load: " + reason);
+            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+        }
 
-	/**
-	 * A {@link MyTargetInterstitialListener} used to forward myTarget interstitial events to Google
-	 */
-	private class MyTargetInterstitialListener implements InterstitialAd.InterstitialAdListener
-	{
+        @Override
+        public void onClick(final MyTargetView view) {
+            Log.d(TAG, "Banner mediation Ad clicked");
+            listener.onAdClicked(MyTargetAdapter.this);
+            listener.onAdOpened(MyTargetAdapter.this);
+            // click redirects user to Google Play, or web browser, so we can notify
+            // about left application.
+            listener.onAdLeftApplication(MyTargetAdapter.this);
+        }
+    }
 
-		private final @NonNull MediationInterstitialListener listener;
+    /**
+     * A {@link MyTargetInterstitialListener} used to forward myTarget interstitial events to
+     * Google.
+     */
+    private class MyTargetInterstitialListener implements InterstitialAd.InterstitialAdListener {
 
-		MyTargetInterstitialListener(final @NonNull MediationInterstitialListener listener)
-		{
-			this.listener = listener;
-		}
+        @NonNull
+        private final MediationInterstitialListener listener;
 
-		@Override
-		public void onLoad(final InterstitialAd ad)
-		{
-			Log.d(TAG, "Interstitial mediation Ad loaded");
-			listener.onAdLoaded(MyTargetAdapter.this);
-		}
+        MyTargetInterstitialListener(final @NonNull MediationInterstitialListener listener) {
+            this.listener = listener;
+        }
 
-		@Override
-		public void onNoAd(final String s, final InterstitialAd ad)
-		{
-			Log.d(TAG, "Interstitial mediation Ad failed to load: " + s);
-			listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
-		}
+        @Override
+        public void onLoad(final InterstitialAd ad) {
+            Log.d(TAG, "Interstitial mediation Ad loaded");
+            listener.onAdLoaded(MyTargetAdapter.this);
+        }
 
-		@Override
-		public void onClick(final InterstitialAd ad)
-		{
-			Log.d(TAG, "Interstitial mediation Ad clicked");
-			listener.onAdClicked(MyTargetAdapter.this);
-			// click redirects user to Google Play, or web browser, so we can notify
-			// about left application
-			listener.onAdLeftApplication(MyTargetAdapter.this);
-		}
+        @Override
+        public void onNoAd(final String reason, final InterstitialAd ad) {
+            Log.d(TAG, "Interstitial mediation Ad failed to load: " + reason);
+            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+        }
 
-		@Override
-		public void onDismiss(final InterstitialAd ad)
-		{
-			Log.d(TAG, "Interstitial mediation Ad dismissed");
-			listener.onAdClosed(MyTargetAdapter.this);
-		}
+        @Override
+        public void onClick(final InterstitialAd ad) {
+            Log.d(TAG, "Interstitial mediation Ad clicked");
+            listener.onAdClicked(MyTargetAdapter.this);
+            // click redirects user to Google Play, or web browser, so we can notify
+            // about left application.
+            listener.onAdLeftApplication(MyTargetAdapter.this);
+        }
 
-		@Override
-		public void onVideoCompleted(final InterstitialAd ad)
-		{
-		}
+        @Override
+        public void onDismiss(final InterstitialAd ad) {
+            Log.d(TAG, "Interstitial mediation Ad dismissed");
+            listener.onAdClosed(MyTargetAdapter.this);
+        }
 
-		@Override
-		public void onDisplay(final InterstitialAd ad)
-		{
-			Log.d(TAG, "Interstitial mediation Ad displayed");
-			listener.onAdOpened(MyTargetAdapter.this);
-		}
-	}
+        @Override
+        public void onVideoCompleted(final InterstitialAd ad) {
+        }
+
+        @Override
+        public void onDisplay(final InterstitialAd ad) {
+            Log.d(TAG, "Interstitial mediation Ad displayed");
+            listener.onAdOpened(MyTargetAdapter.this);
+        }
+    }
 }
