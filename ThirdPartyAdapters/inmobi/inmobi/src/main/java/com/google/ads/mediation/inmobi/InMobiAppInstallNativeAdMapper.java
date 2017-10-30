@@ -89,6 +89,10 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                 map.put(ImageDownloaderAsyncTask.KEY_ICON, iconURL);
             else {
                 setIcon(new InMobiNativeMappedImage(null, iconUri, iconScale));
+                List<NativeAd.Image> imagesList = new ArrayList<>();
+                imagesList.add(new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null,
+                        1.0));
+                setImages(imagesList);
             }
 
         } catch (MandatoryParamException | MalformedURLException |
