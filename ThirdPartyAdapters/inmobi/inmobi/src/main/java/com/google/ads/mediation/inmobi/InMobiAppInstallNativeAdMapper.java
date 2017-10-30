@@ -1,6 +1,9 @@
 package com.google.ads.mediation.inmobi;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +13,7 @@ import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.inmobi.ads.InMobiNative;
@@ -20,7 +24,9 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by vineet.srivastava on 5/2/16.
@@ -47,8 +53,6 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     void mapAppInstallAd(final Context context) {
         JSONObject payLoad;
         HashMap<String, URL> map;
-        final Uri imageUri;
-        final Double imageScale;
         final Uri iconUri;
         final Double iconScale;
 
@@ -109,7 +113,6 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         //Add primary view as media view
         final RelativeLayout placeHolderView = new RelativeLayout(context);
         placeHolderView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) );
@@ -129,7 +132,39 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         setMediaView( placeHolderView );
         setHasVideoContent(true);
         setOverrideClickHandling(false);
-        mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
+
+        //Download drawables
+        if( !this.mIsOnlyURL ){
+            new ImageDownloaderAsyncTask(new ImageDownloaderAsyncTask.DrawableDownloadListener() {
+                @Override
+                public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
+                    Drawable iconDrawable = drawableMap.get(ImageDownloaderAsyncTask.KEY_ICON);
+                    setIcon(new InMobiNativeMappedImage(iconDrawable, iconUri,
+                            iconScale));
+
+                    List<NativeAd.Image> imagesList = new ArrayList<>();
+                    imagesList.add(new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null,
+                            1.0));
+                    setImages(imagesList);
+
+                    if ((null != iconDrawable)) {
+                        mMediationNativeListener.onAdLoaded(mInMobiAdapter,
+                                InMobiAppInstallNativeAdMapper.this);
+                    } else {
+                        mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter,
+                                AdRequest.ERROR_CODE_NETWORK_ERROR);
+                    }
+                }
+
+                @Override
+                public void onDownloadFailure() {
+                    mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest
+                            .ERROR_CODE_NO_FILL);
+                }
+            }).execute(map);
+        }else {
+            mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
+        }
 
     }
 
