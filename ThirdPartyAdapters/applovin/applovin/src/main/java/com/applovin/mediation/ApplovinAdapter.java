@@ -417,7 +417,7 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
     //region Banner utility methods
     private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(final AdSize adSize)
     {
-        if ( AdSize.BANNER.equals( adSize ) || AdSize.LARGE_BANNER.equals( adSize ) )
+        if ( AdSize.BANNER.equals( adSize ) )
         {
             return AppLovinAdSize.BANNER;
         }
