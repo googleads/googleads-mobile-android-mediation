@@ -2,7 +2,8 @@
     <string name="app_name">Mediation Sample</string>
 
     <string name="customevent_banner_ad_unit_id">ca-app-pub-3448655774227075/9118987345</string>
-    <string name="customevent_interstitial_ad_unit_id">ca-app-pub-3448655774227075/1595720546</string>
+    <string name="customevent_interstitial_ad_unit_id">ca-app-pub-3448655774227075/1595720546
+    </string>
     <string name="customevent_native_ad_unit_id">ca-app-pub-3940256099942544/9051804115</string>
     <string name="customevent_rewarded_video_ad_unit_id">ca-app-pub-3940256099942544/6223236111
     </string>

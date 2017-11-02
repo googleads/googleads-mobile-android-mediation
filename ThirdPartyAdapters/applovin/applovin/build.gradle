@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -15,14 +15,14 @@ ext {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 26
+        versionCode 7410
+        versionName stringVersion
 
     }
     buildTypes {
@@ -35,8 +35,8 @@ android {
 
 dependencies {
     compile 'com.applovin:applovin-sdk:7.4.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-ads:11.2.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.google.android.gms:play-services-ads:11.4.2'
 }
 
 /**

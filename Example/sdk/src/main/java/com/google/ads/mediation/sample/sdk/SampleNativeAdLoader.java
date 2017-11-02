@@ -95,7 +95,7 @@ public class SampleNativeAdLoader {
                 mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
             } else if (nextInt < 95) {
                 mListener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
-            } else if (nextInt < 100) {
+            } else {
                 mListener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
             }
         }
@@ -113,6 +113,13 @@ public class SampleNativeAdLoader {
         fakeAd.setStoreName("Sample Store");
         fakeAd.setImageUri(Uri.parse("http://www.example.com/"));
         fakeAd.setAppIconUri(Uri.parse("http://www.example.com/"));
+
+        // We pretend 80% of network's inventory has video assets and 20% doesn't.
+        if ((new Random()).nextInt(100) < 80) {
+            fakeAd.setMediaView(new SampleMediaView(mContext));
+        } else {
+            fakeAd.setMediaView(null);
+        }
 
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
@@ -137,6 +144,13 @@ public class SampleNativeAdLoader {
         fakeAd.setAdvertiser("The very best advertiser!");
         fakeAd.setCallToAction("Take Action!");
         fakeAd.setDegreeOfAwesomeness("Fairly Awesome");
+
+        // We pretend 80% of network's inventory has video assets and 20% doesn't.
+        if ((new Random()).nextInt(100) < 80) {
+            fakeAd.setMediaView(new SampleMediaView(mContext));
+        } else {
+            fakeAd.setMediaView(null);
+        }
 
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
