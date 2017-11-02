@@ -290,7 +290,7 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
     {
         // TODO: More elegant solution for retrieving SDK
         mServerParameters = serverParameters;
-        mAdViewSdk = sdkInstance();
+        mAdViewSdk = sdkInstance(context);
 
         // SDK versions < 7.1.0 require a instance of an Activity to be passed in as the context
         if ( AppLovinSdk.VERSION_CODE < 710 && !( context instanceof Activity ) )
