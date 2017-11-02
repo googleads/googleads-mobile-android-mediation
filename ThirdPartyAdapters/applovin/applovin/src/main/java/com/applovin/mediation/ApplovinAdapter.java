@@ -46,11 +46,11 @@ import static android.util.Log.ERROR;
 /**
  * AppLovin SDK interstitial and rewarded video ad adapter for AdMob.
  *
- * @version 7.3.2.0
+ * @version 7.4.1.0
  */
 public class ApplovinAdapter implements MediationBannerAdapter, MediationRewardedVideoAdAdapter, MediationInterstitialAdapter, OnContextChangedListener {
     private static final boolean LOGGING_ENABLED = false;
-    private static final String ADAPTER_VERSION = "7.3.2.0";
+    private static final String ADAPTER_VERSION = "7.4.1.0";
     private static final String SDK_KEY_PARAM = "sdkKey";
     private static final String PLACEMENT_PARAM = "placement";
 
