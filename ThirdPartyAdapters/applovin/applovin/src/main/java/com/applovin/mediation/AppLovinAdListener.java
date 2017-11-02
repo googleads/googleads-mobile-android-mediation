@@ -23,7 +23,7 @@ import static android.util.Log.ERROR;
 /**
  * AppLovin SDK ad listener used with the AppLovin ad adapter for AdMob.
  *
- * @version 7.4.1.0
+ * @version 7.4.1.1
  */
 class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardListener,
         AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdVideoPlaybackListener {
