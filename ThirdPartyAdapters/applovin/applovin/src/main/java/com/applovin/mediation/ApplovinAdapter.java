@@ -99,7 +99,7 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
         this.mServerParameters = serverParameters;
 
         if (!mInitialized) {
-            mRewardedSdk = sdkInstance();
+            mRewardedSdk = sdkInstance(context);
 
             mInitialized = true;
             mRewardedAd = AppLovinIncentivizedInterstitial.create(mRewardedSdk);
@@ -216,7 +216,7 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
             mAppLovinAdListener.updateAdMobListener(mInterstitialAdMobListener);
         }
 
-        sInterstitialSdk = sdkInstance();
+        sInterstitialSdk = sdkInstance(context);
 
         log(DEBUG, "Adding interstitial request to load list for placement: " + placement());
         sLoadList.add(mAppLovinAdListener);
@@ -514,14 +514,14 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
         return false;
     }
 
-    private AppLovinSdk sdkInstance() {
+    private AppLovinSdk sdkInstance(final Context context) {
         String sdkKey = mServerParameters.getString(SDK_KEY_PARAM);
         AppLovinSdk sdk;
 
         if (sdkKey != null && !sdkKey.equals("")) {
-            sdk = AppLovinSdk.getInstance(sdkKey, sSdkSettings, mContext);
+            sdk = AppLovinSdk.getInstance(sdkKey, sSdkSettings, context);
         } else {
-            sdk = AppLovinSdk.getInstance(mContext);
+            sdk = AppLovinSdk.getInstance(context);
         }
 
         sdk.setPluginVersion(ADAPTER_VERSION);
