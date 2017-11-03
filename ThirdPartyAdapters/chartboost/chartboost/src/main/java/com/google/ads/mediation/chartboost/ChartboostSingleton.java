@@ -327,8 +327,17 @@ public final class ChartboostSingleton {
 
         @Override
         public void didFailToLoadInterstitial(String location, CBError.CBImpressionError error) {
-            // Interstitial ad has attempted to load from the Chartboost API servers but failed.
             super.didFailToLoadInterstitial(location, error);
+            if (error == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
+                // Chartboost SDK failed to show an ad. Notify the current showing adapter delegate.
+                AbstractChartboostAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+                if (delegate != null) {
+                    delegate.didFailToLoadInterstitial(location, error);
+                }
+                return;
+            }
+
+            // Interstitial ad has attempted to load from the Chartboost API servers but failed.
             Iterator<WeakReference<AbstractChartboostAdapterDelegate>> iterator =
                     mInterstitialDelegatesSet.iterator();
             while (iterator.hasNext()) {
@@ -408,8 +417,17 @@ public final class ChartboostSingleton {
 
         @Override
         public void didFailToLoadRewardedVideo(String location, CBError.CBImpressionError error) {
-            // Rewarded video has attempted to load from the Chartboost API servers but failed.
             super.didFailToLoadRewardedVideo(location, error);
+            if (error == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
+                // Chartboost SDK failed to show an ad. Notify the current showing adapter delegate.
+                AbstractChartboostAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+                if (delegate != null) {
+                    delegate.didFailToLoadRewardedVideo(location, error);
+                }
+                return;
+            }
+
+            // Rewarded video has attempted to load from the Chartboost API servers but failed.
             for (WeakReference<AbstractChartboostAdapterDelegate> weakReference
                     : mRewardedVideoDelegatesSet) {
                 AbstractChartboostAdapterDelegate delegate = weakReference.get();
