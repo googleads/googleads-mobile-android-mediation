@@ -4,12 +4,18 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
+import com.applovin.adview.AppLovinAdView;
+import com.applovin.adview.AppLovinAdViewDisplayErrorCode;
+import com.applovin.adview.AppLovinAdViewEventListener;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
+import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
+import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
@@ -17,13 +23,17 @@ import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAdapter;
+import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,12 +46,11 @@ import static android.util.Log.ERROR;
 /**
  * AppLovin SDK interstitial and rewarded video ad adapter for AdMob.
  *
- * @version 7.3.2.0
+ * @version 7.4.1.1
  */
-public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
-        MediationInterstitialAdapter, OnContextChangedListener {
+public class ApplovinAdapter implements MediationBannerAdapter, MediationRewardedVideoAdAdapter, MediationInterstitialAdapter, OnContextChangedListener {
     private static final boolean LOGGING_ENABLED = false;
-    private static final String ADAPTER_VERSION = "7.3.2.0";
+    private static final String ADAPTER_VERSION = "7.4.1.1";
     private static final String SDK_KEY_PARAM = "sdkKey";
     private static final String PLACEMENT_PARAM = "placement";
 
@@ -63,6 +72,10 @@ public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
     private MediationInterstitialListener mInterstitialAdMobListener;
 
     AppLovinInterstitialAdDialog mInterstitialAd;
+
+    // Banner fields
+    private AppLovinAdView mAdView;
+    private AppLovinSdk mAdViewSdk;
 
     //region AdMob rewarded video ad mediation methods
     @Override
@@ -86,7 +99,7 @@ public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
         this.mServerParameters = serverParameters;
 
         if (!mInitialized) {
-            mRewardedSdk = sdkInstance();
+            mRewardedSdk = sdkInstance(context);
 
             mInitialized = true;
             mRewardedAd = AppLovinIncentivizedInterstitial.create(mRewardedSdk);
@@ -203,7 +216,7 @@ public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
             mAppLovinAdListener.updateAdMobListener(mInterstitialAdMobListener);
         }
 
-        sInterstitialSdk = sdkInstance();
+        sInterstitialSdk = sdkInstance(context);
 
         log(DEBUG, "Adding interstitial request to load list for placement: " + placement());
         sLoadList.add(mAppLovinAdListener);
@@ -270,6 +283,178 @@ public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
     }
     //endregion
 
+
+    //region - Banner Methods
+    @Override
+    public void requestBannerAd(final Context context, final MediationBannerListener mediationBannerListener, final Bundle serverParameters, final AdSize adSize, final MediationAdRequest mediationAdRequest, final Bundle mediationExtras)
+    {
+        // TODO: More elegant solution for retrieving SDK
+        mServerParameters = serverParameters;
+        mAdViewSdk = sdkInstance(context);
+
+        // SDK versions < 7.1.0 require a instance of an Activity to be passed in as the context
+        if ( AppLovinSdk.VERSION_CODE < 710 && !( context instanceof Activity ) )
+        {
+            log( ERROR, "Unable to request AppLovin banner. Invalid context provided." );
+            mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+
+            return;
+        }
+
+        log( DEBUG, "Requesting AppLovin banner of size: " + adSize );
+
+        final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize( adSize );
+        if ( appLovinAdSize != null )
+        {
+            mAdView = createAdView( appLovinAdSize, context, mediationBannerListener );
+
+            // Add paranoia null-check
+            if ( mAdView != null )
+            {
+                mAdView.setAdLoadListener( new AppLovinAdLoadListener()
+                {
+                    @Override
+                    public void adReceived(final AppLovinAd ad)
+                    {
+                        log( DEBUG, "Successfully loaded banner ad" );
+
+                        final String placement = ( serverParameters != null ) ? serverParameters.getString( PLACEMENT_PARAM ) : null;
+                        mAdView.renderAd( ad, placement );
+
+                        mediationBannerListener.onAdLoaded( ApplovinAdapter.this );
+                    }
+
+                    @Override
+                    public void failedToReceiveAd(final int errorCode)
+                    {
+                        log( ERROR, "Failed to load banner ad with code: " + errorCode );
+                        mediationBannerListener.onAdFailedToLoad( ApplovinAdapter.this, toAdMobErrorCode( errorCode ) );
+                    }
+                } );
+                mAdView.setAdDisplayListener( new AppLovinAdDisplayListener()
+                {
+                    @Override
+                    public void adDisplayed(final AppLovinAd ad)
+                    {
+                        log( DEBUG, "Banner displayed" );
+                    }
+
+                    @Override
+                    public void adHidden(final AppLovinAd ad)
+                    {
+                        log( DEBUG, "Banner dismissed" );
+                    }
+                } );
+                mAdView.setAdClickListener( new AppLovinAdClickListener()
+                {
+                    @Override
+                    public void adClicked(final AppLovinAd ad)
+                    {
+                        log( DEBUG, "Banner clicked" );
+
+                        mediationBannerListener.onAdClicked( ApplovinAdapter.this );
+                        mediationBannerListener.onAdOpened( ApplovinAdapter.this );
+                        mediationBannerListener.onAdLeftApplication( ApplovinAdapter.this );
+                    }
+                } );
+
+                // As of Android SDK >= 7.3.0, we added a listener for banner events
+                if ( AppLovinSdk.VERSION_CODE >= 730 )
+                {
+                    mAdView.setAdViewEventListener( new AppLovinAdViewEventListener()
+                    {
+                        @Override
+                        public void adOpenedFullscreen(final AppLovinAd ad, final AppLovinAdView adView)
+                        {
+                            log( DEBUG, "Banner opened fullscreen" );
+                            mediationBannerListener.onAdOpened( ApplovinAdapter.this );
+                        }
+
+                        @Override
+                        public void adClosedFullscreen(final AppLovinAd ad, final AppLovinAdView adView)
+                        {
+                            log( DEBUG, "Banner closed fullscreen" );
+                            mediationBannerListener.onAdClosed( ApplovinAdapter.this );
+                        }
+
+                        @Override
+                        public void adLeftApplication(final AppLovinAd ad, final AppLovinAdView adView)
+                        {
+                            // We will fire onAdLeftApplication() in the adClicked() callback
+                            log( DEBUG, "Banner left application" );
+                        }
+
+                        @Override
+                        public void adFailedToDisplay(final AppLovinAd ad, final AppLovinAdView adView, final AppLovinAdViewDisplayErrorCode code)
+                        {
+                            log( DEBUG, "Banner failed to display: " + code );
+                        }
+                    } );
+                }
+
+                mAdView.loadNextAd();
+            }
+            else
+            {
+                log( ERROR, "Unable to request AppLovin banner" );
+                mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INTERNAL_ERROR );
+            }
+        }
+        else
+        {
+            log( ERROR, "Unable to request AppLovin banner" );
+            mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+        }
+    }
+
+    @Override
+    public View getBannerView()
+    {
+        return mAdView;
+    }
+    //endregion
+
+    //region Banner utility methods
+    private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(final AdSize adSize)
+    {
+        if ( AdSize.BANNER.equals( adSize ) )
+        {
+            return AppLovinAdSize.BANNER;
+        }
+        else if ( AdSize.MEDIUM_RECTANGLE.equals( adSize ) )
+        {
+            return AppLovinAdSize.MREC;
+        }
+        else if ( AdSize.LEADERBOARD.equals( adSize ) )
+        {
+            return AppLovinAdSize.LEADER;
+        }
+
+        return null;
+    }
+
+    private AppLovinAdView createAdView(final AppLovinAdSize size, final Context parentContext, final MediationBannerListener customEventBannerListener)
+    {
+        AppLovinAdView adView = null;
+
+        try
+        {
+            // AppLovin SDK < 7.1.0 uses an Activity, as opposed to Context in >= 7.1.0
+            final Class<?> contextClass = ( AppLovinSdk.VERSION_CODE < 710 ) ? Activity.class : Context.class;
+            final Constructor<?> constructor = AppLovinAdView.class.getConstructor( AppLovinSdk.class, AppLovinAdSize.class, contextClass );
+
+            adView = (AppLovinAdView) constructor.newInstance( mAdViewSdk, size, parentContext );
+        }
+        catch ( Throwable th )
+        {
+            log( ERROR, "Unable to get create AppLovinAdView." );
+            customEventBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+        }
+
+        return adView;
+    }
+    //endregion
+
     //region MediationAdapter methods.
     @Override
     public void onPause() {
@@ -329,14 +514,14 @@ public class ApplovinAdapter implements MediationRewardedVideoAdAdapter,
         return false;
     }
 
-    private AppLovinSdk sdkInstance() {
+    private AppLovinSdk sdkInstance(final Context context) {
         String sdkKey = mServerParameters.getString(SDK_KEY_PARAM);
         AppLovinSdk sdk;
 
         if (sdkKey != null && !sdkKey.equals("")) {
-            sdk = AppLovinSdk.getInstance(sdkKey, sSdkSettings, mContext);
+            sdk = AppLovinSdk.getInstance(sdkKey, sSdkSettings, context);
         } else {
-            sdk = AppLovinSdk.getInstance(mContext);
+            sdk = AppLovinSdk.getInstance(context);
         }
 
         sdk.setPluginVersion(ADAPTER_VERSION);
