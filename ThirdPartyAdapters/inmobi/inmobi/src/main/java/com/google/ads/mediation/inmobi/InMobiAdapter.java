@@ -4,6 +4,7 @@ package com.google.ads.mediation.inmobi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -270,15 +271,6 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        final Activity activity;
-
-        if (context instanceof Activity) {
-            activity = (Activity) context;
-        } else {
-            Log.w(TAG, "Context not an Activity. Returning error!");
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
 
         if (!sIsAppInitialized) {
             InMobiSdk.init(context, serverParameters.getString("accountid"));
@@ -287,7 +279,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
         this.mInterstitialListener = listener;
 
-        mAdInterstitial = new InMobiInterstitial(activity, Long.parseLong(serverParameters
+        mAdInterstitial = new InMobiInterstitial(context, Long.parseLong(serverParameters
                 .getString("placementid")), new InMobiInterstitial.InterstitialAdListener2() {
 
             @Override
@@ -403,24 +395,13 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         this.mRewardedVideoAdListener = mediationRewardedVideoAdListener;
         String accountId = serverParameters.getString("accountid");
 
-        Activity activity;
-
-        if (context instanceof Activity) {
-            activity = (Activity) context;
-        } else {
-            Log.w(TAG, "Context not an Activity. Returning error!");
-            mediationRewardedVideoAdListener
-                    .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
         if (!sIsAppInitialized) {
             InMobiSdk.init(context, accountId);
             sIsAppInitialized = true;
         }
 
         String placementId = serverParameters.getString("placementid");
-        mAdRewarded = new InMobiInterstitial(activity, Long.parseLong(placementId), new
+        mAdRewarded = new InMobiInterstitial(context, Long.parseLong(placementId), new
                 InMobiInterstitial.InterstitialAdListener2() {
                     @Override
                     public void onAdRewardActionCompleted(InMobiInterstitial inMobiInterstitial,
@@ -589,18 +570,9 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             return;
         }
 
-        InMobiNative adNative = new InMobiNative(
+        InMobiNative adNative = new InMobiNative(context,
                 Long.parseLong(serverParameters.getString("placementid")),
                 new InMobiNative.NativeAdListener() {
-
-                    @Override
-                    public void onUserLeftApplication(InMobiNative inMobiNative) {
-                        Log.d(TAG, "onUserLeftApplication");
-                        mNativeListener.onAdClicked(InMobiAdapter.this);
-                        mNativeListener.onAdOpened(InMobiAdapter.this);
-                        mNativeListener.onAdLeftApplication(InMobiAdapter.this);
-                    }
-
                     @Override
                     public void onAdLoadSucceeded(final InMobiNative imNativeAd) {
                         System.out.println(" [ InMobi Native Ad ] : onAdLoadSucceeded ");
@@ -625,7 +597,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                         imNativeAd,
                                         mIsOnlyUrl,
                                         mNativeListener);
-                        inMobiAppInstallNativeAdMapper.mapAppInstallAd();
+                        inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
                     }
 
                     @Override
@@ -637,25 +609,48 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                     }
 
                     @Override
-                    public void onAdDisplayed(InMobiNative inMobiNative) {
-                        Log.d(TAG, "onAdDisplayed");
+                    public void onAdFullScreenDismissed(InMobiNative inMobiNative) {
+                        Log.d(TAG, "onAdDismissed");
+                        mNativeListener.onAdClosed(InMobiAdapter.this);
+                    }
+
+                    @Override
+                    public void onAdFullScreenWillDisplay(InMobiNative inMobiNative) {
+
+                    }
+
+                    @Override
+                    public void onAdFullScreenDisplayed(InMobiNative inMobiNative) {
                         mNativeListener.onAdOpened(InMobiAdapter.this);
                     }
 
                     @Override
-                    public void onAdDismissed(InMobiNative inMobiNative) {
-                        Log.d(TAG, "onAdDismissed");
-                        mNativeListener.onAdClosed(InMobiAdapter.this);
+                    public void onUserWillLeaveApplication(InMobiNative inMobiNative) {
+                        Log.d("InMobiAdapter", "onUserLeftApplication");
+                        mNativeListener.onAdLeftApplication(InMobiAdapter.this);
+                    }
+
+                    @Override
+                    public void onAdImpressed(@NonNull InMobiNative inMobiNative) {
+                        Log.d(TAG, "InMobi impression recorded successfully");
+                        mNativeListener.onAdImpression(InMobiAdapter.this);
+                    }
+
+                    @Override
+                    public void onAdClicked(@NonNull InMobiNative inMobiNative) {
+                        mNativeListener.onAdClicked(InMobiAdapter.this);
+                    }
+
+                    @Override
+                    public void onMediaPlaybackComplete(@NonNull InMobiNative inMobiNative) {
+
+                    }
+
+                    @Override
+                    public void onAdStatusChanged(@NonNull InMobiNative inMobiNative) {
+
                     }
                 });
-
-        adNative.setNativeAdEventListener(new InMobiNative.NativeAdEventsListener() {
-            @Override
-            public void onAdImpressed(InMobiNative inMobiNative) {
-                Log.d(TAG, "InMobi impression recorded successfully");
-                mNativeListener.onAdImpression(InMobiAdapter.this);
-            }
-        });
 
         //Setting mediation key words to native ad object
         Set<String> mediationKeyWords = mediationAdRequest.getKeywords();
