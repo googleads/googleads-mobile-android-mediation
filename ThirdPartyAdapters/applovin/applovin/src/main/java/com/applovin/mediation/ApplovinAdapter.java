@@ -48,7 +48,9 @@ import static android.util.Log.ERROR;
  *
  * @version 7.4.1.1
  */
-public class ApplovinAdapter implements MediationBannerAdapter, MediationRewardedVideoAdAdapter, MediationInterstitialAdapter, OnContextChangedListener {
+public class ApplovinAdapter implements MediationBannerAdapter, MediationRewardedVideoAdAdapter,
+        MediationInterstitialAdapter, OnContextChangedListener {
+
     private static final boolean LOGGING_ENABLED = false;
     private static final String ADAPTER_VERSION = "7.4.1.1";
     private static final String SDK_KEY_PARAM = "sdkKey";
@@ -73,7 +75,7 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
 
     AppLovinInterstitialAdDialog mInterstitialAd;
 
-    // Banner fields
+    // AppLovin Banner fields
     private AppLovinAdView mAdView;
     private AppLovinSdk mAdViewSdk;
 
@@ -284,171 +286,155 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
     //endregion
 
 
-    //region - Banner Methods
+    //region MediationBannerAdapter implementation.
     @Override
-    public void requestBannerAd(final Context context, final MediationBannerListener mediationBannerListener, final Bundle serverParameters, final AdSize adSize, final MediationAdRequest mediationAdRequest, final Bundle mediationExtras)
-    {
+    public void requestBannerAd(final Context context,
+                                final MediationBannerListener mediationBannerListener,
+                                final Bundle serverParameters,
+                                final AdSize adSize,
+                                final MediationAdRequest mediationAdRequest,
+                                final Bundle mediationExtras) {
         // TODO: More elegant solution for retrieving SDK
         mServerParameters = serverParameters;
         mAdViewSdk = sdkInstance(context);
 
         // SDK versions < 7.1.0 require a instance of an Activity to be passed in as the context
-        if ( AppLovinSdk.VERSION_CODE < 710 && !( context instanceof Activity ) )
-        {
-            log( ERROR, "Unable to request AppLovin banner. Invalid context provided." );
-            mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+        if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {
+            log(ERROR, "Unable to request AppLovin banner. Invalid context provided.");
+            mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
 
             return;
         }
 
-        log( DEBUG, "Requesting AppLovin banner of size: " + adSize );
+        log(DEBUG, "Requesting AppLovin banner of size: " + adSize);
 
-        final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize( adSize );
-        if ( appLovinAdSize != null )
-        {
-            mAdView = createAdView( appLovinAdSize, context, mediationBannerListener );
+        final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize(adSize);
+        if (appLovinAdSize != null) {
+            mAdView = createAdView(appLovinAdSize, context, mediationBannerListener);
 
             // Add paranoia null-check
-            if ( mAdView != null )
-            {
-                mAdView.setAdLoadListener( new AppLovinAdLoadListener()
-                {
+            if (mAdView != null) {
+                mAdView.setAdLoadListener(new AppLovinAdLoadListener() {
                     @Override
-                    public void adReceived(final AppLovinAd ad)
-                    {
-                        log( DEBUG, "Successfully loaded banner ad" );
+                    public void adReceived(final AppLovinAd ad) {
+                        log(DEBUG, "Successfully loaded banner ad");
 
-                        final String placement = ( serverParameters != null ) ? serverParameters.getString( PLACEMENT_PARAM ) : null;
-                        mAdView.renderAd( ad, placement );
+                        final String placement = (serverParameters != null)
+                                ? serverParameters.getString(PLACEMENT_PARAM) : null;
+                        mAdView.renderAd(ad, placement);
 
-                        mediationBannerListener.onAdLoaded( ApplovinAdapter.this );
+                        mediationBannerListener.onAdLoaded(ApplovinAdapter.this);
                     }
 
                     @Override
-                    public void failedToReceiveAd(final int errorCode)
-                    {
-                        log( ERROR, "Failed to load banner ad with code: " + errorCode );
-                        mediationBannerListener.onAdFailedToLoad( ApplovinAdapter.this, toAdMobErrorCode( errorCode ) );
+                    public void failedToReceiveAd(final int errorCode) {
+                        log(ERROR, "Failed to load banner ad with code: " + errorCode);
+                        mediationBannerListener.onAdFailedToLoad(
+                                ApplovinAdapter.this, toAdMobErrorCode(errorCode));
                     }
-                } );
-                mAdView.setAdDisplayListener( new AppLovinAdDisplayListener()
-                {
+                });
+                mAdView.setAdDisplayListener(new AppLovinAdDisplayListener() {
                     @Override
-                    public void adDisplayed(final AppLovinAd ad)
-                    {
-                        log( DEBUG, "Banner displayed" );
+                    public void adDisplayed(final AppLovinAd ad) {
+                        log(DEBUG, "Banner displayed");
                     }
 
                     @Override
-                    public void adHidden(final AppLovinAd ad)
-                    {
-                        log( DEBUG, "Banner dismissed" );
+                    public void adHidden(final AppLovinAd ad) {
+                        log(DEBUG, "Banner dismissed");
                     }
-                } );
-                mAdView.setAdClickListener( new AppLovinAdClickListener()
-                {
+                });
+                mAdView.setAdClickListener(new AppLovinAdClickListener() {
                     @Override
-                    public void adClicked(final AppLovinAd ad)
-                    {
-                        log( DEBUG, "Banner clicked" );
+                    public void adClicked(final AppLovinAd ad) {
+                        log(DEBUG, "Banner clicked");
 
-                        mediationBannerListener.onAdClicked( ApplovinAdapter.this );
-                        mediationBannerListener.onAdOpened( ApplovinAdapter.this );
-                        mediationBannerListener.onAdLeftApplication( ApplovinAdapter.this );
+                        mediationBannerListener.onAdClicked(ApplovinAdapter.this);
+                        mediationBannerListener.onAdOpened(ApplovinAdapter.this);
+                        mediationBannerListener.onAdLeftApplication(ApplovinAdapter.this);
                     }
-                } );
+                });
 
                 // As of Android SDK >= 7.3.0, we added a listener for banner events
-                if ( AppLovinSdk.VERSION_CODE >= 730 )
-                {
-                    mAdView.setAdViewEventListener( new AppLovinAdViewEventListener()
-                    {
+                if (AppLovinSdk.VERSION_CODE >= 730) {
+                    mAdView.setAdViewEventListener(new AppLovinAdViewEventListener() {
                         @Override
-                        public void adOpenedFullscreen(final AppLovinAd ad, final AppLovinAdView adView)
-                        {
-                            log( DEBUG, "Banner opened fullscreen" );
-                            mediationBannerListener.onAdOpened( ApplovinAdapter.this );
+                        public void adOpenedFullscreen(final AppLovinAd ad,
+                                                       final AppLovinAdView adView) {
+                            log(DEBUG, "Banner opened fullscreen");
+                            mediationBannerListener.onAdOpened(ApplovinAdapter.this);
                         }
 
                         @Override
-                        public void adClosedFullscreen(final AppLovinAd ad, final AppLovinAdView adView)
-                        {
-                            log( DEBUG, "Banner closed fullscreen" );
-                            mediationBannerListener.onAdClosed( ApplovinAdapter.this );
+                        public void adClosedFullscreen(final AppLovinAd ad,
+                                                       final AppLovinAdView adView) {
+                            log(DEBUG, "Banner closed fullscreen");
+                            mediationBannerListener.onAdClosed(ApplovinAdapter.this);
                         }
 
                         @Override
-                        public void adLeftApplication(final AppLovinAd ad, final AppLovinAdView adView)
-                        {
+                        public void adLeftApplication(final AppLovinAd ad,
+                                                      final AppLovinAdView adView) {
                             // We will fire onAdLeftApplication() in the adClicked() callback
-                            log( DEBUG, "Banner left application" );
+                            log(DEBUG, "Banner left application");
                         }
 
                         @Override
-                        public void adFailedToDisplay(final AppLovinAd ad, final AppLovinAdView adView, final AppLovinAdViewDisplayErrorCode code)
-                        {
-                            log( DEBUG, "Banner failed to display: " + code );
+                        public void adFailedToDisplay(final AppLovinAd ad,
+                                                      final AppLovinAdView adView,
+                                                      final AppLovinAdViewDisplayErrorCode code) {
+                            log(DEBUG, "Banner failed to display: " + code);
                         }
-                    } );
+                    });
                 }
 
                 mAdView.loadNextAd();
+            } else {
+                log(ERROR, "Unable to request AppLovin banner");
+                mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
             }
-            else
-            {
-                log( ERROR, "Unable to request AppLovin banner" );
-                mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INTERNAL_ERROR );
-            }
-        }
-        else
-        {
-            log( ERROR, "Unable to request AppLovin banner" );
-            mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+        } else {
+            log(ERROR, "Unable to request AppLovin banner");
+            mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 
     @Override
-    public View getBannerView()
-    {
+    public View getBannerView() {
         return mAdView;
     }
     //endregion
 
     //region Banner utility methods
-    private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(final AdSize adSize)
-    {
-        if ( AdSize.BANNER.equals( adSize ) )
-        {
+    private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(final AdSize adSize) {
+        if (AdSize.BANNER.equals(adSize)) {
             return AppLovinAdSize.BANNER;
-        }
-        else if ( AdSize.MEDIUM_RECTANGLE.equals( adSize ) )
-        {
+        } else if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
             return AppLovinAdSize.MREC;
-        }
-        else if ( AdSize.LEADERBOARD.equals( adSize ) )
-        {
+        } else if (AdSize.LEADERBOARD.equals(adSize)) {
             return AppLovinAdSize.LEADER;
         }
 
         return null;
     }
 
-    private AppLovinAdView createAdView(final AppLovinAdSize size, final Context parentContext, final MediationBannerListener customEventBannerListener)
-    {
+    private AppLovinAdView createAdView(final AppLovinAdSize size,
+                                        final Context parentContext,
+                                        final MediationBannerListener customEventBannerListener) {
         AppLovinAdView adView = null;
 
-        try
-        {
+        try {
             // AppLovin SDK < 7.1.0 uses an Activity, as opposed to Context in >= 7.1.0
-            final Class<?> contextClass = ( AppLovinSdk.VERSION_CODE < 710 ) ? Activity.class : Context.class;
-            final Constructor<?> constructor = AppLovinAdView.class.getConstructor( AppLovinSdk.class, AppLovinAdSize.class, contextClass );
+            final Class<?> contextClass =
+                    (AppLovinSdk.VERSION_CODE < 710) ? Activity.class : Context.class;
+            final Constructor<?> constructor = AppLovinAdView.class
+                    .getConstructor(AppLovinSdk.class, AppLovinAdSize.class, contextClass);
 
-            adView = (AppLovinAdView) constructor.newInstance( mAdViewSdk, size, parentContext );
-        }
-        catch ( Throwable th )
-        {
-            log( ERROR, "Unable to get create AppLovinAdView." );
-            customEventBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+            adView = (AppLovinAdView) constructor.newInstance(mAdViewSdk, size, parentContext);
+        } catch (Throwable th) {
+            log(ERROR, "Unable to get create AppLovinAdView.");
+            customEventBannerListener.onAdFailedToLoad(this,
+                    AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
 
         return adView;
@@ -494,7 +480,8 @@ public class ApplovinAdapter implements MediationBannerAdapter, MediationRewarde
                 && sCurrentlyLoading != sLoadList.get(0)) || sCurrentlyLoading == null)) {
             sCurrentlyLoading = sLoadList.get(0);
             log(DEBUG, "Loading next interstitial ad from load list");
-            sInterstitialSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, sLoadList.get(0));
+            sInterstitialSdk.getAdService().loadNextAd(
+                    AppLovinAdSize.INTERSTITIAL, sLoadList.get(0));
         } else if (sLoadList.size() == 0) {
             log(DEBUG, "No more interstitials to load");
         } else {
