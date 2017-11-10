@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.17.0.0"
+    stringVersion = "4.18.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 41700
+        versionCode 41800
         versionName stringVersion
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -41,9 +41,12 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services-ads:11.4.0'
-    compile('com.mopub:mopub-sdk:4.17.0@aar') {
+    implementation 'com.google.android.gms:play-services-ads:11.4.2'
+    implementation('com.mopub:mopub-sdk:4.18.0@aar') {
         transitive = true
+
+        // Exclude Moat module from the SDK.
+        exclude module: 'moat-mobile-app-kit'
     }
 }
 
