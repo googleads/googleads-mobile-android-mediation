@@ -18,6 +18,10 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            // nendSDK (Wiki -> https://github.com/fan-ADN/nendSDK-Android/wiki/About-integrate-the-SDK)
+            url 'http://fan-adn.github.io/nendSDK-Android-lib/library'
+        }
     }
 }
 
