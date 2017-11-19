@@ -18,6 +18,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.util.Log;
+
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost.CBFramework;
 import com.chartboost.sdk.Model.CBError;
@@ -40,7 +41,7 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
     /**
      * The current version of the adapter.
      */
-    public static final String ADAPTER_VERSION_NAME = "7.0.0.0";
+    public static final String ADAPTER_VERSION_NAME = "7.0.1.0";
 
     /**
      * Key to obtain App ID, required for initializing Chartboost SDK.
@@ -110,11 +111,20 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
                 public void didFailToLoadInterstitial(String location,
                                                       CBError.CBImpressionError error) {
                     super.didFailToLoadInterstitial(location, error);
-                    if (mMediationInterstitialListener != null && mIsLoading
+                    if (mMediationInterstitialListener != null
                             && location.equals(mChartboostParams.getLocation())) {
-                        mMediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this,
-                                getAdRequestErrorType(error));
-                        mIsLoading = false;
+                        if (mIsLoading) {
+                            mMediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this,
+                                    getAdRequestErrorType(error));
+                            mIsLoading = false;
+                        } else if (error
+                                == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
+                            // Chartboost sends the CBErrorInternetUnavailableAtShow error when
+                            // the Chartboost SDK fails to show an ad because no network connection
+                            // is available.
+                            mMediationInterstitialListener.onAdOpened(ChartboostAdapter.this);
+                            mMediationInterstitialListener.onAdClosed(ChartboostAdapter.this);
+                        }
                     }
                 }
 
@@ -184,11 +194,20 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
                 public void didFailToLoadRewardedVideo(String location,
                                                        CBError.CBImpressionError error) {
                     super.didFailToLoadRewardedVideo(location, error);
-                    if (mMediationRewardedVideoAdListener != null && mIsLoading
+                    if (mMediationRewardedVideoAdListener != null
                             && location.equals(mChartboostParams.getLocation())) {
-                        mMediationRewardedVideoAdListener.onAdFailedToLoad(ChartboostAdapter.this,
-                                getAdRequestErrorType(error));
-                        mIsLoading = false;
+                        if (mIsLoading) {
+                            mMediationRewardedVideoAdListener.onAdFailedToLoad(
+                                    ChartboostAdapter.this, getAdRequestErrorType(error));
+                            mIsLoading = false;
+                        } else if (error
+                                == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
+                            // Chartboost sends the CBErrorInternetUnavailableAtShow error when
+                            // the Chartboost SDK fails to show an ad because no network connection
+                            // is available.
+                            mMediationRewardedVideoAdListener.onAdOpened(ChartboostAdapter.this);
+                            mMediationRewardedVideoAdListener.onAdClosed(ChartboostAdapter.this);
+                        }
                     }
                 }
 
@@ -256,18 +275,21 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
             case ASSET_PREFETCH_IN_PROGRESS:
             case IMPRESSION_ALREADY_VISIBLE:
             case ACTIVITY_MISSING_IN_MANIFEST:
+            case WEB_VIEW_CLIENT_RECEIVED_ERROR:
                 return AdRequest.ERROR_CODE_INTERNAL_ERROR;
             case NETWORK_FAILURE:
             case END_POINT_DISABLED:
             case INTERNET_UNAVAILABLE:
             case TOO_MANY_CONNECTIONS:
             case ASSETS_DOWNLOAD_FAILURE:
+            case WEB_VIEW_PAGE_LOAD_TIMEOUT:
                 return AdRequest.ERROR_CODE_NETWORK_ERROR;
             case INVALID_LOCATION:
             case VIDEO_ID_MISSING:
             case HARDWARE_ACCELERATION_DISABLED:
             case FIRST_SESSION_INTERSTITIALS_DISABLED:
                 return AdRequest.ERROR_CODE_INVALID_REQUEST;
+            case INTERNET_UNAVAILABLE_AT_SHOW:
             case NO_AD_FOUND:
             case ASSET_MISSING:
             case VIDEO_UNAVAILABLE:

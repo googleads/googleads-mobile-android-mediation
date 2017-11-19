@@ -34,6 +34,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.VideoController;
+import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.NativeAppInstallAdView;
@@ -50,8 +52,6 @@ import java.util.List;
  * custom event.
  */
 public class MainActivity extends AppCompatActivity {
-
-    private static final String LOG_TAG = "SampleApp";
 
     private InterstitialAd mCustomEventInterstitial;
     private InterstitialAd mAdapterInterstitial;
@@ -342,11 +342,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private void populateAppInstallAdView(NativeAppInstallAd nativeAppInstallAd,
                                           NativeAppInstallAdView adView) {
+        VideoController videoController = nativeAppInstallAd.getVideoController();
+
         // Assign native ad object to the native view.
         adView.setNativeAd(nativeAppInstallAd);
 
         adView.setHeadlineView(adView.findViewById(R.id.appinstall_headline));
-        adView.setImageView(adView.findViewById(R.id.appinstall_image));
         adView.setBodyView(adView.findViewById(R.id.appinstall_body));
         adView.setCallToActionView(adView.findViewById(R.id.appinstall_call_to_action));
         adView.setIconView(adView.findViewById(R.id.appinstall_app_icon));
@@ -361,10 +362,21 @@ public class MainActivity extends AppCompatActivity {
         ((ImageView) adView.getIconView()).setImageDrawable(nativeAppInstallAd.getIcon()
                 .getDrawable());
 
-        List<NativeAd.Image> images = nativeAppInstallAd.getImages();
+        MediaView sampleMediaView = adView.findViewById(R.id.appinstall_media);
+        ImageView imageView = adView.findViewById(R.id.appinstall_image);
 
-        if (images.size() > 0) {
-            ((ImageView) adView.getImageView()).setImageDrawable(images.get(0).getDrawable());
+        if (videoController.hasVideoContent()) {
+            imageView.setVisibility(View.GONE);
+            adView.setMediaView(sampleMediaView);
+        } else {
+            sampleMediaView.setVisibility(View.GONE);
+            adView.setImageView(imageView);
+
+            List<NativeAd.Image> images = nativeAppInstallAd.getImages();
+
+            if (images.size() > 0) {
+                ((ImageView) adView.getImageView()).setImageDrawable(images.get(0).getDrawable());
+            }
         }
 
         // Some aren't guaranteed, however, and should be checked.

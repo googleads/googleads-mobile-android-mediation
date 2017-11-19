@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.0.0.0"
+    stringVersion = "7.0.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 25
-        versionCode 1
+        targetSdkVersion 26
+        versionCode 70010
         versionName stringVersion
     }
     buildTypes {
@@ -33,10 +33,10 @@ android {
 }
 
 dependencies {
-    // Adding Chartboost SDK as a provided dependency makes sure that the jar is not included in the
+    // Adding Chartboost SDK as a compileOnly dependency makes sure that the jar is not included in the
     // AAR.
-    provided files('libs/chartboost.jar')
-    compile 'com.google.android.gms:play-services-ads:11.0.2'
+    compileOnly files('libs/chartboost.jar')
+    implementation 'com.google.android.gms:play-services-ads:11.4.2'
 }
 
 /**

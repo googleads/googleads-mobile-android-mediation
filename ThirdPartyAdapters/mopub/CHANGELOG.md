@@ -1,5 +1,9 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.18.0.0
+- Verified compatibility with MoPub SDK 4.18.0.
+- Updated the Adapter project for Android Studio 3.0 and Android API 26.
+
 ## 4.17.0.0
 - Using MoPub's impression and click reporting for native ads (AdMob and MoPub
   impression and click statistics will match up).

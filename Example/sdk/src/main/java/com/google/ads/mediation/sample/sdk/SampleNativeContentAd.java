@@ -37,6 +37,7 @@ public class SampleNativeContentAd {
     private Uri mLogoUri;
     private String mDegreeOfAwesomeness;
     private ImageView mInformationIcon;
+    private SampleMediaView mMediaView;
 
     public SampleNativeContentAd() {
     }
@@ -121,6 +122,14 @@ public class SampleNativeContentAd {
         this.mInformationIcon = informationIcon;
     }
 
+    public SampleMediaView getMediaView() {
+        return mMediaView;
+    }
+
+    public void setMediaView(SampleMediaView mediaView) {
+        this.mMediaView = mediaView;
+    }
+
     public void handleClick(View view) {
         // Normally this would result in some type of click response, like a browser opening
         // or a ping to the servers. This isn't a real sdk, though, so we'll just log it.
@@ -132,4 +141,11 @@ public class SampleNativeContentAd {
         Log.i("SampleAdSdk", "An impression has been reported.");
     }
 
+    public void registerNativeAdView(View view) {
+        // Starts playing video if there is any video asset. Here, passing view is not mandatory
+        // since we are just calling the playback to play the video.
+        if (mMediaView != null) {
+            mMediaView.beginPlaying();
+        }
+    }
 }

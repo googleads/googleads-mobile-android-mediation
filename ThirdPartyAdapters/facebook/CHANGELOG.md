@@ -1,6 +1,11 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.26.1.0
+- Verified compatibility with Facebook SDK v4.26.1.
+- Updated the Adapter project for Android Studio 3.0
+
 ## 4.26.0.0
+- Added support for rewarded video ads.
 - Added support for native video ads.
 - Verified compatibility with Facebook SDK v4.26.0.
 
