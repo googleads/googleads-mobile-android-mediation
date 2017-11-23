@@ -173,7 +173,7 @@ class InMobiAdapterUtils {
                 return Ethnicity.AFRICAN_AMERICAN;
             case InMobiNetworkValues.ETHNICITY_ASIAN:
                 return Ethnicity.ASIAN;
-            case InMobiNetworkValues.ETHNICITY_CAUCASIAN:
+            case InMobiNetworkValues. ETHNICITY_CAUCASIAN:
                 return Ethnicity.CAUCASIAN;
             case InMobiNetworkValues.ETHNICITY_HISPANIC:
                 return Ethnicity.HISPANIC;

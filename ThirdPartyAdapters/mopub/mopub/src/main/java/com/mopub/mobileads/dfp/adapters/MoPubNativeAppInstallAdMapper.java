@@ -66,8 +66,8 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
             setImages(imagesList);
         }
 
-        setOverrideClickHandling(false);
-        setOverrideImpressionRecording(false);
+        setOverrideClickHandling(true);
+        setOverrideImpressionRecording(true);
     }
 
     @Override
