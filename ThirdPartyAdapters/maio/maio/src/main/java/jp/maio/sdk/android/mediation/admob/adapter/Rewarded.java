@@ -1,8 +1,10 @@
 package jp.maio.sdk.android.mediation.admob.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
@@ -29,13 +31,18 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
                            MediationRewardedVideoAdListener listener,
                            Bundle serverParameters,
                            Bundle networkExtras) {
+        if(!(context instanceof Activity)) {
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
         this.mediationRewardedVideoAdListener = listener;
 
         loadServerParameters(serverParameters);
 
         if (!isInitialized()) {
             //maio sdk initialization
-            MaioEventForwarder.initialize(context, this.mediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mediaId);
         }
     }
 

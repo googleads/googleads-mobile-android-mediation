@@ -1,7 +1,6 @@
 package jp.maio.sdk.android.mediation.admob.adapter;
 
 import android.app.Activity;
-import android.content.Context;
 
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -52,12 +51,12 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
         }
     }
 
-    public static void initialize(Context context, String mediaId){
-        instance._initialize(context, mediaId);
+    public static void initialize(Activity activity, String mediaId) {
+        instance._initialize(activity, mediaId);
     }
 
-    private void _initialize(Context context, String mediaId){
-        MaioAds.init((Activity)context, mediaId, this);
+    private void _initialize(Activity activity, String mediaId){
+        MaioAds.init(activity, mediaId, this);
     }
     public static boolean isInitialized(){
         return initialized;
@@ -151,6 +150,7 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
         }
         else if (_isInterstitial()) {
             this.mediationInterstitialListener.onAdClicked(interstitialAdapter);
+            this.mediationInterstitialListener.onAdLeftApplication(interstitialAdapter);
         }
     }
 
