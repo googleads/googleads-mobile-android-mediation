@@ -554,7 +554,6 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             InMobiSdk.init(context, serverParameters.getString("accountid"));
             sIsAppInitialized = true;
         }
-
         this.mNativeListener = listener;
 
         final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested()
