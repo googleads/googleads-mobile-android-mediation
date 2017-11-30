@@ -1,0 +1,5 @@
+The jar file for the IronSource Android SDK should be placed in this directory.
+For details on where to get the latest release, see the AdMob Mediation Networks
+page:
+
+https://firebase.google.com/docs/admob/android/mediation-networks

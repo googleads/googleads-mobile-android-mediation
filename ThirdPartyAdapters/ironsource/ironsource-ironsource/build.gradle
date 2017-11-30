@@ -1,0 +1,40 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.2"
+}
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+/**
+ * Extra properties used by the project.
+ */
+ext {
+    // String property to store version name.
+    stringVersion = "6.7.1.0"
+    // String property to store group id.
+    stringGroupId = "com.google.ads.mediation"
+}
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName stringVersion
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    // Download the latest IronSource SDK jar from bintray
+    // https://bintray.com/ironsource-mobile/android-sdk/mediation#files/com/ironsource/sdk/mediationsdk
+    // Rename it to 'ironsource.jar' so it will be added as a provided dependency
+    provided files('libs/ironsource.jar')
+    compile 'com.google.android.gms:play-services-ads:11.0.2'
+}
