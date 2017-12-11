@@ -14,8 +14,6 @@ import net.nend.android.NendAdRewardedListener;
 import net.nend.android.NendAdRewardedVideo;
 import net.nend.android.NendAdVideo;
 
-import java.net.HttpURLConnection;
-
 class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener {
 
     private NendAdRewardedVideo mNendAdRewardedVideo;
@@ -23,10 +21,6 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
     private NendRewardedAdapter mNendAdapter;
     private boolean mIsInitialized;
     private Activity mActivity;
-
-    // Invalid network
-    private static final int NEND_SDK_NETWORK_ERROR_CODE = 603;
-    // https://github.com/fan-ADN/nendSDK-Android/wiki/Implementation-for-video-ads#acquire-error-information)
 
     NendMediationRewardedVideoEventForwarder(
             Activity activity, NendRewardedAdapter nendAdapter, Bundle serverParameters,
@@ -97,7 +91,7 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
     @Override
     public void onFailedToLoad(NendAdVideo nendAdVideo, int errorCode) {
         mMediationRewardedVideoAdListener.onAdFailedToLoad(
-                mNendAdapter, getAdMobErrorCode(errorCode));
+                mNendAdapter, ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode));
     }
 
     @Override
@@ -139,20 +133,4 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
         mMediationRewardedVideoAdListener.onAdLeftApplication(mNendAdapter);
     }
 
-    private int getAdMobErrorCode(int errorCode) {
-        switch (errorCode) {
-            case HttpURLConnection.HTTP_NO_CONTENT:
-                return AdRequest.ERROR_CODE_NO_FILL;
-
-            case HttpURLConnection.HTTP_BAD_REQUEST:
-                return AdRequest.ERROR_CODE_INVALID_REQUEST;
-
-            case NEND_SDK_NETWORK_ERROR_CODE:
-                return AdRequest.ERROR_CODE_NETWORK_ERROR;
-
-            case HttpURLConnection.HTTP_INTERNAL_ERROR:
-            default:
-                return AdRequest.ERROR_CODE_INTERNAL_ERROR;
-        }
-    }
 }

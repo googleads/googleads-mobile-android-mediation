@@ -185,7 +185,7 @@ public class NendAdapter implements MediationBannerAdapter, MediationInterstitia
 
             @Override
             public void onFailedToLoad(NendAdVideo nendAdVideo, int errorCode) {
-                adFailedToLoad(errorCode);
+                adFailedToLoad(ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode));
             }
 
             @Override
