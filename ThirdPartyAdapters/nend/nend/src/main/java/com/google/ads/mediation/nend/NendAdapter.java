@@ -263,12 +263,12 @@ public class NendAdapter implements MediationBannerAdapter, MediationInterstitia
                         adClosed();
                         break;
                     case DOWNLOAD:
-                        adClosed();
                         adLeftApplication();
+                        adClosed();
                         break;
                     case INFORMATION:
-                        adClosed();
                         adLeftApplication();
+                        adClosed();
                         break;
                     default:
                         break;
