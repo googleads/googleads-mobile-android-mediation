@@ -1,5 +1,8 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
+## 7.6.0.0
+- Verified compatibility with AppLovin SDK 7.6.0.
+
 ## 7.5.0.0
 - Verified compatibility with AppLovin SDK 7.5.0.
 
