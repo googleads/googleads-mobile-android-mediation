@@ -373,6 +373,18 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             mediationNativeListener.onAdImpression(MyTargetNativeAdapter.this);
         }
 
+        @Override
+        public void onVideoPlay(NativeAd nativeAd) {
+        }
+
+        @Override
+        public void onVideoPause(NativeAd nativeAd) {
+        }
+
+        @Override
+        public void onVideoComplete(NativeAd nativeAd) {
+        }
+
         private void mapAd(final @NonNull NativeAd nativeAd,
                            final @NonNull NativePromoBanner banner) {
             if (resources == null || nativeMediationAdRequest == null) {
