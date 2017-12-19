@@ -38,7 +38,7 @@ android {
 }
 
 dependencies {
-    compile 'com.vungle:publisher-sdk-android:5.3.0:release@aar'
+    compile 'com.vungle:publisher-sdk-android:5.3.2'
     compile 'com.google.android.gms:play-services-ads:11.0.2'
 }
 
