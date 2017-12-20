@@ -21,39 +21,29 @@ been set up.
 
 ## Mediation Adapters
 
-Open source adapters for mediating the following networks via the Google Mobile
-Ads SDK:
-
-* AdColony
-* Chartboost
-* Facebook Audience Network
-* MoPub
-* Tapjoy
-* Unity Ads
-
-For prebuilt versions of these adapters, see the
-[AdMob Mediation Networks page](https://firebase.google.com/docs/admob/android/mediation-networks).
+Open source adapters for mediating via the Google Mobile Ads SDK. A list of
+these adapters is available on our
+[Mediation](https://developers.google.com/admob/android/mediation#choosing_your_mediation_networks)
+page.
 
 ## Downloads
 
-Please check out our
-[releases](https://github.com/googleads/googleads-mobile-android-mediation/releases)
-for the latest download of this project.
+For prebuilt versions of these adapters, see our
+[Bintray repository](https://bintray.com/google/mobile-ads-adapters-android).
 
 ## Documentation
 
-Check out our [developers site](https://firebase.google.com/docs/admob/)
+Check out our [developer site](https://developers.google.com/admob/android)
 for documentation on using the SDK and our
-[mediation developer guide](https://firebase.google.com/docs/admob/android/mediation-developer).
+[mediation developer guide](https://developers.google.com/admob/android/mediation-developer)
+for information on how to create an adapter.
 You can also join the developer community on
 [our SDK forum](https://groups.google.com/forum/#!forum/google-admob-ads-sdk).
 
 ## Suggesting improvements
 
-If you're having trouble using any of the projects in this repo, the best way to
-get support is to post on [our SDK forum](https://groups.google.com/forum/#!forum/google-admob-ads-sdk).
-
-For feature requests, or to suggest other improvements, please use [github's issue tracker](https://github.com/googleads/googleads-mobile-android-mediation/issues).
+For feature requests, or to suggest other improvements, please use
+[github's issue tracker](https://github.com/googleads/googleads-mobile-android-mediation/issues).
 
 ## License
 [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html)

@@ -60,14 +60,6 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
         Drawable iconDrawable;
 
         try {
-            if (null != mMemoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE))))
-                imageDrawable = mMemoryCache.get(String.valueOf(urlsMap.get(KEY_IMAGE)));
-            else {
-                imageDrawable = getDrawableFuture(urlsMap.get(KEY_IMAGE), executorService).get
-                        (DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                // Add Screenshot to Memory Cache so that it is not needed to be downloaded later.
-                mMemoryCache.put(String.valueOf(urlsMap.get(KEY_IMAGE)), imageDrawable);
-            }
             if (null != mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON))))
                 iconDrawable = mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
             else {
@@ -77,7 +69,6 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
             }
 
             HashMap<String, Drawable> drawableHashMap = new HashMap<>();
-            drawableHashMap.put(KEY_IMAGE, imageDrawable);
             drawableHashMap.put(KEY_ICON, iconDrawable);
 
             return drawableHashMap;
