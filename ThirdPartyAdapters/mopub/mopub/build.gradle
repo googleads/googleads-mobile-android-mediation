@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.18.0.0"
+    stringVersion = "4.19.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 41800
+        versionCode 41900
         versionName stringVersion
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -41,8 +41,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:11.4.2'
-    implementation('com.mopub:mopub-sdk:4.18.0@aar') {
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation('com.mopub:mopub-sdk:4.19.0@aar') {
         transitive = true
 
         // Exclude Moat module from the SDK.
