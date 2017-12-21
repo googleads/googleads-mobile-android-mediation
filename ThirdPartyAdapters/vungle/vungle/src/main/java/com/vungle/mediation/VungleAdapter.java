@@ -141,7 +141,7 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                 mVungleListener.setWaitingInit(true);
                 mVungleManager.init(context);
             }
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             if (listener != null)
                 listener.onInitializationFailed(VungleAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }

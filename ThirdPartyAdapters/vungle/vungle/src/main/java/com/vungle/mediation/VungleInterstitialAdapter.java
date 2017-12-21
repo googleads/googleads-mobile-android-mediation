@@ -99,7 +99,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                 mVungleListener.setWaitingInit(true);
                 mVungleManager.init(context);
             }
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             if (mediationInterstitialListener != null)
                 mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }

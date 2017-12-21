@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.3.0.0"
+    stringVersion = "5.3.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -42,7 +42,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.vungle:publisher-sdk-android:5.3.0@aar') {
+    compile('com.vungle:publisher-sdk-android:5.3.2') {
         transitive=true
     }
     compile 'com.google.android.gms:play-services-ads:11.4.2'

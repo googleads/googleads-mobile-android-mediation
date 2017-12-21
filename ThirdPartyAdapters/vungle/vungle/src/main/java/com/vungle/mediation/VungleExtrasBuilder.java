@@ -14,6 +14,8 @@ public final class VungleExtrasBuilder {
 
     static final String EXTRA_USER_ID = "userId";
     static final String EXTRA_SOUND_ENABLED = "soundEnabled";
+    static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
+    static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
     static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
     static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
 
@@ -40,6 +42,16 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
+    public VungleExtrasBuilder setFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
+        mBundle.putInt(EXTRA_FLEXVIEW_CLOSE_TIME, flexViewCloseTimeInSec);
+        return this;
+    }
+
+    public VungleExtrasBuilder setOrdinalViewCount(int ordinalViewCount) {
+        mBundle.putInt(EXTRA_ORDINAL_VIEW_COUNT, ordinalViewCount);
+        return this;
+    }
+
     public Bundle build() {
         return mBundle;
     }
@@ -49,6 +61,8 @@ public final class VungleExtrasBuilder {
         if (networkExtras != null) {
             adConfig.setIncentivizedUserId(networkExtras.getString(EXTRA_USER_ID));
             adConfig.setSoundEnabled(networkExtras.getBoolean(EXTRA_SOUND_ENABLED, true));
+            adConfig.setFlexViewCloseTimeInSec(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
+            adConfig.setOrdinalViewCount(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
         }
         return adConfig;
     }
