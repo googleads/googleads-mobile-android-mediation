@@ -29,17 +29,15 @@ abstract class VungleListener {
 
     }
 
-    void onAdStart(String placement){
-
+    void onAdStart(String placement) {
     }
 
-    void onAdFail(String placement){
-
+    void onAdFail(String placement) {
     }
 
-    void onAdAvailable(){}
+    void onAdAvailable() {
+    }
 
     void onInitialized(boolean isSuccess) {
-
     }
 }

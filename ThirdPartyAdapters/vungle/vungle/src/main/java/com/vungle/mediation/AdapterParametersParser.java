@@ -1,18 +1,11 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
 /**
- * Created by andrey on 7/27/17.
+ * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific parameters.
  */
-
 class AdapterParametersParser {
     private static final String TAG = VungleManager.class.getSimpleName();
 
@@ -29,7 +22,8 @@ class AdapterParametersParser {
         private String[] allPlacements;
     }
 
-    public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
+    public static Config parse(Bundle networkExtras, Bundle serverParameters)
+            throws IllegalArgumentException {
         String[] placements = null;
         if (networkExtras != null) {
             placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
