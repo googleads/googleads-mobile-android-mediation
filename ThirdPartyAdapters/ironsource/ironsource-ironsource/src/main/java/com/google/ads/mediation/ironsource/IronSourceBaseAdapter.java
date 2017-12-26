@@ -43,6 +43,11 @@ class IronSourceBaseAdapter {
      boolean mIsTestEnabled;
 
     /**
+     * This is used to indicate if we initiated IronSource's SDK inside the adapter
+     */
+    private boolean mInitSucceeded;
+
+    /**
      * UI thread handler used to send callbacks with AdMob interface
      */
     private Handler mUIHandler;
@@ -56,13 +61,16 @@ class IronSourceBaseAdapter {
         // SDK requires activity context to initialize, so check that the context
         // provided by the app is an activity context before initializing
 
+        if (!mInitSucceeded) {
+            mIsTestEnabled = serverParameters.getBoolean(KEY_TEST_MODE, false);
 
-        mIsTestEnabled = serverParameters.getBoolean(KEY_TEST_MODE, false);
+            String appKey = serverParameters.getString(KEY_APP_KEY);
 
-        String appKey = serverParameters.getString(KEY_APP_KEY);
+            IronSource.setMediationType(MEDIATION_NAME);
+            IronSource.init((Activity) context, appKey, adUnit);
 
-        IronSource.setMediationType(MEDIATION_NAME);
-        IronSource.init((Activity) context, appKey, adUnit);
+            mInitSucceeded = true;
+        }
     }
 
     synchronized void sendEventOnUIThread(Runnable runnable) {
