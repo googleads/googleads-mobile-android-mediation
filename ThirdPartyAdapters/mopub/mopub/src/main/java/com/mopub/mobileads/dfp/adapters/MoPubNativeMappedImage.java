@@ -18,14 +18,8 @@ public class MoPubNativeMappedImage extends NativeAd.Image {
 
     public MoPubNativeMappedImage(Drawable drawable, String imageUrl, double scale) {
         mDrawable = drawable;
+        mImageUri = Uri.parse(imageUrl);
         mScale = scale;
-
-        try {
-            mImageUri = Uri.parse(imageUrl);
-        } catch (Exception e) {
-            Log.d(MoPubAdapter.TAG, "Exception trying to parse image URL.");
-            return;
-        }
     }
     
     @Override
