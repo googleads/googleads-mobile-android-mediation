@@ -131,13 +131,18 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                             final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
 
                             if (options != null && options.shouldReturnUrlsForImageAssets()) {
-                                final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
-                                        new MoPubNativeAppInstallAdMapper(staticNativeAd,
-                                                null,
-                                                privacyIconPlacement,
-                                                mPrivacyIconSize);
-                                listener.onAdLoaded(MoPubAdapter.this,
-                                        moPubNativeAppInstallAdMapper);
+                                try {
+                                    final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
+                                            new MoPubNativeAppInstallAdMapper(staticNativeAd,
+                                                    null,
+                                                    privacyIconPlacement,
+                                                    mPrivacyIconSize);
+                                    listener.onAdLoaded(MoPubAdapter.this,
+                                            moPubNativeAppInstallAdMapper);
+
+                                } catch (Exception e) {
+                                    Log.d(TAG, "Exception constructing the native ad");
+                                }
                                 return;
                             }
 
@@ -161,14 +166,20 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 public void onDownloadSuccess(
                                         HashMap<String, Drawable> drawableMap) {
 
-                                    final MoPubNativeAppInstallAdMapper
-                                            moPubNativeAppInstallAdMapper =
-                                            new MoPubNativeAppInstallAdMapper(staticNativeAd,
-                                                    drawableMap,
-                                                    privacyIconPlacement,
-                                                    mPrivacyIconSize);
-                                    listener.onAdLoaded(MoPubAdapter.this,
-                                            moPubNativeAppInstallAdMapper);
+                                    try {
+                                        final MoPubNativeAppInstallAdMapper
+                                                moPubNativeAppInstallAdMapper =
+                                                new MoPubNativeAppInstallAdMapper(staticNativeAd,
+                                                        drawableMap,
+                                                        privacyIconPlacement,
+                                                        mPrivacyIconSize);
+                                        listener.onAdLoaded(MoPubAdapter.this,
+                                                moPubNativeAppInstallAdMapper);
+                                    } catch (Exception e) {
+                                        Log.d(TAG, "Exception trying to download native ad drawables");
+                                        listener.onAdFailedToLoad(MoPubAdapter.this,
+                                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                    }
                                 }
 
                                 @Override
