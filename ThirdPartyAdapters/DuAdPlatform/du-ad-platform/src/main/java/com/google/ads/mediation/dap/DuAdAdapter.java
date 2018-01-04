@@ -40,6 +40,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
     public static final String KEY_BANNER_STYLE = "BANNER_STYLE";
     public static final String KEY_BANNER_CLOSE_STYLE = "BANNER_CLOSE_STYLE";
     public static final String KEY_INTERSTITIAL_TYPE = "INTERSTITIAL_TYPE";
+    public static final String KEY_SOURCE = "source";
     private BannerAdView mBannerAdView;
     private InterstitialAd mInterstitial;
     private DuNativeAd nativeAd;

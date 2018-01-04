@@ -1,5 +1,8 @@
 apply plugin: 'com.android.library'
 
+def adapterVersionCode = 1000
+def adapterVersionName = "1.0.0"
+
 repositories {
     flatDir {
         dirs 'libs'
@@ -11,8 +14,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode adapterVersionCode
+        versionName adapterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -27,4 +30,9 @@ dependencies {
     provided "com.google.android.gms:play-services-ads:11.0.4"
     provided(name: 'DuappsAd-CW-v1.1.1.0-release', ext: 'aar')
     provided(name: 'DuVideoSdk-v1.0.1-release', ext: 'aar')
+}
+
+task sourcesJar (type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
 }

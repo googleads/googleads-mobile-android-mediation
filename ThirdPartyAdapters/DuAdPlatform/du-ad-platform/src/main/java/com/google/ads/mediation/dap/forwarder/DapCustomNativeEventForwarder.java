@@ -2,7 +2,6 @@ package com.google.ads.mediation.dap.forwarder;
 
 import android.util.Log;
 
-import com.dap.mediation.customevent.DuNativeAdMapper;
 import com.duapps.ad.AdError;
 import com.duapps.ad.DuAdListener;
 import com.duapps.ad.DuNativeAd;
