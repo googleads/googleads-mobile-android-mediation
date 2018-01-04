@@ -8,11 +8,10 @@ import com.google.android.gms.ads.formats.NativeAd;
 
 public class DuNativeMappedImage extends NativeAd.Image {
 
-
     private Drawable mDrawable;
     private Uri mImageUri;
 
-    public DuNativeMappedImage(Uri imageUri) {
+    DuNativeMappedImage(Uri imageUri) {
         mImageUri = imageUri;
     }
 
@@ -21,7 +20,7 @@ public class DuNativeMappedImage extends NativeAd.Image {
         return mDrawable;
     }
 
-    public void setDrawable(Drawable mDrawable) {
+    void setDrawable(Drawable mDrawable) {
         this.mDrawable = mDrawable;
     }
 

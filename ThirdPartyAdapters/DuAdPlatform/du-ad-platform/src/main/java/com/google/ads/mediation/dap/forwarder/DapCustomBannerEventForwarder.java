@@ -1,35 +1,29 @@
 package com.google.ads.mediation.dap.forwarder;
 
-import android.util.Log;
-
-import com.duapps.ad.banner.BannerAdView;
 import com.duapps.ad.banner.BannerListener;
-import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
+import com.google.ads.mediation.dap.DuAdAdapter;
+import com.google.ads.mediation.dap.DuBannerAdAdapter;
+import com.google.android.gms.ads.mediation.MediationBannerListener;
 
 
 public class DapCustomBannerEventForwarder implements BannerListener {
-    private static final String TAG = "DAP mediation - Banner";
-    private CustomEventBannerListener mBannerListener;
-    private BannerAdView mAdView;
+    private static final String TAG = DuBannerAdAdapter.class.getSimpleName();
+    private MediationBannerListener mBannerListener;
+    private DuBannerAdAdapter mAdapter;
 
-    public DapCustomBannerEventForwarder(CustomEventBannerListener listener, BannerAdView adView) {
+    public DapCustomBannerEventForwarder(DuBannerAdAdapter adAdapter, MediationBannerListener listener) {
         mBannerListener = listener;
-        mAdView = adView;
+        mAdapter = adAdapter;
     }
 
     @Override
     public void onAdLoaded() {
-        Log.d(TAG, " onAdLoaded , mAdView = " + mAdView);
-
-
-        mBannerListener.onAdLoaded(mAdView);
-
+        mBannerListener.onAdLoaded(mAdapter);
     }
 
     @Override
     public void onError(String s) {
-        Log.d(TAG, "onError - " + s);
-
-        mBannerListener.onAdFailedToLoad(Integer.valueOf(s));
+        DuAdAdapter.d(TAG, "onError - " + s);
+        mBannerListener.onAdFailedToLoad(mAdapter, Integer.valueOf(s));
     }
 }

@@ -1,15 +1,15 @@
 package com.google.ads.mediation.dap.forwarder;
 
-import android.util.Log;
-
 import com.duapps.ad.AdError;
 import com.duapps.ad.video.AdResult;
 import com.duapps.ad.video.DuVideoAdListener;
+import com.google.ads.mediation.dap.DuAdAdapter;
+import com.google.ads.mediation.dap.DuVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
 public class DapCustomRewardedVideoEventForwarder implements DuVideoAdListener {
-    private static final String TAG = "DapRewardedVideoCustom";
+    private static final String TAG = DuVideoAdAdapter.class.getSimpleName();
 
     private final MediationRewardedVideoAdListener mRewardedVideoListener;
     private final MediationRewardedVideoAdAdapter mMediationRewardedVideoAdAdapter;
@@ -26,17 +26,17 @@ public class DapCustomRewardedVideoEventForwarder implements DuVideoAdListener {
         if (mRewardedVideoListener != null) {
             if (adResult.isCallToActionClicked()) {
                 mRewardedVideoListener.onAdClicked(mMediationRewardedVideoAdAdapter);
-                Log.d(TAG, "Dap Rewarded Video clicked.");
+                DuAdAdapter.d(TAG, "Dap Rewarded Video clicked.");
             }
             mRewardedVideoListener.onAdClosed(mMediationRewardedVideoAdAdapter);
-            Log.d(TAG, "Dap Rewarded Video closed.");
+            DuAdAdapter.d(TAG, "Dap Rewarded Video closed.");
         }
     }
 
     @Override
     public void onAdStart() {
         if (mRewardedVideoListener != null) {
-            Log.d(TAG, "Dap Rewarded Video started playing.");
+            DuAdAdapter.d(TAG, "Dap Rewarded Video started playing.");
             mRewardedVideoListener.onAdOpened(mMediationRewardedVideoAdAdapter);
             mRewardedVideoListener.onVideoStarted(mMediationRewardedVideoAdAdapter);
         }
@@ -45,7 +45,7 @@ public class DapCustomRewardedVideoEventForwarder implements DuVideoAdListener {
     @Override
     public void onAdError(AdError adError) {
         if (mRewardedVideoListener != null) {
-            Log.d(TAG, "Loading/Playing Dap Rewarded Video encountered an error: " + adError.getErrorCode());
+            DuAdAdapter.d(TAG, "Loading/Playing Dap Rewarded Video encountered an error: " + adError.getErrorCode());
 
             mRewardedVideoListener.onAdFailedToLoad(mMediationRewardedVideoAdAdapter, adError.getErrorCode());
         }
@@ -54,7 +54,7 @@ public class DapCustomRewardedVideoEventForwarder implements DuVideoAdListener {
     @Override
     public void onAdPlayable() {
         if (mRewardedVideoListener != null) {
-            Log.d(TAG, "Dap Rewarded Video loaded successfully.");
+            DuAdAdapter.d(TAG, "Dap Rewarded Video loaded successfully.");
             mRewardedVideoListener.onAdLoaded(mMediationRewardedVideoAdAdapter);
         }
     }

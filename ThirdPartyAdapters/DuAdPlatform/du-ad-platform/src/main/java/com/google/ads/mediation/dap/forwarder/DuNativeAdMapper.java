@@ -12,7 +12,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.duapps.ad.DuNativeAd;
-import com.google.ads.mediation.dap.DuAdAdapter;
+import com.google.ads.mediation.dap.DuNativeAdAdapter;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DuNativeAdMapper extends NativeAppInstallAdMapper {
-    private static final String TAG = "DuNativeAdMapper";
+    private static final String TAG = DuNativeAdAdapter.class.getSimpleName();
     private final DuNativeAd mNativeAd;
     private NativeAdMapperListener mNativeAdMapperListener;
     private static final int DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
@@ -53,7 +53,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
         setImages(imageList);
 
         Bundle extras = new Bundle();
-        extras.putString(DuAdAdapter.KEY_SOURCE, mNativeAd.getSource());
+        extras.putString(DuNativeAdAdapter.KEY_SOURCE, mNativeAd.getSource());
         setExtras(extras);
 
         setOverrideClickHandling(false);
