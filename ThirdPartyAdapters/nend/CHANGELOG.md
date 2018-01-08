@@ -2,6 +2,5 @@
 
 ## 4.0.2.0
 
-- First release as googleads-mobile-android-mediation.
-- Verified compatibility with nendSDK v4.0.2.
-- Adds support for rewarded video ads.
+- First release in Google Mobile Ads Mediation open source project.
+- Added support for banner, interstitial, and rewarded video ads.

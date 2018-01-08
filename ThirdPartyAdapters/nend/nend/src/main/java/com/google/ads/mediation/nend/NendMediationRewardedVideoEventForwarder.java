@@ -2,6 +2,7 @@ package com.google.ads.mediation.nend;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,27 +15,41 @@ import net.nend.android.NendAdRewardedListener;
 import net.nend.android.NendAdRewardedVideo;
 import net.nend.android.NendAdVideo;
 
+import java.lang.ref.WeakReference;
+
+/*
+ * The {@link NendMediationRewardedVideoEventForwarder} is used to forward reward-based video ad
+ * events from Nend SDK to Google Mobile Ads SDK.
+ */
 class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener {
 
+    private static final String TAG = NendAdapter.class.getSimpleName();
     private NendAdRewardedVideo mNendAdRewardedVideo;
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
     private NendRewardedAdapter mNendAdapter;
     private boolean mIsInitialized;
-    private Activity mActivity;
+    /*
+     * An Android {@link Activity} weak reference used to show ads.
+     */
+    private WeakReference<Activity> mActivityWeakReference;
 
-    NendMediationRewardedVideoEventForwarder(
-            Activity activity, NendRewardedAdapter nendAdapter, Bundle serverParameters,
-            MediationRewardedVideoAdListener listener) {
+    NendMediationRewardedVideoEventForwarder(Activity activity,
+                                             NendRewardedAdapter nendAdapter,
+                                             Bundle serverParameters,
+                                             MediationRewardedVideoAdListener listener) {
         this.mMediationRewardedVideoAdListener = listener;
         this.mNendAdapter = nendAdapter;
-        this.mActivity = activity;
+        this.mActivityWeakReference = new WeakReference<>(activity);
 
         String apiKey = serverParameters.getString("apiKey");
         int spotId = Integer.parseInt(serverParameters.getString("spotId"));
 
         if (!isValidSpotIdAndKey(spotId, apiKey)) {
-            Log.e(NendRewardedAdapter.TAG, "Failed to initialize! It may spotId or apiKey is invalid.");
-            mMediationRewardedVideoAdListener.onInitializationFailed(nendAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            Log.e(NendRewardedAdapter.TAG, "Failed to initialize! It may spotId or apiKey is "
+                    + "invalid.");
+            mMediationRewardedVideoAdListener
+                    .onInitializationFailed(nendAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+
             return;
         }
         mNendAdRewardedVideo = new NendAdRewardedVideo(activity, spotId, apiKey);
@@ -55,15 +70,26 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
 
     void showAd() {
         if (mNendAdRewardedVideo.isLoaded()) {
-            mNendAdRewardedVideo.showAd(mActivity);
+            Activity activity = mActivityWeakReference.get();
+            if (activity == null) {
+                // Activity is null, logging a warning and sending ad closed callback.
+                Log.w(TAG, "An activity context is required to show Nend Ads, please call "
+                        + "RewardedVideoAd#resume(Context) in your Activity's onResume.");
+                mMediationRewardedVideoAdListener.onAdClosed(mNendAdapter);
+                return;
+            }
+
+            mNendAdRewardedVideo.showAd(activity);
         } else {
-            Log.w(NendRewardedAdapter.TAG, "Failed to show ad. Loading of video ad is not completed yet.");
+            Log.w(NendRewardedAdapter.TAG, "Failed to show ad. Loading of video ad is not "
+                    + "completed yet.");
         }
     }
 
     void loadAd(Bundle mediationExtras) {
         if (mediationExtras != null) {
-            mNendAdRewardedVideo.setUserId(mediationExtras.getString(NendRewardedAdapter.KEY_USER_ID, ""));
+            mNendAdRewardedVideo
+                    .setUserId(mediationExtras.getString(NendRewardedAdapter.KEY_USER_ID, ""));
         }
 
         mNendAdRewardedVideo.loadAd();
@@ -71,6 +97,8 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
 
     void releaseAd() {
         mNendAdRewardedVideo.releaseAd();
+
+        mMediationRewardedVideoAdListener = null;
     }
 
     boolean isInitialized() {
@@ -133,4 +161,13 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
         mMediationRewardedVideoAdListener.onAdLeftApplication(mNendAdapter);
     }
 
+    public void contextChanged(Context context) {
+        if (!(context instanceof Activity)) {
+            Log.w(TAG, "Context is not an Activity. Nend Ads requires an Activity context to show"
+                    + "ads.");
+            return;
+        }
+
+        mActivityWeakReference = new WeakReference<>((Activity) context);
+    }
 }
