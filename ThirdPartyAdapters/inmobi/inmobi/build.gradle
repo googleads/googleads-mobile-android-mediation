@@ -59,7 +59,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
