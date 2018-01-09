@@ -43,7 +43,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onDestroy() {
-        DuAdUtils.d(TAG, "DuNativeAdAdapter onDestroy ");
+        DuAd.d(TAG, "DuNativeAdAdapter onDestroy ");
         if (nativeAd != null) {
             nativeAd.destory();
             nativeAd = null;
@@ -52,12 +52,12 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onPause() {
-        DuAdUtils.d(TAG, "DuNativeAdAdapter onPause");
+        DuAd.d(TAG, "DuNativeAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAdUtils.d(TAG, "DuNativeAdAdapter onResume");
+        DuAd.d(TAG, "DuNativeAdAdapter onResume");
     }
 
 
@@ -65,7 +65,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAdUtils.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAd.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }

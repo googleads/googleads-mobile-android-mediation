@@ -7,7 +7,7 @@ import android.util.Log;
  * Created by bushaopeng on 18/1/4.
  */
 @Keep
-public class DuAdUtils {
+public class DuAd {
     /**
      * This key should be configured at AdMob server side or AdMob front-end.
      */

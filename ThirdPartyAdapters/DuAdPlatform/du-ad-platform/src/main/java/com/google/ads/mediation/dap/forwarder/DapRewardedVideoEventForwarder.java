@@ -3,7 +3,7 @@ package com.google.ads.mediation.dap.forwarder;
 import com.duapps.ad.AdError;
 import com.duapps.ad.video.AdResult;
 import com.duapps.ad.video.DuVideoAdListener;
-import com.google.ads.mediation.dap.DuAdUtils;
+import com.google.ads.mediation.dap.DuAd;
 import com.google.ads.mediation.dap.DuVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
@@ -26,17 +26,17 @@ public class DapRewardedVideoEventForwarder implements DuVideoAdListener {
         if (mRewardedVideoListener != null) {
             if (adResult.isCallToActionClicked()) {
                 mRewardedVideoListener.onAdClicked(mMediationRewardedVideoAdAdapter);
-                DuAdUtils.d(TAG, "Dap Rewarded Video clicked.");
+                DuAd.d(TAG, "Dap Rewarded Video clicked.");
             }
             mRewardedVideoListener.onAdClosed(mMediationRewardedVideoAdAdapter);
-            DuAdUtils.d(TAG, "Dap Rewarded Video closed.");
+            DuAd.d(TAG, "Dap Rewarded Video closed.");
         }
     }
 
     @Override
     public void onAdStart() {
         if (mRewardedVideoListener != null) {
-            DuAdUtils.d(TAG, "Dap Rewarded Video started playing.");
+            DuAd.d(TAG, "Dap Rewarded Video started playing.");
             mRewardedVideoListener.onAdOpened(mMediationRewardedVideoAdAdapter);
             mRewardedVideoListener.onVideoStarted(mMediationRewardedVideoAdAdapter);
         }
@@ -45,7 +45,7 @@ public class DapRewardedVideoEventForwarder implements DuVideoAdListener {
     @Override
     public void onAdError(AdError adError) {
         if (mRewardedVideoListener != null) {
-            DuAdUtils.d(TAG, "Loading/Playing Dap Rewarded Video encountered an error: " + adError.getErrorCode());
+            DuAd.d(TAG, "Loading/Playing Dap Rewarded Video encountered an error: " + adError.getErrorCode());
 
             mRewardedVideoListener.onAdFailedToLoad(mMediationRewardedVideoAdAdapter, adError.getErrorCode());
         }
@@ -54,7 +54,7 @@ public class DapRewardedVideoEventForwarder implements DuVideoAdListener {
     @Override
     public void onAdPlayable() {
         if (mRewardedVideoListener != null) {
-            DuAdUtils.d(TAG, "Dap Rewarded Video loaded successfully.");
+            DuAd.d(TAG, "Dap Rewarded Video loaded successfully.");
             mRewardedVideoListener.onAdLoaded(mMediationRewardedVideoAdAdapter);
         }
     }

@@ -50,7 +50,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdUtils.d(TAG, "requestBannerAd" + ",pid = " + pid);
+        DuAd.d(TAG, "requestBannerAd" + ",pid = " + pid);
         mBannerAdView = new BannerAdView(context, pid, 5,
                 new DapCustomBannerEventForwarder(DuAdAdapter.this, listener));
         BannerStyle style = (BannerStyle) mediationExtras.getSerializable(KEY_BANNER_STYLE);
@@ -109,7 +109,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdUtils.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
+        DuAd.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
         InterstitialAdType type = (InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
         mInterstitial = new InterstitialAd(context, pid, getType(type));
         mInterstitial.setInterstitialListener(new DapCustomInterstitialEventForwarder(DuAdAdapter.this, listener));
@@ -129,7 +129,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
     @Override
     public void showInterstitial() {
         if (mInterstitial != null) {
-            DuAdUtils.d(TAG, "showInterstitial ");
+            DuAd.d(TAG, "showInterstitial ");
             mInterstitial.show();
         }
     }
@@ -137,7 +137,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public void onDestroy() {
-        DuAdUtils.d(TAG, "onDestroy ");
+        DuAd.d(TAG, "onDestroy ");
         if (mBannerAdView != null) {
             mBannerAdView.onDestory();
             mBannerAdView = null;
@@ -150,12 +150,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public void onPause() {
-        DuAdUtils.d(TAG, "DuAdAdapter onPause");
+        DuAd.d(TAG, "DuAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAdUtils.d(TAG, "DuAdAdapter onResume");
+        DuAd.d(TAG, "DuAdAdapter onResume");
     }
 
 
@@ -163,7 +163,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAdUtils.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAd.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }
