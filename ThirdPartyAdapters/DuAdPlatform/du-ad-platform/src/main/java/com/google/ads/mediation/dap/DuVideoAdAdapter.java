@@ -7,7 +7,7 @@ import android.text.TextUtils;
 
 import com.duapps.ad.video.DuVideoAd;
 import com.duapps.ad.video.DuVideoAdsManager;
-import com.google.ads.mediation.dap.forwarder.DapCustomRewardedVideoEventForwarder;
+import com.google.ads.mediation.dap.forwarder.DapRewardedVideoEventForwarder;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
@@ -47,11 +47,11 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
         mRewardedVideoPid = pid;
         mRewardedVideoCtx = context;
         mDuRewardedVideoAd = DuVideoAdsManager.getVideoAd(mRewardedVideoCtx, mRewardedVideoPid);
-        mDuRewardedVideoAd.setListener(new DapCustomRewardedVideoEventForwarder(this, mRewardedVideoListener));
+        mDuRewardedVideoAd.setListener(new DapRewardedVideoEventForwarder(this, mRewardedVideoListener));
         mIsInitialized = true;
 
         mRewardedVideoListener.onInitializationSucceeded(this);
-        DuAdAdapter.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid);
+        DuAdUtils.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid);
     }
 
     @Override
@@ -65,23 +65,23 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
             }
             return;
         }
-        DuAdAdapter.d(TAG, "Dap Rewarded Video load....mRewardedVideoPid = " + mRewardedVideoPid);
+        DuAdUtils.d(TAG, "Dap Rewarded Video load....mRewardedVideoPid = " + mRewardedVideoPid);
         mDuRewardedVideoAd.load();
     }
 
     @Override
     public void showVideo() {
         if (mDuRewardedVideoAd != null && mDuRewardedVideoAd.isAdPlayable()) {
-            DuAdAdapter.d(TAG, "Dap Rewarded Video is available. Showing...");
+            DuAdUtils.d(TAG, "Dap Rewarded Video is available. Showing...");
             mDuRewardedVideoAd.playAd(mRewardedVideoCtx);
         } else {
-            DuAdAdapter.d(TAG, "Dap Rewarded Video is not available. Try re-requesting.");
+            DuAdUtils.d(TAG, "Dap Rewarded Video is not available. Try re-requesting.");
         }
     }
 
     @Override
     public boolean isInitialized() {
-        DuAdAdapter.d(TAG, "isInit = " + mIsInitialized);
+        DuAdUtils.d(TAG, "isInit = " + mIsInitialized);
         return mIsInitialized;
     }
 
@@ -89,7 +89,7 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onDestroy() {
-        DuAdAdapter.d(TAG, "onDestroy ");
+        DuAdUtils.d(TAG, "onDestroy ");
         if (mDuRewardedVideoAd != null) {
             mDuRewardedVideoAd.clearListener();
             mDuRewardedVideoAd = null;
@@ -98,12 +98,12 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onPause() {
-        DuAdAdapter.d(TAG, "DuAdAdapter onPause");
+        DuAdUtils.d(TAG, "DuAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAdAdapter.d(TAG, "DuAdAdapter onResume");
+        DuAdUtils.d(TAG, "DuAdAdapter onResume");
     }
 
 
@@ -111,7 +111,7 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAdAdapter.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAdUtils.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }

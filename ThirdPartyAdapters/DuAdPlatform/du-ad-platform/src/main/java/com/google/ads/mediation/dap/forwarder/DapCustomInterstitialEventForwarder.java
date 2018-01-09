@@ -2,7 +2,7 @@ package com.google.ads.mediation.dap.forwarder;
 
 
 import com.duapps.ad.InterstitialListener;
-import com.google.ads.mediation.dap.DuAdAdapter;
+import com.google.ads.mediation.dap.DuAdUtils;
 import com.google.ads.mediation.dap.DuInterstitialAdAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -21,7 +21,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdFail(int i) {
         if (mInterstitialListener != null) {
-            DuAdAdapter.d(TAG, "Interstitial onAdFail -  " + i);
+            DuAdUtils.d(TAG, "Interstitial onAdFail -  " + i);
             mInterstitialListener.onAdFailedToLoad(mAdapter, i);
         }
     }
@@ -29,7 +29,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdReceive() {
         if (mInterstitialListener != null) {
-            DuAdAdapter.d(TAG, "Interstitial onAdReceive ");
+            DuAdUtils.d(TAG, "Interstitial onAdReceive ");
             mInterstitialListener.onAdLoaded(mAdapter);
         }
     }
@@ -37,7 +37,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdDismissed() {
         if (mInterstitialListener != null) {
-            DuAdAdapter.d(TAG, "Interstitial onAdDismissed ");
+            DuAdUtils.d(TAG, "Interstitial onAdDismissed ");
             mInterstitialListener.onAdClosed(mAdapter);
         }
     }
@@ -45,7 +45,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdPresent() {
         if (mInterstitialListener != null) {
-            DuAdAdapter.d(TAG, "Interstitial onAdPresent ");
+            DuAdUtils.d(TAG, "Interstitial onAdPresent ");
             mInterstitialListener.onAdOpened(mAdapter);
         }
     }
@@ -53,7 +53,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdClicked() {
         if (mInterstitialListener != null) {
-            DuAdAdapter.d(TAG, "Interstitial onAdClicked ");
+            DuAdUtils.d(TAG, "Interstitial onAdClicked ");
             mInterstitialListener.onAdClicked(mAdapter);
         }
 
