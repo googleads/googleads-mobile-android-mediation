@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import com.duapps.ad.InterstitialAd;
@@ -26,7 +27,21 @@ import java.io.Serializable;
 @Keep
 public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
     private static final String TAG = DuAdAdapter.class.getSimpleName();
+    /**
+     * This key should be configured at AdMob server side or AdMob front-end.
+     */
+    public static final String KEY_DAP_PID = "placementId";
+    private static boolean DEBUG = false;
 
+    public static void setDebug(boolean debug) {
+        DEBUG = debug;
+    }
+
+    public static void d(String tag, String msg) {
+        if (DEBUG) {
+            Log.d(tag, msg);
+        }
+    }
     public static final String KEY_BANNER_STYLE = "BANNER_STYLE";
     public static final String KEY_BANNER_CLOSE_STYLE = "BANNER_CLOSE_STYLE";
     private BannerAdView mBannerAdView;
@@ -50,7 +65,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAd.d(TAG, "requestBannerAd" + ",pid = " + pid);
+        DuAdAdapter.d(TAG, "requestBannerAd" + ",pid = " + pid);
         mBannerAdView = new BannerAdView(context, pid, 5,
                 new DapCustomBannerEventForwarder(DuAdAdapter.this, listener));
         BannerStyle style = (BannerStyle) mediationExtras.getSerializable(KEY_BANNER_STYLE);
@@ -109,7 +124,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAd.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
+        DuAdAdapter.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
         InterstitialAdType type = (InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
         mInterstitial = new InterstitialAd(context, pid, getType(type));
         mInterstitial.setInterstitialListener(new DapCustomInterstitialEventForwarder(DuAdAdapter.this, listener));
@@ -129,7 +144,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
     @Override
     public void showInterstitial() {
         if (mInterstitial != null) {
-            DuAd.d(TAG, "showInterstitial ");
+            DuAdAdapter.d(TAG, "showInterstitial ");
             mInterstitial.show();
         }
     }
@@ -137,7 +152,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public void onDestroy() {
-        DuAd.d(TAG, "onDestroy ");
+        DuAdAdapter.d(TAG, "onDestroy ");
         if (mBannerAdView != null) {
             mBannerAdView.onDestory();
             mBannerAdView = null;
@@ -150,12 +165,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public void onPause() {
-        DuAd.d(TAG, "DuAdAdapter onPause");
+        DuAdAdapter.d(TAG, "DuAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAd.d(TAG, "DuAdAdapter onResume");
+        DuAdAdapter.d(TAG, "DuAdAdapter onResume");
     }
 
 
@@ -163,7 +178,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAd.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAdAdapter.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }

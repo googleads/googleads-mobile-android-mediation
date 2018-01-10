@@ -17,8 +17,8 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * Created by bushaopeng on 18/1/3.
  */
 @Keep
-public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
-    private static final String TAG = DuVideoAdAdapter.class.getSimpleName();
+public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
+    private static final String TAG = DuRewardedAdAdapter.class.getSimpleName();
     private int mRewardedVideoPid;
     private Context mRewardedVideoCtx;
     private DuVideoAd mDuRewardedVideoAd;
@@ -51,7 +51,7 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
         mIsInitialized = true;
 
         mRewardedVideoListener.onInitializationSucceeded(this);
-        DuAd.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid);
+        DuAdAdapter.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid);
     }
 
     @Override
@@ -65,23 +65,23 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
             }
             return;
         }
-        DuAd.d(TAG, "Dap Rewarded Video load....mRewardedVideoPid = " + mRewardedVideoPid);
+        DuAdAdapter.d(TAG, "Dap Rewarded Video load....mRewardedVideoPid = " + mRewardedVideoPid);
         mDuRewardedVideoAd.load();
     }
 
     @Override
     public void showVideo() {
         if (mDuRewardedVideoAd != null && mDuRewardedVideoAd.isAdPlayable()) {
-            DuAd.d(TAG, "Dap Rewarded Video is available. Showing...");
+            DuAdAdapter.d(TAG, "Dap Rewarded Video is available. Showing...");
             mDuRewardedVideoAd.playAd(mRewardedVideoCtx);
         } else {
-            DuAd.d(TAG, "Dap Rewarded Video is not available. Try re-requesting.");
+            DuAdAdapter.d(TAG, "Dap Rewarded Video is not available. Try re-requesting.");
         }
     }
 
     @Override
     public boolean isInitialized() {
-        DuAd.d(TAG, "isInit = " + mIsInitialized);
+        DuAdAdapter.d(TAG, "isInit = " + mIsInitialized);
         return mIsInitialized;
     }
 
@@ -89,7 +89,7 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onDestroy() {
-        DuAd.d(TAG, "onDestroy ");
+        DuAdAdapter.d(TAG, "onDestroy ");
         if (mDuRewardedVideoAd != null) {
             mDuRewardedVideoAd.clearListener();
             mDuRewardedVideoAd = null;
@@ -98,12 +98,12 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onPause() {
-        DuAd.d(TAG, "DuAdAdapter onPause");
+        DuAdAdapter.d(TAG, "DuAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAd.d(TAG, "DuAdAdapter onResume");
+        DuAdAdapter.d(TAG, "DuAdAdapter onResume");
     }
 
 
@@ -111,7 +111,7 @@ public class DuVideoAdAdapter implements MediationRewardedVideoAdAdapter {
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAd.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAdAdapter.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }
