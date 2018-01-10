@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.2.1.1"
+    stringVersion = "3.3.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 3211
+        versionCode 3300
         versionName stringVersion
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
-    provided 'com.adcolony:sdk:3.2.1'
-    provided 'com.google.android.gms:play-services-ads:11.2.0'
+    implementation 'com.adcolony:sdk:3.3.0'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
 }
 
 /**
@@ -62,7 +62,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
@@ -71,7 +73,7 @@ publishing {
 }
 
 /**
- * Bintray closure needed to run the buntrayUpload task.
+ * Bintray closure needed to run the bintrayUpload task.
  *
  * Usage:
  * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY

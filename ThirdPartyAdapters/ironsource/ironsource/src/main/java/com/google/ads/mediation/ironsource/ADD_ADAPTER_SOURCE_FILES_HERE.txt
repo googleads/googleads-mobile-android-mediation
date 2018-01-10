@@ -1,0 +1,1 @@
+# TODO: Remove this file once the adapter source files have been added.
