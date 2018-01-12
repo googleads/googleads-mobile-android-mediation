@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.duapps.ad.video.DuVideoAd;
 import com.duapps.ad.video.DuVideoAdsManager;
@@ -12,6 +13,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
+
+import static com.google.ads.mediation.dap.DuAdAdapter.checkClassExist;
 
 /**
  * Created by bushaopeng on 18/1/3.
@@ -38,6 +41,15 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        if (!checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
+            String msg = "No Du Video Ad SDK can be found, please make sure you have integrated latest version of Du " +
+                    "Video Ad SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            listener.onInitializationFailed(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            return;
+        }
+
         int pid = getValidPid(serverParameters);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -58,6 +70,13 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
     public void loadAd(MediationAdRequest mediationAdRequest,
                        Bundle serverParameters,
                        Bundle mediationExtras) {
+        if (!checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
+            String msg = "No Du Video Ad SDK is found, please make sure you have integrated latest version of Du "
+                    + "Video Ad SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            return;
+        }
         if (mDuRewardedVideoAd == null) {
             mIsInitialized = false;
             if (mRewardedVideoListener != null) {
@@ -71,6 +90,13 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void showVideo() {
+        if (!checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
+            String msg = "No Du Video Ad SDK is found, please make sure you have integrated latest version of Du "
+                    + "Video Ad SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            return;
+        }
         if (mDuRewardedVideoAd != null && mDuRewardedVideoAd.isAdPlayable()) {
             DuAdAdapter.d(TAG, "Dap Rewarded Video is available. Showing...");
             mDuRewardedVideoAd.playAd(mRewardedVideoCtx);

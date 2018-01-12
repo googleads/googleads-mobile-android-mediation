@@ -42,6 +42,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             Log.d(tag, msg);
         }
     }
+
     public static final String KEY_BANNER_STYLE = "BANNER_STYLE";
     public static final String KEY_BANNER_CLOSE_STYLE = "BANNER_CLOSE_STYLE";
     private BannerAdView mBannerAdView;
@@ -58,6 +59,14 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             Bundle mediationExtras) {
         if (context == null) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+        if (!checkClassExist("com.duapps.ad.banner.BannerAdView")) {
+            String msg = "Your version of Du Ad SDK is not right, there is no support for Banner Ad in current SDK, "
+                    + "Please make sure that you are using CW latest version of SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
             return;
         }
         int pid = getValidPid(serverParameters);
@@ -78,6 +87,13 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public View getBannerView() {
+        if (!checkClassExist("com.duapps.ad.banner.BannerAdView")) {
+            String msg = "Your version of Du Ad SDK is not right, there is no support for Banner Ad in current SDK, "
+                    + "Please make sure that you are using CW latest version of SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            return null;
+        }
         return mBannerAdView;
     }
 
@@ -119,6 +135,14 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        if (!checkClassExist("com.duapps.ad.InterstitialAd")) {
+            String msg = "Your version of Du Ad SDK is not right, there is no support for Interstitial Ad in current "
+                    + "SDK, Please make sure that you are using CW latest version of SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            return;
+        }
         int pid = getValidPid(serverParameters);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -143,6 +167,13 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
 
     @Override
     public void showInterstitial() {
+        if (!checkClassExist("com.duapps.ad.InterstitialAd")) {
+            String msg = "Your version of Du Ad SDK is not right, there is no support for Interstitial Ad in current "
+                    + "SDK, Please make sure that you are using CW latest version of SDK";
+            Log.e(TAG, msg);
+            Log.e(TAG, msg);
+            return;
+        }
         if (mInterstitial != null) {
             DuAdAdapter.d(TAG, "showInterstitial ");
             mInterstitial.show();
@@ -241,4 +272,13 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         SCREEN;
     }
 
+
+    public static boolean checkClassExist(String className) {
+        try {
+            Class.forName(className);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }
