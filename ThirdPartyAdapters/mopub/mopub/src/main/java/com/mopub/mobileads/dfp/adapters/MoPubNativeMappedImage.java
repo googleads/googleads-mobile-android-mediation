@@ -21,7 +21,7 @@ public class MoPubNativeMappedImage extends NativeAd.Image {
         mImageUri = Uri.parse(imageUrl);
         mScale = scale;
     }
-
+    
     @Override
     public Drawable getDrawable() {
         return mDrawable;

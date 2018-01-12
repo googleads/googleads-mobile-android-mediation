@@ -1,5 +1,8 @@
 package com.google.ads.mediation.inmobi;
 
+/*
+ * This interface contains {@code String} constants used to set values in the InMobi extras bundle.
+ */
 public interface InMobiNetworkValues {
 
     String LOGLEVEL_NONE="LOGLEVEL_NONE";
@@ -12,6 +15,7 @@ public interface InMobiNetworkValues {
     String ETHNICITY_HISPANIC="ETHNICITY_HISPANIC";
     String ETHNICITY_AFRICAN_AMERICAN="ETHNICITY_AFRICAN_AMERICAN";
     String ETHNICITY_CAUCASIAN="ETHNICITY_CAUCASIAN";
+    String ETHNICITY_OTHER="ETHNICITY_OTHER";
     String ABOVE_65="ABOVE_65";
     String BELOW_18="BELOW_18";
     String BETWEEN_18_AND_24="BETWEEN_18_AND_24";

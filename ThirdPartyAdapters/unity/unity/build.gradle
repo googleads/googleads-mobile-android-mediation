@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,18 +9,18 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "2.1.1.0"
+    stringVersion = "2.1.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 1
+        versionCode 20120
         versionName stringVersion
     }
     buildTypes {
@@ -32,8 +32,8 @@ android {
 }
 
 dependencies {
-    compile project(':unity-ads-aar')
-    compile 'com.google.android.gms:play-services-ads:11.2.0'
+    implementation 'com.unity3d.ads:unity-ads:2.1.2'
+    implementation 'com.google.android.gms:play-services-ads:11.6.2'
 }
 
 /**
@@ -55,7 +55,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
