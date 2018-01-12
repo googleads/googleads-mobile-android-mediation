@@ -123,7 +123,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
                     @Override
                     public void onNativeLoad(NativeAd nativeAd) {
-                        // Setting a native event listener for MoPub's impression & click events
+                        // Setting a native event listener for MoPub's impression & click events.
                         nativeAd.setMoPubNativeEventListener(mMoPubNativeEventListener);
 
                         BaseNativeAd adData = nativeAd.getBaseNativeAd();
@@ -132,7 +132,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
                             if (options != null && options.shouldReturnUrlsForImageAssets()) {
                                 try {
-                                    final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
+                                    final MoPubNativeAppInstallAdMapper
+                                            moPubNativeAppInstallAdMapper =
                                             new MoPubNativeAppInstallAdMapper(staticNativeAd,
                                                     null,
                                                     privacyIconPlacement,
@@ -176,7 +177,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                         listener.onAdLoaded(MoPubAdapter.this,
                                                 moPubNativeAppInstallAdMapper);
                                     } catch (Exception e) {
-                                        Log.d(TAG, "Exception trying to download native ad drawables");
+                                        Log.d(TAG, "Exception trying to download native ad "
+                                                + "drawables");
                                         listener.onAdFailedToLoad(MoPubAdapter.this,
                                                 AdRequest.ERROR_CODE_INTERNAL_ERROR);
                                     }
@@ -248,7 +250,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         moPubNative.makeRequest(requestParameters);
 
-        // Forwarding MoPub's impression and click events to AdMob
+        // Forwarding MoPub's impression and click events to AdMob.
         mMoPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
 
             @Override
