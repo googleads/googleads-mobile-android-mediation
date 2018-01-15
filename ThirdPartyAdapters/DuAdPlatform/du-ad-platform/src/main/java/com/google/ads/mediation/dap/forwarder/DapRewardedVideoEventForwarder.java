@@ -28,6 +28,9 @@ public class DapRewardedVideoEventForwarder implements DuVideoAdListener {
                 mRewardedVideoListener.onAdClicked(mMediationRewardedVideoAdAdapter);
                 DuAdAdapter.d(TAG, "Dap Rewarded Video clicked.");
             }
+            if (adResult.isSuccessfulView()) {
+                mRewardedVideoListener.onRewarded(mMediationRewardedVideoAdAdapter, null);
+            }
             mRewardedVideoListener.onAdClosed(mMediationRewardedVideoAdAdapter);
             DuAdAdapter.d(TAG, "Dap Rewarded Video closed.");
         }
