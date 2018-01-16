@@ -1,6 +1,5 @@
 package com.vungle.mediation;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,8 +25,7 @@ class VungleManager implements VungleAdEventListener {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-
-    private static final String VERSION = "5.3.0";
+    private static final String VERSION = "5.3.2";
 
     private static VungleManager sInstance;
     private VunglePub mVunglePub;
@@ -65,18 +63,21 @@ class VungleManager implements VungleAdEventListener {
 
     String findPlacement(Bundle networkExtras, Bundle serverParameters) {
         String placement = null;
-        if (networkExtras != null && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
+        if (networkExtras != null
+                && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
             placement = networkExtras.getString(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT);
         }
         if (serverParameters != null && serverParameters.containsKey(PLAYING_PLACEMENT)) {
             if (placement != null) {
-                Log.i(TAG, "'placementID' had a value in both serverParameters and networkExtras. Used one from serverParameters");
+                Log.i(TAG, "'placementID' had a value in both serverParameters and networkExtras. "
+                        + "Used one from serverParameters");
             }
             placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
         if (placement == null) {
             placement = mPlacements[0];
-            Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements': %s", placement));
+            Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements'"
+                    + ": %s", placement));
         }
         return placement;
     }
@@ -174,7 +175,8 @@ class VungleManager implements VungleAdEventListener {
     private void notifyAdIsReady(String placement) {
         for (VungleListener cb : mListeners.values()) {
             try {
-                if (cb.getWaitingForPlacement() != null && cb.getWaitingForPlacement().equals(placement)) {
+                if (cb.getWaitingForPlacement() != null
+                        && cb.getWaitingForPlacement().equals(placement)) {
                     cb.onAdAvailable();
                     cb.waitForAd(null);
                 }

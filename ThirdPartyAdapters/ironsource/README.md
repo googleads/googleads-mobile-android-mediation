@@ -1,8 +1,6 @@
-# IronSource Mediation Adapter for Google Mobile Ads SDK for Android
+# ironSource Adapter for Google Mobile Ads SDK for Android
 
 This is an adapter to be used in conjunction with the Google Mobile Ads SDK.
-For requirements, instructions, and other info, see the
-[IronSource Adapter Integration Guide](https://developers.ironsrc.com/ironsource-mobile/android/admob-mediation-guide/#step-1).
-
-
-
+See the
+[quick start guide](https://firebase.google.com/docs/admob/android/quick-start)
+for the latest documentation and code samples for the Google Mobile Ads SDK.

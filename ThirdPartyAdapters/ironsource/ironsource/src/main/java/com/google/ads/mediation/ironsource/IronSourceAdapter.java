@@ -15,7 +15,7 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.InterstitialListener;
 
-public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, InterstitialListener  {
+public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, InterstitialListener {
 
     /**
      * Mediation interstitial ad listener used to forward interstitial events from

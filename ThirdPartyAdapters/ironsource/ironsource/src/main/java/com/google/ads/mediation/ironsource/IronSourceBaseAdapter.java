@@ -20,7 +20,7 @@ class IronSourceBaseAdapter {
     /**
      * Adapter class name for logging
      */
-     static final String TAG = "IronSource";
+    static final String TAG = "IronSource";
 
     /**
      * Key to obtain App Key, required for initializing IronSource SDK.
@@ -35,12 +35,12 @@ class IronSourceBaseAdapter {
     /**
      * Key to obtain isTestEnabled flag, used to control console logs display
      */
-     static final String KEY_TEST_MODE = "isTestEnabled";
+    static final String KEY_TEST_MODE = "isTestEnabled";
 
     /**
      * This is used for show logs inside the adapter
      */
-     boolean mIsTestEnabled;
+    boolean mIsTestEnabled;
 
     /**
      * This is used to indicate if we initiated IronSource's SDK inside the adapter
