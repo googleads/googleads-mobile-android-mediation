@@ -247,6 +247,8 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter implements 
                 public void run() {
                     onLog("onAdClicked");
                     mMediationRewardedVideoAdListener.onAdClicked(IronSourceRewardedAdapter.this);
+                    onLog("onAdLeftApplication");
+                    mMediationRewardedVideoAdListener.onAdLeftApplication(IronSourceRewardedAdapter.this);
                 }
             });
         }
