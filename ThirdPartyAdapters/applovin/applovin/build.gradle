@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.6.2.0"
+    stringVersion = "7.7.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 70620
+        versionCode 70700
         versionName stringVersion
 
     }
@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.applovin:applovin-sdk:7.6.2'
+    implementation 'com.applovin:applovin-sdk:7.7.0'
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.google.android.gms:play-services-ads:11.8.0'
 }
