@@ -38,6 +38,8 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
             return;
         }
 
+        MaioAds.setAdTestMode(adRequest.isTesting());
+
         this.mMediationRewardedVideoAdListener = listener;
         mIsRewardedVideoInitialized = true;
 
@@ -81,8 +83,8 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
     //Display maio rewarded video ad
     public void showVideo() {
         MaioEventForwarder.showVideo(this.mRewardVideoZoneId,
-                                     Rewarded.this,
-                                     mMediationRewardedVideoAdListener);
+                Rewarded.this,
+                mMediationRewardedVideoAdListener);
     }
 
     @Override
