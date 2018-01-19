@@ -3,6 +3,7 @@ package com.jirbo.adcolony;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.jirbo.adcolony.AdColonyAdListener.RequestState;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
@@ -134,42 +135,47 @@ public class AdColonyAdapter implements MediationInterstitialAdapter,
                        Bundle networkExtras) {
         boolean showPrePopup = false;
         boolean showPostPopup = false;
-        boolean success = AdColonyManager.getInstance()
-                .configureAdColony(null, serverParams, mediationAdRequest, networkExtras);
 
         // retrieve the appropriate zone for this ad-request
         ArrayList<String> listFromServerParams =
                 AdColonyManager.getInstance().parseZoneList(serverParams);
         String requestedZone = AdColonyManager
                 .getInstance().getZoneFromRequest(listFromServerParams, networkExtras);
-
-        if (networkExtras != null) {
-            showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
-            showPostPopup = networkExtras.getBoolean("show_post_popup", false);
-        }
-        // update the reward listener if it had not been set before
-        AdColonyRewardListener currentRewardListener = AdColony.getRewardListener();
-        if (currentRewardListener == null) {
-            // one hasn't been added yet.
-            AdColony.setRewardListener(_adColonyRewardedInterstitialListener);
-        }
-
-        if (requestedZone != null) {
-            // we have a valid zone, so request the ad
-            AdColonyAdOptions adOptions = new AdColonyAdOptions();
-            adOptions.enableConfirmationDialog(showPrePopup);
-            adOptions.enableResultsDialog(showPostPopup);
-            AdColony.requestInterstitial(requestedZone,
-                    _adColonyRewardedInterstitialListener,
-                    adOptions);
-        } else {
-            // cannot request an ad without a valid zone.
-            success = false;
-        }
-
-        if (!success) {
-            _mediationRewardedVideoAdListener
-                    .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        if (_adColonyRewardedInterstitialListener.getState() == RequestState.FILLED) {
+            _adColonyRewardedInterstitialListener.notifyAdLoaded();
+        } else if (_adColonyRewardedInterstitialListener.getState() != RequestState.REQUESTED) {
+            boolean success = AdColonyManager.getInstance()
+                    .configureAdColony(null, serverParams, mediationAdRequest, networkExtras);
+            if (networkExtras != null) {
+                showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
+                showPostPopup = networkExtras.getBoolean("show_post_popup", false);
+            }
+            // update the reward listener if it had not been set before
+            if (_adColonyRewardedInterstitialListener == null) {
+                _adColonyRewardedInterstitialListener =
+                        new AdColonyAdListener(this, _mediationRewardedVideoAdListener);
+            }
+            AdColonyRewardListener currentRewardListener = AdColony.getRewardListener();
+            if (currentRewardListener == null) {
+                // one hasn't been added yet
+                AdColony.setRewardListener(_adColonyRewardedInterstitialListener);
+            }
+            if (requestedZone != null) {
+                // we have a valid zone, so request the ad
+                AdColonyAdOptions adOptions = new AdColonyAdOptions()
+                        .enableConfirmationDialog(showPrePopup)
+                        .enableResultsDialog(showPostPopup);
+                _adColonyRewardedInterstitialListener.onRequest();
+                AdColony.requestInterstitial(requestedZone,
+                                             _adColonyRewardedInterstitialListener, adOptions);
+            } else {
+                // cannot request an ad without a valid zone
+                success = false;
+            }
+            if (!success) {
+                _mediationRewardedVideoAdListener
+                        .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
         }
     }
 
