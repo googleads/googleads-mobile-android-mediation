@@ -4,7 +4,6 @@ import com.google.android.gms.ads.reward.RewardItem;
 
 /**
  * A {@link RewardItem} used to map AdColony rewards to Google's rewarded video ad rewards.
- *
  */
 public class AdColonyReward implements RewardItem {
     private String _name;

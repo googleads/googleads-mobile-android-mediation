@@ -51,7 +51,7 @@ class AdColonyManager {
             _context = context; // update the context if its non-null
         }
 
-        if (!(_context instanceof Activity)) {
+        if (_context != null && !(_context instanceof Activity)) {
             Log.w("AdColonyAdapter", "Context must be of type Activity.");
             return false;
         }
