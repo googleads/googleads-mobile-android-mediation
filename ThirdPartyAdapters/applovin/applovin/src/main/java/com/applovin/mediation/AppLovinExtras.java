@@ -19,7 +19,7 @@ public class AppLovinExtras
     /**
      * Convenience class used to build the AppLovin network extras {@link Bundle}.
      */
-    public class Builder
+    public static class Builder
     {
         private boolean mMuteAudio;
         private String  mZoneId;

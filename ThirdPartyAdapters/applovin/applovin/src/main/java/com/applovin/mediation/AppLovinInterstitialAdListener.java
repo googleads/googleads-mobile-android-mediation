@@ -4,7 +4,6 @@ import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
-import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import static android.util.Log.DEBUG;
@@ -33,30 +32,14 @@ class AppLovinInterstitialAdListener
     public void adDisplayed(AppLovinAd ad)
     {
         ApplovinAdapter.log( DEBUG, "Interstitial displayed" );
-
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                mMediationInterstitialListener.onAdOpened( mAdapter );
-            }
-        } );
+        mMediationInterstitialListener.onAdOpened( mAdapter );
     }
 
     @Override
     public void adHidden(AppLovinAd ad)
     {
         ApplovinAdapter.log( DEBUG, "Interstitial dismissed" );
-
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                mMediationInterstitialListener.onAdClosed( mAdapter );
-            }
-        } );
+        mMediationInterstitialListener.onAdClosed( mAdapter );
     }
 
     //
@@ -68,15 +51,8 @@ class AppLovinInterstitialAdListener
     {
         ApplovinAdapter.log( DEBUG, "Interstitial clicked" );
 
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                mMediationInterstitialListener.onAdClicked( mAdapter );
-                mMediationInterstitialListener.onAdLeftApplication( mAdapter );
-            }
-        } );
+        mMediationInterstitialListener.onAdClicked( mAdapter );
+        mMediationInterstitialListener.onAdLeftApplication( mAdapter );
     }
 
     //

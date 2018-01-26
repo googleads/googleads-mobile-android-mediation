@@ -81,79 +81,74 @@ public class ApplovinAdapter
     @Override
     public void requestInterstitialAd(Context context, MediationInterstitialListener interstitialListener, Bundle serverParameters, MediationAdRequest mediationAdRequest, Bundle networkExtras)
     {
-        synchronized ( INTERSTITIAL_AD_QUEUES_LOCK )
+        //
+        // TODO: Make sure the same instance of adapter is not used for multiple ad requests, AND multiple sizes... We'd need interSDK, bannerSdk, etc if so... -_-
+        //
+
+        // Store parent objects
+        mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
+        mContext = context;
+        mNetworkExtras = networkExtras;
+        mMediationInterstitialListener = interstitialListener;
+
+        mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
+        mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
+
+        log( DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: " + mPlacement );
+
+        //
+        // Create Ad Load listener
+        //
+
+        final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener()
         {
-            //
-            // TODO: Make sure the same instance of adapter is not used for multiple ad requests, AND multiple sizes... We'd need interSDK, bannerSdk, etc if so... -_-
-            //
-
-            // Store parent objects
-            mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
-            mContext = context;
-            mNetworkExtras = networkExtras;
-            mMediationInterstitialListener = interstitialListener;
-
-            mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
-            mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
-
-            log( DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: " + mPlacement );
-
-            //
-            // Create Ad Load listener
-            //
-
-            final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener()
+            @Override
+            public void adReceived(final AppLovinAd ad)
             {
-                @Override
-                public void adReceived(final AppLovinAd ad)
-                {
-                    log( DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId + " and placement: " + mPlacement );
+                log( DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId + " and placement: " + mPlacement );
 
-                    synchronized ( INTERSTITIAL_AD_QUEUES_LOCK )
+                synchronized ( INTERSTITIAL_AD_QUEUES_LOCK )
+                {
+                    Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get( mZoneId );
+                    if ( preloadedAds == null )
                     {
-                        Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get( mZoneId );
-                        if ( preloadedAds == null )
-                        {
-                            preloadedAds = new LinkedList<AppLovinAd>();
-                            INTERSTITIAL_AD_QUEUES.put( mZoneId, preloadedAds );
-                        }
-
-                        preloadedAds.offer( ad );
-
-                        //
-                        // TODO: Make sure this doesn't have consequences switching context within syncrhonized block
-                        //
-
-                        AppLovinSdkUtils.runOnUiThread( new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                mMediationInterstitialListener.onAdLoaded( ApplovinAdapter.this );
-                            }
-                        } );
+                        preloadedAds = new LinkedList<AppLovinAd>();
+                        INTERSTITIAL_AD_QUEUES.put( mZoneId, preloadedAds );
                     }
-                }
 
-                @Override
-                public void failedToReceiveAd(final int code)
-                {
-                    log( ERROR, "Interstitial failed to load with error: " + code );
+                    preloadedAds.offer( ad );
 
                     AppLovinSdkUtils.runOnUiThread( new Runnable()
                     {
                         @Override
                         public void run()
                         {
-                            mMediationInterstitialListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
+                            mMediationInterstitialListener.onAdLoaded( ApplovinAdapter.this );
                         }
                     } );
                 }
-            };
+            }
 
+            @Override
+            public void failedToReceiveAd(final int code)
+            {
+                log( ERROR, "Interstitial failed to load with error: " + code );
 
+                AppLovinSdkUtils.runOnUiThread( new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        mMediationInterstitialListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
+                    }
+                } );
+            }
+        };
+
+        synchronized ( INTERSTITIAL_AD_QUEUES_LOCK )
+        {
             final Queue<AppLovinAd> queue = INTERSTITIAL_AD_QUEUES.get( mZoneId );
-            if ( queue != null && queue.isEmpty() )
+            if ( queue == null || ( queue != null && queue.isEmpty() ) )
             {
                 // If we don't already have enqueued ads, fetch from SDK
 
@@ -343,8 +338,6 @@ public class ApplovinAdapter
     //
     //  Banner Methods
     //
-
-    // TODO: Smart banners please
 
     @Override
     public void requestBannerAd(Context context, MediationBannerListener mediationBannerListener, Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest, Bundle networkExtras)
