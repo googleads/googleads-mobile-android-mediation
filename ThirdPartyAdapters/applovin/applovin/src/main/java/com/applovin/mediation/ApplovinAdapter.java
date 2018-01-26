@@ -69,6 +69,7 @@ public class ApplovinAdapter
     // Banner objects
     private AppLovinAdView mAdView;
 
+    // Controlled fields
     private String mPlacement;
     private String mZoneId;
 
