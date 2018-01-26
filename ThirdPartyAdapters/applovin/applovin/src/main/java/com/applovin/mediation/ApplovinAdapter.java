@@ -394,7 +394,9 @@ public class ApplovinAdapter
 
     private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(AdSize adSize)
     {
-        if ( AdSize.BANNER.equals( adSize ) )
+        final boolean isSmartBanner = ( adSize.getWidth() == AdSize.FULL_WIDTH ) && ( adSize.getHeight() == AdSize.AUTO_HEIGHT );
+
+        if ( AdSize.BANNER.equals( adSize ) || AdSize.LARGE_BANNER.equals( adSize ) || isSmartBanner )
         {
             return AppLovinAdSize.BANNER;
         }
