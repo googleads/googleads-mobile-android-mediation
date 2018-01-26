@@ -252,7 +252,7 @@ public class ApplovinAdapter
             mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
             mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
 
-            log( DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: " + mPlacement );
+            log( DEBUG, "Requesting rewarded video for zone: " + mZoneId + " and placement: " + mPlacement );
 
             // Check if incentivized ad for zone already exists
             if ( INCENTIVIZED_ADS.containsKey( mZoneId ) )
