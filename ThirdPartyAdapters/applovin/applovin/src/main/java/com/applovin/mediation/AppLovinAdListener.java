@@ -21,21 +21,23 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
 /**
- * AppLovin SDK ad listener used with the AppLovin ad adapter for AdMob.
- *
- * @version 7.4.1.1
+ * AppLovin SDK ad listener used with the adapter for AdMob.
+ * <p>
+ * Created by Thomas So on 1/25/18.
  */
-class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardListener,
-        AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdVideoPlaybackListener {
-    private static final Handler uiHandler = new Handler(Looper.getMainLooper());
+class AppLovinAdListener
+        implements AppLovinAdClickListener, AppLovinAdRewardListener,
+        AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdVideoPlaybackListener
+{
+    private static final Handler uiHandler = new Handler( Looper.getMainLooper() );
 
-    private boolean mIsRewarded;
-    private boolean mFullyWatched;
-    private String mAdType;
-    private ApplovinAdapter mAdapter;
-    private MediationInterstitialListener mInterstitialListener;
+    private boolean                          mIsRewarded;
+    private boolean                          mFullyWatched;
+    private String                           mAdType;
+    private ApplovinAdapter                  mAdapter;
+    private MediationInterstitialListener    mInterstitialListener;
     private MediationRewardedVideoAdListener mRewardedListener;
-    private RewardItem mReward;
+    private RewardItem                       mReward;
 
     // AdMob preloads ads in bursts of 2 requests
     public static final int ADS_QUEUE_MIN_CAPACITY = 2;
@@ -43,193 +45,239 @@ class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardLis
     // Failsafe for when ads are loaded but discarded
     public static final Queue<AppLovinAd> ADS_QUEUE = new LinkedList<AppLovinAd>();
 
-    AppLovinAdListener(ApplovinAdapter adapter, MediationRewardedVideoAdListener listener) {
+    AppLovinAdListener(ApplovinAdapter adapter, MediationRewardedVideoAdListener listener)
+    {
         this.mAdapter = adapter;
         mRewardedListener = listener;
         mIsRewarded = true;
         mAdType = "Rewarded video";
     }
 
-    AppLovinAdListener(ApplovinAdapter adapter, MediationInterstitialListener listener) {
+    AppLovinAdListener(ApplovinAdapter adapter, MediationInterstitialListener listener)
+    {
         this.mAdapter = adapter;
         mInterstitialListener = listener;
         mIsRewarded = false;
         mAdType = "Interstitial";
     }
 
-    public void updateAdMobListener(final MediationInterstitialListener listener) {
+    public void updateAdMobListener(final MediationInterstitialListener listener)
+    {
         this.mInterstitialListener = listener;
     }
 
-    boolean hasAdReady() {
+    boolean hasAdReady()
+    {
         return !ADS_QUEUE.isEmpty();
     }
 
-    AppLovinAd dequeueAd() {
+    AppLovinAd dequeueAd()
+    {
         return ADS_QUEUE.poll();
     }
 
+    //endregion
     //region Ad Load Listener
     @Override
-    public void adReceived(final AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, mAdType + " did load ad: " + ad.getAdIdNumber());
+    public void adReceived(final AppLovinAd ad)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " did load ad: " + ad.getAdIdNumber() );
 
-        runOnUiThread(new AdLoadRunnable(this) {
+        runOnUiThread( new AdLoadRunnable( this
+        {
             @Override
-            public void run() {
-                if (mIsRewarded) {
-                    mRewardedListener.onAdLoaded(mAdapter);
-                } else {
-                    ADS_QUEUE.offer(ad);
+            public void run()
+            {
+                if ( mIsRewarded )
+                {
+                    mRewardedListener.onAdLoaded( mAdapter );
+                }
+                else
+                {
+                    ADS_QUEUE.offer( ad );
 
-                    ApplovinAdapter.adLoaded(this.listener);
-                    mInterstitialListener.onAdLoaded(mAdapter);
+                    ApplovinAdapter.adLoaded( this.listener );
+                    mInterstitialListener.onAdLoaded( mAdapter );
                 }
             }
 
             ;
-        });
+        } );
     }
 
     @Override
-    public void failedToReceiveAd(final int errorCode) {
-        ApplovinAdapter.log(DEBUG, mAdType + " failed to load with error: " + errorCode);
+    public void failedToReceiveAd(final int errorCode)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " failed to load with error: " + errorCode );
 
-        runOnUiThread(new AdLoadRunnable(this) {
+        runOnUiThread( new AdLoadRunnable( this )
+        {
             @Override
-            public void run() {
-                if (mIsRewarded) {
-                    mRewardedListener.onAdFailedToLoad(mAdapter,
-                            ApplovinAdapter.toAdMobErrorCode(errorCode));
-                } else {
-                    ApplovinAdapter.adLoadFailed(this.listener);
-                    mInterstitialListener.onAdFailedToLoad(mAdapter,
-                            ApplovinAdapter.toAdMobErrorCode(errorCode));
+            public void run()
+            {
+                if ( mIsRewarded )
+                {
+                    mRewardedListener.onAdFailedToLoad( mAdapter,
+                                                        ApplovinAdapter.toAdMobErrorCode( errorCode ) );
+                }
+                else
+                {
+                    ApplovinAdapter.adLoadFailed( this.listener );
+                    mInterstitialListener.onAdFailedToLoad( mAdapter,
+                                                            ApplovinAdapter.toAdMobErrorCode( errorCode ) );
                 }
             }
-        });
+        } );
     }
     //endregion
 
     //region Ad Display Listener
     @Override
-    public void adDisplayed(final AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, mAdType + " displayed");
+    public void adDisplayed(final AppLovinAd ad)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " displayed" );
 
-        runOnUiThread(new Runnable() {
+        runOnUiThread( new Runnable()
+        {
             @Override
-            public void run() {
-                if (mIsRewarded) {
-                    mRewardedListener.onAdOpened(mAdapter);
-                } else {
-                    mInterstitialListener.onAdOpened(mAdapter);
+            public void run()
+            {
+                if ( mIsRewarded )
+                {
+                    mRewardedListener.onAdOpened( mAdapter );
+                }
+                else
+                {
+                    mInterstitialListener.onAdOpened( mAdapter );
                 }
             }
-        });
+        } );
 
         mFullyWatched = false;
     }
 
     @Override
-    public void adHidden(final AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, mAdType + " dismissed");
+    public void adHidden(final AppLovinAd ad)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " dismissed" );
 
-        runOnUiThread(new Runnable() {
+        runOnUiThread( new Runnable()
+        {
             @Override
-            public void run() {
-                if (mIsRewarded && mFullyWatched && mReward != null) {
-                    ApplovinAdapter.log(DEBUG, "Rewarded "
-                            + mReward.getAmount() + " " + mReward.getType());
-                    mRewardedListener.onRewarded(mAdapter, mReward);
+            public void run()
+            {
+                if ( mIsRewarded && mFullyWatched && mReward != null )
+                {
+                    ApplovinAdapter.log( DEBUG, "Rewarded "
+                            + mReward.getAmount() + " " + mReward.getType() );
+                    mRewardedListener.onRewarded( mAdapter, mReward );
                 }
 
-                if (mIsRewarded) {
-                    mRewardedListener.onAdClosed(mAdapter);
+                if ( mIsRewarded )
+                {
+                    mRewardedListener.onAdClosed( mAdapter );
                     mReward = null;
-                } else {
-                    mInterstitialListener.onAdClosed(mAdapter);
+                }
+                else
+                {
+                    mInterstitialListener.onAdClosed( mAdapter );
                 }
             }
-        });
+        } );
     }
-    //endregion
 
     //region Ad Click Listener
     @Override
-    public void adClicked(final AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, mAdType + " clicked");
+    public void adClicked(final AppLovinAd ad)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " clicked" );
 
-        runOnUiThread(new Runnable() {
+        runOnUiThread( new Runnable()
+        {
             @Override
-            public void run() {
-                if (mIsRewarded) {
-                    mRewardedListener.onAdClicked(mAdapter);
-                    mRewardedListener.onAdLeftApplication(mAdapter);
-                } else {
-                    mInterstitialListener.onAdClicked(mAdapter);
-                    mInterstitialListener.onAdLeftApplication(mAdapter);
+            public void run()
+            {
+                if ( mIsRewarded )
+                {
+                    mRewardedListener.onAdClicked( mAdapter );
+                    mRewardedListener.onAdLeftApplication( mAdapter );
+                }
+                else
+                {
+                    mInterstitialListener.onAdClicked( mAdapter );
+                    mInterstitialListener.onAdLeftApplication( mAdapter );
                 }
             }
-        });
+        } );
     }
     //endregion
 
     //region Video Playback Listener
     @Override
-    public void videoPlaybackBegan(AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, mAdType + " playback began");
+    public void videoPlaybackBegan(AppLovinAd ad)
+    {
+        ApplovinAdapter.log( DEBUG, mAdType + " playback began" );
 
-        if (mIsRewarded) {
-            runOnUiThread(new Runnable() {
+        if ( mIsRewarded )
+        {
+            runOnUiThread( new Runnable()
+            {
                 @Override
-                public void run() {
-                    mRewardedListener.onVideoStarted(mAdapter);
+                public void run()
+                {
+                    mRewardedListener.onVideoStarted( mAdapter );
                 }
-            });
+            } );
         }
     }
 
     @Override
-    public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
-        ApplovinAdapter.log(DEBUG,
-                mAdType + " playback ended at playback percent: " + percentViewed);
+    public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched)
+    {
+        ApplovinAdapter.log( DEBUG,
+                             mAdType + " playback ended at playback percent: " + percentViewed );
         this.mFullyWatched = fullyWatched;
     }
     //endregion
 
     //region Reward Listener
     @Override
-    public void userOverQuota(final AppLovinAd appLovinAd, final Map map) {
-        ApplovinAdapter.log(ERROR,
-                "Rewarded video validation request for ad did exceed quota with response: " + map);
+    public void userOverQuota(final AppLovinAd appLovinAd, final Map map)
+    {
+        ApplovinAdapter.log( ERROR,
+                             "Rewarded video validation request for ad did exceed quota with response: " + map );
     }
 
     @Override
-    public void validationRequestFailed(final AppLovinAd appLovinAd, final int errorCode) {
-        ApplovinAdapter.log(ERROR,
-                "Rewarded video validation request for ad failed with error code: " + errorCode);
+    public void validationRequestFailed(final AppLovinAd appLovinAd, final int errorCode)
+    {
+        ApplovinAdapter.log( ERROR,
+                             "Rewarded video validation request for ad failed with error code: " + errorCode );
     }
 
     @Override
-    public void userRewardRejected(final AppLovinAd appLovinAd, final Map map) {
-        ApplovinAdapter.log(ERROR,
-                "Rewarded video validation request was rejected with response: " + map);
+    public void userRewardRejected(final AppLovinAd appLovinAd, final Map map)
+    {
+        ApplovinAdapter.log( ERROR,
+                             "Rewarded video validation request was rejected with response: " + map );
     }
 
     @Override
-    public void userDeclinedToViewAd(final AppLovinAd appLovinAd) {
-        ApplovinAdapter.log(DEBUG, "User declined to view rewarded video");
+    public void userDeclinedToViewAd(final AppLovinAd appLovinAd)
+    {
+        ApplovinAdapter.log( DEBUG, "User declined to view rewarded video" );
     }
 
     @Override
-    public void userRewardVerified(final AppLovinAd ad, final Map map) {
-        final String currency = (String) map.get("currency");
-        final String amountStr = (String) map.get("amount");
-        final int amount = (int) Double.parseDouble(amountStr); // AppLovin returns amount as double
+    public void userRewardVerified(final AppLovinAd ad, final Map map)
+    {
+        final String currency = (String) map.get( "currency" );
+        final String amountStr = (String) map.get( "amount" );
+        final int amount = (int) Double.parseDouble( amountStr ); // AppLovin returns amount as double
 
-        ApplovinAdapter.log(DEBUG, "Verified " + amount + " " + currency);
+        ApplovinAdapter.log( DEBUG, "Verified " + amount + " " + currency );
 
-        mReward = new AppLovinRewardItem(amount, currency);
+        mReward = new AppLovinRewardItem( amount, currency );
     }
     //endregion
 
@@ -237,22 +285,26 @@ class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardLis
      * Reward item wrapper class.
      */
     private static final class AppLovinRewardItem
-            implements RewardItem {
-        private final int mAmount;
+            implements RewardItem
+    {
+        private final int    mAmount;
         private final String mType;
 
-        private AppLovinRewardItem(final int amount, final String type) {
+        private AppLovinRewardItem(final int amount, final String type)
+        {
             this.mAmount = amount;
             this.mType = type;
         }
 
         @Override
-        public String getType() {
+        public String getType()
+        {
             return mType;
         }
 
         @Override
-        public int getAmount() {
+        public int getAmount()
+        {
             return mAmount;
         }
     }
@@ -260,27 +312,38 @@ class AppLovinAdListener implements AppLovinAdClickListener, AppLovinAdRewardLis
     /**
      * A {@link Runnable} to send success and failure callbacks on main thread.
      */
-    private abstract class AdLoadRunnable implements Runnable {
+    private abstract class AdLoadRunnable
+            implements Runnable
+    {
         AppLovinAdListener listener;
 
-        AdLoadRunnable(AppLovinAdListener listener) {
+        AdLoadRunnable(AppLovinAdListener listener)
+        {
             this.listener = listener;
         }
     }
 
-    private static void runOnUiThread(final AdLoadRunnable runnable) {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
+    private static void runOnUiThread(final AdLoadRunnable runnable)
+    {
+        if ( Looper.myLooper() == Looper.getMainLooper() )
+        {
             runnable.run();
-        } else {
-            uiHandler.post(runnable);
+        }
+        else
+        {
+            uiHandler.post( runnable );
         }
     }
 
-    private static void runOnUiThread(final Runnable runnable) {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
+    private static void runOnUiThread(final Runnable runnable)
+    {
+        if ( Looper.myLooper() == Looper.getMainLooper() )
+        {
             runnable.run();
-        } else {
-            uiHandler.post(runnable);
+        }
+        else
+        {
+            uiHandler.post( runnable );
         }
     }
 }
