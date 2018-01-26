@@ -54,7 +54,14 @@ class AppLovinUtils
      */
     static String retrievePlacement(Bundle serverParameters)
     {
-        return serverParameters.getString( ServerParameterKeys.PLACEMENT );
+        if ( serverParameters != null && serverParameters.containsKey( ServerParameterKeys.PLACEMENT ) )
+        {
+            return serverParameters.getString( ServerParameterKeys.PLACEMENT );
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -70,6 +77,14 @@ class AppLovinUtils
         {
             return DEFAULT_ZONE;
         }
+    }
+
+    /**
+     * Retrieves whether or not to mute the ad that is about to be rendered.
+     */
+    static boolean shouldMuteAudio(Bundle networkExtras)
+    {
+        return networkExtras != null && networkExtras.getBoolean( AppLovinExtras.Keys.MUTE_AUDIO );
     }
 
     /**

@@ -18,7 +18,7 @@ import static android.util.Log.ERROR;
  * Created by thomasso on 1/26/18.
  */
 
-public class AppLovinIncentivizedAdListener
+class AppLovinIncentivizedAdListener
         implements AppLovinAdRewardListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener
 {
     private final ApplovinAdapter                  mAdapter;
