@@ -54,7 +54,7 @@ class AppLovinUtils
      */
     static String retrievePlacement(Bundle serverParameters)
     {
-        if ( serverParameters != null && serverParameters.containsKey( ServerParameterKeys.PLACEMENT ) )
+        if ( serverParameters.containsKey( ServerParameterKeys.PLACEMENT ) )
         {
             return serverParameters.getString( ServerParameterKeys.PLACEMENT );
         }
