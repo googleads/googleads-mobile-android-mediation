@@ -5,7 +5,6 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
-import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
@@ -41,15 +40,7 @@ class AppLovinIncentivizedAdListener
     public void adDisplayed(AppLovinAd ad)
     {
         ApplovinAdapter.log( DEBUG, "Rewarded video displayed" );
-
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                mMediationRewardedVideoAdListener.onAdOpened( mAdapter );
-            }
-        } );
+        mMediationRewardedVideoAdListener.onAdOpened( mAdapter );
     }
 
     @Override
@@ -63,6 +54,9 @@ class AppLovinIncentivizedAdListener
         }
 
         mMediationRewardedVideoAdListener.onAdClosed( mAdapter );
+
+        // Clear states in the case this listener gets re-used in the future
+        mFullyWatched = false;
         mRewardItem = null;
     }
 
@@ -124,7 +118,6 @@ class AppLovinIncentivizedAdListener
     {
         ApplovinAdapter.log( DEBUG, "User declined to view rewarded video" );
     }
-
 
     @Override
     public void userRewardVerified(AppLovinAd ad, Map response)

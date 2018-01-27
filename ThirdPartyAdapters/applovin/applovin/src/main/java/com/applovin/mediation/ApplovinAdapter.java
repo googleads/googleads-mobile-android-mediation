@@ -64,7 +64,7 @@ public class ApplovinAdapter
     // Rewarded Video objects
     private final AtomicBoolean mInitialized = new AtomicBoolean();
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
-    private AppLovinIncentivizedInterstitial mIncentivizedAd;
+    private AppLovinIncentivizedInterstitial mIncentivizedInterstitial;
 
     // Banner objects
     private AppLovinAdView mAdView;
@@ -236,6 +236,7 @@ public class ApplovinAdapter
     @Override
     public boolean isInitialized()
     {
+        // Please note: AdMob re-uses the adapter for rewarded videos, so be cognizant of states.
         return mInitialized.get();
     }
 
@@ -252,61 +253,49 @@ public class ApplovinAdapter
             // Check if incentivized ad for zone already exists
             if ( INCENTIVIZED_ADS.containsKey( mZoneId ) )
             {
-                mIncentivizedAd = INCENTIVIZED_ADS.get( mZoneId );
+                mIncentivizedInterstitial = INCENTIVIZED_ADS.get( mZoneId );
             }
             else
             {
                 // If this is a default Zone, create the incentivized ad normally
                 if ( DEFAULT_ZONE.equals( mZoneId ) )
                 {
-                    mIncentivizedAd = AppLovinIncentivizedInterstitial.create( mSdk );
+                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create( mSdk );
                 }
                 // Otherwise, use the Zones API
                 else
                 {
-                    mIncentivizedAd = AppLovinIncentivizedInterstitial.create( mZoneId, mSdk );
+                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create( mZoneId, mSdk );
                 }
 
-                INCENTIVIZED_ADS.put( mZoneId, mIncentivizedAd );
+                INCENTIVIZED_ADS.put( mZoneId, mIncentivizedInterstitial );
             }
         }
 
-        if ( mIncentivizedAd.isAdReadyToDisplay() )
+        if ( mIncentivizedInterstitial.isAdReadyToDisplay() )
         {
             mMediationRewardedVideoAdListener.onAdLoaded( this );
         }
         else
         {
-            mIncentivizedAd.preload( new AppLovinAdLoadListener()
+            // Save placement and zone id, in case the adapter is re-used with new values but the callbacks are for the old values
+            final String placement = mPlacement;
+            final String zoneId = mZoneId;
+
+            mIncentivizedInterstitial.preload( new AppLovinAdLoadListener()
             {
                 @Override
                 public void adReceived(final AppLovinAd ad)
                 {
-                    log( DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zoneIdentifier: " + mZoneId + " and placement: " + mPlacement );
-
-                    AppLovinSdkUtils.runOnUiThread( new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
-                        }
-                    } );
+                    log( DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zoneIdentifier: " + zoneId + " and placement: " + placement );
+                    mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
                 }
 
                 @Override
                 public void failedToReceiveAd(final int code)
                 {
                     log( ERROR, "Rewarded video failed to load with error: " + code );
-
-                    AppLovinSdkUtils.runOnUiThread( new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            mMediationRewardedVideoAdListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
-                        }
-                    } );
+                    mMediationRewardedVideoAdListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
                 }
             } );
         }
@@ -315,7 +304,7 @@ public class ApplovinAdapter
     @Override
     public void showVideo()
     {
-        if ( mIncentivizedAd.isAdReadyToDisplay() )
+        if ( mIncentivizedInterstitial.isAdReadyToDisplay() )
         {
             // Update mute state
             mSdk.getSettings().setMuted( AppLovinUtils.shouldMuteAudio( mNetworkExtras ) );
@@ -323,7 +312,7 @@ public class ApplovinAdapter
             log( DEBUG, "Showing rewarded video for zone: " + mZoneId + " placement: " + mPlacement );
 
             final AppLovinIncentivizedAdListener listener = new AppLovinIncentivizedAdListener( this, mMediationRewardedVideoAdListener );
-            mIncentivizedAd.show( mContext, mPlacement, listener, listener, listener, listener );
+            mIncentivizedInterstitial.show( mContext, mPlacement, listener, listener, listener, listener );
         }
         else
         {
