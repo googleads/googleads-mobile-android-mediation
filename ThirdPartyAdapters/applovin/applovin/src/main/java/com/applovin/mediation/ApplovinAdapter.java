@@ -42,7 +42,7 @@ import static android.util.Log.ERROR;
 public class ApplovinAdapter
         implements MediationBannerAdapter, MediationInterstitialAdapter, MediationRewardedVideoAdAdapter, OnContextChangedListener
 {
-    private static final boolean LOGGING_ENABLED = false;
+    private static final boolean LOGGING_ENABLED = true;
     private static final String  DEFAULT_ZONE    = "";
 
     // Interstitial globals
