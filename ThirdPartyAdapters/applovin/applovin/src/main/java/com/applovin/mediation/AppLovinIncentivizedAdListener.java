@@ -142,8 +142,8 @@ class AppLovinIncentivizedAdListener
 
         private AppLovinRewardItem(int amount, final String type)
         {
-            this.mAmount = amount;
-            this.mType = type;
+            mAmount = amount;
+            mType = type;
         }
 
         @Override
