@@ -57,6 +57,7 @@ class AppLovinBannerAdListener
     //
     // Ad Display Listener
     //
+
     @Override
     public void adDisplayed(AppLovinAd ad)
     {
@@ -108,6 +109,6 @@ class AppLovinBannerAdListener
     @Override
     public void adFailedToDisplay(AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code)
     {
-        ApplovinAdapter.log( DEBUG, "Banner failed to display: " + code );
+        ApplovinAdapter.log( ERROR, "Banner failed to display: " + code );
     }
 }
