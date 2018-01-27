@@ -13,7 +13,7 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
 /**
- * Created by thomasso on 1/26/18.
+ * Created by Thomas So on 1/26/18.
  */
 
 class AppLovinBannerAdListener

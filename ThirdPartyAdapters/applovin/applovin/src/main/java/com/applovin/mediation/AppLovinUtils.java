@@ -10,7 +10,7 @@ import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.android.gms.ads.AdRequest;
 
 /**
- * Created by thomasso on 1/25/18.
+ * Created by Thomas So on 1/25/18.
  */
 
 class AppLovinUtils

@@ -9,7 +9,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import static android.util.Log.DEBUG;
 
 /**
- * Created by thomasso on 1/25/18.
+ * Created by Thomas So on 1/25/18.
  */
 
 class AppLovinInterstitialAdListener
