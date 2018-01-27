@@ -426,5 +426,4 @@ public class ApplovinAdapter
             Log.println( priority, "AppLovinAdapter", message );
         }
     }
-
 }
