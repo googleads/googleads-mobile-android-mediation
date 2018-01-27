@@ -329,8 +329,6 @@ public class ApplovinAdapter
     {
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
-        mContext = context;
-        mNetworkExtras = networkExtras;
 
         mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
         mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
@@ -341,7 +339,7 @@ public class ApplovinAdapter
         final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize( adSize );
         if ( appLovinAdSize != null )
         {
-            mAdView = new AppLovinAdView( mSdk, appLovinAdSize, mContext );
+            mAdView = new AppLovinAdView( mSdk, appLovinAdSize, context );
 
             final AppLovinBannerAdListener listener = new AppLovinBannerAdListener( mZoneId, mPlacement, mAdView, this, mediationBannerListener );
             mAdView.setAdDisplayListener( listener );
@@ -360,7 +358,6 @@ public class ApplovinAdapter
         else
         {
             log( ERROR, "Failed to request banner with unsupported size" );
-
             mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
         }
     }
@@ -417,6 +414,10 @@ public class ApplovinAdapter
             mContext = context;
         }
     }
+
+    //
+    // Logging
+    //
 
     static void log(int priority, final String message)
     {
