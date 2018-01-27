@@ -102,7 +102,6 @@ class AppLovinBannerAdListener
     public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView)
     {
         ApplovinAdapter.log( DEBUG, "Banner left application" );
-        mMediationBannerListener.onAdOpened( mAdapter );
         mMediationBannerListener.onAdLeftApplication( mAdapter );
     }
 
