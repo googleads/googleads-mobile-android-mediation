@@ -81,10 +81,6 @@ public class ApplovinAdapter
     @Override
     public void requestInterstitialAd(Context context, MediationInterstitialListener interstitialListener, Bundle serverParameters, MediationAdRequest mediationAdRequest, Bundle networkExtras)
     {
-        //
-        // TODO: Make sure the same instance of adapter is not used for multiple ad requests, AND multiple sizes... We'd need interSDK, bannerSdk, etc if so... -_-
-        //
-
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
         mContext = context;
