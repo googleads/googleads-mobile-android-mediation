@@ -101,9 +101,7 @@ class AppLovinBannerAdListener
     @Override
     public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView)
     {
-        // We will fire onAdLeftApplication() in the adClicked() callback
         ApplovinAdapter.log( DEBUG, "Banner left application" );
-
         mMediationBannerListener.onAdOpened( mAdapter );
         mMediationBannerListener.onAdLeftApplication( mAdapter );
     }

@@ -330,10 +330,10 @@ public class ApplovinAdapter
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
         mContext = context;
-        this.mNetworkExtras = networkExtras;
+        mNetworkExtras = networkExtras;
 
         mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
-        mZoneId = AppLovinUtils.retrieveZoneId( serverParameters );
+        mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
 
         log( DEBUG, "Requesting banner of size " + adSize + " for zone: " + mZoneId + " and placement: " + mPlacement );
 
@@ -414,7 +414,7 @@ public class ApplovinAdapter
         if ( context != null )
         {
             log( DEBUG, "Context changed: " + context );
-            this.mContext = context;
+            mContext = context;
         }
     }
 
