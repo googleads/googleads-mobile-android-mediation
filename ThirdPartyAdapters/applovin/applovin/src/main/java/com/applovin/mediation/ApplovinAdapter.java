@@ -283,7 +283,7 @@ public class ApplovinAdapter
                 @Override
                 public void adReceived(final AppLovinAd ad)
                 {
-                    log( DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zoneIdentifier: " + zoneId + " and placement: " + placement );
+                    log( DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zone: " + zoneId + " and placement: " + placement );
                     mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
                 }
 
