@@ -96,7 +96,7 @@ class AppLovinIncentivizedAdListener
     //
 
     @Override
-    public void userOverQuota(AppLovinAd ad, Map response)
+    public void userOverQuota(AppLovinAd ad, Map<String, String> response)
     {
         ApplovinAdapter.log( ERROR, "Rewarded video validation request for ad did exceed quota with response: " + response );
     }
@@ -108,7 +108,7 @@ class AppLovinIncentivizedAdListener
     }
 
     @Override
-    public void userRewardRejected(AppLovinAd ad, Map response)
+    public void userRewardRejected(AppLovinAd ad, Map<String, String> response)
     {
         ApplovinAdapter.log( ERROR, "Rewarded video validation request was rejected with response: " + response );
     }
@@ -120,14 +120,13 @@ class AppLovinIncentivizedAdListener
     }
 
     @Override
-    public void userRewardVerified(AppLovinAd ad, Map response)
+    public void userRewardVerified(AppLovinAd ad, Map<String, String> response)
     {
-        final String currency = (String) response.get( "currency" );
-        final String amountStr = (String) response.get( "amount" );
+        final String currency = response.get( "currency" );
+        final String amountStr = response.get( "amount" );
         final int amount = (int) Double.parseDouble( amountStr ); // AppLovin returns amount as double
 
         ApplovinAdapter.log( DEBUG, "Rewarded " + amount + " " + currency );
-
         mRewardItem = new AppLovinRewardItem( amount, currency );
     }
 
