@@ -36,21 +36,36 @@ class IronSourceBaseAdapter {
     static final String KEY_TEST_MODE = "isTestEnabled";
 
     /**
+     * Key to obtain isTestEnabled flag, used to control console logs display
+     */
+    static final String KEY_INTANCE_ID = "instanceId";
+
+    /**
      * This is used for show logs inside the adapter
      */
-    boolean mIsTestEnabled;
+     public boolean mIsTestEnabled;
+
+    /**
+     * This is the placement name for adunit
+     */
+    public String mPlacementName;
+
+    /**
+     * This is the id of the instance to be shown
+     */
+    public String mInstanceID;
 
     /**
      * This is used to indicate if we initiated IronSource's SDK inside the adapter
      */
-    private boolean mInitSucceeded;
+    public boolean mInitSucceeded;
 
     /**
      * UI thread handler used to send callbacks with AdMob interface
      */
     private Handler mUIHandler;
 
-    void initIronSourceSDK(Context context, Bundle serverParameters, IronSource.AD_UNIT adUnit) {
+    void initIronSourceSDK(Context context, String appKey, IronSource.AD_UNIT adUnit) {
         // 1 - We are not sending user ID from adapters anymore,
         //     the IronSource SDK will take care of this identifier
 
