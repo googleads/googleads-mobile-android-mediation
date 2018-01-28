@@ -5,10 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.ads.AdRequest;
 import com.ironsource.mediationsdk.IronSource;
 
 /**
@@ -62,13 +60,8 @@ class IronSourceBaseAdapter {
         // provided by the app is an activity context before initializing
 
         if (!mInitSucceeded) {
-            mIsTestEnabled = serverParameters.getBoolean(KEY_TEST_MODE, false);
-
-            String appKey = serverParameters.getString(KEY_APP_KEY);
-
             IronSource.setMediationType(MEDIATION_NAME);
-            IronSource.init((Activity) context, appKey, adUnit);
-
+            IronSource.initISDemandOnly((Activity) context, appKey, adUnit);
             mInitSucceeded = true;
         }
     }
