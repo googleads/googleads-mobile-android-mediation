@@ -46,11 +46,6 @@ class IronSourceBaseAdapter {
      public boolean mIsTestEnabled;
 
     /**
-     * This is the placement name for adunit
-     */
-    public String mPlacementName;
-
-    /**
      * This is the id of the instance to be shown
      */
     public String mInstanceID;

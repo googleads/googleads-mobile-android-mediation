@@ -16,58 +16,24 @@ import com.google.android.gms.ads.AdRequest;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 
-import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
+import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 
 /**
  * A {@link MediationRewardedVideoAdAdapter} to load and show myTarget rewarded video ads.
  */
 public class IronSourceRewardedAdapter extends IronSourceBaseAdapter implements MediationRewardedVideoAdAdapter,
-        RewardedVideoListener {
-
-    /**
-     * Key to obtain Rewarded Video placement name
-     */
-    private static final String KEY_RV_PLACEMENT = "rewardedVideoPlacement";
-
-    /**
-     * This is the placement name used for Rewarded Video
-     */
-    private String mRewardedVideoPlacementName;
-
-    /**
-     * Flag to keep track of whether or not this {@link IronSourceRewardedAdapter} is initialized.
-     */
-    private boolean mIsInitialized;
+ISDemandOnlyRewardedVideoListener {
 
     /**
      * Mediation rewarded video ad listener used to forward reward-based video ad events from
      * IronSource SDK to Google Mobile Ads SDK.
      */
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
-
-    /**
-     * Private IronSource methods
-     */
-
-
-    private void onRewardedVideoInitSuccess() {
-        onLog("onRewardedVideoInitSuccess");
-
-        if (mMediationRewardedVideoAdListener != null) {
-
-            sendEventOnUIThread(new Runnable() {
-                public void run() {
-                    onLog("onInitializationSucceeded");
-                    mMediationRewardedVideoAdListener.onInitializationSucceeded(IronSourceRewardedAdapter.this);
-                }
-            });
-        }
-    }
-
+    
     /**
      * MediationRewardedVideoAdAdapter implementation
      */
-
+    
     @Override
     public void initialize(Context context,
                            MediationAdRequest mediationAdRequest,
@@ -77,10 +43,7 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter implements 
                            Bundle networkExtras) {
         onLog("initialize");
         mMediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
-        IronSource.setRewardedVideoListener(this);
-
-        mRewardedVideoPlacementName = serverParameters.getString(KEY_RV_PLACEMENT, "");
-
+        
         if (!(context instanceof Activity)) {
             // Context not an Activity context, log the reason for failure and fail the
             // initialization.
@@ -88,189 +51,210 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter implements 
             mMediationRewardedVideoAdListener.onInitializationFailed(IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-
+        
         try {
+
+            // Parse IronSource network-specific parameters
+            if (networkExtras != null) {
+                if (networkExtras.containsKey(KEY_TEST_MODE)) {
+                    this.mIsTestEnabled = networkExtras.getBoolean(KEY_TEST_MODE, false);
+                }
+            }
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
                 onLog("onInitializationFailed, make sure that 'appKey' server parameter is added");
                 mMediationRewardedVideoAdListener.onInitializationFailed(IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-
+                
                 return;
             }
 
+            this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
+            
             // Everything is ok, continue with IronSource initialization
-            onLog("Server params | appKey: " + appKey + " | isTestEnabled: " + mIsTestEnabled + " | placementName: " + mRewardedVideoPlacementName);
-            initIronSourceSDK(context, serverParameters, IronSource.AD_UNIT.REWARDED_VIDEO);
-            mIsInitialized = true;
-
+            onLog("Server params for RV | appKey: " + appKey + " | isTestEnabled: " + this.mIsTestEnabled + " | InstanceID: " +this.mInstanceID );
+            
+            IronSource.setISDemandOnlyRewardedVideoListener(this);
+            initIronSourceSDK(context, appKey, IronSource.AD_UNIT.REWARDED_VIDEO);
+            
             // in case of Rewarded Video ad unit we report init success
             onRewardedVideoInitSuccess();
-
+            
         } catch (Exception e) {
             mMediationRewardedVideoAdListener.onInitializationFailed(IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
-
+    
     @Override
     public void loadAd(MediationAdRequest mediationAdRequest, Bundle serverParameters, Bundle networkExtras) {
-        onLog("loadAd");
 
-        if (IronSource.isRewardedVideoAvailable()) {
-            onLog("onAdLoaded");
+        this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
+
+        onLog("loadAd for instance: " + this.mInstanceID);
+        if (IronSource.isISDemandOnlyRewardedVideoAvailable(this.mInstanceID)) {
             mMediationRewardedVideoAdListener.onAdLoaded(IronSourceRewardedAdapter.this);
         }
     }
-
+    
     @Override
     public void showVideo() {
-        onLog("showVideo");
+        onLog("showVideo for instance: " + this.mInstanceID);
 
-        if (TextUtils.isEmpty(mRewardedVideoPlacementName)) {
-            IronSource.showRewardedVideo();
+        if (IronSource.isISDemandOnlyRewardedVideoAvailable(this.mInstanceID)) {
+            IronSource.showISDemandOnlyRewardedVideo(this.mInstanceID);
         } else {
-            IronSource.showRewardedVideo(mRewardedVideoPlacementName);
+            // Show ad will only be called if the adapter sends back an ad
+            // loaded callback in response to a loadAd request. If for any
+            // reason the adapter is not ready to show an ad after sending
+            // an ad loaded callback, log a warning.
+            onLog("No ads to show.");
         }
     }
-
+    
     @Override
     public boolean isInitialized() {
-        onLog("isInitialized: " + mIsInitialized);
-        return mIsInitialized;
+        onLog("isInitialized: " + this.mInitSucceeded);
+        return this.mInitSucceeded;
     }
-
+    
     @Override
     public void onDestroy() {
         onLog("onDestroy");
     }
-
+    
     @Override
     public void onPause() {
         onLog("onPause");
     }
-
+    
     @Override
     public void onResume() {
         onLog("onResume");
     }
-
+    
+    /**
+     * Private IronSource methods
+     */
+    
+    private void onRewardedVideoInitSuccess() {
+        onLog("onRewardedVideoInitSuccess");
+        
+        if (mMediationRewardedVideoAdListener != null) {
+            sendEventOnUIThread(new Runnable() {
+                public void run() {
+                    onLog("onInitializationSucceeded");
+                    mMediationRewardedVideoAdListener.onInitializationSucceeded(IronSourceRewardedAdapter.this);
+                }
+            });
+        }
+    }
+    
     /**
      * IronSource RewardedVideoListener implementation
      */
-
+    
     @Override
-    public void onRewardedVideoAvailabilityChanged(final boolean available) {
-        onLog("onRewardedVideoAvailabilityChanged " + available);
+    public void onRewardedVideoAvailabilityChanged(String instanceId, final boolean available) {
+        onLog("onRewardedVideoAvailabilityChanged " + available + " for instance: " + instanceId);
+        
+        //We handle callbacks only for registered instances
+        if (!this.mInstanceID.equals(instanceId))
+            return;
+        
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
                     if (available) {
-                        onLog("onAdLoaded");
                         mMediationRewardedVideoAdListener.onAdLoaded(IronSourceRewardedAdapter.this);
                     } else {
-                        onLog("onISAdFailedToLoad");
                         mMediationRewardedVideoAdListener.onAdFailedToLoad(IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
                     }
                 }
             });
         }
     }
-
+    
     @Override
-    public void onRewardedVideoAdOpened() {
+    public void onRewardedVideoAdOpened(final String instanceId) {
+        onLog("onRewardedVideoAdOpened for instance: " + instanceId);
+
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    onLog("onAdOpened");
                     mMediationRewardedVideoAdListener.onAdOpened(IronSourceRewardedAdapter.this);
-                    onLog("onVideoStarted");
                     mMediationRewardedVideoAdListener.onVideoStarted(IronSourceRewardedAdapter.this);
                 }
             });
         }
     }
-
+    
     @Override
-    public void onRewardedVideoAdClosed() {
+    public void onRewardedVideoAdClosed(String instanceId) {
+        onLog("onRewardedVideoAdClosed for instance: " + instanceId);
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    onLog("onAdClosed");
                     mMediationRewardedVideoAdListener.onAdClosed(IronSourceRewardedAdapter.this);
                 }
             });
         }
     }
-
+    
     @Override
-    public void onRewardedVideoAdStarted() {
-        // Not called from IronSource SDK
-    }
-
-    @Override
-    public void onRewardedVideoAdEnded() {
-        // No relevant delegate in AdMob interface
-    }
-
-    @Override
-    public void onRewardedVideoAdRewarded(final Placement placement) {
+    public void onRewardedVideoAdRewarded(String instanceId, final Placement placement) {
         if (placement == null) {
             onLog("IronSource Placement Error");
             return;
         }
-
+        
         final IronSourceReward reward = new IronSourceReward(placement);
+        onLog("onRewardedVideoAdRewarded for instance: " + instanceId + "rewarded: " + reward.getType() + " " + reward.getAmount());
 
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-
-                    onLog("onRewarded: " + reward.getType() + " " + reward.getAmount());
                     mMediationRewardedVideoAdListener.onRewarded(IronSourceRewardedAdapter.this, new IronSourceReward(placement));
                 }
             });
         }
     }
-
+    
     @Override
-    public void onRewardedVideoAdShowFailed(IronSourceError ironsourceError) {
+    public void onRewardedVideoAdShowFailed(String instanceId, IronSourceError ironsourceError) {
         // No relevant delegate in AdMob interface
-        onLog("onRewardedVideoAdShowFailed: " + ironsourceError.getErrorMessage());
+        onLog("onRewardedVideoAdShowFailed: " + ironsourceError.getErrorMessage() + " for instance: " + instanceId);
     }
-
+    
     @Override
-    public void onRewardedVideoAdClicked(Placement placement) {
-        onLog("onRewardedVideoAdClicked, placement: " + placement.getPlacementName());
-
+    public void onRewardedVideoAdClicked(String instanceId, Placement placement) {
+        onLog("onRewardedVideoAdClicked, placement: " + placement.getPlacementName() + " for instance: " + instanceId);
+        
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    onLog("onAdClicked");
                     mMediationRewardedVideoAdListener.onAdClicked(IronSourceRewardedAdapter.this);
-                    onLog("onAdLeftApplication");
-                    mMediationRewardedVideoAdListener.onAdLeftApplication(IronSourceRewardedAdapter.this);
                 }
             });
         }
     }
-
+    
     /**
      * A {@link RewardItem} used to map IronSource reward to Google's reward.
      */
 
     class IronSourceReward implements RewardItem {
-
+        
         private final Placement mPlacement;
-
+        
         IronSourceReward(Placement placement) {
             this.mPlacement = placement;
         }
-
+        
         @Override
         public String getType() {
             return mPlacement.getRewardName();
         }
-
+        
         @Override
         public int getAmount() {
             return mPlacement.getRewardAmount();
