@@ -61,10 +61,10 @@ public class DuAdExtrasBundleBuilder {
         bundle.putSerializable(DuAdAdapter.KEY_BANNER_STYLE, bannerStyle);
         bundle.putSerializable(DuAdAdapter.KEY_INTERSTITIAL_TYPE, interstitialAdType);
         if (placementIds != null) {
-            bundle.putIntegerArrayList(DuAdAdapter.KEY_ALL_PLACEMENT_ID, placementIds);
+            bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_PLACEMENT_ID, placementIds);
         }
         if (videoPlacementIds != null) {
-            bundle.putIntegerArrayList(DuAdAdapter.KEY_ALL_VIDEO_PLACEMENT_ID, videoPlacementIds);
+            bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_VIDEO_PLACEMENT_ID, videoPlacementIds);
         }
         return bundle;
     }

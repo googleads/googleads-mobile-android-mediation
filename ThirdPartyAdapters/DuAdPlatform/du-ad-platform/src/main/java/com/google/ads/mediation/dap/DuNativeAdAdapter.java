@@ -36,7 +36,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdAdapter.initializeSDK(context, mediationExtras, pid);
+        DuAdMediation.initializeSDK(context, mediationExtras, pid);
         nativeAd = new DuNativeAd(context, pid);
         nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(DuNativeAdAdapter.this, listener));
         nativeAd.load();
@@ -44,7 +44,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onDestroy() {
-        DuAdAdapter.d(TAG, "DuNativeAdAdapter onDestroy ");
+        DuAdMediation.d(TAG, "DuNativeAdAdapter onDestroy ");
         if (nativeAd != null) {
             nativeAd.destory();
             nativeAd = null;
@@ -53,12 +53,12 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onPause() {
-        DuAdAdapter.d(TAG, "DuNativeAdAdapter onPause");
+        DuAdMediation.d(TAG, "DuNativeAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAdAdapter.d(TAG, "DuNativeAdAdapter onResume");
+        DuAdMediation.d(TAG, "DuNativeAdAdapter onResume");
     }
 
 
@@ -66,7 +66,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
         if (bundle == null) {
             return -1;
         }
-        String pidStr = bundle.getString(DuAdAdapter.KEY_DAP_PID);
+        String pidStr = bundle.getString(DuAdMediation.KEY_DAP_PID);
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }
