@@ -36,6 +36,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        DuAdAdapter.initializeSDK(context, mediationExtras, pid);
         nativeAd = new DuNativeAd(context, pid);
         nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(DuNativeAdAdapter.this, listener));
         nativeAd.load();

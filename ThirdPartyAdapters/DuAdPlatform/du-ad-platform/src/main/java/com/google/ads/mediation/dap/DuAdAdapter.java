@@ -3,12 +3,14 @@ package com.google.ads.mediation.dap;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
 import com.duapps.ad.InterstitialAd;
 import com.duapps.ad.banner.BannerAdView;
+import com.duapps.ad.base.DuAdNetwork;
 import com.google.ads.mediation.dap.forwarder.DapCustomBannerEventForwarder;
 import com.google.ads.mediation.dap.forwarder.DapCustomInterstitialEventForwarder;
 import com.google.android.gms.ads.AdRequest;
@@ -19,7 +21,12 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
-import java.io.Serializable;
+import org.json.JSONException;
+import org.json.JSONStringer;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Created by bushaopeng on 18/1/3.
@@ -31,7 +38,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
      * This key should be configured at AdMob server side or AdMob front-end.
      */
     public static final String KEY_DAP_PID = "placementId";
+    public static final String KEY_ALL_PLACEMENT_ID = "ALL_PID";
+    public static final String KEY_ALL_VIDEO_PLACEMENT_ID = "ALL_V_PID";
     private static boolean DEBUG = false;
+    static boolean isInitialized = false;
+
+    public static HashSet<Integer> initializedPlacementIds = new HashSet<>();
 
     public static void setDebug(boolean debug) {
         DEBUG = debug;
@@ -61,6 +73,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        int pid = getValidPid(serverParameters);
+        if (pid < 0) {
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+        initializeSDK(context, mediationExtras, pid);
         if (!checkClassExist("com.duapps.ad.banner.BannerAdView")) {
             String msg = "Your version of Du Ad SDK is not right, there is no support for Banner Ad in current SDK, "
                     + "Please make sure that you are using CW latest version of SDK";
@@ -69,20 +87,60 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
             return;
         }
-        int pid = getValidPid(serverParameters);
-        if (pid < 0) {
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
+
         DuAdAdapter.d(TAG, "requestBannerAd" + ",pid = " + pid);
         mBannerAdView = new BannerAdView(context, pid, 5,
                 new DapCustomBannerEventForwarder(DuAdAdapter.this, listener));
-        BannerStyle style = (BannerStyle) mediationExtras.getSerializable(KEY_BANNER_STYLE);
-        BannerCloseStyle closeStyle = (BannerCloseStyle) mediationExtras.getSerializable(KEY_BANNER_CLOSE_STYLE);
+        DuAdExtrasBundleBuilder.BannerStyle style = (DuAdExtrasBundleBuilder.BannerStyle) mediationExtras
+                .getSerializable(KEY_BANNER_STYLE);
+        DuAdExtrasBundleBuilder.BannerCloseStyle closeStyle = (DuAdExtrasBundleBuilder.BannerCloseStyle)
+                mediationExtras.getSerializable
+                        (KEY_BANNER_CLOSE_STYLE);
         mBannerAdView.setBgStyle(getStyle(style));
         mBannerAdView.setCloseStyle(getCloseStyle(closeStyle));
 
         mBannerAdView.load();
+    }
+
+    static void initializeSDK(Context context, Bundle mediationExtras, int pid) {
+        if (!isInitialized) {
+            ArrayList<Integer> allPids = mediationExtras.getIntegerArrayList(KEY_ALL_PLACEMENT_ID);
+            if (allPids != null) {
+                if (!allPids.contains(pid)) {
+                    allPids.add(pid);
+                }
+                initializedPlacementIds.addAll(allPids);
+                String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds);
+                d(TAG, "init config json is : " + initJsonConfig);
+                DuAdNetwork.init(context, initJsonConfig);
+                isInitialized = true;
+            } else {
+                if (!initializedPlacementIds.contains(pid)) {
+                    initializedPlacementIds.add(pid);
+                    String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds);
+                    d(TAG, "init config json is : " + initJsonConfig);
+                    DuAdNetwork.init(context, initJsonConfig);
+                    String msg = "Only the current placementIds " + initializedPlacementIds + " is initialized. "
+                            + "It is Strongly recommended to use DuAdExtrasBundleBuilder.addAllPlacementId() to pass all "
+                            + "your valid placement id (for native ad /banner ad/ interstitial ad), "
+                            + "so that the DuAdNetwork could be normally initialized.";
+                    Log.e(TAG, msg);
+                }
+            }
+        }
+    }
+
+    static String buildJsonFromPidsNative(@NonNull Collection<Integer> allPids) {
+        try {
+            JSONStringer array = new JSONStringer().object().key("native").array();
+            for (Integer pid : allPids) {
+                array.object().key("pid").value(pid);
+            }
+            return array.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -97,21 +155,21 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         return mBannerAdView;
     }
 
-    private com.duapps.ad.banner.BannerStyle getStyle(BannerStyle style) {
+    private com.duapps.ad.banner.BannerStyle getStyle(DuAdExtrasBundleBuilder.BannerStyle style) {
         if (style == null) {
             return com.duapps.ad.banner.BannerStyle.STYLE_GREEN;
         }
-        if (style == BannerStyle.STYLE_BLUE) {
+        if (style == DuAdExtrasBundleBuilder.BannerStyle.STYLE_BLUE) {
             return com.duapps.ad.banner.BannerStyle.STYLE_BLUE;
         }
         return com.duapps.ad.banner.BannerStyle.STYLE_GREEN;
     }
 
-    private com.duapps.ad.banner.BannerCloseStyle getCloseStyle(BannerCloseStyle style) {
+    private com.duapps.ad.banner.BannerCloseStyle getCloseStyle(DuAdExtrasBundleBuilder.BannerCloseStyle style) {
         if (style == null) {
             return com.duapps.ad.banner.BannerCloseStyle.STYLE_TOP;
         }
-        if (style == BannerCloseStyle.STYLE_BOTTOM) {
+        if (style == DuAdExtrasBundleBuilder.BannerCloseStyle.STYLE_BOTTOM) {
             return com.duapps.ad.banner.BannerCloseStyle.STYLE_BOTTOM;
         }
         return com.duapps.ad.banner.BannerCloseStyle.STYLE_TOP;
@@ -148,18 +206,19 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+        initializeSDK(context, mediationExtras, pid);
         DuAdAdapter.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
-        InterstitialAdType type = (InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
+        DuAdExtrasBundleBuilder.InterstitialAdType type = (DuAdExtrasBundleBuilder.InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
         mInterstitial = new InterstitialAd(context, pid, getType(type));
         mInterstitial.setInterstitialListener(new DapCustomInterstitialEventForwarder(DuAdAdapter.this, listener));
         mInterstitial.load();
     }
 
-    private InterstitialAd.Type getType(InterstitialAdType type) {
+    private InterstitialAd.Type getType(DuAdExtrasBundleBuilder.InterstitialAdType type) {
         if (type == null) {
             return InterstitialAd.Type.SCREEN;
         }
-        if (type == InterstitialAdType.NORMAL) {
+        if (type == DuAdExtrasBundleBuilder.InterstitialAdType.NORMAL) {
             return InterstitialAd.Type.NORMAL;
         }
         return InterstitialAd.Type.SCREEN;
@@ -224,52 +283,6 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             return -1;
         }
         return pid;
-    }
-
-    public enum BannerCloseStyle implements Serializable {
-        STYLE_TOP,
-        STYLE_BOTTOM;
-    }
-
-    public enum BannerStyle implements Serializable {
-        STYLE_BLUE,
-        STYLE_GREEN;
-    }
-
-    public static class ExtrasBundleBuilder {
-
-        private BannerCloseStyle bannerCloseStyle;
-        private BannerStyle bannerStyle;
-
-        public ExtrasBundleBuilder bannerCloseStyle(BannerCloseStyle bannerCloseStyle) {
-            this.bannerCloseStyle = bannerCloseStyle;
-            return ExtrasBundleBuilder.this;
-        }
-
-        public ExtrasBundleBuilder bannerStyle(BannerStyle bannerStyle) {
-            this.bannerStyle = bannerStyle;
-            return ExtrasBundleBuilder.this;
-        }
-
-        private InterstitialAdType interstitialAdType;
-
-        public ExtrasBundleBuilder interstitialAdType(InterstitialAdType interstitialAdType) {
-            this.interstitialAdType = interstitialAdType;
-            return ExtrasBundleBuilder.this;
-        }
-
-        public Bundle build() {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(KEY_BANNER_CLOSE_STYLE, bannerCloseStyle);
-            bundle.putSerializable(KEY_BANNER_STYLE, bannerStyle);
-            bundle.putSerializable(KEY_INTERSTITIAL_TYPE, interstitialAdType);
-            return bundle;
-        }
-    }
-
-    public enum InterstitialAdType implements Serializable {
-        NORMAL,
-        SCREEN;
     }
 
 
