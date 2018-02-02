@@ -1,8 +1,6 @@
 package com.google.ads.mediation.dap;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -63,12 +61,12 @@ public class DuAdMediation {
             if (shouldInit) {
                 String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds, "native");
                 d(TAG, "init config json is : " + initJsonConfig);
-                try {
-                    ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
-                            .getPackageName(), ApplicationInfo.EXT);
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
+//                            .getPackageName(), ApplicationInfo.EXT);
+//                } catch (PackageManager.NameNotFoundException e) {
+//                    e.printStackTrace();
+//                }
                 DuAdNetwork.init(context.getApplicationContext(), initJsonConfig);
                 if (initIdsSucc) {
                     isInitialized = true;
