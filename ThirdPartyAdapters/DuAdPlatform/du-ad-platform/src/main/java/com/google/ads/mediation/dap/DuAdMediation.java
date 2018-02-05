@@ -47,15 +47,23 @@ public class DuAdMediation {
     private static Handler handler;
 
     public static void runOnUIThread(Runnable runnable) {
-        if (handler == null) {
-            handler = new Handler(Looper.getMainLooper());
+        try {
+            if (handler == null) {
+                handler = new Handler(Looper.getMainLooper());
+            }
+            handler.post(runnable);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        handler.post(runnable);
     }
 
     public static void removeAllCallbacks() {
         if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+            try {
+                handler.removeCallbacksAndMessages(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
