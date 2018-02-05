@@ -3,6 +3,7 @@ package com.google.ads.mediation.dap.forwarder;
 import com.duapps.ad.banner.BannerListener;
 import com.google.ads.mediation.dap.DuAdAdapter;
 import com.google.ads.mediation.dap.DuAdMediation;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 
 
@@ -18,12 +19,23 @@ public class DapCustomBannerEventForwarder implements BannerListener {
 
     @Override
     public void onAdLoaded() {
-        mBannerListener.onAdLoaded(mAdapter);
+        DuAdMediation.d(TAG, "Banner Ad Loaded");
+        DuAdMediation.runOnUIThread(new Runnable() {
+            @Override
+            public void run() {
+                mBannerListener.onAdLoaded(mAdapter);
+            }
+        });
     }
 
     @Override
     public void onError(String s) {
-        DuAdMediation.d(TAG, "onError - " + s);
-        mBannerListener.onAdFailedToLoad(mAdapter, Integer.valueOf(s));
+        DuAdMediation.d(TAG, "Banner Ad onError - msg: " + s);
+        DuAdMediation.runOnUIThread(new Runnable() {
+            @Override
+            public void run() {
+                mBannerListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+        });
     }
 }

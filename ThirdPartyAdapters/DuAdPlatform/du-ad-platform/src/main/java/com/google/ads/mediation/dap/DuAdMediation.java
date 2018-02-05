@@ -2,6 +2,8 @@ package com.google.ads.mediation.dap;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -33,7 +35,8 @@ public class DuAdMediation {
 
     public static void d(String tag, String msg) {
         if (DEBUG) {
-            Log.d(tag, msg);
+            String name = Thread.currentThread().getName();
+            Log.d(TAG, "[" + tag + "]: " + "<" + name + "> " + msg);
         }
     }
 
@@ -41,6 +44,18 @@ public class DuAdMediation {
     public static final String KEY_ALL_PLACEMENT_ID = "ALL_PID";
     public static final String KEY_ALL_VIDEO_PLACEMENT_ID = "ALL_V_PID";
     private static HashSet<Integer> initializedPlacementIds = new HashSet<>();
+    private static Handler handler;
+
+    public static void runOnUIThread(Runnable runnable) {
+        if (handler == null) {
+            handler = new Handler(Looper.getMainLooper());
+        }
+        handler.post(runnable);
+    }
+
+    public static void removeAllCallbacks() {
+        handler.removeCallbacksAndMessages(null);
+    }
 
     static void initializeSDK(Context context, Bundle mediationExtras, int pid) {
         if (!isInitialized) {

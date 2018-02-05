@@ -105,7 +105,8 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
         mIsInitialized = true;
 
         mRewardedVideoListener.onInitializationSucceeded(this);
-        DuAdMediation.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid);
+        DuAdMediation.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid +
+                ", adapter instance: " + this);
     }
 
     @Override
@@ -149,7 +150,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public boolean isInitialized() {
-        DuAdMediation.d(TAG, "isInit = " + mIsInitialized);
+        DuAdMediation.d(TAG, "isInit = " + mIsInitialized + ", adapter instance: " + this);
         return mIsInitialized;
     }
 
@@ -166,12 +167,12 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onPause() {
-        DuAdMediation.d(TAG, "DuAdAdapter onPause");
+        DuAdMediation.d(TAG, "DuAdAdapter onPause, adapter instance: " + this);
     }
 
     @Override
     public void onResume() {
-        DuAdMediation.d(TAG, "DuAdAdapter onResume");
+        DuAdMediation.d(TAG, "DuAdAdapter onResume, adapter instance: " + this);
     }
 
 

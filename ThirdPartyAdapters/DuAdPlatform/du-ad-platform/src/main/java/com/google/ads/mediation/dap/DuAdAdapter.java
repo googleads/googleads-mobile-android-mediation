@@ -63,18 +63,19 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         DuAdMediation.d(TAG, "requestBannerAd" + ",pid = " + pid);
         mBannerAdView = new BannerAdView(context, pid, 5,
                 new DapCustomBannerEventForwarder(DuAdAdapter.this, listener));
-        DuAdExtrasBundleBuilder.BannerStyle style = (DuAdExtrasBundleBuilder.BannerStyle) mediationExtras
-                .getSerializable(KEY_BANNER_STYLE);
-        DuAdExtrasBundleBuilder.BannerCloseStyle closeStyle = (DuAdExtrasBundleBuilder.BannerCloseStyle)
-                mediationExtras.getSerializable
-                        (KEY_BANNER_CLOSE_STYLE);
+        DuAdExtrasBundleBuilder.BannerStyle style = null;
+        DuAdExtrasBundleBuilder.BannerCloseStyle closeStyle = null;
+        if (mediationExtras != null) {
+            style = (DuAdExtrasBundleBuilder.BannerStyle) mediationExtras
+                    .getSerializable(KEY_BANNER_STYLE);
+            closeStyle = (DuAdExtrasBundleBuilder.BannerCloseStyle) mediationExtras
+                    .getSerializable(KEY_BANNER_CLOSE_STYLE);
+        }
         mBannerAdView.setBgStyle(getStyle(style));
         mBannerAdView.setCloseStyle(getCloseStyle(closeStyle));
 
         mBannerAdView.load();
     }
-
-
 
 
     @Override
@@ -142,7 +143,10 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
         }
         DuAdMediation.initializeSDK(context, mediationExtras, pid);
         DuAdMediation.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
-        DuAdExtrasBundleBuilder.InterstitialAdType type = (DuAdExtrasBundleBuilder.InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
+        DuAdExtrasBundleBuilder.InterstitialAdType type = null;
+        if (mediationExtras != null) {
+            type = (DuAdExtrasBundleBuilder.InterstitialAdType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
+        }
         mInterstitial = new InterstitialAd(context, pid, getType(type));
         mInterstitial.setInterstitialListener(new DapCustomInterstitialEventForwarder(DuAdAdapter.this, listener));
         mInterstitial.load();
