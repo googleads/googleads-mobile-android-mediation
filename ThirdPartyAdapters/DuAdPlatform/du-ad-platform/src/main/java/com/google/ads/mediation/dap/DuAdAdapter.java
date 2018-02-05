@@ -189,6 +189,7 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             mInterstitial.destory();
             mInterstitial = null;
         }
+        DuAdMediation.removeAllCallbacks();
     }
 
     @Override

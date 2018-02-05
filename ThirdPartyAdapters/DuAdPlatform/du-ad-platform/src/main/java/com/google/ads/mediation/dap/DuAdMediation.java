@@ -54,7 +54,9 @@ public class DuAdMediation {
     }
 
     public static void removeAllCallbacks() {
-        handler.removeCallbacksAndMessages(null);
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 
     static void initializeSDK(Context context, Bundle mediationExtras, int pid) {
