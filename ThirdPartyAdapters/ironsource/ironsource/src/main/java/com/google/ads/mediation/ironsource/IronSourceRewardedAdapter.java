@@ -68,7 +68,7 @@ ISDemandOnlyRewardedVideoListener {
             this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
             
             // Everything is ok, continue with IronSource initialization
-            onLog("Server params for RV | appKey: " + appKey + " | isTestEnabled: " + this.mIsTestEnabled + " | InstanceID: " +this.mInstanceID );
+            onLog("Server params for RV | appKey: " + appKey + " | isTestEnabled: " + this.mIsLogEnabled + " | InstanceID: " +this.mInstanceID );
             
             IronSource.setISDemandOnlyRewardedVideoListener(this);
             initIronSourceSDK(context, appKey, IronSource.AD_UNIT.REWARDED_VIDEO);
@@ -229,6 +229,7 @@ ISDemandOnlyRewardedVideoListener {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
                     mMediationRewardedVideoAdListener.onAdClicked(IronSourceRewardedAdapter.this);
+                    mMediationRewardedVideoAdListener.onAdLeftApplication(IronSourceRewardedAdapter.this);
                 }
             });
         }
