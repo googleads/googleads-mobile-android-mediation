@@ -33,17 +33,12 @@ class IronSourceBaseAdapter {
     /**
      * Key to obtain isTestEnabled flag, used to control console logs display
      */
-    static final String KEY_TEST_MODE = "isTestEnabled";
-
-    /**
-     * Key to obtain isTestEnabled flag, used to control console logs display
-     */
     static final String KEY_INTANCE_ID = "instanceId";
 
     /**
      * This is used for show logs inside the adapter
      */
-     public boolean mIsTestEnabled;
+     public boolean mIsLogEnabled;
 
     /**
      * This is the id of the instance to be shown
@@ -84,7 +79,7 @@ class IronSourceBaseAdapter {
     }
 
     void onLog(String message) {
-        if (mIsTestEnabled) {
+        if (mIsLogEnabled) {
             Log.d(TAG, message);
         }
     }

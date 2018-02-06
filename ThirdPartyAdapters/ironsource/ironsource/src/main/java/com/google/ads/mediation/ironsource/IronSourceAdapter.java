@@ -48,11 +48,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
         try {
 
             // Parse IronSource network-specific parameters
-            if (mediationExtras != null) {
-                if (mediationExtras.containsKey(KEY_TEST_MODE)) {
-                    this.mIsTestEnabled = mediationExtras.getBoolean(KEY_TEST_MODE, false);
-                }
-            }
+            this.mIsLogEnabled = mediationAdRequest.isTesting();
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
@@ -63,7 +59,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
             this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
 
-            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: " + this.mIsTestEnabled + " | InstanceID: " + this.mInstanceID );
+            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: " + this.mIsLogEnabled + " | InstanceID: " + this.mInstanceID );
 
             IronSource.setISDemandOnlyInterstitialListener(this);
             initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);

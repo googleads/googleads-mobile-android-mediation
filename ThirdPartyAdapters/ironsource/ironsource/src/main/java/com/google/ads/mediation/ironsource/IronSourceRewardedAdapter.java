@@ -54,12 +54,8 @@ ISDemandOnlyRewardedVideoListener {
         
         try {
 
-            // Parse IronSource network-specific parameters
-            if (networkExtras != null) {
-                if (networkExtras.containsKey(KEY_TEST_MODE)) {
-                    this.mIsTestEnabled = networkExtras.getBoolean(KEY_TEST_MODE, false);
-                }
-            }
+            // Parse enabling testing mode key for log
+            this.mIsLogEnabled = mediationAdRequest.isTesting();
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
