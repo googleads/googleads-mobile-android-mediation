@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private Button mCustomEventButton;
     private Button mAdapterButton;
     private Button mAdapterVideoButton;
+    private AdLoader adapterNativeLoader;
+    private AdLoader customEventNativeLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 .addNetworkExtrasBundle(SampleAdapter.class, extras)
                 .build();
         mAdapterAdView.loadAd(bannerAdRequest);
-
+        
         // Sample adapter interstitial button.
         mAdapterButton = (Button) findViewById(R.id.adapter_button);
         mAdapterButton.setOnClickListener(new View.OnClickListener() {
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Sample Custom Event Native ad.
          */
-        AdLoader customEventNativeLoader = new AdLoader.Builder(this,
+        customEventNativeLoader = new AdLoader.Builder(this,
                 getResources().getString(R.string.customevent_native_ad_unit_id))
                 .forAppInstallAd(new NativeAppInstallAd.OnAppInstallAdLoadedListener() {
                     @Override
@@ -221,12 +223,21 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 }).build();
+
         customEventNativeLoader.loadAd(new AdRequest.Builder().build());
+        Button refreshCustomEvent = (Button) findViewById(R.id.customeventnative_button);
+        refreshCustomEvent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View unusedView) {
+                customEventNativeLoader.loadAd(new AdRequest.Builder().build());
+            }
+        });
+
 
         /**
          * Sample Adapter Native ad.
          */
-        AdLoader adapterNativeLoader = new AdLoader.Builder(this,
+        adapterNativeLoader = new AdLoader.Builder(this,
                 getResources().getString(R.string.adapter_native_ad_unit_id))
                 .forAppInstallAd(new NativeAppInstallAd.OnAppInstallAdLoadedListener() {
                     @Override
@@ -261,10 +272,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).build();
 
-        AdRequest nativeAdRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(SampleAdapter.class, extras)
-                .build();
-        adapterNativeLoader.loadAd(nativeAdRequest);
+        loadAdapterNativeAd(extras);
+        Button refreshAdapterNative = (Button) findViewById(R.id.adapternative_button);
+        refreshAdapterNative.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View unusedView) {
+                loadAdapterNativeAd(new SampleAdapter.MediationExtrasBundleBuilder()
+                        .setIncome(100000)
+                        .setShouldAddAwesomeSauce(true)
+                        .build());
+            }
+        });
 
         // Sample adapter rewarded video button.
         mAdapterVideoButton = (Button) findViewById(R.id.adapter_rewarded_button);
@@ -331,6 +349,13 @@ public class MainActivity extends AppCompatActivity {
         mAdapterVideoButton.setEnabled(false);
         mRewardedVideoAd.loadAd(getString(R.string.adapter_rewarded_video_ad_unit_id),
                 new AdRequest.Builder().build());
+    }
+
+    private void loadAdapterNativeAd(Bundle extras) {
+        AdRequest nativeAdRequest = new AdRequest.Builder()
+                .addNetworkExtrasBundle(SampleAdapter.class, extras)
+                .build();
+        adapterNativeLoader.loadAd(nativeAdRequest);
     }
 
     /**

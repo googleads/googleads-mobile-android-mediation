@@ -17,12 +17,13 @@ import jp.maio.sdk.android.MaioAds;
 public class Interstitial implements MediationInterstitialAdapter {
 
     //Admob Interstitial listener
-    private MediationInterstitialListener mediationInterstitialListener;
+    private MediationInterstitialListener mMediationInterstitialListener;
 
     // maio Media Id
-    private String mediaId;
+    private String mMediaId;
+
     // maio Interstitial Zone Id
-    private String interstitialZoneId;
+    private String mInterstitialZoneId;
 
     @Override
     public void requestInterstitialAd(Context context,
@@ -30,40 +31,45 @@ public class Interstitial implements MediationInterstitialAdapter {
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        if(!(context instanceof Activity)) {
+        if (!(context instanceof Activity)) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        this.mediationInterstitialListener = listener;
+        MaioAds.setAdTestMode(mediationAdRequest.isTesting());
+
+        this.mMediationInterstitialListener = listener;
         loadServerParameters(serverParameters);
 
-        if (!isInitialized()){
+        if (!isInitialized()) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
         }
 
-        if (MaioAds.canShow(this.interstitialZoneId)) {
-            if (this.mediationInterstitialListener != null) {
-                this.mediationInterstitialListener.onAdLoaded(Interstitial.this);
+        if (MaioAds.canShow(this.mInterstitialZoneId)) {
+            if (this.mMediationInterstitialListener != null) {
+                this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);
             }
         } else {
-            if (this.mediationInterstitialListener != null) {
-                this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, 3);
+            if (this.mMediationInterstitialListener != null) {
+                this.mMediationInterstitialListener
+                        .onAdFailedToLoad(Interstitial.this, AdRequest.ERROR_CODE_NO_FILL);
             }
         }
     }
 
     // Load media and zone id from the server
     private void loadServerParameters(Bundle serverParameters) {
-        this.mediaId = serverParameters.getString("mediaId");
-        this.interstitialZoneId = serverParameters.getString("zoneId");
+        this.mMediaId = serverParameters.getString("mediaId");
+        this.mInterstitialZoneId = serverParameters.getString("zoneId");
     }
 
     @Override
     //Show maio Interstitial video ad
     public void showInterstitial() {
-        MaioEventForwarder.showInterstitial(this.interstitialZoneId, Interstitial.this, mediationInterstitialListener );
+        MaioEventForwarder.showInterstitial(this.mInterstitialZoneId,
+                Interstitial.this,
+                mMediationInterstitialListener);
     }
 
     //Checks if maio sdk has initialized

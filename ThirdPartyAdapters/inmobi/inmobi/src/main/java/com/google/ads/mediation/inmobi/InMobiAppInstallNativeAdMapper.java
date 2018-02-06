@@ -29,7 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by vineet.srivastava on 5/2/16.
+ * A {@link NativeAppInstallAdMapper} used to map an InMobi Native ad to Google Native App install
+ * ad.
  */
 class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     private final InMobiNative mInMobiNative;
@@ -49,7 +50,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         this.mMediationNativeListener = mediationNativeListener;
     }
 
-    //Map InMobi Native Ad to AdMob App Install Ad
+    // Map InMobi Native Ad to AdMob App Install Ad.
     void mapAppInstallAd(final Context context) {
         JSONObject payLoad;
         HashMap<String, URL> map;
@@ -57,11 +58,11 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         final Double iconScale;
 
         try {
-            if(mInMobiNative.getCustomAdContent() != null) {
+            if (mInMobiNative.getCustomAdContent() != null) {
                 payLoad = mInMobiNative.getCustomAdContent();
-            }
-            else{
-                mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
+            } else {
+                mMediationNativeListener
+                        .onAdFailedToLoad(mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
                 return;
             }
 
@@ -73,15 +74,15 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             setCallToAction(InMobiAdapterUtils.mandatoryChecking(
                     mInMobiNative.getAdCtaText(), InMobiNetworkValues.CTA));
 
-            String landingURL = InMobiAdapterUtils.mandatoryChecking(mInMobiNative.getAdLandingPageUrl(),
-                    InMobiNetworkValues.LANDING_URL);
+            String landingURL = InMobiAdapterUtils.mandatoryChecking(
+                    mInMobiNative.getAdLandingPageUrl(), InMobiNetworkValues.LANDING_URL);
             Bundle paramMap = new Bundle();
             paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
             setExtras(paramMap);
             mLandingUrlMap.put(InMobiNetworkValues.LANDING_URL, landingURL);
             map = new HashMap<>();
 
-            //app icon
+            // App icon.
             URL iconURL = new URL(mInMobiNative.getAdIconUrl());
             iconUri = Uri.parse(iconURL.toURI().toString());
             iconScale = 1.0;
@@ -90,8 +91,8 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             else {
                 setIcon(new InMobiNativeMappedImage(null, iconUri, iconScale));
                 List<NativeAd.Image> imagesList = new ArrayList<>();
-                imagesList.add(new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null,
-                        1.0));
+                imagesList.add(new InMobiNativeMappedImage(
+                        new ColorDrawable(Color.TRANSPARENT), null, 1.0));
                 setImages(imagesList);
             }
 
@@ -103,7 +104,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         }
 
         try {
-            if(payLoad.has(InMobiNetworkValues.RATING)){
+            if (payLoad.has(InMobiNetworkValues.RATING)) {
                 setStarRating(Double.parseDouble(payLoad.getString(InMobiNetworkValues.RATING)));
             }
             if (payLoad.has(InMobiNetworkValues.PACKAGE_NAME)) {
@@ -111,34 +112,36 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             } else {
                 setStore("Others");
             }
-            if(payLoad.has(InMobiNetworkValues.PRICE)) {
+            if (payLoad.has(InMobiNetworkValues.PRICE)) {
                 setPrice(payLoad.getString(InMobiNetworkValues.PRICE));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Add primary view as media view
+        // Add primary view as media view.
         final RelativeLayout placeHolderView = new RelativeLayout(context);
-        placeHolderView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) );
+        placeHolderView.setLayoutParams(
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                           ViewGroup.LayoutParams.MATCH_PARENT));
         placeHolderView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                View primaryView = mInMobiNative.getPrimaryViewOfWidth( null, placeHolderView, placeHolderView.getWidth());
+                View primaryView = mInMobiNative
+                        .getPrimaryViewOfWidth(null, placeHolderView, placeHolderView.getWidth());
                 placeHolderView.addView(primaryView);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-                else{
+                } else {
                     placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
             }
         });
-        setMediaView( placeHolderView );
+        setMediaView(placeHolderView);
         setHasVideoContent(true);
         setOverrideClickHandling(false);
 
-        //Download drawables
-        if( !this.mIsOnlyURL ){
+        // Download drawables.
+        if (!this.mIsOnlyURL) {
             new ImageDownloaderAsyncTask(new ImageDownloaderAsyncTask.DrawableDownloadListener() {
                 @Override
                 public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
@@ -147,8 +150,8 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                             iconScale));
 
                     List<NativeAd.Image> imagesList = new ArrayList<>();
-                    imagesList.add(new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null,
-                            1.0));
+                    imagesList.add(new InMobiNativeMappedImage(
+                            new ColorDrawable(Color.TRANSPARENT), null, 1.0));
                     setImages(imagesList);
 
                     if ((null != iconDrawable)) {
@@ -166,10 +169,10 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                             .ERROR_CODE_NO_FILL);
                 }
             }).execute(map);
-        }else {
-            mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
+        } else {
+            mMediationNativeListener
+                    .onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
         }
-
     }
 
     @Override
@@ -178,7 +181,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
 
     @Override
     public void handleClick(View view) {
-        //Handle click
+        // Handle click.
         mInMobiNative.reportAdClickAndOpenLandingPage();
     }
 

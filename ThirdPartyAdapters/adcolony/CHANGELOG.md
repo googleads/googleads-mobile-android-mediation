@@ -1,5 +1,9 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.0.0
+- Verified compatibility with AdColony SDK version 3.3.0.
+- Updated the Adapter project for Android Studio 3.0.
+
 ## 3.2.1.1
 - Added `setTestModeEnabled` method to the Bundle builder class. Publishers can
   use this method to mark AdColony requests as test requests.

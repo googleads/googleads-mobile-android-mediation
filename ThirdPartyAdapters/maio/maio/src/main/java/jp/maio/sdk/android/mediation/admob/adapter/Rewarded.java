@@ -17,12 +17,14 @@ import jp.maio.sdk.android.MaioAds;
 public class Rewarded implements MediationRewardedVideoAdAdapter {
 
     //Admob Rewarded listener
-    private MediationRewardedVideoAdListener mediationRewardedVideoAdListener;
+    private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
 
     // maio Media Id
-    private String mediaId;
+    private String mMediaId;
     // maio Rewarded Zone Id
-    private String rewardVideoZoneId;
+    private String mRewardVideoZoneId;
+    // Flag to keep track of whether or not the maio rewarded video ad adapter has been initialized.
+    private boolean mIsRewardedVideoInitialized;
 
     @Override
     public void initialize(Context context,
@@ -31,55 +33,63 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
                            MediationRewardedVideoAdListener listener,
                            Bundle serverParameters,
                            Bundle networkExtras) {
-        if(!(context instanceof Activity)) {
+        if (!(context instanceof Activity)) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        this.mediationRewardedVideoAdListener = listener;
+        MaioAds.setAdTestMode(adRequest.isTesting());
+
+        this.mMediationRewardedVideoAdListener = listener;
+        mIsRewardedVideoInitialized = true;
 
         loadServerParameters(serverParameters);
 
         if (!isInitialized()) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
         }
     }
 
     @Override
     //Load the next maio rewarded video ad
-    public void loadAd(MediationAdRequest adRequest, Bundle serverParameters, Bundle networkExtras) {
+    public void loadAd(MediationAdRequest adRequest,
+                       Bundle serverParameters,
+                       Bundle networkExtras) {
         if (!isInitialized())
             return;
 
         //Load new server parameters in case zone id has changed
         loadServerParameters(serverParameters);
 
-        if (MaioAds.canShow(this.rewardVideoZoneId)) {
-            if (this.mediationRewardedVideoAdListener != null) {
-                this.mediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
+        if (MaioAds.canShow(this.mRewardVideoZoneId)) {
+            if (this.mMediationRewardedVideoAdListener != null) {
+                this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
             }
         } else {
-            if (this.mediationRewardedVideoAdListener != null) {
-                this.mediationRewardedVideoAdListener.onAdFailedToLoad(Rewarded.this, 3);
+            if (this.mMediationRewardedVideoAdListener != null) {
+                this.mMediationRewardedVideoAdListener
+                        .onAdFailedToLoad(Rewarded.this, AdRequest.ERROR_CODE_NO_FILL);
             }
         }
     }
 
     private void loadServerParameters(Bundle serverParameters) {
-        this.mediaId = serverParameters.getString("mediaId");
-        this.rewardVideoZoneId = serverParameters.getString("zoneId");
+        this.mMediaId = serverParameters.getString("mediaId");
+        this.mRewardVideoZoneId = serverParameters.getString("zoneId");
     }
 
     @Override
     //Display maio rewarded video ad
     public void showVideo() {
-        MaioEventForwarder.showVideo(this.rewardVideoZoneId, Rewarded.this, mediationRewardedVideoAdListener);
+        MaioEventForwarder.showVideo(this.mRewardVideoZoneId,
+                Rewarded.this,
+                mMediationRewardedVideoAdListener);
     }
 
     @Override
     public boolean isInitialized() {
-        return MaioEventForwarder.isInitialized();
+        return MaioEventForwarder.isInitialized() && mIsRewardedVideoInitialized;
     }
 
     @Override

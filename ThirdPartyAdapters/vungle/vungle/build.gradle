@@ -9,14 +9,14 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.3.0.0"
+    stringVersion = "5.3.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "26.0.3"
 
     lintOptions {
         abortOnError false
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 5300
+        versionCode 503020
         versionName stringVersion
 
     }
@@ -37,15 +37,11 @@ android {
     }
 }
 
-repositories {
-    maven { url 'https://maven.google.com' }
-}
-
 dependencies {
-    compile('com.vungle:publisher-sdk-android:5.3.0@aar') {
+    implementation('com.vungle:publisher-sdk-android:5.3.2') {
         transitive=true
     }
-    compile 'com.google.android.gms:play-services-ads:11.4.2'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
 }
 
 /**
@@ -67,7 +63,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)

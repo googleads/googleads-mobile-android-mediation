@@ -8,12 +8,8 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.vungle.publisher.AdConfig;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A {@link MediationRewardedVideoAdAdapter} to load and show Vungle rewarded video ads using
@@ -130,9 +126,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                            MediationRewardedVideoAdListener listener, Bundle serverParameters,
                            Bundle networkExtras) {
         try {
-            AdapterParametersParser.Config config = AdapterParametersParser.parse(networkExtras, serverParameters);
+            AdapterParametersParser.Config config =
+                    AdapterParametersParser.parse(networkExtras, serverParameters);
             mMediationRewardedVideoAdListener = listener;
-            mVungleManager = VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+            mVungleManager =
+                    VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
             mVungleManager.addListener(mId, mVungleListener);
             if (mVungleManager.isInitialized()) {
                 mInitialized = true;
@@ -141,9 +139,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                 mVungleListener.setWaitingInit(true);
                 mVungleManager.init(context);
             }
-        } catch (IllegalArgumentException _) {
-            if (listener != null)
-                listener.onInitializationFailed(VungleAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        } catch (IllegalArgumentException e) {
+            if (listener != null) {
+                listener.onInitializationFailed(VungleAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
         }
     }
 

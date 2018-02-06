@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.26.1.0"
+    stringVersion = "4.27.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 42610
+        versionCode 42700
         versionName stringVersion
     }
     buildTypes {
@@ -33,8 +33,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:11.4.2'
-    implementation 'com.facebook.android:audience-network-sdk:4.26.1'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.facebook.android:audience-network-sdk:4.27.0'
 }
 
 /**
@@ -56,7 +56,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
