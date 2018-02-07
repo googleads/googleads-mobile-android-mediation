@@ -133,7 +133,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         if (adData instanceof StaticNativeAd) {
                             final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
 
-                            if (options != null && options.shouldReturnUrlsForImageAssets()) {
+                            if (options != null) {
                                 try {
 
                                     HashMap<String, URL> map = new HashMap<>();
