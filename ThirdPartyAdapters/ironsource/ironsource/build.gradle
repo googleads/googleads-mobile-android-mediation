@@ -19,6 +19,7 @@ android {
 }
 
 dependencies {
+    compileOnly files('libs/ironsource.jar')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.google.android.gms:play-services-ads:11.6.2'
 }

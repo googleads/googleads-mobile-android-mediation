@@ -167,10 +167,10 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     @Override
     public void onFailed(FailNotificationReason reason, String zoneId) {
-        if (_isVideo()) {
+        if (_isInterstitial()) {
             this.mMediationInterstitialListener
                     .onAdFailedToLoad(mInterstitialAdapter, getAdRequestErrorType(reason));
-        } else if (_isInterstitial()) {
+        } else if (_isVideo()) {
             this.mMediationRewardedVideoAdListener
                     .onAdFailedToLoad(mRewardedAdapter, getAdRequestErrorType(reason));
         }
