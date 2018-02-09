@@ -1,5 +1,8 @@
 # myTarget Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.7.2.0
+- Verified compatibility with myTarget SDK version 4.7.2.
+
 ## 4.7.1.0
 - Verified compatibility with myTarget SDK version 4.7.1.
 - Added support for video and carousel ads inside MediaView.
