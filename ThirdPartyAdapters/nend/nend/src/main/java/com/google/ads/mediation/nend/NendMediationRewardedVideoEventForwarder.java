@@ -8,11 +8,13 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
 import net.nend.android.NendAdRewardItem;
 import net.nend.android.NendAdRewardedListener;
 import net.nend.android.NendAdRewardedVideo;
+import net.nend.android.NendAdUserFeature;
 import net.nend.android.NendAdVideo;
 
 import java.lang.ref.WeakReference;
@@ -86,12 +88,15 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
         }
     }
 
-    void loadAd(Bundle mediationExtras) {
+    void loadAd(Bundle mediationExtras, MediationAdRequest mediationAdRequest) {
         if (mediationExtras != null) {
             mNendAdRewardedVideo
                     .setUserId(mediationExtras.getString(NendRewardedAdapter.KEY_USER_ID, ""));
         }
-
+        NendAdUserFeature feature = NendAdRequestUtils.createUserFeature(mediationAdRequest);
+        if (feature != null) {
+            mNendAdRewardedVideo.setUserFeature(feature);
+        }
         mNendAdRewardedVideo.loadAd();
     }
 
