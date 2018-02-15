@@ -12,7 +12,8 @@ import java.util.Date;
 
 class NendAdRequestUtils {
 
-    private static final int CALENDAR_MONTH_ADJUST_VALUE = 1;  // Because it adjusts -1 on nendSDK.
+    // Because the start of Calendar and Date 's month is 0, nendSDK has -1 offset.
+    private static final int CALENDAR_MONTH_OFFSET = 1;
 
     @Nullable
     static NendAdUserFeature createUserFeature(MediationAdRequest mediationAdRequest) {
@@ -24,15 +25,13 @@ class NendAdRequestUtils {
         Date birthday = mediationAdRequest.getBirthday();
 
         NendAdUserFeature.Gender gender = null;
-        if (mediationAdRequest.getGender() != AdRequest.GENDER_UNKNOWN) {
-            switch (mediationAdRequest.getGender()) {
-                case AdRequest.GENDER_MALE:
-                    gender = NendAdUserFeature.Gender.MALE;
-                    break;
-                case AdRequest.GENDER_FEMALE:
-                    gender = NendAdUserFeature.Gender.FEMALE;
-                    break;
-            }
+        switch (mediationAdRequest.getGender()) {
+            case AdRequest.GENDER_MALE:
+                gender = NendAdUserFeature.Gender.MALE;
+                break;
+            case AdRequest.GENDER_FEMALE:
+                gender = NendAdUserFeature.Gender.FEMALE;
+                break;
         }
 
         if (birthday == null && gender == null) {
@@ -43,7 +42,7 @@ class NendAdRequestUtils {
         if (birthday != null) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(birthday);
-            builder.setBirthday(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + CALENDAR_MONTH_ADJUST_VALUE, cal.get(Calendar.DAY_OF_MONTH));
+            builder.setBirthday(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + CALENDAR_MONTH_OFFSET, cal.get(Calendar.DAY_OF_MONTH));
         }
         if (gender != null) {
             builder.setGender(gender);
