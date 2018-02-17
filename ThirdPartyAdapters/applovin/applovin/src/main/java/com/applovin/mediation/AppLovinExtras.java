@@ -13,7 +13,6 @@ public class AppLovinExtras
     static class Keys
     {
         static final String MUTE_AUDIO = "mute_audio";
-        static final String ZONE_ID    = "zone_id";
     }
 
     /**
@@ -22,7 +21,6 @@ public class AppLovinExtras
     public static class Builder
     {
         private boolean mMuteAudio;
-        private String  mZoneId;
 
         /**
          * Use this to mute audio for video ads. Must be set on each ad request.
@@ -34,22 +32,12 @@ public class AppLovinExtras
         }
 
         /**
-         * The accompanying zone identifier with this ad request, if any.
-         */
-        public Builder setZoneId(String zoneId)
-        {
-            mZoneId = zoneId;
-            return this;
-        }
-
-        /**
          * Builds a {@link Bundle} object with the given inputs.
          */
         public Bundle build()
         {
-            final Bundle extras = new Bundle();
+            final Bundle extras = new Bundle(1);
             extras.putBoolean( Keys.MUTE_AUDIO, mMuteAudio );
-            extras.putString( Keys.ZONE_ID, mZoneId );
 
             return extras;
         }

@@ -88,7 +88,7 @@ public class ApplovinAdapter
         mMediationInterstitialListener = interstitialListener;
 
         mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
-        mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
+        mZoneId = AppLovinUtils.retrieveZoneId( serverParameters );
 
         log( DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: " + mPlacement );
 
@@ -242,7 +242,7 @@ public class ApplovinAdapter
         synchronized ( INCENTIVIZED_ADS_LOCK )
         {
             mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
-            mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
+            mZoneId = AppLovinUtils.retrieveZoneId( serverParameters );
 
             log( DEBUG, "Requesting rewarded video for zone: " + mZoneId + " and placement: " + mPlacement );
 
@@ -331,7 +331,7 @@ public class ApplovinAdapter
         mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
 
         mPlacement = AppLovinUtils.retrievePlacement( serverParameters );
-        mZoneId = AppLovinUtils.retrieveZoneId( networkExtras );
+        mZoneId = AppLovinUtils.retrieveZoneId( serverParameters );
 
         log( DEBUG, "Requesting banner of size " + adSize + " for zone: " + mZoneId + " and placement: " + mPlacement );
 

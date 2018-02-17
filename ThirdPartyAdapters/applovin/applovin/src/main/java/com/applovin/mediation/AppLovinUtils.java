@@ -24,6 +24,7 @@ class AppLovinUtils
     {
         private static final String SDK_KEY   = "sdkKey";
         private static final String PLACEMENT = "placement";
+        private static final String ZONE_ID   = "zone_id";
     }
 
     /**
@@ -67,11 +68,11 @@ class AppLovinUtils
     /**
      * Retrieves the zone identifier from an appropriate connector object. Will use empty string if none exists.
      */
-    static String retrieveZoneId(Bundle networkExtras)
+    static String retrieveZoneId(Bundle serverParameters)
     {
-        if ( networkExtras != null && networkExtras.containsKey( AppLovinExtras.Keys.ZONE_ID ) )
+        if ( serverParameters.containsKey( ServerParameterKeys.ZONE_ID ) )
         {
-            return networkExtras.getString( AppLovinExtras.Keys.ZONE_ID );
+            return serverParameters.getString( ServerParameterKeys.ZONE_ID );
         }
         else
         {
