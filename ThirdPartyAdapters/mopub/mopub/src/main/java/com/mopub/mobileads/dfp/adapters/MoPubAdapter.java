@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -35,6 +36,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.HashMap;
+
+import static com.mopub.mobileads.dfp.adapters.DownloadDrawablesAsync.KEY_IMAGE;
 
 /**
  * A {@link com.google.android.gms.ads.mediation.MediationAdapter} used to mediate banner ads,
@@ -83,7 +86,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     @Override
-    public void requestNativeAd(Context context,
+    public void requestNativeAd(final Context context,
                                 final MediationNativeListener listener,
                                 Bundle serverParameters,
                                 NativeMediationAdRequest mediationAdRequest,
@@ -130,67 +133,61 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         if (adData instanceof StaticNativeAd) {
                             final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
 
-                            if (options != null && options.shouldReturnUrlsForImageAssets()) {
-                                try {
-                                    final MoPubNativeAppInstallAdMapper
-                                            moPubNativeAppInstallAdMapper =
-                                            new MoPubNativeAppInstallAdMapper(staticNativeAd,
-                                                    null,
-                                                    privacyIconPlacement,
-                                                    mPrivacyIconSize);
-                                    listener.onAdLoaded(MoPubAdapter.this,
-                                            moPubNativeAppInstallAdMapper);
-
-                                } catch (Exception e) {
-                                    Log.d(TAG, "Exception constructing the native ad");
-                                }
-                                return;
-                            }
-
-                            HashMap<String, URL> map = new HashMap<String, URL>();
                             try {
-                                map.put(DownloadDrawablesAsync.KEY_ICON,
-                                        new URL(staticNativeAd.getIconImageUrl()));
-                                map.put(DownloadDrawablesAsync.KEY_IMAGE,
-                                        new URL(staticNativeAd.getMainImageUrl()));
 
-                            } catch (MalformedURLException e) {
-                                Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
-                                        + " are invalid");
-                                listener.onAdFailedToLoad(MoPubAdapter.this,
-                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                return;
-                            }
-
-                            new DownloadDrawablesAsync(new DrawableDownloadListener() {
-                                @Override
-                                public void onDownloadSuccess(
-                                        HashMap<String, Drawable> drawableMap) {
-
-                                    try {
-                                        final MoPubNativeAppInstallAdMapper
-                                                moPubNativeAppInstallAdMapper =
-                                                new MoPubNativeAppInstallAdMapper(staticNativeAd,
-                                                        drawableMap,
-                                                        privacyIconPlacement,
-                                                        mPrivacyIconSize);
-                                        listener.onAdLoaded(MoPubAdapter.this,
-                                                moPubNativeAppInstallAdMapper);
-                                    } catch (Exception e) {
-                                        Log.d(TAG, "Exception trying to download native ad "
-                                                + "drawables");
-                                        listener.onAdFailedToLoad(MoPubAdapter.this,
-                                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                    }
-                                }
-
-                                @Override
-                                public void onDownloadFailure() {
-                                    // Failed to download images, send failure callback.
+                                HashMap<String, URL> map = new HashMap<>();
+                                try {
+                                    map.put(DownloadDrawablesAsync.KEY_ICON,
+                                            new URL(staticNativeAd.getIconImageUrl()));
+                                    map.put(KEY_IMAGE,
+                                            new URL(staticNativeAd.getMainImageUrl()));
+                                } catch (MalformedURLException e) {
+                                    Log.d(TAG, "Invalid ad response received from MoPub. Image URLs" +
+                                            " are invalid");
                                     listener.onAdFailedToLoad(MoPubAdapter.this,
                                             AdRequest.ERROR_CODE_INTERNAL_ERROR);
                                 }
-                            }).execute(map);
+
+                                new DownloadDrawablesAsync(new DrawableDownloadListener() {
+                                    @Override
+                                    public void onDownloadSuccess(
+                                            HashMap<String, Drawable> drawableMap) {
+
+                                        try {
+                                            final MoPubNativeAppInstallAdMapper
+                                                    moPubNativeAppInstallAdMapper =
+                                                    new MoPubNativeAppInstallAdMapper(staticNativeAd,
+                                                            drawableMap,
+                                                            privacyIconPlacement,
+                                                            mPrivacyIconSize);
+
+                                            // Returning the ImageView containing the main image via a AdMob's MediaView
+                                            ImageView imageView = new ImageView(context);
+                                            imageView.setImageDrawable(drawableMap.get(KEY_IMAGE));
+
+                                            moPubNativeAppInstallAdMapper.setMediaView(imageView);
+
+                                            listener.onAdLoaded(MoPubAdapter.this,
+                                                    moPubNativeAppInstallAdMapper);
+
+                                        } catch (Exception e) {
+                                            Log.d(TAG, "Exception trying to download native ad " +
+                                                    "drawables");
+                                            listener.onAdFailedToLoad(MoPubAdapter.this,
+                                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onDownloadFailure() {
+                                        // Failed to download images, send failure callback.
+                                        listener.onAdFailedToLoad(MoPubAdapter.this,
+                                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                    }
+                                }).execute(map);
+                            } catch (Exception e) {
+                                Log.d(TAG, "Exception constructing the native ad");
+                            }
                         }
                     }
 
