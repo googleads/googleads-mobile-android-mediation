@@ -160,7 +160,15 @@ public class ApplovinAdapter
             else
             {
                 log( DEBUG, "Enqueued interstitial found. Finishing load..." );
-                mMediationInterstitialListener.onAdLoaded( this );
+
+                AppLovinSdkUtils.runOnUiThread( new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        mMediationInterstitialListener.onAdLoaded( ApplovinAdapter.this );
+                    }
+                } );
             }
         }
     }
@@ -270,7 +278,14 @@ public class ApplovinAdapter
 
         if ( mIncentivizedInterstitial.isAdReadyToDisplay() )
         {
-            mMediationRewardedVideoAdListener.onAdLoaded( this );
+            AppLovinSdkUtils.runOnUiThread( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
+                }
+            } );
         }
         else
         {
@@ -284,14 +299,30 @@ public class ApplovinAdapter
                 public void adReceived(final AppLovinAd ad)
                 {
                     log( DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zone: " + zoneId + " and placement: " + placement );
-                    mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
+
+                    AppLovinSdkUtils.runOnUiThread( new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            mMediationRewardedVideoAdListener.onAdLoaded( ApplovinAdapter.this );
+                        }
+                    } );
                 }
 
                 @Override
                 public void failedToReceiveAd(final int code)
                 {
                     log( ERROR, "Rewarded video failed to load with error: " + code );
-                    mMediationRewardedVideoAdListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
+
+                    AppLovinSdkUtils.runOnUiThread( new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            mMediationRewardedVideoAdListener.onAdFailedToLoad( ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode( code ) );
+                        }
+                    } );
                 }
             } );
         }
@@ -325,7 +356,7 @@ public class ApplovinAdapter
     //
 
     @Override
-    public void requestBannerAd(Context context, MediationBannerListener mediationBannerListener, Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest, Bundle networkExtras)
+    public void requestBannerAd(Context context, final MediationBannerListener mediationBannerListener, Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest, Bundle networkExtras)
     {
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk( serverParameters, context );
@@ -358,7 +389,15 @@ public class ApplovinAdapter
         else
         {
             log( ERROR, "Failed to request banner with unsupported size" );
-            mediationBannerListener.onAdFailedToLoad( this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+
+            AppLovinSdkUtils.runOnUiThread( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    mediationBannerListener.onAdFailedToLoad( ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST );
+                }
+            } );
         }
     }
 
