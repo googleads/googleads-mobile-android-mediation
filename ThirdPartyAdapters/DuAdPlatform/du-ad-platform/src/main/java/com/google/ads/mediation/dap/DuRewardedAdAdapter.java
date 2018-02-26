@@ -53,7 +53,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             if (shouldInit) {
                 String initJsonConfig = DuAdMediation.buildJsonFromPidsNative(initializedVideoPlacementIds, "video");
                 DuAdMediation.d(TAG, "init config json is : " + initJsonConfig);
-                DuAdMediation.setAppIdInMeta(context, appId);
+                context = DuAdMediation.setAppIdInMeta(context, appId);
                 DuAdNetwork.init(context, initJsonConfig);
                 DuVideoAdSDK.init(context, initJsonConfig);
                 if (initIdsSucc) {
