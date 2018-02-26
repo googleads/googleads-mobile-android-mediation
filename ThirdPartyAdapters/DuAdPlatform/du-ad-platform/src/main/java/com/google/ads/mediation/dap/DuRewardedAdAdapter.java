@@ -34,7 +34,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
     public static HashSet<Integer> initializedVideoPlacementIds = new HashSet<>();
 
 
-    static void initializeVideoSDK(Context context, Bundle mediationExtras, int pid) {
+    static void initializeVideoSDK(Context context, Bundle mediationExtras, int pid, String appId) {
         if (!isVideoInitialized) {
             boolean initIdsSucc = false;
             boolean shouldInit = false;
@@ -53,6 +53,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             if (shouldInit) {
                 String initJsonConfig = DuAdMediation.buildJsonFromPidsNative(initializedVideoPlacementIds, "video");
                 DuAdMediation.d(TAG, "init config json is : " + initJsonConfig);
+                DuAdMediation.setAppIdInMeta(context, appId);
                 DuAdNetwork.init(context, initJsonConfig);
                 DuVideoAdSDK.init(context, initJsonConfig);
                 if (initIdsSucc) {
@@ -92,11 +93,12 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
         }
 
         int pid = getValidPid(serverParameters);
+        String appId = serverParameters.getString(DuAdMediation.KEY_APP_ID);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        initializeVideoSDK(context, mediationExtras, pid);
+        initializeVideoSDK(context, mediationExtras, pid, appId);
         mRewardedVideoListener = listener;
         mRewardedVideoPid = pid;
         mRewardedVideoCtx = context;

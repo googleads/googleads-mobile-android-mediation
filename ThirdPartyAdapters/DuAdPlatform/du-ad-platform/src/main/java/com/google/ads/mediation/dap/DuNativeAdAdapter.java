@@ -32,11 +32,12 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             return;
         }
         int pid = getValidPid(serverParameters);
+        String appId = serverParameters.getString(DuAdMediation.KEY_APP_ID);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdMediation.initializeSDK(context, mediationExtras, pid);
+        DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
         nativeAd = new DuNativeAd(context, pid);
         nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(DuNativeAdAdapter.this, listener));
         nativeAd.load();

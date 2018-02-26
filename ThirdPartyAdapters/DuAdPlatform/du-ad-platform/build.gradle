@@ -1,11 +1,12 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 //[compileJava, compileTestJava, compileGroovy]*.options*.encoding = 'UTF-8'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 def adapterVersionCode = 1000
-def adapterVersionName = "0.0.1"
+def adapterVersionName = "0.0.2"
 
 group = 'com.google.ads.mediation.dap'
 version = adapterVersionName
@@ -61,7 +62,36 @@ artifacts {
 
 def siteUrl = 'https://github.com/baiduDuApps/googleads-mobile-android-mediation'    // project homepage
 def gitUrl = 'https://github.com/baiduDuApps/googleads-mobile-android-mediation.git' // project git
-
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                name 'DAP'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'baiduduapps'
+                        name 'baiduduapps'
+                        email 'baiduduapps@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
 Properties properties = new Properties()
 boolean isHasFile = false
 if (project.rootProject.file('local.properties').exists()) {

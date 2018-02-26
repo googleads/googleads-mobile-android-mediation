@@ -1,10 +1,13 @@
 package com.google.ads.mediation.dap;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.duapps.ad.base.DuAdNetwork;
@@ -26,6 +29,8 @@ public class DuAdMediation {
      * This key should be configured at AdMob server side or AdMob front-end.
      */
     public static final String KEY_DAP_PID = "placementId";
+    public static final String KEY_APP_ID = "appId";
+    public static final String KEY_APP_LICENSE = "app_license";
 
     private static boolean DEBUG = false;
 
@@ -67,7 +72,7 @@ public class DuAdMediation {
         }
     }
 
-    static void initializeSDK(Context context, Bundle mediationExtras, int pid) {
+    static void initializeSDK(Context context, Bundle mediationExtras, int pid, String appId) {
         if (!isInitialized) {
             boolean initIdsSucc = false;
             boolean shouldInit = false;
@@ -86,12 +91,7 @@ public class DuAdMediation {
             if (shouldInit) {
                 String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds, "native");
                 d(TAG, "init config json is : " + initJsonConfig);
-//                try {
-//                    ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
-//                            .getPackageName(), ApplicationInfo.EXT);
-//                } catch (PackageManager.NameNotFoundException e) {
-//                    e.printStackTrace();
-//                }
+                setAppIdInMeta(context, appId);
                 DuAdNetwork.init(context.getApplicationContext(), initJsonConfig);
                 if (initIdsSucc) {
                     isInitialized = true;
@@ -104,6 +104,30 @@ public class DuAdMediation {
                 }
             }
         }
+    }
+
+    static boolean setAppIdInMeta(Context context, String appId) {
+        boolean succ = false;
+        try {
+            ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
+                    .getPackageName(), PackageManager.GET_META_DATA);
+            Bundle metaData = applicationInfo.metaData;
+            if (metaData != null) {
+                String appLicense = metaData.getString(KEY_APP_LICENSE);
+                if (!TextUtils.isEmpty(appLicense)) {
+                    DuAdMediation.d(TAG, "appId from meta is " + appLicense);
+                    succ = true;
+                }
+                if (!TextUtils.isEmpty(appId)) {
+                    DuAdMediation.d(TAG, "appId from admob server is " + appId);
+                    metaData.putString(KEY_APP_LICENSE, appId);
+                    succ = true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return succ;
     }
 
     static String buildJsonFromPidsNative(@NonNull Collection<Integer> allPids, String node) {

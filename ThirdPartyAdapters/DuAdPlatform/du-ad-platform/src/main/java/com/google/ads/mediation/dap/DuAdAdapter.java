@@ -46,11 +46,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             return;
         }
         int pid = getValidPid(serverParameters);
+        String appId = serverParameters.getString(DuAdMediation.KEY_APP_ID);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdMediation.initializeSDK(context, mediationExtras, pid);
+        DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
         if (!DuAdMediation.checkClassExist("com.duapps.ad.banner.BannerAdView")) {
             String msg = "Your version of Du Ad SDK is not right, there is no support for Banner Ad in current SDK, "
                     + "Please make sure that you are using CW latest version of SDK";
@@ -137,11 +138,12 @@ public class DuAdAdapter implements MediationBannerAdapter, MediationInterstitia
             return;
         }
         int pid = getValidPid(serverParameters);
+        String appId = serverParameters.getString(DuAdMediation.KEY_APP_ID);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        DuAdMediation.initializeSDK(context, mediationExtras, pid);
+        DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
         DuAdMediation.d(TAG, "requestInterstitialAd " + ",pid = " + pid + ",omInterstitial" + mInterstitial);
         DuAdExtrasBundleBuilder.InterstitialAdType type = null;
         if (mediationExtras != null) {

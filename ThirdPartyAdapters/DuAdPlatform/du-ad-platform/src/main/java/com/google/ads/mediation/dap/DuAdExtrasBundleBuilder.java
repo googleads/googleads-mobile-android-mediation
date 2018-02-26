@@ -28,6 +28,11 @@ public class DuAdExtrasBundleBuilder {
         return DuAdExtrasBundleBuilder.this;
     }
 
+    /**
+     * add placement IDs for native/banner/interstitial ad
+     * @param ids placement IDs for native/banner/interstitial ad
+     * @return
+     */
     public DuAdExtrasBundleBuilder addAllPlacementId(Integer... ids) {
         if (ids == null || ids.length <= 0) {
             return DuAdExtrasBundleBuilder.this;
@@ -38,7 +43,11 @@ public class DuAdExtrasBundleBuilder {
         placementIds.addAll(Arrays.asList(ids));
         return DuAdExtrasBundleBuilder.this;
     }
-
+    /**
+     * add placement IDs for rewarded video ad
+     * @param ids placement IDs for rewarded video ad
+     * @return
+     */
     public DuAdExtrasBundleBuilder addAllVideoPlacementId(Integer... ids) {
         if (ids == null || ids.length <= 0) {
             return DuAdExtrasBundleBuilder.this;
