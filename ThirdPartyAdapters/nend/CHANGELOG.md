@@ -1,8 +1,8 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
-## 4.0.3.0
+## 4.0.4.0
 
-- Verified compatibility with nend SDK 4.0.3.
+- Verified compatibility with nend SDK 4.0.4.
 
 ## 4.0.2.0
 
