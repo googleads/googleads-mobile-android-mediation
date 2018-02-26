@@ -6,7 +6,7 @@ sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 def adapterVersionCode = 1000
-def adapterVersionName = "0.0.3-rc4"
+def adapterVersionName = "0.0.3"
 
 group = 'com.google.ads.mediation.dap'
 version = adapterVersionName
