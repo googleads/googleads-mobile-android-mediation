@@ -130,6 +130,7 @@ public class DuAdMediation {
     }
 
     static Context setAppIdInMeta(Context context, String appId) {
+        boolean appIdNotFound = true;
         try {
             ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
                     .getPackageName(), PackageManager.GET_META_DATA);
@@ -138,8 +139,10 @@ public class DuAdMediation {
                 String appLicense = metaData.getString(KEY_APP_LICENSE);
                 if (!TextUtils.isEmpty(appLicense)) {
                     DuAdMediation.d(TAG, "appId from meta is " + appLicense);
+                    appIdNotFound = false;
                 } else {
                     if (!TextUtils.isEmpty(appId)) {
+                        appIdNotFound = false;
                         DuAdMediation.d(TAG, "appId from admob server is " + appId);
                         context = new AppIdContext(context, appId);
                     }
@@ -147,6 +150,12 @@ public class DuAdMediation {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        if (appIdNotFound) {
+            Log.e(TAG, "No App Id found! Du Ad will not be able to make money for you properly! Have you configure " +
+                    "it in your meta data or AdMob UI?");
+            Log.e(TAG, "No App Id found! Du Ad will not be able to make money for you properly! Have you configure " +
+                    "it in your meta data or AdMob UI?");
         }
         return context;
     }
