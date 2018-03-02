@@ -15,7 +15,12 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 
-public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener  {
+/**
+ * A {@link MediationInterstitialAdapter} to load and show IronSource interstitial ads using Google
+ * Mobile Ads SDK mediation.
+ */
+public class IronSourceAdapter extends IronSourceBaseAdapter
+        implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener {
 
     /**
      * Mediation interstitial ad listener used to forward interstitial events from
@@ -23,10 +28,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
      */
     private MediationInterstitialListener mInterstitialListener;
 
-    /**
-     * MediationInterstitialAdapter implementation
-     */
-
+    //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener listener,
@@ -46,8 +48,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
         }
 
         try {
-
-            // Parse IronSource network-specific parameters
+            // Parse IronSource network-specific parameters.
             this.mIsLogEnabled = mediationAdRequest.isTesting();
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
@@ -59,7 +60,8 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
             this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
 
-            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: " + this.mIsLogEnabled + " | InstanceID: " + this.mInstanceID );
+            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: "
+                    + this.mIsLogEnabled + " | InstanceID: " + this.mInstanceID);
 
             IronSource.setISDemandOnlyInterstitialListener(this);
             initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);
@@ -80,7 +82,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
             onLog(e.toString());
         }
     }
+    //endregion
 
+    //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
         onLog("onDestroy");
@@ -95,11 +99,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
     public void onResume() {
         onLog("onResume");
     }
+    //endregion
 
-    /**
-     * Private IronSource methods
-     */
-
+    //region Private IronSource methods.
     private void loadISIronSourceSDK() {
         if (IronSource.isISDemandOnlyInterstitialReady(this.mInstanceID)) {
             onInterstitialAdReady(this.mInstanceID);
@@ -119,16 +121,14 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
             });
         }
     }
+    //endregion
 
-    /**
-     * IronSource ISDemandOnlyInterstitialListener implementation
-     */
-
+    //region IronSource ISDemandOnlyInterstitialListener implementation.
     @Override
     public void onInterstitialAdReady(String instanceId) {
         onLog("onInterstitialAdReady for instance: " + instanceId);
 
-        // We only listen to a registered instance
+        // We only listen to a registered instance.
         if (!this.mInstanceID.equals(instanceId))
             return;
 
@@ -143,9 +143,10 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("onInterstitialAdLoadFailed: " + ironSourceError.getErrorMessage() + " for instance: " + instanceId);
+        onLog("onInterstitialAdLoadFailed: " + ironSourceError.getErrorMessage() + " for instance: "
+                + instanceId);
 
-        // We only listen to a registered instance
+        // We only listen to a registered instance.
         if (!this.mInstanceID.equals(instanceId))
             return;
 
@@ -180,12 +181,13 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdShowSucceeded(String instanceId) {
-        // No relevant delegate in AdMob interface
+        // No relevant delegate in AdMob interface.
     }
 
     @Override
-    public void onInterstitialAdShowFailed(String instanceId,IronSourceError ironSourceError) {
-        onLog("onInterstitialAdShowFailed: " + ironSourceError.getErrorMessage() + " for instance: " + instanceId);
+    public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
+        onLog("onInterstitialAdShowFailed: " + ironSourceError.getErrorMessage() + " for instance: "
+                + instanceId);
     }
 
     @Override
@@ -201,4 +203,5 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
             });
         }
     }
+    //endregion
 }
