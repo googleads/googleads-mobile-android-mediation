@@ -14,6 +14,7 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * events from AdColony SDK to Google Mobile Ads SDK.
  */
 class AdColonyAdListener extends AdColonyInterstitialListener implements AdColonyRewardListener {
+
     enum RequestState {
         REQUESTED,
         FILLED,
@@ -22,6 +23,7 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
         EXPIRED,
         NONE
     }
+
     private MediationInterstitialListener _mediationInterstitialListener;
     private MediationRewardedVideoAdListener _mediationRewardedVideoAdListener;
     private AdColonyAdapter _adapter;
