@@ -9,16 +9,17 @@ import android.util.Log;
 
 import com.ironsource.mediationsdk.IronSource;
 
-/**
- * Created by gili.ariel on 20/12/2017.
- */
-
 class IronSourceBaseAdapter {
 
     /**
      * Adapter class name for logging
      */
     static final String TAG = "IronSource";
+
+    /**
+     * Adapter version
+     */
+    static final String ADAPTER_VERSION = "2.6.1";
 
     /**
      * Key to obtain App Key, required for initializing IronSource SDK.
@@ -33,7 +34,7 @@ class IronSourceBaseAdapter {
     /**
      * Key to obtain isTestEnabled flag, used to control console logs display
      */
-    static final String KEY_INTANCE_ID = "instanceId";
+    static final String KEY_INSTANCE_ID = "instanceId";
 
     /**
      * This is used for show logs inside the adapter
@@ -46,29 +47,15 @@ class IronSourceBaseAdapter {
     public String mInstanceID;
 
     /**
-     * This is used to indicate if we initiated IronSource's SDK inside the adapter
-     */
-    public boolean mInitSucceeded;
-
-    /**
      * UI thread handler used to send callbacks with AdMob interface
      */
     private Handler mUIHandler;
 
     void initIronSourceSDK(Context context, String appKey, IronSource.AD_UNIT adUnit) {
-        // 1 - We are not sending user ID from adapters anymore,
-        //     the IronSource SDK will take care of this identifier
 
-        // 2 - We assume the init is always successful (we will fail in load if needed)
+        IronSource.setMediationType(MEDIATION_NAME);
+        IronSource.initISDemandOnly((Activity) context, appKey, adUnit);
 
-        // SDK requires activity context to initialize, so check that the context
-        // provided by the app is an activity context before initializing
-
-        if (!mInitSucceeded) {
-            IronSource.setMediationType(MEDIATION_NAME);
-            IronSource.initISDemandOnly((Activity) context, appKey, adUnit);
-            mInitSucceeded = true;
-        }
     }
 
     synchronized void sendEventOnUIThread(Runnable runnable) {

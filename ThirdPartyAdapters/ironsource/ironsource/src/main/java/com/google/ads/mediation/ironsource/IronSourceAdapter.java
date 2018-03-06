@@ -15,6 +15,9 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 
+/**
+ * Mediate interstitial ads from IronSource.
+ */
 public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener  {
 
     /**
@@ -22,6 +25,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
      * IronSource SDK to Google Mobile Ads SDK.
      */
     private MediationInterstitialListener mInterstitialListener;
+
+
+    private static boolean mDidInitInterstitial = false;
 
     /**
      * MediationInterstitialAdapter implementation
@@ -33,7 +39,6 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        onLog("requestInterstitialAd");
 
         mInterstitialListener = listener;
 
@@ -52,28 +57,30 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
-                onLog("onInitializationFailed, make sure that 'appKey' server parameter is added");
+                onLog("IronSource initialization failed, make sure that 'applicationKey' server parameter is added");
                 onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 return;
             }
 
-            this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
-
-            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: " + this.mIsLogEnabled + " | InstanceID: " + this.mInstanceID );
+            this.mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, "0");
 
             IronSource.setISDemandOnlyInterstitialListener(this);
-            initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);
-            loadISIronSourceSDK();
+            if (!mDidInitInterstitial) {
+                initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);
+                mDidInitInterstitial = true;
+            }
+
+            onLog("Load IronSource interstitial ad for instance: " + this.mInstanceID);
+            IronSource.loadISDemandOnlyInterstitial(this.mInstanceID);
 
         } catch (Exception e) {
-            onLog("onInitializationFailed, error: " + e.getMessage());
+            onLog("IronSource initialization failed, error: " + e.getMessage());
             onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
 
     @Override
     public void showInterstitial() {
-        onLog("showInterstitial for instance: " + this.mInstanceID);
         try {
             IronSource.showISDemandOnlyInterstitial(this.mInstanceID);
         } catch (Exception e) {
@@ -83,37 +90,29 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onDestroy() {
-        onLog("onDestroy");
+
     }
 
     @Override
     public void onPause() {
-        onLog("onPause");
+
     }
 
     @Override
     public void onResume() {
-        onLog("onResume");
+
     }
 
     /**
      * Private IronSource methods
      */
 
-    private void loadISIronSourceSDK() {
-        if (IronSource.isISDemandOnlyInterstitialReady(this.mInstanceID)) {
-            onInterstitialAdReady(this.mInstanceID);
-        } else {
-            onLog("loadInterstitial for instance: " + this.mInstanceID);
-            IronSource.loadISDemandOnlyInterstitial(this.mInstanceID);
-        }
-    }
-
     private void onISAdFailedToLoad(final int errorCode) {
+        onLog("IronSource Interstitial failed to load for instance " + this.mInstanceID + " Error: " + errorCode);
+
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    onLog("onISAdFailedToLoad:" + errorCode);
                     mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
                 }
             });
@@ -126,7 +125,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdReady(String instanceId) {
-        onLog("onInterstitialAdReady for instance: " + instanceId);
+        onLog("IronSource Interstitial loaded successfully for instance " + instanceId);
 
         // We only listen to a registered instance
         if (!this.mInstanceID.equals(instanceId))
@@ -143,7 +142,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("onInterstitialAdLoadFailed: " + ironSourceError.getErrorMessage() + " for instance: " + instanceId);
+        onLog("IronSource Interstitial failed to load for instance " + instanceId + " Error: " + ironSourceError.getErrorMessage());
 
         // We only listen to a registered instance
         if (!this.mInstanceID.equals(instanceId))
@@ -154,7 +153,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdOpened(String instanceId) {
-        onLog("onInterstitialAdOpened for instance: " + instanceId);
+        onLog("IronSource Interstitial opened ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -167,7 +166,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdClosed(String instanceId) {
-        onLog("onInterstitialAdClosed for instance: " + instanceId);
+        onLog("IronSource Interstitial closed ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -185,12 +184,13 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdShowFailed(String instanceId,IronSourceError ironSourceError) {
-        onLog("onInterstitialAdShowFailed: " + ironSourceError.getErrorMessage() + " for instance: " + instanceId);
+        onLog("IronSource Interstitial failed to show for instance " + instanceId + ", error " + ironSourceError.getErrorMessage() );
+
     }
 
     @Override
     public void onInterstitialAdClicked(String instanceId) {
-        onLog("onInterstitialAdClicked for instance: " + instanceId);
+        onLog("IronSource Interstitial clicked ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
