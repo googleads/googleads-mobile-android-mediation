@@ -1,5 +1,10 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.0.1
+- Fixed an issue where the adapter fails to fill when the adapter is
+  reinitialized.
+- Fixed an issue where reward callback is sent incorrectly.
+
 ## 3.3.0.0
 - Verified compatibility with AdColony SDK version 3.3.0.
 - Updated the Adapter project for Android Studio 3.0.

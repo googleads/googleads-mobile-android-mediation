@@ -16,7 +16,8 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 
 /**
- * Mediate interstitial ads from IronSource.
+ * A {@link MediationInterstitialAdapter} to load and show IronSource interstitial ads using Google
+ * Mobile Ads SDK mediation.
  */
 public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener  {
 

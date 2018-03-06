@@ -14,6 +14,4 @@ public class IronSourceAdapterUtils {
     {
         IronSource.onResume(activity);
     }
-
-
 }

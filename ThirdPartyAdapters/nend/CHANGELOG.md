@@ -1,5 +1,9 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.0.4.0
+
+- Verified compatibility with nend SDK 4.0.4.
+
 ## 4.0.2.0
 
 - First release in Google Mobile Ads Mediation open source project.
