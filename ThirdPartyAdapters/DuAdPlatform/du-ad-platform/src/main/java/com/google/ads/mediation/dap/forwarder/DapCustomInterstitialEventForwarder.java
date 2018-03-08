@@ -54,6 +54,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
         if (mInterstitialListener != null) {
             DuAdMediation.d(TAG, "Interstitial onAdClicked ");
             mInterstitialListener.onAdClicked(mAdapter);
+            mInterstitialListener.onAdLeftApplication(mAdapter);
         }
 
     }

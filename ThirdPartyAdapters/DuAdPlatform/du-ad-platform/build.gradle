@@ -18,7 +18,7 @@ repositories {
 }
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
@@ -35,21 +35,9 @@ android {
 }
 
 dependencies {
-    provided "com.google.android.gms:play-services-ads:11.0.4"
+    provided "com.google.android.gms:play-services-ads:11.8.0"
     provided(name: 'DuappsAd-CW-v1.1.1.0-release', ext: 'aar')
     provided(name: 'DuVideoSdk-v1.0.1-release', ext: 'aar')
-}
-
-android.libraryVariants.all {
-    variant ->
-        def name = variant.buildType.name
-        variant.outputs.each { output ->
-            def outputFile = output.outputFile
-            if (outputFile != null && outputFile.name.endsWith('.aar')) {
-                def fileName = "${archivesBaseName}-${version}-${name}.aar"
-                output.outputFile = new File(outputFile.parent, fileName)
-            }
-        }
 }
 
 task sourcesJar(type: Jar) {

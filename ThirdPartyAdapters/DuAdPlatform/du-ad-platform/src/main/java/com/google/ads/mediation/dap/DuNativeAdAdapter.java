@@ -39,7 +39,8 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
         }
         DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
         nativeAd = new DuNativeAd(context, pid);
-        nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(DuNativeAdAdapter.this, listener));
+        nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(context,DuNativeAdAdapter.this, listener,
+                mediationAdRequest));
         nativeAd.load();
     }
 

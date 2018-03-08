@@ -26,7 +26,10 @@ public class DapRewardedVideoEventForwarder implements DuVideoAdListener {
     public void onAdEnd(AdResult adResult) {
         if (mRewardedVideoListener != null) {
             if (adResult.isCallToActionClicked()) {
+                // these are invoked after the video ad is ended as we currently don`t support ad click instant
+                // callback. We will support it in future if the our publishers do have such need.
                 mRewardedVideoListener.onAdClicked(mMediationRewardedVideoAdAdapter);
+                mRewardedVideoListener.onAdLeftApplication(mMediationRewardedVideoAdAdapter);
                 DuAdMediation.d(TAG, "Dap Rewarded Video clicked.");
             }
             if (adResult.isSuccessfulView()) {
