@@ -19,8 +19,7 @@ import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
  * A {@link MediationInterstitialAdapter} to load and show IronSource interstitial ads using Google
  * Mobile Ads SDK mediation.
  */
-public class IronSourceAdapter extends IronSourceBaseAdapter
-        implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener {
+public class IronSourceAdapter extends IronSourceBaseAdapter implements MediationInterstitialAdapter, ISDemandOnlyInterstitialListener  {
 
     /**
      * Mediation interstitial ad listener used to forward interstitial events from
@@ -28,14 +27,19 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
      */
     private MediationInterstitialListener mInterstitialListener;
 
-    //region MediationInterstitialAdapter implementation.
+
+    private static boolean mDidInitInterstitial = false;
+
+    /**
+     * MediationInterstitialAdapter implementation
+     */
+
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener listener,
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
-        onLog("requestInterstitialAd");
 
         mInterstitialListener = listener;
 
@@ -48,87 +52,83 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
         }
 
         try {
-            // Parse IronSource network-specific parameters.
+
+            // Parse IronSource network-specific parameters
             this.mIsLogEnabled = mediationAdRequest.isTesting();
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
-                onLog("onInitializationFailed, make sure that 'appKey' server parameter is added");
+                onLog("IronSource initialization failed, make sure that 'applicationKey' server parameter is added");
                 onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 return;
             }
 
-            this.mInstanceID = serverParameters.getString(KEY_INTANCE_ID, "0");
-
-            onLog("Server params for IS | appKey: " + appKey + " | isTestEnabled: "
-                    + this.mIsLogEnabled + " | InstanceID: " + this.mInstanceID);
+            this.mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, "0");
 
             IronSource.setISDemandOnlyInterstitialListener(this);
-            initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);
-            loadISIronSourceSDK();
+            if (!mDidInitInterstitial) {
+                initIronSourceSDK(context, appKey, IronSource.AD_UNIT.INTERSTITIAL);
+                mDidInitInterstitial = true;
+            }
+
+            onLog("Load IronSource interstitial ad for instance: " + this.mInstanceID);
+            IronSource.loadISDemandOnlyInterstitial(this.mInstanceID);
 
         } catch (Exception e) {
-            onLog("onInitializationFailed, error: " + e.getMessage());
+            onLog("IronSource initialization failed, error: " + e.getMessage());
             onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
 
     @Override
     public void showInterstitial() {
-        onLog("showInterstitial for instance: " + this.mInstanceID);
         try {
             IronSource.showISDemandOnlyInterstitial(this.mInstanceID);
         } catch (Exception e) {
             onLog(e.toString());
         }
     }
-    //endregion
 
-    //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
-        onLog("onDestroy");
+
     }
 
     @Override
     public void onPause() {
-        onLog("onPause");
+
     }
 
     @Override
     public void onResume() {
-        onLog("onResume");
-    }
-    //endregion
 
-    //region Private IronSource methods.
-    private void loadISIronSourceSDK() {
-        if (IronSource.isISDemandOnlyInterstitialReady(this.mInstanceID)) {
-            onInterstitialAdReady(this.mInstanceID);
-        } else {
-            onLog("loadInterstitial for instance: " + this.mInstanceID);
-            IronSource.loadISDemandOnlyInterstitial(this.mInstanceID);
-        }
     }
+
+    /**
+     * Private IronSource methods
+     */
 
     private void onISAdFailedToLoad(final int errorCode) {
+        onLog("IronSource Interstitial failed to load for instance " + this.mInstanceID + " Error: " + errorCode);
+
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    onLog("onISAdFailedToLoad:" + errorCode);
                     mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
                 }
             });
         }
     }
-    //endregion
 
-    //region IronSource ISDemandOnlyInterstitialListener implementation.
+    /**
+     * IronSource ISDemandOnlyInterstitialListener implementation
+     */
+
     @Override
     public void onInterstitialAdReady(String instanceId) {
-        onLog("onInterstitialAdReady for instance: " + instanceId);
+        onLog("IronSource Interstitial loaded successfully for instance " + instanceId);
 
-        // We only listen to a registered instance.
+        // We only listen to a registered instance
         if (!this.mInstanceID.equals(instanceId))
             return;
 
@@ -143,10 +143,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("onInterstitialAdLoadFailed: " + ironSourceError.getErrorMessage() + " for instance: "
-                + instanceId);
+        onLog("IronSource Interstitial failed to load for instance " + instanceId + " Error: " + ironSourceError.getErrorMessage());
 
-        // We only listen to a registered instance.
+        // We only listen to a registered instance
         if (!this.mInstanceID.equals(instanceId))
             return;
 
@@ -155,7 +154,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
 
     @Override
     public void onInterstitialAdOpened(String instanceId) {
-        onLog("onInterstitialAdOpened for instance: " + instanceId);
+        onLog("IronSource Interstitial opened ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -168,7 +167,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
 
     @Override
     public void onInterstitialAdClosed(String instanceId) {
-        onLog("onInterstitialAdClosed for instance: " + instanceId);
+        onLog("IronSource Interstitial closed ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -181,18 +180,18 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
 
     @Override
     public void onInterstitialAdShowSucceeded(String instanceId) {
-        // No relevant delegate in AdMob interface.
+        // No relevant delegate in AdMob interface
     }
 
     @Override
-    public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("onInterstitialAdShowFailed: " + ironSourceError.getErrorMessage() + " for instance: "
-                + instanceId);
+    public void onInterstitialAdShowFailed(String instanceId,IronSourceError ironSourceError) {
+        onLog("IronSource Interstitial failed to show for instance " + instanceId + ", error " + ironSourceError.getErrorMessage() );
+
     }
 
     @Override
     public void onInterstitialAdClicked(String instanceId) {
-        onLog("onInterstitialAdClicked for instance: " + instanceId);
+        onLog("IronSource Interstitial clicked ad for instance " + instanceId);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -203,5 +202,4 @@ public class IronSourceAdapter extends IronSourceBaseAdapter
             });
         }
     }
-    //endregion
 }
