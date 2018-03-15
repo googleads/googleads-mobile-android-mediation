@@ -1,4 +1,3 @@
-
 package com.mopub.mobileads.dfp.adapters;
 
 import android.graphics.drawable.Drawable;

@@ -13,21 +13,24 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
-/**
- * Created by Thomas So on 1/26/18.
+/*
+ * The {@link AppLovinBannerAdListener} class is used to forward Banner ad events from the AppLovin
+  * SDK to the Google Mobile Ads SDK.
  */
-
 class AppLovinBannerAdListener
-        implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdViewEventListener
-{
-    private final ApplovinAdapter         mAdapter;
+        implements AppLovinAdLoadListener, AppLovinAdDisplayListener,
+        AppLovinAdClickListener, AppLovinAdViewEventListener {
+    private final ApplovinAdapter mAdapter;
     private final MediationBannerListener mMediationBannerListener;
-    private final AppLovinAdView          mAdView;
-    private final String                  mZoneId;
-    private final String                  mPlacement;
+    private final AppLovinAdView mAdView;
+    private final String mZoneId;
+    private final String mPlacement;
 
-    AppLovinBannerAdListener(String zoneId, String placement, AppLovinAdView adView, ApplovinAdapter adapter, MediationBannerListener mediationBannerListener)
-    {
+    AppLovinBannerAdListener(String zoneId,
+                             String placement,
+                             AppLovinAdView adView,
+                             ApplovinAdapter adapter,
+                             MediationBannerListener mediationBannerListener) {
         mAdapter = adapter;
         mMediationBannerListener = mediationBannerListener;
         mAdView = adView;
@@ -35,97 +38,75 @@ class AppLovinBannerAdListener
         mPlacement = placement;
     }
 
-    //
-    // Ad Load Listener
-    //
-
+    // Ad Load Listener.
     @Override
-    public void adReceived(final AppLovinAd ad)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId + " and placement: " + mPlacement );
+    public void adReceived(final AppLovinAd ad) {
+        ApplovinAdapter.log(DEBUG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: "
+                + mZoneId + " and placement: " + mPlacement);
 
-        mAdView.renderAd( ad, mPlacement );
+        mAdView.renderAd(ad, mPlacement);
 
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
+        AppLovinSdkUtils.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                mMediationBannerListener.onAdLoaded( mAdapter );
+            public void run() {
+                mMediationBannerListener.onAdLoaded(mAdapter);
             }
-        } );
+        });
     }
 
     @Override
-    public void failedToReceiveAd(final int code)
-    {
-        ApplovinAdapter.log( ERROR, "Failed to load banner ad with error: " + code );
+    public void failedToReceiveAd(final int code) {
+        ApplovinAdapter.log(ERROR, "Failed to load banner ad with error: " + code);
 
-        AppLovinSdkUtils.runOnUiThread( new Runnable()
-        {
+        AppLovinSdkUtils.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                mMediationBannerListener.onAdFailedToLoad( mAdapter, AppLovinUtils.toAdMobErrorCode( code ) );
+            public void run() {
+                mMediationBannerListener.onAdFailedToLoad(
+                        mAdapter, AppLovinUtils.toAdMobErrorCode(code));
             }
-        } );
+        });
     }
 
-    //
-    // Ad Display Listener
-    //
-
+    // Ad Display Listener.
     @Override
-    public void adDisplayed(AppLovinAd ad)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner displayed" );
+    public void adDisplayed(AppLovinAd ad) {
+        ApplovinAdapter.log(DEBUG, "Banner displayed");
     }
 
     @Override
-    public void adHidden(AppLovinAd ad)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner dismissed" );
+    public void adHidden(AppLovinAd ad) {
+        ApplovinAdapter.log(DEBUG, "Banner dismissed");
     }
 
-    //
-    // Ad Click Listener
-    //
-
+    // Ad Click Listener.
     @Override
-    public void adClicked(AppLovinAd ad)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner clicked" );
-        mMediationBannerListener.onAdClicked( mAdapter );
+    public void adClicked(AppLovinAd ad) {
+        ApplovinAdapter.log(DEBUG, "Banner clicked");
+        mMediationBannerListener.onAdClicked(mAdapter);
     }
 
-    //
-    // Ad View Event Listener
-    //
-
+    // Ad View Event Listener.
     @Override
-    public void adOpenedFullscreen(AppLovinAd ad, AppLovinAdView adView)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner opened fullscreen" );
-        mMediationBannerListener.onAdOpened( mAdapter );
+    public void adOpenedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
+        ApplovinAdapter.log(DEBUG, "Banner opened fullscreen");
+        mMediationBannerListener.onAdOpened(mAdapter);
     }
 
     @Override
-    public void adClosedFullscreen(AppLovinAd ad, AppLovinAdView adView)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner closed fullscreen" );
-        mMediationBannerListener.onAdClosed( mAdapter );
+    public void adClosedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
+        ApplovinAdapter.log(DEBUG, "Banner closed fullscreen");
+        mMediationBannerListener.onAdClosed(mAdapter);
     }
 
     @Override
-    public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView)
-    {
-        ApplovinAdapter.log( DEBUG, "Banner left application" );
-        mMediationBannerListener.onAdLeftApplication( mAdapter );
+    public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView) {
+        ApplovinAdapter.log(DEBUG, "Banner left application");
+        mMediationBannerListener.onAdLeftApplication(mAdapter);
     }
 
     @Override
-    public void adFailedToDisplay(AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code)
-    {
-        ApplovinAdapter.log( ERROR, "Banner failed to display: " + code );
+    public void adFailedToDisplay(
+            AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code) {
+        ApplovinAdapter.log(ERROR, "Banner failed to display: " + code);
     }
 }

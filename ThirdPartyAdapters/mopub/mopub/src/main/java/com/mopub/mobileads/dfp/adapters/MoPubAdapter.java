@@ -134,7 +134,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                             final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
 
                             try {
-
                                 HashMap<String, URL> map = new HashMap<>();
                                 try {
                                     map.put(DownloadDrawablesAsync.KEY_ICON,
@@ -142,8 +141,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                     map.put(KEY_IMAGE,
                                             new URL(staticNativeAd.getMainImageUrl()));
                                 } catch (MalformedURLException e) {
-                                    Log.d(TAG, "Invalid ad response received from MoPub. Image URLs" +
-                                            " are invalid");
+                                    Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
+                                            + " are invalid");
                                     listener.onAdFailedToLoad(MoPubAdapter.this,
                                             AdRequest.ERROR_CODE_INTERNAL_ERROR);
                                 }
@@ -156,12 +155,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                         try {
                                             final MoPubNativeAppInstallAdMapper
                                                     moPubNativeAppInstallAdMapper =
-                                                    new MoPubNativeAppInstallAdMapper(staticNativeAd,
+                                                    new MoPubNativeAppInstallAdMapper(
+                                                            staticNativeAd,
                                                             drawableMap,
                                                             privacyIconPlacement,
                                                             mPrivacyIconSize);
 
-                                            // Returning the ImageView containing the main image via a AdMob's MediaView
+                                            // Returning the ImageView containing the main image via
+                                            // AdMob's MediaView.
                                             ImageView imageView = new ImageView(context);
                                             imageView.setImageDrawable(drawableMap.get(KEY_IMAGE));
 
@@ -171,8 +172,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                                     moPubNativeAppInstallAdMapper);
 
                                         } catch (Exception e) {
-                                            Log.d(TAG, "Exception trying to download native ad " +
-                                                    "drawables");
+                                            Log.d(TAG, "Exception trying to download native ad "
+                                                    + "drawables");
                                             listener.onAdFailedToLoad(MoPubAdapter.this,
                                                     AdRequest.ERROR_CODE_INTERNAL_ERROR);
                                         }
@@ -187,6 +188,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 }).execute(map);
                             } catch (Exception e) {
                                 Log.d(TAG, "Exception constructing the native ad");
+                                listener.onAdFailedToLoad(
+                                        MoPubAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                             }
                         }
                     }
@@ -215,7 +218,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                         AdRequest.ERROR_CODE_INTERNAL_ERROR);
                                 break;
                         }
-
                     }
                 };
 
@@ -328,13 +330,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onBannerCollapsed(MoPubView moPubView) {
             mMediationBannerListener.onAdClosed(MoPubAdapter.this);
-
         }
 
         @Override
         public void onBannerExpanded(MoPubView moPubView) {
             mMediationBannerListener.onAdOpened(MoPubAdapter.this);
-
         }
 
         @Override
@@ -422,7 +422,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onInterstitialDismissed(MoPubInterstitial moPubInterstitial) {
             mMediationInterstitialListener.onAdClosed(MoPubAdapter.this);
-
         }
 
         @Override
