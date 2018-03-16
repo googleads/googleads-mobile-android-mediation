@@ -96,25 +96,25 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
     /**
      * The {@link SampleAdView} representing a banner ad.
      */
-    private SampleAdView mSampleAdView;
+    private SampleAdView sampleAdView;
 
     /**
      * Represents a {@link SampleInterstitial}.
      */
-    private SampleInterstitial mSampleInterstitial;
+    private SampleInterstitial sampleInterstitial;
 
     /**
      * Used to forward rewarded video ad events to AdMob.
      */
-    private SampleMediationRewardedVideoEventForwarder mRewardedVideoEventForwarder;
+    private SampleMediationRewardedVideoEventForwarder rewardedVideoEventForwarder;
 
     /**
      * Contains publisher preferences for native ads.
      */
-    private NativeAdOptions mNativeAdOptions;
+    private NativeAdOptions nativeAdOptions;
 
     protected NativeAdOptions getNativeAdOptions() {
-        return mNativeAdOptions;
+        return nativeAdOptions;
     }
 
     /**
@@ -122,11 +122,11 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
      */
     @Override
     public void onDestroy() {
-        if (mSampleAdView != null) {
-            mSampleAdView.destroy();
+        if (sampleAdView != null) {
+            sampleAdView.destroy();
         }
 
-        if (mRewardedVideoEventForwarder != null) {
+        if (rewardedVideoEventForwarder != null) {
             SampleRewardedVideo.destroy();
         }
     }
@@ -169,10 +169,10 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          */
 
         // Create the SampleAdView.
-        mSampleAdView = new SampleAdView(context);
+        sampleAdView = new SampleAdView(context);
 
         if (serverParameters.containsKey(SAMPLE_AD_UNIT_KEY)) {
-            mSampleAdView.setAdUnit(serverParameters.getString(SAMPLE_AD_UNIT_KEY));
+            sampleAdView.setAdUnit(serverParameters.getString(SAMPLE_AD_UNIT_KEY));
         } else {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
@@ -187,13 +187,13 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         int widthInDp = Math.round(widthInPixels / displayMetrics.density);
         int heightInDp = Math.round(heightInPixels / displayMetrics.density);
 
-        mSampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
+        sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
 
         /**
          * Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
          * is handled by {@link SampleMediationBannerEventForwarder}.
          */
-        mSampleAdView.setAdListener(new SampleMediationBannerEventForwarder(listener, this));
+        sampleAdView.setAdListener(new SampleMediationBannerEventForwarder(listener, this));
 
         SampleAdRequest request = createSampleRequest(mediationAdRequest);
 
@@ -214,7 +214,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         }
 
         // Make an ad request.
-        mSampleAdView.fetchAd(request);
+        sampleAdView.fetchAd(request);
     }
 
     /**
@@ -233,7 +233,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
     @Override
     public View getBannerView() {
         // Return the banner view that you created from requestBannerAd().
-        return mSampleAdView;
+        return sampleAdView;
     }
 
     /**
@@ -255,10 +255,10 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          */
 
         // Create the SampleInterstitial.
-        mSampleInterstitial = new SampleInterstitial(context);
+        sampleInterstitial = new SampleInterstitial(context);
 
         if (serverParameters.containsKey(SAMPLE_AD_UNIT_KEY)) {
-            mSampleInterstitial.setAdUnit(serverParameters.getString(SAMPLE_AD_UNIT_KEY));
+            sampleInterstitial.setAdUnit(serverParameters.getString(SAMPLE_AD_UNIT_KEY));
         } else {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
@@ -267,7 +267,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          * Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
          * is handled by {@link SampleMediationInterstitialEventForwarder}.
          */
-        mSampleInterstitial.setAdListener(
+        sampleInterstitial.setAdListener(
                 new SampleMediationInterstitialEventForwarder(listener, this));
 
         SampleAdRequest request = createSampleRequest(mediationAdRequest);
@@ -289,13 +289,13 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         }
 
         // Make an ad request.
-        mSampleInterstitial.fetchAd(request);
+        sampleInterstitial.fetchAd(request);
     }
 
     @Override
     public void showInterstitial() {
         // Show the interstitial ad.
-        mSampleInterstitial.show();
+        sampleInterstitial.show();
     }
 
     @Override
@@ -339,17 +339,17 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         request.setShouldDownloadMultipleImages(false);
         request.setPreferredImageOrientation(SampleNativeAdRequest.IMAGE_ORIENTATION_ANY);
 
-        mNativeAdOptions = mediationAdRequest.getNativeAdOptions();
+        nativeAdOptions = mediationAdRequest.getNativeAdOptions();
 
-        if (mNativeAdOptions != null) {
+        if (nativeAdOptions != null) {
             // If the NativeAdOptions' shouldReturnUrlsForImageAssets is true, the adapter should
             // send just the URLs for the images.
-            request.setShouldDownloadImages(!mNativeAdOptions.shouldReturnUrlsForImageAssets());
+            request.setShouldDownloadImages(!nativeAdOptions.shouldReturnUrlsForImageAssets());
 
             // If your network does not support any of the following options, please make sure
             // that it is documented in your adapter's documentation.
-            request.setShouldDownloadMultipleImages(mNativeAdOptions.shouldRequestMultipleImages());
-            switch (mNativeAdOptions.getImageOrientation()) {
+            request.setShouldDownloadMultipleImages(nativeAdOptions.shouldRequestMultipleImages());
+            switch (nativeAdOptions.getImageOrientation()) {
                 case NativeAdOptions.ORIENTATION_LANDSCAPE:
                     request.setPreferredImageOrientation(
                             SampleNativeAdRequest.IMAGE_ORIENTATION_LANDSCAPE);
@@ -368,18 +368,17 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         // Set App Install and Content Ad requests.
         //
         // NOTE: Care needs to be taken to make sure the adapter respects the publisher's wishes
-        // in regard to native ad formats. For example, if your ad network only provides app install
-        // ads, and the publisher requests content ads alone, the adapter must report an error by
-        // calling the listener's onAdFailedToLoad method with an error code of
-        // AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad anyway,
-        // and then attempt to map it to the content ad format.
-        if (!mediationAdRequest.isAppInstallAdRequested()
-                && !mediationAdRequest.isContentAdRequested()) {
+        // in regard to native ad formats. This sample SDK provides native ads of a single type
+        // that represent both semantic types of ads (app install and content ads), and therefore
+        // the ad request is required to request both app install and content ad formats.
+        // If this is not the case, we call the listener's onAdFailedToLoad method with an error
+        // code of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
+        // anyway, and then attempt to map it to the content ad format.
+        if (!(mediationAdRequest.isAppInstallAdRequested()
+                && mediationAdRequest.isContentAdRequested())) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        request.setAppInstallAdsRequested(mediationAdRequest.isAppInstallAdRequested());
-        request.setContentAdsRequested(mediationAdRequest.isContentAdRequested());
 
         /**
          * If your network supports additional request parameters, the publisher can send these
@@ -439,11 +438,11 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
 
         // Create a rewarded video event forwarder to forward the events from the Sample SDK to
         // the Google Mobile Ads SDK.
-        mRewardedVideoEventForwarder =
+        rewardedVideoEventForwarder =
                 new SampleMediationRewardedVideoEventForwarder(listener, SampleAdapter.this);
 
         // Initialize the Sample SDK.
-        SampleRewardedVideo.initialize((Activity) context, adUnit, mRewardedVideoEventForwarder);
+        SampleRewardedVideo.initialize((Activity) context, adUnit, rewardedVideoEventForwarder);
     }
 
     @Override
@@ -452,10 +451,10 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
                        Bundle mediationExtras) {
         if (SampleRewardedVideo.isAdAvailable()) {
             // Ad already available, use the forwarder to send a success callback to AdMob.
-            mRewardedVideoEventForwarder.onAdLoaded();
+            rewardedVideoEventForwarder.onAdLoaded();
         } else {
             // No ad available, use the forwarder to send a failure callback.
-            mRewardedVideoEventForwarder.onAdFailedToLoad();
+            rewardedVideoEventForwarder.onAdFailedToLoad();
         }
     }
 
@@ -475,7 +474,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
 
     @Override
     public boolean isInitialized() {
-        return mRewardedVideoEventForwarder != null && mRewardedVideoEventForwarder.isInitialized();
+        return rewardedVideoEventForwarder != null && rewardedVideoEventForwarder.isInitialized();
     }
 
     @Override
@@ -500,28 +499,28 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          * An extra value used to populate the "ShouldAddAwesomeSauce" property of the Sample
          * SDK's ad request.
          */
-        private boolean mShouldAddAwesomeSauce;
+        private boolean shouldAddAwesomeSauce;
 
         /**
          * An extra value used to populate the "income" property of the Sample SDK's ad request.
          */
-        private int mIncome;
+        private int income;
 
         public MediationExtrasBundleBuilder setShouldAddAwesomeSauce(
                 boolean shouldAddAwesomeSauce) {
-            this.mShouldAddAwesomeSauce = shouldAddAwesomeSauce;
+            this.shouldAddAwesomeSauce = shouldAddAwesomeSauce;
             return MediationExtrasBundleBuilder.this;
         }
 
         public MediationExtrasBundleBuilder setIncome(int income) {
-            this.mIncome = income;
+            this.income = income;
             return MediationExtrasBundleBuilder.this;
         }
 
         public Bundle build() {
             Bundle extras = new Bundle();
-            extras.putBoolean(KEY_AWESOME_SAUCE, mShouldAddAwesomeSauce);
-            extras.putInt(KEY_INCOME, mIncome);
+            extras.putBoolean(KEY_AWESOME_SAUCE, shouldAddAwesomeSauce);
+            extras.putInt(KEY_INCOME, income);
             return extras;
         }
     }
