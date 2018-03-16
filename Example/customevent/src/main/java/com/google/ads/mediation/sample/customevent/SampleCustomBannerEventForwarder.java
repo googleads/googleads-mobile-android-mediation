@@ -27,8 +27,8 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListene
  * {@link CustomEventBannerListener}.
  */
 public class SampleCustomBannerEventForwarder extends SampleAdListener {
-    private CustomEventBannerListener mBannerListener;
-    private SampleAdView mAdView;
+    private final CustomEventBannerListener bannerListener;
+    private final SampleAdView adView;
 
     /**
      * Creates a new {@code SampleBannerEventForwarder}.
@@ -38,43 +38,43 @@ public class SampleCustomBannerEventForwarder extends SampleAdListener {
      */
     public SampleCustomBannerEventForwarder(
             CustomEventBannerListener listener, SampleAdView adView) {
-        this.mBannerListener = listener;
-        this.mAdView = adView;
+        this.bannerListener = listener;
+        this.adView = adView;
     }
 
     @Override
     public void onAdFetchSucceeded() {
-        mBannerListener.onAdLoaded(mAdView);
+        bannerListener.onAdLoaded(adView);
     }
 
     @Override
     public void onAdFetchFailed(SampleErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
-                mBannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 break;
             case BAD_REQUEST:
-                mBannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 break;
             case NETWORK_ERROR:
-                mBannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
+                bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
                 break;
             case NO_INVENTORY:
-                mBannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+                bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
                 break;
         }
     }
 
     @Override
     public void onAdFullScreen() {
-        mBannerListener.onAdClicked();
-        mBannerListener.onAdOpened();
+        bannerListener.onAdClicked();
+        bannerListener.onAdOpened();
         // Only call onAdLeftApplication if your ad network actually exits the developer's app.
-        mBannerListener.onAdLeftApplication();
+        bannerListener.onAdLeftApplication();
     }
 
     @Override
     public void onAdClosed() {
-        mBannerListener.onAdClosed();
+        bannerListener.onAdClosed();
     }
 }

@@ -21,9 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.ads.mediation.sample.sdk.activities.SampleSDKAdsActivity;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Locale;
@@ -44,22 +42,22 @@ public class SampleRewardedVideo {
     /**
      * Flag to determine whether or not the Sample SDK's rewarded video code is initialized.
      */
-    private static boolean sIsInitialized;
+    private static boolean isInitialized;
 
     /**
      * A queue of rewarded video ad objects.
      */
-    private static Queue<SampleRewardedVideoAd> sAdsQueue;
+    private static Queue<SampleRewardedVideoAd> adsQueue;
 
     /**
      * A listener that SampleRewardedVideo will send rewarded video events to.
      */
-    private static SampleRewardedVideoAdListener sListener;
+    private static SampleRewardedVideoAdListener listener;
 
     /**
      * A weak reference to the current activity. Used to show rewarded video ads.
      */
-    private static WeakReference<Activity> sWeakActivity;
+    private static WeakReference<Activity> weakActivity;
 
     /**
      * Private constructor to restrict anyone from instantiating this class.
@@ -74,7 +72,7 @@ public class SampleRewardedVideo {
      *                 video ad events.
      */
     public static void setListener(SampleRewardedVideoAdListener listener) {
-        sListener = listener;
+        SampleRewardedVideo.listener = listener;
     }
 
     /**
@@ -85,7 +83,7 @@ public class SampleRewardedVideo {
      * SDK.
      */
     public static SampleRewardedVideoAdListener getListener() {
-        return sListener;
+        return listener;
     }
 
     /**
@@ -101,7 +99,7 @@ public class SampleRewardedVideo {
     public static void initialize(Activity activity,
                                   String adUnitId,
                                   SampleRewardedVideoAdListener listener) {
-        if (sIsInitialized) {
+        if (isInitialized) {
             Log.d("SampleSDK", "Sample rewarded video is already initialized.");
             return;
         }
@@ -116,7 +114,7 @@ public class SampleRewardedVideo {
 
         setListener(listener);
         setCurrentActivity(activity);
-        sAdsQueue = new ArrayDeque<>();
+        adsQueue = new ArrayDeque<>();
 
         loadAds();
     }
@@ -128,13 +126,13 @@ public class SampleRewardedVideo {
      * {@code false} otherwise.
      */
     public static boolean isAdAvailable() {
-        if (!sIsInitialized) {
+        if (!isInitialized) {
             Log.w("SampleSDK", "Sample rewarded video not initialized. Call "
                     + "SampleRewardedVideo.initialize(...) before fetching ads.");
             return false;
         }
 
-        if (sAdsQueue.size() > 0) {
+        if (!adsQueue.isEmpty()) {
             return true;
         } else {
             loadAds();
@@ -148,7 +146,7 @@ public class SampleRewardedVideo {
      * @param activity an Android {@link Activity}.
      */
     public static void setCurrentActivity(Activity activity) {
-        sWeakActivity = new WeakReference<>(activity);
+        weakActivity = new WeakReference<>(activity);
     }
 
     /**
@@ -168,9 +166,9 @@ public class SampleRewardedVideo {
             } else {
                 createSampleRewardedVideoAds(8, 1);
             }
-            if (sListener != null && !sIsInitialized) {
-                sIsInitialized = true;
-                sListener.onRewardedVideoInitialized();
+            if (listener != null && !isInitialized) {
+                isInitialized = true;
+                listener.onRewardedVideoInitialized();
             }
         } else if (nextInt < 85) {
             errorCode = SampleErrorCode.UNKNOWN;
@@ -181,8 +179,8 @@ public class SampleRewardedVideo {
         } else if (nextInt < 100) {
             errorCode = SampleErrorCode.NO_INVENTORY;
         }
-        if (errorCode != null && sListener != null && !sIsInitialized) {
-            sListener.onRewardedVideoInitializationFailed(errorCode);
+        if (errorCode != null && listener != null && !isInitialized) {
+            listener.onRewardedVideoInitializationFailed(errorCode);
         }
     }
 
@@ -198,14 +196,14 @@ public class SampleRewardedVideo {
         }
 
 
-        if (sWeakActivity == null) {
+        if (weakActivity == null) {
             Log.d("SampleSDK", "Current activity is null. Make sure to call "
                     + "SampleRewardedVideo.setCurrentActivity(this) in your Activity's onResume()");
             return;
         }
 
 
-        Context context = sWeakActivity.get();
+        Context context = weakActivity.get();
         if (context == null) {
             Log.d("SampleSDK", "Current activity is null. Make sure to call "
                     + "SampleRewardedVideo.setCurrentActivity(this) in your Activity's onResume()");
@@ -224,8 +222,8 @@ public class SampleRewardedVideo {
      * @return the {@link SampleRewardedVideoAd} on top of the queue.
      */
     private static SampleRewardedVideoAd nextSampleRewardedVideoAd() {
-        SampleRewardedVideoAd sampleRewardedVideoAd = sAdsQueue.remove();
-        if (sAdsQueue.size() == 0) {
+        SampleRewardedVideoAd sampleRewardedVideoAd = adsQueue.remove();
+        if (adsQueue.isEmpty()) {
             loadAds();
         }
         return sampleRewardedVideoAd;
@@ -239,16 +237,16 @@ public class SampleRewardedVideo {
      */
     private static void createSampleRewardedVideoAds(int numberOfAds, int rewardValue) {
         for (int i = 0; i < numberOfAds; i++) {
-            sAdsQueue.add(new SampleRewardedVideoAd(
+            adsQueue.add(new SampleRewardedVideoAd(
                     String.format(Locale.getDefault(), "Ad %d of %d", (i + 1), numberOfAds),
                     rewardValue));
         }
     }
 
     public static void destroy() {
-        sWeakActivity = null;
-        sAdsQueue = null;
-        sListener = null;
-        sIsInitialized = false;
+        weakActivity = null;
+        adsQueue = null;
+        listener = null;
+        isInitialized = false;
     }
 }

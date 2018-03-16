@@ -17,44 +17,35 @@
 package com.google.ads.mediation.sample.adapter;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-
 import com.google.ads.mediation.sample.sdk.SampleMediaView;
-import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
+import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link NativeContentAdMapper} extension to map {@link SampleNativeContentAd} instances to
+ * A {@link NativeContentAdMapper} extension to map {@link SampleNativeAd} instances to
  * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeContentAd} interface.
  */
 public class SampleNativeContentAdMapper extends NativeContentAdMapper {
 
-    private SampleNativeContentAd mSampleAd;
-    private NativeAdOptions mNativeAdOptions;
-    private ImageView mInformationIconView;
+    private final SampleNativeAd sampleAd;
 
+    // For the sake of simplicity, the NativeAdOptions are not used by the Sample Adapter.
+    // They're included to demonstrate how the adapter can map options and views between the Google
+    // Mobile Ads SDK and the Sample SDK.
+    public SampleNativeContentAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+        sampleAd = ad;
 
-    public SampleNativeContentAdMapper(SampleNativeContentAd ad, NativeAdOptions adOptions) {
-        mSampleAd = ad;
-        mNativeAdOptions = adOptions;
+        setAdvertiser(sampleAd.getAdvertiser());
+        setHeadline(sampleAd.getHeadline());
+        setBody(sampleAd.getBody());
+        setCallToAction(sampleAd.getCallToAction());
 
-        setAdvertiser(mSampleAd.getAdvertiser());
-        setHeadline(mSampleAd.getHeadline());
-        setBody(mSampleAd.getBody());
-        setCallToAction(mSampleAd.getCallToAction());
-
-        setLogo(new SampleNativeMappedImage(ad.getLogo(), ad.getLogoUri(),
+        setLogo(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
                 SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
@@ -66,7 +57,7 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
         extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);
 
-        SampleMediaView mediaView = mSampleAd.getMediaView();
+        SampleMediaView mediaView = sampleAd.getMediaView();
 
         // Some ads from Sample SDK has video assets and some do not.
         if(mediaView != null) {
@@ -79,17 +70,17 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
         setOverrideClickHandling(false);
         setOverrideImpressionRecording(false);
 
-        setAdChoicesContent(mSampleAd.getInformationIcon());
+        setAdChoicesContent(sampleAd.getInformationIcon());
     }
 
     @Override
     public void recordImpression() {
-        mSampleAd.recordImpression();
+        sampleAd.recordImpression();
     }
 
     @Override
     public void handleClick(View view) {
-        mSampleAd.handleClick(view);
+        sampleAd.handleClick(view);
     }
 
     // The Sample SDK doesn't do its own impression/click tracking, instead relies on its
@@ -103,7 +94,7 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
         super.trackView(view);
         // Here you would pass the View back to the mediated network's SDK.
 
-        mSampleAd.registerNativeAdView(view);
+        sampleAd.registerNativeAdView(view);
 
     }
 
