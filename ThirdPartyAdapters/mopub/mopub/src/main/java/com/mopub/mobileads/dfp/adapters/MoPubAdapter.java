@@ -193,6 +193,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 }).execute(map);
                             } catch (Exception e) {
                                 Log.d(TAG, "Exception constructing the native ad");
+                                listener.onAdFailedToLoad(
+                                        MoPubAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                             }
                         }
                     }
