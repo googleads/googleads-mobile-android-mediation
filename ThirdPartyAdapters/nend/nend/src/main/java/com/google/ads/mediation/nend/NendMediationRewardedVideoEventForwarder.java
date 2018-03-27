@@ -153,6 +153,7 @@ class NendMediationRewardedVideoEventForwarder implements NendAdRewardedListener
 
     @Override
     public void onCompleted(NendAdVideo nendAdVideo) {
+        mMediationRewardedVideoAdListener.onVideoCompleted(mNendAdapter);
     }
 
     @Override
