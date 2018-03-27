@@ -114,7 +114,7 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion("2.1.2.0");
+        mediationMetaData.setVersion("2.2.0.0");
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());

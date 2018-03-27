@@ -25,54 +25,29 @@ public class SampleNativeAdRequest extends SampleAdRequest {
     public static final int IMAGE_ORIENTATION_PORTRAIT = 1;
     public static final int IMAGE_ORIENTATION_LANDSCAPE = 2;
 
-    private boolean mAppInstallAdsRequested;
-    private boolean mContentAdsRequested;
-    private boolean mShouldDownloadImages;
+    private boolean shouldDownloadImages;
+
+    public SampleNativeAdRequest() {
+        super();
+        shouldDownloadImages = true;
+    }
+
+    public boolean getShouldDownloadImages() {
+        return shouldDownloadImages;
+    }
+
+    public void setShouldDownloadImages(boolean shouldDownloadImages) {
+        this.shouldDownloadImages = shouldDownloadImages;
+    }
 
     // For the sake of simplicity, the following two values are ignored by the Sample SDK.
     // They're included so that the custom event and adapter classes can demonstrate how to take
     // a request from the Google Mobile Ads SDK and translate it into one for the Sample SDK.
-    private boolean mShouldDownloadMultipleImages;
-    private int mPreferredImageOrientation;
-
-    public SampleNativeAdRequest() {
-        super();
-        mAppInstallAdsRequested = false;
-        mContentAdsRequested = false;
-        mShouldDownloadImages = true;
-        mShouldDownloadMultipleImages = false;
-        mPreferredImageOrientation = IMAGE_ORIENTATION_ANY;
-    }
-
-    public boolean areAppInstallAdsRequested() {
-        return mAppInstallAdsRequested;
-    }
-
-    public void setAppInstallAdsRequested(boolean appInstallAdsRequested) {
-        this.mAppInstallAdsRequested = appInstallAdsRequested;
-    }
-
-    public boolean areContentAdsRequested() {
-        return mContentAdsRequested;
-    }
-
-    public void setContentAdsRequested(boolean contentAdsRequested) {
-        this.mContentAdsRequested = contentAdsRequested;
-    }
-
-    public boolean getShouldDownloadImages() {
-        return mShouldDownloadImages;
-    }
-
-    public void setShouldDownloadImages(boolean shouldDownloadImages) {
-        this.mShouldDownloadImages = shouldDownloadImages;
-    }
-
     public void setShouldDownloadMultipleImages(boolean shouldDownloadMultipleImages) {
-        this.mShouldDownloadMultipleImages = shouldDownloadMultipleImages;
+
     }
 
     public void setPreferredImageOrientation(int preferredImageOrientation) {
-        this.mPreferredImageOrientation = preferredImageOrientation;
+
     }
 }

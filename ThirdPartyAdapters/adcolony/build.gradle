@@ -4,9 +4,6 @@ buildscript {
     repositories {
         jcenter()
         google()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
@@ -19,13 +16,10 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        google()
         maven {
             url  "https://adcolony.bintray.com/AdColony"
         }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-        google()
     }
 }
 

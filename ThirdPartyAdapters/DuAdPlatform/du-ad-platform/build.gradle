@@ -1,0 +1,103 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+//[compileJava, compileTestJava, compileGroovy]*.options*.encoding = 'UTF-8'
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+def adapterVersionCode = 1000
+def adapterVersionName = "0.0.3"
+
+group = 'com.google.ads.mediation.dap'
+version = adapterVersionName
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+android {
+    compileSdkVersion 25
+    buildToolsVersion "26.0.2"
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode adapterVersionCode
+        versionName adapterVersionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    provided "com.google.android.gms:play-services-ads:11.8.0"
+    provided(name: 'DuappsAd-CW-v1.1.1.0-release', ext: 'aar')
+    provided(name: 'DuVideoSdk-v1.0.1-release', ext: 'aar')
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+artifacts {
+    archives sourcesJar
+}
+
+def siteUrl = 'https://github.com/baiduDuApps/googleads-mobile-android-mediation'    // project homepage
+def gitUrl = 'https://github.com/baiduDuApps/googleads-mobile-android-mediation.git' // project git
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                name 'DAP'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'baiduduapps'
+                        name 'baiduduapps'
+                        email 'baiduduapps@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+Properties properties = new Properties()
+boolean isHasFile = false
+if (project.rootProject.file('local.properties').exists()) {
+    isHasFile = true
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    println "1 hasfile:$isHasFile"
+}
+bintray {
+    println "hasfile:$isHasFile"
+    user = isHasFile ? properties.getProperty("bintray.user") : System.getenv("bintray.user")
+    key = isHasFile ? properties.getProperty("bintray.apikey") : System.getenv("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = "publicSDK"
+        name = "DAP"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}

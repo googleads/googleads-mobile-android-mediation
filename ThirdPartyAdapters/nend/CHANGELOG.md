@@ -4,7 +4,10 @@
 
 - Verified compatibility with nend SDK 4.0.4.
 
-## 4.0.2.0
+## 4.0.2.1
+- Added the ability to create a `Bundle` of mediation extras using the
+  `NendExtrasBundleBuilder` class.
 
+## 4.0.2.0
 - First release in Google Mobile Ads Mediation open source project.
 - Added support for banner, interstitial, and rewarded video ads.
