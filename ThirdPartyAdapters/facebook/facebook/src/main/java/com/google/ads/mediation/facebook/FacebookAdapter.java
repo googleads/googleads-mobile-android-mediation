@@ -154,7 +154,7 @@ public final class FacebookAdapter
     private MediaView mMediaView;
 
     /**
-     * Set mediation service for Facebook adapter.
+     * Set mediation service for FacebookAdapter.
      */
     static {
         AdSettings.setMediationService("ADMOB_" + GoogleApiAvailability.GOOGLE_PLAY_SERVICES_VERSION_CODE);
