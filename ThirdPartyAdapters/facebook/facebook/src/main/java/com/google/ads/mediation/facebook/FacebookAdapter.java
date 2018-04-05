@@ -153,6 +153,13 @@ public final class FacebookAdapter
      */
     private MediaView mMediaView;
 
+    /**
+     * Set mediation service for FacebookAdapter.
+     */
+    static {
+        AdSettings.setMediationService("ADMOB_" + GoogleApiAvailability.GOOGLE_PLAY_SERVICES_VERSION_CODE);
+    }
+
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
