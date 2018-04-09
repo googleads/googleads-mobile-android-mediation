@@ -34,7 +34,6 @@ android {
 
 dependencies {
     implementation 'com.google.android.gms:play-services-ads:11.8.0'
-    implementation 'com.google.android.gms:play-services-base:11.8.0'
     implementation 'com.facebook.android:audience-network-sdk:4.28.0'
 }
 
