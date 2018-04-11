@@ -24,11 +24,11 @@ import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
-import com.my.target.ads.CustomParams;
+import com.my.target.common.CustomParams;
 import com.my.target.nativeads.NativeAd;
 import com.my.target.nativeads.banners.NativePromoBanner;
-import com.my.target.nativeads.banners.NavigationType;
-import com.my.target.nativeads.models.ImageData;
+import com.my.target.common.NavigationType;
+import com.my.target.common.models.ImageData;
 import com.my.target.nativeads.views.MediaAdView;
 
 import java.util.ArrayList;
@@ -324,7 +324,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             if (!TextUtils.isEmpty(category)) {
                 extras.putString(EXTRA_KEY_CATEGORY, category);
             }
-            final String subCategory = banner.getSubcategory();
+            final String subCategory = banner.getSubCategory();
             if (!TextUtils.isEmpty(subCategory)) {
                 extras.putString(EXTRA_KEY_SUBCATEGORY, subCategory);
             }

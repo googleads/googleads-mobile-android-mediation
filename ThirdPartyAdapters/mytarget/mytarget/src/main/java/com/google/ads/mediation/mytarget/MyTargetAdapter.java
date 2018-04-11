@@ -14,7 +14,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.my.target.ads.CustomParams;
+import com.my.target.common.CustomParams;
 import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;

@@ -11,7 +11,7 @@ import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
-import com.my.target.ads.CustomParams;
+import com.my.target.common.CustomParams;
 import com.my.target.ads.InterstitialAd;
 
 import java.util.Date;
