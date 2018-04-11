@@ -30,6 +30,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                             boolean wasSuccessfulView,
                             boolean wasCallToActionClicked) {
             if (mMediationInterstitialListener != null) {
+                if (wasCallToActionClicked) {
+                    // Only the call to action button is clickable for Vungle ads. So the
+                    // wasCallToActionClicked can be used for tracking clicks.
+                    mMediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
+                }
                 mMediationInterstitialListener.onAdClosed(VungleInterstitialAdapter.this);
             }
         }

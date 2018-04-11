@@ -54,6 +54,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                             final boolean wasSuccessfulView,
                             boolean wasCallToActionClicked) {
             if (mMediationRewardedVideoAdListener != null) {
+                if (wasCallToActionClicked) {
+                    // Only the call to action button is clickable for Vungle ads. So the
+                    // wasCallToActionClicked can be used for tracking clicks.
+                    mMediationRewardedVideoAdListener.onAdClicked(VungleAdapter.this);
+                }
                 if (wasSuccessfulView) {
                     mMediationRewardedVideoAdListener.onRewarded(VungleAdapter.this,
                             new VungleReward("vungle", 1));
