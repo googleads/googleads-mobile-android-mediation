@@ -214,6 +214,7 @@ public final class FacebookAdapter
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVsionCode(this));
         mAdView = new AdView(context, placementId, facebookAdSize);
         mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
@@ -246,6 +247,7 @@ public final class FacebookAdapter
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVsionCode(this));
         mInterstitialAd = new InterstitialAd(context, placementId);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
@@ -296,6 +298,7 @@ public final class FacebookAdapter
                 mRewardedListener.onAdLoaded(this);
             } else {
                 buildAdRequest(mediationAdRequest);
+                AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVsionCode(this));
                 mRewardedVideoAd.loadAd(true);
             }
         }
@@ -359,6 +362,7 @@ public final class FacebookAdapter
 
         mMediaView = new MediaView(context);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVsionCode(this));
         mNativeAd = new NativeAd(context, placementId);
         mNativeAd.setAdListener(new NativeListener(mNativeAd, mediationAdRequest));
         buildAdRequest(mediationAdRequest);
@@ -671,6 +675,14 @@ public final class FacebookAdapter
     private int pixelToDip(int pixel) {
         DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
         return Math.round(pixel / displayMetrics.density);
+    }
+
+    private static int getGMSVsionCode(Context context) {
+        try {
+            return context.getPackageManager().getPackageInfo("com.google.android.gms", 0 ).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
+        }
     }
 
     /**
