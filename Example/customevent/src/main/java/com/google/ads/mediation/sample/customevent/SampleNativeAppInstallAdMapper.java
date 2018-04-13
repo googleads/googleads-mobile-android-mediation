@@ -22,13 +22,16 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
+ * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to
+ * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
  */
 public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 
@@ -81,10 +84,12 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
     // your mediated network does need a reference to the view, the following method can be used
     // to provide one.
 
+
     @Override
-    public void trackView(View view) {
-        super.trackView(view);
-        // Here you would pass the View back to the mediated network's SDK.
+    public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
+        super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
+        // If your ad network SDK does its own impression tracking, here is where you can track the
+        // top level native ad view and its individual asset views.
     }
 
     @Override

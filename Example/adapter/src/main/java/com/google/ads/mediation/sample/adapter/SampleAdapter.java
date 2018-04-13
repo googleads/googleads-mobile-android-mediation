@@ -109,15 +109,6 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
     private SampleMediationRewardedVideoEventForwarder rewardedVideoEventForwarder;
 
     /**
-     * Contains publisher preferences for native ads.
-     */
-    private NativeAdOptions nativeAdOptions;
-
-    protected NativeAdOptions getNativeAdOptions() {
-        return nativeAdOptions;
-    }
-
-    /**
      * The adapter is being destroyed. Perform any necessary cleanup here.
      */
     @Override
@@ -325,7 +316,8 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
          * Set the native ad listener and forward callbacks to mediation. The callback forwarding
          * is handled by {@link SampleNativeMediationEventForwarder}.
          */
-        loader.setNativeAdListener(new SampleNativeMediationEventForwarder(listener, this));
+        loader.setNativeAdListener(new SampleNativeMediationEventForwarder(
+                listener, this, mediationAdRequest));
         SampleNativeAdRequest request = new SampleNativeAdRequest();
 
         // The Google Mobile Ads SDK requires the image assets to be downloaded automatically unless
@@ -339,7 +331,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         request.setShouldDownloadMultipleImages(false);
         request.setPreferredImageOrientation(SampleNativeAdRequest.IMAGE_ORIENTATION_ANY);
 
-        nativeAdOptions = mediationAdRequest.getNativeAdOptions();
+        NativeAdOptions nativeAdOptions = mediationAdRequest.getNativeAdOptions();
 
         if (nativeAdOptions != null) {
             // If the NativeAdOptions' shouldReturnUrlsForImageAssets is true, the adapter should
@@ -370,12 +362,14 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         // NOTE: Care needs to be taken to make sure the adapter respects the publisher's wishes
         // in regard to native ad formats. This sample SDK provides native ads of a single type
         // that represent both semantic types of ads (app install and content ads), and therefore
-        // the ad request is required to request both app install and content ad formats.
+        // the ad request is required to request both app install and content ad formats, or the
+        // unified native ad format.
         // If this is not the case, we call the listener's onAdFailedToLoad method with an error
         // code of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
         // anyway, and then attempt to map it to the content ad format.
         if (!(mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested())) {
+                && mediationAdRequest.isContentAdRequested())
+                && !mediationAdRequest.isUnifiedNativeAdRequested()) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }

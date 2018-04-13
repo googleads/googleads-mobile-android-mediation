@@ -18,39 +18,48 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.mediation.NativeContentAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link NativeContentAdMapper} extension to map {@link SampleNativeAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeContentAd} interface.
+ * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to
+ * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
  */
-public class SampleNativeContentAdMapper extends NativeContentAdMapper {
+public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     private final SampleNativeAd sampleAd;
     // For the sake of simplicity, NativeAdOptions are not used by the Sample Custom
     // Event. They're included to demonstrate how the custom event can map options and views between
-    // the Google Mobile Ads SDK and the Sample SDK.
-    public SampleNativeContentAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+    // the Google Mobile Ads SDK and the Sample SDK
+    public SampleUnifiedNativeAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
         sampleAd = ad;
-
-        setAdvertiser(sampleAd.getAdvertiser());
         setHeadline(sampleAd.getHeadline());
         setBody(sampleAd.getBody());
         setCallToAction(sampleAd.getCallToAction());
-
-        setLogo(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
+        setStarRating(sampleAd.getStarRating());
+        setStore(sampleAd.getStoreName());
+        setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
                 SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+        setAdvertiser(ad.getAdvertiser());
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
         imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
                 SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
         setImages(imagesList);
+
+        NumberFormat formatter = NumberFormat.getCurrencyInstance();
+        String priceString = formatter.format(sampleAd.getPrice());
+        setPrice(priceString);
 
         Bundle extras = new Bundle();
         extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
@@ -78,6 +87,7 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
     // your mediated network does need a reference to the view, the following method can be used
     // to provide one.
 
+
     @Override
     public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
         super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
@@ -89,6 +99,5 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
     public void untrackView(View view) {
         super.untrackView(view);
         // Here you would remove any trackers from the View added in trackView.
-
     }
 }

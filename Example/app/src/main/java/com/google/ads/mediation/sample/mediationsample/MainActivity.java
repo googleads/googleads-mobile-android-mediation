@@ -333,6 +333,9 @@ public class MainActivity extends AppCompatActivity {
                 adapterVideoButton.setEnabled(true);
                 adapterVideoButton.setText("Load SampleAdapter Rewarded Video");
             }
+
+            @Override
+            public void onRewardedVideoCompleted() {}
         });
 
         loadRewardedVideoAd();

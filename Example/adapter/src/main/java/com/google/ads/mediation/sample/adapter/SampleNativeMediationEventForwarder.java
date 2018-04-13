@@ -22,6 +22,7 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
 /**
  * A {@link SampleNativeAdListener} that forwards events to AdMob's
@@ -30,6 +31,7 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 public class SampleNativeMediationEventForwarder extends SampleNativeAdListener {
     private final MediationNativeListener nativeListener;
     private final SampleAdapter adapter;
+    private final NativeMediationAdRequest nativeAdRequest;
 
     /**
      * Creates a new {@code SampleNativeMediationEventForwarder}.
@@ -40,9 +42,11 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
      * @param adapter A {@link SampleAdapter} mediation adapter.
      */
     public SampleNativeMediationEventForwarder(
-            MediationNativeListener listener, SampleAdapter adapter) {
+            MediationNativeListener listener, SampleAdapter adapter,
+            NativeMediationAdRequest adRequest) {
         this.nativeListener = listener;
         this.adapter = adapter;
+        this.nativeAdRequest = adRequest;
     }
 
     @Override
@@ -68,7 +72,19 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
         // image downloading are respected, and that any additional downloads take place *before*
         // the mapped native ad object is returned to the Google Mobile Ads SDK via the
         // onAdLoaded method.
-        if (containsRequiredAppInstallAdAssets(ad)) {
+        if (nativeAdRequest.isUnifiedNativeAdRequested()) {
+            // It is important that video events be forwarded from the mediated SDK to the Google
+            // Mobile Ads SDK. This example has a SampleMediaViewEventForwarder class to do the job.
+            SampleMediaView mediaView = ad.getMediaView();
+            if (mediaView != null) {
+                mediaView.setMediaViewListener(
+                        new SampleMediaViewEventForwarder(nativeListener, adapter, mediaView));
+            }
+
+            SampleUnifiedNativeAdMapper mapper =
+                    new SampleUnifiedNativeAdMapper(ad, nativeAdRequest.getNativeAdOptions());
+            nativeListener.onAdLoaded(adapter, mapper);
+        } else if (containsRequiredAppInstallAdAssets(ad)) {
             // It is important that video events be forwarded from the mediated SDK to the Google
             // Mobile Ads SDK. This example has a SampleMediaViewEventForwarder class to do the job.
             SampleMediaView mediaView = ad.getMediaView();
@@ -78,7 +94,7 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             }
 
             SampleNativeAppInstallAdMapper mapper =
-                    new SampleNativeAppInstallAdMapper(ad, adapter.getNativeAdOptions());
+                    new SampleNativeAppInstallAdMapper(ad, nativeAdRequest.getNativeAdOptions());
             nativeListener.onAdLoaded(adapter, mapper);
         } else if (containsRequiredContentAdAssets(ad)) {
 
@@ -92,7 +108,7 @@ public class SampleNativeMediationEventForwarder extends SampleNativeAdListener 
             }
 
             SampleNativeContentAdMapper mapper =
-                    new SampleNativeContentAdMapper(ad, adapter.getNativeAdOptions());
+                    new SampleNativeContentAdMapper(ad, nativeAdRequest.getNativeAdOptions());
             nativeListener.onAdLoaded(adapter, mapper);
         } else {
             // Each system-defined native ad format (App Install and Content) has a set of
