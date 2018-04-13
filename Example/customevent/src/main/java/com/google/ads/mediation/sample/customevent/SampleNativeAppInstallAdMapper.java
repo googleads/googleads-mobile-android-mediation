@@ -22,7 +22,6 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -30,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
+ * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAd} instances to
+ * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
+ *
  */
 public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 

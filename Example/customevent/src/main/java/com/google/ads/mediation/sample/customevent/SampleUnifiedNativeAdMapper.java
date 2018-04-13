@@ -18,12 +18,9 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.mediation.NativeAdMapper;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
 import java.text.NumberFormat;

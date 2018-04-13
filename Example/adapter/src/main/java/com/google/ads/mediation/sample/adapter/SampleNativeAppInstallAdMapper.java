@@ -37,7 +37,7 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 
     // For the sake of simplicity, the ad options are ignored here.
     // They're included to demonstrate how the adapter can map options and views between the Google
-    // Mobile Ads SDK and the Sample SDK.
+    // Mobile Ads SDK and the Sample SDK.    
     public SampleNativeAppInstallAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
         sampleAd = ad;
         setHeadline(sampleAd.getHeadline());
