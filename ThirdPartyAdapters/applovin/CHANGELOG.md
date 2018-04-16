@@ -1,7 +1,7 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
-## 7.8.5.1
-- Added support for Unity banners.
+## 7.8.6.0
+- Verified compatibility with AppLovin SDK 7.8.6
 
 ## 7.8.5.0
 - Added support for zones and smart banners.
