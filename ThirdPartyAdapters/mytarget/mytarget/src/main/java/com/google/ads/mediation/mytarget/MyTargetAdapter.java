@@ -14,10 +14,10 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.my.target.common.CustomParams;
 import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
+import com.my.target.common.CustomParams;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -209,28 +209,31 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         mMyTargetView.init(slotId, adSize, false);
 
         CustomParams params = mMyTargetView.getCustomParams();
-        if (mediationAdRequest != null) {
-            int gender = mediationAdRequest.getGender();
-            params.setGender(gender);
-            Log.d(TAG, "Set gender to " + gender);
+        if (params != null) {
+            if (mediationAdRequest != null) {
+                int gender = mediationAdRequest.getGender();
+                params.setGender(gender);
+                Log.d(TAG, "Set gender to " + gender);
 
-            Date date = mediationAdRequest.getBirthday();
-            if (date != null && date.getTime() != -1) {
-                GregorianCalendar calendar = new GregorianCalendar();
-                GregorianCalendar calendarNow = new GregorianCalendar();
+                Date date = mediationAdRequest.getBirthday();
+                if (date != null && date.getTime() != -1) {
+                    GregorianCalendar calendar = new GregorianCalendar();
+                    GregorianCalendar calendarNow = new GregorianCalendar();
 
-                calendar.setTimeInMillis(date.getTime());
-                int age = calendarNow.get(GregorianCalendar.YEAR) -
-                        calendar.get(GregorianCalendar.YEAR);
-                if (age >= 0) {
-                    Log.d(TAG, "Set age to " + age);
-                    params.setAge(age);
+                    calendar.setTimeInMillis(date.getTime());
+                    int age = calendarNow.get(GregorianCalendar.YEAR) -
+                            calendar.get(GregorianCalendar.YEAR);
+                    if (age >= 0) {
+                        Log.d(TAG, "Set age to " + age);
+                        params.setAge(age);
+                    }
                 }
             }
+
+            params.setCustomParam(
+                    MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
         }
 
-        params.setCustomParam(
-                MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
         mMyTargetView.setListener(myTargetBannerListener);
         mMyTargetView.load();
     }
@@ -248,20 +251,20 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         }
 
         @Override
-        public void onLoad(final MyTargetView view) {
+        public void onLoad(@NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad loaded");
             view.start();
             listener.onAdLoaded(MyTargetAdapter.this);
         }
 
         @Override
-        public void onNoAd(final String reason, final MyTargetView view) {
+        public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad failed to load: " + reason);
             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override
-        public void onClick(final MyTargetView view) {
+        public void onClick(@NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad clicked");
             listener.onAdClicked(MyTargetAdapter.this);
             listener.onAdOpened(MyTargetAdapter.this);
@@ -285,19 +288,19 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         }
 
         @Override
-        public void onLoad(final InterstitialAd ad) {
+        public void onLoad(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Interstitial mediation Ad loaded");
             listener.onAdLoaded(MyTargetAdapter.this);
         }
 
         @Override
-        public void onNoAd(final String reason, final InterstitialAd ad) {
+        public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
             Log.d(TAG, "Interstitial mediation Ad failed to load: " + reason);
             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override
-        public void onClick(final InterstitialAd ad) {
+        public void onClick(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Interstitial mediation Ad clicked");
             listener.onAdClicked(MyTargetAdapter.this);
             // click redirects user to Google Play, or web browser, so we can notify
@@ -306,17 +309,17 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         }
 
         @Override
-        public void onDismiss(final InterstitialAd ad) {
+        public void onDismiss(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Interstitial mediation Ad dismissed");
             listener.onAdClosed(MyTargetAdapter.this);
         }
 
         @Override
-        public void onVideoCompleted(final InterstitialAd ad) {
+        public void onVideoCompleted(@NonNull final InterstitialAd ad) {
         }
 
         @Override
-        public void onDisplay(final InterstitialAd ad) {
+        public void onDisplay(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Interstitial mediation Ad displayed");
             listener.onAdOpened(MyTargetAdapter.this);
         }

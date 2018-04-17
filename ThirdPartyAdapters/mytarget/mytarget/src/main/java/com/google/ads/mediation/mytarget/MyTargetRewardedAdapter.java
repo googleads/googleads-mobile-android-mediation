@@ -11,8 +11,8 @@ import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
-import com.my.target.common.CustomParams;
 import com.my.target.ads.InterstitialAd;
+import com.my.target.common.CustomParams;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -164,19 +164,19 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter 
         }
 
         @Override
-        public void onLoad(final InterstitialAd ad) {
+        public void onLoad(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Ad loaded");
             listener.onAdLoaded(MyTargetRewardedAdapter.this);
         }
 
         @Override
-        public void onNoAd(final String reason, final InterstitialAd ad) {
+        public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
             Log.d(TAG, "Failed to load: " + reason);
             listener.onAdFailedToLoad(MyTargetRewardedAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override
-        public void onClick(final InterstitialAd ad) {
+        public void onClick(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Ad clicked");
             listener.onAdClicked(MyTargetRewardedAdapter.this);
             // click redirects user to Google Play, or web browser, so we can notify
@@ -185,19 +185,19 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter 
         }
 
         @Override
-        public void onDismiss(final InterstitialAd ad) {
+        public void onDismiss(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Ad dismissed");
             listener.onAdClosed(MyTargetRewardedAdapter.this);
         }
 
         @Override
-        public void onVideoCompleted(final InterstitialAd ad) {
+        public void onVideoCompleted(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Video completed");
             listener.onRewarded(MyTargetRewardedAdapter.this, new MyTargetReward());
         }
 
         @Override
-        public void onDisplay(final InterstitialAd ad) {
+        public void onDisplay(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Ad displayed");
             listener.onAdOpened(MyTargetRewardedAdapter.this);
             // myTarget has no callback for starting video, but rewarded video always
