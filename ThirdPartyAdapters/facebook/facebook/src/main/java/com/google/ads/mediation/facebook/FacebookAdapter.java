@@ -15,6 +15,7 @@
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -129,6 +130,9 @@ public final class FacebookAdapter
      * Facebook rewarded video ad instance.
      */
     private RewardedVideoAd mRewardedVideoAd;
+
+    private Context mContext;
+
     private NativeAd mNativeAd;
 
     /**
@@ -214,6 +218,7 @@ public final class FacebookAdapter
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mAdView = new AdView(context, placementId, facebookAdSize);
         mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
@@ -246,6 +251,7 @@ public final class FacebookAdapter
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mInterstitialAd = new InterstitialAd(context, placementId);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
@@ -268,6 +274,7 @@ public final class FacebookAdapter
                            MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
                            Bundle serverParameters,
                            Bundle networkExtras) {
+        mContext = context;
         mRewardedListener = mediationRewardedVideoAdListener;
         if (!isValidRequestParameters(context, serverParameters)) {
             mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -296,6 +303,7 @@ public final class FacebookAdapter
                 mRewardedListener.onAdLoaded(this);
             } else {
                 buildAdRequest(mediationAdRequest);
+                AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(mContext));
                 mRewardedVideoAd.loadAd(true);
             }
         }
@@ -359,6 +367,7 @@ public final class FacebookAdapter
 
         mMediaView = new MediaView(context);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mNativeAd = new NativeAd(context, placementId);
         mNativeAd.setAdListener(new NativeListener(mNativeAd, mediationAdRequest));
         buildAdRequest(mediationAdRequest);
@@ -671,6 +680,14 @@ public final class FacebookAdapter
     private int pixelToDip(int pixel) {
         DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
         return Math.round(pixel / displayMetrics.density);
+    }
+
+    private static int getGMSVersionCode(Context context) {
+        try {
+            return context.getPackageManager().getPackageInfo("com.google.android.gms", 0 ).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
+        }
     }
 
     /**

@@ -15,12 +15,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 42800
         versionName stringVersion
     }
@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.google.android.gms:play-services-ads:15.0.0'
     implementation 'com.facebook.android:audience-network-sdk:4.28.0'
 }
 

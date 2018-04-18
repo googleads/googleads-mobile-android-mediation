@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,9 +35,13 @@ import com.mopub.nativeads.ViewBinder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import static com.google.android.gms.ads.AdRequest.GENDER_FEMALE;
+import static com.google.android.gms.ads.AdRequest.GENDER_MALE;
 import static com.mopub.mobileads.dfp.adapters.DownloadDrawablesAsync.KEY_IMAGE;
 
 /**
@@ -241,8 +246,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         RequestParameters.NativeAdAsset.ICON_IMAGE);
 
         RequestParameters requestParameters = new RequestParameters.Builder()
-                .keywords(MOPUB_NATIVE_CEVENT_VERSION + "gender:" + mediationAdRequest
-                        .getGender() + ",age:" + mediationAdRequest.getBirthday())
+                .keywords(getKeywords(mediationAdRequest))
                 .location(mediationAdRequest.getLocation())
                 .desiredAssets(assetsSet)
                 .build();
@@ -303,16 +307,40 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     private String getKeywords(MediationAdRequest mediationAdRequest) {
+
+        Date birthday = mediationAdRequest.getBirthday();
+        String ageString = "";
+
+        if (birthday != null) {
+            int ageInt = getAge(birthday);
+            ageString = "m_age:" + Integer.toString(ageInt);
+        }
+
+        int gender = mediationAdRequest.getGender();
+        String genderString = "";
+
+        if (gender != -1) {
+            if (gender == GENDER_FEMALE) {
+                genderString = "m_gender:f";
+            } else if (gender == GENDER_MALE) {
+                genderString = "m_gender:m";
+            }
+        }
+
         StringBuilder keywordsBuilder = new StringBuilder();
 
         keywordsBuilder = keywordsBuilder.append(MOPUB_NATIVE_CEVENT_VERSION)
-                .append(mediationAdRequest.getBirthday() != null ?
-                        ",m_birthday:" + mediationAdRequest.getBirthday() : "")
-                .append(mediationAdRequest.getGender() != -1 ?
-                        ",m_gender:" + mediationAdRequest.getGender() : "");
+                .append(",").append(ageString)
+                .append(",").append(genderString);
 
         return keywordsBuilder.toString();
+    }
 
+    private static int getAge(Date birthday) {
+        int givenYear = Integer.parseInt((String) DateFormat.format("yyyy", birthday));
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        return currentYear - givenYear;
     }
 
     private class MBannerListener implements MoPubView.BannerAdListener {
@@ -403,7 +431,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         } else {
             MoPubLog.i("Interstitial was not ready. Unable to load the interstitial");
         }
-
     }
 
     private class mMediationInterstitialListener implements
@@ -448,7 +475,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                     .ERROR_CODE_INTERNAL_ERROR);
                     break;
             }
-
         }
 
         @Override
