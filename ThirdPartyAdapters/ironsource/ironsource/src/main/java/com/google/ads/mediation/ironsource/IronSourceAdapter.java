@@ -27,13 +27,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
      */
     private MediationInterstitialListener mInterstitialListener;
 
-
     private static boolean mDidInitInterstitial = false;
 
-    /**
-     * MediationInterstitialAdapter implementation
-     */
-
+    //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener listener,
@@ -91,25 +87,22 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onDestroy() {
-
     }
 
     @Override
     public void onPause() {
-
     }
 
     @Override
     public void onResume() {
-
     }
 
     /**
      * Private IronSource methods
      */
-
     private void onISAdFailedToLoad(final int errorCode) {
-        onLog("IronSource Interstitial failed to load for instance " + this.mInstanceID + " Error: " + errorCode);
+        onLog("IronSource Interstitial failed to load for instance " + this.mInstanceID + " Error: "
+                + errorCode);
 
         if (mInterstitialListener != null) {
             sendEventOnUIThread(new Runnable() {
@@ -120,10 +113,7 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
         }
     }
 
-    /**
-     * IronSource ISDemandOnlyInterstitialListener implementation
-     */
-
+    //region ISDemandOnlyInterstitialListener implementation.
     @Override
     public void onInterstitialAdReady(String instanceId) {
         onLog("IronSource Interstitial loaded successfully for instance " + instanceId);
@@ -143,7 +133,8 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("IronSource Interstitial failed to load for instance " + instanceId + " Error: " + ironSourceError.getErrorMessage());
+        onLog("IronSource Interstitial failed to load for instance " + instanceId + " Error: "
+                + ironSourceError.getErrorMessage());
 
         // We only listen to a registered instance
         if (!this.mInstanceID.equals(instanceId))
@@ -184,9 +175,9 @@ public class IronSourceAdapter extends IronSourceBaseAdapter implements Mediatio
     }
 
     @Override
-    public void onInterstitialAdShowFailed(String instanceId,IronSourceError ironSourceError) {
-        onLog("IronSource Interstitial failed to show for instance " + instanceId + ", error " + ironSourceError.getErrorMessage() );
-
+    public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
+        onLog("IronSource Interstitial failed to show for instance " + instanceId + ", error "
+                + ironSourceError.getErrorMessage());
     }
 
     @Override

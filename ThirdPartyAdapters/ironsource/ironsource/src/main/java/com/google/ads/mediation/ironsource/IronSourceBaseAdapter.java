@@ -9,6 +9,10 @@ import android.util.Log;
 
 import com.ironsource.mediationsdk.IronSource;
 
+
+/*
+ * A helper class used by {@link IronSourceAdapter} and {@link IronSourceRewardedAdapter}.
+ */
 class IronSourceBaseAdapter {
 
     /**
@@ -17,9 +21,9 @@ class IronSourceBaseAdapter {
     static final String TAG = "IronSource";
 
     /**
-     * Adapter version
+     * Adapter version.
      */
-    static final String ADAPTER_VERSION = "2.6.1";
+    static final String ADAPTER_VERSION = "6.7.8.0";
 
     /**
      * Key to obtain App Key, required for initializing IronSource SDK.
@@ -47,15 +51,13 @@ class IronSourceBaseAdapter {
     public String mInstanceID;
 
     /**
-     * UI thread handler used to send callbacks with AdMob interface
+     * UI thread handler used to send callbacks with AdMob interface.
      */
     private Handler mUIHandler;
 
     void initIronSourceSDK(Context context, String appKey, IronSource.AD_UNIT adUnit) {
-
         IronSource.setMediationType(MEDIATION_NAME);
         IronSource.initISDemandOnly((Activity) context, appKey, adUnit);
-
     }
 
     synchronized void sendEventOnUIThread(Runnable runnable) {

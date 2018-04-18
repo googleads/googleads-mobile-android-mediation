@@ -26,9 +26,9 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * {@link MediationRewardedVideoAdListener}.
  */
 public class SampleMediationRewardedVideoEventForwarder extends SampleRewardedVideoAdListener {
-    private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
-    private SampleAdapter mSampleAdapter;
-    private boolean mIsInitialized;
+    private final MediationRewardedVideoAdListener mediationRewardedVideoAdListener;
+    private final SampleAdapter sampleAdapter;
+    private boolean isInitialized;
 
     /**
      * Creates a new {@link SampleMediationRewardedVideoEventForwarder}.
@@ -39,30 +39,30 @@ public class SampleMediationRewardedVideoEventForwarder extends SampleRewardedVi
      */
     public SampleMediationRewardedVideoEventForwarder(MediationRewardedVideoAdListener listener,
                                                       SampleAdapter sampleAdapter) {
-        this.mMediationRewardedVideoAdListener = listener;
-        this.mSampleAdapter = sampleAdapter;
+        this.mediationRewardedVideoAdListener = listener;
+        this.sampleAdapter = sampleAdapter;
     }
 
     /**
      * @return whether or not the Sample SDK is initialized.
      */
     public boolean isInitialized() {
-        return mIsInitialized;
+        return isInitialized;
     }
 
     @Override
     public void onRewardedVideoInitialized() {
         super.onRewardedVideoInitialized();
-        mIsInitialized = true;
-        mMediationRewardedVideoAdListener.onInitializationSucceeded(mSampleAdapter);
+        isInitialized = true;
+        mediationRewardedVideoAdListener.onInitializationSucceeded(sampleAdapter);
     }
 
     @Override
     public void onRewardedVideoInitializationFailed(SampleErrorCode error) {
         super.onRewardedVideoInitializationFailed(error);
-        mIsInitialized = false;
-        mMediationRewardedVideoAdListener.onInitializationFailed(
-                mSampleAdapter, getAdMobErrorCode(error));
+        isInitialized = false;
+        mediationRewardedVideoAdListener.onInitializationFailed(
+                sampleAdapter, getAdMobErrorCode(error));
     }
 
     @Override
@@ -78,29 +78,29 @@ public class SampleMediationRewardedVideoEventForwarder extends SampleRewardedVi
          * 2. Send a reward item with default values for the type (an empty string "") and reward
          * amount (1).
          */
-        mMediationRewardedVideoAdListener.onRewarded(
-                mSampleAdapter, new SampleRewardItem(rewardType, amount));
+        mediationRewardedVideoAdListener.onRewarded(
+                sampleAdapter, new SampleRewardItem(rewardType, amount));
     }
 
     @Override
     public void onAdClicked() {
         super.onAdClicked();
-        mMediationRewardedVideoAdListener.onAdClicked(mSampleAdapter);
+        mediationRewardedVideoAdListener.onAdClicked(sampleAdapter);
     }
 
     @Override
     public void onAdFullScreen() {
         super.onAdFullScreen();
-        mMediationRewardedVideoAdListener.onAdOpened(mSampleAdapter);
+        mediationRewardedVideoAdListener.onAdOpened(sampleAdapter);
         // Only send video started here if your SDK starts video immediately after the ad has been
         // opened/is fullscreen.
-        mMediationRewardedVideoAdListener.onVideoStarted(mSampleAdapter);
+        mediationRewardedVideoAdListener.onVideoStarted(sampleAdapter);
     }
 
     @Override
     public void onAdClosed() {
         super.onAdClosed();
-        mMediationRewardedVideoAdListener.onAdClosed(mSampleAdapter);
+        mediationRewardedVideoAdListener.onAdClosed(sampleAdapter);
     }
 
     /**
@@ -108,7 +108,7 @@ public class SampleMediationRewardedVideoEventForwarder extends SampleRewardedVi
      * callback, the adapter calls this method if an ad is available when loadAd is called.
      */
     protected void onAdLoaded() {
-        mMediationRewardedVideoAdListener.onAdLoaded(mSampleAdapter);
+        mediationRewardedVideoAdListener.onAdLoaded(sampleAdapter);
     }
 
     /**
@@ -116,8 +116,8 @@ public class SampleMediationRewardedVideoEventForwarder extends SampleRewardedVi
      * load callback, the adapter calls this method to forward the failure callback.
      */
     protected void onAdFailedToLoad() {
-        mMediationRewardedVideoAdListener.onAdFailedToLoad(
-                mSampleAdapter, AdRequest.ERROR_CODE_NO_FILL);
+        mediationRewardedVideoAdListener.onAdFailedToLoad(
+                sampleAdapter, AdRequest.ERROR_CODE_NO_FILL);
     }
 
     /**

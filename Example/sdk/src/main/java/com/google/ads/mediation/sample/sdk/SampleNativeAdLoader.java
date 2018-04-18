@@ -23,7 +23,6 @@ import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
 import java.util.Random;
 
 /**
@@ -31,9 +30,9 @@ import java.util.Random;
  * {@code SampleCustomEvent} and {@code SampleAdapter} to request native ads.
  */
 public class SampleNativeAdLoader {
-    private Context mContext;
-    private String mAdUnit;
-    private SampleNativeAdListener mListener;
+  private final Context context;
+    private String adUnit;
+    private SampleNativeAdListener listener;
 
     /**
      * Create a new {@link SampleInterstitial}.
@@ -41,7 +40,7 @@ public class SampleNativeAdLoader {
      * @param context An Android {@link Context}.
      */
     public SampleNativeAdLoader(Context context) {
-        this.mContext = context;
+        this.context = context;
     }
 
     /**
@@ -50,7 +49,7 @@ public class SampleNativeAdLoader {
      * @param sampleAdUnit The sample ad unit.
      */
     public void setAdUnit(String sampleAdUnit) {
-        this.mAdUnit = sampleAdUnit;
+        this.adUnit = sampleAdUnit;
     }
 
     /**
@@ -59,7 +58,7 @@ public class SampleNativeAdLoader {
      * @param listener The native ad listener.
      */
     public void setNativeAdListener(SampleNativeAdListener listener) {
-        this.mListener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -70,39 +69,36 @@ public class SampleNativeAdLoader {
      */
     public void fetchAd(SampleNativeAdRequest request) {
         // Check for conditions that constitute a bad request.
-        if ((mListener == null) || (mAdUnit == null)
-                || (!request.areContentAdsRequested() && !request.areAppInstallAdsRequested())) {
-            mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+        if ((listener == null) || (adUnit == null)) {
+            listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
             return;
         }
 
         Random random = new Random();
         int nextInt = random.nextInt(100);
-        if (mListener != null) {
+        if (listener != null) {
             if (nextInt < 80) {
                 // Act as if the request was successful and create a sample native ad
                 // of the request type filled with dummy data.
-                if (request.areAppInstallAdsRequested()
-                        && (!request.areContentAdsRequested()
-                        || random.nextBoolean())) {
-                    mListener.onNativeAppInstallAdFetched(createFakeAppInstallAd(request));
+                if (random.nextBoolean()) {
+                    listener.onNativeAdFetched(createFakeAppInstallAd(request));
                 } else {
-                    mListener.onNativeContentAdFetched(createFakeContentAd(request));
+                    listener.onNativeAdFetched(createFakeContentAd(request));
                 }
             } else if (nextInt < 85) {
-                mListener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
+                listener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
             } else if (nextInt < 90) {
-                mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+                listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
             } else if (nextInt < 95) {
-                mListener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
+                listener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
             } else {
-                mListener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
+                listener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
             }
         }
     }
 
-    private SampleNativeAppInstallAd createFakeAppInstallAd(SampleNativeAdRequest request) {
-        SampleNativeAppInstallAd fakeAd = new SampleNativeAppInstallAd();
+    private SampleNativeAd createFakeAppInstallAd(SampleNativeAdRequest request) {
+        SampleNativeAd fakeAd = new SampleNativeAd();
 
         fakeAd.setHeadline("Sample App!");
         fakeAd.setBody("This app doesn't actually exist.");
@@ -112,11 +108,11 @@ public class SampleNativeAdLoader {
         fakeAd.setStarRating(4.5);
         fakeAd.setStoreName("Sample Store");
         fakeAd.setImageUri(Uri.parse("http://www.example.com/"));
-        fakeAd.setAppIconUri(Uri.parse("http://www.example.com/"));
+        fakeAd.setIconUri(Uri.parse("http://www.example.com/"));
 
         // We pretend 80% of network's inventory has video assets and 20% doesn't.
         if ((new Random()).nextInt(100) < 80) {
-            fakeAd.setMediaView(new SampleMediaView(mContext));
+            fakeAd.setMediaView(new SampleMediaView(context));
         } else {
             fakeAd.setMediaView(null);
         }
@@ -124,9 +120,9 @@ public class SampleNativeAdLoader {
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
         if (request.getShouldDownloadImages()) {
-            fakeAd.setAppIcon(mContext.getResources()
+            fakeAd.setIcon(context.getResources()
                     .getDrawable(R.drawable.sample_app_icon));
-            fakeAd.setImage(mContext.getResources()
+            fakeAd.setImage(context.getResources()
                     .getDrawable(R.drawable.sample_app_image));
         }
 
@@ -135,8 +131,8 @@ public class SampleNativeAdLoader {
         return fakeAd;
     }
 
-    private SampleNativeContentAd createFakeContentAd(SampleNativeAdRequest request) {
-        SampleNativeContentAd fakeAd = new SampleNativeContentAd();
+    private SampleNativeAd createFakeContentAd(SampleNativeAdRequest request) {
+        SampleNativeAd fakeAd = new SampleNativeAd();
 
         fakeAd.setHeadline("Sample Content!");
         fakeAd.setBody("This is a sample ad, so there's no real content. In the event of a real "
@@ -147,7 +143,7 @@ public class SampleNativeAdLoader {
 
         // We pretend 80% of network's inventory has video assets and 20% doesn't.
         if ((new Random()).nextInt(100) < 80) {
-            fakeAd.setMediaView(new SampleMediaView(mContext));
+            fakeAd.setMediaView(new SampleMediaView(context));
         } else {
             fakeAd.setMediaView(null);
         }
@@ -155,9 +151,9 @@ public class SampleNativeAdLoader {
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
         if (request.getShouldDownloadImages()) {
-            fakeAd.setLogo(mContext.getResources()
+            fakeAd.setIcon(context.getResources()
                     .getDrawable(R.drawable.sample_content_logo));
-            fakeAd.setImage(mContext.getResources()
+            fakeAd.setImage(context.getResources()
                     .getDrawable(R.drawable.sample_content_ad_image));
         }
 
@@ -172,7 +168,7 @@ public class SampleNativeAdLoader {
      * @return information icon image view.
      */
     private ImageView createInformationIconImageView() {
-        ImageView informationIconImageView = new ImageView(mContext);
+        ImageView informationIconImageView = new ImageView(context);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -183,7 +179,7 @@ public class SampleNativeAdLoader {
             @Override
             public void onClick(View view) {
 
-                new AlertDialog.Builder(mContext)
+                new AlertDialog.Builder(context)
                         .setTitle("Sample SDK")
                         .setMessage("This is a sample ad from the Sample SDK.")
                         .setNeutralButton(android.R.string.ok,

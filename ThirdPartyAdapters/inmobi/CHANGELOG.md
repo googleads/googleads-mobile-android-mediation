@@ -1,5 +1,8 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.0.4.0
+- Verified compatibility with InMobi SDK version 7.0.4.
+
 ## 7.0.2.0
 - Verified compatibility with InMobi SDK version 7.0.2.
 

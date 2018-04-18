@@ -25,9 +25,12 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
  * {@link MediationNativeListener}.
  */
 public class SampleMediaViewEventForwarder implements SampleMediaViewListener {
-    private MediationNativeListener mNativeListener;
-    private SampleAdapter mAdapter;
-    private SampleMediaView mMediaView;
+    private final MediationNativeListener nativeListener;
+    private final SampleAdapter adapter;
+    // For the sake of simplicity, the media view is not used by the Sample Adapter.
+    // It's included to demonstrate how the adapter can communicate between the Google Mobile Ads
+    // SDK and the Sample SDK for events related to the media view.
+    private final SampleMediaView mediaView;
 
     /**
      * Creates a new {@code SampleNativeMediationEventForwarder}.
@@ -42,13 +45,13 @@ public class SampleMediaViewEventForwarder implements SampleMediaViewListener {
      */
     public SampleMediaViewEventForwarder(MediationNativeListener listener,
                                          SampleAdapter adapter, SampleMediaView mediaView) {
-        mNativeListener = listener;
-        mAdapter = adapter;
-        mMediaView = mediaView;
+        nativeListener = listener;
+        this.adapter = adapter;
+        this.mediaView = mediaView;
     }
 
     @Override
     public void onVideoEnd() {
-        mNativeListener.onVideoEnd(mAdapter);
+        nativeListener.onVideoEnd(adapter);
     }
 }

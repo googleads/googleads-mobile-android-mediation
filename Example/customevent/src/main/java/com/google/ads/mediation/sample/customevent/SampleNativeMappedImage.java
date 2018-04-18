@@ -18,7 +18,6 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-
 import com.google.android.gms.ads.formats.NativeAd;
 
 /**
@@ -27,29 +26,29 @@ import com.google.android.gms.ads.formats.NativeAd;
  */
 public class SampleNativeMappedImage extends NativeAd.Image {
 
-    private Drawable mDrawable;
-    private Uri mImageUri;
-    private double mScale;
+    private final Drawable drawable;
+    private final Uri imageUri;
+    private final double scale;
 
     public SampleNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
-        mDrawable = drawable;
-        mImageUri = imageUri;
-        mScale = scale;
+        this.drawable = drawable;
+        this.imageUri = imageUri;
+        this.scale = scale;
     }
 
     @Override
     public Drawable getDrawable() {
-        return mDrawable;
+        return drawable;
     }
 
     @Override
     public Uri getUri() {
-        return mImageUri;
+        return imageUri;
     }
 
     @Override
     public double getScale() {
-        return mScale;
+        return scale;
     }
 
 }

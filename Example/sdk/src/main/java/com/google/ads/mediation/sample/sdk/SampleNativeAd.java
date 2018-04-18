@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Google, Inc.
+ * Copyright (C) 2018 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,126 +23,135 @@ import android.view.View;
 import android.widget.ImageView;
 
 /**
- * A native ad object that holds assets for a sample app install ad.
+ * A native ad object that holds assets for a sample native ad.
  */
-public class SampleNativeAppInstallAd {
+public class SampleNativeAd {
 
-    private String mHeadline;
-    private Drawable mImage;
-    private Uri mImageUri;
-    private String mBody;
-    private Drawable mAppIcon;
-    private Uri mAppIconUri;
-    private String mCallToAction;
-    private double mStarRating;
-    private String mStoreName;
-    private Double mPrice;
-    private String mDegreeOfAwesomeness;
-    private ImageView mInformationIcon;
-    private SampleMediaView mMediaView;
+    private String headline;
+    private Drawable image;
+    private Uri imageUri;
+    private String body;
+    private Drawable icon;
+    private Uri iconUri;
+    private String callToAction;
+    private String advertiser;
+    private double starRating;
+    private String storeName;
+    private Double price;
+    private String degreeOfAwesomeness;
+    private ImageView informationIcon;
+    private SampleMediaView mediaView;
 
     public String getHeadline() {
-        return mHeadline;
+        return headline;
     }
 
     public void setHeadline(String headline) {
-        this.mHeadline = headline;
+        this.headline = headline;
     }
 
     public Drawable getImage() {
-        return mImage;
+        return image;
     }
 
     public void setImage(Drawable image) {
-        this.mImage = image;
+        this.image = image;
     }
 
     public String getBody() {
-        return mBody;
+        return body;
     }
 
     public void setBody(String body) {
-        this.mBody = body;
+        this.body = body;
     }
 
-    public Drawable getAppIcon() {
-        return mAppIcon;
+    public Drawable getIcon() {
+        return icon;
     }
 
-    public void setAppIcon(Drawable mAppIcon) {
-        this.mAppIcon = mAppIcon;
+    public void setIcon(Drawable mAppIcon) {
+        this.icon = mAppIcon;
     }
 
     public String getCallToAction() {
-        return mCallToAction;
+        return callToAction;
     }
 
     public void setCallToAction(String mCallToAction) {
-        this.mCallToAction = mCallToAction;
+        this.callToAction = mCallToAction;
+    }
+
+    public String getAdvertiser() {
+        return advertiser;
+    }
+
+    public void setAdvertiser(String advertiser) {
+        this.advertiser = advertiser;
     }
 
     public double getStarRating() {
-        return mStarRating;
+        return starRating;
     }
 
     public void setStarRating(double starRating) {
-        this.mStarRating = starRating;
+        this.starRating = starRating;
     }
 
     public String getStoreName() {
-        return mStoreName;
+        return storeName;
     }
 
     public void setStoreName(String storeName) {
-        this.mStoreName = storeName;
+        this.storeName = storeName;
     }
 
     public Double getPrice() {
-        return mPrice;
+        return price;
     }
 
     public void setPrice(Double mPrice) {
-        this.mPrice = mPrice;
+        this.price = mPrice;
     }
 
     public String getDegreeOfAwesomeness() {
-        return mDegreeOfAwesomeness;
+        return degreeOfAwesomeness;
     }
 
     public void setDegreeOfAwesomeness(String degreeOfAwesomeness) {
-        this.mDegreeOfAwesomeness = degreeOfAwesomeness;
+        this.degreeOfAwesomeness = degreeOfAwesomeness;
     }
 
     public Uri getImageUri() {
-        return mImageUri;
+        return imageUri;
     }
 
     public void setImageUri(Uri imageUri) {
-        this.mImageUri = imageUri;
+        this.imageUri = imageUri;
     }
 
-    public Uri getAppIconUri() {
-        return mAppIconUri;
+    public Uri getIconUri() {
+        return iconUri;
     }
 
-    public void setAppIconUri(Uri mAppIconUri) {
-        this.mAppIconUri = mAppIconUri;
+    public void setIconUri(Uri mAppIconUri) {
+        this.iconUri = mAppIconUri;
     }
 
     public ImageView getInformationIcon() {
-        return mInformationIcon;
+        return informationIcon;
     }
 
     public void setInformationIcon(ImageView informationIcon) {
-        this.mInformationIcon = informationIcon;
+        this.informationIcon = informationIcon;
     }
 
     public SampleMediaView getMediaView() {
-        return mMediaView;
+        return mediaView;
     }
 
     public void setMediaView(SampleMediaView mediaView) {
-        this.mMediaView = mediaView;
+        this.mediaView = mediaView;
     }
 
     public void handleClick(View view) {
@@ -159,8 +168,8 @@ public class SampleNativeAppInstallAd {
     public void registerNativeAdView(View view) {
         // Starts playing video if there is any video asset. Here, passing view is not mandatory
         // since we are just calling the playback to play the video.
-        if (mMediaView != null) {
-            mMediaView.beginPlaying();
+        if (mediaView != null) {
+            mediaView.beginPlaying();
         }
     }
 }
