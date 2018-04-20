@@ -29,6 +29,6 @@ ext {
     support = '26.1.0'
     appcompatV7 = "com.android.support:appcompat-v7:$support"
 
-    play = '11.8.0'
+    play = '15.0.0'
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }

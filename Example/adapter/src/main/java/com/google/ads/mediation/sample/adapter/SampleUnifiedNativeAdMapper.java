@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Google, Inc.
+ * Copyright (C) 2018 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,27 +18,29 @@ package com.google.ads.mediation.sample.adapter;
 
 import android.os.Bundle;
 import android.view.View;
+
 import com.google.ads.mediation.sample.sdk.SampleMediaView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
+ * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to
+ * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
  */
-public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
+public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     private final SampleNativeAd sampleAd;
-
-    // For the sake of simplicity, the ad options are ignored here.
-    // They're included to demonstrate how the adapter can map options and views between the Google
-    // Mobile Ads SDK and the Sample SDK.    
-    public SampleNativeAppInstallAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+    // For the sake of simplicity, NativeAdOptions are not used by the Sample Custom
+    // Event. They're included to demonstrate how the custom event can map options and views between
+    // the Google Mobile Ads SDK and the Sample SDK
+    public SampleUnifiedNativeAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
         sampleAd = ad;
         setHeadline(sampleAd.getHeadline());
         setBody(sampleAd.getBody());
@@ -47,6 +49,7 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setStore(sampleAd.getStoreName());
         setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
                 SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
+        setAdvertiser(ad.getAdvertiser());
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
         imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
@@ -93,14 +96,13 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
     // your mediated network does need a reference to the view, the following method can be used
     // to provide one.
 
+
     @Override
-    public void trackView(View view) {
-        super.trackView(view);
-        // Here you would pass the View back to the mediated network's SDK.
-
-
-        sampleAd.registerNativeAdView(view);
-
+    public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
+        super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
+        sampleAd.registerNativeAdView(containerView);
+        // If your ad network SDK does its own impression tracking, here is where you can track the
+        // top level native ad view and its individual asset views.
     }
 
     @Override
