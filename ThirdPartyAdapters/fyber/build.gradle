@@ -1,12 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+
     repositories {
-        jcenter()
         google()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.1.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -15,20 +16,11 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         google()
+        jcenter()
     }
 }
 
-ext {
-    minSdkVersion = 14
-    compileSdkVersion = 26
-    targetSdkVersion = 26
-    tools = '26.0.2'
-
-    support = '26.1.0'
-    appcompatV7 = "com.android.support:appcompat-v7:$support"
-
-    play = '15.0.0'
-    playServicesAds = "com.google.android.gms:play-services-ads:$play"
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

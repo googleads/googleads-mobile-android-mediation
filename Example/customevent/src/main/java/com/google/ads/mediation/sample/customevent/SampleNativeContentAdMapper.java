@@ -24,6 +24,7 @@ import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link NativeContentAdMapper} extension to map {@link SampleNativeAd} instances to
@@ -78,11 +79,10 @@ public class SampleNativeContentAdMapper extends NativeContentAdMapper {
     // to provide one.
 
     @Override
-    public void trackView(View view) {
-        super.trackView(view);
-        // Here you would pass the View back to the mediated network's SDK.
-
-
+    public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
+        super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
+        // If your ad network SDK does its own impression tracking, here is where you can track the
+        // top level native ad view and its individual asset views.
     }
 
     @Override
