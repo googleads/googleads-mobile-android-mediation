@@ -1,5 +1,8 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.0.0
+- Verified compatibility with Chartboost SDK 7.2.0.
+
 ## 7.1.0.0
 - Verified compatibility with Chartboost SDK 7.1.0.
 
