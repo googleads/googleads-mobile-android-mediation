@@ -121,14 +121,15 @@ class AdColonyManager {
                 options.setUserID(userId);
                 updatedOptions = true;
             }
-            if (networkExtras.containsKey("test_mode")) {
-                boolean testMode = networkExtras.getBoolean("test_mode");
-                options.setTestModeEnabled(testMode);
-                updatedOptions = true;
-            }
         }
 
         if (adRequest != null) {
+            // Enable test ads from AdColony when a Test Ad Request was sent.
+            if (adRequest.isTesting()) {
+                options.setTestModeEnabled(true);
+                updatedOptions = true;
+            }
+
             AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
 
             // Try to update userMetaData with gender field.

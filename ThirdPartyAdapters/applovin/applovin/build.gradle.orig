@@ -9,22 +9,28 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.0.2.1"
+<<<<<<< HEAD
+    stringVersion = "7.8.6.1"
+=======
+    stringVersion = "8.0.0.0"
+>>>>>>> googleads/master
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 27
-        versionCode 500021
+        minSdkVersion 14
+        targetSdkVersion 26
+<<<<<<< HEAD
+        versionCode 70861
+=======
+        versionCode 8000
+>>>>>>> googleads/master
         versionName stringVersion
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -36,11 +42,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.android.support:support-v4:27.1.0'
-    implementation 'com.android.support:customtabs:27.1.0'
-    implementation 'com.google.android.gms:play-services-ads:15.0.0'
-    implementation 'com.my.target:mytarget-sdk:5.0.2'
+    implementation 'com.applovin:applovin-sdk:8.0.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
 }
 
 /**
@@ -56,7 +60,7 @@ task sourcesJar (type: Jar) {
  */
 publishing {
     publications {
-        myTargetPublications(MavenPublication) {
+        applovinPublications(MavenPublication) {
             groupId = stringGroupId
             artifactId = project.name
             version = stringVersion
@@ -73,7 +77,7 @@ publishing {
 }
 
 /**
- * Bintray closure needed to run the buntrayUpload task.
+ * Bintray closure needed to run the bintrayUpload task.
  *
  * Usage:
  * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
@@ -87,7 +91,7 @@ bintray {
             : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey')
             : System.getenv('BINTRAY_API_KEY')
-    publications = ['myTargetPublications']
+    publications = ['applovinPublications']
 
     dryRun = false // Deploy after running.
     publish = false // Don't auto publish after deploying.
@@ -96,9 +100,9 @@ bintray {
         repo = 'mobile-ads-adapters-android'
         name = "${stringGroupId}.${project.name}" // Display name for the package.
         userOrg = 'google'
-        desc = 'myTarget adapter for Google Mobile Ads mediation.'
+        desc = 'AppLovin adapter for Google Mobile Ads mediation.'
         licenses = ['Apache-2.0']
-        websiteUrl = 'https://developers.google.com/admob/android/mediation/mytarget'
+        websiteUrl = 'https://developers.google.com/admob/android/mediation/applovin'
         vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
