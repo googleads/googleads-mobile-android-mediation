@@ -1,5 +1,9 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.0.5.0
+
+- Verified compatibility with nend SDK 4.0.5.
+
 ## 4.0.4.1
 
 - Supported onRewardedVideoCompleted() method of RewardedVideoAdListener.
