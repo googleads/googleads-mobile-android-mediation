@@ -39,39 +39,39 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
     /**
      * Displays the amount of time remaining for the ad to complete.
      */
-    private TextView mCountdownTimerView;
+    private TextView countdownTimerView;
 
     /**
      * Closes the ad/activity.
      */
-    private ImageButton mCloseAdButton;
+    private ImageButton closeAdButton;
 
     /**
      * Flag to determine whether or not it is ok to close this activity. The ad can be skipped
      * after 5 seconds; no reward is provided if the ad is closed before the countdown is finished.
      */
-    private boolean mIsSkippable;
+    private boolean isSkippable;
 
     /**
      * Flag to determine whether not the ad is clickable. The ad is not clickable when showing
      * the countdown (clickable after the video completed playing).
      */
-    private boolean mIsClickable;
+    private boolean isClickable;
 
     /**
      * A simple countdown timer.
      */
-    private CountDownTimer mCountDownTimer;
+    private CountDownTimer countDownTimer;
 
     /**
      * The Sample SDK's rewarded video ad object that needs to be shown to the user.
      */
-    private SampleRewardedVideoAd mSampleRewardedVideoAd;
+    private SampleRewardedVideoAd sampleRewardedVideoAd;
 
     /**
      * Forwards rewarded video ad events.
      */
-    private SampleRewardedVideoAdListener mRewardedVideoAdListener;
+    private SampleRewardedVideoAdListener rewardedVideoAdListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,65 +81,65 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
         // Get the Sample SDK rewarded video ad, which was added to the intent as extra.
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra(SampleRewardedVideo.KEY_REWARDED_VIDEO_AD_EXTRA)) {
-            mSampleRewardedVideoAd =
+            sampleRewardedVideoAd =
                     intent.getParcelableExtra(SampleRewardedVideo.KEY_REWARDED_VIDEO_AD_EXTRA);
         } else {
             // Rewarded video ad not available, close ad.
             finish();
         }
 
-        mRewardedVideoAdListener = SampleRewardedVideo.getListener();
-        if (mRewardedVideoAdListener != null) {
-            mRewardedVideoAdListener.onAdFullScreen();
+        rewardedVideoAdListener = SampleRewardedVideo.getListener();
+        if (rewardedVideoAdListener != null) {
+            rewardedVideoAdListener.onAdFullScreen();
         }
         SampleRewardedVideo.setCurrentActivity(SampleSDKAdsActivity.this);
 
-        ((TextView) findViewById(R.id.title_textView)).setText(mSampleRewardedVideoAd.getAdName());
+        ((TextView) findViewById(R.id.title_textView)).setText(sampleRewardedVideoAd.getAdName());
         findViewById(R.id.main_view).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mRewardedVideoAdListener != null && mIsClickable) {
-                    mRewardedVideoAdListener.onAdClicked();
+                if (rewardedVideoAdListener != null && isClickable) {
+                    rewardedVideoAdListener.onAdClicked();
                 }
             }
         });
-        mCloseAdButton = (ImageButton) findViewById(R.id.close_button);
-        mCloseAdButton.setOnClickListener(new View.OnClickListener() {
+        closeAdButton = (ImageButton) findViewById(R.id.close_button);
+        closeAdButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mCountDownTimer != null) {
-                    mCountDownTimer.cancel();
-                    mCountDownTimer = null;
+                if (countDownTimer != null) {
+                    countDownTimer.cancel();
+                    countDownTimer = null;
                 }
                 finish();
             }
         });
-        mCountdownTimerView = (TextView) findViewById(R.id.countdown_timer_textView);
+        countdownTimerView = (TextView) findViewById(R.id.countdown_timer_textView);
 
         // Countdown timer for 10 seconds.
-        mCountDownTimer = new CountDownTimer(10000, 1000) {
+        countDownTimer = new CountDownTimer(10000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (millisUntilFinished > 6000) {
-                    mIsSkippable = false;
-                    mCloseAdButton.setVisibility(View.GONE);
+                    isSkippable = false;
+                    closeAdButton.setVisibility(View.GONE);
                 } else {
                     // The ad is skippable after 5 seconds.
-                    mIsSkippable = true;
-                    mCloseAdButton.setVisibility(View.VISIBLE);
+                    isSkippable = true;
+                    closeAdButton.setVisibility(View.VISIBLE);
                 }
-                mCountdownTimerView.setText(String.format("%d", (millisUntilFinished / 1000)));
+                countdownTimerView.setText(String.format("%d", (millisUntilFinished / 1000)));
             }
 
             @Override
             public void onFinish() {
-                int rewardAmount = mSampleRewardedVideoAd.getRewardAmount();
-                if (mRewardedVideoAdListener != null) {
-                    mRewardedVideoAdListener.onAdRewarded("Reward", rewardAmount);
+                int rewardAmount = sampleRewardedVideoAd.getRewardAmount();
+                if (rewardedVideoAdListener != null) {
+                    rewardedVideoAdListener.onAdRewarded("Reward", rewardAmount);
                 }
-                mCountdownTimerView.setText(String.format(
+                countdownTimerView.setText(String.format(
                         Locale.getDefault(), "Rewarded with reward amount %d", rewardAmount));
-                mIsClickable = true;
+                isClickable = true;
             }
         }.start();
     }
@@ -152,18 +152,18 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mCountDownTimer != null) {
-            mCountDownTimer.cancel();
-            mCountDownTimer = null;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
         }
-        if (mRewardedVideoAdListener != null) {
-            mRewardedVideoAdListener.onAdClosed();
+        if (rewardedVideoAdListener != null) {
+            rewardedVideoAdListener.onAdClosed();
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (mIsSkippable) {
+        if (isSkippable) {
             super.onBackPressed();
         }
 

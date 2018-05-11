@@ -1,5 +1,11 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.20.0.0
+- Verified compatibility with MoPub SDK 4.20.0.
+
+## 4.19.0.1
+- Fixed an NPE issue when a null image URL is returned by MoPub.
+
 ## 4.19.0.0
 - Verified compatibility with MoPub SDK 4.19.0.
 

@@ -17,43 +17,35 @@
 package com.google.ads.mediation.sample.adapter;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-
 import com.google.ads.mediation.sample.sdk.SampleMediaView;
-import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
+import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
-
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAppInstallAd} instances to
+ * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAd} instances to
  * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
  */
 public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 
-    private final SampleNativeAppInstallAd mSampleAd;
-    private NativeAdOptions mNativeAdOptions;
-    private ImageView mInformationIconView;
+    private final SampleNativeAd sampleAd;
 
-    public SampleNativeAppInstallAdMapper(SampleNativeAppInstallAd ad, NativeAdOptions adOptions) {
-        mSampleAd = ad;
-        mNativeAdOptions = adOptions;
-        setHeadline(mSampleAd.getHeadline());
-        setBody(mSampleAd.getBody());
-        setCallToAction(mSampleAd.getCallToAction());
-        setStarRating(mSampleAd.getStarRating());
-        setStore(mSampleAd.getStoreName());
-        setIcon(new SampleNativeMappedImage(ad.getAppIcon(), ad.getAppIconUri(),
+    // For the sake of simplicity, the ad options are ignored here.
+    // They're included to demonstrate how the adapter can map options and views between the Google
+    // Mobile Ads SDK and the Sample SDK.    
+    public SampleNativeAppInstallAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+        sampleAd = ad;
+        setHeadline(sampleAd.getHeadline());
+        setBody(sampleAd.getBody());
+        setCallToAction(sampleAd.getCallToAction());
+        setStarRating(sampleAd.getStarRating());
+        setStore(sampleAd.getStoreName());
+        setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
                 SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
@@ -62,14 +54,14 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setImages(imagesList);
 
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        String priceString = formatter.format(mSampleAd.getPrice());
+        String priceString = formatter.format(sampleAd.getPrice());
         setPrice(priceString);
 
         Bundle extras = new Bundle();
         extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);
 
-        SampleMediaView mediaView = mSampleAd.getMediaView();
+        SampleMediaView mediaView = sampleAd.getMediaView();
 
         // Some ads from Sample SDK has video assets and some do not.
         if (mediaView != null) {
@@ -82,17 +74,17 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setOverrideClickHandling(false);
         setOverrideImpressionRecording(false);
 
-        setAdChoicesContent(mSampleAd.getInformationIcon());
+        setAdChoicesContent(sampleAd.getInformationIcon());
     }
 
     @Override
     public void recordImpression() {
-        mSampleAd.recordImpression();
+        sampleAd.recordImpression();
     }
 
     @Override
     public void handleClick(View view) {
-        mSampleAd.handleClick(view);
+        sampleAd.handleClick(view);
     }
 
     // The Sample SDK doesn't do its own impression/click tracking, and instead relies on its
@@ -107,7 +99,7 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         // Here you would pass the View back to the mediated network's SDK.
 
 
-        mSampleAd.registerNativeAdView(view);
+        sampleAd.registerNativeAdView(view);
 
     }
 

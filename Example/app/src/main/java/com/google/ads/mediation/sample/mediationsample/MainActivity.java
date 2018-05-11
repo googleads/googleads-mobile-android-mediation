@@ -53,12 +53,12 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private InterstitialAd mCustomEventInterstitial;
-    private InterstitialAd mAdapterInterstitial;
-    private RewardedVideoAd mRewardedVideoAd;
-    private Button mCustomEventButton;
-    private Button mAdapterButton;
-    private Button mAdapterVideoButton;
+    private InterstitialAd customEventInterstitial;
+    private InterstitialAd adapterInterstitial;
+    private RewardedVideoAd rewardedVideoAd;
+    private Button customEventButton;
+    private Button adapterButton;
+    private Button adapterVideoButton;
     private AdLoader adapterNativeLoader;
     private AdLoader customEventNativeLoader;
 
@@ -78,45 +78,45 @@ public class MainActivity extends AppCompatActivity {
         mCustomEventAdView.loadAd(new AdRequest.Builder().build());
 
         // Sample custom event interstitial button.
-        mCustomEventButton = (Button) findViewById(R.id.customevent_button);
-        mCustomEventButton.setOnClickListener(new View.OnClickListener() {
+        customEventButton = (Button) findViewById(R.id.customevent_button);
+        customEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mCustomEventInterstitial.isLoaded()) {
-                    mCustomEventInterstitial.show();
+                if (customEventInterstitial.isLoaded()) {
+                    customEventInterstitial.show();
                 }
             }
         });
 
         // Sample custom event interstitial.
-        mCustomEventInterstitial = new InterstitialAd(this);
-        mCustomEventInterstitial.setAdUnitId(
+        customEventInterstitial = new InterstitialAd(this);
+        customEventInterstitial.setAdUnitId(
                 getResources().getString(R.string.customevent_interstitial_ad_unit_id));
-        mCustomEventInterstitial.setAdListener(new AdListener() {
+        customEventInterstitial.setAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
                         "Error loading custom event interstitial, code " + errorCode,
                         Toast.LENGTH_SHORT).show();
-                mCustomEventButton.setEnabled(true);
+                customEventButton.setEnabled(true);
             }
 
             @Override
             public void onAdLoaded() {
-                mCustomEventButton.setEnabled(true);
+                customEventButton.setEnabled(true);
             }
 
             @Override
             public void onAdOpened() {
-                mCustomEventButton.setEnabled(false);
+                customEventButton.setEnabled(false);
             }
 
             @Override
             public void onAdClosed() {
-                mCustomEventInterstitial.loadAd(new AdRequest.Builder().build());
+                customEventInterstitial.loadAd(new AdRequest.Builder().build());
             }
         });
-        mCustomEventInterstitial.loadAd(new AdRequest.Builder().build());
+        customEventInterstitial.loadAd(new AdRequest.Builder().build());
 
         /**
          * Sample Adapter.
@@ -142,49 +142,49 @@ public class MainActivity extends AppCompatActivity {
         mAdapterAdView.loadAd(bannerAdRequest);
         
         // Sample adapter interstitial button.
-        mAdapterButton = (Button) findViewById(R.id.adapter_button);
-        mAdapterButton.setOnClickListener(new View.OnClickListener() {
+        adapterButton = (Button) findViewById(R.id.adapter_button);
+        adapterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mAdapterInterstitial.isLoaded()) {
-                    mAdapterInterstitial.show();
+                if (adapterInterstitial.isLoaded()) {
+                    adapterInterstitial.show();
                 }
             }
         });
 
         // Sample adapter interstitial.
-        mAdapterInterstitial = new InterstitialAd(this);
-        mAdapterInterstitial.setAdUnitId(
+        adapterInterstitial = new InterstitialAd(this);
+        adapterInterstitial.setAdUnitId(
                 getResources().getString(R.string.adapter_interstitial_ad_unit_id));
-        mAdapterInterstitial.setAdListener(new AdListener() {
+        adapterInterstitial.setAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
                         "Error loading adapter interstitial, code " + errorCode,
                         Toast.LENGTH_SHORT).show();
-                mAdapterButton.setEnabled(true);
+                adapterButton.setEnabled(true);
             }
 
             @Override
             public void onAdLoaded() {
-                mAdapterButton.setEnabled(true);
+                adapterButton.setEnabled(true);
             }
 
             @Override
             public void onAdOpened() {
-                mAdapterButton.setEnabled(false);
+                adapterButton.setEnabled(false);
             }
 
             @Override
             public void onAdClosed() {
-                mAdapterInterstitial.loadAd(new AdRequest.Builder().build());
+                adapterInterstitial.loadAd(new AdRequest.Builder().build());
             }
         });
 
         AdRequest interstitialAdRequest = new AdRequest.Builder()
                 .addNetworkExtrasBundle(SampleAdapter.class, extras)
                 .build();
-        mAdapterInterstitial.loadAd(interstitialAdRequest);
+        adapterInterstitial.loadAd(interstitialAdRequest);
 
         /**
          * Sample Custom Event Native ad.
@@ -285,12 +285,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Sample adapter rewarded video button.
-        mAdapterVideoButton = (Button) findViewById(R.id.adapter_rewarded_button);
-        mAdapterVideoButton.setOnClickListener(new View.OnClickListener() {
+        adapterVideoButton = (Button) findViewById(R.id.adapter_rewarded_button);
+        adapterVideoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mRewardedVideoAd.isLoaded()) {
-                    mRewardedVideoAd.show();
+                if (rewardedVideoAd.isLoaded()) {
+                    rewardedVideoAd.show();
                 } else {
                     loadRewardedVideoAd();
                 }
@@ -300,12 +300,12 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Sample adapter rewarded video ad.
          */
-        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
-        mRewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
+        rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
+        rewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
             @Override
             public void onRewardedVideoAdLoaded() {
-                mAdapterVideoButton.setEnabled(true);
-                mAdapterVideoButton.setText("Show SampleAdapter Rewarded Video");
+                adapterVideoButton.setEnabled(true);
+                adapterVideoButton.setText("Show SampleAdapter Rewarded Video");
             }
 
             @Override
@@ -330,9 +330,12 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,
                         "Sample adapter rewarded video ad failed with code: " + errorCode,
                         Toast.LENGTH_SHORT).show();
-                mAdapterVideoButton.setEnabled(true);
-                mAdapterVideoButton.setText("Load SampleAdapter Rewarded Video");
+                adapterVideoButton.setEnabled(true);
+                adapterVideoButton.setText("Load SampleAdapter Rewarded Video");
             }
+
+            @Override
+            public void onRewardedVideoCompleted() {}
         });
 
         loadRewardedVideoAd();
@@ -342,12 +345,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Activity resumed, update the current activity in Sample SDK's sample rewarded video.
-        mRewardedVideoAd.resume(MainActivity.this);
+        rewardedVideoAd.resume(MainActivity.this);
     }
 
     private void loadRewardedVideoAd() {
-        mAdapterVideoButton.setEnabled(false);
-        mRewardedVideoAd.loadAd(getString(R.string.adapter_rewarded_video_ad_unit_id),
+        adapterVideoButton.setEnabled(false);
+        rewardedVideoAd.loadAd(getString(R.string.adapter_rewarded_video_ad_unit_id),
                 new AdRequest.Builder().build());
     }
 

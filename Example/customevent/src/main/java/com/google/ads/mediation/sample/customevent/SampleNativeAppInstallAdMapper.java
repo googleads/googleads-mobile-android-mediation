@@ -17,15 +17,8 @@
 package com.google.ads.mediation.sample.customevent;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-
-import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
+import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
@@ -33,26 +26,27 @@ import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAppInstallAd} instances to
+ * A {@link NativeAppInstallAdMapper} extension to map {@link SampleNativeAd} instances to
  * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.NativeAppInstallAd} interface.
+ *
  */
 public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 
-    private final SampleNativeAppInstallAd mSampleAd;
-    private NativeAdOptions mNativeAdOptions;
-    private ImageView mInformationIconView;
-
-    public SampleNativeAppInstallAdMapper(SampleNativeAppInstallAd ad, NativeAdOptions adOptions) {
-        mSampleAd = ad;
-        mNativeAdOptions = adOptions;
-        setHeadline(mSampleAd.getHeadline());
-        setBody(mSampleAd.getBody());
-        setCallToAction(mSampleAd.getCallToAction());
-        setStarRating(mSampleAd.getStarRating());
-        setStore(mSampleAd.getStoreName());
-        setIcon(new SampleNativeMappedImage(ad.getAppIcon(), ad.getAppIconUri(),
+    private final SampleNativeAd sampleAd;
+    // For the sake of simplicity, NativeAdOptions are not used by the Sample Custom
+    // Event. They're included to demonstrate how the custom event can map options and views between
+    // the Google Mobile Ads SDK and the Sample SDK.
+    public SampleNativeAppInstallAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+        sampleAd = ad;
+        setHeadline(sampleAd.getHeadline());
+        setBody(sampleAd.getBody());
+        setCallToAction(sampleAd.getCallToAction());
+        setStarRating(sampleAd.getStarRating());
+        setStore(sampleAd.getStoreName());
+        setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
                 SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
 
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
@@ -61,7 +55,7 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setImages(imagesList);
 
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        String priceString = formatter.format(mSampleAd.getPrice());
+        String priceString = formatter.format(sampleAd.getPrice());
         setPrice(priceString);
 
         Bundle extras = new Bundle();
@@ -71,17 +65,17 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         setOverrideClickHandling(false);
         setOverrideImpressionRecording(false);
 
-        setAdChoicesContent(mSampleAd.getInformationIcon());
+        setAdChoicesContent(sampleAd.getInformationIcon());
     }
 
     @Override
     public void recordImpression() {
-        mSampleAd.recordImpression();
+        sampleAd.recordImpression();
     }
 
     @Override
     public void handleClick(View view) {
-        mSampleAd.handleClick(view);
+        sampleAd.handleClick(view);
     }
 
     // The Sample SDK doesn't do its own impression/click tracking, instead relies on its
@@ -90,10 +84,12 @@ public class SampleNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
     // your mediated network does need a reference to the view, the following method can be used
     // to provide one.
 
+
     @Override
-    public void trackView(View view) {
-        super.trackView(view);
-        // Here you would pass the View back to the mediated network's SDK.
+    public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
+        super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
+        // If your ad network SDK does its own impression tracking, here is where you can track the
+        // top level native ad view and its individual asset views.
     }
 
     @Override

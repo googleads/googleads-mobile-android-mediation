@@ -29,9 +29,9 @@ import java.util.Random;
  * have.
  */
 public class SampleAdView extends TextView {
-    private SampleAdSize mAdSize;
-    private String mAdUnit;
-    private SampleAdListener mListener;
+    private SampleAdSize adSize;
+    private String adUnit;
+    private SampleAdListener listener;
 
     /**
      * Create a new {@link SampleAdView}.
@@ -46,7 +46,7 @@ public class SampleAdView extends TextView {
      * @param size The banner size.
      */
     public void setSize(SampleAdSize size) {
-        this.mAdSize = size;
+        this.adSize = size;
     }
 
     /**
@@ -54,7 +54,7 @@ public class SampleAdView extends TextView {
      * @param sampleAdUnit The sample ad unit.
      */
     public void setAdUnit(String sampleAdUnit) {
-        this.mAdUnit = sampleAdUnit;
+        this.adUnit = sampleAdUnit;
     }
 
     /**
@@ -62,7 +62,7 @@ public class SampleAdView extends TextView {
      * @param listener The ad listener.
      */
     public void setAdListener(SampleAdListener listener) {
-        this.mListener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -71,38 +71,38 @@ public class SampleAdView extends TextView {
      * @param request The ad request with targeting information.
      */
     public void fetchAd(SampleAdRequest request) {
-        if (mListener == null) {
+        if (listener == null) {
             return;
         }
 
         // If the publisher didn't set a size or ad unit, return a bad request.
-        if (mAdSize == null || mAdUnit == null) {
-            mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+        if (adSize == null || adUnit == null) {
+            listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
         }
 
         // Randomly decide whether to succeed or fail.
         Random random = new Random();
         int nextInt = random.nextInt(100);
-        if (mListener != null) {
+        if (listener != null) {
             if (nextInt < 85) {
                 this.setText("Sample Text Ad");
                 this.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         // Notify the developer that a full screen view will be presented.
-                        mListener.onAdFullScreen();
+                        listener.onAdFullScreen();
                         Intent intent =
                                 new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
                         SampleAdView.this.getContext().startActivity(intent);
                     }
                 });
-                mListener.onAdFetchSucceeded();
+                listener.onAdFetchSucceeded();
             } else if (nextInt < 90) {
-                mListener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
+                listener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
             } else if (nextInt < 95) {
-                mListener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
+                listener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
             } else if (nextInt < 100) {
-                mListener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
+                listener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
             }
         }
     }
@@ -111,6 +111,6 @@ public class SampleAdView extends TextView {
      * Destroy the banner.
      */
     public void destroy() {
-        mListener = null;
+        listener = null;
     }
 }

@@ -36,6 +36,8 @@ public class Interstitial implements MediationInterstitialAdapter {
             return;
         }
 
+        MaioAds.setAdTestMode(mediationAdRequest.isTesting());
+
         this.mMediationInterstitialListener = listener;
         loadServerParameters(serverParameters);
 
@@ -66,8 +68,8 @@ public class Interstitial implements MediationInterstitialAdapter {
     //Show maio Interstitial video ad
     public void showInterstitial() {
         MaioEventForwarder.showInterstitial(this.mInterstitialZoneId,
-                                            Interstitial.this,
-                                            mMediationInterstitialListener);
+                Interstitial.this,
+                mMediationInterstitialListener);
     }
 
     //Checks if maio sdk has initialized
