@@ -55,8 +55,8 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     /**
      * Example of an extra field that publishers can use for a Native ad. In this example, the
-     * String is added to a {@link Bundle} in {@link SampleNativeAppInstallAdMapper} and
-     * {@link SampleNativeContentAdMapper}.
+     * String is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper},
+     * {@link SampleNativeAppInstallAdMapper} and {@link SampleNativeContentAdMapper}.
      */
     public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
 
@@ -69,20 +69,20 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
     /**
      * The {@link SampleAdView} representing a banner ad.
      */
-    private SampleAdView mSampleAdView;
+    private SampleAdView sampleAdView;
 
     /**
      * Represents a {@link SampleInterstitial}.
      */
-    private SampleInterstitial mSampleInterstitial;
+    private SampleInterstitial sampleInterstitial;
 
     /**
      * The event is being destroyed. Perform any necessary cleanup here.
      */
     @Override
     public void onDestroy() {
-        if (mSampleAdView != null) {
-            mSampleAdView.destroy();
+        if (sampleAdView != null) {
+            sampleAdView.destroy();
         }
     }
 
@@ -128,10 +128,10 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
          * listener.onAdClosed(this);
          */
 
-        mSampleAdView = new SampleAdView(context);
+        sampleAdView = new SampleAdView(context);
 
         // Assumes that the serverParameter is the AdUnit for the Sample Network.
-        mSampleAdView.setAdUnit(serverParameter);
+        sampleAdView.setAdUnit(serverParameter);
 
         // Internally, smart banners use constants to represent their ad size, which means a call to
         // AdSize.getHeight could return a negative value. You can accommodate this by using
@@ -143,14 +143,14 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         int widthInDp = Math.round(widthInPixels / displayMetrics.density);
         int heightInDp = Math.round(heightInPixels / displayMetrics.density);
 
-        mSampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
+        sampleAdView.setSize(new SampleAdSize(widthInDp, heightInDp));
 
         // Implement a SampleAdListener and forward callbacks to mediation. The callback forwarding
         // is handled by SampleBannerEventFowarder.
-        mSampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, mSampleAdView));
+        sampleAdView.setAdListener(new SampleCustomBannerEventForwarder(listener, sampleAdView));
 
         // Make an ad request.
-        mSampleAdView.fetchAd(createSampleRequest(mediationAdRequest));
+        sampleAdView.fetchAd(createSampleRequest(mediationAdRequest));
     }
 
     /**
@@ -188,22 +188,22 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
          * listener.onAdClosed(this);
          */
 
-        mSampleInterstitial = new SampleInterstitial(context);
+        sampleInterstitial = new SampleInterstitial(context);
 
         // Here we're assuming the serverParameter is the ad unit for the Sample Ad Network.
-        mSampleInterstitial.setAdUnit(serverParameter);
+        sampleInterstitial.setAdUnit(serverParameter);
 
         // Implement a SampleAdListener and forward callbacks to mediation.
-        mSampleInterstitial.setAdListener(new SampleCustomInterstitialEventForwarder(listener));
+        sampleInterstitial.setAdListener(new SampleCustomInterstitialEventForwarder(listener));
 
         // Make an ad request.
-        mSampleInterstitial.fetchAd(createSampleRequest(mediationAdRequest));
+        sampleInterstitial.fetchAd(createSampleRequest(mediationAdRequest));
     }
 
     @Override
     public void showInterstitial() {
         // Show your interstitial ad.
-        mSampleInterstitial.show();
+        sampleInterstitial.show();
     }
 
     @Override
@@ -264,16 +264,16 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         // must report an error by calling the listener's onAdFailedToLoad method with an error code
         // of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
         // anyway, and then attempt to map it to the content ad format.
-        if (!nativeMediationAdRequest.isAppInstallAdRequested()
-                && !nativeMediationAdRequest.isContentAdRequested()) {
+        if (!(nativeMediationAdRequest.isAppInstallAdRequested()
+                && nativeMediationAdRequest.isContentAdRequested()) &&
+                !nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
             customEventNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        request.setAppInstallAdsRequested(nativeMediationAdRequest.isAppInstallAdRequested());
-        request.setContentAdsRequested(nativeMediationAdRequest.isContentAdRequested());
 
         loader.setNativeAdListener(
-                new SampleCustomNativeEventForwarder(customEventNativeListener, options));
+                new SampleCustomNativeEventForwarder(customEventNativeListener,
+                        nativeMediationAdRequest));
 
         // Begin a request.
         loader.fetchAd(request);

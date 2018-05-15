@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "11.11.1.0"
+    stringVersion = "11.12.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 111110
+        versionCode 111210
         versionName stringVersion
 
     }
@@ -37,9 +37,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.tapjoy:tapjoy-android-sdk:11.11.1'
+    implementation 'com.tapjoy:tapjoy-android-sdk:11.12.1'
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:11.6.0'
+    implementation 'com.google.android.gms:play-services-ads:15.0.0'
 }
 
 /**
@@ -61,7 +61,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)

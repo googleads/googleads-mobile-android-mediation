@@ -3,9 +3,10 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.android.tools.build:gradle:3.0.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -15,9 +16,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven {
-            url 'https://maven.google.com'
-        }
+        google()
     }
 }
 
@@ -27,9 +26,9 @@ ext {
     targetSdkVersion = 26
     tools = '26.0.2'
 
-    support = '26.0.0'
+    support = '26.1.0'
     appcompatV7 = "com.android.support:appcompat-v7:$support"
 
-    play = '11.4.2'
+    play = '15.0.0'
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }

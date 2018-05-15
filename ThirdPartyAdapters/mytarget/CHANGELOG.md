@@ -1,5 +1,27 @@
 # myTarget Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.0.2.1
+- Updated the adapter to make it compatible with Google Mobile Ads SDK version 15.0.0.
+
+## 5.0.2.0
+- Verified compatibility with myTarget SDK version 5.0.2.
+
+## 5.0.0.0
+- Verified compatibility with myTarget SDK version 5.0.0.
+- Updated the adapter to make it compatible with myTarget SDK 5.0.0 and Android
+  Studio 3.1.
+
+## 4.7.2.0
+- Verified compatibility with myTarget SDK version 4.7.2.
+
+## 4.7.1.0
+- Verified compatibility with myTarget SDK version 4.7.1.
+- Added support for video and carousel ads inside MediaView.
+
+## 4.6.28.0
+- Updated the adapter project for Android Studio 3.0.
+- Verified compatibility with myTarget SDK version 4.6.28.
+
 ## 4.6.27.0
 - First release!
 - Added support for banner, interstitial, rewarded, and native ads.

@@ -8,12 +8,8 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.vungle.publisher.AdConfig;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A {@link MediationRewardedVideoAdAdapter} to load and show Vungle rewarded video ads using
@@ -58,6 +54,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                             final boolean wasSuccessfulView,
                             boolean wasCallToActionClicked) {
             if (mMediationRewardedVideoAdListener != null) {
+                if (wasCallToActionClicked) {
+                    // Only the call to action button is clickable for Vungle ads. So the
+                    // wasCallToActionClicked can be used for tracking clicks.
+                    mMediationRewardedVideoAdListener.onAdClicked(VungleAdapter.this);
+                }
                 if (wasSuccessfulView) {
                     mMediationRewardedVideoAdListener.onRewarded(VungleAdapter.this,
                             new VungleReward("vungle", 1));
@@ -130,9 +131,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                            MediationRewardedVideoAdListener listener, Bundle serverParameters,
                            Bundle networkExtras) {
         try {
-            AdapterParametersParser.Config config = AdapterParametersParser.parse(networkExtras, serverParameters);
+            AdapterParametersParser.Config config =
+                    AdapterParametersParser.parse(networkExtras, serverParameters);
             mMediationRewardedVideoAdListener = listener;
-            mVungleManager = VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+            mVungleManager =
+                    VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
             mVungleManager.addListener(mId, mVungleListener);
             if (mVungleManager.isInitialized()) {
                 mInitialized = true;
@@ -142,8 +145,10 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                 mVungleManager.init(context);
             }
         } catch (IllegalArgumentException e) {
-            if (listener != null)
-                listener.onInitializationFailed(VungleAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            if (listener != null) {
+                listener.onInitializationFailed(VungleAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package com.vungle.mediation;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -14,9 +13,6 @@ import com.vungle.publisher.AdConfig;
  * A {@link MediationInterstitialAdapter} used to load and show Vungle interstitial ads using
  * Google Mobile Ads SDK mediation.
  */
-import java.util.ArrayList;
-import java.util.List;
-
 public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
     private static final String TAG = VungleManager.class.getSimpleName();
@@ -34,6 +30,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                             boolean wasSuccessfulView,
                             boolean wasCallToActionClicked) {
             if (mMediationInterstitialListener != null) {
+                if (wasCallToActionClicked) {
+                    // Only the call to action button is clickable for Vungle ads. So the
+                    // wasCallToActionClicked can be used for tracking clicks.
+                    mMediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
+                }
                 mMediationInterstitialListener.onAdClosed(VungleInterstitialAdapter.this);
             }
         }
@@ -56,8 +57,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
         void onInitialized(boolean isSuccess) {
             if (mMediationInterstitialListener != null) {
                 if (!isSuccess) {
-                    mMediationInterstitialListener.onAdFailedToLoad(
-                            VungleInterstitialAdapter.this,
+                    mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
                             AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 } else {
                     loadAd();
@@ -82,9 +82,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
         try {
-            AdapterParametersParser.Config config = AdapterParametersParser.parse(mediationExtras, serverParameters);
+            AdapterParametersParser.Config config =
+                    AdapterParametersParser.parse(mediationExtras, serverParameters);
             mMediationInterstitialListener = mediationInterstitialListener;
-            mVungleManager = VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+            mVungleManager =
+                    VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
 
             mPlacementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
             mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
@@ -100,8 +102,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                 mVungleManager.init(context);
             }
         } catch (IllegalArgumentException e) {
-            if (mediationInterstitialListener != null)
-                mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            if (mediationInterstitialListener != null) {
+                mediationInterstitialListener
+                        .onAdFailedToLoad(VungleInterstitialAdapter.this,
+                                AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
         }
     }
 

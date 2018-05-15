@@ -7,11 +7,17 @@ import android.util.Log;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.OnContextChangedListener;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
+/*
+ * The {@link NendRewardedAdapter} to load and show Nend rewarded video ads.
+ */
 @SuppressWarnings("unused")
-public class NendRewardedAdapter implements MediationRewardedVideoAdAdapter {
+public class NendRewardedAdapter
+        implements MediationRewardedVideoAdAdapter, OnContextChangedListener {
+
     public static final String KEY_USER_ID = "key_user_id";
     static final String TAG = "NendRewardedAdapter";
 
@@ -19,12 +25,18 @@ public class NendRewardedAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void showVideo() {
-        if (isInitialized()) mRewardedVideoEventForwarder.showAd();
+        if (isInitialized()) {
+            mRewardedVideoEventForwarder.showAd();
+        }
     }
 
     @Override
-    public void loadAd(MediationAdRequest mediationAdRequest, Bundle serverParameters, Bundle mediationExtras) {
-        if (isInitialized()) mRewardedVideoEventForwarder.loadAd(mediationExtras);
+    public void loadAd(MediationAdRequest mediationAdRequest,
+                       Bundle serverParameters,
+                       Bundle mediationExtras) {
+        if (isInitialized()) {
+            mRewardedVideoEventForwarder.loadAd(mediationExtras, mediationAdRequest);
+        }
     }
 
     @Override
@@ -40,14 +52,13 @@ public class NendRewardedAdapter implements MediationRewardedVideoAdAdapter {
                     NendRewardedAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        Activity activity = (Activity)context;
+        Activity activity = (Activity) context;
 
-        mRewardedVideoEventForwarder = new NendMediationRewardedVideoEventForwarder(
-                activity,
-                NendRewardedAdapter.this,
-                serverParameters,
-                adListener
-        );
+        mRewardedVideoEventForwarder =
+                new NendMediationRewardedVideoEventForwarder(activity,
+                                                             NendRewardedAdapter.this,
+                                                             serverParameters,
+                                                             adListener);
         if (isInitialized()) {
             adListener.onInitializationSucceeded(this);
         } else {
@@ -70,11 +81,22 @@ public class NendRewardedAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void onPause() {
-        if (mRewardedVideoEventForwarder != null) mRewardedVideoEventForwarder.onPause();
+        if (mRewardedVideoEventForwarder != null) {
+            mRewardedVideoEventForwarder.onPause();
+        }
     }
 
     @Override
     public void onResume() {
-        if (mRewardedVideoEventForwarder != null) mRewardedVideoEventForwarder.onResume();
+        if (mRewardedVideoEventForwarder != null) {
+            mRewardedVideoEventForwarder.onResume();
+        }
+    }
+
+    @Override
+    public void onContextChanged(Context context) {
+        if (mRewardedVideoEventForwarder != null) {
+            mRewardedVideoEventForwarder.contextChanged(context);
+        }
     }
 }
