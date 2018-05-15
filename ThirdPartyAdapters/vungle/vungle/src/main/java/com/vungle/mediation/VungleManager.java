@@ -4,16 +4,16 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.vungle.publisher.AdConfig;
-import com.vungle.publisher.VungleAdEventListener;
-import com.vungle.publisher.VungleInitListener;
-import com.vungle.publisher.VunglePub;
-import com.vungle.publisher.env.WrapperFramework;
-import com.vungle.publisher.inject.Injector;
+import com.vungle.warren.AdConfig;
+import com.vungle.warren.InitCallback;
+import com.vungle.warren.LoadAdCallback;
+import com.vungle.warren.PlayAdCallback;
+import com.vungle.warren.Vungle;
+import com.vungle.warren.network.VungleApiClient;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,14 +21,13 @@ import java.util.Map;
  * A helper class to load and show Vungle ads and keep track of multiple
  * {@link VungleInterstitialAdapter} instances.
  */
-class VungleManager implements VungleAdEventListener {
+class VungleManager {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-    private static final String VERSION = "5.3.2";
+    private static final String VERSION = "6.2.5";
 
     private static VungleManager sInstance;
-    private VunglePub mVunglePub;
     private String mCurrentPlayId = null;
     private boolean mIsInitialising = false;
     private String mAppId;
@@ -47,18 +46,21 @@ class VungleManager implements VungleAdEventListener {
     private VungleManager(String appId, String[] placements) {
         mListeners = new HashMap<>();
 
-        Injector injector = Injector.getInstance();
-        injector.setWrapperFramework(WrapperFramework.admob);
-        injector.setWrapperFrameworkVersion(VERSION.replace('.', '_'));
+        VungleApiClient.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
+                VERSION.replace('.', '_'));
 
         this.mAppId = appId;
         this.mPlacements = placements;
-
-        mVunglePub = VunglePub.getInstance();
     }
 
     boolean isInitialized() {
-        return mVunglePub.isInitialized();
+        return Vungle.isInitialized();
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    void setIncentivizedFields(String userID, String title, String body, String keepWatching,
+                               String close) {
+        Vungle.setIncentivizedFields(userID, title, body, keepWatching, close);
     }
 
     String findPlacement(Bundle networkExtras, Bundle serverParameters) {
@@ -82,12 +84,18 @@ class VungleManager implements VungleAdEventListener {
         return placement;
     }
 
+    void updateConsentStatus(Bundle networkExtras) {
+        Vungle.Consent status = VungleExtrasBuilder.getConsentStatus(networkExtras);
+        if (status != null)
+            Vungle.updateConsentStatus(status);
+    }
+
     void init(Context context) {
-        if (mVunglePub.isInitialized()) {
+        if (Vungle.isInitialized()) {
             for (VungleListener cb : mListeners.values()) {
                 if (cb.isWaitingInit()) {
                     cb.setWaitingInit(false);
-                    cb.onInitialized(mVunglePub.isInitialized());
+                    cb.onInitialized(Vungle.isInitialized());
                 }
             }
             return;
@@ -97,18 +105,18 @@ class VungleManager implements VungleAdEventListener {
         }
         mIsInitialising = true;
 
-        mVunglePub.init(context, mAppId, mPlacements, new VungleInitListener() {
+        Vungle.init(Arrays.asList(mPlacements), mAppId, context.getApplicationContext(),
+                new InitCallback() {
             @Override
             public void onSuccess() {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         mIsInitialising = false;
-                        mVunglePub.clearAndSetEventListeners(VungleManager.this);
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
-                                cb.onInitialized(mVunglePub.isInitialized());
+                                cb.onInitialized(Vungle.isInitialized());
                             }
                         }
                     }
@@ -116,7 +124,7 @@ class VungleManager implements VungleAdEventListener {
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
+            public void onError(Throwable throwable) {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -124,11 +132,16 @@ class VungleManager implements VungleAdEventListener {
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
-                                cb.onInitialized(mVunglePub.isInitialized());
+                                cb.onInitialized(Vungle.isInitialized());
                             }
                         }
                     }
                 });
+            }
+
+            @Override
+            public void onAutoCacheAdAvailable(String placementId) {
+                // not used
             }
         });
     }
@@ -149,35 +162,107 @@ class VungleManager implements VungleAdEventListener {
             return;
         }
         mCurrentPlayId = id;
-        mVunglePub.playAd(placement, cfg);
-    }
+        Vungle.playAd(placement, cfg, new PlayAdCallback() {
+            @Override
+            public void onAdStart(final String id) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                            try {
+                                if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
+                                    entry.getValue().onAdStart(id);
+                                }
+                            } catch (Exception exception) {
+                                Log.w(TAG, exception);
+                            }
+                        }
+                    }
+                });
+            }
 
-    void onPause() {
-        mVunglePub.onPause();
-    }
+            @Override
+            public void onAdEnd(final String id, final boolean completed, final boolean isCTAClicked) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                            try {
+                                if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
+                                    entry.getValue()
+                                            .onAdEnd(id, completed, isCTAClicked);
+                                }
+                            } catch (Exception exception) {
+                                Log.w(TAG, exception);
+                            }
+                        }
+                        mCurrentPlayId = null;
+                    }
+                });
+            }
 
-    void onResume() {
-        mVunglePub.onResume();
+            @Override
+            public void onError(final String id, Throwable error) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
+                            try {
+                                if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
+                                    entry.getValue().onAdFail(id);
+                                }
+                            } catch (Exception exception) {
+                                Log.w(TAG, exception);
+                            }
+                        }
+                        mCurrentPlayId = null;
+                    }
+                });
+            }
+        });
     }
 
     boolean isAdPlayable(String placement) {
-        return mVunglePub.isAdPlayable(placement);
+        return Vungle.canPlayAd(placement);
     }
 
     void loadAd(String placement) {
-        if (mVunglePub.isAdPlayable(placement)) {
-            notifyAdIsReady(placement);
+        if (Vungle.canPlayAd(placement)) {
+            notifyAdIsReady(placement, true);
             return;
         }
-        mVunglePub.loadAd(placement);
+        Vungle.loadAd(placement, new LoadAdCallback() {
+            @Override
+            public void onAdLoad(final String id) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyAdIsReady(id, true);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(final String id, Throwable cause) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyAdIsReady(id, false);
+                    }
+                });
+            }
+        });
     }
 
-    private void notifyAdIsReady(String placement) {
+    private void notifyAdIsReady(String placement, boolean success) {
         for (VungleListener cb : mListeners.values()) {
             try {
                 if (cb.getWaitingForPlacement() != null
                         && cb.getWaitingForPlacement().equals(placement)) {
-                    cb.onAdAvailable();
+                    if (success)
+                        cb.onAdAvailable();
+                    else
+                        cb.onAdFailedToLoad();
                     cb.waitForAd(null);
                 }
             } catch (Exception exception) {
@@ -185,78 +270,4 @@ class VungleManager implements VungleAdEventListener {
             }
         }
     }
-
-    //region VungleAdEventListener implementation.
-    @Override
-    public void onAdEnd(final @NonNull String placement,
-                        final boolean wasSuccessfulView,
-                        final boolean wasCallToActionClicked) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
-                    try {
-                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
-                            entry.getValue()
-                                    .onAdEnd(placement, wasSuccessfulView, wasCallToActionClicked);
-                        }
-                    } catch (Exception exception) {
-                        Log.w(TAG, exception);
-                    }
-                }
-                mCurrentPlayId = null;
-            }
-        });
-    }
-
-    @Override
-    public void onAdStart(final @NonNull String placement) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
-                    try {
-                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
-                            entry.getValue().onAdStart(placement);
-                        }
-                    } catch (Exception exception) {
-                        Log.w(TAG, exception);
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onUnableToPlayAd(final @NonNull String placement, String reason) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<String, VungleListener> entry : mListeners.entrySet()) {
-                    try {
-                        if (mCurrentPlayId == null || mCurrentPlayId.equals(entry.getKey())) {
-                            entry.getValue().onAdFail(placement);
-                        }
-                    } catch (Exception exception) {
-                        Log.w(TAG, exception);
-                    }
-                }
-                mCurrentPlayId = null;
-            }
-        });
-    }
-
-    @Override
-    public void onAdAvailabilityUpdate(final @NonNull String placement, boolean isAdAvailable) {
-        if (!isAdAvailable) {
-            return;
-        }
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                notifyAdIsReady(placement);
-            }
-        });
-    }
-    //endregion
 }
