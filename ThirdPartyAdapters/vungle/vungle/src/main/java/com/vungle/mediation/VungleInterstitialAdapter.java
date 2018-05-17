@@ -99,8 +99,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
             mPlacementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
             mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
-            mVungleManager.updateConsentStatus(mediationExtras);
-
             mAdapterId = mId + String.valueOf(sCounter);
             sCounter++;
 

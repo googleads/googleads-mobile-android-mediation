@@ -140,7 +140,6 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
             mMediationRewardedVideoAdListener = listener;
             mVungleManager =
                     VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
-            mVungleManager.updateConsentStatus(networkExtras);
             mVungleManager.addListener(mId, mVungleListener);
             if (mVungleManager.isInitialized()) {
                 mInitialized = true;

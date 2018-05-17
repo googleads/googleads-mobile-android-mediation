@@ -84,12 +84,6 @@ class VungleManager {
         return placement;
     }
 
-    void updateConsentStatus(Bundle networkExtras) {
-        Vungle.Consent status = VungleExtrasBuilder.getConsentStatus(networkExtras);
-        if (status != null)
-            Vungle.updateConsentStatus(status);
-    }
-
     void init(Context context) {
         if (Vungle.isInitialized()) {
             for (VungleListener cb : mListeners.values()) {

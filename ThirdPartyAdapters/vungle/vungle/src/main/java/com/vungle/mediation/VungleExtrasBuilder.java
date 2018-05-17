@@ -19,7 +19,6 @@ public final class VungleExtrasBuilder {
     private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
     static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
     static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
-    private static final String EXTRA_CONSENT_STATUS = "consentStatus";
 
     private final Bundle mBundle = new Bundle();
 
@@ -52,11 +51,6 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
-    public VungleExtrasBuilder setConsentStatus(Vungle.Consent status) {
-        mBundle.putSerializable(EXTRA_CONSENT_STATUS, status);
-        return this;
-    }
-
     public Bundle build() {
         return mBundle;
     }
@@ -69,9 +63,5 @@ public final class VungleExtrasBuilder {
             adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
         }
         return adConfig;
-    }
-
-    static Vungle.Consent getConsentStatus(Bundle networkExtras) {
-        return (Vungle.Consent) networkExtras.getSerializable(EXTRA_CONSENT_STATUS);
     }
 }
