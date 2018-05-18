@@ -246,7 +246,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         RequestParameters.NativeAdAsset.ICON_IMAGE);
 
         RequestParameters requestParameters = new RequestParameters.Builder()
-                .keywords(getKeywords(mediationAdRequest))
+                .keywords(getKeywords(mediationAdRequest, false))
+                .userDataKeywords(getKeywords(mediationAdRequest, true))
                 .location(mediationAdRequest.getLocation())
                 .desiredAssets(assetsSet)
                 .build();
@@ -297,7 +298,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMoPubView.setLocation(mediationAdRequest.getLocation());
         }
 
-        mMoPubView.setKeywords(getKeywords(mediationAdRequest));
+        mMoPubView.setKeywords(getKeywords(mediationAdRequest, false));
+        mMoPubView.setUserDataKeywords(getKeywords(mediationAdRequest, true));
         mMoPubView.loadAd();
     }
 
@@ -306,7 +308,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         return mMoPubView;
     }
 
-    private String getKeywords(MediationAdRequest mediationAdRequest) {
+    private String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
 
         Date birthday = mediationAdRequest.getBirthday();
         String ageString = "";
@@ -333,7 +335,17 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 .append(",").append(ageString)
                 .append(",").append(genderString);
 
-        return keywordsBuilder.toString();
+        if (intendedForPII) {
+            return keywordsContainPII(mediationAdRequest) ? keywordsBuilder.toString() : "";
+        } else {
+            return keywordsContainPII(mediationAdRequest) ? "" : keywordsBuilder.toString();
+        }
+    }
+
+    // Check whether passed keywords contain personally-identifiable information
+    private boolean keywordsContainPII(MediationAdRequest mediationAdRequest) {
+        return mediationAdRequest.getBirthday() != null || mediationAdRequest.getGender() !=
+                -1 || mediationAdRequest.getLocation() != null;
     }
 
     private static int getAge(Date birthday) {
@@ -400,7 +412,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         }
     }
 
-
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener mediationInterstitialListener,
@@ -419,7 +430,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMoPubInterstitial.setTesting(true);
         }
 
-        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest));
+        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, false));
+        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, true));
+
         mMoPubInterstitial.load();
     }
 
