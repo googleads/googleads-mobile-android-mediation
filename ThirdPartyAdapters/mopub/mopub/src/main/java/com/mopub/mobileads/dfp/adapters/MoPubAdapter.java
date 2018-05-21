@@ -55,7 +55,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         MediationInterstitialAdapter {
     public static final String TAG = MoPubAdapter.class.getSimpleName();
 
-    private boolean isMoPubInitialized = false;
     private MoPubView mMoPubView;
     private AdSize mAdSize;
 
@@ -512,7 +511,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     private void initializeMoPub(Context context, String adUnitId) {
-        if (!isMoPubInitialized) {
+        if (!MoPub.isSdkInitialized()) {
             SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
                     .build();
             MoPub.initializeSdk(context, sdkConfiguration, initSdkListener());
@@ -525,7 +524,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             @Override
             public void onInitializationFinished() {
                 MoPubLog.d("MoPub SDK initialized.");
-                isMoPubInitialized = true;
             }
         };
     }
