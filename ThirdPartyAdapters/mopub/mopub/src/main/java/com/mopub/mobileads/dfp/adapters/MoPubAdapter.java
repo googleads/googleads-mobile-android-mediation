@@ -20,6 +20,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.mopub.common.MoPub;
+import com.mopub.common.SdkConfiguration;
+import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
@@ -52,6 +55,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         MediationInterstitialAdapter {
     public static final String TAG = MoPubAdapter.class.getSimpleName();
 
+    private boolean isMoPubInitialized = false;
     private MoPubView mMoPubView;
     private AdSize mAdSize;
 
@@ -98,6 +102,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 Bundle mediationExtras) {
 
         String adunit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
+        initializeMoPub(context, adunit);
+
         final NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
 
         if (options != null)
@@ -282,6 +288,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 Bundle bundle1) {
 
         String adunit = bundle.getString(MOPUB_AD_UNIT_KEY);
+        initializeMoPub(context, adunit);
+
 
         mAdSize = adSize;
         mMoPubView = new MoPubView(context);
@@ -420,6 +428,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                       Bundle bundle1) {
 
         String adunit = bundle.getString(MOPUB_AD_UNIT_KEY);
+        initializeMoPub(context, adunit);
 
         mMoPubInterstitial = new MoPubInterstitial((Activity) context, adunit);
         mMoPubInterstitial.setInterstitialAdListener(
@@ -500,6 +509,25 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMediationInterstitialListener.onAdOpened(MoPubAdapter.this);
         }
 
+    }
+
+    private void initializeMoPub(Context context, String adUnitId) {
+        if (!isMoPubInitialized) {
+            SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
+                    .build();
+            MoPub.initializeSdk(context, sdkConfiguration, initSdkListener());
+        }
+    }
+
+    private SdkInitializationListener initSdkListener() {
+        return new SdkInitializationListener() {
+
+            @Override
+            public void onInitializationFinished() {
+                MoPubLog.d("MoPub SDK initialized.");
+                isMoPubInitialized = true;
+            }
+        };
     }
 
     /**
