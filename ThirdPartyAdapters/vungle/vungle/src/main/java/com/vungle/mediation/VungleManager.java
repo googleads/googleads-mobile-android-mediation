@@ -33,7 +33,6 @@ class VungleManager {
     private String mAppId;
     private String[] mPlacements;
     private Handler mHandler = new Handler(Looper.getMainLooper());
-
     private Map<String, VungleListener> mListeners;
 
     static VungleManager getInstance(String appId, String[] placements) {
@@ -107,6 +106,7 @@ class VungleManager {
                     @Override
                     public void run() {
                         mIsInitialising = false;
+                        Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent());
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
