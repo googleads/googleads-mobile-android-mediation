@@ -21,7 +21,7 @@ class IronSourceBaseAdapter {
     /**
      * Adapter version.
      */
-    static final String ADAPTER_VERSION = "6.7.8.0";
+    static final String ADAPTER_VERSION = "6.7.9.0";
 
     /**
      * Key to obtain App Key, required for initializing IronSource SDK.
