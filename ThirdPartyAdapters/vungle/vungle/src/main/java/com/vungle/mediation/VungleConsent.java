@@ -3,7 +3,7 @@ package com.vungle.mediation;
 import com.vungle.warren.Vungle;
 
 /**
- * Created by akifumi.shinagawa on 5/21/18.
+ * A public static class used to set Vungle Consent Status.
  */
 
 public class VungleConsent {
