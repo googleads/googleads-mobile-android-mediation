@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.2"
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,20 +9,20 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.0.0.0"
+    stringVersion = "7.0.4.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 26
+        versionCode 70040
+        versionName stringVersion
     }
     buildTypes {
         release {
@@ -33,11 +33,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-ads:11.0.2'
-    compile 'com.inmobi.monetization:inmobi-ads:7.0.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.inmobi.monetization:inmobi-ads:7.0.4'
 }
 
 /**
@@ -59,7 +59,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)

@@ -20,26 +20,19 @@ abstract class VungleListener {
         return mIsWaitingInit;
     }
 
-
     void setWaitingInit(boolean isWaitingInit) {
         this.mIsWaitingInit = isWaitingInit;
     }
 
-    void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {
+    void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {}
 
-    }
+    void onAdStart(String placement) {}
 
-    void onAdStart(String placement){
+    void onAdFail(String placement) {}
 
-    }
+    void onAdAvailable() {}
 
-    void onAdFail(String placement){
+    void onAdFailedToLoad() {}
 
-    }
-
-    void onAdAvailable(){}
-
-    void onInitialized(boolean isSuccess) {
-
-    }
+    void onInitialized(boolean isSuccess) {}
 }

@@ -1,5 +1,8 @@
 package com.google.ads.mediation.inmobi;
 
+/*
+ * This interface contains {@code String} constants used to set values in the InMobi extras bundle.
+ */
 public interface InMobiNetworkValues {
 
     String LOGLEVEL_NONE="LOGLEVEL_NONE";

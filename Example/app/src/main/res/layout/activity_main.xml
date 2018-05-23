@@ -29,6 +29,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin" />
 
+        <Button
+            android:id="@+id/customeventnative_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Refresh" />
+
         <TextView
             android:id="@+id/adapternative_label"
             android:layout_width="wrap_content"
@@ -42,6 +49,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin" />
+
+        <Button
+            android:id="@+id/adapternative_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Refresh" />
 
         <TextView
             android:id="@+id/customeventbanner_label"
