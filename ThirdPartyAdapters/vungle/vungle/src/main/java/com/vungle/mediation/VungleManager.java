@@ -106,7 +106,9 @@ class VungleManager {
                     @Override
                     public void run() {
                         mIsInitialising = false;
-                        Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent());
+                        if(VungleConsent.getCurrentVungleConsent() != null) {
+                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent());
+                        }
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
                                 cb.setWaitingInit(false);
