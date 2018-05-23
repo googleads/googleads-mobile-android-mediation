@@ -7,11 +7,11 @@ import com.vungle.warren.Vungle;
  */
 
 public class VungleConsent {
-    private static Vungle.Consent sCurrentVungleConsent;
+    private static Vungle.Consent sCurrentVungleConsent = null;
 
     public static void updateConsentStatus(Vungle.Consent consentStatus) {
         sCurrentVungleConsent = consentStatus;
-        if (Vungle.isInitialized()) {
+        if (Vungle.isInitialized() && sCurrentVungleConsent != null) {
             Vungle.updateConsentStatus(consentStatus);
         }
     }
