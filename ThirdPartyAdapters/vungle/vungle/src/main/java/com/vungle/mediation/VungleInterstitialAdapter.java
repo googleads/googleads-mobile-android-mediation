@@ -7,7 +7,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.vungle.publisher.AdConfig;
+import com.vungle.warren.AdConfig;
 
 /**
  * A {@link MediationInterstitialAdapter} used to load and show Vungle interstitial ads using
@@ -15,11 +15,10 @@ import com.vungle.publisher.AdConfig;
  */
 public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
-    private static final String TAG = VungleManager.class.getSimpleName();
     private MediationInterstitialListener mMediationInterstitialListener;
     private VungleManager mVungleManager;
     private AdConfig mAdConfig;
-    private final String mId = "interstitial";
+    private static final String mId = "interstitial";
     private static int sCounter = 0;
     private String mAdapterId;
     private String mPlacementForPlay;
@@ -30,6 +29,12 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                             boolean wasSuccessfulView,
                             boolean wasCallToActionClicked) {
             if (mMediationInterstitialListener != null) {
+                if (wasCallToActionClicked) {
+                    // Only the call to action button is clickable for Vungle ads. So the
+                    // wasCallToActionClicked can be used for tracking clicks.
+                    mMediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
+                    mMediationInterstitialListener.onAdLeftApplication(VungleInterstitialAdapter.this);
+                }
                 mMediationInterstitialListener.onAdClosed(VungleInterstitialAdapter.this);
             }
         }
@@ -45,6 +50,14 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
         public void onAdAvailable() {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
+            }
+        }
+
+        @Override
+        void onAdFailedToLoad() {
+            if (mMediationInterstitialListener != null) {
+                mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
+                        AdRequest.ERROR_CODE_NO_FILL);
             }
         }
 
@@ -130,13 +143,9 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
 
     @Override
     public void onPause() {
-        if (mVungleManager != null)
-            mVungleManager.onPause();
     }
 
     @Override
     public void onResume() {
-        if (mVungleManager != null)
-            mVungleManager.onResume();
     }
 }

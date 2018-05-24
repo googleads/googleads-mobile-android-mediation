@@ -41,28 +41,24 @@ public class SampleRewardedVideoAd implements Parcelable {
                 }
             };
 
-    /**
-     * A simple name for the rewarded video ad.
-     */
-    private String mAdName;
+  /** A simple name for the rewarded video ad. */
+  private final String adName;
+
+  /** The rewarded amount associated with this native ad. */
+  private final int rewardAmount;
 
     /**
-     * The rewarded amount associated with this native ad.
-     */
-    private int mRewardAmount;
-
-    /**
-     * @return {@link #mAdName}.
+     * @return {@link #adName}.
      */
     public String getAdName() {
-        return this.mAdName;
+        return this.adName;
     }
 
     /**
-     * @return {@link #mRewardAmount}.
+     * @return {@link #rewardAmount}.
      */
     public int getRewardAmount() {
-        return this.mRewardAmount;
+        return this.rewardAmount;
     }
 
     /**
@@ -71,8 +67,8 @@ public class SampleRewardedVideoAd implements Parcelable {
      * @param in an Android {@link Parcel} object.
      */
     public SampleRewardedVideoAd(Parcel in) {
-        this.mAdName = in.readString();
-        this.mRewardAmount = in.readInt();
+        this.adName = in.readString();
+        this.rewardAmount = in.readInt();
     }
 
     /**
@@ -82,8 +78,8 @@ public class SampleRewardedVideoAd implements Parcelable {
      * @param rewardAmount reward amount to be provided when a user completes watching this ad.
      */
     SampleRewardedVideoAd(String adName, int rewardAmount) {
-        this.mAdName = adName;
-        this.mRewardAmount = rewardAmount;
+        this.adName = adName;
+        this.rewardAmount = rewardAmount;
     }
 
     @Override
@@ -93,7 +89,7 @@ public class SampleRewardedVideoAd implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mAdName);
-        dest.writeInt(mRewardAmount);
+        dest.writeString(adName);
+        dest.writeInt(rewardAmount);
     }
 }

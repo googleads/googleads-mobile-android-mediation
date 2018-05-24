@@ -26,7 +26,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialL
  * {@link CustomEventInterstitialListener}.
  */
 public class SampleCustomInterstitialEventForwarder extends SampleAdListener {
-    private CustomEventInterstitialListener mInterstitialListener;
+    private final CustomEventInterstitialListener interstitialListener;
 
     /**
      * Creates a new {@code SampleInterstitialEventForwarder}.
@@ -34,41 +34,41 @@ public class SampleCustomInterstitialEventForwarder extends SampleAdListener {
      *                 receive forwarded events.
      */
     public SampleCustomInterstitialEventForwarder(CustomEventInterstitialListener listener) {
-        this.mInterstitialListener = listener;
+        this.interstitialListener = listener;
     }
 
     @Override
     public void onAdFetchSucceeded() {
-        mInterstitialListener.onAdLoaded();
+        interstitialListener.onAdLoaded();
     }
 
     @Override
     public void onAdFetchFailed(SampleErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
-                mInterstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                interstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 break;
             case BAD_REQUEST:
-                mInterstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                interstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 break;
             case NETWORK_ERROR:
-                mInterstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
+                interstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
                 break;
             case NO_INVENTORY:
-                mInterstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+                interstitialListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
                 break;
         }
     }
 
     @Override
     public void onAdFullScreen() {
-        mInterstitialListener.onAdOpened();
+        interstitialListener.onAdOpened();
         // Only call onAdLeftApplication if your ad network actually exits the developer's app.
-        mInterstitialListener.onAdLeftApplication();
+        interstitialListener.onAdLeftApplication();
     }
 
     @Override
     public void onAdClosed() {
-        mInterstitialListener.onAdClosed();
+        interstitialListener.onAdClosed();
     }
 }

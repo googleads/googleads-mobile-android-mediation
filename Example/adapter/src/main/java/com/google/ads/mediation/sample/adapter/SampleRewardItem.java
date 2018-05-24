@@ -22,8 +22,8 @@ import com.google.android.gms.ads.reward.RewardItem;
  * A {@link RewardItem} that maps the sample reward type and reward amount.
  */
 public class SampleRewardItem implements RewardItem {
-    private String mRewardType;
-    private int mRewardAmount;
+    private final String rewardType;
+    private final int rewardAmount;
 
     /**
      * Creates a {@link SampleRewardItem}.
@@ -32,17 +32,17 @@ public class SampleRewardItem implements RewardItem {
      * @param rewardAmount the sample reward amount.
      */
     public SampleRewardItem(String rewardType, int rewardAmount) {
-        this.mRewardType = rewardType;
-        this.mRewardAmount = rewardAmount;
+        this.rewardType = rewardType;
+        this.rewardAmount = rewardAmount;
     }
 
     @Override
     public String getType() {
-        return mRewardType;
+        return rewardType;
     }
 
     @Override
     public int getAmount() {
-        return mRewardAmount;
+        return rewardAmount;
     }
 }

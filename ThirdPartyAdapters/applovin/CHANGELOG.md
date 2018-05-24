@@ -1,5 +1,21 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
+## 8.0.1
+- Verified compatibility with AppLovin SDK 8.0.1
+
+## 8.0.0
+- Verified compatibility with AppLovin SDK 8.0.0
+
+## 7.8.6.0
+- Verified compatibility with AppLovin SDK 7.8.6
+
+## 7.8.5.0
+- Added support for zones and smart banners.
+- Verified compatibility with AppLovin SDK 7.8.5.
+
+## 7.7.0.0
+- Verified compatibility with AppLovin SDK 7.7.0.
+
 ## 7.6.2.0
 - Verified compatibility with AppLovin SDK 7.6.2.
 

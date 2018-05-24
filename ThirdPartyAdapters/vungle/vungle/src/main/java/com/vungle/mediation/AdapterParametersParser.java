@@ -22,8 +22,7 @@ class AdapterParametersParser {
         private String[] allPlacements;
     }
 
-    public static Config parse(Bundle networkExtras, Bundle serverParameters)
-            throws IllegalArgumentException {
+    public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
         String[] placements = null;
         if (networkExtras != null) {
             placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);

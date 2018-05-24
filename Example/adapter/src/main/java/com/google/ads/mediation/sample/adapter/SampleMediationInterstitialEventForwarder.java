@@ -26,8 +26,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
  * {@link MediationInterstitialListener}.
  */
 public class SampleMediationInterstitialEventForwarder extends SampleAdListener {
-    private MediationInterstitialListener mMediationListener;
-    private SampleAdapter mAdapter;
+    private final MediationInterstitialListener mediationListener;
+    private final SampleAdapter adapter;
 
     /**
      * Creates a new {@code SampleInterstitialEventForwarder}.
@@ -37,42 +37,42 @@ public class SampleMediationInterstitialEventForwarder extends SampleAdListener 
      */
     public SampleMediationInterstitialEventForwarder(
             MediationInterstitialListener listener, SampleAdapter adapter) {
-        this.mMediationListener = listener;
-        this.mAdapter = adapter;
+        this.mediationListener = listener;
+        this.adapter = adapter;
     }
 
     @Override
     public void onAdFetchSucceeded() {
-        mMediationListener.onAdLoaded(mAdapter);
+        mediationListener.onAdLoaded(adapter);
     }
 
     @Override
     public void onAdFetchFailed(SampleErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
-                mMediationListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                mediationListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 break;
             case BAD_REQUEST:
-                mMediationListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                mediationListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
                 break;
             case NETWORK_ERROR:
-                mMediationListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
+                mediationListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
                 break;
             case NO_INVENTORY:
-                mMediationListener.onAdFailedToLoad(mAdapter, AdRequest.ERROR_CODE_NO_FILL);
+                mediationListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_NO_FILL);
                 break;
         }
     }
 
     @Override
     public void onAdFullScreen() {
-        mMediationListener.onAdOpened(mAdapter);
+        mediationListener.onAdOpened(adapter);
         // Only call onAdLeftApplication if your ad network actually exits the developer's app.
-        mMediationListener.onAdLeftApplication(mAdapter);
+        mediationListener.onAdLeftApplication(adapter);
     }
 
     @Override
     public void onAdClosed() {
-        mMediationListener.onAdClosed(mAdapter);
+        mediationListener.onAdClosed(adapter);
     }
 }

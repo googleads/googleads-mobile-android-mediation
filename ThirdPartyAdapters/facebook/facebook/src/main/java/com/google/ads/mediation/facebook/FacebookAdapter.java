@@ -15,6 +15,7 @@
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -129,6 +130,9 @@ public final class FacebookAdapter
      * Facebook rewarded video ad instance.
      */
     private RewardedVideoAd mRewardedVideoAd;
+
+    private Context mContext;
+
     private NativeAd mNativeAd;
 
     /**
@@ -214,6 +218,7 @@ public final class FacebookAdapter
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mAdView = new AdView(context, placementId, facebookAdSize);
         mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
@@ -246,6 +251,7 @@ public final class FacebookAdapter
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mInterstitialAd = new InterstitialAd(context, placementId);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
@@ -268,6 +274,7 @@ public final class FacebookAdapter
                            MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
                            Bundle serverParameters,
                            Bundle networkExtras) {
+        mContext = context;
         mRewardedListener = mediationRewardedVideoAdListener;
         if (!isValidRequestParameters(context, serverParameters)) {
             mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -296,6 +303,7 @@ public final class FacebookAdapter
                 mRewardedListener.onAdLoaded(this);
             } else {
                 buildAdRequest(mediationAdRequest);
+                AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(mContext));
                 mRewardedVideoAd.loadAd(true);
             }
         }
@@ -359,6 +367,7 @@ public final class FacebookAdapter
 
         mMediaView = new MediaView(context);
 
+        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mNativeAd = new NativeAd(context, placementId);
         mNativeAd.setAdListener(new NativeListener(mNativeAd, mediationAdRequest));
         buildAdRequest(mediationAdRequest);
@@ -673,6 +682,14 @@ public final class FacebookAdapter
         return Math.round(pixel / displayMetrics.density);
     }
 
+    private static int getGMSVersionCode(Context context) {
+        try {
+            return context.getPackageManager().getPackageInfo("com.google.android.gms", 0 ).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
+        }
+    }
+
     /**
      * The {@link AppInstallMapper} class is used to map Facebook native ads to Google Mobile Ads'
      * native app install ads.
@@ -727,61 +744,56 @@ public final class FacebookAdapter
             setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().getUrl())));
             setCallToAction(mNativeAd.getAdCallToAction());
 
-            if (mMediaView != null) {
-                mMediaView.setListener(new MediaViewListener() {
-                    @Override
-                    public void onPlay(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+            mMediaView.setListener(new MediaViewListener() {
+                @Override
+                public void onPlay(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onVolumeChange(MediaView mediaView, float v) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+                @Override
+                public void onVolumeChange(MediaView mediaView, float v) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onPause(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+                @Override
+                public void onPause(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onComplete(MediaView mediaView) {
-                        if (FacebookAdapter.this.mNativeListener != null) {
-                            FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
-                        }
+                @Override
+                public void onComplete(MediaView mediaView) {
+                    if (FacebookAdapter.this.mNativeListener != null) {
+                        FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
                     }
+                }
 
-                    @Override
-                    public void onEnterFullscreen(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+                @Override
+                public void onEnterFullscreen(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onExitFullscreen(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+                @Override
+                public void onExitFullscreen(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onFullscreenBackground(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
+                @Override
+                public void onFullscreenBackground(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
 
-                    @Override
-                    public void onFullscreenForeground(MediaView mediaView) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-                });
-                mMediaView.setNativeAd(mNativeAd);
+                @Override
+                public void onFullscreenForeground(MediaView mediaView) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+            });
+            mMediaView.setNativeAd(mNativeAd);
 
-                // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
-                // a video asset or not, the adapter always returns a MediaView and claims to have
-                // video content.
-                setMediaView(mMediaView);
-                setHasVideoContent(true);
-            } else {
-                Log.w(TAG, "Couldn't set MediaView.");
-                setHasVideoContent(false);
-            }
+            // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
+            // a video asset or not, the adapter always returns a MediaView and claims to have
+            // video content.
+            setMediaView(mMediaView);
+            setHasVideoContent(true);
 
             // Map the optional assets.
             Double starRating = getRating(mNativeAd.getAdStarRating());
@@ -846,7 +858,7 @@ public final class FacebookAdapter
         private boolean containsRequiredFieldsForNativeAppInstallAd(NativeAd nativeAd) {
             return ((nativeAd.getAdTitle() != null) && (nativeAd.getAdCoverImage() != null)
                     && (nativeAd.getAdBody() != null) && (nativeAd.getAdIcon() != null)
-                    && (nativeAd.getAdCallToAction() != null));
+                    && (nativeAd.getAdCallToAction() != null) && (mMediaView != null));
         }
 
         @Override

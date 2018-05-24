@@ -35,7 +35,7 @@ public class NendRewardedAdapter
                        Bundle serverParameters,
                        Bundle mediationExtras) {
         if (isInitialized()) {
-            mRewardedVideoEventForwarder.loadAd(mediationExtras);
+            mRewardedVideoEventForwarder.loadAd(mediationExtras, mediationAdRequest);
         }
     }
 

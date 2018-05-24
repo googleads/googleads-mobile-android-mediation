@@ -1,5 +1,11 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 11.12.1.0
+- Verified compatibility with tapjoy SDK versiobn 11.12.1.
+
+## 11.12.0.0
+- Verified compatibility with tapjoy SDK versiobn 11.12.0.
+
 ## 11.11.1.0
 - Verified compatibility with Tapjoy SDK version 11.11.1.
 

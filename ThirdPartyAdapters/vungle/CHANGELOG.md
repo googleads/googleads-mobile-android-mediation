@@ -1,5 +1,11 @@
 # Vungle Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 6.2.5.0
+- Verified compatibility with Vungle SDK 6.2.5.
+
+## 5.3.2.1
+- Updated adapter to correctly report clicks to the Google Mobile Ads SDK.
+
 ## 5.3.2.0
 - Verified compatibility with Vungle SDK 5.3.2.
 - Updated the Adpater project for Android Studio 3.0.

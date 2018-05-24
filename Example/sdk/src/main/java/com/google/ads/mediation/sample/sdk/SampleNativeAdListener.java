@@ -22,16 +22,9 @@ package com.google.ads.mediation.sample.sdk;
  */
 public abstract class SampleNativeAdListener {
     /**
-     * Called when an app install ad is successfully fetched.
+     * Called when a native ad is successfully fetched.
      */
-    public void onNativeAppInstallAdFetched(SampleNativeAppInstallAd ad) {
-        // Default is to do nothing.
-    }
-
-    /**
-     * Called when an app install ad is successfully fetched.
-     */
-    public void onNativeContentAdFetched(SampleNativeContentAd ad) {
+    public void onNativeAdFetched(SampleNativeAd ad) {
         // Default is to do nothing.
     }
 
