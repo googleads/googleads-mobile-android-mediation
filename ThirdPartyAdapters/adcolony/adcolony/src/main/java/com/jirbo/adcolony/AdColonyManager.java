@@ -121,6 +121,13 @@ class AdColonyManager {
                 options.setUserID(userId);
                 updatedOptions = true;
             }
+            String npa = networkExtras.getString("npa");
+            if (npa != null) {
+                boolean consentResponse = !npa.equals("1");
+                options.setOption("explicit_consent_given", true);
+                options.setOption("consent_response", consentResponse);
+                updatedOptions = true;
+            }
         }
 
         if (adRequest != null) {
@@ -130,9 +137,8 @@ class AdColonyManager {
                 updatedOptions = true;
             }
 
-            AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
-
             // Try to update userMetaData with gender field.
+            AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
             int genderVal = adRequest.getGender();
             if (genderVal == AdRequest.GENDER_FEMALE) {
                 updatedOptions = true;
