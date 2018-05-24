@@ -146,7 +146,6 @@ public class AdColonyAdapter implements MediationInterstitialAdapter,
                 showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
                 showPostPopup = networkExtras.getBoolean("show_post_popup", false);
             }
-
             // Update the reward listener if it had not been set before.
             if (_adColonyRewardedInterstitialListener == null) {
                 _adColonyRewardedInterstitialListener =

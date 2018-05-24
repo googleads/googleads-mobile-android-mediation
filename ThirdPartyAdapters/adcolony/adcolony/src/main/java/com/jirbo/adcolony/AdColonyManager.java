@@ -136,8 +136,9 @@ class AdColonyManager {
                 updatedOptions = true;
             }
 
-            // Try to update userMetaData with gender field.
             AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
+
+            // Try to update userMetaData with gender field.
             int genderVal = adRequest.getGender();
             if (genderVal == AdRequest.GENDER_FEMALE) {
                 updatedOptions = true;
