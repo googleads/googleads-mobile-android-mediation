@@ -121,12 +121,6 @@ class AdColonyManager {
                 options.setUserID(userId);
                 updatedOptions = true;
             }
-            String npa = networkExtras.getString("npa");
-            if (npa != null) {
-                options.setOption("explicit_consent_given", true);
-                options.setOption("consent_response", !npa.equals("1"));
-                updatedOptions = true;
-            }
         }
 
         if (adRequest != null) {
