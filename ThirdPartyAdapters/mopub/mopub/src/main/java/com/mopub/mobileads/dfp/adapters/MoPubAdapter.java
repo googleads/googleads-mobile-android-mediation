@@ -315,6 +315,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         return mMoPubView;
     }
 
+    /* Keywords passed from AdMob are separated into 1) personally identifiable, and 2) non-personally
+    identifiable categories before they are forwarded to MoPub due to GDPR.
+     */
     private String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
 
         Date birthday = mediationAdRequest.getBirthday();
@@ -510,6 +513,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
     }
 
+    // Initializing the MoPub SDK. Required as of 5.0.0
     private void initializeMoPub(Context context, String adUnitId) {
         if (!MoPub.isSdkInitialized()) {
             SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
