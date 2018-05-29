@@ -117,8 +117,17 @@ class AdColonyManager {
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
+            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
             if (userId != null) {
                 options.setUserID(userId);
+                updatedOptions = true;
+            }
+            if (gdprConsentString != null) {
+                options.setGDPRConsentString(gdprConsentString);
+                updatedOptions = true;
+            }
+            if (networkExtras.containsKey("gdpr_required")) {
+                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
                 updatedOptions = true;
             }
         }
