@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.28.1.0"
+    stringVersion = "4.28.1.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -33,7 +33,7 @@ android {
 
 dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:15.0.0'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
     implementation 'com.facebook.android:audience-network-sdk:4.28.1'
 }
 
