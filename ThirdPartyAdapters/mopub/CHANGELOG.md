@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.0.0.0
+- Verified compatibility with MoPub SDK 5.0.0.
+
 ## 4.20.0.0
 - Verified compatibility with MoPub SDK 4.20.0.
 
