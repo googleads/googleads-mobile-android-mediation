@@ -2,6 +2,7 @@
 
 ## 8.0.1.1
 - Add support for native ads.
+- Set AdMob as mediation provider on the AppLovin SDK.
 
 ## 8.0.1.0
 - Verified compatibility with AppLovin SDK 8.0.1
