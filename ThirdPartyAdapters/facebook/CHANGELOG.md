@@ -1,4 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
+## 4.28.2.0
+- Verified compatibility with Facebook SDK v4.28.2.
+
+## 4.28.1.1
+- Fixed an issue where clicks are not being registered for Unified Native Ads.
 
 ## 4.28.1.0
 - Verified compatibility with Facebook SDK v4.28.1.

@@ -52,7 +52,6 @@ import com.facebook.ads.RewardedVideoAdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.NativeAppInstallAdView;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -862,7 +861,7 @@ public final class FacebookAdapter
         }
 
         @Override
-        public void trackView(View view) {
+        public void trackViews(View view, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
             ViewGroup adView = (ViewGroup) view;
             // Find the overlay view in the given ad view. The overlay view will always be the
             // top most view in the hierarchy.
@@ -906,50 +905,12 @@ public final class FacebookAdapter
             // Facebook does its own click handling.
             setOverrideClickHandling(true);
 
-            if (view instanceof NativeAppInstallAdView) {
-                NativeAppInstallAdView appInstallAdView = (NativeAppInstallAdView) view;
-                ArrayList<View> assetViews = new ArrayList<>();
-
-                if (appInstallAdView.getHeadlineView() != null) {
-                    assetViews.add(appInstallAdView.getHeadlineView());
-                }
-
-                if (appInstallAdView.getBodyView() != null) {
-                    assetViews.add(appInstallAdView.getBodyView());
-                }
-
-                if (appInstallAdView.getCallToActionView() != null) {
-                    assetViews.add(appInstallAdView.getCallToActionView());
-                }
-
-                if (appInstallAdView.getIconView() != null) {
-                    assetViews.add(appInstallAdView.getIconView());
-                }
-
-                if (appInstallAdView.getImageView() != null) {
-                    assetViews.add(appInstallAdView.getImageView());
-                }
-
-                if (appInstallAdView.getPriceView() != null) {
-                    assetViews.add(appInstallAdView.getPriceView());
-                }
-
-                if (appInstallAdView.getStarRatingView() != null) {
-                    assetViews.add(appInstallAdView.getStarRatingView());
-                }
-
-                if (appInstallAdView.getStoreView() != null) {
-                    assetViews.add(appInstallAdView.getStoreView());
-                }
-
-                if (appInstallAdView.getMediaView() != null) {
-                    assetViews.add(appInstallAdView.getMediaView());
-                }
-
-                mNativeAd.registerViewForInteraction(view, assetViews);
-            } else {
-                Log.w(TAG, "Failed to register view for interaction.");
+            ArrayList<View> assetViews = new ArrayList<>();
+            for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
+                assetViews.add(clickableAssets.getValue());
             }
+
+            mNativeAd.registerViewForInteraction(view, assetViews);
         }
 
         @Override
