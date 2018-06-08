@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "8.0.1.0"
+    stringVersion = "8.0.1.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 8010
+        versionCode 8011
         versionName stringVersion
 
     }
@@ -71,8 +71,7 @@ publishing {
 /**
  * Bintray closure needed to run the bintrayUpload task.
  *
- * Usage:
- * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
+ * Usage: * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
  *
  * The Bintray User ID and API key can be added to your system environment variables as BINTRAY_USER
  * and BINTRAY_API_KEY respectively, and the command could be reduced to:
