@@ -193,6 +193,7 @@ public class MyTargetRewardedAdapter implements MediationRewardedVideoAdAdapter 
         @Override
         public void onVideoCompleted(@NonNull final InterstitialAd ad) {
             Log.d(TAG, "Video completed");
+            listener.onVideoCompleted(MyTargetRewardedAdapter.this);
             listener.onRewarded(MyTargetRewardedAdapter.this, new MyTargetReward());
         }
 
