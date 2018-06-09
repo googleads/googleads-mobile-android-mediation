@@ -1,5 +1,9 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.1.0.0
+- Added InMobiConsent class which provides updateGDPRConsent() and getConsentObj() methods.
+- Verified compatibility with InMobi SDK version 7.1.0.
+
 ## 7.0.4.0
 - Verified compatibility with InMobi SDK version 7.0.4.
 
