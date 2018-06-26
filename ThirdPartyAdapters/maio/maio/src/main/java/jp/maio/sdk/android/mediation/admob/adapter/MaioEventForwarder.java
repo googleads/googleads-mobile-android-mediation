@@ -25,6 +25,7 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
     private MediationInterstitialAdapter mInterstitialAdapter;
     private MediationInterstitialListener mMediationInterstitialListener;
     private AdType mAdType;
+    private FirstLoadInterface mFirstLoad;
 
     private enum AdType {VIDEO, INTERSTITIAL}
 
@@ -55,11 +56,12 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
         }
     }
 
-    public static void initialize(Activity activity, String mediaId) {
-        sInstance._initialize(activity, mediaId);
+    public static void initialize(Activity activity, String mediaId, FirstLoadInterface firstLoad) {
+        sInstance._initialize(activity, mediaId, firstLoad);
     }
 
-    private void _initialize(Activity activity, String mediaId) {
+    private void _initialize(Activity activity, String mediaId, FirstLoadInterface firstLoad) {
+        this.mFirstLoad = firstLoad;
         MaioAds.init(activity, mediaId, this);
     }
 
@@ -108,14 +110,20 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
     @Override
     public void onInitialized() {
         this.sInitialized = true;
-        if (_isVideo()) {
-            this.mMediationRewardedVideoAdListener.onInitializationSucceeded(mRewardedAdapter);
-        }
     }
 
     @Override
     public void onChangedCanShow(String zoneId, boolean newValue) {
 
+        if (this.mFirstLoad == null || zoneId == null) {
+            return;
+        }
+
+        if (!newValue) {
+            return;
+        }
+
+        this.mFirstLoad.adLoaded(zoneId);
     }
 
     @Override

@@ -14,7 +14,7 @@ import jp.maio.sdk.android.MaioAds;
 /**
  * maio mediation adapter for AdMob Interstitial videos.
  */
-public class Interstitial implements MediationInterstitialAdapter {
+public class Interstitial implements MediationInterstitialAdapter, FirstLoadInterface {
 
     //Admob Interstitial listener
     private MediationInterstitialListener mMediationInterstitialListener;
@@ -43,7 +43,7 @@ public class Interstitial implements MediationInterstitialAdapter {
 
         if (!isInitialized()) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId, this);
         }
 
         if (MaioAds.canShow(this.mInterstitialZoneId)) {
@@ -55,6 +55,13 @@ public class Interstitial implements MediationInterstitialAdapter {
                 this.mMediationInterstitialListener
                         .onAdFailedToLoad(Interstitial.this, AdRequest.ERROR_CODE_NO_FILL);
             }
+        }
+    }
+
+    @Override
+    public void adLoaded(String zoneId) {
+        if (this.mMediationInterstitialListener != null  && zoneId.equals(this.mInterstitialZoneId)) {
+            this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);
         }
     }
 
