@@ -14,7 +14,7 @@ import jp.maio.sdk.android.MaioAds;
 /**
  * maio mediation adapter for AdMob Rewarded videos.
  */
-public class Rewarded implements MediationRewardedVideoAdAdapter {
+public class Rewarded implements MediationRewardedVideoAdAdapter, FirstLoadInterface {
 
     //Admob Rewarded listener
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
@@ -47,7 +47,27 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
 
         if (!isInitialized()) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId, this);
+            this.mMediationRewardedVideoAdListener.onInitializationSucceeded(this);
+        } else {
+            if (MaioAds.canShow(this.mRewardVideoZoneId)) {
+                if (this.mMediationRewardedVideoAdListener != null) {
+                    this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
+                }
+            } else {
+                if (this.mMediationRewardedVideoAdListener != null) {
+                    this.mMediationRewardedVideoAdListener
+                            .onAdFailedToLoad(Rewarded.this, AdRequest.ERROR_CODE_NO_FILL);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void adLoaded(String zoneId)
+    {
+        if (this.mMediationRewardedVideoAdListener != null && zoneId.equals(this.mRewardVideoZoneId)) {
+            this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
         }
     }
 
