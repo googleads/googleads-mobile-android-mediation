@@ -1,13 +1,11 @@
 package com.google.ads.mediation.dap.forwarder;
 
-
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
 import com.google.android.gms.ads.formats.NativeAd;
 
 public class DuNativeMappedImage extends NativeAd.Image {
-
     private Drawable mDrawable;
     private Uri mImageUri;
 

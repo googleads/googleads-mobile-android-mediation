@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.duapps.ad.DuNativeAd;
 import com.google.ads.mediation.dap.forwarder.DapCustomNativeEventForwarder;
@@ -13,14 +14,15 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
 /**
- * Created by bushaopeng on 18/1/3.
+ * Mediation adapter for Native Ads for DU Ad Platform
  */
 @Keep
 public class DuNativeAdAdapter implements MediationNativeAdapter {
     private static final String TAG = DuNativeAdAdapter.class.getSimpleName();
-    private DuNativeAd nativeAd;
     public static final String KEY_SOURCE = "source";
+    private DuNativeAd nativeAd;
 
+    // region MediationNativeAdapter implementation
     @Override
     public void requestNativeAd(Context context,
                                 MediationNativeListener listener,
@@ -31,12 +33,21 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
+        if (!(mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest.isContentAdRequested())) {
+            Log.w(TAG, "Failed to request native ad. Both app install and content ad should be "
+                    + "requested");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
         int pid = getValidPid(serverParameters);
         String appId = serverParameters.getString(DuAdMediation.KEY_APP_ID);
         if (pid < 0) {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
         DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
         nativeAd = new DuNativeAd(context, pid);
         nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(context,DuNativeAdAdapter.this, listener,
@@ -46,7 +57,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onDestroy() {
-        DuAdMediation.d(TAG, "DuNativeAdAdapter onDestroy ");
+        DuAdMediation.d(TAG, "DuNativeAdAdapter onDestroy");
         if (nativeAd != null) {
             nativeAd.destory();
             nativeAd = null;
@@ -62,7 +73,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
     public void onResume() {
         DuAdMediation.d(TAG, "DuNativeAdAdapter onResume");
     }
-
+    // endregion
 
     private int getValidPid(Bundle bundle) {
         if (bundle == null) {

@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by bushaopeng on 18/2/1.
+ * The {@link DuAdExtrasBundleBuilder} class is used to create a network extras bundle that can be passed
+ * to the adapter to make network-specific customizations.
  */
-
 public class DuAdExtrasBundleBuilder {
     private BannerCloseStyle bannerCloseStyle;
     private BannerStyle bannerStyle;
@@ -29,7 +29,7 @@ public class DuAdExtrasBundleBuilder {
     }
 
     /**
-     * add placement IDs for native/banner/interstitial ad
+     * Add placement IDs for native/banner/interstitial ad
      * @param ids placement IDs for native/banner/interstitial ad
      * @return
      */
@@ -44,7 +44,7 @@ public class DuAdExtrasBundleBuilder {
         return DuAdExtrasBundleBuilder.this;
     }
     /**
-     * add placement IDs for rewarded video ad
+     * Add placement IDs for rewarded video ad
      * @param ids placement IDs for rewarded video ad
      * @return
      */
@@ -69,28 +69,29 @@ public class DuAdExtrasBundleBuilder {
         bundle.putSerializable(DuAdAdapter.KEY_BANNER_CLOSE_STYLE, bannerCloseStyle);
         bundle.putSerializable(DuAdAdapter.KEY_BANNER_STYLE, bannerStyle);
         bundle.putSerializable(DuAdAdapter.KEY_INTERSTITIAL_TYPE, interstitialAdType);
+
         if (placementIds != null) {
             bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_PLACEMENT_ID, placementIds);
         }
         if (videoPlacementIds != null) {
             bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_VIDEO_PLACEMENT_ID, videoPlacementIds);
         }
+
         return bundle;
     }
 
     public enum BannerCloseStyle implements Serializable {
         STYLE_TOP,
-        STYLE_BOTTOM;
+        STYLE_BOTTOM
     }
 
     public enum BannerStyle implements Serializable {
         STYLE_BLUE,
-        STYLE_GREEN;
+        STYLE_GREEN
     }
-
 
     public enum InterstitialAdType implements Serializable {
         NORMAL,
-        SCREEN;
+        SCREEN
     }
 }

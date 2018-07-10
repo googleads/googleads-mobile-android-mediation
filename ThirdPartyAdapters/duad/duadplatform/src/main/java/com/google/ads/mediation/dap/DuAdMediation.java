@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.ChangedPackages;
 import android.content.pm.FeatureInfo;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageInfo;
@@ -18,6 +19,8 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.SharedLibraryInfo;
+import android.content.pm.VersionedPackage;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
@@ -28,6 +31,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -41,14 +45,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * Created by bushaopeng on 18/2/2.
- */
-
 public class DuAdMediation {
     private static final String TAG = DuAdMediation.class.getSimpleName();
+
     /**
-     * This key should be configured at AdMob server side or AdMob front-end.
+     * The following keys should be configured in the AdMob account Mediation settings.
      */
     public static final String KEY_DAP_PID = "placementId";
     public static final String KEY_APP_ID = "appId";
@@ -68,8 +69,10 @@ public class DuAdMediation {
     }
 
     private static boolean isInitialized = false;
+
     public static final String KEY_ALL_PLACEMENT_ID = "ALL_PID";
     public static final String KEY_ALL_VIDEO_PLACEMENT_ID = "ALL_V_PID";
+
     private static HashSet<Integer> initializedPlacementIds = new HashSet<>();
     private static Handler handler;
 
@@ -97,33 +100,36 @@ public class DuAdMediation {
     static void initializeSDK(Context context, Bundle mediationExtras, int pid, String appId) {
         if (!isInitialized) {
             context = context.getApplicationContext();
-            boolean initIdsSucc = false;
+            boolean initIdsSuccess = false;
             boolean shouldInit = false;
+
             if (mediationExtras != null) {
                 ArrayList<Integer> allPids = mediationExtras.getIntegerArrayList(KEY_ALL_PLACEMENT_ID);
                 if (allPids != null) {
                     initializedPlacementIds.addAll(allPids);
                     shouldInit = true;
-                    initIdsSucc = true;
+                    initIdsSuccess = true;
                 }
             }
+
             if (!initializedPlacementIds.contains(pid)) {
                 initializedPlacementIds.add(pid);
                 shouldInit = true;
             }
+
             if (shouldInit) {
                 String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds, "native");
                 d(TAG, "init config json is : " + initJsonConfig);
                 context = setAppIdInMeta(context, appId);
                 DuAdNetwork.init(context, initJsonConfig);
-                if (initIdsSucc) {
+                if (initIdsSuccess) {
                     isInitialized = true;
                 } else {
-                    String msg = "Only the following placementIds " + initializedPlacementIds + " is initialized. "
-                            + "It is Strongly recommended to use DuAdExtrasBundleBuilder.addAllPlacementId() to pass all "
-                            + "your valid placement id (for native ad /banner ad/ interstitial ad) when requests ad, "
-                            + "so that the DuAdNetwork could be normally initialized.";
-                    Log.e(TAG, msg);
+                    String message = "Only the following placementIds " + initializedPlacementIds + " are initialized. "
+                            + "It is strongly recommended to use DuAdExtrasBundleBuilder.addAllPlacementId() to pass all "
+                            + "your valid placement IDs (for Native, Banner and Interstitial ads) when making an Ad Request, "
+                            + "so that the DuAdNetwork can be properly initialized.";
+                    Log.e(TAG, message);
                 }
             }
         }
@@ -131,6 +137,7 @@ public class DuAdMediation {
 
     static Context setAppIdInMeta(Context context, String appId) {
         boolean appIdNotFound = true;
+
         try {
             ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
                     .getPackageName(), PackageManager.GET_META_DATA);
@@ -143,7 +150,7 @@ public class DuAdMediation {
                 } else {
                     if (!TextUtils.isEmpty(appId)) {
                         appIdNotFound = false;
-                        DuAdMediation.d(TAG, "appId from admob server is " + appId);
+                        DuAdMediation.d(TAG, "appId from AdMob server is " + appId);
                         context = new AppIdContext(context, appId);
                     }
                 }
@@ -151,6 +158,7 @@ public class DuAdMediation {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         if (appIdNotFound) {
             Log.e(TAG, "No App Id found! Du Ad will not be able to make money for you properly! Have you configure " +
                     "it in your meta data or AdMob UI?");
@@ -548,10 +556,69 @@ public class DuAdMediation {
         public PackageInstaller getPackageInstaller() {
             return this.innerPackageManager.getPackageInstaller();
         }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public List<SharedLibraryInfo> getSharedLibraries(int flags) {
+            return this.innerPackageManager.getSharedLibraries(flags);
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public boolean canRequestPackageInstalls() {
+            return this.innerPackageManager.canRequestPackageInstalls();
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public void setApplicationCategoryHint(@NonNull String packageName, int categoryHint) {
+            this.innerPackageManager.setApplicationCategoryHint(packageName, categoryHint);
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public ChangedPackages getChangedPackages(int sequenceNumber) {
+            return this.innerPackageManager.getChangedPackages(sequenceNumber);
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public void updateInstantAppCookie(@Nullable byte[] cookie) {
+            this.innerPackageManager.updateInstantAppCookie(cookie);
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public void clearInstantAppCookie() {
+            this.innerPackageManager.clearInstantAppCookie();
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public byte[] getInstantAppCookie() {
+            return this.innerPackageManager.getInstantAppCookie();
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public int getInstantAppCookieMaxBytes() {
+            return this.innerPackageManager.getInstantAppCookieMaxBytes();
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public boolean isInstantApp() {
+            return this.innerPackageManager.isInstantApp();
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public boolean isInstantApp(String packageName) {
+            return this.innerPackageManager.isInstantApp(packageName);
+        }
+
+        @TargetApi(Build.VERSION_CODES.O)
+        public PackageInfo getPackageInfo(VersionedPackage versionedPackage, int flags) {
+            try {
+                return this.innerPackageManager.getPackageInfo(versionedPackage, flags);
+            } catch (NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
     private static class AppIdContext extends ContextWrapper {
-
         private final String appId;
         private final Context base;
 
@@ -560,7 +627,6 @@ public class DuAdMediation {
             this.base = base;
             this.appId = appId;
         }
-
 
         public Context getApplicationContext() {
             return this;
