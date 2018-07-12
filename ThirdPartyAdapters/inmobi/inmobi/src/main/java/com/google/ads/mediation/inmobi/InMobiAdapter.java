@@ -419,6 +419,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                             }
                         }
 
+                        mRewardedVideoAdListener.onVideoCompleted(InMobiAdapter.this);
                         mRewardedVideoAdListener.onRewarded(InMobiAdapter.this, new RewardItem() {
                             @Override
                             public String getType() {

@@ -54,6 +54,7 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                             boolean wasCallToActionClicked) {
             if (mMediationRewardedVideoAdListener != null) {
                 if (wasSuccessfulView) {
+                    mMediationRewardedVideoAdListener.onVideoCompleted(VungleAdapter.this);
                     mMediationRewardedVideoAdListener.onRewarded(VungleAdapter.this,
                             new VungleReward("vungle", 1));
                 }

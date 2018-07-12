@@ -235,6 +235,7 @@ public class ChartboostAdapter implements MediationRewardedVideoAdAdapter,
                 public void didCompleteRewardedVideo(String location, int reward) {
                     super.didCompleteRewardedVideo(location, reward);
                     if (mMediationRewardedVideoAdListener != null) {
+                        mMediationRewardedVideoAdListener.onVideoCompleted(ChartboostAdapter.this);
                         mMediationRewardedVideoAdListener.onRewarded(ChartboostAdapter.this,
                                 new ChartboostReward(reward));
                     }

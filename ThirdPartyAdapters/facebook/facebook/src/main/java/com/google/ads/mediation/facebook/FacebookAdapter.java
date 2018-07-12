@@ -528,6 +528,7 @@ public final class FacebookAdapter
 
         @Override
         public void onRewardedVideoCompleted() {
+            mRewardedListener.onVideoCompleted(FacebookAdapter.this);
             // Facebook SDK doesn't provide a reward value. The publisher is expected to
             // override the reward in AdMob UI.
             mRewardedListener.onRewarded(FacebookAdapter.this, new FacebookReward());

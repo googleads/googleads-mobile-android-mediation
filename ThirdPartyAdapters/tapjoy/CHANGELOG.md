@@ -1,5 +1,8 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 12.0.0.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
 ## 12.0.0.0
 - Verified compatibility with tapjoy SDK versiobn 12.0.0.
 
