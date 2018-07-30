@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.99.1.0
+- Verified compatibility with Facebook SDK v4.99.1.
+
 ## 4.28.2.1
 - Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
 
