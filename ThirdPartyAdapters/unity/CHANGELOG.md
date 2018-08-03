@@ -1,5 +1,8 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 2.3.0.0
+- Verified compatibility with Unity Ads SDK 2.3.0.
+
 ## 2.2.1.1
 - Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
 
