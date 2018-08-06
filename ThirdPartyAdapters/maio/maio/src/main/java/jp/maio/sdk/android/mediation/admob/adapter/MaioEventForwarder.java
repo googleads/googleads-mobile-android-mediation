@@ -11,6 +11,7 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
+import jp.maio.sdk.android.MaioAdsInstance;
 import jp.maio.sdk.android.MaioAdsListenerInterface;
 
 /**
@@ -62,7 +63,8 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     private void _initialize(Activity activity, String mediaId, FirstLoadInterface firstLoad) {
         this.mFirstLoad = firstLoad;
-        MaioAds.init(activity, mediaId, this);
+        MaioAdsInstance maioAdsInstance = MaioAds.initWithNonDefaultMediaId(activity, mediaId, this);
+        MaioAdsInstanceRepository.setMaioAdsInstance(mediaId, maioAdsInstance);
     }
 
     public static boolean isInitialized() {
@@ -71,14 +73,16 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     public static void showVideo(String zoneId,
                                  MediationRewardedVideoAdAdapter adapter,
-                                 MediationRewardedVideoAdListener listener) {
-        sInstance._showVideo(zoneId, adapter, listener);
+                                 MediationRewardedVideoAdListener listener,
+                                 MaioAdsInstance maio) {
+        sInstance._showVideo(zoneId, adapter, listener, maio);
     }
 
     private void _showVideo(String zoneId,
                             MediationRewardedVideoAdAdapter adapter,
-                            MediationRewardedVideoAdListener listener) {
-        MaioAds.show(zoneId);
+                            MediationRewardedVideoAdListener listener,
+                            MaioAdsInstance maio) {
+        maio.show(zoneId);
         this.mRewardedAdapter = adapter;
         this.mMediationRewardedVideoAdListener = listener;
         mAdType = AdType.VIDEO;
@@ -86,14 +90,16 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     public static void showInterstitial(String zoneId,
                                         MediationInterstitialAdapter adapter,
-                                        MediationInterstitialListener listener) {
-        sInstance._showInterstitial(zoneId, adapter, listener);
+                                        MediationInterstitialListener listener,
+                                        MaioAdsInstance maio) {
+        sInstance._showInterstitial(zoneId, adapter, listener, maio);
     }
 
     private void _showInterstitial(String zoneId,
                                    MediationInterstitialAdapter adapter,
-                                   MediationInterstitialListener listener) {
-        MaioAds.show(zoneId);
+                                   MediationInterstitialListener listener,
+                                   MaioAdsInstance maio) {
+        maio.show(zoneId);
         this.mMediationInterstitialListener = listener;
         this.mInterstitialAdapter = adapter;
         mAdType = AdType.INTERSTITIAL;
