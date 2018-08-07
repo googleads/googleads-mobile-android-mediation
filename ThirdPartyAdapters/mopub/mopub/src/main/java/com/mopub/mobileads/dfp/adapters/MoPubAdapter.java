@@ -375,6 +375,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onBannerClicked(MoPubView moPubView) {
             mMediationBannerListener.onAdClicked(MoPubAdapter.this);
+            mMediationBannerListener.onAdLeftApplication(MoPubAdapter.this);
         }
 
         @Override
@@ -468,6 +469,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onInterstitialClicked(MoPubInterstitial moPubInterstitial) {
             mMediationInterstitialListener.onAdClicked(MoPubAdapter.this);
+            mMediationInterstitialListener.onAdLeftApplication(MoPubAdapter.this);
         }
 
         @Override
