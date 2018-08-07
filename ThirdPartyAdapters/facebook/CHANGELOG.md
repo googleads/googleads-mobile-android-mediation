@@ -1,5 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 4.99.1.1
+- Fixed a bug where the Ad Choices icon is not shown for Unified Native Ads.
+- Fixed a bug where the adapter would throw an exception when trying to download images.
+
 ## 4.99.1.0
 - Verified compatibility with Facebook SDK v4.99.1.
 

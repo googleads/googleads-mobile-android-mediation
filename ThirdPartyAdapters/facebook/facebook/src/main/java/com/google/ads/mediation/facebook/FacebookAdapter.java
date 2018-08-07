@@ -17,14 +17,9 @@ package com.google.ads.mediation.facebook;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
@@ -48,7 +43,6 @@ import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeAdViewAttributes;
 import com.facebook.ads.RewardedVideoAd;
@@ -57,8 +51,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
-import com.google.android.gms.ads.formats.NativeAppInstallAdView;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -73,21 +65,9 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static android.os.Build.ID;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -114,8 +94,6 @@ public final class FacebookAdapter
     public static final String KEY_TITLE_TEXT_COLOR = "title_text_color";
     public static final String KEY_TITLE_TEXT_SIZE = "title_text_size";
     public static final String KEY_TYPEFACE = "typeface";
-
-    private static final int DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
 
     private static final String PLACEMENT_PARAMETER = "pubid";
 
@@ -803,7 +781,6 @@ public final class FacebookAdapter
                 }
             });
 
-
             // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
             // a video asset or not, the adapter always returns a MediaView and claims to have
             // video content.
@@ -820,7 +797,6 @@ public final class FacebookAdapter
             Bundle extras = new Bundle();
             extras.putCharSequence(KEY_ID, mNativeAd.getId());
             extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-
 
             NativeAdViewAttributes attributes = mNativeAd.getAdViewAttributes();
             if (attributes != null) {
@@ -849,17 +825,7 @@ public final class FacebookAdapter
             }
             setExtras(extras);
 
-            // Respect the publisher's setting whether to return a drawable or not.
-            boolean urlsOnly = false;
-            if (mNativeAdOptions != null) {
-                urlsOnly = mNativeAdOptions.shouldReturnUrlsForImageAssets();
-            }
-
-            if (urlsOnly) {
-                mapperListener.onMappingSuccess();
-            } else {
-                new DownloadDrawablesAsync(mapperListener).execute(AppInstallMapper.this);
-            }
+            mapperListener.onMappingSuccess();
         }
 
         /**
@@ -877,50 +843,49 @@ public final class FacebookAdapter
         }
 
         @Override
-        public void trackViews(View view, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
+        public void trackViews(View view,
+                               Map<String, View> clickableAssetViews,
+                               Map<String, View> nonClickableAssetViews) {
 
-            if(view instanceof NativeAppInstallAdView) {
-                ViewGroup adView = (ViewGroup) view;
+            ViewGroup adView = (ViewGroup) view;
 
-                // Find the overlay view in the given ad view. The overlay view will always be the
-                // top most view in the hierarchy.
-                View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-                if (overlayView instanceof FrameLayout) {
-                    // Create and add Facebook's AdChoicesView to the overlay view.
-                    AdChoicesView adChoicesView =
-                            new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                    ((ViewGroup) overlayView).addView(adChoicesView);
-                    // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
-                    // LayoutParams from the AdChoicesView.
-                    FrameLayout.LayoutParams params =
-                            (FrameLayout.LayoutParams) adChoicesView.getLayoutParams();
-                    if (mNativeAdOptions != null) {
-                        switch (mNativeAdOptions.getAdChoicesPlacement()) {
-                            case NativeAdOptions.ADCHOICES_TOP_LEFT:
-                                params.gravity = Gravity.TOP | Gravity.LEFT;
-                                break;
-                            case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-                                params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-                                break;
-                            case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-                                params.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                                break;
-                            case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-                            default:
-                                params.gravity = Gravity.TOP | Gravity.RIGHT;
-                        }
-                    } else {
-                        // Default to top right if native ad options are not provided.
-                        params.gravity = Gravity.TOP | Gravity.RIGHT;
+            // Find the overlay view in the given ad view. The overlay view will always be the
+            // top most view in the hierarchy.
+            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
+            if (overlayView instanceof FrameLayout) {
+                // Create and add Facebook's AdChoicesView to the overlay view.
+                AdChoicesView adChoicesView =
+                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
+                ((ViewGroup) overlayView).addView(adChoicesView);
+                // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
+                // LayoutParams from the AdChoicesView.
+                FrameLayout.LayoutParams params =
+                        (FrameLayout.LayoutParams) adChoicesView.getLayoutParams();
+                if (mNativeAdOptions != null) {
+                    switch (mNativeAdOptions.getAdChoicesPlacement()) {
+                        case NativeAdOptions.ADCHOICES_TOP_LEFT:
+                            params.gravity = Gravity.TOP | Gravity.LEFT;
+                            break;
+                        case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+                            params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+                            break;
+                        case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+                            params.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                            break;
+                        case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+                        default:
+                            params.gravity = Gravity.TOP | Gravity.RIGHT;
                     }
-                    adView.requestLayout();
                 } else {
-
-                    AdChoicesView adChoicesView =
-                            new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                    this.setAdChoicesContent(adChoicesView);
-
+                    // Default to top right if native ad options are not provided.
+                    params.gravity = Gravity.TOP | Gravity.RIGHT;
                 }
+                adView.requestLayout();
+            } else {
+
+                AdChoicesView adChoicesView =
+                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
+                this.setAdChoicesContent(adChoicesView);
 
             }
 
@@ -971,102 +936,6 @@ public final class FacebookAdapter
                 return null;
             }
             return (MAX_STAR_RATING * rating.getValue()) / rating.getScale();
-        }
-    }
-
-    /**
-     * The {@link DownloadDrawablesAsync} class is used to download the drawables and send the
-     * necessary callbacks.
-     */
-    private static class DownloadDrawablesAsync extends AsyncTask<Object, Void, Boolean> {
-
-        /**
-         * The image drawable listener used to send the success/fail callbacks once the task
-         * completed the download process.
-         */
-        private NativeAdMapperListener mDrawableListener;
-
-        public DownloadDrawablesAsync(NativeAdMapperListener listener) {
-            this.mDrawableListener = listener;
-        }
-
-        @Override
-        protected Boolean doInBackground(Object... params) {
-            AppInstallMapper mapper = (AppInstallMapper) params[0];
-            ExecutorService executorService = Executors.newCachedThreadPool();
-
-            // Create all the Futures before calling get on them, so that the images can be
-            // downloaded in parallel. This HashMap is used to set each drawable to its image
-            // once the Future finishes downloading.
-            HashMap<FacebookAdapterNativeAdImage, Future<Drawable>> futuresMap = new HashMap<>();
-
-            List<com.google.android.gms.ads.formats.NativeAd.Image> images = mapper.getImages();
-            for (int i = 0; i < images.size(); i++) {
-                FacebookAdapterNativeAdImage image =
-                        (FacebookAdapterNativeAdImage) images.get(i);
-                Future<Drawable> drawableFuture =
-                        getDrawableFuture(image.getUri(), executorService);
-                futuresMap.put(image, drawableFuture);
-            }
-
-            FacebookAdapterNativeAdImage iconImage =
-                    (FacebookAdapterNativeAdImage) mapper.getIcon();
-            Future<Drawable> drawableFuture =
-                    getDrawableFuture(iconImage.getUri(), executorService);
-            futuresMap.put(iconImage, drawableFuture);
-
-            for (Map.Entry<FacebookAdapterNativeAdImage, Future<Drawable>> pair
-                    : futuresMap.entrySet()) {
-                Drawable drawable;
-                try {
-                    drawable =
-                            pair.getValue().get(DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-                    Log.w(TAG, "Exception occurred while waiting for future to return. "
-                            + "Returning null as drawable : " + exception);
-                    return false;
-                }
-                pair.getKey().setDrawable(drawable);
-            }
-
-            return true;
-        }
-
-        /**
-         * This method will use the given {@link ExecutorService} to create a
-         * {@link Future<Drawable>} which will download the image drawable. The Future will start
-         * downloading as soon as the {@link ExecutorService} has a thread available.
-         *
-         * @param uri             the {@link Uri} from which to get the Image.
-         * @param executorService needed to create the {@link Future<Drawable>}.
-         * @return a {@link Future<Drawable>} which will start downloading the image from the
-         * given Uri.
-         */
-        private Future<Drawable> getDrawableFuture(final Uri uri, ExecutorService executorService) {
-            // The call() will be executed as the threads in executorService's thread pool become
-            // available.
-            return executorService.submit(new Callable<Drawable>() {
-                @Override
-                public Drawable call() throws Exception {
-                    InputStream in = new URL(uri.toString()).openStream();
-                    Bitmap bitmap = BitmapFactory.decodeStream(in);
-
-                    // Defaulting to a scale of 1.
-                    bitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
-                    return new BitmapDrawable(Resources.getSystem(), bitmap);
-                }
-            });
-        }
-
-        @Override
-        protected void onPostExecute(Boolean isDownloadSuccessful) {
-            super.onPostExecute(isDownloadSuccessful);
-            if (isDownloadSuccessful) {
-                // Image download successful, send on success callback.
-                mDrawableListener.onMappingSuccess();
-            } else {
-                mDrawableListener.onMappingFailed();
-            }
         }
     }
 
