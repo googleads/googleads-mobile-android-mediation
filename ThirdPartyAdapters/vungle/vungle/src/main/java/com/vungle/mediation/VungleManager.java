@@ -25,7 +25,7 @@ class VungleManager {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-    private static final String VERSION = "6.2.5";
+    private static final String VERSION = "6.3.12";
 
     private static VungleManager sInstance;
     private String mCurrentPlayId = null;
@@ -76,9 +76,14 @@ class VungleManager {
             placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
         if (placement == null) {
-            placement = mPlacements[0];
-            Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements'"
-                    + ": %s", placement));
+            if (mPlacements != null && mPlacements.length > 0) {
+                placement = mPlacements[0];
+                Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements'"
+                        + ": %s", placement));
+            } else {
+                Log.e(TAG, "At least one placement should be specified in either " +
+                        "serverParameters or the networkExtras!");
+            }
         }
         return placement;
     }
@@ -98,8 +103,7 @@ class VungleManager {
         }
         mIsInitialising = true;
 
-        Vungle.init(Arrays.asList(mPlacements), mAppId, context.getApplicationContext(),
-                new InitCallback() {
+        Vungle.init(mAppId, context.getApplicationContext(), new InitCallback() {
             @Override
             public void onSuccess() {
                 mHandler.post(new Runnable() {
@@ -107,7 +111,8 @@ class VungleManager {
                     public void run() {
                         mIsInitialising = false;
                         if(VungleConsent.getCurrentVungleConsent() != null) {
-                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent());
+                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
+                                    VungleConsent.getCurrentVungleConsentMessageVersion());
                         }
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {

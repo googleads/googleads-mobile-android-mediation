@@ -34,11 +34,6 @@ class AdapterParametersParser {
             throw new IllegalArgumentException();
         }
 
-        if (placements == null || placements.length == 0) {
-            Log.e(TAG, "At least one placement should be specified!");
-            throw new IllegalArgumentException();
-        }
-
         Config ret = new Config();
         ret.appId = appId;
         ret.allPlacements = placements;

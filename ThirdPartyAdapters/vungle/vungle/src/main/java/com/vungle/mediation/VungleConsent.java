@@ -8,15 +8,25 @@ import com.vungle.warren.Vungle;
 
 public class VungleConsent {
     private static Vungle.Consent sCurrentVungleConsent = null;
+    private static String sCurrentVungleConsentMessageVersion = "";
 
-    public static void updateConsentStatus(Vungle.Consent consentStatus) {
+    public static void updateConsentStatus(Vungle.Consent consentStatus,
+                                           String consentMessageVersion) {
         sCurrentVungleConsent = consentStatus;
-        if (Vungle.isInitialized() && sCurrentVungleConsent != null) {
-            Vungle.updateConsentStatus(consentStatus);
+        sCurrentVungleConsentMessageVersion = consentMessageVersion;
+
+        if (Vungle.isInitialized() &&
+                sCurrentVungleConsent != null &&
+                sCurrentVungleConsentMessageVersion != null) {
+            Vungle.updateConsentStatus(sCurrentVungleConsent, sCurrentVungleConsentMessageVersion);
         }
     }
 
     public static Vungle.Consent getCurrentVungleConsent() {
         return sCurrentVungleConsent;
+    }
+
+    public static String getCurrentVungleConsentMessageVersion() {
+        return sCurrentVungleConsentMessageVersion;
     }
 }

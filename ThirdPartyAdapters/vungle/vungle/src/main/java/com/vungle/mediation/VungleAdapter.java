@@ -165,7 +165,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
     @Override
     public void loadAd(MediationAdRequest adRequest, Bundle serverParameters,
                        Bundle networkExtras) {
-        String userId = networkExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+        String userId = "";
+        if (networkExtras != null) {
+            userId = networkExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+        }
+
         mVungleManager.setIncentivizedFields(userId, null, null, null, null);
         mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(networkExtras);
         mPlacementForPlay = mVungleManager.findPlacement(networkExtras, serverParameters);
