@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.2.0.1
+- Updated the adapter to invoke 'onAdLeftApplication()' ad event.
+
 ## 5.2.0.0
 - Verified compatibility with MoPub SDK 5.2.0.
 
