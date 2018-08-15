@@ -1,5 +1,8 @@
 # maio Adapter for Google Mobile Ads SDK for Android Changelog
 
+##1.1.3.1
+- Updated the adapter to work with instance class instead of singleton.
+
 ## 1.1.3.0
 - Verified compatibility with maio SDK version 1.1.3.
 
