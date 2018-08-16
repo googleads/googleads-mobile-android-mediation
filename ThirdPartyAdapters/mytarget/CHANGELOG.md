@@ -1,5 +1,8 @@
 # myTarget Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.4.0
+- Verified compatibility with myTarget SDK version 5.1.4.
+
 ## 5.1.3.0
 - Verified compatibility with myTarget SDK version 5.1.3.
 
