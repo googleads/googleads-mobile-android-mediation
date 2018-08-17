@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.0.1
+- Initialize MoPub and reattempt ad requests manually in the adapters for use cases that do not do so in the app.
+
 ## 5.3.0.0
 - Verified compatibility with MoPub SDK 5.3.0.
 
