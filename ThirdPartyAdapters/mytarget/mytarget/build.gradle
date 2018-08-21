@@ -9,22 +9,22 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.7.1.0"
+    stringVersion = "5.1.4.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 407010
+        targetSdkVersion 27
+        versionCode 5010400
         versionName stringVersion
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -36,9 +36,12 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.google.android.gms:play-services-ads:11.8.0'
-    compile 'com.my.target:mytarget-sdk:4.7.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:customtabs:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.my.target:mytarget-sdk:5.1.4'
 }
 
 /**
@@ -60,7 +63,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)

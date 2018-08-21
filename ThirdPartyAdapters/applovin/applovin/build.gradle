@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.6.1.0"
+    stringVersion = "8.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "26.0.3"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 70610
+        versionCode 8100
         versionName stringVersion
 
     }
@@ -34,9 +34,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.applovin:applovin-sdk:7.6.1'
+    implementation 'com.applovin:applovin-sdk:8.1.0'
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:11.6.2'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
 }
 
 /**
@@ -58,7 +58,9 @@ publishing {
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
@@ -69,8 +71,7 @@ publishing {
 /**
  * Bintray closure needed to run the bintrayUpload task.
  *
- * Usage:
- * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
+ * Usage: * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
  *
  * The Bintray User ID and API key can be added to your system environment variables as BINTRAY_USER
  * and BINTRAY_API_KEY respectively, and the command could be reduced to:

@@ -11,6 +11,7 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
+import jp.maio.sdk.android.MaioAdsInstance;
 import jp.maio.sdk.android.MaioAdsListenerInterface;
 
 /**
@@ -25,6 +26,7 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
     private MediationInterstitialAdapter mInterstitialAdapter;
     private MediationInterstitialListener mMediationInterstitialListener;
     private AdType mAdType;
+    private FirstLoadInterface mFirstLoad;
 
     private enum AdType {VIDEO, INTERSTITIAL}
 
@@ -55,12 +57,14 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
         }
     }
 
-    public static void initialize(Activity activity, String mediaId) {
-        sInstance._initialize(activity, mediaId);
+    public static void initialize(Activity activity, String mediaId, FirstLoadInterface firstLoad) {
+        sInstance._initialize(activity, mediaId, firstLoad);
     }
 
-    private void _initialize(Activity activity, String mediaId) {
-        MaioAds.init(activity, mediaId, this);
+    private void _initialize(Activity activity, String mediaId, FirstLoadInterface firstLoad) {
+        this.mFirstLoad = firstLoad;
+        MaioAdsInstance maioAdsInstance = MaioAds.initWithNonDefaultMediaId(activity, mediaId, this);
+        MaioAdsInstanceRepository.setMaioAdsInstance(mediaId, maioAdsInstance);
     }
 
     public static boolean isInitialized() {
@@ -69,14 +73,16 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     public static void showVideo(String zoneId,
                                  MediationRewardedVideoAdAdapter adapter,
-                                 MediationRewardedVideoAdListener listener) {
-        sInstance._showVideo(zoneId, adapter, listener);
+                                 MediationRewardedVideoAdListener listener,
+                                 MaioAdsInstance maio) {
+        sInstance._showVideo(zoneId, adapter, listener, maio);
     }
 
     private void _showVideo(String zoneId,
                             MediationRewardedVideoAdAdapter adapter,
-                            MediationRewardedVideoAdListener listener) {
-        MaioAds.show(zoneId);
+                            MediationRewardedVideoAdListener listener,
+                            MaioAdsInstance maio) {
+        maio.show(zoneId);
         this.mRewardedAdapter = adapter;
         this.mMediationRewardedVideoAdListener = listener;
         mAdType = AdType.VIDEO;
@@ -84,14 +90,16 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     public static void showInterstitial(String zoneId,
                                         MediationInterstitialAdapter adapter,
-                                        MediationInterstitialListener listener) {
-        sInstance._showInterstitial(zoneId, adapter, listener);
+                                        MediationInterstitialListener listener,
+                                        MaioAdsInstance maio) {
+        sInstance._showInterstitial(zoneId, adapter, listener, maio);
     }
 
     private void _showInterstitial(String zoneId,
                                    MediationInterstitialAdapter adapter,
-                                   MediationInterstitialListener listener) {
-        MaioAds.show(zoneId);
+                                   MediationInterstitialListener listener,
+                                   MaioAdsInstance maio) {
+        maio.show(zoneId);
         this.mMediationInterstitialListener = listener;
         this.mInterstitialAdapter = adapter;
         mAdType = AdType.INTERSTITIAL;
@@ -108,14 +116,20 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
     @Override
     public void onInitialized() {
         this.sInitialized = true;
-        if (_isVideo()) {
-            this.mMediationRewardedVideoAdListener.onInitializationSucceeded(mRewardedAdapter);
-        }
     }
 
     @Override
     public void onChangedCanShow(String zoneId, boolean newValue) {
 
+        if (this.mFirstLoad == null || zoneId == null) {
+            return;
+        }
+
+        if (!newValue) {
+            return;
+        }
+
+        this.mFirstLoad.adLoaded(zoneId);
     }
 
     @Override
@@ -167,10 +181,10 @@ public class MaioEventForwarder implements MaioAdsListenerInterface {
 
     @Override
     public void onFailed(FailNotificationReason reason, String zoneId) {
-        if (_isVideo()) {
+        if (_isInterstitial()) {
             this.mMediationInterstitialListener
                     .onAdFailedToLoad(mInterstitialAdapter, getAdRequestErrorType(reason));
-        } else if (_isInterstitial()) {
+        } else if (_isVideo()) {
             this.mMediationRewardedVideoAdListener
                     .onAdFailedToLoad(mRewardedAdapter, getAdRequestErrorType(reason));
         }

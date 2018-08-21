@@ -1,4 +1,3 @@
-
 package com.mopub.mobileads.dfp.adapters;
 
 import android.content.Context;
@@ -65,7 +64,6 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
                     mMopubNativeAdData.getMainImageUrl(), MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE));
             setImages(imagesList);
         }
-
         setOverrideClickHandling(true);
         setOverrideImpressionRecording(true);
     }
@@ -157,8 +155,6 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
         } else {
             Log.d(MoPubAdapter.TAG, "Failed to show AdChoices icon.");
         }
-
-
     }
 
     @Override

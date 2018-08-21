@@ -1,6 +1,25 @@
 # ironSource Adapter for Google Mobile Ads SDK for Android Changelog
 
-## x.y.z.0
+## Version 6.7.10.0
+- Verified compatibility with ironSource SDK version 6.7.10.
 
-- First release!
-- Added support for banner ads, interstitial ads etc.
+## Version 6.7.9.1.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
+## Version 6.7.9.1.0
+- Verified compatibility with ironSource SDK version 6.7.9.1.
+
+## Version 6.7.9.0
+- Verified compatibility with ironSource SDK version 6.7.9.
+
+## Version 6.7.8.0
+- Verified compatibility with ironSource SDK version 6.7.8.
+
+## Version 6.7.7.0
+- Initialize IronSource SDK once per ad unit.
+- Added option to pass activity to IronSource SDK in `onPause` and `onResume`
+  methods.
+- Verified compatibility with ironSource SDK version 6.7.0.
+
+## Version 6.7.5.0
+- Initial release.

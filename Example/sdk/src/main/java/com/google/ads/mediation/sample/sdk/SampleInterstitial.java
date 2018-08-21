@@ -19,7 +19,6 @@ package com.google.ads.mediation.sample.sdk;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-
 import java.util.Random;
 
 /**
@@ -27,16 +26,16 @@ import java.util.Random;
  * have.
  */
 public class SampleInterstitial {
-    private Context mContext;
-    private String mAdUnit;
-    private SampleAdListener mListener;
+    private final Context context;
+    private String adUnit;
+    private SampleAdListener listener;
 
     /**
      * Create a new {@link SampleInterstitial}.
      * @param context An Android {@link Context}.
      */
     public SampleInterstitial(Context context) {
-        this.mContext = context;
+        this.context = context;
     }
 
     /**
@@ -44,7 +43,7 @@ public class SampleInterstitial {
      * @param sampleAdUnit The sample ad unit.
      */
     public void setAdUnit(String sampleAdUnit) {
-        this.mAdUnit = sampleAdUnit;
+        this.adUnit = sampleAdUnit;
     }
 
     /**
@@ -52,7 +51,7 @@ public class SampleInterstitial {
      * @param listener The ad listener.
      */
     public void setAdListener(SampleAdListener listener) {
-        this.mListener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -61,28 +60,28 @@ public class SampleInterstitial {
      * @param request The ad request with targeting information.
      */
     public void fetchAd(SampleAdRequest request) {
-        if (mListener == null) {
+        if (listener == null) {
             return;
         }
 
         // If the publisher didn't set an ad unit, return a bad request.
-        if (mAdUnit == null) {
-            mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+        if (adUnit == null) {
+            listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
         }
 
         Random random = new Random();
         int nextInt = random.nextInt(100);
-        if (mListener != null) {
+        if (listener != null) {
             if (nextInt < 80) {
-                mListener.onAdFetchSucceeded();
+                listener.onAdFetchSucceeded();
             } else if (nextInt < 85) {
-                mListener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
+                listener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
             } else if (nextInt < 90) {
-                mListener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
+                listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
             } else if (nextInt < 95) {
-                mListener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
+                listener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
             } else if (nextInt < 100) {
-                mListener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
+                listener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
             }
         }
     }
@@ -92,15 +91,15 @@ public class SampleInterstitial {
      */
     public void show() {
         // Notify the developer that a full screen view will be presented.
-        mListener.onAdFullScreen();
-        new AlertDialog.Builder(mContext)
+        listener.onAdFullScreen();
+        new AlertDialog.Builder(context)
                 .setTitle("Sample Interstitial")
                 .setMessage("You are viewing a sample interstitial ad.")
                 .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // Notify the developer that the interstitial was closed.
-                        mListener.onAdClosed();
+                        listener.onAdClosed();
                     }
                 })
                 .show();
@@ -110,7 +109,7 @@ public class SampleInterstitial {
      * Destroy the interstitial.
      */
     public void destroy() {
-        mListener = null;
+        listener = null;
     }
 }
 

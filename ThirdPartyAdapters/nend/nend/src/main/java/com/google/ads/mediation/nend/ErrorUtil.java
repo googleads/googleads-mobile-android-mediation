@@ -4,6 +4,9 @@ import com.google.android.gms.ads.AdRequest;
 
 import java.net.HttpURLConnection;
 
+/*
+ * The {@link ErrorUtil} contains constants and static utility methods for error conversion.
+ */
 class ErrorUtil {
     // Invalid network
     private static final int NEND_SDK_NETWORK_ERROR_CODE = 603;

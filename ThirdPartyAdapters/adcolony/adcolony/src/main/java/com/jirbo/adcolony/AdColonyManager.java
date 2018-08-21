@@ -41,17 +41,19 @@ class AdColonyManager {
         _context = null;
     }
 
-    boolean configureAdColony(Context context, Bundle serverParams, MediationAdRequest adRequest,
+    boolean configureAdColony(Context context,
+                              Bundle serverParams,
+                              MediationAdRequest adRequest,
                               Bundle networkExtras) {
         String appId = serverParams.getString("app_id");
         ArrayList<String> newZoneList = parseZoneList(serverParams);
         boolean needToConfigure = false;
 
         if (context != null) {
-            _context = context; // update the context if its non-null
+            _context = context; // Update the context if its non-null.
         }
 
-        if (!(_context instanceof Activity)) {
+        if (_context != null && !(_context instanceof Activity)) {
             Log.w("AdColonyAdapter", "Context must be of type Activity.");
             return false;
         }
@@ -66,35 +68,35 @@ class AdColonyManager {
             return false;
         }
 
-        // check to see if the stored list of zones is missing any values
+        // Check to see if the stored list of zones is missing any values.
         for (String zone : newZoneList) {
             if (!_configuredListOfZones.contains(zone)) {
-                // not contained in our list
+                // Not contained in our list.
                 _configuredListOfZones.add(zone);
                 needToConfigure = true;
             }
         }
 
-        // update app-options if necessary
+        // Update app-options if necessary.
         AdColonyAppOptions appOptions = buildAppOptions(adRequest, networkExtras);
 
-        // we are requesting zones that we haven't configured with yet.
+        // We are requesting zones that we haven't configured with yet.
         if (_isConfigured && !needToConfigure) {
             if (appOptions != null) {
-                // always set the appOptions if non-null
+                // Always set the appOptions if non-null.
                 AdColony.setAppOptions(appOptions);
             }
         } else {
-            // convert _configuredListOfZones into array
+            // Convert _configuredListOfZones into array.
             String[] zones =
                     _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
 
-            // instantiate app options if null so that we can always send mediation network info
+            // Instantiate app options if null so that we can always send mediation network info.
             if (appOptions == null) {
                 appOptions = new AdColonyAppOptions();
             }
 
-            // always set mediation network info
+            // Always set mediation network info.
             appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
             _isConfigured = AdColony.configure((Activity) _context, appOptions, appId, zones);
         }
@@ -102,33 +104,44 @@ class AdColonyManager {
     }
 
     /**
-     * Places user_id, age, location, and gender into AdColonyAppOptions
-     * @param adRequest -- request received from AdMob
-     * @param networkExtras -- possible network parameters sent from AdMob
-     * @return a valid AppOptions object or null if nothing valid was passed from AdMob
+     * Places user_id, age, location, and gender into AdColonyAppOptions.
+     *
+     * @param adRequest     request received from AdMob.
+     * @param networkExtras possible network parameters sent from AdMob.
+     * @return a valid AppOptions object or null if nothing valid was passed from AdMob.
      */
-     private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
-                                                Bundle networkExtras) {
+    private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
+                                               Bundle networkExtras) {
         AdColonyAppOptions options = new AdColonyAppOptions();
         boolean updatedOptions = false;
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
+            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
             if (userId != null) {
                 options.setUserID(userId);
                 updatedOptions = true;
             }
-            if (networkExtras.containsKey("test_mode")) {
-                boolean testMode = networkExtras.getBoolean("test_mode");
-                options.setTestModeEnabled(testMode);
+            if (gdprConsentString != null) {
+                options.setGDPRConsentString(gdprConsentString);
+                updatedOptions = true;
+            }
+            if (networkExtras.containsKey("gdpr_required")) {
+                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
                 updatedOptions = true;
             }
         }
 
         if (adRequest != null) {
+            // Enable test ads from AdColony when a Test Ad Request was sent.
+            if (adRequest.isTesting()) {
+                options.setTestModeEnabled(true);
+                updatedOptions = true;
+            }
+
             AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
 
-            // try to update userMetaData with gender field
+            // Try to update userMetaData with gender field.
             int genderVal = adRequest.getGender();
             if (genderVal == AdRequest.GENDER_FEMALE) {
                 updatedOptions = true;
@@ -138,14 +151,14 @@ class AdColonyManager {
                 userMetadata.setUserGender(AdColonyUserMetadata.USER_MALE);
             }
 
-            // try to update userMetaData with location (if provided)
+            // Try to update userMetaData with location (if provided).
             Location location = adRequest.getLocation();
             if (location != null) {
                 updatedOptions = true;
                 userMetadata.setUserLocation(location);
             }
 
-            // try to update userMetaData with age if birth date is provided
+            // Try to update userMetaData with age if birth date is provided.
             Date birthday = adRequest.getBirthday();
             if (birthday != null) {
                 long currentTime = System.currentTimeMillis();

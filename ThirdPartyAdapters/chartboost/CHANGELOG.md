@@ -1,5 +1,14 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.0.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
+## 7.2.0.0
+- Verified compatibility with Chartboost SDK 7.2.0.
+
+## 7.1.0.0
+- Verified compatibility with Chartboost SDK 7.1.0.
+
 ## 7.0.1.0
 - Verified compatibility with Chartboost SDK 7.0.1.
 - Added support for new Chartboost error codes.

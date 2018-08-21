@@ -14,10 +14,21 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
  * events from AdColony SDK to Google Mobile Ads SDK.
  */
 class AdColonyAdListener extends AdColonyInterstitialListener implements AdColonyRewardListener {
+
+    enum RequestState {
+        REQUESTED,
+        FILLED,
+        NOT_FILLED,
+        CLOSED,
+        EXPIRED,
+        NONE
+    }
+
     private MediationInterstitialListener _mediationInterstitialListener;
     private MediationRewardedVideoAdListener _mediationRewardedVideoAdListener;
     private AdColonyAdapter _adapter;
     private boolean _rewarded;
+    private RequestState _state = RequestState.NONE;
 
     AdColonyAdListener(AdColonyAdapter adapter, MediationInterstitialListener listener) {
         _mediationInterstitialListener = listener;
@@ -33,12 +44,9 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onRequestFilled(AdColonyInterstitial ad) {
         if (_adapter != null) {
+            _state = RequestState.FILLED;
             _adapter.setAd(ad);
-            if (_rewarded) {
-                _mediationRewardedVideoAdListener.onAdLoaded(_adapter);
-            } else {
-                _mediationInterstitialListener.onAdLoaded(_adapter);
-            }
+            notifyAdLoaded();
         }
     }
 
@@ -57,6 +65,7 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onClosed(AdColonyInterstitial ad) {
         if (_adapter != null) {
+            _state = RequestState.CLOSED;
             _adapter.setAd(ad);
             if (_rewarded) {
                 _mediationRewardedVideoAdListener.onAdClosed(_adapter);
@@ -69,6 +78,7 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onExpiring(AdColonyInterstitial ad) {
         if (_adapter != null) {
+            _state = RequestState.EXPIRED;
             _adapter.setAd(ad);
             AdColony.requestInterstitial(ad.getZoneID(), this);
         }
@@ -109,6 +119,7 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onRequestNotFilled(AdColonyZone zone) {
         if (_adapter != null) {
+            _state = RequestState.NOT_FILLED;
             _adapter.setAd(null);
             if (_rewarded) {
                 AdColony.removeRewardListener();
@@ -124,9 +135,13 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
     @Override
     public void onReward(com.adcolony.sdk.AdColonyReward reward) {
         if (_adapter != null) {
-            AdColonyReward adReward =
-                    new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
-            _mediationRewardedVideoAdListener.onRewarded(_adapter, adReward);
+            _mediationRewardedVideoAdListener.onVideoCompleted(_adapter);
+
+            if (reward.success()) {
+                AdColonyReward adReward =
+                        new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
+                _mediationRewardedVideoAdListener.onRewarded(_adapter, adReward);
+            }
         }
     }
 
@@ -134,5 +149,21 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
         _adapter = null;
         _mediationInterstitialListener = null;
         _mediationRewardedVideoAdListener = null;
+    }
+
+    void onRequest() {
+        _state = RequestState.REQUESTED;
+    }
+
+    RequestState getState() {
+        return _state;
+    }
+
+    void notifyAdLoaded() {
+        if (_rewarded) {
+            _mediationRewardedVideoAdListener.onAdLoaded(_adapter);
+        } else {
+            _mediationInterstitialListener.onAdLoaded(_adapter);
+        }
     }
 }

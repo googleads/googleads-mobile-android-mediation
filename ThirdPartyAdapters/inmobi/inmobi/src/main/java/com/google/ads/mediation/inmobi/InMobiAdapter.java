@@ -72,6 +72,10 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
      */
     private boolean mIsRewardedVideoAdAdapterInitialized;
 
+    public static Boolean IsAppInitialized() {
+        return sIsAppInitialized;
+    }
+
     private void isTaggedForChildDirectedTreatment(MediationAdRequest mediationAdRequest,
                                                    HashMap<String, String> paramMap) {
         if (mediationAdRequest.taggedForChildDirectedTreatment()
@@ -137,7 +141,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             Log.d(TAG, serverParameters.getString("accountid"));
             Log.d(TAG, serverParameters.getString("placementid"));
 
-            InMobiSdk.init(context, serverParameters.getString("accountid"));
+            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
         this.mBannerListener = listener;
@@ -273,7 +277,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                       Bundle mediationExtras) {
 
         if (!sIsAppInitialized) {
-            InMobiSdk.init(context, serverParameters.getString("accountid"));
+            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
 
@@ -396,7 +400,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         String accountId = serverParameters.getString("accountid");
 
         if (!sIsAppInitialized) {
-            InMobiSdk.init(context, accountId);
+            InMobiSdk.init(context, accountId, InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
 
@@ -415,6 +419,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                             }
                         }
 
+                        mRewardedVideoAdListener.onVideoCompleted(InMobiAdapter.this);
                         mRewardedVideoAdListener.onRewarded(InMobiAdapter.this, new RewardItem() {
                             @Override
                             public String getType() {
@@ -551,7 +556,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
         /* Logging few initial info */
         if (!sIsAppInitialized && serverParameters != null) {
-            InMobiSdk.init(context, serverParameters.getString("accountid"));
+            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
         this.mNativeListener = listener;
@@ -647,6 +652,11 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
                     @Override
                     public void onAdStatusChanged(@NonNull InMobiNative inMobiNative) {
+
+                    }
+
+                    @Override
+                    public void onUserSkippedMedia(@NonNull InMobiNative inMobiNative) {
 
                     }
                 });

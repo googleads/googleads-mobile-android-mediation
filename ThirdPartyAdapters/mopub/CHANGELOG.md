@@ -1,5 +1,26 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.0.0
+- Verified compatibility with MoPub SDK 5.3.0.
+
+## 5.2.0.1
+- Updated the adapter to invoke 'onAdLeftApplication()' ad event.
+
+## 5.2.0.0
+- Verified compatibility with MoPub SDK 5.2.0.
+
+## 5.1.0.0
+- Verified compatibility with MoPub SDK 5.1.0.
+
+## 5.0.0.0
+- Verified compatibility with MoPub SDK 5.0.0.
+
+## 4.20.0.0
+- Verified compatibility with MoPub SDK 4.20.0.
+
+## 4.19.0.1
+- Fixed an NPE issue when a null image URL is returned by MoPub.
+
 ## 4.19.0.0
 - Verified compatibility with MoPub SDK 4.19.0.
 

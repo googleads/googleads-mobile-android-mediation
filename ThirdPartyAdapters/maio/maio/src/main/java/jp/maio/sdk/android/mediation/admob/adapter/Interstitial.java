@@ -10,11 +10,12 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import jp.maio.sdk.android.MaioAds;
+import jp.maio.sdk.android.MaioAdsInstance;
 
 /**
  * maio mediation adapter for AdMob Interstitial videos.
  */
-public class Interstitial implements MediationInterstitialAdapter {
+public class Interstitial implements MediationInterstitialAdapter, FirstLoadInterface {
 
     //Admob Interstitial listener
     private MediationInterstitialListener mMediationInterstitialListener;
@@ -36,15 +37,20 @@ public class Interstitial implements MediationInterstitialAdapter {
             return;
         }
 
+        MaioAds.setAdTestMode(mediationAdRequest.isTesting());
+
         this.mMediationInterstitialListener = listener;
         loadServerParameters(serverParameters);
 
-        if (!isInitialized()) {
+        if (!MaioAdsInstanceRepository.isInitialized(this.mMediaId)) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId, this);
+            return;
         }
 
-        if (MaioAds.canShow(this.mInterstitialZoneId)) {
+        MaioAdsInstance maio = MaioAdsInstanceRepository.getMaioAdsInstance(this.mMediaId);
+
+        if (maio.canShow(this.mInterstitialZoneId)) {
             if (this.mMediationInterstitialListener != null) {
                 this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);
             }
@@ -53,6 +59,13 @@ public class Interstitial implements MediationInterstitialAdapter {
                 this.mMediationInterstitialListener
                         .onAdFailedToLoad(Interstitial.this, AdRequest.ERROR_CODE_NO_FILL);
             }
+        }
+    }
+
+    @Override
+    public void adLoaded(String zoneId) {
+        if (this.mMediationInterstitialListener != null  && zoneId.equals(this.mInterstitialZoneId)) {
+            this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);
         }
     }
 
@@ -65,9 +78,10 @@ public class Interstitial implements MediationInterstitialAdapter {
     @Override
     //Show maio Interstitial video ad
     public void showInterstitial() {
+        MaioAdsInstance maio = MaioAdsInstanceRepository.getMaioAdsInstance(this.mMediaId);
         MaioEventForwarder.showInterstitial(this.mInterstitialZoneId,
-                                            Interstitial.this,
-                                            mMediationInterstitialListener);
+                Interstitial.this,
+                mMediationInterstitialListener, maio);
     }
 
     //Checks if maio sdk has initialized

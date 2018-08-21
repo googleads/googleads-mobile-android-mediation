@@ -10,9 +10,7 @@ import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
-import com.inmobi.sdk.InMobiSdk.Ethnicity;
 import com.inmobi.sdk.InMobiSdk.Gender;
-import com.inmobi.sdk.InMobiSdk.HouseHoldIncome;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
 
 import java.util.Calendar;
@@ -44,15 +42,6 @@ class InMobiAdapterUtils {
             if (key.equals(InMobiNetworkKeys.AREA_CODE)) {
                 if (!"".equals(value))
                     InMobiSdk.setAreaCode(value);
-            } else if (key.equals(InMobiNetworkKeys.INCOME)) {
-                try {
-                    if (!"".equals(value))
-                        InMobiSdk.setIncome(Integer.parseInt(value));
-                } catch (NumberFormatException nfe) {
-                    Log.d("Invalid Income value", nfe.getMessage());
-                    nfe.printStackTrace();
-
-                }
             } else if (key.equals(InMobiNetworkKeys.AGE)) {
                 try {
                     if (!"".equals(value))
@@ -64,9 +53,6 @@ class InMobiAdapterUtils {
             } else if (key.equals(InMobiNetworkKeys.POSTAL_CODE)) {
                 if (!"".equals(value))
                     InMobiSdk.setPostalCode(value);
-            } else if (key.equals(InMobiNetworkKeys.NATIONALITY)) {
-                if (!"".equals(value))
-                    InMobiSdk.setNationality(value);
             } else if (key.equals(InMobiNetworkKeys.LANGUAGE)) {
                 if (!"".equals(value))
                     InMobiSdk.setLanguage(value);
@@ -87,17 +73,6 @@ class InMobiAdapterUtils {
                     Education education = getEducation(value);
                     if (education != null)
                         InMobiSdk.setEducation(education);
-                }
-            } else if (key.equals(InMobiNetworkKeys.ETHNICITY)) {
-                if (value != null)
-                    InMobiSdk.setEthnicity(getEthnicity(value));
-                else
-                    InMobiSdk.setEthnicity(Ethnicity.OTHER);
-            } else if (key.equals(InMobiNetworkKeys.HOUSEHOLD_INCOME)) {
-                if (value != null) {
-                    HouseHoldIncome householdincome = getHouseHoldIncome(value);
-                    if (householdincome != null)
-                        InMobiSdk.setHouseHoldIncome(householdincome);
                 }
             } else if (key.equals(InMobiNetworkKeys.LOGLEVEL)) {
                 if (value != null)
@@ -167,21 +142,6 @@ class InMobiAdapterUtils {
         return null;
     }
 
-    private static Ethnicity getEthnicity(String value) {
-        switch (value) {
-            case InMobiNetworkValues.ETHNICITY_AFRICAN_AMERICAN:
-                return Ethnicity.AFRICAN_AMERICAN;
-            case InMobiNetworkValues.ETHNICITY_ASIAN:
-                return Ethnicity.ASIAN;
-            case InMobiNetworkValues.ETHNICITY_CAUCASIAN:
-                return Ethnicity.CAUCASIAN;
-            case InMobiNetworkValues.ETHNICITY_HISPANIC:
-                return Ethnicity.HISPANIC;
-            default:
-                return Ethnicity.OTHER;
-        }
-    }
-
     private static Education getEducation(String value) {
         if (value.equals(InMobiNetworkValues.EDUCATION_COLLEGEORGRADUATE)) {
             return Education.COLLEGE_OR_GRADUATE;
@@ -189,32 +149,6 @@ class InMobiAdapterUtils {
             return Education.HIGH_SCHOOL_OR_LESS;
         } else if (value.equals(InMobiNetworkValues.EDUCATION_POSTGRADUATEORABOVE)) {
             return Education.POST_GRADUATE_OR_ABOVE;
-        }
-        return null;
-    }
-
-    private static HouseHoldIncome getHouseHoldIncome(String value) {
-        switch (value) {
-            case InMobiNetworkValues.ABOVE_USD_150K:
-                return HouseHoldIncome.ABOVE_USD_150K;
-            case InMobiNetworkValues.BELOW_USD_5K:
-                return HouseHoldIncome.BELOW_USD_5K;
-            case InMobiNetworkValues.BETWEEN_USD_100K_AND_150K:
-                return HouseHoldIncome.BETWEEN_USD_100K_AND_150K;
-            case InMobiNetworkValues.BETWEEN_USD_10K_AND_15K:
-                return HouseHoldIncome.BETWEEN_USD_10K_AND_15K;
-            case InMobiNetworkValues.BETWEEN_USD_15K_AND_20K:
-                return HouseHoldIncome.BETWEEN_USD_15K_AND_20K;
-            case InMobiNetworkValues.BETWEEN_USD_20K_AND_25K:
-                return HouseHoldIncome.BETWEEN_USD_20K_AND_25K;
-            case InMobiNetworkValues.BETWEEN_USD_25K_AND_50K:
-                return HouseHoldIncome.BETWEEN_USD_25K_AND_50K;
-            case InMobiNetworkValues.BETWEEN_USD_50K_AND_75K:
-                return HouseHoldIncome.BETWEEN_USD_50K_AND_75K;
-            case InMobiNetworkValues.BETWEEN_USD_5K_AND_10K:
-                return HouseHoldIncome.BETWEEN_USD_5K_AND_10K;
-            case InMobiNetworkValues.BETWEEN_USD_75K_AND_100K:
-                return HouseHoldIncome.BETWEEN_USD_75K_AND_100K;
         }
         return null;
     }

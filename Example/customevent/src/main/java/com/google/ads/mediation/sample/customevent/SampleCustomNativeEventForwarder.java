@@ -18,10 +18,11 @@ package com.google.ads.mediation.sample.customevent;
 
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
-import com.google.ads.mediation.sample.sdk.SampleNativeAppInstallAd;
-import com.google.ads.mediation.sample.sdk.SampleNativeContentAd;
+import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
 
 /**
@@ -29,8 +30,8 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListene
  * {@link CustomEventNativeListener}.
  */
 public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
-    private CustomEventNativeListener mNativeListener;
-    private NativeAdOptions mNativeAdOptions;
+    private final CustomEventNativeListener nativeListener;
+    private final NativeMediationAdRequest nativeAdRequest;
 
     /**
      * Creates a new {@code SampleNativeEventForwarder}.
@@ -39,13 +40,13 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
      *                 forwarded events.
      */
     public SampleCustomNativeEventForwarder(CustomEventNativeListener listener,
-                                            NativeAdOptions adOptions) {
-        this.mNativeListener = listener;
-        this.mNativeAdOptions = adOptions;
+                                            NativeMediationAdRequest adRequest) {
+        this.nativeListener = listener;
+        this.nativeAdRequest = adRequest;
     }
 
     @Override
-    public void onNativeAppInstallAdFetched(SampleNativeAppInstallAd ad) {
+    public void onNativeAdFetched(SampleNativeAd ad) {
         // If the mediated network only ever returns URLs for images, this is an appropriate place
         // to automatically download the image files if the publisher has indicated via the
         // NativeAdOptions object that the custom event should do so.
@@ -67,21 +68,32 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
         // image downloading are respected, and that any additional downloads take place *before*
         // the mapped native ad object is returned to the Google Mobile Ads SDK via the
         // onAdLoaded method.
-        if (!containsRequiredAppInstallAdAssets(ad)) {
+        NativeAdOptions nativeAdOptions = nativeAdRequest.getNativeAdOptions();
+
+        if (nativeAdRequest.isUnifiedNativeAdRequested()) {
+            SampleUnifiedNativeAdMapper mapper =
+                    new SampleUnifiedNativeAdMapper(ad, nativeAdOptions);
+            nativeListener.onAdLoaded(mapper);
+        } else if (containsRequiredAppInstallAdAssets(ad)) {
+            SampleNativeAppInstallAdMapper mapper =
+                    new SampleNativeAppInstallAdMapper(ad, nativeAdOptions);
+            nativeListener.onAdLoaded(mapper);
+        } else if (containsRequiredContentAdAssets(ad)) {
+            SampleNativeContentAdMapper mapper =
+                    new SampleNativeContentAdMapper(ad, nativeAdOptions);
+            nativeListener.onAdLoaded(mapper);
+        } else {
             // Each system-defined native ad format (App Install and Content) has a set of
             // "Always Included" assets. Mediated networks must check and fail the request if any
             // of the "Always Included" assets are not available for the ad loaded (the sample
             // SDK will always provide these assets, but this check is added as an example).
-            mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
-            return;
+            nativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
         }
-        SampleNativeAppInstallAdMapper mapper =
-                new SampleNativeAppInstallAdMapper(ad, mNativeAdOptions);
-        mNativeListener.onAdLoaded(mapper);
+
     }
 
     /**
-     * This method will check whether or not he provided {@link SampleNativeAppInstallAd} contains
+     * This method will check whether or not he provided {@link SampleNativeAd} contains
      * all the required assets (headline, body, image, app icon and call to action) for it to be
      * mapped onto an AdMob native app install ad.
      *
@@ -89,29 +101,14 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
      * @return {@code true} if the provided sample native app install ad contains all the
      * necessary assets for it to be mapped, {@code false} otherwise.
      */
-    private boolean containsRequiredAppInstallAdAssets(SampleNativeAppInstallAd appInstallAd) {
+    private boolean containsRequiredAppInstallAdAssets(SampleNativeAd appInstallAd) {
         return (appInstallAd != null && appInstallAd.getHeadline() != null
                 && appInstallAd.getBody() != null && appInstallAd.getImage() != null
-                && appInstallAd.getAppIcon() != null && appInstallAd.getCallToAction() != null);
-    }
-
-    @Override
-    public void onNativeContentAdFetched(SampleNativeContentAd ad) {
-        // The note above about automatically downloading images also applies to content ads.
-        if (!containsRequiredContentAdAssets(ad)) {
-            // Each system-defined native ad format (App Install and Content) has a set of
-            // "Always Included" assets. Mediated networks must check and fail the request if any
-            // of the "Always Included" assets are not available for the ad loaded (the sample
-            // SDK will always provide these assets, but this check is added as an example).
-            mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
-            return;
-        }
-        SampleNativeContentAdMapper mapper = new SampleNativeContentAdMapper(ad, mNativeAdOptions);
-        mNativeListener.onAdLoaded(mapper);
+                && appInstallAd.getIcon() != null && appInstallAd.getCallToAction() != null);
     }
 
     /**
-     * This method will check whether or not the provided {@link SampleNativeContentAd} contains
+     * This method will check whether or not the provided {@link SampleNativeAd} contains
      * all the required assets (headline, body, image, call to action and advertiser) for it to be
      * mapped onto an AdMob native content ad.
      *
@@ -119,7 +116,7 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
      * @return {@code true} if the provided sample native content ad contains all the necessary
      * assets for it to be mapped, {@code false} otherwise.
      */
-    private boolean containsRequiredContentAdAssets(SampleNativeContentAd contentAd) {
+    private boolean containsRequiredContentAdAssets(SampleNativeAd contentAd) {
         return (contentAd != null && contentAd.getHeadline() != null && contentAd.getBody() != null
                 && contentAd.getImage() != null && contentAd.getCallToAction() != null
                 && contentAd.getAdvertiser() != null);
@@ -129,16 +126,16 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
     public void onAdFetchFailed(SampleErrorCode errorCode) {
         switch (errorCode) {
             case UNKNOWN:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                nativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 break;
             case BAD_REQUEST:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                nativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 break;
             case NETWORK_ERROR:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
+                nativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
                 break;
             case NO_INVENTORY:
-                mNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
+                nativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
                 break;
         }
     }

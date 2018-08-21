@@ -26,7 +26,7 @@ import android.view.Gravity;
  * values instead.
  */
 public class SampleMediaView extends android.support.v7.widget.AppCompatTextView {
-    SampleMediaViewListener mListener;
+    SampleMediaViewListener listener;
 
     public SampleMediaView(Context context) {
         super(context);
@@ -41,7 +41,7 @@ public class SampleMediaView extends android.support.v7.widget.AppCompatTextView
      * @param listener The SampleMediaView listener.
      */
     public void setMediaViewListener(SampleMediaViewListener listener) {
-        mListener = listener;
+        this.listener = listener;
     }
 
     /**
@@ -83,8 +83,8 @@ public class SampleMediaView extends android.support.v7.widget.AppCompatTextView
                 SampleMediaView.this.setText("Playback is complete.\nWe've all learned about the " +
                         "product.");
 
-                if (mListener != null) {
-                    mListener.onVideoEnd();
+                if (listener != null) {
+                    listener.onVideoEnd();
                 }
             }
         }, runningTimeMillis);
