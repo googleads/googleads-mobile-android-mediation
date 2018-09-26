@@ -110,14 +110,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         else
             privacyIconPlacement = NativeAdOptions.ADCHOICES_TOP_RIGHT;
 
-        if (!mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest
-                .isContentAdRequested()) {
-            Log.d(TAG, "Currently, MoPub only serves native app install ads. Apps requesting "
-                    + "content ads alone will not receive ads from this adapter.");
-            listener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
         if (mediationExtras != null) {
             int iconSizeExtra = mediationExtras.getInt(BundleBuilder.ARG_PRIVACY_ICON_SIZE_DP);
             if (iconSizeExtra < MINIMUM_MOPUB_PRIVACY_ICON_SIZE_DP) {
@@ -497,18 +489,15 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                     break;
                 case NETWORK_TIMEOUT:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_NETWORK_ERROR);
+                            AdRequest.ERROR_CODE_NETWORK_ERROR);
                     break;
                 case SERVER_ERROR:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_INVALID_REQUEST);
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
                     break;
                 default:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_INTERNAL_ERROR);
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                     break;
             }
         }
