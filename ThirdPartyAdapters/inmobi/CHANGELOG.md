@@ -1,5 +1,8 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.0.0
+- Verified compatibility with InMobi SDK version 7.2.0.
+
 ## 7.1.1.1
 - Updated the adapter to invoke the `onRewardedVideoComplete` ad event.
 
