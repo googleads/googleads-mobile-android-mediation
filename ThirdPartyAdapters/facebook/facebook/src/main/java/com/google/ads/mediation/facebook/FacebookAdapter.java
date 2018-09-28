@@ -116,6 +116,7 @@ public final class FacebookAdapter
     /**
      * Facebook rewarded video ad instance.
      */
+    private String mPlacementId;
     private RewardedVideoAd mRewardedVideoAd;
 
     private Context mContext;
@@ -268,9 +269,7 @@ public final class FacebookAdapter
             return;
         }
 
-        String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        mRewardedVideoAd = new RewardedVideoAd(context, placementId);
-        mRewardedVideoAd.setAdListener(new RewardedVideoListener());
+        mPlacementId = serverParameters.getString(PLACEMENT_PARAMETER);
         mIsInitialized = true;
         mRewardedListener.onInitializationSucceeded(this);
     }
@@ -280,19 +279,16 @@ public final class FacebookAdapter
                        Bundle serverParameters,
                        Bundle networkExtras) {
         if (mRewardedVideoAd == null) {
-            Log.w(TAG, "Failed to request rewarded video ad, adapter has not been initialized.");
-            mIsInitialized = false;
-            if (mRewardedListener != null) {
-                mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            }
+            mRewardedVideoAd = new RewardedVideoAd(mContext, mPlacementId);
+            mRewardedVideoAd.setAdListener(new RewardedVideoListener());
+        }
+
+        if (mRewardedVideoAd.isAdLoaded()) {
+            mRewardedListener.onAdLoaded(this);
         } else {
-            if (mRewardedVideoAd.isAdLoaded()) {
-                mRewardedListener.onAdLoaded(this);
-            } else {
-                buildAdRequest(mediationAdRequest);
-                AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(mContext));
-                mRewardedVideoAd.loadAd(true);
-            }
+            buildAdRequest(mediationAdRequest);
+            AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(mContext));
+            mRewardedVideoAd.loadAd(true);
         }
     }
 
