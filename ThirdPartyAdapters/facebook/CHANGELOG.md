@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.0.1.0
+- Verified compatibility with Facebook SDK v5.0.1.
+
 ## 5.0.0.1
 - Updated the adapter to create the rewarded ad object at ad request time.
 
