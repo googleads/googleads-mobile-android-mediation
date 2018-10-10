@@ -23,7 +23,6 @@ import net.nend.android.NendAdInterstitial.NendAdInterstitialShowResult;
 import net.nend.android.NendAdInterstitial.NendAdInterstitialStatusCode;
 import net.nend.android.NendAdInterstitial.OnCompletionListener;
 import net.nend.android.NendAdInterstitialVideo;
-import net.nend.android.NendAdUserFeature;
 import net.nend.android.NendAdVideo;
 import net.nend.android.NendAdVideoListener;
 import net.nend.android.NendAdView;
@@ -190,10 +189,6 @@ public class NendAdapter
                                             MediationAdRequest mediationAdRequest) {
         mNendAdInterstitialVideo = new NendAdInterstitialVideo(context, spotId, apikey);
         mNendAdInterstitialVideo.setMediationName("AdMob");
-        NendAdUserFeature feature = NendAdRequestUtils.createUserFeature(mediationAdRequest);
-        if (feature != null) {
-            mNendAdInterstitialVideo.setUserFeature(feature);
-        }
         if (!TextUtils.isEmpty(userId)) {
             mNendAdInterstitialVideo.setUserId(userId);
         }
