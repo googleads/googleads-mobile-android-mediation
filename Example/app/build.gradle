@@ -1,9 +1,5 @@
 apply plugin: 'com.android.application'
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.tools
@@ -28,5 +24,4 @@ dependencies {
     compile rootProject.ext.playServicesAds
     compile project(':adapter')
     compile project(':customevent')
-    compile(name: 'du-ad-platform-release', ext: 'aar')
 }

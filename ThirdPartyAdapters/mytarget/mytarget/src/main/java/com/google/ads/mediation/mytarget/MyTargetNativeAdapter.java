@@ -24,16 +24,18 @@ import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
-import com.my.target.ads.CustomParams;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.my.target.common.CustomParams;
+import com.my.target.common.NavigationType;
+import com.my.target.common.models.ImageData;
 import com.my.target.nativeads.NativeAd;
 import com.my.target.nativeads.banners.NativePromoBanner;
-import com.my.target.nativeads.banners.NavigationType;
-import com.my.target.nativeads.models.ImageData;
 import com.my.target.nativeads.views.MediaAdView;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Map;
 
 /**
  * A {@link MediationNativeAdapter} to load and show myTarget native ads.
@@ -54,10 +56,10 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void requestNativeAd(Context context,
-                                MediationNativeListener customEventNativeListener,
-                                Bundle serverParameter,
-                                NativeMediationAdRequest nativeMediationAdRequest,
-                                Bundle customEventExtras) {
+            MediationNativeListener customEventNativeListener,
+            Bundle serverParameter,
+            NativeMediationAdRequest nativeMediationAdRequest,
+            Bundle customEventExtras) {
         this.customEventNativeListener = customEventNativeListener;
         int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameter);
         Log.d(TAG, "Requesting myTarget mediation, slotId: " + slotId);
@@ -74,12 +76,14 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         Date birthday = null;
         boolean contentRequested = false;
         boolean installRequested = false;
+        boolean unifiedRequested = false;
         if (nativeMediationAdRequest != null) {
             options = nativeMediationAdRequest.getNativeAdOptions();
             gender = nativeMediationAdRequest.getGender();
             birthday = nativeMediationAdRequest.getBirthday();
             contentRequested = nativeMediationAdRequest.isContentAdRequested();
             installRequested = nativeMediationAdRequest.isAppInstallAdRequested();
+            unifiedRequested = nativeMediationAdRequest.isUnifiedNativeAdRequested();
         }
 
         NativeAd nativeAd = new NativeAd(slotId, context);
@@ -107,8 +111,9 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             }
         }
         Log.d(TAG, "Content requested: " + contentRequested
-                + ", install requested: " + installRequested);
-        if (!contentRequested || !installRequested) {
+                + ", install requested: " + installRequested
+                + ", unified requested: " + unifiedRequested);
+        if (!unifiedRequested && (!contentRequested || !installRequested)) {
             if (!contentRequested) {
                 params.setCustomParam(PARAM_NATIVE_TYPE_REQUEST, PARAM_INSTALL_ONLY);
             } else {
@@ -116,8 +121,10 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             }
         }
 
-        MyTargetNativeAdListener nativeAdListener =
-                new MyTargetNativeAdListener(nativeAd, nativeMediationAdRequest, context);
+        MyTargetNativeAdListener nativeAdListener = new MyTargetNativeAdListener(
+                nativeAd,
+                nativeMediationAdRequest,
+                context);
 
         params.setCustomParam(
                 MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
@@ -183,7 +190,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         @NonNull
         private final MediaAdView mediaAdView;
 
-        MyTargetNativeContentAdMapper(@NonNull NativeAd nativeAd, @NonNull Context context) {
+        MyTargetNativeContentAdMapper(@NonNull NativeAd nativeAd,
+                @NonNull Context context) {
             this.nativeAd = nativeAd;
             this.mediaAdView = new MediaAdView(context);
             setOverrideClickHandling(true);
@@ -219,6 +227,18 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                 extras.putString(EXTRA_KEY_ADVERTISING_LABEL, advertisingLabel);
             }
             setExtras(extras);
+        }
+
+        @Override
+        public void trackViews(final View containerView, final Map<String, View> clickables,
+                Map<String, View> nonclickables) {
+            final ArrayList<View> clickableViews = new ArrayList<>(clickables.values());
+            containerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    nativeAd.registerView(containerView, clickableViews);
+                }
+            });
         }
 
         @Override
@@ -263,6 +283,90 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                     } else {
                         Log.w(TAG, "Failed to register view for interaction.");
                     }
+
+                }
+            });
+        }
+
+        @Override
+        public void untrackView(View view) {
+            nativeAd.unregisterView();
+        }
+    }
+
+    /**
+     * A {@link MyTargetNativeUnifiedAdMapper} used to map myTarget native ad to Google Mobile
+     * Ads SDK
+     * native app unified ad.
+     */
+    private static class MyTargetNativeUnifiedAdMapper extends UnifiedNativeAdMapper {
+        @NonNull
+        private final NativeAd nativeAd;
+        @NonNull
+        private final MediaAdView mediaAdView;
+
+        MyTargetNativeUnifiedAdMapper(@NonNull NativeAd nativeAd,
+                @NonNull Context context) {
+            this.nativeAd = nativeAd;
+            this.mediaAdView = new MediaAdView(context);
+            setOverrideClickHandling(true);
+            setOverrideImpressionRecording(true);
+            NativePromoBanner banner = nativeAd.getBanner();
+            if (banner == null) {
+                return;
+            }
+            setBody(banner.getDescription());
+            setCallToAction(banner.getCtaText());
+            setHeadline(banner.getTitle());
+            ImageData icon = banner.getIcon();
+            if (icon != null && !TextUtils.isEmpty(icon.getUrl())) {
+                setIcon(new MyTargetAdmobNativeImage(icon, context.getResources()));
+            }
+            ImageData image = banner.getImage();
+            setHasVideoContent(true);
+            setMediaView(mediaAdView);
+            if (image != null && !TextUtils.isEmpty(image.getUrl())) {
+                ArrayList<Image> imageArrayList = new ArrayList<>();
+                imageArrayList.add(new MyTargetAdmobNativeImage(image, context.getResources()));
+                setImages(imageArrayList);
+            }
+            setAdvertiser(banner.getDomain());
+            setStarRating((double) banner.getRating());
+            setStore(null);
+            setPrice(null);
+
+            Bundle extras = new Bundle();
+            final String ageRestrictions = banner.getAgeRestrictions();
+            if (!TextUtils.isEmpty(ageRestrictions)) {
+                extras.putString(EXTRA_KEY_AGE_RESTRICTIONS, ageRestrictions);
+            }
+            final String advertisingLabel = banner.getAdvertisingLabel();
+            if (!TextUtils.isEmpty(advertisingLabel)) {
+                extras.putString(EXTRA_KEY_ADVERTISING_LABEL, advertisingLabel);
+            }
+            final String category = banner.getCategory();
+            if (!TextUtils.isEmpty(category)) {
+                extras.putString(EXTRA_KEY_CATEGORY, category);
+            }
+            final String subCategory = banner.getSubCategory();
+            if (!TextUtils.isEmpty(subCategory)) {
+                extras.putString(EXTRA_KEY_SUBCATEGORY, subCategory);
+            }
+            final int votes = banner.getVotes();
+            if (votes > 0) {
+                extras.putInt(EXTRA_KEY_VOTES, votes);
+            }
+            setExtras(extras);
+        }
+
+        @Override
+        public void trackViews(final View containerView, final Map<String, View> clickables,
+                Map<String, View> nonclickables) {
+            final ArrayList<View> clickableViews = new ArrayList<>(clickables.values());
+            containerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    nativeAd.registerView(containerView, clickableViews);
                 }
             });
         }
@@ -283,7 +387,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         @NonNull
         private final MediaAdView mediaAdView;
 
-        MyTargetNativeInstallAdMapper(@NonNull NativeAd nativeAd, @NonNull Context context) {
+        MyTargetNativeInstallAdMapper(@NonNull NativeAd nativeAd,
+                @NonNull Context context) {
             this.nativeAd = nativeAd;
             this.mediaAdView = new MediaAdView(context);
             setOverrideClickHandling(true);
@@ -324,7 +429,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             if (!TextUtils.isEmpty(category)) {
                 extras.putString(EXTRA_KEY_CATEGORY, category);
             }
-            final String subCategory = banner.getSubcategory();
+            final String subCategory = banner.getSubCategory();
             if (!TextUtils.isEmpty(subCategory)) {
                 extras.putString(EXTRA_KEY_SUBCATEGORY, subCategory);
             }
@@ -333,6 +438,18 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                 extras.putInt(EXTRA_KEY_VOTES, votes);
             }
             setExtras(extras);
+        }
+
+        @Override
+        public void trackViews(final View containerView, final Map<String, View> clickables,
+                Map<String, View> nonclickables) {
+            final ArrayList<View> clickableViews = new ArrayList<>(clickables.values());
+            containerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    nativeAd.registerView(containerView, clickableViews);
+                }
+            });
         }
 
         @Override
@@ -411,30 +528,23 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         private final Context context;
 
         MyTargetNativeAdListener(final @NonNull NativeAd nativeAd,
-                                 final @Nullable NativeMediationAdRequest nativeMediationAdRequest,
-                                 final @NonNull Context context) {
+                final @Nullable NativeMediationAdRequest nativeMediationAdRequest,
+                final @NonNull Context context) {
             this.nativeAd = nativeAd;
             this.nativeMediationAdRequest = nativeMediationAdRequest;
             this.context = context;
         }
 
         @Override
-        public void onLoad(final NativeAd nativeAd) {
+        public void onLoad(@NonNull final NativeAd nativeAd) {
 
-            if (nativeAd == null) {
-                Log.d(TAG, "No ad: MyTarget responded with null NativeAd");
-                if (customEventNativeListener != null) {
-                    customEventNativeListener.onAdFailedToLoad(
-                            MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
-                }
-                return;
-            }
             NativePromoBanner banner = nativeAd.getBanner();
             if (banner == null) {
                 Log.d(TAG, "No ad: MyTarget responded with null banner");
                 if (customEventNativeListener != null) {
-                    customEventNativeListener.onAdFailedToLoad(
-                            MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                    customEventNativeListener
+                            .onAdFailedToLoad(MyTargetNativeAdapter.this,
+                                    AdRequest.ERROR_CODE_NO_FILL);
                 }
                 return;
             }
@@ -452,16 +562,16 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         }
 
         @Override
-        public void onNoAd(final String reason, final NativeAd nativeAd) {
+        public void onNoAd(@NonNull final String reason, @NonNull final NativeAd nativeAd) {
             Log.d(TAG, "No ad: MyTarget callback with reason " + reason);
             if (customEventNativeListener != null) {
-                customEventNativeListener.onAdFailedToLoad(
-                        MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                customEventNativeListener
+                        .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
             }
         }
 
         @Override
-        public void onClick(final NativeAd nativeAd) {
+        public void onClick(@NonNull final NativeAd nativeAd) {
             Log.d(TAG, "Ad clicked");
             if (customEventNativeListener != null) {
                 customEventNativeListener.onAdClicked(MyTargetNativeAdapter.this);
@@ -471,7 +581,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         }
 
         @Override
-        public void onShow(final NativeAd nativeAd) {
+        public void onShow(@NonNull final NativeAd nativeAd) {
             Log.d(TAG, "Ad show");
             if (customEventNativeListener != null) {
                 customEventNativeListener.onAdImpression(MyTargetNativeAdapter.this);
@@ -479,17 +589,17 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         }
 
         @Override
-        public void onVideoPlay(NativeAd nativeAd) {
+        public void onVideoPlay(@NonNull NativeAd nativeAd) {
             Log.d(TAG, "Play ad video");
         }
 
         @Override
-        public void onVideoPause(NativeAd nativeAd) {
+        public void onVideoPause(@NonNull NativeAd nativeAd) {
             Log.d(TAG, "Pause ad video");
         }
 
         @Override
-        public void onVideoComplete(NativeAd nativeAd) {
+        public void onVideoComplete(@NonNull NativeAd nativeAd) {
             Log.d(TAG, "Complete ad video");
             if (customEventNativeListener != null) {
                 customEventNativeListener.onVideoEnd(MyTargetNativeAdapter.this);
@@ -497,7 +607,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         }
 
         private void mapAd(final @NonNull NativeAd nativeAd,
-                           final @NonNull NativePromoBanner banner) {
+                final @NonNull NativePromoBanner banner) {
             if (nativeMediationAdRequest == null) {
                 Log.d(TAG, "Failed to load: resources or nativeMediationAdRequest null");
                 if (customEventNativeListener != null) {
@@ -507,12 +617,37 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                 return;
             }
 
-            NativeAdMapper nativeAdMapper;
+            if (nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
+                MyTargetNativeUnifiedAdMapper unifiedMapper = new MyTargetNativeUnifiedAdMapper(
+                        nativeAd, context);
+                if (banner.getImage() == null || banner.getIcon() == null) {
+                    Log.d(TAG,
+                            "No ad: Some of the Always Included assets are not available for the "
+                                    + "ad");
+
+                    if (customEventNativeListener != null) {
+                        customEventNativeListener.onAdFailedToLoad(
+                                MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                    }
+                    return;
+                }
+                Log.d(TAG, "Ad loaded successfully");
+                if (customEventNativeListener != null) {
+                    customEventNativeListener.onAdLoaded(MyTargetNativeAdapter.this,
+                            unifiedMapper);
+                }
+                return;
+            }
+
             String navigationType = banner.getNavigationType();
 
+            NativeAdMapper nativeAdMapper;
             if (NavigationType.STORE.equals(navigationType)
                     || NavigationType.DEEPLINK.equals(navigationType)) {
-                if (!nativeMediationAdRequest.isAppInstallAdRequested()) {
+
+                if (nativeMediationAdRequest.isAppInstallAdRequested()) {
+                    nativeAdMapper = new MyTargetNativeInstallAdMapper(nativeAd, context);
+                } else {
                     Log.d(TAG, "No ad: AdMob request was without install ad flag, " +
                             "but MyTarget responded with " + navigationType + " navigation type");
                     if (customEventNativeListener != null) {
@@ -522,11 +657,10 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                     return;
                 }
 
-                if (banner.getTitle() == null || banner.getDescription() == null
-                        || banner.getImage() == null || banner.getIcon() == null
-                        || banner.getCtaText() == null) {
-                    Log.d(TAG, "No ad: Some of the Always Included assets are not available for "
-                            + "the ad");
+                if (banner.getImage() == null || banner.getIcon() == null) {
+                    Log.d(TAG,
+                            "No ad: Some of the Always Included assets are not available for the "
+                                    + "ad");
 
                     if (customEventNativeListener != null) {
                         customEventNativeListener.onAdFailedToLoad(
@@ -534,10 +668,10 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                     }
                     return;
                 }
-
-                nativeAdMapper = new MyTargetNativeInstallAdMapper(nativeAd, context);
             } else {
-                if (!nativeMediationAdRequest.isContentAdRequested()) {
+                if (nativeMediationAdRequest.isContentAdRequested()) {
+                    nativeAdMapper = new MyTargetNativeContentAdMapper(nativeAd, context);
+            } else {
                     Log.d(TAG, "No ad: AdMob request was without content ad flag, " +
                             "but MyTarget responded with " + navigationType + " navigation type");
                     if (customEventNativeListener != null) {
@@ -546,18 +680,16 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
                     }
                     return;
                 }
-                if (banner.getTitle() == null || banner.getDescription() == null ||
-                        banner.getImage() == null || banner.getCtaText() == null ||
-                        banner.getDomain() == null) {
-                    Log.d(TAG, "No ad: Some of the Always Included assets are not available for "
-                            + "the ad");
+                if (banner.getImage() == null) {
+                    Log.d(TAG,
+                            "No ad: Some of the Always Included assets are not available for the "
+                                    + "ad");
                     if (customEventNativeListener != null) {
                         customEventNativeListener.onAdFailedToLoad(
                                 MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
                     }
                     return;
                 }
-                nativeAdMapper = new MyTargetNativeContentAdMapper(nativeAd, context);
             }
             Log.d(TAG, "Ad loaded successfully");
             if (customEventNativeListener != null) {
@@ -565,4 +697,5 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             }
         }
     }
+
 }

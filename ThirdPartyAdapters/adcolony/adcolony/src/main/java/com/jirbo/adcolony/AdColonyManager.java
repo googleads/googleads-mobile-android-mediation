@@ -117,18 +117,28 @@ class AdColonyManager {
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
+            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
             if (userId != null) {
                 options.setUserID(userId);
                 updatedOptions = true;
             }
-            if (networkExtras.containsKey("test_mode")) {
-                boolean testMode = networkExtras.getBoolean("test_mode");
-                options.setTestModeEnabled(testMode);
+            if (gdprConsentString != null) {
+                options.setGDPRConsentString(gdprConsentString);
+                updatedOptions = true;
+            }
+            if (networkExtras.containsKey("gdpr_required")) {
+                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
                 updatedOptions = true;
             }
         }
 
         if (adRequest != null) {
+            // Enable test ads from AdColony when a Test Ad Request was sent.
+            if (adRequest.isTesting()) {
+                options.setTestModeEnabled(true);
+                updatedOptions = true;
+            }
+
             AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
 
             // Try to update userMetaData with gender field.

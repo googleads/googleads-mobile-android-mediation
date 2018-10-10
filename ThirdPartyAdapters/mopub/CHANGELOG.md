@@ -1,5 +1,26 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.0.2
+- Remove the check that prevents ad requests for native content ad.
+
+## 5.3.0.1
+- Initialize MoPub and reattempt ad requests manually in the adapters for use cases that do not do so in the app.
+
+## 5.3.0.0
+- Verified compatibility with MoPub SDK 5.3.0.
+
+## 5.2.0.1
+- Updated the adapter to invoke 'onAdLeftApplication()' ad event.
+
+## 5.2.0.0
+- Verified compatibility with MoPub SDK 5.2.0.
+
+## 5.1.0.0
+- Verified compatibility with MoPub SDK 5.1.0.
+
+## 5.0.0.0
+- Verified compatibility with MoPub SDK 5.0.0.
+
 ## 4.20.0.0
 - Verified compatibility with MoPub SDK 4.20.0.
 
