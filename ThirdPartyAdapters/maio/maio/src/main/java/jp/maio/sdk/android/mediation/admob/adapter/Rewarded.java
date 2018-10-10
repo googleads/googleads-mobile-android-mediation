@@ -10,11 +10,12 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapt
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
 import jp.maio.sdk.android.MaioAds;
+import jp.maio.sdk.android.MaioAdsInstance;
 
 /**
  * maio mediation adapter for AdMob Rewarded videos.
  */
-public class Rewarded implements MediationRewardedVideoAdAdapter {
+public class Rewarded implements MediationRewardedVideoAdAdapter, FirstLoadInterface {
 
     //Admob Rewarded listener
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
@@ -45,9 +46,34 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
 
         loadServerParameters(serverParameters);
 
-        if (!isInitialized()) {
+        if (!MaioAdsInstanceRepository.isInitialized(this.mMediaId)) {
             //maio sdk initialization
-            MaioEventForwarder.initialize((Activity) context, this.mMediaId);
+            MaioEventForwarder.initialize((Activity) context, this.mMediaId, this);
+            this.mMediationRewardedVideoAdListener.onInitializationSucceeded(this);
+
+            return;
+        }
+
+        MaioAdsInstance maio = MaioAdsInstanceRepository.getMaioAdsInstance(this.mMediaId);
+
+            if (maio.canShow(this.mRewardVideoZoneId)) {
+                if (this.mMediationRewardedVideoAdListener != null) {
+                    this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
+                }
+            } else {
+                if (this.mMediationRewardedVideoAdListener != null) {
+                    this.mMediationRewardedVideoAdListener
+                            .onAdFailedToLoad(Rewarded.this, AdRequest.ERROR_CODE_NO_FILL);
+                }
+            }
+
+    }
+
+    @Override
+    public void adLoaded(String zoneId)
+    {
+        if (this.mMediationRewardedVideoAdListener != null && zoneId.equals(this.mRewardVideoZoneId)) {
+            this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
         }
     }
 
@@ -56,13 +82,18 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
     public void loadAd(MediationAdRequest adRequest,
                        Bundle serverParameters,
                        Bundle networkExtras) {
-        if (!isInitialized())
-            return;
 
         //Load new server parameters in case zone id has changed
         loadServerParameters(serverParameters);
 
-        if (MaioAds.canShow(this.mRewardVideoZoneId)) {
+        if(!MaioAdsInstanceRepository.isInitialized(this.mMediaId))
+        {
+            return;
+        }
+
+        MaioAdsInstance maio = MaioAdsInstanceRepository.getMaioAdsInstance(this.mMediaId);
+
+        if (maio.canShow(this.mRewardVideoZoneId)) {
             if (this.mMediationRewardedVideoAdListener != null) {
                 this.mMediationRewardedVideoAdListener.onAdLoaded(Rewarded.this);
             }
@@ -82,9 +113,12 @@ public class Rewarded implements MediationRewardedVideoAdAdapter {
     @Override
     //Display maio rewarded video ad
     public void showVideo() {
+        MaioAdsInstance maio = MaioAdsInstanceRepository.getMaioAdsInstance(this.mMediaId);
+
         MaioEventForwarder.showVideo(this.mRewardVideoZoneId,
                 Rewarded.this,
-                mMediationRewardedVideoAdListener);
+                mMediationRewardedVideoAdListener,
+                maio);
     }
 
     @Override

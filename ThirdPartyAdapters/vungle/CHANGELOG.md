@@ -1,5 +1,17 @@
 # Vungle Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 6.3.17.0
+- Verified compatibility with Vungle SDK 6.3.17.
+
+## 6.3.12.0
+- Verified compatibility with Vungle SDK 6.3.12.
+
+## 6.2.5.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
+## 6.2.5.0
+- Verified compatibility with Vungle SDK 6.2.5.
+
 ## 5.3.2.1
 - Updated adapter to correctly report clicks to the Google Mobile Ads SDK.
 

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.android.gms.ads.AdRequest;
@@ -39,6 +40,8 @@ class AppLovinUtils {
         }
 
         sdk.setPluginVersion(BuildConfig.VERSION_NAME);
+        
+        sdk.setMediationProvider( AppLovinMediationProvider.ADMOB );
 
         return sdk;
     }

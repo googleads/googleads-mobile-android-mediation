@@ -1,5 +1,33 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.0.1.0
+- Verified compatibility with Facebook SDK v5.0.1.
+
+## 5.0.0.1
+- Updated the adapter to create the rewarded ad object at ad request time.
+
+## 5.0.0.0
+- Verified compatibility with Facebook SDK v5.0.0.
+
+## 4.99.3.0
+- Verified compatibility with Facebook SDK v4.99.3.
+
+## 4.99.1.1
+- Fixed a bug where the Ad Choices icon is not shown for Unified Native Ads.
+- Fixed a bug where the adapter would throw an exception when trying to download images.
+
+## 4.99.1.0
+- Verified compatibility with Facebook SDK v4.99.1.
+
+## 4.28.2.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
+## 4.28.2.0
+- Verified compatibility with Facebook SDK v4.28.2.
+
+## 4.28.1.1
+- Fixed an issue where clicks are not being registered for Unified Native Ads.
+
 ## 4.28.1.0
 - Verified compatibility with Facebook SDK v4.28.1.
 

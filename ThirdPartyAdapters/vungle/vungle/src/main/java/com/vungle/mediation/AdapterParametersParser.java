@@ -22,8 +22,7 @@ class AdapterParametersParser {
         private String[] allPlacements;
     }
 
-    public static Config parse(Bundle networkExtras, Bundle serverParameters)
-            throws IllegalArgumentException {
+    public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
         String[] placements = null;
         if (networkExtras != null) {
             placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
@@ -32,11 +31,6 @@ class AdapterParametersParser {
         String appId = serverParameters.getString("appid");
         if (appId == null || appId.isEmpty()) {
             Log.e(TAG, "Vungle app ID should be specified!");
-            throw new IllegalArgumentException();
-        }
-
-        if (placements == null || placements.length == 0) {
-            Log.e(TAG, "At least one placement should be specified!");
             throw new IllegalArgumentException();
         }
 

@@ -469,6 +469,7 @@ public class TapjoyAdapter implements MediationInterstitialAdapter, MediationRew
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                mediationRewardedVideoAdListener.onVideoCompleted(TapjoyAdapter.this);
                 mediationRewardedVideoAdListener.onRewarded(TapjoyAdapter.this, new TapjoyReward());
             }
         });

@@ -156,6 +156,8 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             } else if (mMediationRewardedVideoAdListener != null) {
                 // Reward is provided only if the ad is watched completely.
                 if (finishState == UnityAds.FinishState.COMPLETED) {
+                    mMediationRewardedVideoAdListener.onVideoCompleted(
+                            UnityAdapter.this);
                     // Unity Ads doesn't provide a reward value. The publisher is expected to
                     // override the reward in AdMob console.
                     mMediationRewardedVideoAdListener.onRewarded(

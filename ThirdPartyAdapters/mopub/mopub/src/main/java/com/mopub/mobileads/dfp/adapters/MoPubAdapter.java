@@ -20,6 +20,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.mopub.common.MoPub;
+import com.mopub.common.SdkConfiguration;
+import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
@@ -67,6 +70,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private static final int MAXIMUM_MOPUB_PRIVACY_ICON_SIZE_DP = 30;
 
     private NativeAd.MoPubNativeEventListener mMoPubNativeEventListener;
+    private RequestParameters requestParameters;
 
     @Override
     public void onDestroy() {
@@ -98,20 +102,13 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                 Bundle mediationExtras) {
 
         String adunit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
+
         final NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
 
         if (options != null)
             privacyIconPlacement = options.getAdChoicesPlacement();
         else
             privacyIconPlacement = NativeAdOptions.ADCHOICES_TOP_RIGHT;
-
-        if (!mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest
-                .isContentAdRequested()) {
-            Log.d(TAG, "Currently, MoPub only serves native app install ads. Apps requesting "
-                    + "content ads alone will not receive ads from this adapter.");
-            listener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
 
         if (mediationExtras != null) {
             int iconSizeExtra = mediationExtras.getInt(BundleBuilder.ARG_PRIVACY_ICON_SIZE_DP);
@@ -245,13 +242,18 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         RequestParameters.NativeAdAsset.MAIN_IMAGE,
                         RequestParameters.NativeAdAsset.ICON_IMAGE);
 
-        RequestParameters requestParameters = new RequestParameters.Builder()
-                .keywords(getKeywords(mediationAdRequest))
+        requestParameters = new RequestParameters.Builder()
+                .keywords(getKeywords(mediationAdRequest, false))
+                .userDataKeywords(getKeywords(mediationAdRequest, true))
                 .location(mediationAdRequest.getLocation())
                 .desiredAssets(assetsSet)
                 .build();
 
-        moPubNative.makeRequest(requestParameters);
+        if (MoPub.isSdkInitialized()) {
+            moPubNative.makeRequest(requestParameters);
+        } else {
+            initializeMoPub(context, adunit, null, null, moPubNative);
+        }
 
         // Forwarding MoPub's impression and click events to AdMob.
         mMoPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
@@ -297,8 +299,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMoPubView.setLocation(mediationAdRequest.getLocation());
         }
 
-        mMoPubView.setKeywords(getKeywords(mediationAdRequest));
-        mMoPubView.loadAd();
+        mMoPubView.setKeywords(getKeywords(mediationAdRequest, false));
+        mMoPubView.setUserDataKeywords(getKeywords(mediationAdRequest, true));
+
+        if (MoPub.isSdkInitialized()) {
+            mMoPubView.loadAd();
+        } else {
+            initializeMoPub(context, adunit, mMoPubView, null, null);
+        }
     }
 
     @Override
@@ -306,7 +314,10 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         return mMoPubView;
     }
 
-    private String getKeywords(MediationAdRequest mediationAdRequest) {
+    /* Keywords passed from AdMob are separated into 1) personally identifiable, and 2) non-personally
+    identifiable categories before they are forwarded to MoPub due to GDPR.
+     */
+    private String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
 
         Date birthday = mediationAdRequest.getBirthday();
         String ageString = "";
@@ -333,7 +344,17 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 .append(",").append(ageString)
                 .append(",").append(genderString);
 
-        return keywordsBuilder.toString();
+        if (intendedForPII) {
+            return keywordsContainPII(mediationAdRequest) ? keywordsBuilder.toString() : "";
+        } else {
+            return keywordsContainPII(mediationAdRequest) ? "" : keywordsBuilder.toString();
+        }
+    }
+
+    // Check whether passed keywords contain personally-identifiable information
+    private boolean keywordsContainPII(MediationAdRequest mediationAdRequest) {
+        return mediationAdRequest.getBirthday() != null || mediationAdRequest.getGender() !=
+                -1 || mediationAdRequest.getLocation() != null;
     }
 
     private static int getAge(Date birthday) {
@@ -353,6 +374,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onBannerClicked(MoPubView moPubView) {
             mMediationBannerListener.onAdClicked(MoPubAdapter.this);
+            mMediationBannerListener.onAdLeftApplication(MoPubAdapter.this);
         }
 
         @Override
@@ -400,7 +422,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         }
     }
 
-
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener mediationInterstitialListener,
@@ -419,8 +440,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMoPubInterstitial.setTesting(true);
         }
 
-        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest));
-        mMoPubInterstitial.load();
+        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, false));
+        mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, true));
+
+        if (MoPub.isSdkInitialized()) {
+            mMoPubInterstitial.load();
+        } else {
+            initializeMoPub(context, adunit, null, mMoPubInterstitial, null);
+        }
     }
 
     @Override
@@ -444,6 +471,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onInterstitialClicked(MoPubInterstitial moPubInterstitial) {
             mMediationInterstitialListener.onAdClicked(MoPubAdapter.this);
+            mMediationInterstitialListener.onAdLeftApplication(MoPubAdapter.this);
         }
 
         @Override
@@ -461,18 +489,15 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                     break;
                 case NETWORK_TIMEOUT:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_NETWORK_ERROR);
+                            AdRequest.ERROR_CODE_NETWORK_ERROR);
                     break;
                 case SERVER_ERROR:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_INVALID_REQUEST);
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
                     break;
                 default:
                     mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest
-                                    .ERROR_CODE_INTERNAL_ERROR);
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                     break;
             }
         }
@@ -487,6 +512,38 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             mMediationInterstitialListener.onAdOpened(MoPubAdapter.this);
         }
 
+    }
+
+    // Initializing the MoPub SDK. Required as of 5.0.0
+    private void initializeMoPub(Context context, String adUnitId, MoPubView bannerAd, MoPubInterstitial
+            interstitialAd, MoPubNative nativeAd) {
+        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
+                .build();
+        MoPub.initializeSdk(context, sdkConfiguration, initSdkListener(bannerAd, interstitialAd, nativeAd));
+    }
+
+    private SdkInitializationListener initSdkListener(final MoPubView bannerAd, final MoPubInterstitial
+            interstitialAd, final MoPubNative nativeAd) {
+        return new SdkInitializationListener() {
+
+            @Override
+            public void onInitializationFinished() {
+                MoPubLog.d("MoPub SDK initialized.");
+
+                // Sending ad requests now that the MoPub SDK has initialized
+                if (bannerAd != null) {
+                    bannerAd.loadAd();
+                } else if (interstitialAd != null) {
+                    interstitialAd.load();
+                } else if (nativeAd != null) {
+                    if (requestParameters != null) {
+                        nativeAd.makeRequest(requestParameters);
+                    } else {
+                        nativeAd.makeRequest();
+                    }
+                }
+            }
+        };
     }
 
     /**
