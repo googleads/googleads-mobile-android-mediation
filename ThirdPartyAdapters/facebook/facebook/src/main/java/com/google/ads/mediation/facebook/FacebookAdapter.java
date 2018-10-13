@@ -38,6 +38,7 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
+import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.MediaView;
@@ -68,6 +69,7 @@ import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListe
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -145,6 +147,11 @@ public final class FacebookAdapter
      */
     private MediaView mMediaView;
 
+    /**
+     * Flag to determine whether or not the Audience Network SDK has been initialized.
+     */
+    private AtomicBoolean mIsSdkInitialized = new AtomicBoolean(false);
+
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
@@ -186,6 +193,9 @@ public final class FacebookAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         mBannerListener = listener;
+        if(!mIsSdkInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mBannerListener.onAdFailedToLoad(
                     FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -232,6 +242,9 @@ public final class FacebookAdapter
                                       MediationAdRequest adRequest,
                                       Bundle mediationExtras) {
         mInterstitialListener = listener;
+        if(!mIsSdkInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
@@ -263,6 +276,9 @@ public final class FacebookAdapter
                            Bundle serverParameters,
                            Bundle networkExtras) {
         mContext = context;
+        if(!mIsSdkInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         mRewardedListener = mediationRewardedVideoAdListener;
         if (!isValidRequestParameters(context, serverParameters)) {
             mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -326,6 +342,9 @@ public final class FacebookAdapter
                                 NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         mNativeListener = listener;
+        if(!mIsSdkInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
