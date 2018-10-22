@@ -1,6 +1,7 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
 ## 5.4.0.0
+- Fixed a native ad crash for publishers importing MoPub's non-native modules.
 - Verified compatibility with MoPub SDK 5.4.0.
 
 ## 5.3.0.2
