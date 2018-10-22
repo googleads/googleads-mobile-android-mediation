@@ -390,23 +390,26 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onBannerFailed(MoPubView moPubView,
                                    MoPubErrorCode moPubErrorCode) {
-            switch (moPubErrorCode) {
-                case NO_FILL:
-                    mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_NO_FILL);
-                    break;
-                case NETWORK_TIMEOUT:
-                    mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_NETWORK_ERROR);
-                    break;
-                case SERVER_ERROR:
-                    mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_INVALID_REQUEST);
-                    break;
-                default:
-                    mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                    break;
+            try {
+                switch (moPubErrorCode) {
+                    case NO_FILL:
+                        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                        break;
+                    case NETWORK_TIMEOUT:
+                        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_NETWORK_ERROR);
+                        break;
+                    case SERVER_ERROR:
+                        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_INVALID_REQUEST);
+                        break;
+                    default:
+                        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        break;
+                }
+            } catch (NoClassDefFoundError e) {
             }
         }
 
@@ -482,23 +485,26 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         @Override
         public void onInterstitialFailed(MoPubInterstitial moPubInterstitial,
                                          MoPubErrorCode moPubErrorCode) {
-            switch (moPubErrorCode) {
-                case NO_FILL:
-                    mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_NO_FILL);
-                    break;
-                case NETWORK_TIMEOUT:
-                    mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_NETWORK_ERROR);
-                    break;
-                case SERVER_ERROR:
-                    mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_INVALID_REQUEST);
-                    break;
-                default:
-                    mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                    break;
+            try {
+                switch (moPubErrorCode) {
+                    case NO_FILL:
+                        mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                        break;
+                    case NETWORK_TIMEOUT:
+                        mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_NETWORK_ERROR);
+                        break;
+                    case SERVER_ERROR:
+                        mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_INVALID_REQUEST);
+                        break;
+                    default:
+                        mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        break;
+                }
+            } catch (NoClassDefFoundError e) {
             }
         }
 
