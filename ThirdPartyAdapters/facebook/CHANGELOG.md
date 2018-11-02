@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.0.0
+- Initialize Facebook SDK for each ad format.
+
 ## 5.0.1.0
 - Verified compatibility with Facebook SDK v5.0.1.
 
