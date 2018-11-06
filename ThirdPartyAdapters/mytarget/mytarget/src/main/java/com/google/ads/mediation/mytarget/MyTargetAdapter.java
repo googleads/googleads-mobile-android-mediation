@@ -67,21 +67,21 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             bannerListener = new MyTargetBannerListener(mediationBannerListener);
         }
 
-        if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
+        if (adSize.getWidth() == 300 && adSize.getHeight() == 250) {
             Log.d(TAG, "Loading myTarget banner, size: 300x250");
             loadBanner(bannerListener,
                     mediationAdRequest,
                     slotId,
                     MyTargetView.AdSize.BANNER_300x250,
                     context);
-        } else if (AdSize.LEADERBOARD.equals(adSize)) {
+        } else if (adSize.getWidth() == 728 && adSize.getHeight() == 90) {
             Log.d(TAG, "Loading myTarget banner, size: 728x90");
             loadBanner(bannerListener,
                     mediationAdRequest,
                     slotId,
                     MyTargetView.AdSize.BANNER_728x90,
                     context);
-        } else if (AdSize.BANNER.equals(adSize)) {
+        } else if (adSize.getWidth() == 320 && adSize.getHeight() == 50) {
             Log.d(TAG, "Loading myTarget banner, size: 320x50");
             loadBanner(bannerListener,
                     mediationAdRequest,
@@ -174,16 +174,10 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
     @Override
     public void onPause() {
-        if (mMyTargetView != null) {
-            mMyTargetView.pause();
-        }
     }
 
     @Override
     public void onResume() {
-        if (mMyTargetView != null) {
-            mMyTargetView.resume();
-        }
     }
 
     /**
@@ -253,7 +247,6 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         @Override
         public void onLoad(@NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad loaded");
-            view.start();
             listener.onAdLoaded(MyTargetAdapter.this);
         }
 
