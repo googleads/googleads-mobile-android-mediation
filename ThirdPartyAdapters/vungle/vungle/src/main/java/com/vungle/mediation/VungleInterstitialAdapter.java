@@ -94,20 +94,26 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
                     AdapterParametersParser.parse(mediationExtras, serverParameters);
             mMediationInterstitialListener = mediationInterstitialListener;
             mVungleManager =
-                    VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+                    VungleManager.getInstance(config.getAppId());
 
             mPlacementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
-            mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+            if(mPlacementForPlay != null && !mPlacementForPlay.isEmpty()) {
+                mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
-            mAdapterId = mId + String.valueOf(sCounter);
-            sCounter++;
+                mAdapterId = mId + String.valueOf(sCounter);
+                sCounter++;
 
-            mVungleManager.addListener(mAdapterId, mVungleListener);
-            if (mVungleManager.isInitialized()) {
-                loadAd();
+                mVungleManager.addListener(mAdapterId, mVungleListener);
+                if (mVungleManager.isInitialized()) {
+                    loadAd();
+                } else {
+                    mVungleListener.setWaitingInit(true);
+                    mVungleManager.init(context);
+                }
             } else {
-                mVungleListener.setWaitingInit(true);
-                mVungleManager.init(context);
+                mediationInterstitialListener
+                        .onAdFailedToLoad(VungleInterstitialAdapter.this,
+                                AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
         } catch (IllegalArgumentException e) {
             if (mediationInterstitialListener != null) {
@@ -123,9 +129,13 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
             }
-        } else {
+        } else if (mVungleManager.isValidPlacement(mPlacementForPlay)) {
             mVungleListener.waitForAd(mPlacementForPlay);
             mVungleManager.loadAd(mPlacementForPlay);
+        } else { // passed Placement Id is not what Vungle's SDK gets back after init/config
+            mMediationInterstitialListener
+                    .onAdFailedToLoad(VungleInterstitialAdapter.this,
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 

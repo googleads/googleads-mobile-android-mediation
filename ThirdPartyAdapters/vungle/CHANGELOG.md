@@ -1,5 +1,8 @@
 # Vungle Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 6.3.24.0
+- Verified compatibility with Vungle SDK 6.3.24.
+
 ## 6.3.17.0
 - Verified compatibility with Vungle SDK 6.3.17.
 
