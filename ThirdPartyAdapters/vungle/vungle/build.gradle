@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 603170
+        versionCode 603240
         versionName stringVersion
 
     }
@@ -41,7 +41,7 @@ dependencies {
     implementation('com.vungle:publisher-sdk-android:6.3.24') {
         transitive=true
     }
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.google.android.gms:play-services-ads:17.1.0'
 }
 
 /**
