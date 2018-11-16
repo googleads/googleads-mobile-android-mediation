@@ -1,5 +1,8 @@
 # maio Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 1.1.6.0
+- Verified compatibility with maio SDK version 1.1.6.
+
 ## 1.1.5.0
 - Verified compatibility with maio SDK version 1.1.5.
 
