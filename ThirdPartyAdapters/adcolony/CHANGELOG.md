@@ -1,5 +1,8 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.6.0
+- Verified compatibility with AdColony SDK version 3.3.6.
+
 ## 3.3.5.1
 - Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
 
