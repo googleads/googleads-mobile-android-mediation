@@ -36,6 +36,7 @@ import com.facebook.ads.Ad;
 import com.facebook.ads.AdChoicesView;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
+import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
@@ -869,13 +870,13 @@ public final class FacebookAdapter
             View overlayView = adView.getChildAt(adView.getChildCount() - 1);
             if (overlayView instanceof FrameLayout) {
                 // Create and add Facebook's AdChoicesView to the overlay view.
-                AdChoicesView adChoicesView =
-                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                ((ViewGroup) overlayView).addView(adChoicesView);
+                AdOptionsView adOptionsView =
+                        new AdOptionsView(view.getContext(), mNativeAd, null);
+                ((ViewGroup) overlayView).addView(adOptionsView);
                 // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
                 // LayoutParams from the AdChoicesView.
                 FrameLayout.LayoutParams params =
-                        (FrameLayout.LayoutParams) adChoicesView.getLayoutParams();
+                        (FrameLayout.LayoutParams) adOptionsView.getLayoutParams();
                 if (mNativeAdOptions != null) {
                     switch (mNativeAdOptions.getAdChoicesPlacement()) {
                         case NativeAdOptions.ADCHOICES_TOP_LEFT:
@@ -898,9 +899,9 @@ public final class FacebookAdapter
                 adView.requestLayout();
             } else {
 
-                AdChoicesView adChoicesView =
-                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                this.setAdChoicesContent(adChoicesView);
+                AdOptionsView adOptionsView =
+                        new AdOptionsView(view.getContext(), mNativeAd, null);
+                this.setAdChoicesContent(adOptionsView);
 
             }
 
