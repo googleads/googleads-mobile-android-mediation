@@ -80,23 +80,8 @@ public final class FacebookAdapter
         implements MediationBannerAdapter, MediationInterstitialAdapter,
         MediationRewardedVideoAdAdapter, MediationNativeAdapter {
 
-    public static final String KEY_AD_VIEW_ATTRIBUTES = "ad_view_attributes";
-    public static final String KEY_AUTOPLAY = "autoplay";
-    public static final String KEY_BACKGROUND_COLOR = "background_color";
-    public static final String KEY_BUTTON_BORDER_COLOR = "button_border_color";
-    public static final String KEY_BUTTON_COLOR = "button_color";
-    public static final String KEY_BUTTON_TEXT_COLOR = "button_text_color";
-    public static final String KEY_DESCRIPTION_TEXT_COLOR = "description_text_color";
-    public static final String KEY_DESCRIPTION_TEXT_SIZE = "description_text_size";
     public static final String KEY_ID = "id";
-    public static final String KEY_IS_BOLD = "is_bold";
-    public static final String KEY_IS_ITALIC = "is_italic";
     public static final String KEY_SOCIAL_CONTEXT_ASSET = "social_context";
-    public static final String KEY_STYLE = "style";
-    public static final String KEY_SUBTITLE_ASSET = "subtitle";
-    public static final String KEY_TITLE_TEXT_COLOR = "title_text_color";
-    public static final String KEY_TITLE_TEXT_SIZE = "title_text_size";
-    public static final String KEY_TYPEFACE = "typeface";
 
     private static final String PLACEMENT_PARAMETER = "pubid";
 
