@@ -1,5 +1,10 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+
+## 5.2.0.0
+- Uses newer AdOptionsView instead of AdChoicesView.
+- Removes usages of NativeAdView attributes.
+
 ## 5.1.0.0
 - Initialize Facebook SDK for each ad format.
 
