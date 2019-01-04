@@ -345,7 +345,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 .append(",").append(genderString);
 
         if (intendedForPII) {
-            return keywordsContainPII(mediationAdRequest) ? keywordsBuilder.toString() : "";
+            if (MoPub.canCollectPersonalInformation()) {
+                return keywordsContainPII(mediationAdRequest) ? keywordsBuilder.toString() : "";
+            } else {
+                return "";
+            }
         } else {
             return keywordsContainPII(mediationAdRequest) ? "" : keywordsBuilder.toString();
         }
