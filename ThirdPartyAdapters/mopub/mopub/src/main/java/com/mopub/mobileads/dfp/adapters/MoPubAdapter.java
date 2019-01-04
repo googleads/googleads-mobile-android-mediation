@@ -48,7 +48,7 @@ import static com.google.android.gms.ads.AdRequest.GENDER_MALE;
 import static com.mopub.mobileads.dfp.adapters.DownloadDrawablesAsync.KEY_IMAGE;
 
 /**
- * A {@link com.google.android.gms.ads.mediation.MediationAdapter} used to mediate banner ads,
+ * A {@link com.mopub.mobileads.dfp.adapters.MoPubAdapter} used to mediate banner ads,
  * interstitial ads and native ads from MoPub.
  */
 public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdapter,
@@ -317,7 +317,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     /* Keywords passed from AdMob are separated into 1) personally identifiable, and 2) non-personally
     identifiable categories before they are forwarded to MoPub due to GDPR.
      */
-    private String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
+    public static String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
 
         Date birthday = mediationAdRequest.getBirthday();
         String ageString = "";
@@ -352,7 +352,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     // Check whether passed keywords contain personally-identifiable information
-    private boolean keywordsContainPII(MediationAdRequest mediationAdRequest) {
+    private static boolean keywordsContainPII(MediationAdRequest mediationAdRequest) {
         return mediationAdRequest.getBirthday() != null || mediationAdRequest.getGender() !=
                 -1 || mediationAdRequest.getLocation() != null;
     }
@@ -517,7 +517,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         public void onInterstitialShown(MoPubInterstitial moPubInterstitial) {
             mMediationInterstitialListener.onAdOpened(MoPubAdapter.this);
         }
-
     }
 
     // Initializing the MoPub SDK. Required as of 5.0.0

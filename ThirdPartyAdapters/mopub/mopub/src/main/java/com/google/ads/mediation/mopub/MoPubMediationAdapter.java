@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.google.android.gms.ads.AdRequest;
@@ -23,13 +22,9 @@ import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.MoPubRewardedVideos;
+import com.mopub.mobileads.dfp.adapters.MoPubAdapter;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Set;
-
-import static com.google.android.gms.ads.AdRequest.GENDER_FEMALE;
-import static com.google.android.gms.ads.AdRequest.GENDER_MALE;
 
 /**
  * A {@link com.google.ads.mediation.mopub.MoPubMediationAdapter} used to mediate rewarded video
@@ -38,15 +33,12 @@ import static com.google.android.gms.ads.AdRequest.GENDER_MALE;
 public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
 
     private static final String TAG = MoPubMediationAdapter.class.getSimpleName();
-
-    private static final String MOPUB_NATIVE_CEVENT_VERSION = "gmext";
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
-
-    private String adUnitId;
 
     private mMediationRewardedVideoListener mMediationRewardedVideoListener;
     private MediationRewardedVideoAdListener mediationRewardedVideoAdListener;
     private boolean isRewardedVideoInitialized = false;
+    private String adUnitId;
 
     @Override
     public void onDestroy() {
@@ -103,8 +95,8 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
             } else {
                 MoPubRewardedVideoManager.RequestParameters rewardedRequestParameters =
                         new MoPubRewardedVideoManager.RequestParameters(
-                                getKeywords(mediationAdRequest, false),
-                                getKeywords(mediationAdRequest, true),
+                                MoPubAdapter.getKeywords(mediationAdRequest, false),
+                                MoPubAdapter.getKeywords(mediationAdRequest, true),
                                 mediationAdRequest.getLocation()
                         );
                 MoPubRewardedVideos.loadRewardedVideo(adUnitId, rewardedRequestParameters);
@@ -151,8 +143,24 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
         @Override
         public void onRewardedVideoLoadFailure(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
             if (listener != null) {
-                listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                        errorCode.getIntCode());
+                switch (errorCode) {
+                    case NO_FILL:
+                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                        break;
+                    case NETWORK_TIMEOUT:
+                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
+                                AdRequest.ERROR_CODE_NETWORK_ERROR);
+                        break;
+                    case SERVER_ERROR:
+                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
+                                AdRequest.ERROR_CODE_INVALID_REQUEST);
+                        break;
+                    default:
+                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
+                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        break;
+                }
             }
         }
 
@@ -205,55 +213,6 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
                 listener.onVideoCompleted(MoPubMediationAdapter.this);
             }
         }
-    }
-
-    /* Keywords passed from AdMob are separated into 1) personally identifiable, and 2) non-personally
-    identifiable categories before they are forwarded to MoPub due to GDPR. */
-    private String getKeywords(MediationAdRequest mediationAdRequest, boolean intendedForPII) {
-
-        Date birthday = mediationAdRequest.getBirthday();
-        String ageString = "";
-
-        if (birthday != null) {
-            int ageInt = getAge(birthday);
-            ageString = "m_age:" + Integer.toString(ageInt);
-        }
-
-        int gender = mediationAdRequest.getGender();
-        String genderString = "";
-
-        if (gender != -1) {
-            if (gender == GENDER_FEMALE) {
-                genderString = "m_gender:f";
-            } else if (gender == GENDER_MALE) {
-                genderString = "m_gender:m";
-            }
-        }
-
-        StringBuilder keywordsBuilder = new StringBuilder();
-
-        keywordsBuilder = keywordsBuilder.append(MOPUB_NATIVE_CEVENT_VERSION)
-                .append(",").append(ageString)
-                .append(",").append(genderString);
-
-        if (intendedForPII) {
-            return keywordsContainPII(mediationAdRequest) ? keywordsBuilder.toString() : "";
-        } else {
-            return keywordsContainPII(mediationAdRequest) ? "" : keywordsBuilder.toString();
-        }
-    }
-
-    // Check whether passed keywords contain personally-identifiable information
-    private boolean keywordsContainPII(MediationAdRequest mediationAdRequest) {
-        return mediationAdRequest.getBirthday() != null || mediationAdRequest.getGender() !=
-                -1 || mediationAdRequest.getLocation() != null;
-    }
-
-    private static int getAge(Date birthday) {
-        int givenYear = Integer.parseInt((String) DateFormat.format("yyyy", birthday));
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-
-        return currentYear - givenYear;
     }
 
     // Initializing the MoPub SDK. Required as of 5.0.0
