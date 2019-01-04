@@ -39,6 +39,7 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
     private MediationRewardedVideoAdListener mediationRewardedVideoAdListener;
     private boolean isRewardedVideoInitialized = false;
     private String adUnitId;
+    private boolean adExpired;
 
     @Override
     public void onDestroy() {
@@ -59,6 +60,7 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
                            Bundle bundle, Bundle bundle1) {
 
         adUnitId = bundle.getString(MOPUB_AD_UNIT_KEY);
+        adExpired = false;
 
         if (TextUtils.isEmpty(adUnitId)) {
             Log.d(TAG, "Failed to initialize MoPub rewarded video. The ad unit ID is empty.");
@@ -110,7 +112,7 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
 
     @Override
     public void showVideo() {
-        if (!TextUtils.isEmpty(adUnitId) && MoPubRewardedVideos.hasRewardedVideo(adUnitId)) {
+        if (!adExpired && !TextUtils.isEmpty(adUnitId) && MoPubRewardedVideos.hasRewardedVideo(adUnitId)) {
             Log.d(TAG, "Showing a MoPub rewarded video.");
             MoPubRewardedVideos.showRewardedVideo(adUnitId);
         } else {
@@ -156,6 +158,12 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
                         listener.onAdFailedToLoad(MoPubMediationAdapter.this,
                                 AdRequest.ERROR_CODE_INVALID_REQUEST);
                         break;
+                    case EXPIRED:
+                        adExpired = true;
+                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
+                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        break;
+
                     default:
                         listener.onAdFailedToLoad(MoPubMediationAdapter.this,
                                 AdRequest.ERROR_CODE_INTERNAL_ERROR);
