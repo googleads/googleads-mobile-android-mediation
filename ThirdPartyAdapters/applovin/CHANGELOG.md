@@ -1,5 +1,9 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
+## 9.1.3.0
+- Removed support for placements as they were deprecated by AppLovin SDK.
+- Verified compatibility with AppLovin SDK 9.1.3
+
 ## 9.1.0.0
 - Verified compatibility with AppLovin SDK 9.1.0
 
