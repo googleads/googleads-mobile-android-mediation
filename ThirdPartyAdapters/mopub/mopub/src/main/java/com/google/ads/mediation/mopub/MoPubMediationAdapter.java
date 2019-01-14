@@ -176,6 +176,7 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
         public void onRewardedVideoStarted(@NonNull String adUnitId) {
             if (listener != null) {
                 listener.onAdOpened(MoPubMediationAdapter.this);
+                listener.onVideoStarted(MoPubMediationAdapter.this);
             }
         }
 
