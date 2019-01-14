@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.0.1
+- Fixed an ANR issue caused by 'getGMSVersionCode()'.
+
 ## 5.1.0.0
 - Initialize Facebook SDK for each ad format.
 

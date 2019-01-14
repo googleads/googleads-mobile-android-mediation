@@ -20,6 +20,7 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -101,6 +103,8 @@ public final class FacebookAdapter
 
     private static final int MAX_STAR_RATING = 5;
     private static final String TAG = "FacebookAdapter";
+
+    private static AtomicInteger gmsVersion = new AtomicInteger(0);
 
     private MediationBannerListener mBannerListener;
     private MediationInterstitialListener mInterstitialListener;
@@ -193,7 +197,7 @@ public final class FacebookAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         mBannerListener = listener;
-        if(!mIsSdkInitialized.getAndSet(true)) {
+        if (!mIsSdkInitialized.getAndSet(true)) {
             AudienceNetworkAds.initialize(context);
         }
         if (!isValidRequestParameters(context, serverParameters)) {
@@ -216,7 +220,6 @@ public final class FacebookAdapter
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mAdView = new AdView(context, placementId, facebookAdSize);
         mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
@@ -225,7 +228,20 @@ public final class FacebookAdapter
         mWrappedAdView = new RelativeLayout(context);
         mAdView.setLayoutParams(adViewLayoutParams);
         mWrappedAdView.addView(mAdView);
-        mAdView.loadAd();
+        if (gmsVersion.get() == 0) {
+            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
+             gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
+                @Override
+                public void OnGMSVersionUpdate() {
+                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
+                    mAdView.loadAd();
+                }
+            });
+            gmsVersionUpdateTask.execute();
+        } else {
+            AdSettings.setMediationService("ADMOB_" + gmsVersion);
+            mAdView.loadAd();
+        }
     }
 
     @Override
@@ -242,7 +258,7 @@ public final class FacebookAdapter
                                       MediationAdRequest adRequest,
                                       Bundle mediationExtras) {
         mInterstitialListener = listener;
-        if(!mIsSdkInitialized.getAndSet(true)) {
+        if (!mIsSdkInitialized.getAndSet(true)) {
             AudienceNetworkAds.initialize(context);
         }
         if (!isValidRequestParameters(context, serverParameters)) {
@@ -252,11 +268,23 @@ public final class FacebookAdapter
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
-        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mInterstitialAd = new InterstitialAd(context, placementId);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
-        mInterstitialAd.loadAd();
+        if (gmsVersion.get() == 0) {
+            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
+             gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
+                @Override
+                public void OnGMSVersionUpdate() {
+                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
+                    mInterstitialAd.loadAd();
+                }
+            });
+            gmsVersionUpdateTask.execute();
+        } else {
+            AdSettings.setMediationService("ADMOB_" + gmsVersion);
+            mInterstitialAd.loadAd();
+        }
     }
 
     @Override
@@ -276,7 +304,7 @@ public final class FacebookAdapter
                            Bundle serverParameters,
                            Bundle networkExtras) {
         mContext = context;
-        if(!mIsSdkInitialized.getAndSet(true)) {
+        if (!mIsSdkInitialized.getAndSet(true)) {
             AudienceNetworkAds.initialize(context);
         }
         mRewardedListener = mediationRewardedVideoAdListener;
@@ -303,8 +331,20 @@ public final class FacebookAdapter
             mRewardedListener.onAdLoaded(this);
         } else {
             buildAdRequest(mediationAdRequest);
-            AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(mContext));
-            mRewardedVideoAd.loadAd(true);
+            if (gmsVersion.get() == 0) {
+                GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(mContext);
+                 gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
+                    @Override
+                    public void OnGMSVersionUpdate() {
+                        AdSettings.setMediationService("ADMOB_" + gmsVersion);
+                        mRewardedVideoAd.loadAd(true);
+                    }
+                });
+                gmsVersionUpdateTask.execute();
+            } else {
+                AdSettings.setMediationService("ADMOB_" + gmsVersion);
+                mRewardedVideoAd.loadAd(true);
+            }
         }
     }
 
@@ -342,7 +382,7 @@ public final class FacebookAdapter
                                 NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         mNativeListener = listener;
-        if(!mIsSdkInitialized.getAndSet(true)) {
+        if (!mIsSdkInitialized.getAndSet(true)) {
             AudienceNetworkAds.initialize(context);
         }
         if (!isValidRequestParameters(context, serverParameters)) {
@@ -369,11 +409,23 @@ public final class FacebookAdapter
 
         mMediaView = new MediaView(context);
 
-        AdSettings.setMediationService("ADMOB_" + FacebookAdapter.getGMSVersionCode(context));
         mNativeAd = new NativeAd(context, placementId);
         mNativeAd.setAdListener(new NativeListener(mNativeAd, mediationAdRequest));
         buildAdRequest(mediationAdRequest);
-        mNativeAd.loadAd();
+        if (gmsVersion.get() == 0) {
+            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
+             gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
+                @Override
+                public void OnGMSVersionUpdate() {
+                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
+                    mNativeAd.loadAd();
+                }
+            });
+            gmsVersionUpdateTask.execute();
+        } else {
+            AdSettings.setMediationService("ADMOB_" + gmsVersion);
+            mNativeAd.loadAd();
+        }
     }
     //endregion
 
@@ -658,7 +710,7 @@ public final class FacebookAdapter
 
         @Override
         public void onMediaDownloaded(Ad ad) {
-            Log.d(TAG,"onMediaDownloaded");
+            Log.d(TAG, "onMediaDownloaded");
         }
     }
 
@@ -690,11 +742,38 @@ public final class FacebookAdapter
         return Math.round(pixel / displayMetrics.density);
     }
 
-    private static int getGMSVersionCode(Context context) {
-        try {
-            return context.getPackageManager().getPackageInfo("com.google.android.gms", 0 ).versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            return 0;
+    public static class GMSVersionUpdateTask extends AsyncTask<Void, Void, Integer> {
+
+        public Context context;
+        GMSVersionUpdateTask(Context context) {
+            this.context = context;
+        }
+
+        public interface OnGMSUpdateListener {
+            void OnGMSVersionUpdate();
+        }
+
+        private OnGMSUpdateListener listener;
+
+        private void Task(OnGMSUpdateListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            try {
+                return context.getPackageManager().getPackageInfo("com.google.android.gms", 0).versionCode;
+            } catch (PackageManager.NameNotFoundException e) {
+                return 0;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            gmsVersion.set(result);
+            if (this.listener != null) {
+                listener.OnGMSVersionUpdate();
+            }
         }
     }
 
@@ -916,8 +995,8 @@ public final class FacebookAdapter
                 assetViews.add(clickableAssets.getValue());
 
                 if (clickableAssets.getKey().equals(NativeAppInstallAd.ASSET_ICON) ||
-                        clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)){
-                    iconview = (ImageView)clickableAssets.getValue();
+                        clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
+                    iconview = (ImageView) clickableAssets.getValue();
                 }
 
             }
