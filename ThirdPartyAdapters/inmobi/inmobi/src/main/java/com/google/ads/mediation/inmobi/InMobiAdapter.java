@@ -68,6 +68,8 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
     private Boolean mIsOnlyUrl = false;
 
+    private InMobiNative mAdNative;
+
     /**
      * Flag to keep track of whether or not the InMobi rewarded video ad adapter has been
      * initialized.
@@ -225,7 +227,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
             @Override
             public void onAdDisplayed(InMobiBanner inMobiBanner) {
-                Log.d(TAG, "onAdDismissed");
+                Log.d(TAG, "onAdDisplayed");
                 mBannerListener.onAdOpened(InMobiAdapter.this);
             }
 
@@ -561,7 +563,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         this.mNativeListener = listener;
 
         final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested());
+                && mediationAdRequest.isContentAdRequested()) || mediationAdRequest.isUnifiedNativeAdRequested();;
 
        /*
         * InMobi Adapter will serve ad only if publisher requests for both AppInstall and Content
@@ -573,7 +575,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             return;
         }
 
-        InMobiNative adNative = new InMobiNative(context,
+        mAdNative = new InMobiNative(context,
                 Long.parseLong(serverParameters.getString("placementid")),
                 new NativeAdEventListener() {
                     @Override
@@ -653,7 +655,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         //Setting mediation key words to native ad object
         Set<String> mediationKeyWords = mediationAdRequest.getKeywords();
         if (null != mediationKeyWords) {
-            adNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
+            mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
         }
 
        /*
@@ -667,11 +669,11 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
         isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
 
-        adNative.setExtras(paramMap);
+        mAdNative.setExtras(paramMap);
 
         InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
 
-        adNative.load();
+        mAdNative.load();
     }
     //endregion
 }
