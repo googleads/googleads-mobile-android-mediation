@@ -1,11 +1,10 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.Size;
 
 import com.vungle.warren.AdConfig;
-import com.vungle.warren.Vungle;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
@@ -22,11 +21,11 @@ public final class VungleExtrasBuilder {
 
     private final Bundle mBundle = new Bundle();
 
-    public VungleExtrasBuilder(@NonNull @Size(min = 1L) String[] placements) {
+    public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
         mBundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
     }
 
-    public VungleExtrasBuilder setPlayingPlacement(@NonNull String placement) {
+    public VungleExtrasBuilder setPlayingPlacement(String placement) {
         mBundle.putString(EXTRA_PLAY_PLACEMENT, placement);
         return this;
     }

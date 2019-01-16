@@ -6,7 +6,6 @@ import com.google.ads.mediation.dap.DuAdMediation;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 
-
 public class DapCustomBannerEventForwarder implements BannerListener {
     private static final String TAG = DuAdAdapter.class.getSimpleName();
     private MediationBannerListener mBannerListener;

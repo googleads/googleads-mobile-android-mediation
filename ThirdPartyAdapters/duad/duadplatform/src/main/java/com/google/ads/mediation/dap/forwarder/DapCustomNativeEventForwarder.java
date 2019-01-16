@@ -7,6 +7,8 @@ import com.duapps.ad.DuAdListener;
 import com.duapps.ad.DuNativeAd;
 import com.google.ads.mediation.dap.DuAdMediation;
 import com.google.ads.mediation.dap.DuNativeAdAdapter;
+
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
@@ -25,14 +27,13 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
         mAdapter = adapter;
         mNativeListener = listener;
         mMediationAdRequest = mediationAdRequest;
-
     }
 
     @Override
     public void onError(DuNativeAd duNativeAd, AdError adError) {
         if (mNativeListener != null) {
             DuAdMediation.d(TAG, "Native onError - " + adError.getErrorMessage());
-            mNativeListener.onAdFailedToLoad(mAdapter, adError.getErrorCode());
+            mNativeListener.onAdFailedToLoad(mAdapter, getAdMobErrorCode(adError.getErrorCode()));
         }
     }
 
@@ -43,6 +44,7 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
         if (mMediationAdRequest != null) {
             nativeAdOptions = mMediationAdRequest.getNativeAdOptions();
         }
+
         final DuNativeAdMapper mapper = new DuNativeAdMapper(mContext,duNativeAd, nativeAdOptions);
         mapper.mapNativeAd(new DuNativeAdMapper.NativeAdMapperListener() {
             @Override
@@ -50,7 +52,6 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
                 if (mNativeListener != null) {
                     mNativeListener.onAdLoaded(mAdapter, mapper);
                     DuAdMediation.d(TAG, "onMappingSuccess ");
-
                 }
             }
 
@@ -62,8 +63,6 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
                 }
             }
         });
-
-
     }
 
     @Override
@@ -74,5 +73,24 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
             mNativeListener.onAdOpened(mAdapter);
             mNativeListener.onAdLeftApplication(mAdapter);
         }
+    }
+
+    private int getAdMobErrorCode(int duAdErrorCode){
+        switch (duAdErrorCode){
+            case 2000: // SERVER_ERROR_CODE: Server Error
+            case 2001: // INTERNAL_ERROR_CODE: Network Error
+            case 3001: // UNKNOWN_ERROR_CODE: Unknown Error
+                return AdRequest.ERROR_CODE_INTERNAL_ERROR;
+            case 1002: // LOAD_TOO_FREQUENTLY_ERROR_CODE: Too many interface requests
+                return AdRequest.ERROR_CODE_INVALID_REQUEST;
+            case 1000: // NETWORK_ERROR_CODE: Client network error
+            case 3000: // TIME_OUT_CODE: Retrieve Ad data timed out
+                return AdRequest.ERROR_CODE_NETWORK_ERROR;
+            case 1001: // NO_FILL_ERROR_CODE: No Ad data retrieved
+            case 1003: // IMPRESSION_LIMIT_ERROR_CODE: Reach the daily impression limit
+                return AdRequest.ERROR_CODE_NO_FILL;
+            default:
+        }
+        return AdRequest.ERROR_CODE_INTERNAL_ERROR;
     }
 }

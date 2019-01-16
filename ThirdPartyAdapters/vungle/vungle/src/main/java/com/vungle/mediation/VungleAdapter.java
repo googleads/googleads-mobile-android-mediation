@@ -1,14 +1,13 @@
 package com.vungle.mediation;
 
+import android.content.Context;
+import android.os.Bundle;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
 import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
-
-import android.content.Context;
-import android.os.Bundle;
-
 import com.vungle.warren.AdConfig;
 
 /**
@@ -54,6 +53,7 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                             boolean wasCallToActionClicked) {
             if (mMediationRewardedVideoAdListener != null) {
                 if (wasSuccessfulView) {
+                    mMediationRewardedVideoAdListener.onVideoCompleted(VungleAdapter.this);
                     mMediationRewardedVideoAdListener.onRewarded(VungleAdapter.this,
                             new VungleReward("vungle", 1));
                 }
@@ -139,7 +139,7 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
                     AdapterParametersParser.parse(networkExtras, serverParameters);
             mMediationRewardedVideoAdListener = listener;
             mVungleManager =
-                    VungleManager.getInstance(config.getAppId(), config.getAllPlacements());
+                    VungleManager.getInstance(config.getAppId());
             mVungleManager.addListener(mId, mVungleListener);
             if (mVungleManager.isInitialized()) {
                 mInitialized = true;
@@ -164,7 +164,11 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
     @Override
     public void loadAd(MediationAdRequest adRequest, Bundle serverParameters,
                        Bundle networkExtras) {
-        String userId = networkExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+        String userId = "";
+        if (networkExtras != null) {
+            userId = networkExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+        }
+
         mVungleManager.setIncentivizedFields(userId, null, null, null, null);
         mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(networkExtras);
         mPlacementForPlay = mVungleManager.findPlacement(networkExtras, serverParameters);
@@ -172,9 +176,12 @@ public class VungleAdapter implements MediationRewardedVideoAdAdapter {
             if (mMediationRewardedVideoAdListener != null) {
                 mMediationRewardedVideoAdListener.onAdLoaded(VungleAdapter.this);
             }
-        } else {
+        } else if (mVungleManager.isValidPlacement(mPlacementForPlay)) {
             mVungleListener.waitForAd(mPlacementForPlay);
             mVungleManager.loadAd(mPlacementForPlay);
+        } else {
+            mMediationRewardedVideoAdListener.onInitializationFailed(VungleAdapter.this,
+                    AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
     }
 

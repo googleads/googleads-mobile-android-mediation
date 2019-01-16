@@ -207,7 +207,6 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
 
     @Override
     public void onRewardedVideoAdRewarded(String instanceId, final Placement placement) {
-
         if (placement == null) {
             onLog("IronSource Placement Error");
             return;
@@ -220,6 +219,8 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
+                    mMediationRewardedVideoAdListener.onVideoCompleted(
+                            IronSourceRewardedAdapter.this);
                     mMediationRewardedVideoAdListener.onRewarded(
                             IronSourceRewardedAdapter.this, new IronSourceReward(placement));
                 }

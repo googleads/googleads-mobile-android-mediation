@@ -1,7 +1,32 @@
 # myTarget Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.2.5.0
+- Verified compatibility with myTarget SDK version 5.2.5.
+- Fixed a bug where the adapter fails to request a Banner ad when using a custom size.
+
+## 5.2.2.0
+- Verified compatibility with myTarget SDK version 5.2.2.
+
+## 5.2.1.0
+- Verified compatibility with myTarget SDK version 5.2.1.
+
+## 5.2.0.0
+- Verified compatibility with myTarget SDK version 5.2.0.
+
+## 5.1.4.0
+- Verified compatibility with myTarget SDK version 5.1.4.
+
+## 5.1.3.0
+- Verified compatibility with myTarget SDK version 5.1.3.
+
+## 5.1.2.0
+- Verified compatibility with myTarget SDK version 5.1.2.
+
+## 5.1.1.0
+- Verified compatibility with myTarget SDK version 5.1.1.
+
 ## 5.1.0.1
-- Updated Adapter to use the Unified Native Ads adapter API.
+- Updated adapter to use the Unified Native Ads adapter API.
 
 ## 5.1.0.0
 - Verified compatibility with myTarget SDK version 5.1.0.

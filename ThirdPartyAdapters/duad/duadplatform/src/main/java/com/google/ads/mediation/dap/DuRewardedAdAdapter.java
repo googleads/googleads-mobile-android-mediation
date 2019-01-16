@@ -20,58 +20,61 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
- * Created by bushaopeng on 18/1/3.
+ * Mediation adapter for Rewarded Video Ads for DU Ad Platform
  */
 @Keep
 public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
     private static final String TAG = DuRewardedAdAdapter.class.getSimpleName();
+
     private int mRewardedVideoPid;
     private Context mRewardedVideoCtx;
     private DuVideoAd mDuRewardedVideoAd;
     private MediationRewardedVideoAdListener mRewardedVideoListener;
+
     private boolean mIsInitialized;
     static boolean isVideoInitialized = false;
-    public static HashSet<Integer> initializedVideoPlacementIds = new HashSet<>();
 
+    public static HashSet<Integer> initializedVideoPlacementIds = new HashSet<>();
 
     static void initializeVideoSDK(Context context, Bundle mediationExtras, int pid, String appId) {
         if (!isVideoInitialized) {
-            boolean initIdsSucc = false;
+            boolean initIdsSuccess = false;
             boolean shouldInit = false;
+
             if (mediationExtras != null) {
                 ArrayList<Integer> allPids = mediationExtras.getIntegerArrayList(DuAdMediation.KEY_ALL_VIDEO_PLACEMENT_ID);
                 if (allPids != null) {
                     initializedVideoPlacementIds.addAll(allPids);
                     shouldInit = true;
-                    initIdsSucc = true;
+                    initIdsSuccess = true;
                 }
             }
+
             if (!initializedVideoPlacementIds.contains(pid)) {
                 initializedVideoPlacementIds.add(pid);
                 shouldInit = true;
             }
+
             if (shouldInit) {
                 String initJsonConfig = DuAdMediation.buildJsonFromPidsNative(initializedVideoPlacementIds, "video");
                 DuAdMediation.d(TAG, "init config json is : " + initJsonConfig);
                 context = DuAdMediation.setAppIdInMeta(context, appId);
                 DuAdNetwork.init(context, initJsonConfig);
                 DuVideoAdSDK.init(context, initJsonConfig);
-                if (initIdsSucc) {
+                if (initIdsSuccess) {
                     isVideoInitialized = true;
                 } else {
-                    String msg = "Only the following video placementIds " + initializedVideoPlacementIds + " is " +
-                            "initialized. "
-                            + "It is Strongly recommended to use DuAdExtrasBundleBuilder.addAllVideoPlacementId() to pass all "
-                            + "your valid video placement id when " +
-                            "requests video ads, "
-                            + "so that the DuVideoAdSDK could be normally initialized.";
-                    Log.e(TAG, msg);
+                    String message = "Only the following video placementIds " + initializedVideoPlacementIds + " are initialized. "
+                            + "It is strongly recommended to use DuAdExtrasBundleBuilder.addAllVideoPlacementId() to pass all "
+                            + "your valid video placement IDs when making a Rewarded Video Ad Request, so that the DuAdNetwork "
+                            + "can be properly initialized.";
+                    Log.e(TAG, message);
                 }
             }
         }
     }
-    /* ****************** MediationRewardedVideoAdAdapter ********************** */
 
+    // region MediationRewardedVideoAdAdapter implementation
     @Override
     public void initialize(Context context,
                            MediationAdRequest mediationAdRequest,
@@ -83,11 +86,12 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
         if (!DuAdMediation.checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
-            String msg = "No Du Video Ad SDK can be found, please make sure you have integrated latest version of Du " +
-                    "Video Ad SDK";
-            Log.e(TAG, msg);
-            Log.e(TAG, msg);
+            String message = "Unable to find the Du Video Ad SDK. Please ensure you have integrated the latest " +
+                    "version of the Du Video Ad SDK.";
+            Log.e(TAG, message);
+            Log.e(TAG, message);
             listener.onInitializationFailed(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
             return;
         }
@@ -98,6 +102,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
         initializeVideoSDK(context, mediationExtras, pid, appId);
         mRewardedVideoListener = listener;
         mRewardedVideoPid = pid;
@@ -107,8 +112,8 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
         mIsInitialized = true;
 
         mRewardedVideoListener.onInitializationSucceeded(this);
-        DuAdMediation.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " + mRewardedVideoPid +
-                ", adapter instance: " + this);
+        DuAdMediation.d(TAG, "Dap Rewarded Video is initialized. mRewardedVideoPid = " +
+                mRewardedVideoPid + ", adapter instance: " + this);
     }
 
     @Override
@@ -116,12 +121,13 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
                        Bundle serverParameters,
                        Bundle mediationExtras) {
         if (!DuAdMediation.checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
-            String msg = "No Du Video Ad SDK is found, please make sure you have integrated latest version of Du "
-                    + "Video Ad SDK";
-            Log.e(TAG, msg);
-            Log.e(TAG, msg);
+            String message = "Unable to find the Du Video Ad SDK. Please ensure you have integrated the latest " +
+                    "version of the Du Video Ad SDK.";
+            Log.e(TAG, message);
+            Log.e(TAG, message);
             return;
         }
+
         if (mDuRewardedVideoAd == null) {
             mIsInitialized = false;
             if (mRewardedVideoListener != null) {
@@ -129,6 +135,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
             }
             return;
         }
+
         DuAdMediation.d(TAG, "Dap Rewarded Video load....mRewardedVideoPid = " + mRewardedVideoPid);
         mDuRewardedVideoAd.load();
     }
@@ -136,10 +143,10 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
     @Override
     public void showVideo() {
         if (!DuAdMediation.checkClassExist("com.duapps.ad.video.DuVideoAdsManager")) {
-            String msg = "No Du Video Ad SDK is found, please make sure you have integrated latest version of Du "
-                    + "Video Ad SDK";
-            Log.e(TAG, msg);
-            Log.e(TAG, msg);
+            String message = "Unable to find the Du Video Ad SDK. Please ensure you have integrated the latest " +
+                    "version of the Du Video Ad SDK.";
+            Log.e(TAG, message);
+            Log.e(TAG, message);
             return;
         }
         if (mDuRewardedVideoAd != null && mDuRewardedVideoAd.isAdPlayable()) {
@@ -155,9 +162,9 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
         DuAdMediation.d(TAG, "isInit = " + mIsInitialized + ", adapter instance: " + this);
         return mIsInitialized;
     }
+    // endregion
 
-    /* ****************** MediationAdapter ********************** */
-
+    // region MediationAdapter implementation
     @Override
     public void onDestroy() {
         DuAdMediation.d(TAG, "onDestroy ");
@@ -176,7 +183,7 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
     public void onResume() {
         DuAdMediation.d(TAG, "DuAdAdapter onResume, adapter instance: " + this);
     }
-
+    // endregion
 
     private int getValidPid(Bundle bundle) {
         if (bundle == null) {
@@ -198,5 +205,4 @@ public class DuRewardedAdAdapter implements MediationRewardedVideoAdAdapter {
         }
         return pid;
     }
-
 }

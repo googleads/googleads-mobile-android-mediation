@@ -1,5 +1,32 @@
 # maio Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 1.1.6.0
+- Verified compatibility with maio SDK version 1.1.6.
+
+## 1.1.5.0
+- Verified compatibility with maio SDK version 1.1.5.
+
+## 1.1.4.0
+- Verified compatibility with maio SDK version 1.1.4.
+
+##1.1.3.1
+- Updated the adapter to work with instance class instead of singleton.
+
+## 1.1.3.0
+- Verified compatibility with maio SDK version 1.1.3.
+
+## 1.1.2.1
+- Updated the adapter with updated initialize functions.
+
+## 1.1.2.0
+- Verified compatibility with maio SDK version 1.1.2.
+
+## 1.1.1.1
+- Updated the adapter to invoke the `onRewardedVideoComplete()` ad event.
+
+## 1.1.1.0
+- Verified compatibility with maio SDK version 1.1.1.
+
 ## 1.1.0.0
 - Verified compatibility with maio SDK version 1.1.0.
 

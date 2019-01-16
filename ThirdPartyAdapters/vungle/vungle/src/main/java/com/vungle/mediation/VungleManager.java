@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.vungle.warren.AdConfig;
@@ -13,7 +14,6 @@ import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.network.VungleApiClient;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,31 +25,29 @@ class VungleManager {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-    private static final String VERSION = "6.2.5";
+    private static final String VERSION = "6.3.24";
 
     private static VungleManager sInstance;
     private String mCurrentPlayId = null;
     private boolean mIsInitialising = false;
     private String mAppId;
-    private String[] mPlacements;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private Map<String, VungleListener> mListeners;
 
-    static VungleManager getInstance(String appId, String[] placements) {
+    static VungleManager getInstance(String appId) {
         if (sInstance == null) {
-            sInstance = new VungleManager(appId, placements);
+            sInstance = new VungleManager(appId);
         }
         return sInstance;
     }
 
-    private VungleManager(String appId, String[] placements) {
+    private VungleManager(String appId) {
         mListeners = new HashMap<>();
 
         VungleApiClient.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
                 VERSION.replace('.', '_'));
 
         this.mAppId = appId;
-        this.mPlacements = placements;
     }
 
     boolean isInitialized() {
@@ -62,6 +60,7 @@ class VungleManager {
         Vungle.setIncentivizedFields(userID, title, body, keepWatching, close);
     }
 
+    @Nullable
     String findPlacement(Bundle networkExtras, Bundle serverParameters) {
         String placement = null;
         if (networkExtras != null
@@ -76,9 +75,8 @@ class VungleManager {
             placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
         if (placement == null) {
-            placement = mPlacements[0];
-            Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements'"
-                    + ": %s", placement));
+            Log.e(TAG, "placementID not provided from serverParameters. Please check your AdMob dashboard settings." +
+                    "load and play functionality will not work");
         }
         return placement;
     }
@@ -98,8 +96,7 @@ class VungleManager {
         }
         mIsInitialising = true;
 
-        Vungle.init(Arrays.asList(mPlacements), mAppId, context.getApplicationContext(),
-                new InitCallback() {
+        Vungle.init(mAppId, context.getApplicationContext(), new InitCallback() {
             @Override
             public void onSuccess() {
                 mHandler.post(new Runnable() {
@@ -107,7 +104,8 @@ class VungleManager {
                     public void run() {
                         mIsInitialising = false;
                         if(VungleConsent.getCurrentVungleConsent() != null) {
-                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent());
+                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
+                                    VungleConsent.getCurrentVungleConsentMessageVersion());
                         }
                         for (VungleListener cb : mListeners.values()) {
                             if (cb.isWaitingInit()) {
@@ -219,7 +217,8 @@ class VungleManager {
     }
 
     boolean isAdPlayable(String placement) {
-        return Vungle.canPlayAd(placement);
+        return (placement != null && !placement.isEmpty()) &&
+                    Vungle.canPlayAd(placement);
     }
 
     void loadAd(String placement) {
@@ -266,4 +265,15 @@ class VungleManager {
             }
         }
     }
+
+    /**
+     * Checks and returns if the passed Placement ID is a valid placement for App ID
+     * @param placementId
+     * @return
+     */
+    boolean isValidPlacement(String placementId) {
+        return Vungle.isInitialized() &&
+                Vungle.getValidPlacements().contains(placementId);
+    }
+
 }

@@ -34,10 +34,12 @@ import java.util.concurrent.TimeoutException;
 
 public class DuNativeAdMapper extends NativeAppInstallAdMapper {
     private static final String TAG = DuNativeAdAdapter.class.getSimpleName();
+
     private final DuNativeAd mNativeAd;
     private final NativeAdOptions mNativeAdOptions;
     private final Context mContext;
     private NativeAdMapperListener mNativeAdMapperListener;
+
     private static final int DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
 
     public DuNativeAdMapper(Context context, DuNativeAd nativeAd, NativeAdOptions nativeAdOptions) {
@@ -69,12 +71,12 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
         if (mNativeAdOptions != null) {
             urlsOnly = mNativeAdOptions.shouldReturnUrlsForImageAssets();
         }
+
 //        if (urlsOnly) {
 //            mNativeAdMapperListener.onMappingSuccess();
 //        } else {
         new DownloadDrawablesAsync(mContext, mNativeAdMapperListener, urlsOnly).execute(DuNativeAdMapper.this);
 //        }
-
     }
 
     @Override
@@ -88,9 +90,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
     }
 
     public interface NativeAdMapperListener {
-
         void onMappingSuccess();
-
         void onMappingFailed();
     }
 
@@ -110,7 +110,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             DuNativeAdMapper mapper = (DuNativeAdMapper) params[0];
             ExecutorService executorService = Executors.newCachedThreadPool();
 
-            // download ad image
+            // Download ad image
             DuNativeMappedImage image = (DuNativeMappedImage) mapper.getImages().get(0);
             Uri uri = image.getUri();
             Future<Drawable> drawableFuture = getDrawableFuture(uri, executorService);
@@ -121,6 +121,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             } catch (InterruptedException | ExecutionException | TimeoutException exception) {
                 return false;
             }
+
             image.setDrawable(drawable);
             if (!mUrlsOnly) {
                 ImageView imageView = new ImageView(mContext);
@@ -129,7 +130,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
                 mapper.setMediaView(imageView);
             }
 
-            // download icon image
+            // Download icon image
             DuNativeMappedImage iconImage = (DuNativeMappedImage) mapper.getIcon();
             uri = iconImage.getUri();
             drawableFuture = getDrawableFuture(uri, executorService);
