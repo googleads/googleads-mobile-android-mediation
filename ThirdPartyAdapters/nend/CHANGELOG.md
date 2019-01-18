@@ -1,5 +1,9 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.0.0
+
+- Verified compatibility with nend SDK 5.1.0.
+
 ## 5.0.2.1
 
 - Removed function that forward user features because following methods are deprecated on `AdRequest.Builder`.
