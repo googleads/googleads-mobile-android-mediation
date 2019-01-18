@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.4.1.1
+- Added support for MoPub Rewarded Video Ads.
+
 ## 5.4.1.0
 - Verified compatibility with MoPub SDK 5.4.1.
 
