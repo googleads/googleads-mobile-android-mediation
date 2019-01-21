@@ -135,7 +135,9 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                     int width = parent.getWidth();
                     Log.d(LOG_TAG, "parent layout width is " + width);
                     final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, width);
-                    placeHolderView.addView(primaryView);
+                    if(primaryView != null){
+                        placeHolderView.addView(primaryView);
+                    }
                 }
             });
         }
