@@ -34,9 +34,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdChoicesView;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
+import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
@@ -45,6 +45,7 @@ import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeAdViewAttributes;
 import com.facebook.ads.RewardedVideoAd;
@@ -139,12 +140,6 @@ public final class FacebookAdapter
      * sent to the Google Mobile Ads SDK.
      */
     private boolean mIsImpressionRecorded;
-
-    /**
-     * Flag to determine whether or not to make AdChoices icon for native ads expandable.
-     * {@code true} by default.
-     */
-    private boolean mIsAdChoicesIconExpandable = true;
 
     /**
      * A Facebook {@link MediaView} used to show native ad media content.
@@ -400,12 +395,6 @@ public final class FacebookAdapter
         }
 
         String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-
-        // Get the optional extras if set by the publisher.
-        if (mediationExtras != null) {
-            mIsAdChoicesIconExpandable = mediationExtras.getBoolean(
-                    FacebookExtrasBundleBuilder.KEY_EXPANDABLE_ICON, true);
-        }
 
         mMediaView = new MediaView(context);
 
@@ -946,15 +935,15 @@ public final class FacebookAdapter
             // Find the overlay view in the given ad view. The overlay view will always be the
             // top most view in the hierarchy.
             View overlayView = adView.getChildAt(adView.getChildCount() - 1);
+            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
             if (overlayView instanceof FrameLayout) {
-                // Create and add Facebook's AdChoicesView to the overlay view.
-                AdChoicesView adChoicesView =
-                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                ((ViewGroup) overlayView).addView(adChoicesView);
+                // Create and add Facebook's AdOptions to the overlay view.
+                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(),mNativeAd,nativeAdLayout);
+                ((ViewGroup) overlayView).addView(adOptionsView);
                 // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
-                // LayoutParams from the AdChoicesView.
+                // LayoutParams from the AdOptionsView.
                 FrameLayout.LayoutParams params =
-                        (FrameLayout.LayoutParams) adChoicesView.getLayoutParams();
+                        (FrameLayout.LayoutParams) adOptionsView.getLayoutParams();
                 if (mNativeAdOptions != null) {
                     switch (mNativeAdOptions.getAdChoicesPlacement()) {
                         case NativeAdOptions.ADCHOICES_TOP_LEFT:
@@ -976,11 +965,8 @@ public final class FacebookAdapter
                 }
                 adView.requestLayout();
             } else {
-
-                AdChoicesView adChoicesView =
-                        new AdChoicesView(view.getContext(), mNativeAd, mIsAdChoicesIconExpandable);
-                this.setAdChoicesContent(adChoicesView);
-
+                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                this.setAdChoicesContent(adOptionsView);
             }
 
             // Facebook does its own impression tracking.
@@ -1030,35 +1016,6 @@ public final class FacebookAdapter
                 return null;
             }
             return (MAX_STAR_RATING * rating.getValue()) / rating.getScale();
-        }
-    }
-
-    /**
-     * The {@link FacebookExtrasBundleBuilder} class is used to create a network extras bundle that
-     * can be passed to the adapter to make network specific customizations.
-     */
-    public static class FacebookExtrasBundleBuilder {
-
-        /**
-         * Key to add and obtain {@link #mIsExpandableIcon}.
-         */
-        private static final String KEY_EXPANDABLE_ICON = "expandable_icon";
-
-        /**
-         * Whether or not ad choices icon for native ads is expandable.
-         */
-        private boolean mIsExpandableIcon;
-
-        public FacebookExtrasBundleBuilder setNativeAdChoicesIconExpandable(
-                boolean isExpandableIcon) {
-            this.mIsExpandableIcon = isExpandableIcon;
-            return FacebookExtrasBundleBuilder.this;
-        }
-
-        public Bundle build() {
-            Bundle bundle = new Bundle();
-            bundle.putBoolean(KEY_EXPANDABLE_ICON, mIsExpandableIcon);
-            return bundle;
         }
     }
 

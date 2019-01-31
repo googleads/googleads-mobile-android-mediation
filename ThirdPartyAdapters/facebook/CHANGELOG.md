@@ -1,5 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.1.0
+- Replaced AdChoices View with AdOptions View.
+- Verified compatibility with Facebook SDK v5.1.1
+
 ## 5.1.0.1
 - Fixed an ANR issue caused by 'getGMSVersionCode()'.
 
