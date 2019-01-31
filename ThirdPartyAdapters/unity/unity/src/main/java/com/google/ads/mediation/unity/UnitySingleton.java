@@ -204,7 +204,7 @@ public final class UnitySingleton {
             // appropriate delegates.
             Iterator<WeakReference<UnityAdapterDelegate>> iterator =
                     mUnityAdapterDelegatesSet.iterator();
-            while (iterator.hasNext()) {
+            while (iterator.hasNext() && placementId != null){) {
                 UnityAdapterDelegate delegate = iterator.next().get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityAdsReady(placementId);

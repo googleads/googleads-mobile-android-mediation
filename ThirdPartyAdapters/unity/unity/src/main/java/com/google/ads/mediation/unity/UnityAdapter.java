@@ -451,7 +451,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         mBannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, mPlacementId)) {
+        if (!isValidIds(gameId, mBannerPlacementId)) {
             if (mBannerListener != null) {
                 mBannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);

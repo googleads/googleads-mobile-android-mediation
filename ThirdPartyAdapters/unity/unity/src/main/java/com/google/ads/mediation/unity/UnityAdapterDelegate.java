@@ -15,7 +15,6 @@
 package com.google.ads.mediation.unity;
 
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.services.banners.IUnityBannerListener;
 
 /**
  * An {@link IUnityAdsExtendedListener} used to mediate callbacks and data between
