@@ -1,5 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.2.0.0-beta
+- Removed usages of NativeAdView attributes.
+- Added NativeAdLayout to Native Ads using a FrameLayout as root.
+
 ## 5.1.1.0
 - Replaced AdChoices View with AdOptions View.
 - Verified compatibility with Facebook SDK v5.1.1
