@@ -17,7 +17,6 @@ package com.google.ads.mediation.facebook;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -47,7 +46,6 @@ import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
-import com.facebook.ads.NativeAdViewAttributes;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -82,23 +80,8 @@ public final class FacebookAdapter
         implements MediationBannerAdapter, MediationInterstitialAdapter,
         MediationRewardedVideoAdAdapter, MediationNativeAdapter {
 
-    public static final String KEY_AD_VIEW_ATTRIBUTES = "ad_view_attributes";
-    public static final String KEY_AUTOPLAY = "autoplay";
-    public static final String KEY_BACKGROUND_COLOR = "background_color";
-    public static final String KEY_BUTTON_BORDER_COLOR = "button_border_color";
-    public static final String KEY_BUTTON_COLOR = "button_color";
-    public static final String KEY_BUTTON_TEXT_COLOR = "button_text_color";
-    public static final String KEY_DESCRIPTION_TEXT_COLOR = "description_text_color";
-    public static final String KEY_DESCRIPTION_TEXT_SIZE = "description_text_size";
     public static final String KEY_ID = "id";
-    public static final String KEY_IS_BOLD = "is_bold";
-    public static final String KEY_IS_ITALIC = "is_italic";
     public static final String KEY_SOCIAL_CONTEXT_ASSET = "social_context";
-    public static final String KEY_STYLE = "style";
-    public static final String KEY_SUBTITLE_ASSET = "subtitle";
-    public static final String KEY_TITLE_TEXT_COLOR = "title_text_color";
-    public static final String KEY_TITLE_TEXT_SIZE = "title_text_size";
-    public static final String KEY_TYPEFACE = "typeface";
 
     private static final String PLACEMENT_PARAMETER = "pubid";
 
@@ -880,32 +863,6 @@ public final class FacebookAdapter
             Bundle extras = new Bundle();
             extras.putCharSequence(KEY_ID, mNativeAd.getId());
             extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-
-            NativeAdViewAttributes attributes = mNativeAd.getAdViewAttributes();
-            if (attributes != null) {
-                Bundle attributesBundle = new Bundle();
-                attributesBundle.putBoolean(KEY_AUTOPLAY, attributes.getAutoplay());
-                attributesBundle.putInt(KEY_BACKGROUND_COLOR, attributes.getBackgroundColor());
-                attributesBundle.putInt(KEY_BUTTON_BORDER_COLOR, attributes.getButtonBorderColor());
-                attributesBundle.putInt(KEY_BUTTON_COLOR, attributes.getButtonColor());
-                attributesBundle.putInt(KEY_BUTTON_TEXT_COLOR, attributes.getButtonTextColor());
-                attributesBundle.putInt(KEY_DESCRIPTION_TEXT_COLOR,
-                        attributes.getDescriptionTextColor());
-                attributesBundle.putInt(KEY_DESCRIPTION_TEXT_SIZE,
-                        attributes.getDescriptionTextSize());
-                attributesBundle.putInt(KEY_TITLE_TEXT_COLOR, attributes.getTitleTextColor());
-                attributesBundle.putInt(KEY_TITLE_TEXT_SIZE, attributes.getTitleTextSize());
-
-                Typeface typeface = attributes.getTypeface();
-                if (typeface != null) {
-                    Bundle typefaceBundle = new Bundle();
-                    typefaceBundle.putBoolean(KEY_IS_BOLD, typeface.isBold());
-                    typefaceBundle.putBoolean(KEY_IS_ITALIC, typeface.isItalic());
-                    typefaceBundle.putInt(KEY_STYLE, typeface.getStyle());
-                    attributesBundle.putBundle(KEY_TYPEFACE, typefaceBundle);
-                }
-                extras.putBundle(KEY_AD_VIEW_ATTRIBUTES, attributesBundle);
-            }
             setExtras(extras);
 
             mapperListener.onMappingSuccess();
@@ -935,10 +892,12 @@ public final class FacebookAdapter
             // Find the overlay view in the given ad view. The overlay view will always be the
             // top most view in the hierarchy.
             View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
             if (overlayView instanceof FrameLayout) {
+                NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
+                ((FrameLayout) overlayView).addView(nativeAdLayout);
                 // Create and add Facebook's AdOptions to the overlay view.
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(),mNativeAd,nativeAdLayout);
+                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd,
+                        nativeAdLayout);
                 ((ViewGroup) overlayView).addView(adOptionsView);
                 // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
                 // LayoutParams from the AdOptionsView.
@@ -965,7 +924,7 @@ public final class FacebookAdapter
                 }
                 adView.requestLayout();
             } else {
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, null);
                 this.setAdChoicesContent(adOptionsView);
             }
 
