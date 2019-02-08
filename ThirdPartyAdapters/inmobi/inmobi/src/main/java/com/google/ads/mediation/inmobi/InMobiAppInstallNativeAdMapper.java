@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
+import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
@@ -38,7 +38,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     private final MediationNativeListener mMediationNativeListener;
     private final InMobiAdapter mInMobiAdapter;
     private final HashMap<String, String> mLandingUrlMap = new HashMap<>();
-    private String[] mImpressionTrackers;
+    private static final String LOG_TAG = InMobiAppInstallNativeAdMapper.class.getSimpleName();
 
     InMobiAppInstallNativeAdMapper(InMobiAdapter inMobiAdapter,
                                    InMobiNative inMobiNative,
@@ -118,25 +118,31 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        // Add primary view as media view.
+        //Add primary view as media view
         final RelativeLayout placeHolderView = new RelativeLayout(context);
-        placeHolderView.setLayoutParams(
-                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                           ViewGroup.LayoutParams.MATCH_PARENT));
-        placeHolderView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                View primaryView = mInMobiNative
-                        .getPrimaryViewOfWidth(null, placeHolderView, placeHolderView.getWidth());
-                placeHolderView.addView(primaryView);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                } else {
-                    placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        placeHolderView.setLayoutParams( new RelativeLayout.LayoutParams( RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT) );
+        final ViewTreeObserver viewTreeObserver = placeHolderView.getViewTreeObserver();
+        if (viewTreeObserver.isAlive()) {
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        placeHolderView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    } else {
+                        placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    }
+                    final View parent = (View)placeHolderView.getParent();
+                    int width = parent.getWidth();
+                    Log.d(LOG_TAG, "parent layout width is " + width);
+                    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, width);
+                    if(primaryView != null){
+                        placeHolderView.addView(primaryView);
+                    }
                 }
-            }
-        });
-        setMediaView(placeHolderView);
+            });
+        }
+
+        setMediaView( placeHolderView );
         setHasVideoContent(true);
         setOverrideClickHandling(false);
 

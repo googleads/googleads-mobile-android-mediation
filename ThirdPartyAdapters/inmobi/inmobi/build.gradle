@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.2.1.0"
+    stringVersion = "7.2.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -36,8 +36,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
-    implementation 'com.inmobi.monetization:inmobi-ads:7.2.1'
+    implementation 'com.google.android.gms:play-services-ads:17.1.1'
+    implementation 'com.inmobi.monetization:inmobi-ads:7.2.2'
 }
 
 /**

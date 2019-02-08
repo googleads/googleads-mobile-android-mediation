@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.0.2.1"
+    stringVersion = "5.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,12 +18,12 @@ afterEvaluate {
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 27
-        versionCode 5021
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 5100
         versionName stringVersion
     }
 
@@ -37,17 +37,15 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation('com.android.support:appcompat-v7:27.1.1') {
+    implementation('com.android.support:appcompat-v7:28.0.0') {
         exclude module: 'support-v4'
     }
-    implementation 'com.android.support:customtabs:27.1.1'
-    implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.android.support:support-media-compat:27.1.1'
-    implementation 'com.android.support:support-v4:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.android.support:customtabs:28.0.0'
+    implementation 'com.android.support:support-media-compat:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.google.android.gms:play-services-ads:17.1.2'
     // nendSDK
-    implementation 'net.nend.android:nend-sdk:5.0.2'
+    implementation 'net.nend.android:nend-sdk:5.1.0'
 }
 
 /**
