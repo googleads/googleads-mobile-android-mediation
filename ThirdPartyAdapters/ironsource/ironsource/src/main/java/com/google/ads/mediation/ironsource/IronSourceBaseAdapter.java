@@ -19,11 +19,6 @@ class IronSourceBaseAdapter {
     static final String TAG = "IronSource";
 
     /**
-     * Adapter version.
-     */
-    static final String ADAPTER_VERSION = "6.7.9.0";
-
-    /**
      * Key to obtain App Key, required for initializing IronSource SDK.
      */
     static final String KEY_APP_KEY = "appKey";

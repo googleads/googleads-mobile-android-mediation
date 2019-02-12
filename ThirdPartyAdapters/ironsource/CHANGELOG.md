@@ -1,5 +1,8 @@
 # ironSource Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Version 6.8.1.0
+- Verified compatibility with ironSource SDK version 6.8.1.
+
 ## Version 6.7.12.0
 - Verified compatibility with ironSource SDK version 6.7.12.
 
