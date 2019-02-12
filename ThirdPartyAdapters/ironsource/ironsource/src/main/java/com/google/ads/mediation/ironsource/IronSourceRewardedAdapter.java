@@ -30,7 +30,6 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
      */
     private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
 
-
     private static boolean mDidInitRewardedVideo = false;
     private static boolean mDidReceiveFirstAvailability = false;
 
@@ -44,26 +43,24 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
                            Bundle networkExtras) {
 
         mMediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
-        
+
         if (!(context instanceof Activity)) {
             // Context not an Activity context, log the reason for failure and fail the
             // initialization.
             onLog("IronSource SDK requires an Activity context to initialize");
-
             mediationRewardedVideoAdListener.onInitializationFailed(
                     IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        
-        try {
 
-            // Parse enabling testing mode key for log
+        try {
+            // Parse enabling testing mode key for log.
             this.mIsLogEnabled = mediationAdRequest.isTesting();
 
             String appKey = serverParameters.getString(KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
-
-                onLog("IronSource initialization failed, make sure that 'appKey' server parameter is added");
+                onLog("IronSource initialization failed, make sure that 'appKey' server parameter"
+                        + " is added");
                 mediationRewardedVideoAdListener.onInitializationFailed(
                         IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
 
@@ -87,12 +84,11 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
                     IronSourceRewardedAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
-    
+
     @Override
     public void loadAd(MediationAdRequest mediationAdRequest,
                        Bundle serverParameters,
                        Bundle networkExtras) {
-
         this.mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, "0");
 
         if (mDidReceiveFirstAvailability) {
@@ -109,7 +105,7 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
             // IronSource rewarded video current availability (see: 'hasVideoAvailable').
         }
     }
-    
+
     @Override
     public void showVideo() {
 
@@ -123,11 +119,12 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
             onLog("No ads to show.");
         }
     }
-    
+
     @Override
     public boolean isInitialized() {
         return this.mDidInitRewardedVideo;
     }
+    //endregion
 
     @Override
     public void onDestroy() {
@@ -138,11 +135,12 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
     public void onPause() {
 
     }
-    
+
     @Override
     public void onResume() {
 
     }
+
 
     /**
      * IronSource RewardedVideoListener implementation.
@@ -178,9 +176,8 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
                 });
             }
         }
-
     }
-    
+
     @Override
     public void onRewardedVideoAdOpened(final String instanceId) {
         onLog("IronSource Rewarded Video opened ad for instance " + instanceId);
@@ -195,7 +192,7 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
             });
         }
     }
-    
+
     @Override
     public void onRewardedVideoAdClosed(String instanceId) {
         onLog("IronSource Rewarded Video closed ad for instance " + instanceId);
@@ -207,35 +204,36 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
             });
         }
     }
-    
+
     @Override
     public void onRewardedVideoAdRewarded(String instanceId, final Placement placement) {
-
         if (placement == null) {
             onLog("IronSource Placement Error");
             return;
         }
-        
-        final IronSourceReward reward = new IronSourceReward(placement);
 
+        final IronSourceReward reward = new IronSourceReward(placement);
         onLog("IronSource Rewarded Video received reward " + reward.getType() + " "
                 + reward.getAmount() + ", for instance: " + instanceId);
 
         if (mMediationRewardedVideoAdListener != null) {
             sendEventOnUIThread(new Runnable() {
                 public void run() {
-                    mMediationRewardedVideoAdListener.onRewarded(IronSourceRewardedAdapter.this, new IronSourceReward(placement));
+                    mMediationRewardedVideoAdListener.onVideoCompleted(
+                            IronSourceRewardedAdapter.this);
+                    mMediationRewardedVideoAdListener.onRewarded(
+                            IronSourceRewardedAdapter.this, new IronSourceReward(placement));
                 }
             });
         }
     }
-    
+
     @Override
     public void onRewardedVideoAdShowFailed(String instanceId, IronSourceError ironsourceError) {
         // No relevant delegate in AdMob interface.
         onLog("IronSource Rewarded Video failed to show for instance " + instanceId);
     }
-    
+
     @Override
     public void onRewardedVideoAdClicked(String instanceId, Placement placement) {
         onLog("IronSource Rewarded Video clicked for instance " + instanceId);
@@ -244,7 +242,8 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
             sendEventOnUIThread(new Runnable() {
                 public void run() {
                     mMediationRewardedVideoAdListener.onAdClicked(IronSourceRewardedAdapter.this);
-                    mMediationRewardedVideoAdListener.onAdLeftApplication(IronSourceRewardedAdapter.this);
+                    mMediationRewardedVideoAdListener.
+                            onAdLeftApplication(IronSourceRewardedAdapter.this);
                 }
             });
         }
@@ -254,18 +253,18 @@ public class IronSourceRewardedAdapter extends IronSourceBaseAdapter
      * A {@link RewardItem} used to map IronSource reward to Google's reward.
      */
     class IronSourceReward implements RewardItem {
-        
+
         private final Placement mPlacement;
-        
+
         IronSourceReward(Placement placement) {
             this.mPlacement = placement;
         }
-        
+
         @Override
         public String getType() {
             return mPlacement.getRewardName();
         }
-        
+
         @Override
         public int getAmount() {
             return mPlacement.getRewardAmount();

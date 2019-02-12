@@ -134,10 +134,14 @@ class AdColonyAdListener extends AdColonyInterstitialListener implements AdColon
 
     @Override
     public void onReward(com.adcolony.sdk.AdColonyReward reward) {
-        if (_adapter != null && reward.success()) {
-            AdColonyReward adReward =
-                    new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
-            _mediationRewardedVideoAdListener.onRewarded(_adapter, adReward);
+        if (_adapter != null) {
+            _mediationRewardedVideoAdListener.onVideoCompleted(_adapter);
+
+            if (reward.success()) {
+                AdColonyReward adReward =
+                        new AdColonyReward(reward.getRewardName(), reward.getRewardAmount());
+                _mediationRewardedVideoAdListener.onRewarded(_adapter, adReward);
+            }
         }
     }
 

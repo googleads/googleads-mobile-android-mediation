@@ -55,8 +55,8 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     /**
      * Example of an extra field that publishers can use for a Native ad. In this example, the
-     * String is added to a {@link Bundle} in {@link SampleNativeAppInstallAdMapper} and
-     * {@link SampleNativeContentAdMapper}.
+     * String is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper},
+     * {@link SampleNativeAppInstallAdMapper} and {@link SampleNativeContentAdMapper}.
      */
     public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
 
@@ -264,14 +264,16 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
         // must report an error by calling the listener's onAdFailedToLoad method with an error code
         // of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
         // anyway, and then attempt to map it to the content ad format.
-        if (!nativeMediationAdRequest.isAppInstallAdRequested()
-                && !nativeMediationAdRequest.isContentAdRequested()) {
+        if (!(nativeMediationAdRequest.isAppInstallAdRequested()
+                && nativeMediationAdRequest.isContentAdRequested()) &&
+                !nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
             customEventNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
         loader.setNativeAdListener(
-                new SampleCustomNativeEventForwarder(customEventNativeListener, options));
+                new SampleCustomNativeEventForwarder(customEventNativeListener,
+                        nativeMediationAdRequest));
 
         // Begin a request.
         loader.fetchAd(request);

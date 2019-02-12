@@ -9,22 +9,22 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.3.2.0"
+    stringVersion = "3.3.8.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 28
+    buildToolsVersion '26.0.3'
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 30320
+        targetSdkVersion 28
+        versionCode 30380
         versionName stringVersion
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.adcolony:sdk:3.3.2'
-    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.adcolony:sdk:3.3.8'
+    implementation 'com.google.android.gms:play-services-ads:17.1.1'
 }
 
 /**

@@ -21,6 +21,8 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
 
 /**
@@ -29,7 +31,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListene
  */
 public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
     private final CustomEventNativeListener nativeListener;
-    private final NativeAdOptions nativeAdOptions;
+    private final NativeMediationAdRequest nativeAdRequest;
 
     /**
      * Creates a new {@code SampleNativeEventForwarder}.
@@ -38,9 +40,9 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
      *                 forwarded events.
      */
     public SampleCustomNativeEventForwarder(CustomEventNativeListener listener,
-                                            NativeAdOptions adOptions) {
+                                            NativeMediationAdRequest adRequest) {
         this.nativeListener = listener;
-        this.nativeAdOptions = adOptions;
+        this.nativeAdRequest = adRequest;
     }
 
     @Override
@@ -66,7 +68,13 @@ public class SampleCustomNativeEventForwarder extends SampleNativeAdListener {
         // image downloading are respected, and that any additional downloads take place *before*
         // the mapped native ad object is returned to the Google Mobile Ads SDK via the
         // onAdLoaded method.
-        if (containsRequiredAppInstallAdAssets(ad)) {
+        NativeAdOptions nativeAdOptions = nativeAdRequest.getNativeAdOptions();
+
+        if (nativeAdRequest.isUnifiedNativeAdRequested()) {
+            SampleUnifiedNativeAdMapper mapper =
+                    new SampleUnifiedNativeAdMapper(ad, nativeAdOptions);
+            nativeListener.onAdLoaded(mapper);
+        } else if (containsRequiredAppInstallAdAssets(ad)) {
             SampleNativeAppInstallAdMapper mapper =
                     new SampleNativeAppInstallAdMapper(ad, nativeAdOptions);
             nativeListener.onAdLoaded(mapper);

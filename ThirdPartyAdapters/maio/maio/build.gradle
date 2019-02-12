@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "1.0.7.1"
+    stringVersion = "1.1.6.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 10071
+        targetSdkVersion 27
+        versionCode 11600
         versionName stringVersion
 
     }
@@ -38,9 +38,12 @@ android {
 dependencies {
     // Adding maio SDK as a compileOnly dependency makes sure that the jar is not included in the
     // AAR.
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:11.8.0'
-    implementation 'com.maio:android-sdk:1.0.7'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:support-media-compat:27.1.1'
+    implementation 'com.android.support:customtabs:27.1.1'
+    implementation 'com.google.android.gms:play-services-ads:17.0.0'
+    implementation 'com.maio:android-sdk:1.1.6'
 }
 
 /**

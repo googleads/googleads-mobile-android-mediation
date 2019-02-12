@@ -75,7 +75,6 @@ public class ApplovinAdapter
     private AppLovinAdView mAdView;
 
     // Controlled fields.
-    private String mPlacement;
     private String mZoneId;
 
     //region MediationInterstitialAdapter implementation.
@@ -90,19 +89,16 @@ public class ApplovinAdapter
         mContext = context;
         mNetworkExtras = networkExtras;
         mMediationInterstitialListener = interstitialListener;
-
-        mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
         mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-        log(DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: "
-                + mPlacement);
+        log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
 
         // Create Ad Load listener.
         final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener() {
             @Override
             public void adReceived(final AppLovinAd ad) {
                 log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
-                        + mZoneId + " and placement: " + mPlacement);
+                        + mZoneId);
 
                 synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
                     Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get(mZoneId);
@@ -178,16 +174,15 @@ public class ApplovinAdapter
             interstitialAd.setAdVideoPlaybackListener(listener);
 
             if (dequeuedAd != null) {
-                log(DEBUG, "Showing interstitial for zone: " + mZoneId + " placement: "
-                        + mPlacement);
-                interstitialAd.showAndRender(dequeuedAd, mPlacement);
+                log(DEBUG, "Showing interstitial for zone: " + mZoneId);
+                interstitialAd.showAndRender(dequeuedAd);
             } else {
                 log(DEBUG, "Attempting to show interstitial before one was loaded");
 
                 // Check if we have a default zone interstitial available.
                 if (TextUtils.isEmpty(mZoneId) && interstitialAd.isAdReadyToDisplay()) {
                     log(DEBUG, "Showing interstitial preloaded by SDK");
-                    interstitialAd.show(mPlacement);
+                    interstitialAd.show();
                 }
                 // TODO: Show ad for zone identifier if exists
                 else {
@@ -231,11 +226,9 @@ public class ApplovinAdapter
                        Bundle serverParameters,
                        Bundle networkExtras) {
         synchronized (INCENTIVIZED_ADS_LOCK) {
-            mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
             mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-            log(DEBUG, "Requesting rewarded video for zone: " + mZoneId + " and placement: "
-                    + mPlacement);
+            log(DEBUG, "Requesting rewarded video for zone: " + mZoneId );
 
             // Check if incentivized ad for zone already exists.
             if (INCENTIVIZED_ADS.containsKey(mZoneId)) {
@@ -263,16 +256,16 @@ public class ApplovinAdapter
                 }
             });
         } else {
-            // Save placement and zone id, in case the adapter is re-used with new values but the
+            // Save zone id, in case the adapter is re-used with new values but the
             // callbacks are for the old values.
-            final String placement = mPlacement;
+
             final String zoneId = mZoneId;
 
             mIncentivizedInterstitial.preload(new AppLovinAdLoadListener() {
                 @Override
                 public void adReceived(final AppLovinAd ad) {
                     log(DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zone: "
-                            + zoneId + " and placement: " + placement);
+                            + zoneId );
 
                     AppLovinSdkUtils.runOnUiThread(new Runnable() {
                         @Override
@@ -304,11 +297,11 @@ public class ApplovinAdapter
             // Update mute state
             mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
 
-            log(DEBUG, "Showing rewarded video for zone: " + mZoneId + " placement: " + mPlacement);
+            log(DEBUG, "Showing rewarded video for zone: " + mZoneId );
 
             final AppLovinIncentivizedAdListener listener =
                     new AppLovinIncentivizedAdListener(this, mMediationRewardedVideoAdListener);
-            mIncentivizedInterstitial.show(mContext, mPlacement, listener, listener, listener,
+            mIncentivizedInterstitial.show(mContext, listener, listener, listener,
                     listener);
         } else {
             log(DEBUG, "Attempting to show rewarded video before one was loaded");
@@ -330,12 +323,10 @@ public class ApplovinAdapter
                                 Bundle networkExtras) {
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-
-        mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
         mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
         log(DEBUG, "Requesting banner of size " + adSize + " for zone: "
-                + mZoneId + " and placement: " + mPlacement);
+                + mZoneId);
 
         // Convert requested size to AppLovin Ad Size.
         final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize(adSize);
@@ -343,7 +334,7 @@ public class ApplovinAdapter
             mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
 
             final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(
-                    mZoneId, mPlacement, mAdView, this, mediationBannerListener);
+                    mZoneId, mAdView, this, mediationBannerListener);
             mAdView.setAdDisplayListener(listener);
             mAdView.setAdClickListener(listener);
             mAdView.setAdViewEventListener(listener);

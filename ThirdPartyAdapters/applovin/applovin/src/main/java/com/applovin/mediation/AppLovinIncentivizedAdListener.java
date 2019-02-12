@@ -43,7 +43,6 @@ class AppLovinIncentivizedAdListener
     @Override
     public void adHidden(AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Rewarded video dismissed");
-
         if (mFullyWatched && mRewardItem != null) {
             mMediationRewardedVideoAdListener.onRewarded(mAdapter, mRewardItem);
         }
@@ -76,6 +75,10 @@ class AppLovinIncentivizedAdListener
         ApplovinAdapter.log(DEBUG, "Rewarded video playback ended at playback percent: "
                 + percentViewed + "%");
         mFullyWatched = fullyWatched;
+
+        if (fullyWatched) {
+            mMediationRewardedVideoAdListener.onVideoCompleted(mAdapter);
+        }
     }
 
     // Reward Listener.
