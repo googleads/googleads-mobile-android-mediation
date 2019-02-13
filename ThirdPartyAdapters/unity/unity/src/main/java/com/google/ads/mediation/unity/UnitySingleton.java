@@ -214,18 +214,6 @@ public final class UnitySingleton {
                 }
             }
         }
-        
-        Iterator<WeakReference<UnityAdapterDelegate>> iterator =
-                    mUnityAdapterDelegatesSet.iterator();
-            while (iterator.hasNext()) {
-                UnityAdapterDelegate delegate = iterator.next().get();
-                if(delegate.getPlacementId()!= null){
-                    if (delegate.getPlacementId().equals(placementId)) {
-                        delegate.onUnityAdsReady(placementId);
-                        iterator.remove();
-                    }
-                }
-            }
 
         @Override
         public void onUnityAdsStart(String placementId) {
