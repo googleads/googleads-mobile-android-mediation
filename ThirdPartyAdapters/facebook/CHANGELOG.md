@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.1.1
+- Updated the adapter to populate Advertiser Name for Unified Native Ads.
+
 ## 5.1.1.0
 - Replaced AdChoices View with AdOptions View.
 - Verified compatibility with Facebook SDK v5.1.1
