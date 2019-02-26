@@ -1111,32 +1111,6 @@ public final class FacebookAdapter
             Bundle extras = new Bundle();
             extras.putCharSequence(KEY_ID, mNativeAd.getId());
             extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-
-            NativeAdViewAttributes attributes = mNativeAd.getAdViewAttributes();
-            if (attributes != null) {
-                Bundle attributesBundle = new Bundle();
-                attributesBundle.putBoolean(KEY_AUTOPLAY, attributes.getAutoplay());
-                attributesBundle.putInt(KEY_BACKGROUND_COLOR, attributes.getBackgroundColor());
-                attributesBundle.putInt(KEY_BUTTON_BORDER_COLOR, attributes.getButtonBorderColor());
-                attributesBundle.putInt(KEY_BUTTON_COLOR, attributes.getButtonColor());
-                attributesBundle.putInt(KEY_BUTTON_TEXT_COLOR, attributes.getButtonTextColor());
-                attributesBundle.putInt(KEY_DESCRIPTION_TEXT_COLOR,
-                        attributes.getDescriptionTextColor());
-                attributesBundle.putInt(KEY_DESCRIPTION_TEXT_SIZE,
-                        attributes.getDescriptionTextSize());
-                attributesBundle.putInt(KEY_TITLE_TEXT_COLOR, attributes.getTitleTextColor());
-                attributesBundle.putInt(KEY_TITLE_TEXT_SIZE, attributes.getTitleTextSize());
-
-                Typeface typeface = attributes.getTypeface();
-                if (typeface != null) {
-                    Bundle typefaceBundle = new Bundle();
-                    typefaceBundle.putBoolean(KEY_IS_BOLD, typeface.isBold());
-                    typefaceBundle.putBoolean(KEY_IS_ITALIC, typeface.isItalic());
-                    typefaceBundle.putInt(KEY_STYLE, typeface.getStyle());
-                    attributesBundle.putBundle(KEY_TYPEFACE, typefaceBundle);
-                }
-                extras.putBundle(KEY_AD_VIEW_ATTRIBUTES, attributesBundle);
-            }
             setExtras(extras);
 
             mapperListener.onMappingSuccess();
