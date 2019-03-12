@@ -1,8 +1,7 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
 ## 5.2.0.0
-- Removed usages of NativeAdView attributes.
-- Added NativeAdLayout to Native Ads using a FrameLayout as root.
+- Verified compatibility with Facebook SDK v5.2.0.
 
 ## 5.1.1.1
 - Updated the adapter to populate Advertiser Name for Unified Native Ads.

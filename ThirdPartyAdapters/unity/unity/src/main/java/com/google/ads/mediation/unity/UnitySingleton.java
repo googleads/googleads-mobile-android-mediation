@@ -53,9 +53,9 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
      */
     private static UnitySingletonListener unitySingletonListenerInstance;
-    private static WeakReference<UnityAdapterBannerDelegate> mBannerDelegate;
+    private static WeakReference<UnityAdapterBannerDelegate> bannerDelegate;
 
-    private static WeakReference<Activity> mActivity;
+    private static WeakReference<Activity> activity;
 
     /**
      * This method will return the
@@ -113,7 +113,7 @@ public final class UnitySingleton {
             return true;
         }
 
-        mActivity = new WeakReference<>(activity);
+        UnitySingleton.activity = new WeakReference<>(activity);
 
         // Add the delegate to the set so that the callbacks from Unity Ads can be forwarded to
         // the adapter.
@@ -161,13 +161,12 @@ public final class UnitySingleton {
      * @param delegate Used to forward Unity Ads events to the adapter.
      */
     protected static void loadBannerAd(UnityAdapterBannerDelegate delegate) {
-        if (mActivity != null) {
-            Activity activity = mActivity.get();
+        if (UnitySingleton.activity != null) {
+            Activity activity = UnitySingleton.activity.get();
             if (activity != null) {
-                // UnityAdsBanner is marked ready when "ready to load". Calling
                 if (UnityAds.isInitialized()) {
                     if (UnityAds.isReady(delegate.getPlacementId())) {
-                        mBannerDelegate = new WeakReference<>(delegate);
+                        bannerDelegate = new WeakReference<>(delegate);
                         UnityBanners.loadBanner(activity, delegate.getPlacementId());
                     } else {
                         delegate.onUnityBannerError("Placement " + delegate.getPlacementId() + " is not ready.");
@@ -206,7 +205,7 @@ public final class UnitySingleton {
                     mUnityAdapterDelegatesSet.iterator();
             while (iterator.hasNext()) {
                 UnityAdapterDelegate delegate = iterator.next().get();
-                if(delegate.getPlacementId()!= null){
+                if (delegate.getPlacementId() != null) {
                     if (delegate.getPlacementId().equals(placementId)) {
                         delegate.onUnityAdsReady(placementId);
                         iterator.remove();
@@ -275,8 +274,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerLoaded(String placementId, View view) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityBannerLoaded(placementId, view);
                 }
@@ -285,8 +284,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerUnloaded(String placementId) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityBannerUnloaded(placementId);
                 }
@@ -295,8 +294,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerShow(String placementId) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityBannerShow(placementId);
                 }
@@ -305,8 +304,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerClick(String placementId) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityBannerClick(placementId);
                 }
@@ -315,8 +314,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerHide(String placementId) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityBannerHide(placementId);
                 }
@@ -325,8 +324,8 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityBannerError(String message) {
-            if (mBannerDelegate != null) {
-                UnityAdapterBannerDelegate delegate = mBannerDelegate.get();
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
                 if (delegate != null) {
                     delegate.onUnityBannerError(message);
                 }

@@ -94,17 +94,17 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
     /**
      * Placement ID for banner if requested.
      */
-    private String mBannerPlacementId;
+    private String bannerPlacementId;
 
     /**
-     * The view for the banner instance. UnityAds only supports one banner.
+     * The view for the banner instance.
      */
-    private View mBannerView;
+    private View bannerView;
 
     /**
      * Callback object for Google's Banner Lifecycle.
      */
-    private MediationBannerListener mBannerListener;
+    private MediationBannerListener bannerListener;
 
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
@@ -203,43 +203,51 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
     };
 
-    private UnityAdapterBannerDelegate mBannerDelegate = new UnityAdapterBannerDelegate() {
+    private UnityAdapterBannerDelegate bannerDelegate = new UnityAdapterBannerDelegate() {
         @Override
         public String getPlacementId() {
-            return mBannerPlacementId;
+            return bannerPlacementId;
         }
 
         @Override
         public void onUnityBannerLoaded(String placementId, View view) {
-            mBannerView = view;
-            if (mBannerListener != null) {
-                mBannerListener.onAdLoaded(UnityAdapter.this);
+            bannerView = view;
+            if (bannerListener != null) {
+                bannerListener.onAdLoaded(UnityAdapter.this);
             }
         }
 
         @Override
         public void onUnityBannerUnloaded(String placementId) {
-            mBannerView = null;
+            bannerView = null;
         }
 
         @Override
         public void onUnityBannerShow(String placementId) {
-            mBannerListener.onAdOpened(UnityAdapter.this);
+            if (bannerListener != null) {
+                bannerListener.onAdOpened(UnityAdapter.this);
+            }
         }
 
         @Override
         public void onUnityBannerClick(String placementId) {
-            mBannerListener.onAdClicked(UnityAdapter.this);
+            if (bannerListener != null) {
+                bannerListener.onAdClicked(UnityAdapter.this);
+            }
         }
 
         @Override
         public void onUnityBannerHide(String placementId) {
-            mBannerListener.onAdClosed(UnityAdapter.this);
+            if (bannerListener != null) {
+                bannerListener.onAdClosed(UnityAdapter.this);
+            }
         }
 
         @Override
         public void onUnityBannerError(String message) {
-            mBannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
         }
     };
 
@@ -447,13 +455,13 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
                                 AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
-        mBannerListener = listener;
+        bannerListener = listener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
-        mBannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, mBannerPlacementId)) {
-            if (mBannerListener != null) {
-                mBannerListener.onAdFailedToLoad(UnityAdapter.this,
+        bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (!isValidIds(gameId, bannerPlacementId)) {
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
@@ -466,8 +474,8 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         // Even though we are a banner request, we still need to initialize UnityAds.
         // Check if the Unity Ads initialized successfully.
         if (!UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context, gameId)) {
-            if (mBannerListener != null) {
-                mBannerListener.onAdFailedToLoad(UnityAdapter.this,
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
@@ -476,11 +484,11 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         // Storing a weak reference to the Activity.
         mActivityWeakReference = new WeakReference<>((Activity) context);
 
-        UnitySingleton.loadBannerAd(mBannerDelegate);
+        UnitySingleton.loadBannerAd(bannerDelegate);
     }
 
     @Override
     public View getBannerView() {
-        return mBannerView;
+        return bannerView;
     }
 }
