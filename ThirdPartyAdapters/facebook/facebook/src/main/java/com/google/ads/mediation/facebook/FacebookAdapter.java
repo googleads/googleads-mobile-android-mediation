@@ -15,11 +15,9 @@
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
@@ -38,7 +36,6 @@ import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
-import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.MediaView;
@@ -46,10 +43,9 @@ import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
-import com.facebook.ads.RewardedVideoAd;
-import com.facebook.ads.RewardedVideoAdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
@@ -63,33 +59,22 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mediation adapter for Facebook Audience Network.
  */
 @Keep
-public final class FacebookAdapter
-        implements MediationBannerAdapter, MediationInterstitialAdapter,
-        MediationRewardedVideoAdAdapter, MediationNativeAdapter {
+public final class FacebookAdapter extends FacebookMediationAdapter
+        implements MediationBannerAdapter, MediationInterstitialAdapter, MediationNativeAdapter {
 
     public static final String KEY_ID = "id";
     public static final String KEY_SOCIAL_CONTEXT_ASSET = "social_context";
 
-    private static final String PLACEMENT_PARAMETER = "pubid";
-
     private static final int MAX_STAR_RATING = 5;
-    private static final String TAG = "FacebookAdapter";
-
-    private static AtomicInteger gmsVersion = new AtomicInteger(0);
 
     private MediationBannerListener mBannerListener;
     private MediationInterstitialListener mInterstitialListener;
@@ -98,7 +83,6 @@ public final class FacebookAdapter
      * Mediation rewarded video ad listener used to forward reward-based video ad events from
      * Facebook SDK to Google Mobile Ads SDK.
      */
-    private MediationRewardedVideoAdListener mRewardedListener;
     private MediationNativeListener mNativeListener;
     private AdView mAdView;
     private RelativeLayout mWrappedAdView;
@@ -107,17 +91,7 @@ public final class FacebookAdapter
     /**
      * Facebook rewarded video ad instance.
      */
-    private String mPlacementId;
-    private RewardedVideoAd mRewardedVideoAd;
-
-    private Context mContext;
-
     private NativeAd mNativeAd;
-
-    /**
-     * Flag to determine whether or not the rewarded video adapter has been initialized.
-     */
-    private boolean mIsInitialized;
 
     /**
      * Flag to determine whether or not an impression callback from Facebook SDK has already been
@@ -129,11 +103,6 @@ public final class FacebookAdapter
      * A Facebook {@link MediaView} used to show native ad media content.
      */
     private MediaView mMediaView;
-
-    /**
-     * Flag to determine whether or not the Audience Network SDK has been initialized.
-     */
-    private AtomicBoolean mIsSdkInitialized = new AtomicBoolean(false);
 
     //region MediationAdapter implementation.
     @Override
@@ -151,9 +120,6 @@ public final class FacebookAdapter
         if (mMediaView != null) {
             mMediaView.destroy();
         }
-        if (mRewardedVideoAd != null) {
-            mRewardedVideoAd.destroy();
-        }
     }
 
     @Override
@@ -169,28 +135,24 @@ public final class FacebookAdapter
 
     //region MediationBannerAdapter implementation.
     @Override
-    public void requestBannerAd(Context context,
+    public void requestBannerAd(final Context context,
                                 MediationBannerListener listener,
                                 Bundle serverParameters,
-                                AdSize adSize,
-                                MediationAdRequest adRequest,
+                                final AdSize adSize,
+                                final MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         mBannerListener = listener;
-        if (!mIsSdkInitialized.getAndSet(true)) {
-            AudienceNetworkAds.initialize(context);
-        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mBannerListener.onAdFailedToLoad(
                     FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
+
         if (adSize == null) {
             Log.w(TAG, "Fail to request banner ad, adSize is null");
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-
-        String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
         com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
         if (facebookAdSize == null) {
@@ -199,28 +161,24 @@ public final class FacebookAdapter
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
             return;
         }
-        mAdView = new AdView(context, placementId, facebookAdSize);
-        mAdView.setAdListener(new BannerListener());
-        buildAdRequest(adRequest);
-        RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
-                adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
-        mWrappedAdView = new RelativeLayout(context);
-        mAdView.setLayoutParams(adViewLayoutParams);
-        mWrappedAdView.addView(mAdView);
-        if (gmsVersion.get() == 0) {
-            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
-            gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
-                @Override
-                public void OnGMSVersionUpdate() {
-                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
-                    mAdView.loadAd();
+
+        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
+        FacebookInitializer.getInstance().initialize(context, placementId,
+                new FacebookInitializer.Listener() {
+            @Override
+            public void onInitializeSuccess() {
+                createAndLoadBannerAd(context, placementId, adSize, adRequest);
+            }
+
+            @Override
+            public void onInitializeError(String message) {
+                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                if (mBannerListener != null) {
+                    mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
-            });
-            gmsVersionUpdateTask.execute();
-        } else {
-            AdSettings.setMediationService("ADMOB_" + gmsVersion);
-            mAdView.loadAd();
-        }
+            }
+        });
     }
 
     @Override
@@ -231,39 +189,35 @@ public final class FacebookAdapter
 
     //region MediationInterstitialAdapter implementation.
     @Override
-    public void requestInterstitialAd(Context context,
+    public void requestInterstitialAd(final Context context,
                                       MediationInterstitialListener listener,
                                       Bundle serverParameters,
-                                      MediationAdRequest adRequest,
+                                      final MediationAdRequest adRequest,
                                       Bundle mediationExtras) {
         mInterstitialListener = listener;
-        if (!mIsSdkInitialized.getAndSet(true)) {
-            AudienceNetworkAds.initialize(context);
-        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
+        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
-        mInterstitialAd = new InterstitialAd(context, placementId);
-        mInterstitialAd.setAdListener(new InterstitialListener());
-        buildAdRequest(adRequest);
-        if (gmsVersion.get() == 0) {
-            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
-            gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
-                @Override
-                public void OnGMSVersionUpdate() {
-                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
-                    mInterstitialAd.loadAd();
+        FacebookInitializer.getInstance().initialize(context, placementId,
+                new FacebookInitializer.Listener() {
+            @Override
+            public void onInitializeSuccess() {
+                createAndLoadInterstitial(context, placementId, adRequest);
+            }
+
+            @Override
+            public void onInitializeError(String message) {
+                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                if (mInterstitialListener != null) {
+                    mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
-            });
-            gmsVersionUpdateTask.execute();
-        } else {
-            AdSettings.setMediationService("ADMOB_" + gmsVersion);
-            mInterstitialAd.loadAd();
-        }
+            }
+        });
     }
 
     @Override
@@ -274,96 +228,14 @@ public final class FacebookAdapter
     }
     //endregion
 
-    //region MediationRewardedVideoAdAdapter implementation.
-    @Override
-    public void initialize(Context context,
-                           MediationAdRequest mediationAdRequest,
-                           String unused,
-                           MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
-                           Bundle serverParameters,
-                           Bundle networkExtras) {
-        mContext = context;
-        if (!mIsSdkInitialized.getAndSet(true)) {
-            AudienceNetworkAds.initialize(context);
-        }
-        mRewardedListener = mediationRewardedVideoAdListener;
-        if (!isValidRequestParameters(context, serverParameters)) {
-            mRewardedListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
-        mPlacementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        mIsInitialized = true;
-        mRewardedListener.onInitializationSucceeded(this);
-    }
-
-    @Override
-    public void loadAd(MediationAdRequest mediationAdRequest,
-                       Bundle serverParameters,
-                       Bundle networkExtras) {
-        if (mRewardedVideoAd == null) {
-            mRewardedVideoAd = new RewardedVideoAd(mContext, mPlacementId);
-            mRewardedVideoAd.setAdListener(new RewardedVideoListener());
-        }
-
-        if (mRewardedVideoAd.isAdLoaded()) {
-            mRewardedListener.onAdLoaded(this);
-        } else {
-            buildAdRequest(mediationAdRequest);
-            if (gmsVersion.get() == 0) {
-                GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(mContext);
-                gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
-                    @Override
-                    public void OnGMSVersionUpdate() {
-                        AdSettings.setMediationService("ADMOB_" + gmsVersion);
-                        mRewardedVideoAd.loadAd(true);
-                    }
-                });
-                gmsVersionUpdateTask.execute();
-            } else {
-                AdSettings.setMediationService("ADMOB_" + gmsVersion);
-                mRewardedVideoAd.loadAd(true);
-            }
-        }
-    }
-
-    @Override
-    public void showVideo() {
-        if (mRewardedVideoAd != null && mRewardedVideoAd.isAdLoaded()) {
-            mRewardedVideoAd.show();
-            // Facebook's rewarded video listener does not have an equivalent callback for
-            // onAdOpened() but an ad is shown immediately after calling show(), so sending an
-            // onAdOpened callback.
-            mRewardedListener.onAdOpened(FacebookAdapter.this);
-            mRewardedListener.onVideoStarted(FacebookAdapter.this);
-        } else {
-            // No ads to show, but already sent onAdLoaded. Log a warning and send ad opened and
-            // ad closed callbacks.
-            Log.w(TAG, "No ads to show.");
-            if (mRewardedListener != null) {
-                mRewardedListener.onAdOpened(this);
-                mRewardedListener.onAdClosed(this);
-            }
-        }
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return mIsInitialized;
-    }
-    //endregion
-
     //region MediationNativeAdapter implementation.
     @Override
-    public void requestNativeAd(Context context,
+    public void requestNativeAd(final Context context,
                                 MediationNativeListener listener,
                                 Bundle serverParameters,
-                                NativeMediationAdRequest mediationAdRequest,
+                                final NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         mNativeListener = listener;
-        if (!mIsSdkInitialized.getAndSet(true)) {
-            AudienceNetworkAds.initialize(context);
-        }
         if (!isValidRequestParameters(context, serverParameters)) {
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
@@ -378,58 +250,28 @@ public final class FacebookAdapter
             return;
         }
 
-        String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
+        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
 
-        mMediaView = new MediaView(context);
+        FacebookInitializer.getInstance().initialize(context, placementId,
+                new FacebookInitializer.Listener() {
+            @Override
+            public void onInitializeSuccess() {
+                createAndLoadNativeAd(context, placementId, mediationAdRequest);
+            }
 
-        mNativeAd = new NativeAd(context, placementId);
-        mNativeAd.setAdListener(new NativeListener(mNativeAd, mediationAdRequest));
-        buildAdRequest(mediationAdRequest);
-        if (gmsVersion.get() == 0) {
-            GMSVersionUpdateTask gmsVersionUpdateTask = new GMSVersionUpdateTask(context);
-            gmsVersionUpdateTask.Task(new GMSVersionUpdateTask.OnGMSUpdateListener() {
-                @Override
-                public void OnGMSVersionUpdate() {
-                    AdSettings.setMediationService("ADMOB_" + gmsVersion);
-                    mNativeAd.loadAd();
+            @Override
+            public void onInitializeError(String message) {
+                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                if (mNativeListener != null) {
+                    mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
-            });
-            gmsVersionUpdateTask.execute();
-        } else {
-            AdSettings.setMediationService("ADMOB_" + gmsVersion);
-            mNativeAd.loadAd();
-        }
+            }
+        });
     }
     //endregion
 
     //region Common methods.
-
-    /**
-     * Checks whether or not the request parameters needed to load Facebook ads are null.
-     *
-     * @param context          an Android {@link Context}.
-     * @param serverParameters a {@link Bundle} containing server parameters needed to request ads
-     *                         from Facebook.
-     * @return {@code false} if any of the request parameters are null.
-     */
-    private static boolean isValidRequestParameters(Context context, Bundle serverParameters) {
-        if (context == null) {
-            Log.w(TAG, "Failed to request ad, Context is null.");
-            return false;
-        }
-
-        if (serverParameters == null) {
-            Log.w(TAG, "Failed to request ad, serverParameters is null.");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(serverParameters.getString(PLACEMENT_PARAMETER))) {
-            Log.w(TAG, "Failed to request ad, placementId is null or empty.");
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Converts an {@link AdError} code to Google Mobile Ads SDK readable error code.
      *
@@ -464,6 +306,26 @@ public final class FacebookAdapter
     //endregion
 
     //region Banner adapter utility classes.
+    private void createAndLoadBannerAd(Context context,
+                                       String placementID,
+                                       AdSize adSize,
+                                       MediationAdRequest adRequest) {
+        com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
+
+        mAdView = new AdView(context, placementID, facebookAdSize);
+        mAdView.setAdListener(new BannerListener());
+        buildAdRequest(adRequest);
+
+        RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
+                adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
+        mWrappedAdView = new RelativeLayout(context);
+        mAdView.setLayoutParams(adViewLayoutParams);
+        mWrappedAdView.addView(mAdView);
+
+        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
+        mAdView.loadAd();
+    }
+
     private class BannerListener implements AdListener {
         private BannerListener() {
         }
@@ -500,6 +362,17 @@ public final class FacebookAdapter
     //endregion
 
     //region Interstitial adapter utility classes.
+    private void createAndLoadInterstitial(Context context,
+                                           String placementID,
+                                           MediationAdRequest adRequest) {
+        mInterstitialAd = new InterstitialAd(context, placementID);
+        mInterstitialAd.setAdListener(new InterstitialListener());
+        buildAdRequest(adRequest);
+
+        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
+        mInterstitialAd.loadAd();
+    }
+
     private class InterstitialListener implements InterstitialAdListener {
         private InterstitialListener() {
         }
@@ -544,78 +417,20 @@ public final class FacebookAdapter
     }
     //endregion
 
-    //region Rewarded video adapter utility classes.
-
-    /**
-     * A {@link RewardedVideoAdListener} used to listen to rewarded video ad events from Facebook
-     * SDK and forward to Google Mobile Ads SDK using {@link #mRewardedListener}
-     */
-    private class RewardedVideoListener implements RewardedVideoAdListener {
-        private RewardedVideoListener() {
-        }
-
-        @Override
-        public void onRewardedVideoCompleted() {
-            mRewardedListener.onVideoCompleted(FacebookAdapter.this);
-            // Facebook SDK doesn't provide a reward value. The publisher is expected to
-            // override the reward in AdMob UI.
-            mRewardedListener.onRewarded(FacebookAdapter.this, new FacebookReward());
-        }
-
-        @Override
-        public void onError(Ad ad, AdError adError) {
-            String errorMessage = adError.getErrorMessage();
-            if (!TextUtils.isEmpty(errorMessage)) {
-                Log.w(TAG, errorMessage);
-            }
-
-            mRewardedListener.onAdFailedToLoad(FacebookAdapter.this, convertErrorCode(adError));
-        }
-
-        @Override
-        public void onAdLoaded(Ad ad) {
-            mRewardedListener.onAdLoaded(FacebookAdapter.this);
-        }
-
-        @Override
-        public void onAdClicked(Ad ad) {
-            mRewardedListener.onAdClicked(FacebookAdapter.this);
-            mRewardedListener.onAdLeftApplication(FacebookAdapter.this);
-        }
-
-        @Override
-        public void onLoggingImpression(Ad ad) {
-            // Google Mobile Ads SDK does its own impression tracking for rewarded video ads.
-        }
-
-        @Override
-        public void onRewardedVideoClosed() {
-            mRewardedListener.onAdClosed(FacebookAdapter.this);
-        }
-    }
-
-    /**
-     * An implementation of {@link RewardItem} that will be given to the app when a Facebook reward
-     * is granted. Because the FAN SDK doesn't provide reward amounts and types, defaults are used
-     * here.
-     */
-    private class FacebookReward implements RewardItem {
-
-        @Override
-        public String getType() {
-            // Facebook SDK does not provide a reward type.
-            return "";
-        }
-
-        @Override
-        public int getAmount() {
-            // Facebook SDK does not provide reward amount, default to 1.
-            return 1;
-        }
-    }
-    //endregion
-
     //region Native adapter utility methods and classes.
+    private void createAndLoadNativeAd(Context context,
+                                       String placementID,
+                                       NativeMediationAdRequest adRequest) {
+        mMediaView = new MediaView(context);
+
+        mNativeAd = new NativeAd(context, placementID);
+        mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
+        buildAdRequest(adRequest);
+
+        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
+        mNativeAd.loadAd();
+    }
+
     private class NativeListener implements AdListener, NativeAdListener {
         private NativeAd mNativeAd;
         private NativeMediationAdRequest mMediationAdRequest;
@@ -730,41 +545,6 @@ public final class FacebookAdapter
     private int pixelToDip(int pixel) {
         DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
         return Math.round(pixel / displayMetrics.density);
-    }
-
-    public static class GMSVersionUpdateTask extends AsyncTask<Void, Void, Integer> {
-
-        public Context context;
-        GMSVersionUpdateTask(Context context) {
-            this.context = context;
-        }
-
-        public interface OnGMSUpdateListener {
-            void OnGMSVersionUpdate();
-        }
-
-        private OnGMSUpdateListener listener;
-
-        private void Task(OnGMSUpdateListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... voids) {
-            try {
-                return context.getPackageManager().getPackageInfo("com.google.android.gms", 0).versionCode;
-            } catch (PackageManager.NameNotFoundException e) {
-                return 0;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            gmsVersion.set(result);
-            if (this.listener != null) {
-                listener.OnGMSVersionUpdate();
-            }
-        }
     }
 
     /**
@@ -1223,6 +1003,7 @@ public final class FacebookAdapter
             return (MAX_STAR_RATING * rating.getValue()) / rating.getScale();
         }
     }
+
     /**
      * The {@link FacebookAdapterNativeAdImage} class is a subclass of
      * {@link com.google.android.gms.ads.formats.NativeAd.Image} used by the {@link FacebookAdapter}
