@@ -12,7 +12,7 @@ import com.vungle.warren.AdConfig;
  */
 public final class VungleExtrasBuilder {
 
-    static final String EXTRA_USER_ID = "userId";
+    public static final String EXTRA_USER_ID = "userId";
     private static final String EXTRA_SOUND_ENABLED = "soundEnabled";
     private static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
     private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
@@ -54,7 +54,7 @@ public final class VungleExtrasBuilder {
         return mBundle;
     }
 
-    static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
+    public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
         AdConfig adConfig = new AdConfig();
         if (networkExtras != null) {
             adConfig.setMuted(!networkExtras.getBoolean(EXTRA_SOUND_ENABLED, true));

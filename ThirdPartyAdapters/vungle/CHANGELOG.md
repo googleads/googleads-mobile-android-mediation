@@ -1,5 +1,9 @@
 # Vungle Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 6.3.24.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
 ## 6.3.24.0
 - Verified compatibility with Vungle SDK 6.3.24.
 
