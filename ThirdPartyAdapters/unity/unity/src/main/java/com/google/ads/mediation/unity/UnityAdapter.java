@@ -30,8 +30,6 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 
 import com.unity3d.ads.UnityAds;
 
@@ -42,32 +40,8 @@ import java.lang.ref.WeakReference;
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
-public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationInterstitialAdapter,
-        OnContextChangedListener, MediationBannerAdapter {
-    public static final String TAG = UnityAdapter.class.getSimpleName();
-
-    /**
-     * Key to obtain Game ID, required for loading Unity Ads.
-     */
-    private static final String KEY_GAME_ID = "gameId";
-
-    /**
-     * Key to obtain Placement ID, used to set the type of ad to be shown. Unity Ads has changed
-     * the name from Zone ID to Placement ID in Unity Ads SDK 2.0.0. To maintain backwards
-     * compatibility the key is not changed.
-     */
-    private static final String KEY_PLACEMENT_ID = "zoneId";
-
-    /**
-     * Flag to keep track of whether or not the Unity rewarded video ad adapter has been
-     * initialized.
-     */
-    private boolean mIsRewardedVideoAdAdapterInitialized;
-
-    /**
-     * Flag to determine whether or not the adapter is loading ads.
-     */
-    private boolean mIsLoading;
+public class UnityAdapter extends UnityMediationAdapter
+        implements MediationInterstitialAdapter, MediationBannerAdapter, OnContextChangedListener {
 
     /**
      * Mediation interstitial listener used to forward events from {@link UnitySingleton} to
@@ -76,20 +50,9 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
     private MediationInterstitialListener mMediationInterstitialListener;
 
     /**
-     * Mediation rewarded video ad listener used to forward events from {@link UnitySingleton}
-     * to Google Mobile Ads SDK.
-     */
-    private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
-
-    /**
      * Placement ID used to determine what type of ad to load.
      */
     private String mPlacementId;
-
-    /**
-     * An Android {@link Activity} weak reference used to show ads.
-     */
-    private WeakReference<Activity> mActivityWeakReference;
 
     /**
      * Placement ID for banner if requested.
@@ -111,6 +74,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
      * Ads SDK.
      */
     private UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
+
         @Override
         public String getPlacementId() {
             return mPlacementId;
@@ -120,24 +84,15 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         public void onUnityAdsReady(String placementId) {
             // Unity Ads is ready to show ads for the given placementId. Send Ad Loaded event if the
             // adapter is currently loading ads.
-            if (mIsLoading) {
-                if (mMediationInterstitialListener != null) {
-                    mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
-                    mIsLoading = false;
-                } else if (mMediationRewardedVideoAdListener != null) {
-                    mMediationRewardedVideoAdListener.onAdLoaded(UnityAdapter.this);
-                    mIsLoading = false;
-                }
+            if (placementId.equals(getPlacementId()) && mMediationInterstitialListener != null) {
+                mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
             }
         }
 
         @Override
         public void onUnityAdsStart(String placementId) {
-            // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
-            // video adapter.
-            if (mMediationRewardedVideoAdListener != null) {
-                mMediationRewardedVideoAdListener.onVideoStarted(UnityAdapter.this);
-            }
+            // Unity Ads video ad started playing. Google Mobile Ads SDK does not support
+            // callbacks for Interstitial ads when they start playing.
         }
 
         @Override
@@ -149,12 +104,6 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
                 // user is leaving the application when a click is received, forwarding an on ad
                 // left application event.
                 mMediationInterstitialListener.onAdLeftApplication(UnityAdapter.this);
-            } else if (mMediationRewardedVideoAdListener != null) {
-                mMediationRewardedVideoAdListener.onAdClicked(UnityAdapter.this);
-                // Unity Ads doesn't provide a "leaving application" event, so assuming that the
-                // user is leaving the application when a click is received, forwarding an on ad
-                // left application event.
-                mMediationRewardedVideoAdListener.onAdLeftApplication(UnityAdapter.this);
             }
         }
 
@@ -172,33 +121,23 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             // Unity Ads ad closed.
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
-            } else if (mMediationRewardedVideoAdListener != null) {
-                // Reward is provided only if the ad is watched completely.
-                if (finishState == UnityAds.FinishState.COMPLETED) {
-                    mMediationRewardedVideoAdListener.onVideoCompleted(
-                            UnityAdapter.this);
-                    // Unity Ads doesn't provide a reward value. The publisher is expected to
-                    // override the reward in AdMob console.
-                    mMediationRewardedVideoAdListener.onRewarded(
-                            UnityAdapter.this, new UnityReward());
-                }
-                mMediationRewardedVideoAdListener.onAdClosed(UnityAdapter.this);
             }
         }
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            // Send Ad Failed to load event only if the adapter is currently loading ads.
-            if (mIsLoading) {
-                if (mMediationInterstitialListener != null) {
-                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                            AdRequest.ERROR_CODE_NO_FILL);
-                    mIsLoading = false;
-                } else if (mMediationRewardedVideoAdListener != null) {
-                    mMediationRewardedVideoAdListener.onAdFailedToLoad(UnityAdapter.this,
-                            AdRequest.ERROR_CODE_NO_FILL);
-                    mIsLoading = false;
-                }
+            // Send Ad Failed to load event.
+            if (placementId.equals(getPlacementId()) && mMediationInterstitialListener != null) {
+                Log.e(TAG, "Failed to load Interstitial ad from Unity Ads: " +
+                        unityAdsError.toString());
+                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_NO_FILL);
+            }
+
+            if ((placementId.equals(bannerPlacementId)) && bannerListener != null) {
+                Log.e(TAG, "Failed to load Banner ad from Unity Ads: " + unityAdsError.toString());
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_NO_FILL);
             }
         }
     };
@@ -211,6 +150,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         @Override
         public void onUnityBannerLoaded(String placementId, View view) {
+            // Unity Ads Banner ad has been loaded and is ready to be shown.
             bannerView = view;
             if (bannerListener != null) {
                 bannerListener.onAdLoaded(UnityAdapter.this);
@@ -219,11 +159,13 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         @Override
         public void onUnityBannerUnloaded(String placementId) {
+            // Unity Ads Banner ad has been unloaded and is to be destroyed.
             bannerView = null;
         }
 
         @Override
         public void onUnityBannerShow(String placementId) {
+            // Unity Ads Banner ad is visible to the user.
             if (bannerListener != null) {
                 bannerListener.onAdOpened(UnityAdapter.this);
             }
@@ -231,6 +173,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         @Override
         public void onUnityBannerClick(String placementId) {
+            // Unity Ads Banner ad has been clicked.
             if (bannerListener != null) {
                 bannerListener.onAdClicked(UnityAdapter.this);
             }
@@ -238,6 +181,7 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         @Override
         public void onUnityBannerHide(String placementId) {
+            // Unity Ads Banner ad is hidden from the user.
             if (bannerListener != null) {
                 bannerListener.onAdClosed(UnityAdapter.this);
             }
@@ -245,8 +189,11 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         @Override
         public void onUnityBannerError(String message) {
+            // Unity Ads SDK encountered an error.
+            Log.w(TAG, "Failed to load Banner ad from Unity Ads: " + message);
             if (bannerListener != null) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
             }
         }
     };
@@ -310,11 +257,6 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         if (!isValidContext(context)) {
-            return;
-        }
-
-        // Check if the Unity Ads initialized successfully.
-        if (!UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context, gameId)) {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -322,12 +264,17 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             return;
         }
 
-        // Storing a weak reference to the Activity.
-        mActivityWeakReference = new WeakReference<>((Activity) context);
+        // Check if the Unity Ads initialized successfully.
+        if (UnityAds.isInitialized()) {
+            // Storing a weak reference to the Activity.
+            mActivityWeakReference = new WeakReference<>((Activity) context);
 
-        // Unity Ads initialized successfully, request UnitySingleton to load ads for mPlacementId.
-        mIsLoading = true;
-        UnitySingleton.loadAd(mUnityAdapterDelegate);
+            // Unity Ads initialized successfully, request UnitySingleton to load an ad.
+            UnitySingleton.loadAd(mUnityAdapterDelegate);
+        } else {
+            UnitySingleton.initializeUnityAds(mUnityAdapterDelegate,
+                    (Activity) context, gameId, mPlacementId);
+        }
     }
 
     @Override
@@ -339,92 +286,13 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         Activity activity = mActivityWeakReference.get();
         if (activity == null) {
             // Activity is null, logging a warning and sending ad closed callback.
-            Log.w(TAG, "An activity context is required to show Unity Ads, please call "
-                    + "RewardedVideoAd#resume(Context) in your Activity's onResume.");
+            Log.w(TAG, "An activity context is required to show Unity Ads.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
             return;
         }
 
         // Request UnitySingleton to show interstitial ads.
         UnitySingleton.showAd(mUnityAdapterDelegate, activity);
-    }
-
-    @Override
-    public void initialize(Context context,
-                           MediationAdRequest mediationAdRequest,
-                           String userId,
-                           MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
-                           Bundle serverParameters,
-                           Bundle networkExtras) {
-        mMediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
-
-        String gameId = serverParameters.getString(KEY_GAME_ID);
-        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, mPlacementId)) {
-            if (mMediationRewardedVideoAdListener != null) {
-                mMediationRewardedVideoAdListener.onInitializationFailed(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-            return;
-        }
-
-        if (!isValidContext(context)) {
-            return;
-        }
-
-        // Check if the Unity Ads initialized.
-        if (!UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context, gameId)) {
-            if (mMediationRewardedVideoAdListener != null) {
-                mMediationRewardedVideoAdListener.onInitializationFailed(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-            return;
-        }
-
-        // Storing a weak reference to the Activity.
-        mActivityWeakReference = new WeakReference<>((Activity) context);
-
-        mIsRewardedVideoAdAdapterInitialized = true;
-        mMediationRewardedVideoAdListener.onInitializationSucceeded(this);
-    }
-
-    @Override
-    public void loadAd(MediationAdRequest mediationAdRequest,
-                       Bundle serverParameters,
-                       Bundle networkExtras) {
-        // Request UnitySingleton to load ads for mPlacementId.
-        mIsLoading = true;
-        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(serverParameters.getString(KEY_GAME_ID), mPlacementId)) {
-            mMediationRewardedVideoAdListener.onAdFailedToLoad(
-                    UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
-        UnitySingleton.loadAd(mUnityAdapterDelegate);
-    }
-
-    @Override
-    public void showVideo() {
-        // Unity Ads does not have an ad opened callback. Sending ad opened before showing the ad.
-        mMediationRewardedVideoAdListener.onAdOpened(UnityAdapter.this);
-
-        Activity activity = mActivityWeakReference.get();
-        if (activity == null) {
-            // Activity is null, logging a warning and sending ad closed callback.
-            Log.w(TAG, "An activity context is required to show Unity Ads, please call "
-                    + "RewardedVideoAd#resume(Context) in your Activity's onResume.");
-            mMediationRewardedVideoAdListener.onAdClosed(UnityAdapter.this);
-            return;
-        }
-
-        // Request UnitySingleton to show video ads.
-        UnitySingleton.showAd(mUnityAdapterDelegate, activity);
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return mIsRewardedVideoAdAdapterInitialized && UnityAds.isInitialized();
     }
 
     @Override
@@ -435,18 +303,6 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
     @Override
     public void onResume() {}
-
-    @Override
-    public void onContextChanged(Context context) {
-        if (!(context instanceof Activity)) {
-            Log.w(TAG, "Context is not an Activity. Unity Ads requires an Activity context to show "
-                    + "ads.");
-            return;
-        }
-
-        // Storing a weak reference of the current Activity to be used when showing an ad.
-        mActivityWeakReference = new WeakReference<>((Activity) context);
-    }
 
     @Override
     public void requestBannerAd(Context context,
@@ -468,12 +324,6 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
         }
 
         if (!isValidContext(context)) {
-            return;
-        }
-
-        // Even though we are a banner request, we still need to initialize UnityAds.
-        // Check if the Unity Ads initialized successfully.
-        if (!UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context, gameId)) {
             if (bannerListener != null) {
                 bannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -481,10 +331,16 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
             return;
         }
 
-        // Storing a weak reference to the Activity.
-        mActivityWeakReference = new WeakReference<>((Activity) context);
-
-        UnitySingleton.loadBannerAd(bannerDelegate);
+        // Even though we are a banner request, we still need to initialize UnityAds.
+        // Check if the Unity Ads initialized successfully.
+        if (UnityAds.isInitialized()) {
+            // Storing a weak reference to the Activity.
+            mActivityWeakReference = new WeakReference<>((Activity) context);
+            UnitySingleton.loadBannerAd(bannerDelegate);
+        } else {
+            UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context,
+                    gameId, bannerPlacementId, bannerDelegate);
+        }
     }
 
     @Override
