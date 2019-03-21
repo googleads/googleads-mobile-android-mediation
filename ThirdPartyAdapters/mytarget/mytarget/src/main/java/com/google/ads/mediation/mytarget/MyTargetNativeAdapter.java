@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAdView;
@@ -35,6 +36,7 @@ import com.my.target.nativeads.views.MediaAdView;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +55,25 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     private static final String TAG = "MyTargetNativeAdapter";
     @Nullable
     private MediationNativeListener customEventNativeListener;
+
+	private static int findMediaAdViewPosition(@NonNull List<View> clickableViews,
+                                               @NonNull MediaAdView mediaAdView) {
+		for (int i = 0; i < clickableViews.size(); i++) {
+			View view = clickableViews.get(i);
+			if (view instanceof MediaView) {
+				MediaView mediaView = (MediaView) view;
+				int childCount = mediaView.getChildCount();
+				for (int j = 0; j < childCount; j++) {
+					View innerView = mediaView.getChildAt(j);
+					if (innerView == mediaAdView) {
+						return i;
+					}
+				}
+				break;
+			}
+		}
+		return -1;
+	}
 
     @Override
     public void requestNativeAd(Context context,
@@ -236,6 +257,11 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             containerView.post(new Runnable() {
                 @Override
                 public void run() {
+					int mediaPosition = findMediaAdViewPosition(clickableViews, mediaAdView);
+					if (mediaPosition >=0) {
+						clickableViews.remove(mediaPosition);
+						clickableViews.add(mediaAdView);
+					}
                     nativeAd.registerView(containerView, clickableViews);
                 }
             });
@@ -366,6 +392,11 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             containerView.post(new Runnable() {
                 @Override
                 public void run() {
+                    int mediaPosition = findMediaAdViewPosition(clickableViews, mediaAdView);
+                    if (mediaPosition >=0) {
+						clickableViews.remove(mediaPosition);
+                        clickableViews.add(mediaAdView);
+                    }
                     nativeAd.registerView(containerView, clickableViews);
                 }
             });
@@ -447,6 +478,11 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             containerView.post(new Runnable() {
                 @Override
                 public void run() {
+					int mediaPosition = findMediaAdViewPosition(clickableViews, mediaAdView);
+					if (mediaPosition >=0) {
+						clickableViews.remove(mediaPosition);
+						clickableViews.add(mediaAdView);
+					}
                     nativeAd.registerView(containerView, clickableViews);
                 }
             });
