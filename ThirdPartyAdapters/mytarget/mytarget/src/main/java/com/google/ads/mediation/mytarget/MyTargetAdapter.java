@@ -25,10 +25,8 @@ import java.util.GregorianCalendar;
 /**
  * Mediation adapter for myTarget.
  */
-public class MyTargetAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
-
-    @NonNull
-    private static final String TAG = "MyTargetAdapter";
+public class MyTargetAdapter extends MyTargetMediationAdapter
+        implements MediationBannerAdapter, MediationInterstitialAdapter {
 
     @Nullable
     private MyTargetView mMyTargetView;
@@ -252,7 +250,7 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-            Log.d(TAG, "Banner mediation Ad failed to load: " + reason);
+            Log.i(TAG, "Banner mediation Ad failed to load: " + reason);
             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
@@ -288,7 +286,7 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-            Log.d(TAG, "Interstitial mediation Ad failed to load: " + reason);
+            Log.i(TAG, "Interstitial mediation Ad failed to load: " + reason);
             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
