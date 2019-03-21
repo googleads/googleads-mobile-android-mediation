@@ -1,5 +1,9 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 12.2.0.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
 ## 12.2.0.0
 - Verified compatibility with tapjoy SDK version 12.2.0.
 
