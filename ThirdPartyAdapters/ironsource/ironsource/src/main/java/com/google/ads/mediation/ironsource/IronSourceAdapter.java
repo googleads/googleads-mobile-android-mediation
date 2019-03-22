@@ -33,8 +33,6 @@ public class IronSourceAdapter
      */
     private String mInstanceID;
 
-    private static boolean mDidInitInterstitial = false;
-
     //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
@@ -57,29 +55,26 @@ public class IronSourceAdapter
         try {
             String appKey = serverParameters.getString(IronSourceAdapterUtils.KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
-                Log.e(IronSourceAdapterUtils.TAG, "IronSource initialization failed, make sure " +
-                        "that the '" + IronSourceAdapterUtils.KEY_APP_KEY + "' server parameter " +
-                        "is added");
+                Log.w(IronSourceAdapterUtils.TAG,
+                        "Initialization Failed: Missing or Invalid App Key.");
                 onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 return;
             }
 
-            this.mInstanceID = serverParameters.getString(IronSourceAdapterUtils.KEY_INSTANCE_ID, "0");
+            this.mInstanceID = serverParameters.getString(
+                    IronSourceAdapterUtils.KEY_INSTANCE_ID, "0");
 
             IronSource.setISDemandOnlyInterstitialListener(this);
-            if (!mDidInitInterstitial) {
+            if (!IronSourceAdapterUtils.isIronSourceInitialized(IronSource.AD_UNIT.INTERSTITIAL)) {
                 IronSourceAdapterUtils.initIronSourceSDK((Activity) context, appKey,
                         IronSource.AD_UNIT.INTERSTITIAL);
-                mDidInitInterstitial = true;
             }
 
             Log.d(IronSourceAdapterUtils.TAG, "Load IronSource interstitial ad for instance: " +
                     this.mInstanceID);
             IronSource.loadISDemandOnlyInterstitial(this.mInstanceID);
-
         } catch (Exception e) {
-            Log.e(IronSourceAdapterUtils.TAG, String.format("IronSource initialization failed, " +
-                    "Error: %s", e.getMessage()));
+            Log.w(IronSourceAdapterUtils.TAG, "Initialization Failed.", e);
             onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
@@ -195,8 +190,13 @@ public class IronSourceAdapter
         Log.e(IronSourceAdapterUtils.TAG, String.format("IronSource Interstitial failed to show " +
                 "for instance %s, Error: %s", this.mInstanceID, ironSourceError.getErrorMessage()));
         if (mInterstitialListener != null) {
-            mInterstitialListener.onAdOpened(IronSourceAdapter.this);
-            mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+            IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {
+                @Override
+                public void run() {
+                    mInterstitialListener.onAdOpened(IronSourceAdapter.this);
+                    mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+                }
+            });
         }
     }
 
