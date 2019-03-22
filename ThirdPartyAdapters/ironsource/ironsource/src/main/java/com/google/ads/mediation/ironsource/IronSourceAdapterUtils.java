@@ -26,7 +26,7 @@ public class IronSourceAdapterUtils {
     static final String KEY_APP_KEY = "appKey";
 
     /**
-     * Key to obtain the IronSource Instance ID, required to shot IronSource ads.
+     * Key to obtain the IronSource Instance ID, required to show IronSource ads.
      */
     static final String KEY_INSTANCE_ID = "instanceId";
 
@@ -48,13 +48,13 @@ public class IronSourceAdapterUtils {
     static void initIronSourceSDK(Activity activity,
                                   String appKey,
                                   IronSource.AD_UNIT adUnit) {
-        if (!isIronSourceInitialized(adUnit)) {
+        if (isIronSourceInitialized(adUnit)) {
+            Log.d(IronSourceAdapterUtils.TAG,
+                    adUnit.toString() + " has already been initialized.");
+        } else {
             IronSource.setMediationType(MEDIATION_NAME);
             IronSource.initISDemandOnly(activity, appKey, adUnit);
             mInitialized.add(adUnit);
-        } else {
-            Log.d(IronSourceAdapterUtils.TAG,
-                    adUnit.toString() + " has already been initialized.");
         }
     }
 
