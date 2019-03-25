@@ -160,14 +160,13 @@ public class IronSourceMediationAdapter extends Adapter
                 }
             }
         } else {
-
-                String appKey = serverParameters.getString(IronSourceAdapterUtils.KEY_APP_KEY);
-                if (TextUtils.isEmpty(appKey)) {
-                    String logMessage = "Initialization failed: Missing or Invalid App Key.";
-                    Log.e(IronSourceAdapterUtils.TAG, logMessage);
-                    mMediationAdLoadCallback.onFailure(logMessage);
-                    return;
-                }
+            String appKey = serverParameters.getString(IronSourceAdapterUtils.KEY_APP_KEY);
+            if (TextUtils.isEmpty(appKey)) {
+                String logMessage = "Initialization failed: Missing or Invalid App Key.";
+                Log.e(IronSourceAdapterUtils.TAG, logMessage);
+                mMediationAdLoadCallback.onFailure(logMessage);
+                return;
+            }
 
             try {
                 WeakReference<IronSourceRewardedAvailabilityListener> weakListener =
