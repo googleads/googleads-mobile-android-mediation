@@ -47,8 +47,6 @@ public class AdColonyManager {
         String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
         ArrayList<String> newZoneList = parseZoneList(serverParams);
 
-        boolean needToConfigure = false;
-
         if (!(context instanceof Activity || context instanceof Application)) {
             Log.w(TAG, "Context must be of type Activity or Application.");
             return false;
@@ -69,15 +67,14 @@ public class AdColonyManager {
             if (!configuredZones.contains(zone)) {
                 // Not contained in our list.
                 configuredZones.add(zone);
-                needToConfigure = true;
+                isConfigured = false;
             }
         }
 
         // Update app-options if necessary.
         AdColonyAppOptions appOptions = buildAppOptions(adRequest, networkExtras);
-        AdColony.setAppOptions(appOptions);
 
-        if (isConfigured && !needToConfigure) {
+        if (isConfigured) {
             AdColony.setAppOptions(appOptions);
         } else {
             // We are requesting zones that we haven't configured with yet.
@@ -99,8 +96,6 @@ public class AdColonyManager {
         String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
         ArrayList<String> newZoneList = parseZoneList(serverParams);
 
-        boolean needToConfigure = false;
-
         if (!(context instanceof Activity || context instanceof Application)) {
             Log.w(TAG, "Context must be of type Activity or Application.");
             return false;
@@ -121,13 +116,14 @@ public class AdColonyManager {
             if (!configuredZones.contains(zone)) {
                 // Not contained in our list.
                 configuredZones.add(zone);
-                needToConfigure = true;
+                isConfigured = false;
             }
         }
 
         // Update app-options if necessary.
         AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
-        if (isConfigured && !needToConfigure) {
+
+        if (isConfigured) {
             AdColony.setAppOptions(appOptions);
         } else {
             // We are requesting zones that we haven't configured with yet.
