@@ -37,8 +37,6 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
 
     private AdColonyInterstitial mAdColonyInterstitial;
 
-
-
     /**
      * {@link Adapter} implementation
      */

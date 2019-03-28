@@ -35,7 +35,6 @@ public class AdColonyBundleBuilder {
         bundle.putString("user_id", _userId);
         bundle.putBoolean("show_pre_popup", _showPreAdPopup);
         bundle.putBoolean("show_post_popup", _showPostAdPopup);
-
         return bundle;
     }
 }
