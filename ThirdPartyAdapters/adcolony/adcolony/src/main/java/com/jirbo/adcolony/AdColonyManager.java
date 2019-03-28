@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.appOptions;
+
 /**
  * A helper class used by the {@link AdColonyAdapter}.
  */
@@ -147,19 +149,18 @@ public class AdColonyManager {
      */
     private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
                                                Bundle networkExtras) {
-        AdColonyAppOptions options = new AdColonyAppOptions();
+        AdColonyAppOptions options;
+
+        if (appOptions != null) {
+            options = appOptions;
+        } else {
+            options = new AdColonyAppOptions();
+        }
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
-            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
             if (userId != null) {
                 options.setUserID(userId);
-            }
-            if (gdprConsentString != null) {
-                options.setGDPRConsentString(gdprConsentString);
-            }
-            if (networkExtras.containsKey("gdpr_required")) {
-                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
             }
         }
 
@@ -210,19 +211,18 @@ public class AdColonyManager {
      */
     private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
         Bundle networkExtras = adConfiguration.getMediationExtras();
-        AdColonyAppOptions options = new AdColonyAppOptions();
+        AdColonyAppOptions options;
+
+        if (appOptions != null) {
+            options = appOptions;
+        } else {
+            options = new AdColonyAppOptions();
+        }
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
-            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
             if (userId != null) {
                 options.setUserID(userId);
-            }
-            if (gdprConsentString != null) {
-                options.setGDPRConsentString(gdprConsentString);
-            }
-            if (networkExtras.containsKey("gdpr_required")) {
-                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
             }
         }
 
