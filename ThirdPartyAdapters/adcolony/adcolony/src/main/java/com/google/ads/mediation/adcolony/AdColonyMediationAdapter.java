@@ -29,8 +29,7 @@ import java.util.List;
 
 public class AdColonyMediationAdapter extends Adapter implements MediationRewardedAd {
     private static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
-
-    public static AdColonyAppOptions appOptions;
+    private static AdColonyAppOptions appOptions;
 
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
     private MediationRewardedAdCallback mRewardedAdCallback;
@@ -190,10 +189,13 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
     }
 
     public static void setAppOptions(AdColonyAppOptions options) {
-        appOptions = new AdColonyAppOptions();
-        appOptions.setGDPRRequired(options.getGDPRRequired());
-        appOptions.setGDPRConsentString(options.getGDPRConsentString());
+        appOptions = options;
     }
+
+    public static AdColonyAppOptions getAppOptions() {
+        return appOptions;
+    }
+
 
     @Override
     public void showAd(Context context) {

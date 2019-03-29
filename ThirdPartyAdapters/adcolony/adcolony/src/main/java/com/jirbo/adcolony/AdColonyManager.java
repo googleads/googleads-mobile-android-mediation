@@ -11,6 +11,7 @@ import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyUserMetadata;
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
+import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -18,8 +19,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.appOptions;
 
 /**
  * A helper class used by the {@link AdColonyAdapter}.
@@ -149,11 +148,8 @@ public class AdColonyManager {
      */
     private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
                                                Bundle networkExtras) {
-        AdColonyAppOptions options;
-
-        if (appOptions != null) {
-            options = appOptions;
-        } else {
+        AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
+        if (options == null) {
             options = new AdColonyAppOptions();
         }
 
@@ -211,11 +207,8 @@ public class AdColonyManager {
      */
     private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
         Bundle networkExtras = adConfiguration.getMediationExtras();
-        AdColonyAppOptions options;
-
-        if (appOptions != null) {
-            options = appOptions;
-        } else {
+        AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
+        if (options == null) {
             options = new AdColonyAppOptions();
         }
 
