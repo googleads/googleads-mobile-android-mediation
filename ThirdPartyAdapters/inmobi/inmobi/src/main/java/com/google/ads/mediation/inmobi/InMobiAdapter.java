@@ -1,4 +1,3 @@
-
 package com.google.ads.mediation.inmobi;
 
 import android.app.Activity;
@@ -22,9 +21,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
 import com.inmobi.ads.InMobiBanner.AnimationType;
@@ -41,28 +37,23 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * InMobi Adapter for AdMob Mediation used to load and show banner, interstitial, rewarded video and
+ * InMobi Adapter for AdMob Mediation used to load and show banner, interstitial and
  * native ads. This class should not be used directly by publishers.
  */
-public final class InMobiAdapter implements MediationBannerAdapter, MediationInterstitialAdapter,
-        MediationRewardedVideoAdAdapter, MediationNativeAdapter {
+public final class InMobiAdapter extends InMobiMediationAdapter
+        implements MediationBannerAdapter, MediationInterstitialAdapter, MediationNativeAdapter {
     private static final String TAG = InMobiAdapter.class.getSimpleName();
 
     // Callback listeners.
     private MediationBannerListener mBannerListener;
     private MediationInterstitialListener mInterstitialListener;
-    private MediationRewardedVideoAdListener mRewardedVideoAdListener;
     private MediationNativeListener mNativeListener;
 
     private InMobiInterstitial mAdInterstitial;
-    private InMobiInterstitial mAdRewarded;
     private FrameLayout mWrappedAdView;
 
     private static Boolean sDisableHardwareFlag = false;
     private static Boolean sIsAppInitialized = false;
-
-    private String mKey = "";
-    private String mValue = "";
 
     private NativeMediationAdRequest mNativeMedAdReq;
 
@@ -70,23 +61,8 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
 
     private InMobiNative mAdNative;
 
-    /**
-     * Flag to keep track of whether or not the InMobi rewarded video ad adapter has been
-     * initialized.
-     */
-    private boolean mIsRewardedVideoAdAdapterInitialized;
-
-    public static Boolean IsAppInitialized() {
+    public static Boolean isAppInitialized() {
         return sIsAppInitialized;
-    }
-
-    private void isTaggedForChildDirectedTreatment(MediationAdRequest mediationAdRequest,
-                                                   HashMap<String, String> paramMap) {
-        if (mediationAdRequest.taggedForChildDirectedTreatment()
-                == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-            paramMap.put("coppa", "1");
-        } else
-            paramMap.put("coppa", "0");
     }
 
     /**
@@ -142,10 +118,11 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                 MediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         if (!sIsAppInitialized && serverParameters != null) {
-            Log.d(TAG, serverParameters.getString("accountid"));
-            Log.d(TAG, serverParameters.getString("placementid"));
+            Log.d(TAG, serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID));
+            Log.d(TAG, serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
 
-            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
+            InMobiSdk.init(context, serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID),
+                    InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
         this.mBannerListener = listener;
@@ -157,10 +134,10 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         if (serverParameters != null) {
             if (context instanceof Activity) {
                 adView = new InMobiBanner((Activity) context,
-                        Long.parseLong(serverParameters.getString("placementid")));
+                        Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID)));
             } else {
                 adView = new InMobiBanner(context,
-                        Long.parseLong(serverParameters.getString("placementid")));
+                        Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID)));
             }
         } else {
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -177,11 +154,8 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         }
 
         // Create request params.
-        HashMap<String, String> paramMap = new HashMap<>();
-        paramMap.put("tp", "c_admob");
-
-        isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
-
+        HashMap<String, String> paramMap =
+                InMobiAdapterUtils.createInMobiParameterMap(mediationAdRequest);
         adView.setExtras(paramMap);
 
         if (mediationExtras == null) {
@@ -221,7 +195,8 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             public void onAdLoadFailed(InMobiBanner inMobiBanner,
                                        InMobiAdRequestStatus requestStatus) {
                 mBannerListener.onAdFailedToLoad(
-                        InMobiAdapter.this, getAdRequestErrorCode(requestStatus.getStatusCode()));
+                        InMobiAdapter.this,
+                        getAdRequestErrorCode(requestStatus.getStatusCode()));
                 Log.d(TAG, "onAdLoadFailed: " + requestStatus.getMessage());
             }
 
@@ -248,13 +223,13 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         if (InMobiAdapter.sDisableHardwareFlag) {
             adView.disableHardwareAcceleration();
         }
-       /*
-        * We wrap the ad View in a FrameLayout to ensure that it's the right
-        * size. Without this the ad takes up the maximum width possible,
-        * causing artifacts on high density screens (like the Galaxy Nexus) or
-        * in landscape view. If the underlying library sets the appropriate
-        * size instead of match_parent, this wrapper can be removed.
-        */
+        /*
+         * We wrap the ad View in a FrameLayout to ensure that it's the right
+         * size. Without this the ad takes up the maximum width possible,
+         * causing artifacts on high density screens (like the Galaxy Nexus) or
+         * in landscape view. If the underlying library sets the appropriate
+         * size instead of match_parent, this wrapper can be removed.
+         */
         mWrappedAdView = new FrameLayout(context);
         mWrappedAdView.setLayoutParams(wrappedLayoutParams);
         adView.setLayoutParams(
@@ -262,7 +237,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                         mediationAdSize.getWidthInPixels(context),
                         mediationAdSize.getHeightInPixels(context)));
         mWrappedAdView.addView(adView);
-        InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
+        InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
         adView.load();
     }
 
@@ -281,14 +256,16 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                       Bundle mediationExtras) {
 
         if (!sIsAppInitialized) {
-            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
+            InMobiSdk.init(context, serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID),
+                    InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
 
         this.mInterstitialListener = listener;
 
         mAdInterstitial = new InMobiInterstitial(context, Long.parseLong(serverParameters
-                .getString("placementid")), new  InterstitialAdEventListener() {
+                .getString(InMobiAdapterUtils.KEY_PLACEMENT_ID)),
+                new InterstitialAdEventListener() {
 
             @Override
             public void onUserLeftApplication(InMobiInterstitial inMobiInterstitial) {
@@ -305,7 +282,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                     for (Object reward : rewards.keySet()) {
                         String key = reward.toString();
                         String value = rewards.get(key).toString();
-                        Log.d("Rewards: ", key + ":" + value);
+                        Log.d("Rewards: ", key + ": " + value);
                     }
                 }
             }
@@ -331,7 +308,8 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             public void onAdLoadFailed(InMobiInterstitial inMobiInterstitial,
                                        InMobiAdRequestStatus requestStatus) {
                 mInterstitialListener.onAdFailedToLoad(
-                        InMobiAdapter.this, getAdRequestErrorCode(requestStatus.getStatusCode()));
+                        InMobiAdapter.this,
+                        getAdRequestErrorCode(requestStatus.getStatusCode()));
                 Log.d(TAG, "onAdLoadFailed: " + requestStatus.getMessage());
 
             }
@@ -368,17 +346,14 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         }
 
         // request params
-        HashMap<String, String> paramMap = new HashMap<>();
-        paramMap.put("tp", "c_admob");
-
-        isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
-
+        HashMap<String, String> paramMap =
+                InMobiAdapterUtils.createInMobiParameterMap(mediationAdRequest);
         mAdInterstitial.setExtras(paramMap);
 
         if (InMobiAdapter.sDisableHardwareFlag) {
             mAdInterstitial.disableHardwareAcceleration();
         }
-        InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
+        InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
         mAdInterstitial.load();
     }
 
@@ -391,161 +366,6 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
     }
     //endregion
 
-    //region MediationRewardedVideoAdAdapter implementation.
-    @Override
-    public void initialize(Context context,
-                           MediationAdRequest mediationAdRequest,
-                           String unused,
-                           MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
-                           Bundle serverParameters,
-                           Bundle networkExtras) {
-        Log.d(TAG, "initialize called from InMobiAdapter.");
-        this.mRewardedVideoAdListener = mediationRewardedVideoAdListener;
-        String accountId = serverParameters.getString("accountid");
-
-        if (!sIsAppInitialized) {
-            InMobiSdk.init(context, accountId, InMobiConsent.getConsentObj());
-            sIsAppInitialized = true;
-        }
-
-        String placementId = serverParameters.getString("placementid");
-        mAdRewarded = new InMobiInterstitial(context, Long.parseLong(placementId), new  InterstitialAdEventListener(){
-            @Override
-            public void onRewardsUnlocked(InMobiInterstitial inMobiInterstitial,
-                                          Map<Object, Object> rewards) {
-                Log.d(TAG, "InMobi RewardedVideo onRewardsUnlocked.");
-                if (null != rewards) {
-                    for (Object reward : rewards.keySet()) {
-                        mKey = reward.toString();
-                        mValue = rewards.get(mKey).toString();
-                        Log.d("Rewards: ", mKey + ":" + mValue);
-                    }
-                }
-                mRewardedVideoAdListener.onVideoCompleted(InMobiAdapter.this);
-                mRewardedVideoAdListener.onRewarded(InMobiAdapter.this, new RewardItem() {
-                    @Override
-                    public String getType() {
-                        return mKey;
-                    }
-                    @Override
-                    public int getAmount() {
-                        if (null != mValue && !"".equalsIgnoreCase(mValue)) {
-                            try {
-                                return Integer.parseInt(mValue);
-                            } catch (NumberFormatException nfe) {
-                                Log.e(TAG, "Reward value should be of type " +
-                                        "integer:" + nfe.getMessage());
-                                nfe.printStackTrace();
-                                return 0;
-                            }
-                        } else
-                            return 0;
-                    }
-                });
-            }
-
-            @Override
-            public void onAdDisplayFailed(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "Ad Display failed.");
-            }
-
-            @Override
-            public void onAdWillDisplay(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "Ad Will Display.");
-            }
-
-            @Override
-            public void onAdDisplayed(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "onAdDisplayed");
-                mRewardedVideoAdListener.onAdOpened(InMobiAdapter.this);
-                mRewardedVideoAdListener.onVideoStarted(InMobiAdapter.this);
-            }
-
-            @Override
-            public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "onAdDismissed");
-                mRewardedVideoAdListener.onAdClosed(InMobiAdapter.this);
-            }
-
-            @Override
-            public void onAdClicked(InMobiInterstitial inMobiInterstitial, Map<Object,
-                    Object> map) {
-                Log.d(TAG,
-                        "onInterstitialClicked called");
-                mRewardedVideoAdListener.onAdClicked(InMobiAdapter.this);
-            }
-
-            @Override
-            public void onAdLoadSucceeded(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "onAdLoadSucceeded");
-                mRewardedVideoAdListener.onAdLoaded(InMobiAdapter.this);
-            }
-
-            @Override
-            public void onAdLoadFailed(InMobiInterstitial inMobiInterstitial,
-                                       InMobiAdRequestStatus inMobiAdRequestStatus) {
-                mRewardedVideoAdListener.onAdFailedToLoad(InMobiAdapter.this,
-                        getAdRequestErrorCode(inMobiAdRequestStatus.getStatusCode()));
-                Log.d(TAG, "onAdLoadFailed: " + inMobiAdRequestStatus.getMessage());
-            }
-
-            @Override
-            public void onAdReceived(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "InMobi Ad server responded with an Ad.");
-            }
-
-            @Override
-            public void onUserLeftApplication(InMobiInterstitial inMobiInterstitial) {
-                Log.d(TAG, "onUserLeftApplication");
-                mRewardedVideoAdListener.onAdLeftApplication(InMobiAdapter.this);
-            }
-        });
-
-        mIsRewardedVideoAdAdapterInitialized = true;
-        this.mRewardedVideoAdListener.onInitializationSucceeded(this);
-
-        if (mediationAdRequest.getKeywords() != null) {
-            Log.d(TAG, "keyword is present:" + mediationAdRequest.getKeywords()
-                    .toString());
-            mAdRewarded.setKeywords(TextUtils.join(", ",
-                    mediationAdRequest.getKeywords()));
-        }
-
-        HashMap<String, String> paramMap = new HashMap<>();
-        paramMap.put("tp", "c_admob");
-
-        isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
-
-        mAdRewarded.setExtras(paramMap);
-
-        if (InMobiAdapter.sDisableHardwareFlag) {
-            mAdRewarded.disableHardwareAcceleration();
-        }
-        InMobiAdapterUtils.buildAdRequest(mediationAdRequest, networkExtras);
-    }
-
-    @Override
-    public void loadAd(MediationAdRequest mediationAdRequest,
-                       Bundle serverParameters,
-                       Bundle networkExtras) {
-        if (mAdRewarded != null) {
-            mAdRewarded.load();
-        }
-    }
-
-    @Override
-    public void showVideo() {
-        if (mAdRewarded.isReady()) {
-            mAdRewarded.show();
-        }
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return mIsRewardedVideoAdAdapterInitialized && sIsAppInitialized;
-    }
-    //endregion
-
     //region MediationNativeAdapter implementation.
     @Override
     public void requestNativeAd(final Context context,
@@ -555,20 +375,22 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                 Bundle mediationExtras) {
         this.mNativeMedAdReq = mediationAdRequest;
 
-       /* Logging few initial info */
+        /* Logging few initial info */
         if (!sIsAppInitialized && serverParameters != null) {
-            InMobiSdk.init(context, serverParameters.getString("accountid"), InMobiConsent.getConsentObj());
+            InMobiSdk.init(context, serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID),
+                    InMobiConsent.getConsentObj());
             sIsAppInitialized = true;
         }
         this.mNativeListener = listener;
 
         final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested()) || mediationAdRequest.isUnifiedNativeAdRequested();;
+                && mediationAdRequest.isContentAdRequested())
+                || mediationAdRequest.isUnifiedNativeAdRequested();
 
-       /*
-        * InMobi Adapter will serve ad only if publisher requests for both AppInstall and Content
-        * Ads else we will give No-Fill to Publisher
-        */
+        /*
+         * InMobi Adapter will serve ad only if publisher requests for both AppInstall and Content
+         * Ads else we will give No-Fill to Publisher
+         */
         if (!serveAnyAd) {
             this.mNativeListener
                     .onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -576,7 +398,7 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
         }
 
         mAdNative = new InMobiNative(context,
-                Long.parseLong(serverParameters.getString("placementid")),
+                Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID)),
                 new NativeAdEventListener() {
                     @Override
                     public void onAdLoadSucceeded(final InMobiNative imNativeAd) {
@@ -593,8 +415,9 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
                                 InMobiAdapter.this.mNativeMedAdReq.getNativeAdOptions();
 
 
-                        if (null != nativeAdOptions)
+                        if (null != nativeAdOptions) {
                             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
+                        }
 
                         InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
                                 new InMobiAppInstallNativeAdMapper(
@@ -658,23 +481,18 @@ public final class InMobiAdapter implements MediationBannerAdapter, MediationInt
             mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
         }
 
-       /*
-        *  extra request params : Add any other extra request params here
-        *  #1. Explicitly setting mediation supply parameter to AdMob
-        *  #2. Landing url
-        */
-        HashMap<String, String> paramMap = new HashMap<>();
-
-        paramMap.put("tp", "c_admob");
-
-        isTaggedForChildDirectedTreatment(mediationAdRequest, paramMap);
-
+        /*
+         *  extra request params : Add any other extra request params here
+         *  #1. Explicitly setting mediation supply parameter to AdMob
+         *  #2. Landing url
+         */
+        HashMap<String, String> paramMap =
+                InMobiAdapterUtils.createInMobiParameterMap(mediationAdRequest);
         mAdNative.setExtras(paramMap);
 
-        InMobiAdapterUtils.buildAdRequest(mediationAdRequest, mediationExtras);
+        InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
 
         mAdNative.load();
     }
     //endregion
 }
-
