@@ -1,5 +1,9 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.8.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
 ## 3.3.8.0
 - Verified compatibility with AdColony SDK version 3.3.8.
 

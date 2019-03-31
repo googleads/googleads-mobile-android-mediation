@@ -642,8 +642,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             String navigationType = banner.getNavigationType();
 
             NativeAdMapper nativeAdMapper;
-            if (NavigationType.STORE.equals(navigationType)
-                    || NavigationType.DEEPLINK.equals(navigationType)) {
+            if (NavigationType.STORE.equals(navigationType)) {
 
                 if (nativeMediationAdRequest.isAppInstallAdRequested()) {
                     nativeAdMapper = new MyTargetNativeInstallAdMapper(nativeAd, context);

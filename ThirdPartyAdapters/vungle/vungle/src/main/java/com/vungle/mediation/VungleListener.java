@@ -2,7 +2,7 @@ package com.vungle.mediation;
 
 /**
  * A listener class used to send Vungle events from {@link VungleManager} to
- * {@link VungleInterstitialAdapter} and {@link VungleAdapter}.
+ * {@link VungleInterstitialAdapter}.
  */
 abstract class VungleListener {
     private String mWaitingForPlacement;
@@ -33,6 +33,4 @@ abstract class VungleListener {
     void onAdAvailable() {}
 
     void onAdFailedToLoad() {}
-
-    void onInitialized(boolean isSuccess) {}
 }
