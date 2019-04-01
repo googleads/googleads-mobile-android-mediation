@@ -19,7 +19,8 @@ import com.chartboost.sdk.Chartboost.CBFramework;
 
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
- * extras from {@link ChartboostAdapter} to {@link ChartboostSingleton}.
+ * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter}
+ * to {@link ChartboostSingleton}.
  */
 public class ChartboostParams {
 
