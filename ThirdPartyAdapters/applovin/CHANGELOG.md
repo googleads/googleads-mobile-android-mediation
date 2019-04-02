@@ -1,5 +1,19 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
+## 9.2.1.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 9.2.1.0
+- Verified compatibility with AppLovin SDK 9.2.1
+
+## 9.1.3.0
+- Removed support for placements as they were deprecated by AppLovin SDK.
+- Verified compatibility with AppLovin SDK 9.1.3
+
+## 9.1.0.0
+- Verified compatibility with AppLovin SDK 9.1.0
+
 ## 8.1.4.0
 - Verified compatibility with AppLovin SDK 8.1.4
 

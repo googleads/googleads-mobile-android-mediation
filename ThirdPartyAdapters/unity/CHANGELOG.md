@@ -1,5 +1,8 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.0.0.1
+- Added support for Unity Ads Banner.
+
 ## 3.0.0.0
 - Verified compatibility with Unity Ads SDK 3.0.0.
 

@@ -1,19 +1,17 @@
 package com.vungle.mediation;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.vungle.warren.AdConfig;
-import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.network.VungleApiClient;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,48 +19,32 @@ import java.util.Map;
  * A helper class to load and show Vungle ads and keep track of multiple
  * {@link VungleInterstitialAdapter} instances.
  */
-class VungleManager {
+public class VungleManager {
 
     private static final String TAG = VungleManager.class.getSimpleName();
     private static final String PLAYING_PLACEMENT = "placementID";
-    private static final String VERSION = "6.3.12";
 
     private static VungleManager sInstance;
     private String mCurrentPlayId = null;
-    private boolean mIsInitialising = false;
-    private String mAppId;
-    private String[] mPlacements;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private Map<String, VungleListener> mListeners;
 
-    static VungleManager getInstance(String appId, String[] placements) {
+    public static VungleManager getInstance() {
         if (sInstance == null) {
-            sInstance = new VungleManager(appId, placements);
+            sInstance = new VungleManager();
         }
         return sInstance;
     }
 
-    private VungleManager(String appId, String[] placements) {
+    private VungleManager() {
         mListeners = new HashMap<>();
 
         VungleApiClient.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
-                VERSION.replace('.', '_'));
-
-        this.mAppId = appId;
-        this.mPlacements = placements;
+                com.vungle.warren.BuildConfig.VERSION_NAME.replace('.', '_'));
     }
 
-    boolean isInitialized() {
-        return Vungle.isInitialized();
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    void setIncentivizedFields(String userID, String title, String body, String keepWatching,
-                               String close) {
-        Vungle.setIncentivizedFields(userID, title, body, keepWatching, close);
-    }
-
-    String findPlacement(Bundle networkExtras, Bundle serverParameters) {
+    @Nullable
+    public String findPlacement(Bundle networkExtras, Bundle serverParameters) {
         String placement = null;
         if (networkExtras != null
                 && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
@@ -75,82 +57,11 @@ class VungleManager {
             }
             placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
-        if (placement == null) {
-            if (mPlacements != null && mPlacements.length > 0) {
-                placement = mPlacements[0];
-                Log.i(TAG, String.format("'placementID' not specified. Used first from 'allPlacements'"
-                        + ": %s", placement));
-            } else {
-                Log.e(TAG, "At least one placement should be specified in either " +
-                        "serverParameters or the networkExtras!");
-            }
-        }
         return placement;
     }
 
-    void init(Context context) {
-        if (Vungle.isInitialized()) {
-            for (VungleListener cb : mListeners.values()) {
-                if (cb.isWaitingInit()) {
-                    cb.setWaitingInit(false);
-                    cb.onInitialized(Vungle.isInitialized());
-                }
-            }
-            return;
-        }
-        if (mIsInitialising) {
-            return;
-        }
-        mIsInitialising = true;
-
-        Vungle.init(mAppId, context.getApplicationContext(), new InitCallback() {
-            @Override
-            public void onSuccess() {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mIsInitialising = false;
-                        if(VungleConsent.getCurrentVungleConsent() != null) {
-                            Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
-                                    VungleConsent.getCurrentVungleConsentMessageVersion());
-                        }
-                        for (VungleListener cb : mListeners.values()) {
-                            if (cb.isWaitingInit()) {
-                                cb.setWaitingInit(false);
-                                cb.onInitialized(Vungle.isInitialized());
-                            }
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mIsInitialising = false;
-                        for (VungleListener cb : mListeners.values()) {
-                            if (cb.isWaitingInit()) {
-                                cb.setWaitingInit(false);
-                                cb.onInitialized(Vungle.isInitialized());
-                            }
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onAutoCacheAdAvailable(String placementId) {
-                // not used
-            }
-        });
-    }
-
     void removeListener(String id) {
-        if (mListeners.containsKey(id)) {
-            mListeners.remove(id);
-        }
+        mListeners.remove(id);
     }
 
     void addListener(String id, VungleListener listener) {
@@ -224,7 +135,8 @@ class VungleManager {
     }
 
     boolean isAdPlayable(String placement) {
-        return Vungle.canPlayAd(placement);
+        return (placement != null && !placement.isEmpty()) &&
+                    Vungle.canPlayAd(placement);
     }
 
     void loadAd(String placement) {
@@ -271,4 +183,10 @@ class VungleManager {
             }
         }
     }
+
+    boolean isValidPlacement(String placementId) {
+        return Vungle.isInitialized() &&
+                Vungle.getValidPlacements().contains(placementId);
+    }
+
 }

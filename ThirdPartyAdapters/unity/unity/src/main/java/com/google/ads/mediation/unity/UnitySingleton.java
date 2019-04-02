@@ -16,10 +16,13 @@ package com.google.ads.mediation.unity;
 
 import android.app.Activity;
 import android.util.Log;
+import android.view.View;
 
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.services.banners.IUnityBannerListener;
+import com.unity3d.services.banners.UnityBanners;
 
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -50,6 +53,9 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
      */
     private static UnitySingletonListener unitySingletonListenerInstance;
+    private static WeakReference<UnityAdapterBannerDelegate> bannerDelegate;
+
+    private static WeakReference<Activity> activity;
 
     /**
      * This method will return the
@@ -107,6 +113,8 @@ public final class UnitySingleton {
             return true;
         }
 
+        UnitySingleton.activity = new WeakReference<>(activity);
+
         // Add the delegate to the set so that the callbacks from Unity Ads can be forwarded to
         // the adapter.
         addUnityAdapterDelegate(delegate);
@@ -117,6 +125,8 @@ public final class UnitySingleton {
         mediationMetaData.setVersion("3.0.0.0");
         mediationMetaData.commit();
 
+        UnitySingletonListener unitySingleton = UnitySingleton.getInstance();
+        UnityBanners.setBannerListener(unitySingleton);
         UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());
 
         return true;
@@ -145,6 +155,28 @@ public final class UnitySingleton {
     }
 
     /**
+     * This method will load Unity ads for a given Placement ID and send the ad loaded event if the
+     * ads have already loaded.
+     *
+     * @param delegate Used to forward Unity Ads events to the adapter.
+     */
+    protected static void loadBannerAd(UnityAdapterBannerDelegate delegate) {
+        if (UnitySingleton.activity != null) {
+            Activity activity = UnitySingleton.activity.get();
+            if (activity != null) {
+                if (UnityAds.isInitialized()) {
+                    if (UnityAds.isReady(delegate.getPlacementId())) {
+                        bannerDelegate = new WeakReference<>(delegate);
+                        UnityBanners.loadBanner(activity, delegate.getPlacementId());
+                    } else {
+                        delegate.onUnityBannerError("Placement " + delegate.getPlacementId() + " is not ready.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * This method will show an Unity Ad.
      *
      * @param delegate Used to forward Unity Ads events to the adapter.
@@ -163,7 +195,7 @@ public final class UnitySingleton {
      * to forward events from Unity Ads SDK to {@link UnityAdapter} based on the delegates added
      * to {@link #mUnityAdapterDelegatesSet} and which adapter is currently showing an ad.
      */
-    private static final class UnitySingletonListener implements IUnityAdsExtendedListener {
+    private static final class UnitySingletonListener implements IUnityAdsExtendedListener, IUnityBannerListener {
 
         @Override
         public void onUnityAdsReady(String placementId) {
@@ -173,9 +205,11 @@ public final class UnitySingleton {
                     mUnityAdapterDelegatesSet.iterator();
             while (iterator.hasNext()) {
                 UnityAdapterDelegate delegate = iterator.next().get();
-                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
-                    delegate.onUnityAdsReady(placementId);
-                    iterator.remove();
+                if (delegate.getPlacementId() != null) {
+                    if (delegate.getPlacementId().equals(placementId)) {
+                        delegate.onUnityAdsReady(placementId);
+                        iterator.remove();
+                    }
                 }
             }
         }
@@ -234,6 +268,66 @@ public final class UnitySingleton {
                 if (delegate != null && delegate.getPlacementId().equals(placementId)) {
                     delegate.onUnityAdsError(unityAdsError, placementId);
                     iterator.remove();
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerLoaded(String placementId, View view) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityBannerLoaded(placementId, view);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerUnloaded(String placementId) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityBannerUnloaded(placementId);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerShow(String placementId) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityBannerShow(placementId);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerClick(String placementId) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityBannerClick(placementId);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerHide(String placementId) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null && delegate.getPlacementId().equals(placementId)) {
+                    delegate.onUnityBannerHide(placementId);
+                }
+            }
+        }
+
+        @Override
+        public void onUnityBannerError(String message) {
+            if (bannerDelegate != null) {
+                UnityAdapterBannerDelegate delegate = bannerDelegate.get();
+                if (delegate != null) {
+                    delegate.onUnityBannerError(message);
                 }
             }
         }

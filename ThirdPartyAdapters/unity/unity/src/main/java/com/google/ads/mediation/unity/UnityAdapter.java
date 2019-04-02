@@ -20,9 +20,13 @@ import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAdapter;
+import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
@@ -39,7 +43,7 @@ import java.lang.ref.WeakReference;
  */
 @Keep
 public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationInterstitialAdapter,
-        OnContextChangedListener {
+        OnContextChangedListener, MediationBannerAdapter {
     public static final String TAG = UnityAdapter.class.getSimpleName();
 
     /**
@@ -86,6 +90,21 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
      * An Android {@link Activity} weak reference used to show ads.
      */
     private WeakReference<Activity> mActivityWeakReference;
+
+    /**
+     * Placement ID for banner if requested.
+     */
+    private String bannerPlacementId;
+
+    /**
+     * The view for the banner instance.
+     */
+    private View bannerView;
+
+    /**
+     * Callback object for Google's Banner Lifecycle.
+     */
+    private MediationBannerListener bannerListener;
 
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
@@ -180,6 +199,54 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
                             AdRequest.ERROR_CODE_NO_FILL);
                     mIsLoading = false;
                 }
+            }
+        }
+    };
+
+    private UnityAdapterBannerDelegate bannerDelegate = new UnityAdapterBannerDelegate() {
+        @Override
+        public String getPlacementId() {
+            return bannerPlacementId;
+        }
+
+        @Override
+        public void onUnityBannerLoaded(String placementId, View view) {
+            bannerView = view;
+            if (bannerListener != null) {
+                bannerListener.onAdLoaded(UnityAdapter.this);
+            }
+        }
+
+        @Override
+        public void onUnityBannerUnloaded(String placementId) {
+            bannerView = null;
+        }
+
+        @Override
+        public void onUnityBannerShow(String placementId) {
+            if (bannerListener != null) {
+                bannerListener.onAdOpened(UnityAdapter.this);
+            }
+        }
+
+        @Override
+        public void onUnityBannerClick(String placementId) {
+            if (bannerListener != null) {
+                bannerListener.onAdClicked(UnityAdapter.this);
+            }
+        }
+
+        @Override
+        public void onUnityBannerHide(String placementId) {
+            if (bannerListener != null) {
+                bannerListener.onAdClosed(UnityAdapter.this);
+            }
+        }
+
+        @Override
+        public void onUnityBannerError(String message) {
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
             }
         }
     };
@@ -379,5 +446,49 @@ public class UnityAdapter implements MediationRewardedVideoAdAdapter, MediationI
 
         // Storing a weak reference of the current Activity to be used when showing an ad.
         mActivityWeakReference = new WeakReference<>((Activity) context);
+    }
+
+    @Override
+    public void requestBannerAd(Context context,
+                                MediationBannerListener listener,
+                                Bundle serverParameters,
+                                AdSize adSize,
+                                MediationAdRequest adRequest,
+                                Bundle mediationExtras) {
+        bannerListener = listener;
+
+        String gameId = serverParameters.getString(KEY_GAME_ID);
+        bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (!isValidIds(gameId, bannerPlacementId)) {
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        if (!isValidContext(context)) {
+            return;
+        }
+
+        // Even though we are a banner request, we still need to initialize UnityAds.
+        // Check if the Unity Ads initialized successfully.
+        if (!UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context, gameId)) {
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        // Storing a weak reference to the Activity.
+        mActivityWeakReference = new WeakReference<>((Activity) context);
+
+        UnitySingleton.loadBannerAd(bannerDelegate);
+    }
+
+    @Override
+    public View getBannerView() {
+        return bannerView;
     }
 }
