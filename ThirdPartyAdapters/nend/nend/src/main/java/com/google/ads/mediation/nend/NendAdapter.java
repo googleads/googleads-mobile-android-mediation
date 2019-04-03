@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -17,6 +16,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 
+import java.util.ArrayList;
 import net.nend.android.NendAdInformationListener;
 import net.nend.android.NendAdInterstitial;
 import net.nend.android.NendAdInterstitial.NendAdInterstitialClickType;
@@ -359,6 +359,14 @@ public class NendAdapter extends NendMediationAdapter
                                 AdSize adSize,
                                 MediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
+    adSize = getSupportedAdSize(context, adSize);
+    if (adSize == null) {
+      Log.w(LOG_TAG, "Failed to request ad, AdSize is null.");
+      if (listener != null) {
+        listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      }
+      return;
+    }
         int adSizeWidth = adSize.getWidth();
         int adSizeHeight = adSize.getHeight();
 
@@ -400,9 +408,87 @@ public class NendAdapter extends NendMediationAdapter
         }
     }
 
-    //region NendAdListener callbacks.
-    @Override
-    public void onReceiveAd(NendAdView adView) {
+  AdSize getSupportedAdSize(Context context, AdSize adSize) {
+    AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
+
+    /*
+       Supported Sizes:
+       320 × 50
+       320 × 100
+       300 × 100
+       300 × 250
+       728 × 90
+    */
+    ArrayList<AdSize> potentials = new ArrayList<AdSize>(5);
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.LARGE_BANNER);
+    potentials.add(new AdSize(300, 100));
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
+    potentials.add(AdSize.LEADERBOARD);
+
+    return findClosestSize(context, original, potentials);
+  }
+
+  // Start of helper code to remove when available in SDK
+  /**
+   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
+   * null if none are within given threshold size range.
+   */
+  public static AdSize findClosestSize(
+      Context context, AdSize original, ArrayList<AdSize> potentials) {
+    if (potentials == null || original == null) {
+      return null;
+    }
+    float density = context.getResources().getDisplayMetrics().density;
+    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
+    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
+    original = new AdSize(actualWidth, actualHeight);
+
+    AdSize largestPotential = null;
+    for (AdSize potential : potentials) {
+      if (isSizeInRange(original, potential)) {
+        if (largestPotential == null) {
+          largestPotential = potential;
+        } else {
+          largestPotential = getLargerByArea(largestPotential, potential);
+        }
+      }
+    }
+    return largestPotential;
+  }
+
+  private static boolean isSizeInRange(AdSize original, AdSize potential) {
+    if (potential == null) {
+      return false;
+    }
+    double minWidthRatio = 0.5;
+    double minHeightRatio = 0.7;
+
+    int originalWidth = original.getWidth();
+    int potentialWidth = potential.getWidth();
+    int originalHeight = original.getHeight();
+    int potentialHeight = potential.getHeight();
+
+    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
+      return false;
+    }
+
+    if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
+      return false;
+    }
+    return true;
+  }
+
+  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+    int area1 = size1.getWidth() * size1.getHeight();
+    int area2 = size2.getWidth() * size2.getHeight();
+    return area1 > area2 ? size1 : size2;
+  }
+  // End code to remove when available in SDK
+
+  // region NendAdListener callbacks.
+  @Override
+  public void onReceiveAd(NendAdView adView) {
         if (mListener != null && mIsRequestBannerAd) {
             // New request or auto reload from AdMob network.
             mListener.onAdLoaded(this);
