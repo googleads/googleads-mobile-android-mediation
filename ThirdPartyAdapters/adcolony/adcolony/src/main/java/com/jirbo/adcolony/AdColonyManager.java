@@ -149,9 +149,6 @@ public class AdColonyManager {
     private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
                                                Bundle networkExtras) {
         AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
-        if (options == null) {
-            options = new AdColonyAppOptions();
-        }
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
@@ -208,9 +205,6 @@ public class AdColonyManager {
     private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
         Bundle networkExtras = adConfiguration.getMediationExtras();
         AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
-        if (options == null) {
-            options = new AdColonyAppOptions();
-        }
 
         if (networkExtras != null) {
             String userId = networkExtras.getString("user_id");
