@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * The {@link DuAdExtrasBundleBuilder} class is used to create a network extras bundle that can be passed
- * to the adapter to make network-specific customizations.
+ * The {@link DuAdExtrasBundleBuilder} class is used to create a network extras bundle that
+ * can be passed to the adapter to make network-specific customizations.
  */
 public class DuAdExtrasBundleBuilder {
     private BannerCloseStyle bannerCloseStyle;
@@ -74,7 +74,8 @@ public class DuAdExtrasBundleBuilder {
             bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_PLACEMENT_ID, placementIds);
         }
         if (videoPlacementIds != null) {
-            bundle.putIntegerArrayList(DuAdMediation.KEY_ALL_VIDEO_PLACEMENT_ID, videoPlacementIds);
+            bundle.putIntegerArrayList(
+                    DuAdMediation.KEY_ALL_VIDEO_PLACEMENT_ID, videoPlacementIds);
         }
 
         return bundle;
