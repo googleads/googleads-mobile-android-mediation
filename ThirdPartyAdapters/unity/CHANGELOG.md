@@ -1,5 +1,9 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.0.0.2
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
 ## 3.0.0.1
 - Added support for Unity Ads Banner.
 
