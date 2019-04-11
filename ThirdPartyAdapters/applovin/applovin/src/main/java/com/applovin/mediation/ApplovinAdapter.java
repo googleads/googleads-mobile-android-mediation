@@ -30,6 +30,7 @@ import com.google.android.gms.ads.mediation.OnContextChangedListener;
 
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -209,7 +210,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                 + mZoneId + " and placement: " + mPlacement);
 
         // Convert requested size to AppLovin Ad Size.
-        final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize(adSize);
+        final AppLovinAdSize appLovinAdSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
         if (appLovinAdSize != null) {
             mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
 
@@ -226,14 +227,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             }
         } else {
             log(ERROR, "Failed to request banner with unsupported size");
-
-            AppLovinSdkUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mediationBannerListener.onAdFailedToLoad(
-                            ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-                }
-            });
+            if (mediationBannerListener != null) {
+              AppLovinSdkUtils.runOnUiThread(new Runnable() {
+                  @Override
+                  public void run() {
+                      mediationBannerListener.onAdFailedToLoad(
+                              ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                  }
+              });
+            }
         }
     }
 
@@ -242,27 +244,6 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         return mAdView;
     }
     //endregion
-
-    private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(AdSize adSize) {
-        final boolean isSmartBanner = (adSize.getWidth() == AdSize.FULL_WIDTH) &&
-                (adSize.getHeight() == AdSize.AUTO_HEIGHT);
-
-        if (AdSize.BANNER.equals(adSize) || AdSize.LARGE_BANNER.equals(adSize) || isSmartBanner) {
-            return AppLovinAdSize.BANNER;
-        } else if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
-            return AppLovinAdSize.MREC;
-        } else if (AdSize.LEADERBOARD.equals(adSize)) {
-            return AppLovinAdSize.LEADER;
-        }
-
-        // Assume fluid width, and check for height with offset tolerance
-        final int offset = Math.abs( BANNER_STANDARD_HEIGHT - adSize.getHeight() );
-        if (offset <= BANNER_HEIGHT_OFFSET_TOLERANCE)  {
-            return AppLovinAdSize.BANNER;
-        }
-
-        return null;
-    }
 
     //region MediationAdapter.
     @Override
@@ -282,8 +263,8 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
     @Override
     public void onContextChanged(Context context) {
         if (context != null) {
-            log(DEBUG, "Context changed: " + context);
-            mContext = context;
+          log(DEBUG, "Context changed: " + context);
+          mContext = context;
         }
     }
 

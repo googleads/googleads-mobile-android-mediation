@@ -3,9 +3,11 @@ package com.google.ads.mediation.ironsource;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.ironsource.mediationsdk.IronSource;
 
+import java.util.HashSet;
 
 /*
  * The {@link IronSourceAdapterUtils} class provides the publisher an ability to pass Activity to
@@ -24,42 +26,40 @@ public class IronSourceAdapterUtils {
     static final String KEY_APP_KEY = "appKey";
 
     /**
-     * Constant used for IronSource internal reporting.
-     */
-    static final String MEDIATION_NAME = "AdMob";
-
-    /**
-     * Key to obtain the IronSource Instance ID, required to shot IronSource ads.
+     * Key to obtain the IronSource Instance ID, required to show IronSource ads.
      */
     static final String KEY_INSTANCE_ID = "instanceId";
+
+    /**
+     * Constant used for IronSource internal reporting.
+     */
+    private static final String MEDIATION_NAME = "AdMob";
 
     /**
      * UI thread handler used to send callbacks with AdMob interface.
      */
     private static Handler uiHandler;
 
-    private static boolean mIsIronSourceInitialized = false;
-
-    public static void onActivityPaused(Activity activity)
-    {
-        IronSource.onPause(activity);
-    }
-
-    public static void onActivityResumed(Activity activity)
-    {
-        IronSource.onResume(activity);
-    }
+    /**
+     * Set of {@link com.ironsource.mediationsdk.IronSource.AD_UNIT} that have been initialized.
+     */
+    private static HashSet<IronSource.AD_UNIT> mInitialized = new HashSet<>();
 
     static void initIronSourceSDK(Activity activity,
                                   String appKey,
                                   IronSource.AD_UNIT adUnit) {
-        IronSource.setMediationType(MEDIATION_NAME);
-        IronSource.initISDemandOnly(activity, appKey, adUnit);
-        mIsIronSourceInitialized = true;
+        if (isIronSourceInitialized(adUnit)) {
+            Log.d(IronSourceAdapterUtils.TAG,
+                    adUnit.toString() + " has already been initialized.");
+        } else {
+            IronSource.setMediationType(MEDIATION_NAME);
+            IronSource.initISDemandOnly(activity, appKey, adUnit);
+            mInitialized.add(adUnit);
+        }
     }
 
-    static boolean isIronSourceInitialized() {
-        return mIsIronSourceInitialized;
+    static boolean isIronSourceInitialized(IronSource.AD_UNIT ad_unit) {
+        return mInitialized.contains(ad_unit);
     }
 
     static synchronized void sendEventOnUIThread(Runnable runnable) {

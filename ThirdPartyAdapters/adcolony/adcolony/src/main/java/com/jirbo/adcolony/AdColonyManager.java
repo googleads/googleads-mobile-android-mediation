@@ -1,6 +1,7 @@
 package com.jirbo.adcolony;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
@@ -46,10 +47,8 @@ public class AdColonyManager {
         String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
         ArrayList<String> newZoneList = parseZoneList(serverParams);
 
-        boolean needToConfigure = false;
-
-        if (!(context instanceof Activity)) {
-            Log.w(TAG, "Context must be of type Activity.");
+        if (!(context instanceof Activity || context instanceof Application)) {
+            Log.w(TAG, "Context must be of type Activity or Application.");
             return false;
         }
 
@@ -68,22 +67,24 @@ public class AdColonyManager {
             if (!configuredZones.contains(zone)) {
                 // Not contained in our list.
                 configuredZones.add(zone);
-                needToConfigure = true;
+                isConfigured = false;
             }
         }
 
         // Update app-options if necessary.
         AdColonyAppOptions appOptions = buildAppOptions(adRequest, networkExtras);
-        AdColony.setAppOptions(appOptions);
 
-        // We are requesting zones that we haven't configured with yet.
-        if (!isConfigured && needToConfigure) {
-            // Convert configuredZones into array.
+        if (isConfigured) {
+            AdColony.setAppOptions(appOptions);
+        } else {
+            // We are requesting zones that we haven't configured with yet.
             String[] zones = configuredZones.toArray(new String[0]);
 
             // Always set mediation network info.
             appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
-            isConfigured = AdColony.configure((Activity) context, appOptions, appId, zones);
+            isConfigured = context instanceof Activity
+                    ? AdColony.configure((Activity) context, appOptions, appId, zones)
+                    : AdColony.configure((Application) context, appOptions, appId, zones);
         }
         return isConfigured;
     }
@@ -95,10 +96,8 @@ public class AdColonyManager {
         String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
         ArrayList<String> newZoneList = parseZoneList(serverParams);
 
-        boolean needToConfigure = false;
-
-        if (!(context instanceof Activity)) {
-            Log.w(TAG, "Context must be of type Activity.");
+        if (!(context instanceof Activity || context instanceof Application)) {
+            Log.w(TAG, "Context must be of type Activity or Application.");
             return false;
         }
 
@@ -117,22 +116,24 @@ public class AdColonyManager {
             if (!configuredZones.contains(zone)) {
                 // Not contained in our list.
                 configuredZones.add(zone);
-                needToConfigure = true;
+                isConfigured = false;
             }
         }
 
         // Update app-options if necessary.
         AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
-        AdColony.setAppOptions(appOptions);
 
-        // We are requesting zones that we haven't configured with yet.
-        if (!isConfigured && needToConfigure) {
-            // Convert configuredZones into array.
+        if (isConfigured) {
+            AdColony.setAppOptions(appOptions);
+        } else {
+            // We are requesting zones that we haven't configured with yet.
             String[] zones = configuredZones.toArray(new String[0]);
 
             // Always set mediation network info.
             appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
-            isConfigured = AdColony.configure((Activity) context, appOptions, appId, zones);
+            isConfigured = context instanceof Activity
+                    ? AdColony.configure((Activity) context, appOptions, appId, zones)
+                    : AdColony.configure((Application) context, appOptions, appId, zones);
         }
         return isConfigured;
     }

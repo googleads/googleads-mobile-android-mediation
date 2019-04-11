@@ -1,9 +1,9 @@
 package com.applovin.mediation.rtb;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
-
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinAdViewDisplayErrorCode;
 import com.applovin.adview.AppLovinAdViewEventListener;
@@ -47,14 +47,14 @@ public final class AppLovinRtbBannerRenderer
     private final AppLovinAdSize adSize;
     private AppLovinAdView adView;
 
-    public AppLovinRtbBannerRenderer(
-            MediationBannerAdConfiguration adConfiguration,
-            MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+  public AppLovinRtbBannerRenderer(MediationBannerAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
         this.adConfiguration = adConfiguration;
         this.callback = callback;
 
-        // Convert requested size to AppLovin Ad Size.
-        this.adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(adConfiguration.getAdSize());
+    // Convert requested size to AppLovin Ad Size.
+    this.adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(
+        adConfiguration.getContext(), adConfiguration.getAdSize());
         this.sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
                 adConfiguration.getContext());
     }

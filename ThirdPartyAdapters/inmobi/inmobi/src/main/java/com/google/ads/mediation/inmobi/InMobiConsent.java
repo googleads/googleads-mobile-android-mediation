@@ -8,11 +8,12 @@ public class InMobiConsent {
     private static JSONObject consentObj = new JSONObject();
 
     /**
-     * Call InMobiConsent.updateGDPRConsent() to update GDPR consent for the user on each request basis.
+     * Call InMobiConsent.updateGDPRConsent() to update GDPR consent for the user
+     * on each request basis.
      */
     public static void updateGDPRConsent(JSONObject consentObj) {
-        if( InMobiAdapter.IsAppInitialized() ){
-            InMobiSdk.updateGDPRConsent( consentObj );
+        if (InMobiAdapter.isAppInitialized()) {
+            InMobiSdk.updateGDPRConsent(consentObj);
         }
         InMobiConsent.consentObj = consentObj;
     }
