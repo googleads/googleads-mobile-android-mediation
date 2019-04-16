@@ -263,12 +263,11 @@ public class UnityAdapter extends UnityMediationAdapter
             }
             return;
         }
+        // Storing a weak reference to the Activity.
+        mActivityWeakReference = new WeakReference<>((Activity) context);
 
         // Check if the Unity Ads initialized successfully.
         if (UnityAds.isInitialized()) {
-            // Storing a weak reference to the Activity.
-            mActivityWeakReference = new WeakReference<>((Activity) context);
-
             // Unity Ads initialized successfully, request UnitySingleton to load an ad.
             UnitySingleton.loadAd(mUnityAdapterDelegate);
         } else {
@@ -283,16 +282,13 @@ public class UnityAdapter extends UnityMediationAdapter
         // ad.
         mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
 
-        Activity activity = mActivityWeakReference.get();
-        if (activity == null) {
-            // Activity is null, logging a warning and sending ad closed callback.
-            Log.w(TAG, "An activity context is required to show Unity Ads.");
+        if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
+            // Request UnitySingleton to show interstitial ads.
+            UnitySingleton.showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+        } else {
+            Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
-            return;
         }
-
-        // Request UnitySingleton to show interstitial ads.
-        UnitySingleton.showAd(mUnityAdapterDelegate, activity);
     }
 
     @Override
