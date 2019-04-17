@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.3.0.0"
+    stringVersion = "7.3.1.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 70300
+        versionCode 7030101
         versionName stringVersion
     }
     buildTypes {
@@ -36,7 +36,9 @@ dependencies {
     // Adding Chartboost SDK as a compileOnly dependency makes sure that the jar is not included in the
     // AAR.
     compileOnly files('libs/chartboost.jar')
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.google.android.gms:play-services-ads:17.2.0'
+    implementation "com.google.android.gms:play-services-base:16.1.0"
+    implementation "com.google.android.gms:play-services-ads-identifier:16.0.0"
 }
 
 /**

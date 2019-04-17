@@ -1,34 +1,34 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
-## 5.0.2.1
+## 5.1.0.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
 
+## 5.1.0.0
+- Verified compatibility with nend SDK 5.1.0.
+
+## 5.0.2.1
 - Removed function that forward user features because following methods are deprecated on `AdRequest.Builder`.
   - `setGender()`
   - `setBirthday()`
   - `setIsDesignedForFamiles()`
 
 ## 5.0.2.0
-
 - Verified compatibility with nend SDK 5.0.2.
 
 ## 5.0.1.0
-
 - Verified compatibility with nend SDK 5.0.1.
 
 ## 5.0.0.0
-
 - Verified compatibility with nend SDK 5.0.0.
 
 ## 4.0.5.0
-
 - Verified compatibility with nend SDK 4.0.5.
 
 ## 4.0.4.1
-
 - Supported onRewardedVideoCompleted() method of RewardedVideoAdListener.
 
 ## 4.0.4.0
-
 - Verified compatibility with nend SDK 4.0.4.
 
 ## 4.0.2.1

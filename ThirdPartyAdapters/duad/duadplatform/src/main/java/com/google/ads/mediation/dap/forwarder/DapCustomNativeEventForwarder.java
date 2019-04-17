@@ -15,13 +15,16 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
 public class DapCustomNativeEventForwarder implements DuAdListener {
+
     private static final String TAG = DuNativeAdAdapter.class.getSimpleName();
     private final MediationNativeListener mNativeListener;
     private final MediationNativeAdapter mAdapter;
     private final NativeMediationAdRequest mMediationAdRequest;
     private final Context mContext;
 
-    public DapCustomNativeEventForwarder(Context context, MediationNativeAdapter adapter, MediationNativeListener listener,
+    public DapCustomNativeEventForwarder(Context context,
+                                         MediationNativeAdapter adapter,
+                                         MediationNativeListener listener,
                                          NativeMediationAdRequest mediationAdRequest) {
         mContext = context.getApplicationContext();
         mAdapter = adapter;
@@ -32,14 +35,14 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
     @Override
     public void onError(DuNativeAd duNativeAd, AdError adError) {
         if (mNativeListener != null) {
-            DuAdMediation.d(TAG, "Native onError - " + adError.getErrorMessage());
+            DuAdMediation.debugLog(TAG, "Native onError - " + adError.getErrorMessage());
             mNativeListener.onAdFailedToLoad(mAdapter, getAdMobErrorCode(adError.getErrorCode()));
         }
     }
 
     @Override
     public void onAdLoaded(DuNativeAd duNativeAd) {
-        DuAdMediation.d(TAG, "Native onAdLoaded " + duNativeAd.getTitle());
+        DuAdMediation.debugLog(TAG, "Native onAdLoaded " + duNativeAd.getTitle());
         NativeAdOptions nativeAdOptions = null;
         if (mMediationAdRequest != null) {
             nativeAdOptions = mMediationAdRequest.getNativeAdOptions();
@@ -51,14 +54,14 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
             public void onMappingSuccess() {
                 if (mNativeListener != null) {
                     mNativeListener.onAdLoaded(mAdapter, mapper);
-                    DuAdMediation.d(TAG, "onMappingSuccess ");
+                    DuAdMediation.debugLog(TAG, "onMappingSuccess ");
                 }
             }
 
             @Override
             public void onMappingFailed() {
                 if (mNativeListener != null) {
-                    DuAdMediation.d(TAG, "onMappingFailed ");
+                    DuAdMediation.debugLog(TAG, "onMappingFailed ");
                     mNativeListener.onAdFailedToLoad(mAdapter, 5);
                 }
             }
@@ -68,7 +71,7 @@ public class DapCustomNativeEventForwarder implements DuAdListener {
     @Override
     public void onClick(DuNativeAd duNativeAd) {
         if (mNativeListener != null) {
-            DuAdMediation.d(TAG, "Dap NativeAd clicked.");
+            DuAdMediation.debugLog(TAG, "Dap NativeAd clicked.");
             mNativeListener.onAdClicked(mAdapter);
             mNativeListener.onAdOpened(mAdapter);
             mNativeListener.onAdLeftApplication(mAdapter);

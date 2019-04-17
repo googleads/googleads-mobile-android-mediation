@@ -19,13 +19,15 @@ import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
 import com.my.target.common.CustomParams;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
  * Mediation adapter for myTarget.
  */
-public class MyTargetAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
+public class MyTargetAdapter extends MyTargetMediationAdapter
+    implements MediationBannerAdapter, MediationInterstitialAdapter {
 
     @NonNull
     private static final String TAG = "MyTargetAdapter";
@@ -52,6 +54,7 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             }
             return;
         }
+        adSize = getSupportedAdSize(context, adSize);
 
         if (adSize == null) {
             Log.w(TAG, "Failed to request ad, AdSize is null.");
@@ -96,6 +99,25 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             }
         }
 
+    }
+
+    AdSize getSupportedAdSize(Context context, AdSize adSize) {
+        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
+
+        /*
+            Supported Sizes:
+            MyTargetView.AdSize.BANNER_300x250;
+            MyTargetView.AdSize.BANNER_320x50;
+            MyTargetView.AdSize.BANNER_728x90;
+        */
+
+        ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
+        potentials.add(AdSize.BANNER);
+        potentials.add(AdSize.MEDIUM_RECTANGLE);
+        potentials.add(AdSize.LEADERBOARD);
+
+        Log.i(TAG, "Potential ad sizes: " + potentials.toString());
+        return MyTargetTools.findClosestSize(context, original, potentials);
     }
 
     @Override
@@ -252,8 +274,8 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-            Log.d(TAG, "Banner mediation Ad failed to load: " + reason);
-            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+             Log.i(TAG, "Banner mediation Ad failed to load: " + reason);
+             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override
@@ -288,8 +310,8 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-            Log.d(TAG, "Interstitial mediation Ad failed to load: " + reason);
-            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                Log.i(TAG, "Interstitial mediation Ad failed to load: " + reason);
+                listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override

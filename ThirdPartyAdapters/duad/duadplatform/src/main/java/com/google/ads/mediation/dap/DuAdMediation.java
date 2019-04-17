@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.duapps.ad.base.DuAdNetwork;
+import com.duapps.ad.video.DuVideoAdSDK;
 
 import org.json.JSONException;
 import org.json.JSONStringer;
@@ -61,19 +62,21 @@ public class DuAdMediation {
         DEBUG = debug;
     }
 
-    public static void d(String tag, String msg) {
+    public static void debugLog(String tag, String msg) {
         if (DEBUG) {
             String name = Thread.currentThread().getName();
             Log.d(TAG, "[" + tag + "]: " + "<" + name + "> " + msg);
         }
     }
 
-    private static boolean isInitialized = false;
 
     public static final String KEY_ALL_PLACEMENT_ID = "ALL_PID";
     public static final String KEY_ALL_VIDEO_PLACEMENT_ID = "ALL_V_PID";
 
-    private static HashSet<Integer> initializedPlacementIds = new HashSet<>();
+    private static String sdkAppID = "";
+
+    private static HashSet<Integer> initializedNonVideoPlacements = new HashSet<>();
+    private static HashSet<Integer> initializedVideoPlacements = new HashSet<>();
     private static Handler handler;
 
     public static void runOnUIThread(Runnable runnable) {
@@ -97,60 +100,115 @@ public class DuAdMediation {
         }
     }
 
-    static void initializeSDK(Context context, Bundle mediationExtras, int pid, String appId) {
-        if (!isInitialized) {
+    public static void configureSDKForNonVideo(Context context,
+                                               Bundle mediationExtras,
+                                               String appID,
+                                               int placementID) {
+        if (TextUtils.isEmpty(sdkAppID)) {
+            sdkAppID = appID;
+        } else if (!sdkAppID.equals(appID)){
+            debugLog(TAG, "Already configured with App ID: '" + sdkAppID + "'. "
+                    + "Ignoring attempt to configure using App ID: " + appID);
+            return;
+        }
+
+        if (mediationExtras != null) {
+            ArrayList<Integer> nativePlacements =
+                    mediationExtras.getIntegerArrayList(KEY_ALL_PLACEMENT_ID);
+            if (nativePlacements != null) {
+                initializedNonVideoPlacements.addAll(nativePlacements);
+            }
+        }
+
+        if (!initializedNonVideoPlacements.contains(placementID)) {
+            initializedNonVideoPlacements.add(placementID);
             context = context.getApplicationContext();
-            boolean initIdsSuccess = false;
-            boolean shouldInit = false;
 
-            if (mediationExtras != null) {
-                ArrayList<Integer> allPids = mediationExtras.getIntegerArrayList(KEY_ALL_PLACEMENT_ID);
-                if (allPids != null) {
-                    initializedPlacementIds.addAll(allPids);
-                    shouldInit = true;
-                    initIdsSuccess = true;
-                }
-            }
-
-            if (!initializedPlacementIds.contains(pid)) {
-                initializedPlacementIds.add(pid);
-                shouldInit = true;
-            }
-
-            if (shouldInit) {
-                String initJsonConfig = buildJsonFromPidsNative(initializedPlacementIds, "native");
-                d(TAG, "init config json is : " + initJsonConfig);
-                context = setAppIdInMeta(context, appId);
-                DuAdNetwork.init(context, initJsonConfig);
-                if (initIdsSuccess) {
-                    isInitialized = true;
-                } else {
-                    String message = "Only the following placementIds " + initializedPlacementIds + " are initialized. "
-                            + "It is strongly recommended to use DuAdExtrasBundleBuilder.addAllPlacementId() to pass all "
-                            + "your valid placement IDs (for Native, Banner and Interstitial ads) when making an Ad Request, "
-                            + "so that the DuAdNetwork can be properly initialized.";
-                    Log.e(TAG, message);
-                }
-            }
+            String initJsonConfig = buildJsonFromPlacements(
+                    initializedNonVideoPlacements, initializedVideoPlacements);
+            debugLog(TAG, "Configuring with placements: " + initJsonConfig);
+            context = setAppIdInMeta(context, sdkAppID);
+            DuAdNetwork.init(context, initJsonConfig);
+            DuVideoAdSDK.init(context, initJsonConfig);
         }
     }
 
-    static Context setAppIdInMeta(Context context, String appId) {
+    public static void configureSDKForVideo(Context context,
+                                            Bundle mediationExtras,
+                                            String appID,
+                                            int placementID) {
+        if (TextUtils.isEmpty(sdkAppID)) {
+            sdkAppID = appID;
+        } else if (!sdkAppID.equals(appID)){
+            debugLog(TAG, "Already configured with App ID: '" + sdkAppID + "'. "
+                    + "Ignoring attempt to configure using App ID: " + appID);
+            return;
+        }
+
+        if (mediationExtras != null) {
+            ArrayList<Integer> videoPlacements =
+                    mediationExtras.getIntegerArrayList(KEY_ALL_VIDEO_PLACEMENT_ID);
+            if (videoPlacements != null) {
+                initializedVideoPlacements.addAll(videoPlacements);
+            }
+        }
+
+        if (!initializedVideoPlacements.contains(placementID)) {
+            initializedVideoPlacements.add(placementID);
+            context = context.getApplicationContext();
+
+            String initJsonConfig = buildJsonFromPlacements(
+                    initializedNonVideoPlacements, initializedVideoPlacements);
+            debugLog(TAG, "Configuring with placements: " + initJsonConfig);
+            context = setAppIdInMeta(context, appID);
+            DuAdNetwork.init(context, initJsonConfig);
+            DuVideoAdSDK.init(context, initJsonConfig);
+        }
+    }
+
+    public static void initializeSDK(Context context,
+                                     String appID,
+                                     HashSet<Integer> nativePlacementIDs,
+                                     HashSet<Integer> videoPlacementIDs) {
+        if (TextUtils.isEmpty(sdkAppID)) {
+            sdkAppID = appID;
+        } else if (!sdkAppID.equals(appID)){
+            debugLog(TAG, "Already configured with App ID: '" + sdkAppID + "'. "
+                    + "Ignoring attempt to configure using App ID: " + appID);
+            return;
+        }
+
+        if (!(initializedNonVideoPlacements.containsAll(nativePlacementIDs)
+                && initializedVideoPlacements.containsAll(videoPlacementIDs))) {
+            initializedNonVideoPlacements.addAll(nativePlacementIDs);
+            initializedVideoPlacements.addAll(videoPlacementIDs);
+            context = context.getApplicationContext();
+
+            String initJsonConfig = buildJsonFromPlacements(
+                    initializedNonVideoPlacements, initializedVideoPlacements);
+            debugLog(TAG, "Configuring with placements: " + initJsonConfig);
+            context = setAppIdInMeta(context, sdkAppID);
+            DuAdNetwork.init(context, initJsonConfig);
+            DuVideoAdSDK.init(context, initJsonConfig);
+        }
+    }
+
+    private static Context setAppIdInMeta(Context context, String appId) {
         boolean appIdNotFound = true;
 
         try {
-            ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context
-                    .getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo applicationInfo = context.getPackageManager()
+                    .getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
             Bundle metaData = applicationInfo.metaData;
             if (metaData != null) {
                 String appLicense = metaData.getString(KEY_APP_LICENSE);
                 if (!TextUtils.isEmpty(appLicense)) {
-                    DuAdMediation.d(TAG, "appId from meta is " + appLicense);
+                    DuAdMediation.debugLog(TAG, "appId from meta is " + appLicense);
                     appIdNotFound = false;
                 } else {
                     if (!TextUtils.isEmpty(appId)) {
                         appIdNotFound = false;
-                        DuAdMediation.d(TAG, "appId from AdMob server is " + appId);
+                        DuAdMediation.debugLog(TAG, "appId from AdMob server is " + appId);
                         context = new AppIdContext(context, appId);
                     }
                 }
@@ -160,21 +218,33 @@ public class DuAdMediation {
         }
 
         if (appIdNotFound) {
-            Log.e(TAG, "No App Id found! Du Ad will not be able to make money for you properly! Have you configure " +
-                    "it in your meta data or AdMob UI?");
-            Log.e(TAG, "No App Id found! Du Ad will not be able to make money for you properly! Have you configure " +
-                    "it in your meta data or AdMob UI?");
+            Log.e(TAG, "Missing or Invalid App ID.");
         }
         return context;
     }
 
-    static String buildJsonFromPidsNative(@NonNull Collection<Integer> allPids, String node) {
+    private static String buildJsonFromPlacements(@NonNull Collection<Integer> nativePlacements,
+                                                  @NonNull Collection<Integer> videoPlacements) {
         try {
-            JSONStringer array = new JSONStringer().object().key(node).array();
-            for (Integer pid : allPids) {
-                array.object().key("pid").value(pid).endObject();
+            JSONStringer array = new JSONStringer().object();
+
+            if (nativePlacements.size() > 0) {
+                array.key("native").array();
+                for (Integer pid : nativePlacements) {
+                    array.object().key("pid").value(pid).endObject();
+                }
+                array.endArray();
             }
-            array.endArray().endObject();
+
+            if (videoPlacements.size() > 0) {
+                array.key("video").array();
+                for (Integer pid : videoPlacements) {
+                    array.object().key("pid").value(pid).endObject();
+                }
+                array.endArray();
+            }
+
+            array.endObject();
             return array.toString();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -189,6 +259,27 @@ public class DuAdMediation {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static int getValidPid(Bundle bundle) {
+        if (bundle == null) {
+            return -1;
+        }
+        String pidStr = bundle.getString(DuAdMediation.KEY_DAP_PID);
+        if (TextUtils.isEmpty(pidStr)) {
+            return -1;
+        }
+        int pid = -1;
+        try {
+            pid = Integer.parseInt(pidStr);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return -1;
+        }
+        if (pid < 0) {
+            return -1;
+        }
+        return pid;
     }
 
     private static class AppIdPackageManager extends PackageManager {

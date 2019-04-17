@@ -1,5 +1,12 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.2.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 7.2.2.0
+- Verified compatibility with InMobi SDK version 7.2.2.
+
 ## 7.2.1.0
 - Verified compatibility with InMobi SDK version 7.2.1.
 

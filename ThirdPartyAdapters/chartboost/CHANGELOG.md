@@ -1,5 +1,12 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.3.1.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 7.3.1.0
+- Verified compatibility with Chartboost SDK 7.3.1.
+
 ## 7.3.0.0
 - Verified compatibility with Chartboost SDK 7.3.0.
 
