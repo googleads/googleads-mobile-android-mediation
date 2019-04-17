@@ -28,6 +28,7 @@ import com.inmobi.ads.InMobiNative;
 import com.inmobi.ads.listeners.BannerAdEventListener;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.ads.listeners.NativeAdEventListener;
+import com.inmobi.ads.listeners.VideoEventListener;
 import com.inmobi.sdk.InMobiSdk;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -523,6 +524,21 @@ public final class InMobiAdapter extends InMobiMediationAdapter
                     }
                 });
 
+        mAdNative.setVideoEventListener(new VideoEventListener() {
+            @Override
+            public void onVideoCompleted(final InMobiNative inMobiNative) {
+                super.onVideoCompleted(inMobiNative);
+                Log.d(TAG, "InMobi native video ad completed");
+                mNativeListener.onVideoEnd(InMobiAdapter.this);
+            }
+
+
+            @Override
+            public void onVideoSkipped(final InMobiNative inMobiNative) {
+                super.onVideoSkipped(inMobiNative);
+                Log.d(TAG, "InMobi native video skipped");
+            }
+        });
         //Setting mediation key words to native ad object
         Set<String> mediationKeyWords = mediationAdRequest.getKeywords();
         if (null != mediationKeyWords) {
