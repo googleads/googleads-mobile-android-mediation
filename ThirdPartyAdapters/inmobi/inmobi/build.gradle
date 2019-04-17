@@ -35,7 +35,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.inmobi.monetization:inmobi-ads:7.2.2'
+    implementation 'com.inmobi.monetization:inmobi-ads:7.2.7'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
