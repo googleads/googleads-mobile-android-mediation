@@ -7,205 +7,227 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.VersionInfo;
+import com.google.android.gms.ads.rewarded.RewardItem;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
-import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
-import com.mopub.mobileads.MoPubRewardedVideos;
-import com.mopub.mobileads.dfp.adapters.MoPubAdapter;
+import com.mopub.mobileads.dfp.adapters.BuildConfig;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * A {@link com.google.ads.mediation.mopub.MoPubMediationAdapter} used to mediate rewarded video
  * ads from MoPub.
  */
-public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
+public class MoPubMediationAdapter extends Adapter
+        implements MediationRewardedAd, MoPubRewardedVideoListener {
 
-    private static final String TAG = MoPubMediationAdapter.class.getSimpleName();
+    static final String TAG = MoPubMediationAdapter.class.getSimpleName();
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
 
-    private mMediationRewardedVideoListener mMediationRewardedVideoListener;
-    private MediationRewardedVideoAdListener mediationRewardedVideoAdListener;
-    private boolean isRewardedVideoInitialized = false;
-    private String adUnitId;
+    private String adUnitID = "";
+
+    // TODO: Remove `adExpired` parameter once MoPub fixes MoPubRewardedVideos.hasRewardedVideo()
+    // to return false for expired ads.
     private boolean adExpired;
 
+    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+            mAdLoadCallback;
+    private MediationRewardedAdCallback mRewardedAdCallback;
+
     @Override
-    public void onDestroy() {
-        MoPubRewardedVideos.setRewardedVideoListener(null);
+    public VersionInfo getVersionInfo() {
+        String versionString = BuildConfig.VERSION_NAME;
+        String splits[] = versionString.split("\\.");
+        int major = Integer.parseInt(splits[0]);
+        int minor = Integer.parseInt(splits[1]);
+        int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+        return new VersionInfo(major, minor, micro);
     }
 
     @Override
-    public void onPause() {
+    public VersionInfo getSDKVersionInfo() {
+        String versionString = MoPub.SDK_VERSION;
+        String splits[] = versionString.split("\\.");
+        int major = Integer.parseInt(splits[0]);
+        int minor = Integer.parseInt(splits[1]);
+        int micro = Integer.parseInt(splits[2]);
+        return new VersionInfo(major, minor, micro);
     }
 
     @Override
-    public void onResume() {
-    }
+    public void initialize(Context context,
+                           final InitializationCompleteCallback initializationCompleteCallback,
+                           List<MediationConfiguration> mediationConfigurations) {
 
-    @Override
-    public void initialize(Context context, MediationAdRequest mediationAdRequest,
-                           String s, MediationRewardedVideoAdListener mediationRewardedVideoAdListener,
-                           Bundle bundle, Bundle bundle1) {
-
-        adUnitId = bundle.getString(MOPUB_AD_UNIT_KEY);
-        adExpired = false;
-
-        if (TextUtils.isEmpty(adUnitId)) {
-            Log.d(TAG, "Failed to initialize MoPub rewarded video. The ad unit ID is empty.");
-            mediationRewardedVideoAdListener.onAdFailedToLoad(
-                    MoPubMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        if (!(context instanceof Activity)) {
+            initializationCompleteCallback.onInitializationFailed("MoPub SDK requires an " +
+                    "Activity context to initialize.");
             return;
         }
 
-        /* Persist the listener in case the adapter needs it later (for example, if the ad request
-        has to be delayed for the MoPub SDK to finish initializing */
-        setRewardedVideoListener(mediationRewardedVideoAdListener);
+        for (MediationConfiguration configuration : mediationConfigurations) {
+            Bundle serverParameters = configuration.getServerParameters();
 
-        mMediationRewardedVideoListener = new mMediationRewardedVideoListener(mediationRewardedVideoAdListener);
-
-        if (!MoPub.isSdkInitialized()) {
-            initializeMoPub(context, adUnitId);
-        } else {
-            isRewardedVideoInitialized = true;
-            mediationRewardedVideoAdListener.onInitializationSucceeded(MoPubMediationAdapter.this);
-            MoPubRewardedVideos.setRewardedVideoListener(mMediationRewardedVideoListener);
-        }
-    }
-
-    private void setRewardedVideoListener(MediationRewardedVideoAdListener listener) {
-        mediationRewardedVideoAdListener = listener;
-    }
-
-    @Override
-    public void loadAd(MediationAdRequest mediationAdRequest, Bundle bundle, Bundle bundle1) {
-
-        if (!TextUtils.isEmpty(adUnitId)) {
-            if (MoPubRewardedVideos.hasRewardedVideo(adUnitId)) {
-                mediationRewardedVideoAdListener.onAdLoaded(MoPubMediationAdapter.this);
-            } else {
-                MoPubRewardedVideoManager.RequestParameters rewardedRequestParameters =
-                        new MoPubRewardedVideoManager.RequestParameters(
-                                MoPubAdapter.getKeywords(mediationAdRequest, false),
-                                MoPubAdapter.getKeywords(mediationAdRequest, true),
-                                mediationAdRequest.getLocation()
-                        );
-                MoPubRewardedVideos.loadRewardedVideo(adUnitId, rewardedRequestParameters);
+            // The MoPub SDK requires any valid Ad Unit ID in order to initialize their SDK.
+            adUnitID = serverParameters.getString(MOPUB_AD_UNIT_KEY);
+            if (!TextUtils.isEmpty(adUnitID)) {
+                break;
             }
-        } else {
-            Log.d(TAG, "Failed to request a MoPub rewarded video. The ad unit ID is empty.");
-            mediationRewardedVideoAdListener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                    AdRequest.ERROR_CODE_INVALID_REQUEST);
         }
+
+        if (TextUtils.isEmpty(adUnitID)) {
+            initializationCompleteCallback.onInitializationFailed("Initialization failed: " +
+                    "Missing or Invalid MoPub Ad Unit ID.");
+            return;
+        }
+
+        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitID).build();
+        MoPubSingleton.getInstance().initializeMoPubSDK((Activity) context, sdkConfiguration,
+                new SdkInitializationListener() {
+            @Override
+            public void onInitializationFinished() {
+                initializationCompleteCallback.onInitializationSucceeded();
+            }
+        });
     }
 
     @Override
-    public void showVideo() {
-        if (!adExpired && !TextUtils.isEmpty(adUnitId) && MoPubRewardedVideos.hasRewardedVideo(adUnitId)) {
-            Log.d(TAG, "Showing a MoPub rewarded video.");
-            MoPubRewardedVideos.showRewardedVideo(adUnitId);
-        } else {
-            Log.d(TAG, "Failed to show a MoPub rewarded video. Either the video is not ready " +
-                    "or the ad unit ID is empty.");
+    public void loadRewardedAd(
+            final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+            MediationAdLoadCallback<MediationRewardedAd,
+                    MediationRewardedAdCallback> mediationAdLoadCallback) {
+
+        Context context = mediationRewardedAdConfiguration.getContext();
+        if (!(context instanceof Activity)) {
+            String logMessage = "Failed to request ad from MoPub: "
+                    + "MoPub SDK requires an Activity context to load ads.";
+            Log.w(TAG, logMessage);
+            mediationAdLoadCallback.onFailure(logMessage);
+            return;
+        }
+
+        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
+        adUnitID = serverParameters.getString(MOPUB_AD_UNIT_KEY);
+
+        if (TextUtils.isEmpty(adUnitID)) {
+            String logMessage = "Failed to request ad from MoPub: "
+                    + "Missing or Invalid MoPub Ad Unit ID.";
+            Log.w(TAG, logMessage);
+            mediationAdLoadCallback.onFailure(logMessage);
+            return;
+        }
+
+        mAdLoadCallback = mediationAdLoadCallback;
+        MoPubRewardedVideoManager.RequestParameters requestParameters =
+                new MoPubRewardedVideoManager.RequestParameters(
+                        MoPubSingleton.getKeywords(mediationRewardedAdConfiguration, false),
+                        MoPubSingleton.getKeywords(mediationRewardedAdConfiguration, true),
+                        mediationRewardedAdConfiguration.getLocation()
+                );
+        MoPubSingleton.getInstance().loadRewardedAd(
+                (Activity) context, adUnitID, requestParameters, MoPubMediationAdapter.this);
+    }
+
+    @Override
+    public void showAd(Context context) {
+        if (adExpired && mRewardedAdCallback != null) {
+            mRewardedAdCallback.onAdFailedToShow("Failed to show a MoPub rewarded video. " +
+                    "The MoPub Ad has expired. Please make a new Ad Request.");
+        } else if (!adExpired) {
+            boolean didShow = MoPubSingleton.getInstance().showRewardedAd(adUnitID);
+            if (!didShow && mRewardedAdCallback != null) {
+                mRewardedAdCallback.onAdFailedToShow("Failed to show a MoPub rewarded video. " +
+                        "Either the video is not ready or the ad unit ID is empty.");
+            }
+        }
+    }
+
+    /**
+     * {@link MoPubRewardedVideoListener} implementation
+     */
+    @Override
+    public void onRewardedVideoLoadSuccess(@NonNull String adUnitId) {
+        if (mAdLoadCallback != null) {
+            mRewardedAdCallback = mAdLoadCallback.onSuccess(MoPubMediationAdapter.this);
         }
     }
 
     @Override
-    public boolean isInitialized() {
-        return isRewardedVideoInitialized;
+    public void onRewardedVideoLoadFailure(@NonNull String adUnitId,
+                                           @NonNull MoPubErrorCode errorCode) {
+        if (mAdLoadCallback != null) {
+            String logMessage = "Failed to load MoPub rewarded video: ";
+            switch (errorCode) {
+                case NO_FILL:
+                    logMessage += "No Fill.";
+                    break;
+                case NETWORK_TIMEOUT:
+                    logMessage += "Network error.";
+                    break;
+                case SERVER_ERROR:
+                    logMessage += "Invalid Request.";
+                    break;
+                case EXPIRED:
+                    // MoPub Rewarded video ads expire after 4 hours.
+                    MoPubSingleton.getInstance().adExpired(adUnitId, MoPubMediationAdapter.this);
+                    adExpired = true;
+                    logMessage += "The MoPub Ad has expired. Please make a new Ad Request.";
+                    break;
+                default:
+                    logMessage += "Internal Error.";
+                    break;
+            }
+            Log.i(TAG, logMessage);
+            mAdLoadCallback.onFailure(logMessage);
+        }
     }
 
-    private class mMediationRewardedVideoListener implements
-            MoPubRewardedVideoListener {
-
-        MediationRewardedVideoAdListener listener;
-
-        public mMediationRewardedVideoListener(MediationRewardedVideoAdListener listener) {
-            this.listener = listener;
+    @Override
+    public void onRewardedVideoStarted(@NonNull String adUnitId) {
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.onAdOpened();
+            mRewardedAdCallback.onVideoStart();
         }
+    }
 
-        @Override
-        public void onRewardedVideoLoadSuccess(@NonNull String adUnitId) {
-            if (listener != null) {
-                listener.onAdLoaded(MoPubMediationAdapter.this);
-            }
+    @Override
+    public void onRewardedVideoPlaybackError(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.onAdFailedToShow("Failed to playback MoPub rewarded video: " +
+                    errorCode.toString());
         }
+    }
 
-        @Override
-        public void onRewardedVideoLoadFailure(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
-            if (listener != null) {
-                switch (errorCode) {
-                    case NO_FILL:
-                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                                AdRequest.ERROR_CODE_NO_FILL);
-                        break;
-                    case NETWORK_TIMEOUT:
-                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                                AdRequest.ERROR_CODE_NETWORK_ERROR);
-                        break;
-                    case SERVER_ERROR:
-                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                                AdRequest.ERROR_CODE_INVALID_REQUEST);
-                        break;
-                    case EXPIRED:
-                        adExpired = true;
-                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-
-                    default:
-                        listener.onAdFailedToLoad(MoPubMediationAdapter.this,
-                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
-                }
-            }
+    @Override
+    public void onRewardedVideoClicked(@NonNull String adUnitId) {
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.reportAdClicked();
         }
+    }
 
-        @Override
-        public void onRewardedVideoStarted(@NonNull String adUnitId) {
-            if (listener != null) {
-                listener.onAdOpened(MoPubMediationAdapter.this);
-                listener.onVideoStarted(MoPubMediationAdapter.this);
-            }
-        }
+    @Override
+    public void onRewardedVideoCompleted(@NonNull Set<String> adUnitIds,
+                                         @NonNull final MoPubReward reward) {
+        Preconditions.checkNotNull(reward);
 
-        @Override
-        public void onRewardedVideoPlaybackError(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
-            // AdMob does not have a playback failure callback to notify
-        }
-
-        @Override
-        public void onRewardedVideoClicked(@NonNull String adUnitId) {
-            if (listener != null) {
-                listener.onAdClicked(MoPubMediationAdapter.this);
-                listener.onAdLeftApplication(MoPubMediationAdapter.this);
-            }
-        }
-
-        @Override
-        public void onRewardedVideoClosed(@NonNull String adUnitId) {
-            if (listener != null) {
-                listener.onAdClosed(MoPubMediationAdapter.this);
-            }
-        }
-
-        @Override
-        public void onRewardedVideoCompleted(@NonNull Set<String> adUnitIds, @NonNull final MoPubReward reward) {
-            Preconditions.checkNotNull(reward);
-
-            class AdMobRewardItem implements RewardItem {
-
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.onVideoComplete();
+            mRewardedAdCallback.onUserEarnedReward(new RewardItem() {
                 @Override
                 public String getType() {
                     return reward.getLabel();
@@ -215,43 +237,14 @@ public class MoPubMediationAdapter implements MediationRewardedVideoAdAdapter {
                 public int getAmount() {
                     return reward.getAmount();
                 }
-            }
-
-            if (listener != null) {
-                listener.onRewarded(MoPubMediationAdapter.this, new AdMobRewardItem());
-                listener.onVideoCompleted(MoPubMediationAdapter.this);
-            }
+            });
         }
     }
 
-    // Initializing the MoPub SDK. Required as of 5.0.0
-    private void initializeMoPub(Context context, String adUnitId) {
-
-        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
-                .build();
-
-        if (!(context instanceof Activity)) {
-            Log.d(TAG, "Failed to initialize MoPub rewarded video. An Activity Context is needed.");
-            mediationRewardedVideoAdListener.onInitializationFailed(MoPubMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
+    @Override
+    public void onRewardedVideoClosed(@NonNull String adUnitId) {
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.onAdClosed();
         }
-        Activity activity = (Activity) context;
-        MoPub.initializeSdk(activity, sdkConfiguration, initSdkListener());
-    }
-
-    private SdkInitializationListener initSdkListener() {
-        return new SdkInitializationListener() {
-
-            @Override
-            public void onInitializationFinished() {
-                MoPubLog.d("MoPub SDK initialized.");
-
-                if (mediationRewardedVideoAdListener != null) {
-                    mediationRewardedVideoAdListener.onInitializationSucceeded(MoPubMediationAdapter.this);
-                }
-                isRewardedVideoInitialized = true;
-                MoPubRewardedVideos.setRewardedVideoListener(mMediationRewardedVideoListener);
-            }
-        };
     }
 }
