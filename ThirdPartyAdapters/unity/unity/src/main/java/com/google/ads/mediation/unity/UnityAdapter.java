@@ -34,6 +34,7 @@ import com.google.android.gms.ads.mediation.OnContextChangedListener;
 import com.unity3d.ads.UnityAds;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
@@ -308,6 +309,15 @@ public class UnityAdapter extends UnityMediationAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         bannerListener = listener;
+        AdSize supportedSize = getSupportedAdSize(context, adSize);
+        if (supportedSize == null) {
+          Log.e(TAG, "Invalid ad size requested: " + adSize);
+          if (bannerListener != null) {
+              bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                      AdRequest.ERROR_CODE_INVALID_REQUEST);
+          }
+          return;
+        }
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
@@ -343,4 +353,72 @@ public class UnityAdapter extends UnityMediationAdapter
     public View getBannerView() {
         return bannerView;
     }
+
+    AdSize getSupportedAdSize(Context context, AdSize adSize) {
+        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
+
+        ArrayList<AdSize> potentials = new ArrayList<>(2);
+        potentials.add(AdSize.BANNER);
+        potentials.add(AdSize.LEADERBOARD);
+
+        return findClosestSize(context, original, potentials);
+    }
+
+    // Start of helper code to remove when available in SDK
+    /**
+     * Find the closest supported AdSize from the list of potentials to the provided size.
+     * Returns null if none are within given threshold size range.
+     */
+    public static AdSize findClosestSize(
+          Context context, AdSize original, ArrayList<AdSize> potentials) {
+       if (potentials == null || original == null) {
+           return null;
+       }
+       float density = context.getResources().getDisplayMetrics().density;
+       int actualWidth = Math.round(original.getWidthInPixels(context)/density);
+       int actualHeight = Math.round(original.getHeightInPixels(context)/density);
+       original = new AdSize(actualWidth, actualHeight);
+        AdSize largestPotential = null;
+        for (AdSize potential : potentials) {
+            if (isSizeInRange(original, potential)) {
+                if (largestPotential == null) {
+                  largestPotential = potential;
+                } else {
+                  largestPotential = getLargerByArea(largestPotential, potential);
+                }
+            }
+        }
+        return largestPotential;
+    }
+
+    private static boolean isSizeInRange(AdSize original, AdSize potential) {
+        if (potential == null) {
+          return false;
+        }
+        double minWidthRatio = 0.5;
+        double minHeightRatio = 0.7;
+
+        int originalWidth = original.getWidth();
+        int potentialWidth = potential.getWidth();
+        int originalHeight = original.getHeight();
+        int potentialHeight = potential.getHeight();
+
+        if (originalWidth * minWidthRatio > potentialWidth ||
+            originalWidth < potentialWidth) {
+            return false;
+        }
+
+        if (originalHeight * minHeightRatio > potentialHeight ||
+            originalHeight < potentialHeight) {
+            return false;
+        }
+        return true;
+    }
+
+    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+      int area1 = size1.getWidth() * size1.getHeight();
+      int area2 = size2.getWidth() * size2.getHeight();
+      return area1 > area2 ? size1 : size2;
+    }
+    // End code to remove when available in SDK
 }
