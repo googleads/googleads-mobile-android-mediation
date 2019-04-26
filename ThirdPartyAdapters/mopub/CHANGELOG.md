@@ -2,6 +2,8 @@
 
 ## 5.4.1.2
 - Added support for flexible banner ad sizes.
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
 
 ## 5.4.1.1
 - Added support for MoPub Rewarded Video Ads.
