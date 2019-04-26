@@ -505,8 +505,10 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         public void onBannerLoaded(MoPubView moPubView) {
             if (!(mAdSize.getWidth() == moPubView.getAdWidth()
                     && mAdSize.getHeight() == moPubView.getAdHeight())) {
-                Log.w(TAG, "The banner ad size loaded does not match the request size. Update the"
+                Log.e(TAG, "The banner ad size loaded does not match the request size. Update the"
                         + " ad size on your MoPub UI to match the request size.");
+                mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                return;
             }
             mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
 

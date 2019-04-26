@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.4.1.2
+- Added support for flexible banner ad sizes.
+
 ## 5.4.1.1
 - Added support for MoPub Rewarded Video Ads.
 
