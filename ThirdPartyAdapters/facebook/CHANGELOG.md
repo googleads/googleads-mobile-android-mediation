@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.2.0.2
+- Added support for flexible banner ad sizes.
+
 ## 5.2.0.1
 - Updated adapter to support new open-beta Rewarded API.
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.0.

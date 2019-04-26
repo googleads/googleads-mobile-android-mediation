@@ -361,7 +361,7 @@ public class NendAdapter extends NendMediationAdapter
                                 Bundle mediationExtras) {
     adSize = getSupportedAdSize(context, adSize);
     if (adSize == null) {
-      Log.w(LOG_TAG, "Failed to request ad, AdSize is null.");
+      Log.w(TAG, "Failed to request ad, AdSize is null.");
       if (listener != null) {
         listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       }
