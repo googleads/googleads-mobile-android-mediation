@@ -1,5 +1,10 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.0.0
+- Updated mediation service name for Google Mobile Ads.
+- Added adapter version to the initialization call.
+- Verified compatibility with Facebook SDK v5.3.0.
+
 ## 5.2.0.2
 - Added support for flexible banner ad sizes.
 
