@@ -1,5 +1,8 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.7.0
+- Verified compatibility with InMobi SDK version 7.2.7.
+
 ## 7.2.2.2
 - Added support for flexible banner ad sizes.
 
