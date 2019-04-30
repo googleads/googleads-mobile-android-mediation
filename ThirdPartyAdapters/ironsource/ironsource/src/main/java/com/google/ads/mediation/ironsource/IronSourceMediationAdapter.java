@@ -20,6 +20,10 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,19 +34,48 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATI
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 
 public class IronSourceMediationAdapter extends Adapter
-        implements MediationRewardedAd, ISDemandOnlyRewardedVideoListener {
+        implements MediationRewardedAd {
 
     private static AtomicBoolean mDidInitRewardedVideo = new AtomicBoolean(false);
+
+    private final static List<IronSource.AD_UNIT> mAdUnitsToInit =
+            new ArrayList<>(Collections.singletonList(IronSource.AD_UNIT.REWARDED_VIDEO));
+
     /**
-     * Mediation rewarded ad listener used to forward rewarded ad events from
-     * IronSource SDK to Google Mobile Ads SDK.
+     * Mediation listener used to forward rewarded ad events from
+     * IronSource SDK to Google Mobile Ads SDK while ad is presented
      */
     private MediationRewardedAdCallback mMediationRewardedAdCallback;
+
+    /**
+     * Mediation listener used to forward rewarded ad events from
+     * IronSource SDK to Google Mobile Ads SDK for loading phases of the ad
+     */
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mMediationAdLoadCallback;
+
+    /**
+     * Holds the instance state
+     */
+    private INSTANCE_STATE mState = INSTANCE_STATE.START;
+
     /**
      * This is the id of the rewarded video instance requested.
      */
     private String mInstanceID;
+
+    INSTANCE_STATE getInstanceState() {
+        return mState;
+    }
+
+    void setInstanceState(INSTANCE_STATE mState) {
+        this.mState = mState;
+    }
+
+    enum INSTANCE_STATE {
+        START, //Initial state when instance wasn't loaded yet
+        CAN_LOAD, //If load is called on an instance with this state, pass it forward to IronSource SDK
+        LOCKED, //if load is called on an instance with this state, report load fail
+    }
 
     /**
      * MediationRewardedAd implementation.
@@ -86,8 +119,10 @@ public class IronSourceMediationAdapter extends Adapter
         if (!(context instanceof Activity)) {
             // Context not an Activity context, log the reason for failure and fail the
             // initialization.
-            initializationCompleteCallback.onInitializationFailed("IronSource SDK requires " +
-                    "an Activity context to initialize");
+            initializationCompleteCallback.onInitializationFailed(
+                    "IronSource SDK requires an Activity context to initialize"
+            );
+
             return;
         }
 
@@ -121,9 +156,7 @@ public class IronSourceMediationAdapter extends Adapter
                         "IronSource initialization Failed: Missing or Invalid App Key.");
                 return;
             }
-
-            IronSource.initISDemandOnly((Activity) context, appKey,
-                    IronSource.AD_UNIT.REWARDED_VIDEO);
+            IronSourceManager.getInstance().initIronSourceSDK((Activity) context, appKey, mAdUnitsToInit);
             initializationCompleteCallback.onInitializationSucceeded();
         } catch (Exception e) {
             initializationCompleteCallback.onInitializationFailed(
@@ -165,14 +198,10 @@ public class IronSourceMediationAdapter extends Adapter
                     return;
                 }
 
-                IronSource.setISDemandOnlyRewardedVideoListener(this);
-                IronSource.setMediationType(MEDIATION_NAME);
                 Log.d(TAG, "IronSource Rewarded Video initialization called");
-                IronSource.initISDemandOnly((Activity) context, appKey, IronSource.AD_UNIT.REWARDED_VIDEO);
-                mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(IronSourceMediationAdapter.this);
+                IronSourceManager.getInstance().initIronSourceSDK((Activity) context, appKey, mAdUnitsToInit);
                 Log.d(TAG, String.format("IronSource loadRewardedVideo called with instanceId: %s", this.mInstanceID));
-                IronSource.loadISDemandOnlyRewardedVideo(this.mInstanceID);
-
+                IronSourceManager.getInstance().loadRewardedVideo(this.mInstanceID ,  new WeakReference<>(IronSourceMediationAdapter.this));
             } catch (Exception e) {
                 Log.w(TAG, "IronSource Initialization failed for Rewarded Video", e);
                 mMediationAdLoadCallback.onFailure(
@@ -180,7 +209,7 @@ public class IronSourceMediationAdapter extends Adapter
             }
         } else {
             Log.d(TAG, String.format("IronSource loadRewardedVideo called with instanceId: %s", this.mInstanceID));
-            IronSource.loadISDemandOnlyRewardedVideo(this.mInstanceID);
+            IronSourceManager.getInstance().loadRewardedVideo(this.mInstanceID, new WeakReference<>(IronSourceMediationAdapter.this));
         }
 
     }
@@ -188,20 +217,18 @@ public class IronSourceMediationAdapter extends Adapter
     @Override
     public void showAd(Context context) {
         Log.d(TAG, String.format("IronSource showAd called with instanceId: %s", this.mInstanceID));
-        IronSource.showISDemandOnlyRewardedVideo(this.mInstanceID);
+        IronSourceManager.getInstance().showRewardedVideo(this.mInstanceID);
     }
 
     /**
-     * IronSource RewardedVideoListener implementation.
+     * IronSource callbacks for AdMob Mediation.
      */
 
-    @Override
     public void onRewardedVideoAdLoadSuccess(String instanceId) {
         Log.d(TAG, String.format("IronSource load success for instanceId: %s  (current instance is: %s)", instanceId, this.mInstanceID));
         mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(IronSourceMediationAdapter.this);
     }
 
-    @Override
     public void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
         final String message = String.format("IronSource Rewarded Video failed to load for instance %s (current instance is: %s) with Error: %s",
                 instanceId, this.mInstanceID, ironSourceError.getErrorMessage());
@@ -209,7 +236,6 @@ public class IronSourceMediationAdapter extends Adapter
         mMediationAdLoadCallback.onFailure(message);
     }
 
-    @Override
     public void onRewardedVideoAdOpened(final String instanceId) {
         Log.d(IronSourceAdapterUtils.TAG, String.format("IronSource Rewarded Video opened ad for instance %s (current instance is: %s)",
                 instanceId, this.mInstanceID));
@@ -225,7 +251,6 @@ public class IronSourceMediationAdapter extends Adapter
         }
     }
 
-    @Override
     public void onRewardedVideoAdClosed(String instanceId) {
         Log.d(IronSourceAdapterUtils.TAG, String.format("IronSource Rewarded Video closed ad for instance %s  (current instance is: %s)",
                 instanceId, this.mInstanceID));
@@ -239,7 +264,6 @@ public class IronSourceMediationAdapter extends Adapter
         }
     }
 
-    @Override
     public void onRewardedVideoAdRewarded(String instanceId) {
         final IronSourceReward reward = new IronSourceReward();
         Log.d(IronSourceAdapterUtils.TAG, String.format("IronSource Rewarded Video received reward: %d %s, for instance %s (current instance is: %s)",
@@ -255,7 +279,6 @@ public class IronSourceMediationAdapter extends Adapter
         }
     }
 
-    @Override
     public void onRewardedVideoAdShowFailed(final String instanceId, IronSourceError ironsourceError) {
         final String message = String.format("IronSource Rewarded Video failed to show for instance %s (current instance is: %s) with Error: %s",
                 instanceId, this.mInstanceID, ironsourceError.getErrorMessage());
@@ -270,7 +293,6 @@ public class IronSourceMediationAdapter extends Adapter
         }
     }
 
-    @Override
     public void onRewardedVideoAdClicked(String instanceId) {
         Log.d(IronSourceAdapterUtils.TAG, String.format("IronSource Rewarded Video clicked for instance %s (current instance is: %s)",
                 instanceId, this.mInstanceID));
