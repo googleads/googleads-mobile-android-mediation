@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.google.ads.mediation.mopub.MoPubSingleton;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -60,7 +61,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private AdSize mAdSize;
 
     private MoPubInterstitial mMoPubInterstitial;
-    private static final String MOPUB_NATIVE_CEVENT_VERSION = "gmext";
+    private MediationInterstitialListener mMediationInterstitialListener;
+    public static final String MOPUB_NATIVE_CEVENT_VERSION = "gmext";
     public static final double DEFAULT_MOPUB_IMAGE_SCALE = 1;
     private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
     private int privacyIconPlacement;
@@ -75,12 +77,10 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
     @Override
     public void onDestroy() {
-
         if (mMoPubInterstitial != null) {
             mMoPubInterstitial.destroy();
             mMoPubInterstitial = null;
         }
-
         if (mMoPubView != null) {
             mMoPubView.destroy();
             mMoPubView = null;
@@ -230,7 +230,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             return;
         }
 
-        MoPubNative moPubNative = new MoPubNative(context, adunit, moPubNativeNetworkListener);
+        final MoPubNative moPubNative = new MoPubNative(context, adunit, moPubNativeNetworkListener);
 
         ViewBinder viewbinder = new ViewBinder.Builder(0).build();
         MoPubStaticNativeAdRenderer moPubStaticNativeAdRenderer =
@@ -250,11 +250,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                 .desiredAssets(assetsSet)
                 .build();
 
-        if (MoPub.isSdkInitialized()) {
-            moPubNative.makeRequest(requestParameters);
-        } else {
-            initializeMoPub(context, adunit, null, null, moPubNative);
-        }
+        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adunit).build();
+        MoPubSingleton.getInstance().initializeMoPubSDK((Activity) context, sdkConfiguration,
+                new SdkInitializationListener() {
+            @Override
+            public void onInitializationFinished() {
+                moPubNative.makeRequest(requestParameters);
+            }
+        });
 
         // Forwarding MoPub's impression and click events to AdMob.
         mMoPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
@@ -287,12 +290,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
         mAdSize = getSupportedAdSize(context, adSize);
         if (mAdSize == null) {
-          Log.w(TAG, "Failed to request ad, AdSize is null.");
-            if (mediationBannerListener != null) {
-              mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-          return;
+            Log.w(TAG, "Failed to request ad, AdSize is null.");
+            mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
         }
+
         mMoPubView = new MoPubView(context);
         mMoPubView.setBannerAdListener(new MBannerListener(mediationBannerListener));
         mMoPubView.setAdUnitId(adunit);
@@ -310,18 +312,21 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         mMoPubView.setKeywords(getKeywords(mediationAdRequest, false));
         mMoPubView.setUserDataKeywords(getKeywords(mediationAdRequest, true));
 
-        if (MoPub.isSdkInitialized()) {
-            mMoPubView.loadAd();
-        } else {
-            initializeMoPub(context, adunit, mMoPubView, null, null);
-        }
+        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adunit).build();
+        MoPubSingleton.getInstance().initializeMoPubSDK((Activity) context, sdkConfiguration,
+                new SdkInitializationListener() {
+            @Override
+            public void onInitializationFinished() {
+               mMoPubView.loadAd();
+            }
+        });
     }
 
-    AdSize getSupportedAdSize(Context context, AdSize adSize) {
+    private AdSize getSupportedAdSize(Context context, AdSize adSize) {
         AdSize original = new AdSize(adSize.getWidth(),
-            adSize.getHeight());
+                adSize.getHeight());
 
-        ArrayList<AdSize> potentials = new ArrayList<AdSize>(2);
+        ArrayList<AdSize> potentials = new ArrayList<>(2);
         potentials.add(AdSize.BANNER);
         potentials.add(AdSize.MEDIUM_RECTANGLE);
         potentials.add(AdSize.LEADERBOARD);
@@ -336,21 +341,21 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
      * Returns null if none are within given threshold size range.
      */
     public static AdSize findClosestSize(
-        Context context, AdSize original, ArrayList<AdSize> potentials) {
-       if (potentials == null || original == null) {
-           return null;
-       }
-       float density = context.getResources().getDisplayMetrics().density;
-       int actualWidth = Math.round(original.getWidthInPixels(context)/density);
-       int actualHeight = Math.round(original.getHeightInPixels(context)/density);
-       original = new AdSize(actualWidth, actualHeight);
+            Context context, AdSize original, ArrayList<AdSize> potentials) {
+        if (potentials == null || original == null) {
+            return null;
+        }
+        float density = context.getResources().getDisplayMetrics().density;
+        int actualWidth = Math.round(original.getWidthInPixels(context)/density);
+        int actualHeight = Math.round(original.getHeightInPixels(context)/density);
+        original = new AdSize(actualWidth, actualHeight);
         AdSize largestPotential = null;
         for (AdSize potential : potentials) {
             if (isSizeInRange(original, potential)) {
                 if (largestPotential == null) {
-                  largestPotential = potential;
+                    largestPotential = potential;
                 } else {
-                  largestPotential = getLargerByArea(largestPotential, potential);
+                    largestPotential = getLargerByArea(largestPotential, potential);
                 }
             }
         }
@@ -359,7 +364,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
     private static boolean isSizeInRange(AdSize original, AdSize potential) {
         if (potential == null) {
-          return false;
+            return false;
         }
         double minWidthRatio = 0.5;
         double minHeightRatio = 0.7;
@@ -370,12 +375,12 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         int potentialHeight = potential.getHeight();
 
         if (originalWidth * minWidthRatio > potentialWidth ||
-            originalWidth < potentialWidth) {
+                originalWidth < potentialWidth) {
             return false;
         }
 
         if (originalHeight * minHeightRatio > potentialHeight ||
-            originalHeight < potentialHeight) {
+                originalHeight < potentialHeight) {
             return false;
         }
         return true;
@@ -387,7 +392,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         return area1 > area2 ? size1 : size2;
     }
     // End code to remove when available in SDK
-
 
     @Override
     public View getBannerView() {
@@ -501,8 +505,10 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         public void onBannerLoaded(MoPubView moPubView) {
             if (!(mAdSize.getWidth() == moPubView.getAdWidth()
                     && mAdSize.getHeight() == moPubView.getAdHeight())) {
-                Log.w(TAG, "The banner ad size loaded does not match the request size. Update the"
+                Log.e(TAG, "The banner ad size loaded does not match the request size. Update the"
                         + " ad size on your MoPub UI to match the request size.");
+                mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                return;
             }
             mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
 
@@ -517,10 +523,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                                       Bundle bundle1) {
 
         String adunit = bundle.getString(MOPUB_AD_UNIT_KEY);
+        mMediationInterstitialListener = mediationInterstitialListener;
 
         mMoPubInterstitial = new MoPubInterstitial((Activity) context, adunit);
         mMoPubInterstitial.setInterstitialAdListener(
-                new mMediationInterstitialListener(mediationInterstitialListener));
+                new mMediationInterstitialListener(mMediationInterstitialListener));
 
         //If test mode is enabled
         if (mediationAdRequest.isTesting()) {
@@ -530,20 +537,26 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, false));
         mMoPubInterstitial.setKeywords(getKeywords(mediationAdRequest, true));
 
-        if (MoPub.isSdkInitialized()) {
-            mMoPubInterstitial.load();
-        } else {
-            initializeMoPub(context, adunit, null, mMoPubInterstitial, null);
-        }
+        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adunit).build();
+        MoPubSingleton.getInstance().initializeMoPubSDK((Activity) context, sdkConfiguration,
+                new SdkInitializationListener() {
+            @Override
+            public void onInitializationFinished() {
+                mMoPubInterstitial.load();
+            }
+        });
     }
 
     @Override
     public void showInterstitial() {
-
         if (mMoPubInterstitial.isReady()) {
             mMoPubInterstitial.show();
         } else {
             MoPubLog.i("Interstitial was not ready. Unable to load the interstitial");
+            if (mMediationInterstitialListener != null) {
+                mMediationInterstitialListener.onAdOpened(MoPubAdapter.this);
+                mMediationInterstitialListener.onAdClosed(MoPubAdapter.this);
+            }
         }
     }
 
@@ -583,6 +596,12 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                         mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
                                 AdRequest.ERROR_CODE_INVALID_REQUEST);
                         break;
+                    case EXPIRED:
+                        // MoPub Rewarded video ads expire after 4 hours.
+                        Log.i(TAG, "The MoPub Ad has expired. Please make a new Ad Request.");
+                        mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                        break;
                     default:
                         mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
                                 AdRequest.ERROR_CODE_INTERNAL_ERROR);
@@ -601,38 +620,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         public void onInterstitialShown(MoPubInterstitial moPubInterstitial) {
             mMediationInterstitialListener.onAdOpened(MoPubAdapter.this);
         }
-    }
-
-    // Initializing the MoPub SDK. Required as of 5.0.0
-    private void initializeMoPub(Context context, String adUnitId, MoPubView bannerAd, MoPubInterstitial
-            interstitialAd, MoPubNative nativeAd) {
-        SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitId)
-                .build();
-        MoPub.initializeSdk(context, sdkConfiguration, initSdkListener(bannerAd, interstitialAd, nativeAd));
-    }
-
-    private SdkInitializationListener initSdkListener(final MoPubView bannerAd, final MoPubInterstitial
-            interstitialAd, final MoPubNative nativeAd) {
-        return new SdkInitializationListener() {
-
-            @Override
-            public void onInitializationFinished() {
-                MoPubLog.d("MoPub SDK initialized.");
-
-                // Sending ad requests now that the MoPub SDK has initialized
-                if (bannerAd != null) {
-                    bannerAd.loadAd();
-                } else if (interstitialAd != null) {
-                    interstitialAd.load();
-                } else if (nativeAd != null) {
-                    if (requestParameters != null) {
-                        nativeAd.makeRequest(requestParameters);
-                    } else {
-                        nativeAd.makeRequest();
-                    }
-                }
-            }
-        };
     }
 
     /**
@@ -665,9 +652,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
          * @return a {@link Bundle} containing the specified extras.
          */
         public Bundle build() {
-          Bundle bundle = new Bundle();
-          bundle.putInt(ARG_PRIVACY_ICON_SIZE_DP, mPrivacyIconSizeDp);
-          return bundle;
+            Bundle bundle = new Bundle();
+            bundle.putInt(ARG_PRIVACY_ICON_SIZE_DP, mPrivacyIconSizeDp);
+            return bundle;
         }
     }
 }

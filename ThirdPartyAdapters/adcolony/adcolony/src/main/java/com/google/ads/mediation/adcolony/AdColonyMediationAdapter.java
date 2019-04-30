@@ -29,6 +29,7 @@ import java.util.List;
 
 public class AdColonyMediationAdapter extends Adapter implements MediationRewardedAd {
     private static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
+    private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
 
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
     private MediationRewardedAdCallback mRewardedAdCallback;
@@ -112,7 +113,6 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
         }
 
         // Always set mediation network info.
-        AdColonyAppOptions appOptions = new AdColonyAppOptions();
         appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
         boolean success = AdColony.configure((Activity) context, appOptions, appID,
                 zoneList.toArray(new String[0]));
@@ -183,6 +183,10 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
             Log.w(TAG,logMessage);
             mediationAdLoadCallback.onFailure(logMessage);
         }
+    }
+
+    public static AdColonyAppOptions getAppOptions() {
+        return appOptions;
     }
 
     @Override

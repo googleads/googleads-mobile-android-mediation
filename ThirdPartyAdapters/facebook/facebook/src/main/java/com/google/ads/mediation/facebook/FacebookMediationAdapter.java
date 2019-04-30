@@ -7,10 +7,8 @@ import android.util.Log;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -150,7 +148,6 @@ public class FacebookMediationAdapter extends Adapter implements MediationReward
 
     //region Rewarded video adapter utility methods and classes.
     private void createAndLoadRewardedVideo(Context context, String placementID) {
-        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
         mRewardedVideoAd = new RewardedVideoAd(context, placementID);
         mRewardedVideoAd.setAdListener(
                 new RewardedVideoListener(mRewardedVideoAd, mAdLoadCallback));

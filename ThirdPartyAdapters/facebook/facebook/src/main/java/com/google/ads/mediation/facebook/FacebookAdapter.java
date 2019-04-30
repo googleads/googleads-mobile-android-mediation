@@ -42,7 +42,6 @@ import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
@@ -320,7 +319,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mAdView.setLayoutParams(adViewLayoutParams);
         mWrappedAdView.addView(mAdView);
 
-        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
         mAdView.loadAd();
     }
 
@@ -367,7 +365,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
 
-        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
         mInterstitialAd.loadAd();
     }
 
@@ -425,7 +422,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
         buildAdRequest(adRequest);
 
-        AdSettings.setMediationService("ADMOB_" + MobileAds.getVersionString());
         mNativeAd.loadAd();
     }
 
