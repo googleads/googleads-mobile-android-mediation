@@ -1,5 +1,8 @@
 # ironSource Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Version 6.8.4.0
+- Verified compatibility with ironSource SDK version 6.8.4.
+
 ## Version 6.8.1.2
 - Fixed an issue where loading rewarded ads always failed to load if an
   interstitial ad was loaded first.
