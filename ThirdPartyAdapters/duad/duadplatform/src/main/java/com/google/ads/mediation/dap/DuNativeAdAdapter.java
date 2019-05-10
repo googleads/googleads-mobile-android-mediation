@@ -34,9 +34,10 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             return;
         }
 
-        if (!(mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest.isContentAdRequested())) {
-            Log.w(TAG, "Failed to request native ad. Both app install and content ad should be "
-                    + "requested");
+        if (!(mediationAdRequest.isAppInstallAdRequested()
+                && mediationAdRequest.isContentAdRequested())) {
+            Log.w(TAG, "Failed to request native ad. "
+                    + "Both app install and content ad should be requested");
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -48,16 +49,16 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
             return;
         }
 
-        DuAdMediation.initializeSDK(context, mediationExtras, pid, appId);
+        DuAdMediation.configureSDKForNonVideo(context, mediationExtras, appId, pid);
         nativeAd = new DuNativeAd(context, pid);
-        nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(context,DuNativeAdAdapter.this, listener,
-                mediationAdRequest));
+        nativeAd.setMobulaAdListener(new DapCustomNativeEventForwarder(
+                context,DuNativeAdAdapter.this, listener, mediationAdRequest));
         nativeAd.load();
     }
 
     @Override
     public void onDestroy() {
-        DuAdMediation.d(TAG, "DuNativeAdAdapter onDestroy");
+        DuAdMediation.debugLog(TAG, "DuNativeAdAdapter onDestroy");
         if (nativeAd != null) {
             nativeAd.destory();
             nativeAd = null;
@@ -66,12 +67,12 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
 
     @Override
     public void onPause() {
-        DuAdMediation.d(TAG, "DuNativeAdAdapter onPause");
+        DuAdMediation.debugLog(TAG, "DuNativeAdAdapter onPause");
     }
 
     @Override
     public void onResume() {
-        DuAdMediation.d(TAG, "DuNativeAdAdapter onResume");
+        DuAdMediation.debugLog(TAG, "DuNativeAdAdapter onResume");
     }
     // endregion
 
@@ -83,7 +84,7 @@ public class DuNativeAdAdapter implements MediationNativeAdapter {
         if (TextUtils.isEmpty(pidStr)) {
             return -1;
         }
-        int pid = -1;
+        int pid;
         try {
             pid = Integer.parseInt(pidStr);
         } catch (NumberFormatException e) {

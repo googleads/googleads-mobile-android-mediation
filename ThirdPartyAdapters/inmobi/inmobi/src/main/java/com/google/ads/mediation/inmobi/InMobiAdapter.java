@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -29,8 +28,9 @@ import com.inmobi.ads.InMobiNative;
 import com.inmobi.ads.listeners.BannerAdEventListener;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.ads.listeners.NativeAdEventListener;
+import com.inmobi.ads.listeners.VideoEventListener;
 import com.inmobi.sdk.InMobiSdk;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -117,6 +117,14 @@ public final class InMobiAdapter extends InMobiMediationAdapter
                                 AdSize mediationAdSize,
                                 MediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
+        mediationAdSize = getSupportedAdSize(context, mediationAdSize);
+        if (mediationAdSize == null) {
+            Log.w(TAG, "Failed to request ad, AdSize is null.");
+            if (listener != null) {
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
         if (!sIsAppInitialized && serverParameters != null) {
             Log.d(TAG, serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID));
             Log.d(TAG, serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
@@ -239,6 +247,47 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         mWrappedAdView.addView(adView);
         InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
         adView.load();
+    }
+
+    private AdSize getSupportedAdSize(Context context, AdSize adSize) {
+        /*
+        Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
+        300x50; 600x100
+        320x48; 640x96
+        320x50; 640x100
+        300x250; 600x500
+        120x600; 240x1200
+        468x60; 936x120
+        728x90; 1456x180
+        1024x768; 1536x2048
+        320x480; 640x960
+        1280x800; 1600x2560
+         */
+        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
+
+        ArrayList<AdSize> potentials = new ArrayList<AdSize>(20);
+        potentials.add(new AdSize(300, 50));
+        potentials.add(new AdSize(600, 100));
+        potentials.add(new AdSize(320, 48));
+        potentials.add(new AdSize(640, 96));
+        potentials.add(new AdSize(320, 50));
+        potentials.add(new AdSize(640, 100));
+        potentials.add(new AdSize(300, 250));
+        potentials.add(new AdSize(600, 500));
+        potentials.add(new AdSize(120, 600));
+        potentials.add(new AdSize(240, 1200));
+        potentials.add(new AdSize(468, 60));
+        potentials.add(new AdSize(936, 120));
+        potentials.add(new AdSize(728, 90));
+        potentials.add(new AdSize(1456, 180));
+        potentials.add(new AdSize(1024, 768));
+        potentials.add(new AdSize(1536, 2048));
+        potentials.add(new AdSize(320, 480));
+        potentials.add(new AdSize(640, 960));
+        potentials.add(new AdSize(1280, 800));
+        potentials.add(new AdSize(1600, 2560));
+        Log.i(TAG, potentials.toString());
+        return InMobiAdapterUtils.findClosestSize(context, original, potentials);
     }
 
     @Override
@@ -475,6 +524,21 @@ public final class InMobiAdapter extends InMobiMediationAdapter
                     }
                 });
 
+        mAdNative.setVideoEventListener(new VideoEventListener() {
+            @Override
+            public void onVideoCompleted(final InMobiNative inMobiNative) {
+                super.onVideoCompleted(inMobiNative);
+                Log.d(TAG, "InMobi native video ad completed");
+                mNativeListener.onVideoEnd(InMobiAdapter.this);
+            }
+
+
+            @Override
+            public void onVideoSkipped(final InMobiNative inMobiNative) {
+                super.onVideoSkipped(inMobiNative);
+                Log.d(TAG, "InMobi native video skipped");
+            }
+        });
         //Setting mediation key words to native ad object
         Set<String> mediationKeyWords = mediationAdRequest.getKeywords();
         if (null != mediationKeyWords) {

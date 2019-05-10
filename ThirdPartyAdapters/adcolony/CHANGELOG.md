@@ -1,5 +1,10 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.9.0
+- Verified compatibility with AdColony SDK version 3.3.9.
+- Removed `setGdprRequired()` and `setGdprConsentString()` methods on `AdColonyBundleBuilder`.
+- Added the `AdColonyMediationAdapter.getAppOptions()` method. Publishers must now pass GDPR information to AdColony's SDK through these options. See the [developer documentation](https://developers.google.com/admob/android/mediation/adcolony#eu_consent_and_gdpr) for more details.
+
 ## 3.3.8.1
 - Updated adapter to support new open-beta Rewarded API.
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.0.

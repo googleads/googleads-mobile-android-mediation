@@ -72,11 +72,8 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             urlsOnly = mNativeAdOptions.shouldReturnUrlsForImageAssets();
         }
 
-//        if (urlsOnly) {
-//            mNativeAdMapperListener.onMappingSuccess();
-//        } else {
-        new DownloadDrawablesAsync(mContext, mNativeAdMapperListener, urlsOnly).execute(DuNativeAdMapper.this);
-//        }
+        new DownloadDrawablesAsync(mContext, mNativeAdMapperListener, urlsOnly)
+                .execute(DuNativeAdMapper.this);
     }
 
     @Override
@@ -99,7 +96,9 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
         private NativeAdMapperListener mDrawableListener;
         private boolean mUrlsOnly;
 
-        public DownloadDrawablesAsync(Context context, NativeAdMapperListener listener, boolean urlsOnly) {
+        public DownloadDrawablesAsync(Context context,
+                                      NativeAdMapperListener listener,
+                                      boolean urlsOnly) {
             this.mContext = context;
             this.mDrawableListener = listener;
             this.mUrlsOnly = urlsOnly;
@@ -115,7 +114,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             Uri uri = image.getUri();
             Future<Drawable> drawableFuture = getDrawableFuture(uri, executorService);
             Drawable drawable = null;
-            DuAdMediation.d(TAG, "start to download ad image: " + uri);
+            DuAdMediation.debugLog(TAG, "start to download ad image: " + uri);
             try {
                 drawable = drawableFuture.get(DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException exception) {
@@ -134,7 +133,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             DuNativeMappedImage iconImage = (DuNativeMappedImage) mapper.getIcon();
             uri = iconImage.getUri();
             drawableFuture = getDrawableFuture(uri, executorService);
-            DuAdMediation.d(TAG, "start to download icon image: " + uri);
+            DuAdMediation.debugLog(TAG, "start to download icon image: " + uri);
             try {
                 drawable = drawableFuture.get(DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException exception) {

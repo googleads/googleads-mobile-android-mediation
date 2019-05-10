@@ -1,10 +1,13 @@
 package com.google.ads.mediation.applovin;
 
+import static android.util.Log.DEBUG;
+import static android.util.Log.ERROR;
+import static com.applovin.mediation.ApplovinAdapter.log;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinIncentivizedAdListener;
 import com.applovin.mediation.AppLovinUtils;
@@ -32,14 +35,9 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
-
-import static android.util.Log.DEBUG;
-import static android.util.Log.ERROR;
-import static com.applovin.mediation.ApplovinAdapter.log;
 
 public class AppLovinMediationAdapter extends RtbAdapter
         implements MediationRewardedAd, AppLovinAdLoadListener {
@@ -234,8 +232,8 @@ public class AppLovinMediationAdapter extends RtbAdapter
             MediationAdLoadCallback<MediationBannerAd,
                     MediationBannerAdCallback> mediationAdLoadCallback) {
 
-        AppLovinRtbBannerRenderer bannerRenderer =
-                new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    AppLovinRtbBannerRenderer bannerRenderer =
+        new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
         bannerRenderer.loadAd();
     }
 

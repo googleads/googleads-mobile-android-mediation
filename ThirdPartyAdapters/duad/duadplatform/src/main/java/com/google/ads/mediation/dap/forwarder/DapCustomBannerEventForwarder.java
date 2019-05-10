@@ -7,6 +7,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 
 public class DapCustomBannerEventForwarder implements BannerListener {
+
     private static final String TAG = DuAdAdapter.class.getSimpleName();
     private MediationBannerListener mBannerListener;
     private DuAdAdapter mAdapter;
@@ -18,7 +19,7 @@ public class DapCustomBannerEventForwarder implements BannerListener {
 
     @Override
     public void onAdLoaded() {
-        DuAdMediation.d(TAG, "Banner Ad Loaded");
+        DuAdMediation.debugLog(TAG, "Banner Ad Loaded");
         DuAdMediation.runOnUIThread(new Runnable() {
             @Override
             public void run() {
@@ -29,7 +30,7 @@ public class DapCustomBannerEventForwarder implements BannerListener {
 
     @Override
     public void onError(String s) {
-        DuAdMediation.d(TAG, "Banner Ad onError - msg: " + s);
+        DuAdMediation.debugLog(TAG, "Banner Ad onError - msg: " + s);
         DuAdMediation.runOnUIThread(new Runnable() {
             @Override
             public void run() {

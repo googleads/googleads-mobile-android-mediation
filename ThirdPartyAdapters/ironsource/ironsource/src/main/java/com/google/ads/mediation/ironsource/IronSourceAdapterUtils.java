@@ -1,13 +1,7 @@
 package com.google.ads.mediation.ironsource;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-
-import com.ironsource.mediationsdk.IronSource;
-
-import java.util.HashSet;
 
 /*
  * The {@link IronSourceAdapterUtils} class provides the publisher an ability to pass Activity to
@@ -29,38 +23,22 @@ public class IronSourceAdapterUtils {
      * Key to obtain the IronSource Instance ID, required to show IronSource ads.
      */
     static final String KEY_INSTANCE_ID = "instanceId";
+    static final String DEFAULT_INSTANCE_ID = "0";
 
     /**
      * Constant used for IronSource internal reporting.
      */
-    private static final String MEDIATION_NAME = "AdMob";
+    static final String MEDIATION_NAME = "AdMob";
+
+    /**
+     * Constant used for IronSource adapter version internal reporting
+     */
+    static final String ADAPTER_VERSION_NAME = "310";
 
     /**
      * UI thread handler used to send callbacks with AdMob interface.
      */
     private static Handler uiHandler;
-
-    /**
-     * Set of {@link com.ironsource.mediationsdk.IronSource.AD_UNIT} that have been initialized.
-     */
-    private static HashSet<IronSource.AD_UNIT> mInitialized = new HashSet<>();
-
-    static void initIronSourceSDK(Activity activity,
-                                  String appKey,
-                                  IronSource.AD_UNIT adUnit) {
-        if (isIronSourceInitialized(adUnit)) {
-            Log.d(IronSourceAdapterUtils.TAG,
-                    adUnit.toString() + " has already been initialized.");
-        } else {
-            IronSource.setMediationType(MEDIATION_NAME);
-            IronSource.initISDemandOnly(activity, appKey, adUnit);
-            mInitialized.add(adUnit);
-        }
-    }
-
-    static boolean isIronSourceInitialized(IronSource.AD_UNIT ad_unit) {
-        return mInitialized.contains(ad_unit);
-    }
 
     static synchronized void sendEventOnUIThread(Runnable runnable) {
         if (uiHandler == null) {
