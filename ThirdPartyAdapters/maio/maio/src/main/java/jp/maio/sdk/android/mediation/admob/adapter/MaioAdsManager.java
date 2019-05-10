@@ -129,19 +129,10 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
     @Override
     public void onFailed(FailNotificationReason reason, String zoneId) {
-        if (mInitState == InitializationStatus.INITIALIZING) {
-            mInitState = InitializationStatus.UNINITIALIZED;
-
-            for (InitializationListener listener : mInitListeners) {
-                listener.onMaioInitializeFailed(reason);
-            }
-            mInitListeners.clear();
-        } else {
-            if (hasListener(zoneId)) {
-                this.mListeners.get(zoneId).get().onFailed(reason, zoneId);
-            }
-            this.mListeners.remove(zoneId);
+        if (hasListener(zoneId)) {
+            this.mListeners.get(zoneId).get().onFailed(reason, zoneId);
         }
+        this.mListeners.remove(zoneId);
     }
 
     @Override
@@ -183,6 +174,5 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
     public interface InitializationListener {
         void onMaioInitialized();
-        void onMaioInitializeFailed(FailNotificationReason reason);
     }
 }
