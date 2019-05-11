@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.tools
 
     defaultConfig {
         applicationId "com.google.ads.mediation.sample.mediationsample"
@@ -20,8 +19,8 @@ android {
 }
 
 dependencies {
-    compile rootProject.ext.appcompatV7
-    compile rootProject.ext.playServicesAds
-    compile project(':adapter')
-    compile project(':customevent')
+    implementation rootProject.ext.appcompatV7
+    implementation rootProject.ext.playServicesAds
+    implementation project(':adapter')
+    implementation project(':customevent')
 }
