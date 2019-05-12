@@ -63,8 +63,8 @@ public class IronSourceAdapter
         try {
             String appKey = serverParameters.getString(IronSourceAdapterUtils.KEY_APP_KEY);
             if (TextUtils.isEmpty(appKey)) {
-                Log.e(TAG, String.format("IronSource initialization failed, make sure that the '%s' server parameter is added"
-                        ,IronSourceAdapterUtils.KEY_APP_KEY));
+                Log.e(TAG, String.format("IronSource initialization failed, make sure that the '%s'"
+                                + "server parameter is added", IronSourceAdapterUtils.KEY_APP_KEY));
                 onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                 return;
             }
@@ -125,8 +125,8 @@ public class IronSourceAdapter
     //region ISDemandOnlyInterstitialListener implementation.
     @Override
     public void onInterstitialAdReady(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial loaded successfully for instance %s (current instance is %s )"
-                ,instanceId ,this.mInstanceID));
+        Log.d(TAG, String.format("IronSource Interstitial loaded successfully for instance %s "
+                , instanceId));
 
         if (mInterstitialListener != null) {
             IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {
@@ -139,8 +139,8 @@ public class IronSourceAdapter
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        Log.e(TAG, String.format("IronSource Interstitial failed to load for instance %s (current instance is %s ) with Error: %s"
-                , instanceId, this.mInstanceID, ironSourceError.getErrorMessage()));
+        Log.e(TAG, String.format("IronSource Interstitial failed to load for instance %s  with Error: %s"
+                , instanceId, ironSourceError.getErrorMessage()));
 
         // We only listen to a registered instance.
         if (!this.mInstanceID.equals(instanceId))
@@ -151,8 +151,8 @@ public class IronSourceAdapter
 
     @Override
     public void onInterstitialAdOpened(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial opened ad for instance %s (current instance is %s )",
-                instanceId, this.mInstanceID));
+        Log.d(TAG, String.format("IronSource Interstitial opened ad for instance %s",
+                instanceId));
 
         if (mInterstitialListener != null) {
             IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {
@@ -165,8 +165,8 @@ public class IronSourceAdapter
 
     @Override
     public void onInterstitialAdClosed(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial closed ad for instance %s (current instance is %s )",
-                instanceId, this.mInstanceID));
+        Log.d(TAG, String.format("IronSource Interstitial closed ad for instance %s",
+                instanceId));
 
         if (mInterstitialListener != null) {
             IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {
@@ -180,7 +180,7 @@ public class IronSourceAdapter
     @Override
     public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
         Log.e(TAG, String.format("IronSource Interstitial failed to show " +
-                "for instance %s(current instance is %s ) with Error: %s",instanceId, this.mInstanceID, ironSourceError.getErrorMessage()));
+                "for instance %s with Error: %s",instanceId, ironSourceError.getErrorMessage()));
         if (mInterstitialListener != null) {
             IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {
                 @Override
@@ -194,8 +194,8 @@ public class IronSourceAdapter
 
     @Override
     public void onInterstitialAdClicked(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial ad clicked for instance %s (current instance is %s )",
-                instanceId, this.mInstanceID));
+        Log.d(TAG, String.format("IronSource Interstitial ad clicked for instance %s",
+                instanceId));
 
         if (mInterstitialListener != null) {
             IronSourceAdapterUtils.sendEventOnUIThread(new Runnable() {

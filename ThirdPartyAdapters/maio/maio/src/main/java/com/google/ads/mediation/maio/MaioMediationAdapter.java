@@ -98,12 +98,6 @@ public class MaioMediationAdapter extends Adapter
                 public void onMaioInitialized() {
                     initializationCompleteCallback.onInitializationSucceeded();
                 }
-
-                @Override
-                public void onMaioInitializeFailed(FailNotificationReason reason) {
-                    initializationCompleteCallback.onInitializationFailed(
-                            "Initialization Failed: " + reason.toString());
-                }
             });
         } else {
             initializationCompleteCallback.onInitializationFailed(
@@ -145,20 +139,12 @@ public class MaioMediationAdapter extends Adapter
         }
 
         mAdLoadCallback = mediationAdLoadCallback;
-
         MaioAds.setAdTestMode(mediationRewardedAdConfiguration.isTestRequest());
         MaioAdsManager.getManager(mMediaID).initialize((Activity) context,
                 new MaioAdsManager.InitializationListener() {
             @Override
             public void onMaioInitialized() {
                 MaioAdsManager.getManager(mMediaID).loadAd(mZoneID, MaioMediationAdapter.this);
-            }
-
-            @Override
-            public void onMaioInitializeFailed(FailNotificationReason reason) {
-                String logMessage = "Failed to request ad from Maio: " + reason.toString();
-                Log.w(TAG, logMessage);
-                mAdLoadCallback.onFailure(logMessage);
             }
         });
     }

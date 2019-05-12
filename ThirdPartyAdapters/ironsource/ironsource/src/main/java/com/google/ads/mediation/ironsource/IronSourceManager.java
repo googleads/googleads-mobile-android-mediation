@@ -66,10 +66,10 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener {
 
     private boolean canLoadRewardedVideoInstance(String instanceId) {
 
-        if(!isISRewardedVideoAdapterRegistered(instanceId)){
+        if (!isISRewardedVideoAdapterRegistered(instanceId)) {
             return true;
         }
-        if(isRegisteredRewardedVideoAdapterCanLoad(instanceId)){
+        if (isRegisteredRewardedVideoAdapterCanLoad(instanceId)) {
             return true;
         }
         return false;
@@ -77,14 +77,14 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener {
 
     private boolean isRegisteredRewardedVideoAdapterCanLoad(String instanceId) {
         WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-        if(weakAdapter == null){
+        if (weakAdapter == null) {
             return true;
         }
         IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-        if(ironSourceMediationAdapter == null){
+        if (ironSourceMediationAdapter == null) {
             return true;
         }
-        if(!ironSourceMediationAdapter.getInstanceState().equals(INSTANCE_STATE.CAN_LOAD)){
+        if (!ironSourceMediationAdapter.getInstanceState().equals(INSTANCE_STATE.CAN_LOAD)) {
             return false;
         }
         return true;
@@ -113,9 +113,9 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener {
 
     private boolean isISRewardedVideoAdapterRegistered(@NonNull String instanceId) {
         WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-        if (weakAdapter != null ){
+        if (weakAdapter != null) {
             IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-            if(ironSourceMediationAdapter != null) {
+            if (ironSourceMediationAdapter != null) {
                 return true;
             }
         }

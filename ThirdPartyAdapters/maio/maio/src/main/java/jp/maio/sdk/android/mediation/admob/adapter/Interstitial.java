@@ -76,13 +76,6 @@ public class Interstitial extends MaioMediationAdapter
             public void onMaioInitialized() {
                 MaioAdsManager.getManager(mMediaID).loadAd(mZoneID, Interstitial.this);
             }
-
-            @Override
-            public void onMaioInitializeFailed(FailNotificationReason reason) {
-                Log.w(TAG, "Failed to request ad from Maio: " + reason.toString());
-                mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this,
-                        AdRequest.ERROR_CODE_NO_FILL);
-            }
         });
     }
 
