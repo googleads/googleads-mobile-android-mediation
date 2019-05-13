@@ -22,7 +22,6 @@ import android.view.View;
 import com.google.ads.mediation.sample.sdk.SampleMediaView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
 import java.text.NumberFormat;
@@ -37,10 +36,8 @@ import java.util.Map;
 public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     private final SampleNativeAd sampleAd;
-    // For the sake of simplicity, NativeAdOptions are not used by the Sample Custom
-    // Event. They're included to demonstrate how the custom event can map options and views between
-    // the Google Mobile Ads SDK and the Sample SDK
-    public SampleUnifiedNativeAdMapper(SampleNativeAd ad, NativeAdOptions unusedAdOptions) {
+
+    public SampleUnifiedNativeAdMapper(SampleNativeAd ad) {
         sampleAd = ad;
         setHeadline(sampleAd.getHeadline());
         setBody(sampleAd.getBody());
@@ -56,9 +53,11 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                 SampleAdapter.SAMPLE_SDK_IMAGE_SCALE));
         setImages(imagesList);
 
-        NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        String priceString = formatter.format(sampleAd.getPrice());
-        setPrice(priceString);
+        if (sampleAd.getPrice() != null) {
+            NumberFormat formatter = NumberFormat.getCurrencyInstance();
+            String priceString = formatter.format(sampleAd.getPrice());
+            setPrice(priceString);
+        }
 
         Bundle extras = new Bundle();
         extras.putString(SampleAdapter.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
@@ -66,7 +65,7 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
         SampleMediaView mediaView = sampleAd.getMediaView();
 
-        // Some ads from Sample SDK has video assets and some do not.
+        // Some ads from Sample SDK have video assets and some do not.
         if (mediaView != null) {
             setMediaView(mediaView);
             setHasVideoContent(true);
