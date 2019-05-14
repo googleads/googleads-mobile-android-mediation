@@ -1,5 +1,11 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.0.3
+- Added implementation to display a part of nend banner in SmartBanner. Appropriate size for SmartBanner
+  - Portrait and Landscape
+    - Phones: 320×50
+    - Tablets: 728×90 or 320×50
+
 ## 5.1.0.2
 - Added support for flexible banner ad sizes.
 
