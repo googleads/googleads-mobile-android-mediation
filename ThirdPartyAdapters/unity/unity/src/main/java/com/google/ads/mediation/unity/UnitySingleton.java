@@ -104,7 +104,7 @@ public final class UnitySingleton {
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
         mediationMetaData.set("enable_metadata_load", new Boolean(true));
-        mediationMetaData.set("adaptor_version", "3.1.0");
+        mediationMetaData.set("adapter_version", "3.1.0");
         mediationMetaData.commit();
 
         UnitySingletonListener unitySingleton = UnitySingleton.getInstance();
