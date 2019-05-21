@@ -232,7 +232,7 @@ public final class UnitySingleton {
 
 
         if(UnityAds.isReady(delegate.getPlacementId())) {
-            // Notify UnityAds that the adaptor made a successful show request
+            // Notify UnityAds that the adapter made a successful show request
             MediationMetaData metadata = new MediationMetaData(activity);
             metadata.setOrdinal(++impressionOrdinal);
             metadata.commit();
@@ -240,7 +240,7 @@ public final class UnitySingleton {
             UnityAds.show(activity, delegate.getPlacementId());
         } else {
 
-            // Notify UnityAds that the adaptor fail to show (for Error tracking)
+            // Notify UnityAds that the adapter fail to show (for Error tracking)
             MediationMetaData metadata = new MediationMetaData(activity);
             metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
             metadata.commit();
