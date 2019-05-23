@@ -279,6 +279,12 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
         }
 
         @Override
+        public void onShow(@NonNull MyTargetView view)
+        {
+            Log.d(TAG, "Banner mediation Ad show");
+        }
+
+        @Override
         public void onClick(@NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad clicked");
             listener.onAdClicked(MyTargetAdapter.this);

@@ -1,4 +1,6 @@
 # myTarget Adapter for Google Mobile Ads SDK for Android Changelog
+## 5.4.0.0
+- Verified compatibility with myTarget SDK version 5.4.0.
 
 ## 5.3.9.1
 - Added support for flexible banner ad sizes.
