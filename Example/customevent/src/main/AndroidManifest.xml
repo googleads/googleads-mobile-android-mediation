@@ -1,2 +1,6 @@
-<manifest package="com.google.ads.mediation.sample.customevent">
+<manifest package="com.google.ads.mediation.sample.customevent"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-sdk
+      android:minSdkVersion="16"
+      android:targetSdkVersion="28"/>
 </manifest>
