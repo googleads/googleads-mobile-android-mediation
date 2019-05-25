@@ -29,6 +29,7 @@ import com.unity3d.services.banners.UnityBanners;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.UUID;
 
 /**
  * The {@link UnitySingleton} class is used to load {@link UnityAds}, handle multiple
@@ -56,6 +57,12 @@ public final class UnitySingleton {
     private static WeakReference<UnityAdapterBannerDelegate> mBannerDelegate;
 
     private static WeakReference<Activity> activity;
+
+    /**
+     * Used by Unity Ads to track failures in the mediation lifecycle
+     */
+    private static int impressionOrdinal;
+    private static int missedImpressionOrdinal;
 
     /**
      * This method will return the
@@ -96,6 +103,8 @@ public final class UnitySingleton {
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
+        mediationMetaData.set("enable_metadata_load", new Boolean(true));
+        mediationMetaData.set("adapter_version", "3.1.0");
         mediationMetaData.commit();
 
         UnitySingletonListener unitySingleton = UnitySingleton.getInstance();
@@ -158,6 +167,15 @@ public final class UnitySingleton {
         // If Unity Ads is initialized, we call the appropriate callbacks by checking the isReady
         // method. If ads are currently being loaded, wait for the callbacks from
         // unitySingletonListenerInstance.
+
+        // Tells Unity Ads to load a placement, if "metadata_load_enabled" is set
+        // Calling this before UnityAds.inititalize() will cause the placement to load on init
+        String uuid = UUID.randomUUID().toString();
+        MediationMetaData metadata = new MediationMetaData(activity.get());
+        metadata.setCategory("load");
+        metadata.set(uuid, delegate.getPlacementId());
+        metadata.commit();
+
         if (UnityAds.isInitialized()) {
 
             // Check if an AdMob Ad request has already loaded or is in progress of requesting
@@ -211,7 +229,22 @@ public final class UnitySingleton {
 
         // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
         // Unity Ads fails to shown an ad).
-        UnityAds.show(activity, delegate.getPlacementId());
+
+
+        if(UnityAds.isReady(delegate.getPlacementId())) {
+            // Notify UnityAds that the adapter made a successful show request
+            MediationMetaData metadata = new MediationMetaData(activity);
+            metadata.setOrdinal(++impressionOrdinal);
+            metadata.commit();
+
+            UnityAds.show(activity, delegate.getPlacementId());
+        } else {
+
+            // Notify UnityAds that the adapter fail to show (for Error tracking)
+            MediationMetaData metadata = new MediationMetaData(activity);
+            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
+            metadata.commit();
+        }
     }
 
     /**
