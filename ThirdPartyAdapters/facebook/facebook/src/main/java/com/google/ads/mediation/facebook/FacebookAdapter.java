@@ -15,11 +15,13 @@
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -27,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -55,6 +58,7 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -138,11 +142,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                 Bundle mediationExtras) {
         mBannerListener = listener;
         if (!isValidRequestParameters(context, serverParameters)) {
-      if (mBannerListener != null) {
-        mBannerListener.onAdFailedToLoad(
-            FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
-            return;
+            if (mBannerListener != null) {
+                mBannerListener.onAdFailedToLoad(
+                        FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
         }
 
         if (adSize == null) {
@@ -172,7 +176,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 Log.w(TAG, "Failed to load ad from Facebook: " + message);
                 if (mBannerListener != null) {
                     mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
         });
@@ -211,7 +215,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 Log.w(TAG, "Failed to load ad from Facebook: " + message);
                 if (mInterstitialListener != null) {
                     mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
         });
@@ -318,7 +322,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mWrappedAdView = new RelativeLayout(context);
         mAdView.setLayoutParams(adViewLayoutParams);
         mWrappedAdView.addView(mAdView);
-
         mAdView.loadAd();
     }
 
@@ -364,7 +367,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mInterstitialAd = new InterstitialAd(context, placementID);
         mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
-
         mInterstitialAd.loadAd();
     }
 
@@ -421,7 +423,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mNativeAd = new NativeAd(context, placementID);
         mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
         buildAdRequest(adRequest);
-
         mNativeAd.loadAd();
     }
 
@@ -479,7 +480,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                     }
                 });
 
-            } else if (mMediationAdRequest.isAppInstallAdRequested() || mMediationAdRequest.isContentAdRequested()) {
+            } else if (mMediationAdRequest.isAppInstallAdRequested()) {
                 // We always convert the ad into an app install ad.
                 final AppInstallMapper mapper = new AppInstallMapper(mNativeAd, options);
                 mapper.mapNativeAd(new NativeAdMapperListener() {
@@ -494,6 +495,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                 AdRequest.ERROR_CODE_NO_FILL);
                     }
                 });
+            } else {
+                Log.e(TAG, "Content Ads are not supported.");
+                FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
+                        FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
             }
         }
 
@@ -515,100 +521,100 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
     private com.facebook.ads.AdSize getAdSize(Context context, AdSize adSize) {
 
-    ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
-    potentials.add(0, new AdSize(adSize.getWidth(), 50));
-    potentials.add(1, new AdSize(adSize.getWidth(), 90));
-    potentials.add(2, new AdSize(adSize.getWidth(), 250));
-    Log.i(TAG, "Potential ad sizes: " + potentials.toString());
-    AdSize closestSize = findClosestSize(context, adSize, potentials);
-    if (closestSize == null) {
-      return null;
-    }
-    Log.i(TAG, "Found closest ad size: " + closestSize.toString());
+        ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
+        potentials.add(0, new AdSize(adSize.getWidth(), 50));
+        potentials.add(1, new AdSize(adSize.getWidth(), 90));
+        potentials.add(2, new AdSize(adSize.getWidth(), 250));
+        Log.i(TAG, "Potential ad sizes: " + potentials.toString());
+        AdSize closestSize = findClosestSize(context, adSize, potentials);
+        if (closestSize == null) {
+            return null;
+        }
+        Log.i(TAG, "Found closest ad size: " + closestSize.toString());
 
-    if (closestSize.getWidth() == com.facebook.ads.AdSize.BANNER_320_50.getWidth()
-        && closestSize.getHeight() == com.facebook.ads.AdSize.BANNER_320_50.getHeight()) {
+        if (closestSize.getWidth() == com.facebook.ads.AdSize.BANNER_320_50.getWidth()
+                && closestSize.getHeight() == com.facebook.ads.AdSize.BANNER_320_50.getHeight()) {
             return com.facebook.ads.AdSize.BANNER_320_50;
         }
 
-    int adHeight = closestSize.getHeight();
-    if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_50.getHeight()) {
+        int adHeight = closestSize.getHeight();
+        if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_50.getHeight()) {
             return com.facebook.ads.AdSize.BANNER_HEIGHT_50;
         }
 
-    if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_90.getHeight()) {
+        if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_90.getHeight()) {
             return com.facebook.ads.AdSize.BANNER_HEIGHT_90;
         }
 
-    if (adHeight == com.facebook.ads.AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
+        if (adHeight == com.facebook.ads.AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
             return com.facebook.ads.AdSize.RECTANGLE_HEIGHT_250;
         }
         return null;
     }
 
-  // Start of helper code to remove when available in SDK
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(
-      Context context, AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
 
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
+    // Start of helper code to remove when available in SDK
+    /**
+     * Find the closest supported AdSize from the list of potentials to the provided size. Returns
+     * null if none are within given threshold size range.
+     */
+    public static AdSize findClosestSize(
+            Context context, AdSize original, ArrayList<AdSize> potentials) {
+        if (potentials == null || original == null) {
+            return null;
         }
-      }
-    }
-    return largestPotential;
-  }
+        float density = context.getResources().getDisplayMetrics().density;
+        int actualWidth = Math.round(original.getWidthInPixels(context) / density);
+        int actualHeight = Math.round(original.getHeightInPixels(context) / density);
+        original = new AdSize(actualWidth, actualHeight);
 
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
-      return false;
+        AdSize largestPotential = null;
+        for (AdSize potential : potentials) {
+            if (isSizeInRange(original, potential)) {
+                if (largestPotential == null) {
+                    largestPotential = potential;
+                } else {
+                    largestPotential = getLargerByArea(largestPotential, potential);
+                }
+            }
+        }
+        return largestPotential;
     }
 
-    if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
-      return false;
+    private static boolean isSizeInRange(AdSize original, AdSize potential) {
+        if (potential == null) {
+            return false;
+        }
+        double minWidthRatio = 0.5;
+        double minHeightRatio = 0.7;
+
+        int originalWidth = original.getWidth();
+        int potentialWidth = potential.getWidth();
+        int originalHeight = original.getHeight();
+        int potentialHeight = potential.getHeight();
+
+        if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
+            return false;
+        }
+
+        if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
+            return false;
+        }
+        return true;
     }
-    return true;
-  }
 
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
+    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+        int area1 = size1.getWidth() * size1.getHeight();
+        int area2 = size2.getWidth() * size2.getHeight();
+        return area1 > area2 ? size1 : size2;
     }
-  // End code to remove when available in SDK
+    // End code to remove when available in SDK
 
-  /**
-   * The {@link AppInstallMapper} class is used to map Facebook native ads to Google Mobile Ads'
-   * native app install ads.
-   */
-  class AppInstallMapper extends NativeAppInstallAdMapper {
-
+    /**
+     * The {@link AppInstallMapper} class is used to map Facebook native ads to Google Mobile Ads'
+     * native app install ads.
+     */
+    class AppInstallMapper extends NativeAppInstallAdMapper {
         /**
          * The Facebook native ad to be mapped.
          */
@@ -833,8 +839,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     /**
-     * The {@link UnifiedAdMapper} class is used to map Facebook native ads to Google Mobile Ads'
-     * UnifiedNative ads.
+     * The {@link UnifiedAdMapper} class is used to map Facebook native ads to Google unified native ads.
      */
     class UnifiedAdMapper extends UnifiedNativeAdMapper {
 

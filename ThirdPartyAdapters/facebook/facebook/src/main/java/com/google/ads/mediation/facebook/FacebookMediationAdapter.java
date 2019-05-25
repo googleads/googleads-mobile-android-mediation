@@ -5,36 +5,44 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.RewardedVideoAd;
-import com.facebook.ads.RewardedVideoAdListener;
-import com.google.android.gms.ads.mediation.Adapter;
+import com.facebook.ads.BidderTokenProvider;
+import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
+import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
+import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.mediation.VersionInfo;
-import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FacebookMediationAdapter extends Adapter implements MediationRewardedAd {
+public class FacebookMediationAdapter extends RtbAdapter {
 
-    static final String TAG = FacebookAdapter.class.getSimpleName();
+    public static final String TAG = FacebookAdapter.class.getSimpleName();
 
-    static final String PLACEMENT_PARAMETER = "pubid";
+    private FacebookRtbBannerAd banner;
+    private FacebookRtbInterstitialAd interstitial;
+    private FacebookRtbNativeAd nativeAd;
+    private FacebookRewardedAd rewardedAd;
 
-    /**
-     * Facebook rewarded video ad instance.
-     */
-    private RewardedVideoAd mRewardedVideoAd;
-
-    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-    private MediationRewardedAdCallback mRewardedAdCallback;
+    public static final String PLACEMENT_PARAMETER = "pubid";
+    public static final String RTB_PLACEMENT_PARAMETER = "placement_id";
 
     @Override
     public VersionInfo getVersionInfo() {
@@ -93,157 +101,57 @@ public class FacebookMediationAdapter extends Adapter implements MediationReward
             @Override
             public void onInitializeError(String message) {
                 initializationCompleteCallback.onInitializationFailed(
-                        "Initialization failed: " + message);
+                                "Initialization failed: " + message);
             }
         });
     }
+
+    @Override
+    public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
+        String token = BidderTokenProvider.getBidderToken(rtbSignalData.getContext());
+        signalCallbacks.onSuccess(token);
+    }
+
 
     @Override
     public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-
-        final Context context = mediationRewardedAdConfiguration.getContext();
-        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-
-        if (!isValidRequestParameters(context, serverParameters)) {
-            mediationAdLoadCallback.onFailure("Invalid request");
-            return;
-        }
-
-        mAdLoadCallback = mediationAdLoadCallback;
-        final String placementID = serverParameters.getString(PLACEMENT_PARAMETER);
-
-        FacebookInitializer.getInstance().initialize(context, placementID,
-                new FacebookInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                createAndLoadRewardedVideo(context, placementID);
-            }
-
-            @Override
-            public void onInitializeError(String message) {
-                String logMessage = "Failed to load ad from Facebook: " + message;
-                Log.w(TAG, logMessage);
-                if (mAdLoadCallback != null) {
-                    mAdLoadCallback.onFailure(logMessage);
-                }
-            }
-        });
+                               MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+        rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        rewardedAd.render();
     }
 
     @Override
-    public void showAd(Context context) {
-        if (mRewardedVideoAd != null && mRewardedVideoAd.isAdLoaded()) {
-            mRewardedVideoAd.show();
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdOpened();
-                mRewardedAdCallback.onVideoStart();
-            }
-        } else {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdFailedToShow("No ads to show.");
-            }
-        }
+    public void loadBannerAd(MediationBannerAdConfiguration adConfiguration,
+                             MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+        banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
+        banner.render();
     }
 
-    //region Rewarded video adapter utility methods and classes.
-    private void createAndLoadRewardedVideo(Context context, String placementID) {
-        mRewardedVideoAd = new RewardedVideoAd(context, placementID);
-        mRewardedVideoAd.setAdListener(
-                new RewardedVideoListener(mRewardedVideoAd, mAdLoadCallback));
-        mRewardedVideoAd.loadAd(true);
+    @Override
+    public void loadInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
+                                   MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+        interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
+        interstitial.render();
     }
 
-    /**
-     * A {@link RewardedVideoAdListener} used to listen to rewarded video ad events from Facebook
-     * SDK and forward to Google Mobile Ads SDK using {@link #mRewardedAdCallback}
-     */
-    private class RewardedVideoListener implements RewardedVideoAdListener {
-        private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mMediationAdLoadCallback;
-        private RewardedVideoAd mRewardedVideoAd;
-
-        private RewardedVideoListener(RewardedVideoAd rewardedVideoAd,
-                MediationAdLoadCallback<MediationRewardedAd,
-                MediationRewardedAdCallback> mMediationAdLoadCallback) {
-            this.mRewardedVideoAd = rewardedVideoAd;
-            this.mMediationAdLoadCallback = mMediationAdLoadCallback;
-        }
-
-        @Override
-        public void onRewardedVideoCompleted() {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onVideoComplete();
-                // Facebook SDK doesn't provide a reward value. The publisher is expected to
-                // override the reward in AdMob UI.
-                mRewardedAdCallback.onUserEarnedReward(new FacebookReward());
-            }
-        }
-
-        @Override
-        public void onError(Ad ad, AdError adError) {
-            String errorMessage = adError.getErrorMessage();
-            if (!TextUtils.isEmpty(errorMessage)) {
-                Log.w(TAG, "Failed to load ad from Facebook: " + errorMessage);
-            }
-
-            if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(errorMessage);
-            }
-
-            mRewardedVideoAd.destroy();
-        }
-
-        @Override
-        public void onAdLoaded(Ad ad) {
-            if (mMediationAdLoadCallback != null) {
-                mRewardedAdCallback =
-                        mMediationAdLoadCallback.onSuccess(FacebookMediationAdapter.this);
-            }
-        }
-
-        @Override
-        public void onAdClicked(Ad ad) {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.reportAdClicked();
-            }
-        }
-
-        @Override
-        public void onLoggingImpression(Ad ad) {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.reportAdImpression();
-            }
-        }
-
-        @Override
-        public void onRewardedVideoClosed() {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdClosed();
-            }
-            mRewardedVideoAd.destroy();
-        }
+    @Override
+    public void loadNativeAd(MediationNativeAdConfiguration mediationNativeAdConfiguration,
+                             MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+        nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
+        nativeAd.render();
     }
 
-    /**
-     * An implementation of {@link RewardItem} that will be given to the app when a Facebook reward
-     * is granted. Because the FAN SDK doesn't provide reward amounts and types, defaults are used
-     * here.
-     */
-    private class FacebookReward implements RewardItem {
 
-        @Override
-        public String getType() {
-            // Facebook SDK does not provide a reward type.
-            return "";
+    public static String getPlacementID(Bundle serverParameters) {
+        // Open bidding uses a different key for Placement ID than non-open bidding. Try the open bidding
+        // key first.
+        String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);
+        if (placementId == null) {
+            // Fall back to checking the non-open bidding key.
+            placementId = serverParameters.getString(PLACEMENT_PARAMETER);
         }
-
-        @Override
-        public int getAmount() {
-            // Facebook SDK does not provide reward amount, default to 1.
-            return 1;
-        }
+        return placementId;
     }
-    //endregion
 
     //region Helper methods
 
@@ -273,5 +181,4 @@ public class FacebookMediationAdapter extends Adapter implements MediationReward
         return true;
     }
     //endregion
-
 }

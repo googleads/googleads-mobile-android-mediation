@@ -7,6 +7,7 @@ import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
 
+
 class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
     private static FacebookInitializer instance;
@@ -49,7 +50,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
         getInstance().mListeners.add(listener);
         AudienceNetworkAds.buildInitSettings(context)
                 .withMediationService("GOOGLE_" + MobileAds.getVersionString()
-                    + ":" + BuildConfig.VERSION_NAME)
+                        + ":" + BuildConfig.VERSION_NAME)
                 .withPlacementIds(placements)
                 .withInitListener(FacebookInitializer.this)
                 .initialize();
