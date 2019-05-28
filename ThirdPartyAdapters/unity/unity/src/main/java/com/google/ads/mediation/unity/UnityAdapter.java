@@ -71,6 +71,11 @@ public class UnityAdapter extends UnityMediationAdapter
     private MediationBannerListener bannerListener;
 
     /**
+     * Requested Banner AdSize
+     */
+    private AdSize requestedAdSize;
+    
+    /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
@@ -153,6 +158,15 @@ public class UnityAdapter extends UnityMediationAdapter
         public void onUnityBannerLoaded(String placementId, View view) {
             // Unity Ads Banner ad has been loaded and is ready to be shown.
             bannerView = view;
+            bannerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            int adHeight =  bannerView.getMeasuredHeight();
+            int adwidth = bannerView.getMeasuredWidth();
+            AdSize adSize = new AdSize(adwidth,adHeight);
+            if (!isSizeInRange(requestedAdSize, adSize)) {
+                Log.e(TAG, "The banner adsize loaded does not match the requested size");
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
             if (bannerListener != null) {
                 bannerListener.onAdLoaded(UnityAdapter.this);
             }
@@ -309,14 +323,15 @@ public class UnityAdapter extends UnityMediationAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         bannerListener = listener;
+        requestedAdSize = adSize;
         AdSize supportedSize = getSupportedAdSize(context, adSize);
         if (supportedSize == null) {
-          Log.e(TAG, "Invalid ad size requested: " + adSize);
-          if (bannerListener != null) {
-              bannerListener.onAdFailedToLoad(UnityAdapter.this,
-                      AdRequest.ERROR_CODE_INVALID_REQUEST);
-          }
-          return;
+            Log.e(TAG, "Invalid ad size requested: " + adSize);
+            if (bannerListener != null) {
+                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
         }
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
