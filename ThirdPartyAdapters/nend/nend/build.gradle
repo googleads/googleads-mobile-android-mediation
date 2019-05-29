@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.1.0.2"
+    stringVersion = "5.1.0.3"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
