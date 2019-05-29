@@ -1,8 +1,9 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
 ## 9.4.2.0
+- Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
 - Added support for flexible banner ad sizes.
-- Verified compatibility with AppLovin SDK 9.4.2
+- Verified compatibility with AppLovin SDK 9.4.2.
 
 ## 9.2.1.1
 - Updated adapter to support new open-beta Rewarded API.

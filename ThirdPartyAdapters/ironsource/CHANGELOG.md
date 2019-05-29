@@ -1,5 +1,8 @@
 # ironSource Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Version 6.8.4.1
+- Added support to request multiple interstitial ads.
+
 ## Version 6.8.4.0
 - Verified compatibility with ironSource SDK version 6.8.4.
 
