@@ -1,5 +1,10 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.1.0
+- Added open bidding capability to the adapter for banner, interstitial,
+  rewarded and native ads.
+- Verified compatibility with Facebook SDK v5.3.1.
+
 ## 5.3.0.0
 - Updated mediation service name for Google Mobile Ads.
 - Added adapter version to the initialization call.
