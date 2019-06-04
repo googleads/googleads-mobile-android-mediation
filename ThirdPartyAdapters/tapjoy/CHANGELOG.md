@@ -1,5 +1,9 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 12.2.1.1
+- Added open bidding capability to the adapter for interstitial and
+  rewarded ads.
+
 ## 12.2.1.0
 - Verified compatibility with tapjoy SDK version 12.2.1.
 
