@@ -83,8 +83,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
         @Override
         public void onLoggingImpression(Ad ad) {
-            // TODO: Upon approval, add this callback back in.
-            // mNativeAdCallback.reportAdImpression();
+          // Google Mobile Ads handles impression tracking.
         }
 
         @Override
@@ -256,9 +255,6 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
             AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, null);
             this.setAdChoicesContent(adOptionsView);
         }
-
-        // Facebook does its own impression tracking.
-        setOverrideImpressionRecording(true);
 
         // Facebook does its own click handling.
         setOverrideClickHandling(true);
