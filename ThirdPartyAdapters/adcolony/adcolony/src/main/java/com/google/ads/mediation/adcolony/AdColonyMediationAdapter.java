@@ -7,34 +7,38 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.adcolony.sdk.AdColony;
-import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyAppOptions;
-import com.adcolony.sdk.AdColonyInterstitial;
-import com.adcolony.sdk.AdColonyZone;
+import com.adcolony.sdk.AdColonyCustomMessage;
+import com.adcolony.sdk.AdColonyCustomMessageListener;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.jirbo.adcolony.AdColonyManager;
 import com.jirbo.adcolony.BuildConfig;
 
-import java.lang.ref.WeakReference;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class AdColonyMediationAdapter extends Adapter implements MediationRewardedAd {
-    private static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
+public class AdColonyMediationAdapter extends RtbAdapter {
+    public static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
     private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
-
-    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-    private MediationRewardedAdCallback mRewardedAdCallback;
-
-    private AdColonyInterstitial mAdColonyInterstitial;
+    private static HashMap<String, String> bidResponseDetailsHashMap = new HashMap<>();
 
     /**
      * {@link Adapter} implementation
@@ -51,12 +55,17 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
 
     @Override
     public VersionInfo getSDKVersionInfo() {
-        String versionString = AdColony.getSDKVersion();
-        String splits[] = versionString.split("\\.");
-        int major = Integer.parseInt(splits[0]);
-        int minor = Integer.parseInt(splits[1]);
-        int micro = Integer.parseInt(splits[2]);
-        return new VersionInfo(major, minor, micro);
+        String sdkVersion = AdColony.getSDKVersion();
+        String splits[] = sdkVersion.split("\\.");
+
+        if (splits.length == 3) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]);
+            return new VersionInfo(major, minor, micro);
+        }
+        Log.w(TAG,"Unexpected SDK version format, Returning 0.0.0 for SDK version");
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override
@@ -84,7 +93,7 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
             // AdColony SDK and avoid issues with Interstitial Ads.
             ArrayList<String> zoneIDs = AdColonyManager.getInstance()
                     .parseZoneList(serverParameters);
-            if (zoneIDs != null && zoneIDs.size() > 0){
+            if (zoneIDs != null && zoneIDs.size() > 0) {
                 zoneList.addAll(zoneIDs);
             }
         }
@@ -126,137 +135,54 @@ public class AdColonyMediationAdapter extends Adapter implements MediationReward
     }
 
     @Override
+    public void loadInterstitialAd(
+            MediationInterstitialAdConfiguration interstitialAdConfiguration,
+            MediationAdLoadCallback<MediationInterstitialAd,
+                    MediationInterstitialAdCallback> mediationAdLoadCallback) {
+        String requestedZone =
+                interstitialAdConfiguration.getServerParameters().getString(AdColonyAdapterUtils.KEY_ZONE_ID);
+        AdColonyInterstitialRenderer interstitialAd =
+                new AdColonyInterstitialRenderer(requestedZone);
+        interstitialAd.requestInterstitial(mediationAdLoadCallback);
+    }
+
+    @Override
     public void loadRewardedAd(
-            MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+            MediationRewardedAdConfiguration rewardedAdConfiguration,
             MediationAdLoadCallback<MediationRewardedAd,
                     MediationRewardedAdCallback> mediationAdLoadCallback) {
-
-        mAdLoadCallback = mediationAdLoadCallback;
-
-        boolean showPrePopup = false;
-        boolean showPostPopup = false;
-
-        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-        Bundle networkExtras = mediationRewardedAdConfiguration.getMediationExtras();
-
-        // Retrieve the appropriate zone for this ad-request.
-        ArrayList<String> listFromServerParams =
-                AdColonyManager.getInstance().parseZoneList(serverParameters);
-        String requestedZone = AdColonyManager
-                .getInstance().getZoneFromRequest(listFromServerParams, networkExtras);
-
-        if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)) {
-            String logMessage = "Failed to load ad from AdColony: " +
-                    "Only a maximum of one ad can be loaded per Zone ID.";
-            Log.e(TAG, logMessage);
-            mediationAdLoadCallback.onFailure(logMessage);
-            return;
-        }
-
-        // Configures the AdColony SDK, which also initializes the SDK if it has not been yet.
-        boolean success = AdColonyManager.getInstance()
-                .configureAdColony(mediationRewardedAdConfiguration);
-
-        // Check if we have a valid zone and request the ad.
-        if (success && !TextUtils.isEmpty(requestedZone)) {
-            if (networkExtras != null) {
-                showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
-                showPostPopup = networkExtras.getBoolean("show_post_popup", false);
-            }
-
-            AdColonyAdOptions adOptions = new AdColonyAdOptions()
-                    .enableConfirmationDialog(showPrePopup)
-                    .enableResultsDialog(showPostPopup);
-
-            AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
-                    new WeakReference<>(AdColonyMediationAdapter.this));
-
-            AdColony.requestInterstitial(requestedZone,
-                    AdColonyRewardedEventForwarder.getInstance(), adOptions);
-        } else {
-            // Cannot request an ad without a valid zone.
-            success = false;
-        }
-
-        if (!success) {
-            String logMessage = "Failed to request ad from AdColony: Internal Error";
-            Log.w(TAG,logMessage);
-            mediationAdLoadCallback.onFailure(logMessage);
-        }
+        AdColonyRewardedRenderer rewardedAd =
+                new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
+        rewardedAd.render();
     }
 
     public static AdColonyAppOptions getAppOptions() {
         return appOptions;
     }
 
+
     @Override
-    public void showAd(Context context) {
-        if (mAdColonyInterstitial != null) {
-            mAdColonyInterstitial.show();
-        } else {
-            mRewardedAdCallback.onAdFailedToShow("No ad to show.");
-        }
-    }
+    public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
+        String zone, signals = "";
+        AdColony.addCustomMessageListener(new AdColonyCustomMessageListener() {
+            @Override
+            public void onAdColonyCustomMessage(AdColonyCustomMessage adColonyCustomMessage) {
 
-    //region AdColony Rewarded Events
-    void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
-        mAdColonyInterstitial = adColonyInterstitial;
-        if (mAdLoadCallback != null) {
-            mRewardedAdCallback = mAdLoadCallback.onSuccess(AdColonyMediationAdapter.this);
-        }
-    }
-
-    void onRequestNotFilled(AdColonyZone zone) {
-        if (mAdLoadCallback != null) {
-            mAdLoadCallback.onFailure("Failed to load ad from AdColony.");
-        }
-    }
-
-    void onExpiring(AdColonyInterstitial ad) {
-        // No relevant ad event can be forwarded to the Google Mobile Ads SDK.
-        Log.i(TAG, "AdColony Ad expired. Attempting to load a new ad.");
-        mAdColonyInterstitial = null;
-        AdColony.requestInterstitial(ad.getZoneID(), AdColonyRewardedEventForwarder.getInstance());
-    }
-
-    void onClicked(AdColonyInterstitial ad) {
-        if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.reportAdClicked();
-        }
-    }
-
-    void onOpened(AdColonyInterstitial ad) {
-        if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onAdOpened();
-            mRewardedAdCallback.reportAdImpression();
-            mRewardedAdCallback.onVideoStart();
-        }
-    }
-
-    void onLeftApplication(AdColonyInterstitial ad) {
-        // No relevant ad event can be forwarded to the Google Mobile Ads SDK.
-    }
-
-    void onClosed(AdColonyInterstitial ad) {
-        if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onAdClosed();
-        }
-    }
-
-    void onIAPEvent(AdColonyInterstitial ad, String product_id, int engagement_type) {
-        // No relevant ad event can be forwarded to the Google Mobile Ads SDK.
-    }
-
-    void onReward(com.adcolony.sdk.AdColonyReward adColonyReward) {
-        if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onVideoComplete();
-
-            if (adColonyReward.success()) {
-                AdColonyReward reward = new AdColonyReward(adColonyReward.getRewardName(),
-                        adColonyReward.getRewardAmount());
-                mRewardedAdCallback.onUserEarnedReward(reward);
+                try {
+                    JSONObject jsonObject = new JSONObject(adColonyCustomMessage.getMessage());
+                    String zoneID = jsonObject.getString("zone");
+                    bidResponseDetailsHashMap.put(zoneID, adColonyCustomMessage.getMessage());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+        }, "bid");
+        if (bidResponseDetailsHashMap != null && bidResponseDetailsHashMap.size() > 0) {
+            Bundle serverParameters = rtbSignalData.getConfiguration().getServerParameters();
+            zone = serverParameters.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
+            signals = bidResponseDetailsHashMap.get(zone);
         }
+        signalCallbacks.onSuccess(signals);
     }
     //endregion
 }

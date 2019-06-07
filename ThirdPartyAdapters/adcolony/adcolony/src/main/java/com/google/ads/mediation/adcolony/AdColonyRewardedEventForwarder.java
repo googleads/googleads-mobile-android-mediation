@@ -17,7 +17,7 @@ class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
 
     private static AdColonyRewardedEventForwarder instance = null;
 
-    private static HashMap<String, WeakReference<AdColonyMediationAdapter>> mListeners;
+    private static HashMap<String, WeakReference<AdColonyRewardedRenderer>> mListeners;
 
     static AdColonyRewardedEventForwarder getInstance() {
         if (instance == null) {
@@ -31,10 +31,9 @@ class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
         AdColony.setRewardListener(AdColonyRewardedEventForwarder.this);
     }
 
-    void addListener(@NonNull String zoneID, WeakReference<AdColonyMediationAdapter> listener) {
-        if (listener.get() != null) {
-            mListeners.put(zoneID, listener);
-        }
+    void addListener(@NonNull String zoneID, @NonNull AdColonyRewardedRenderer listener) {
+        WeakReference<AdColonyRewardedRenderer> weakListener = new WeakReference<>(listener);
+        mListeners.put(zoneID, weakListener);
     }
 
     boolean isListenerAvailable(@NonNull String zoneID) {
@@ -118,5 +117,4 @@ class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
         }
     }
     //endregion
-
 }
