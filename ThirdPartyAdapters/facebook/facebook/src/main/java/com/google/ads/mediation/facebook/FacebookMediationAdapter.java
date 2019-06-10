@@ -79,7 +79,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
         for (MediationConfiguration adConfiguration : mediationConfigurations) {
             Bundle serverParameters = adConfiguration.getServerParameters();
 
-            String placementID = serverParameters.getString(PLACEMENT_PARAMETER);
+            String placementID = getPlacementID(serverParameters);
             if (!TextUtils.isEmpty(placementID)) {
                 placements.add(placementID);
             }
