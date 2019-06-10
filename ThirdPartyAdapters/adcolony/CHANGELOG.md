@@ -1,5 +1,9 @@
 # AdColony Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.3.10.1
+- Added open bidding capability to the adapter for interstitial
+  and rewarded ads.
+
 ## 3.3.10.0
 - Verified compatibility with AdColony SDK version 3.3.10.
 
