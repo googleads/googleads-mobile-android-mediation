@@ -1,5 +1,9 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.3.1.2
+- Fixed a bug where Facebook open bidding failed to initialize due
+  to "No placement IDs found".
+
 ## 5.3.1.1
 - Updated native RTB ads impression tracking.
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
