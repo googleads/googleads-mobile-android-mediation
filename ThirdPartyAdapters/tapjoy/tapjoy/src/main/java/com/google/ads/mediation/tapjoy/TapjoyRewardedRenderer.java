@@ -230,6 +230,19 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
                                         int i) {
                 // no-op
             }
+
+            @Override
+            public void onClick(TJPlacement tjPlacement) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "Tapjoy Rewarded Ad has been clicked.");
+                        if (mMediationRewardedAdCallback != null) {
+                            mMediationRewardedAdCallback.reportAdClicked();
+                        }
+                    }
+                });
+            }
         });
 
         videoPlacement.setMediationName(MEDIATION_AGENT);

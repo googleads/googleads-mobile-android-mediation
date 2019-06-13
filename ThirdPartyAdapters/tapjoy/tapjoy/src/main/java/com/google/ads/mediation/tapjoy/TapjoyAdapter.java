@@ -178,6 +178,17 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
                                                 int i) {
                         // no-op
                     }
+
+                    @Override
+                    public void onClick(TJPlacement tjPlacement) {
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mediationInterstitialListener.onAdClicked(TapjoyAdapter.this);
+                                mediationInterstitialListener.onAdLeftApplication(TapjoyAdapter.this);
+                            }
+                        });
+                    }
                 });
         interstitialPlacement.setMediationName(MEDIATION_AGENT);
         interstitialPlacement.setAdapterVersion(TAPJOY_INTERNAL_ADAPTER_VERSION);

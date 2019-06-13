@@ -160,6 +160,19 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
             public void onRewardRequest(TJPlacement tjPlacement, TJActionRequest tjActionRequest, String s, int i) {
 
             }
+
+            @Override
+            public void onClick(TJPlacement tjPlacement) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (listener != null) {
+                            listener.reportAdClicked();
+                            listener.onAdLeftApplication();
+                        }
+                    }
+                });
+            }
         });
 
         interstitialPlacement.setMediationName(MEDIATION_AGENT);
