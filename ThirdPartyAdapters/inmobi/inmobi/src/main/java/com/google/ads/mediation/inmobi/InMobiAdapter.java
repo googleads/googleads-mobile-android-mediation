@@ -262,6 +262,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         1024x768; 1536x2048
         320x480; 640x960
         1280x800; 1600x2560
+        smart banner and other banner formats
+        -1x-2; 320x100
+        160x600
          */
         AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
 
@@ -286,6 +289,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         potentials.add(new AdSize(640, 960));
         potentials.add(new AdSize(1280, 800));
         potentials.add(new AdSize(1600, 2560));
+        potentials.add(new AdSize(-1, -2));
+        potentials.add(new AdSize(320, 100));
+        potentials.add(new AdSize(160, 600));
         Log.i(TAG, potentials.toString());
         return InMobiAdapterUtils.findClosestSize(context, original, potentials);
     }
