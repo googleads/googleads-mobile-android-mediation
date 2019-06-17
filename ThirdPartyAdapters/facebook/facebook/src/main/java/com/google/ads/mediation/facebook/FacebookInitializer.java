@@ -3,7 +3,6 @@ package com.google.ads.mediation.facebook;
 import android.content.Context;
 
 import com.facebook.ads.AudienceNetworkAds;
-import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
 
@@ -49,7 +48,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
         getInstance().mListeners.add(listener);
         AudienceNetworkAds.buildInitSettings(context)
-                .withMediationService("GOOGLE_5.3.1.0")
+                .withMediationService("GOOGLE:"+BuildConfig.VERSION_NAME)
                 .withPlacementIds(placements)
                 .withInitListener(FacebookInitializer.this)
                 .initialize();
