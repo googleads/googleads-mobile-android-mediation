@@ -262,7 +262,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         1024x768; 1536x2048
         320x480; 640x960
         1280x800; 1600x2560
-        smart banner and other banner formats
+        smart banner and other banner sizes
         -1x-2; 320x100
         160x600
          */
