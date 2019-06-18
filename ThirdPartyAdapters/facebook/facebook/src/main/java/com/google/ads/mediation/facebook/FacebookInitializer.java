@@ -48,7 +48,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
         getInstance().mListeners.add(listener);
         AudienceNetworkAds.buildInitSettings(context)
-                .withMediationService("GOOGLE:"+BuildConfig.VERSION_NAME)
+                .withMediationService("GOOGLE:"+ BuildConfig.VERSION_NAME)
                 .withPlacementIds(placements)
                 .withInitListener(FacebookInitializer.this)
                 .initialize();

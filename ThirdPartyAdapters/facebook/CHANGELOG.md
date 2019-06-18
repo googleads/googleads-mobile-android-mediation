@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.4.0.0
+- Verified compatibility with Facebook SDK v5.4.0.
+
 ## 5.3.1.2
 - Fixed a bug where Facebook open bidding failed to initialize due
   to "No placement IDs found".
