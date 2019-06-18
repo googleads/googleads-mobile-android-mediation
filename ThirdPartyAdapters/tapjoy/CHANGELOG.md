@@ -1,5 +1,10 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 12.3.1.0
+- Updated the adapter to invoke 'onClick()' ad event.
+- Verified compatibility with tapjoy SDK version 12.3.1.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
+
 ## 12.2.1.1
 - Added open bidding capability to the adapter for interstitial and
   rewarded ads.
