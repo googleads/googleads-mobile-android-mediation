@@ -1,5 +1,9 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.1.1.0
+- Verified compatibility with nend SDK 5.1.1.
+- Migrated to `AndroidX`.
+
 ## 5.1.0.3
 - Added implementation to display a part of nend banner in SmartBanner. Appropriate size for SmartBanner
   - Portrait and Landscape
