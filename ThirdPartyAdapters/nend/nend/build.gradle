@@ -42,7 +42,7 @@ dependencies {
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
     // nendSDK
-    implementation 'net.nend.android:nend-sdk:5.1.0'
+    implementation 'net.nend.android:nend-sdk:5.1.1'
 }
 
 /**
