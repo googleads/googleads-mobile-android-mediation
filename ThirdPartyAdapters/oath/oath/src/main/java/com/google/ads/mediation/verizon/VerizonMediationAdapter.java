@@ -19,7 +19,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.millennialmedia.adapter.BuildConfig;
+import com.verizon.ads.ActivityStateManager;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
@@ -33,11 +33,9 @@ import java.util.Collections;
 
 public class VerizonMediationAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
 
-	private static final String VERSION = "1.0.1.0";
+	private static final String VERSION = "1.1.1.0";
 	private static final String PLACEMENT_KEY = "placement_id";
-	private static final String CUSTOM_PLACEMENT_KEY = "parameter";
 	private static final String SITE_KEY = "site_id";
-	private static final String GREEN_PLACEMENT_KEY = "pubid";
 	private static final String ORANGE_PLACEMENT_KEY = "position";
 	private static final String DCN_KEY = "dcn";
 
@@ -284,58 +282,63 @@ public class VerizonMediationAdapter implements MediationBannerAdapter, Mediatio
 	private boolean initializeSDK(final Context context, final Bundle mediationExtras,
 		final Bundle serverParams) {
 
-		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-			if (!VASAds.isInitialized()) {
+		if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
 
-				if (context instanceof Activity) {
+			return false;
+		}
 
-					String siteId = null;
-					try {
-						if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
-							siteId = mediationExtras.getString(SITE_KEY);
-						}
-						// If we get site ID from the serverParams (not yet implemented), overwrite everything!
-						if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
-							siteId = serverParams.getString(SITE_KEY);
-						}
+		boolean success = true;
 
-						// Support for legacy Nexage and MM mediation
-						if (TextUtils.isEmpty(siteId)) {
-							if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
-								siteId = mediationExtras.getString(DCN_KEY);
-							}
-							// If we get site ID from the serverParams (not yet implemented), overwrite everything!
-							if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
-								siteId = serverParams.getString(DCN_KEY);
-							}
-						}
+		if (!VASAds.isInitialized()) {
 
-						if (TextUtils.isEmpty(siteId)) {
-							Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or server params");
+			if (!(context instanceof Activity)) {
+				Log.e(TAG, "StandardEdition.initialize must be explicitly called when instantiating the AdMob " +
+					"AdView or InterstitialAd without an Activity.");
 
-							return false;
-						}
+				return false;
+			}
 
-						Log.d(TAG, "Using site ID: " + siteId);
+			String siteId = null;
+			try {
+				if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
+					siteId = mediationExtras.getString(SITE_KEY);
+				}
+				// If we get site ID from the serverParams (not yet implemented), overwrite everything!
+				if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
+					siteId = serverParams.getString(SITE_KEY);
+				}
 
-						StandardEdition.initializeWithActivity((Activity) context, siteId);
-					} catch (Exception e) {
-						Log.e(TAG, "Error occurred initializing Verizon Ads SDK.", e);
-
-						return false;
+				// Support for legacy Nexage and MM mediation
+				if (TextUtils.isEmpty(siteId)) {
+					if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
+						siteId = mediationExtras.getString(DCN_KEY);
 					}
-				} else {
-					Log.e(TAG, "StandardEdition.initialize must be explicitly called when instantiating the AdMob " +
-						"AdView or InterstitialAd without an Activity.");
+					// If we get site ID from the serverParams (not yet implemented), overwrite everything!
+					if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
+						siteId = serverParams.getString(DCN_KEY);
+					}
+				}
+
+				if (TextUtils.isEmpty(siteId)) {
+					Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or server params");
 
 					return false;
 				}
+
+				Log.d(TAG, "Using site ID: " + siteId);
+
+				success = StandardEdition.initialize(((Activity) context).getApplication(), siteId);
+			} catch (Exception e) {
+				Log.e(TAG, "Error occurred initializing Verizon Ads SDK.", e);
+
+				return false;
 			}
-		} else {
-			Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
-			return false;
 		}
-		return true;
+
+		VASAds.getActivityStateManager().setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
+
+		return success;
 	}
 
 
@@ -348,10 +351,6 @@ public class VerizonMediationAdapter implements MediationBannerAdapter, Mediatio
 			placementId = serverParams.getString(VerizonMediationAdapter.PLACEMENT_KEY);
 		} else if (serverParams.containsKey(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY)) {
 			placementId = serverParams.getString(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY);
-		} else if (serverParams.containsKey(VerizonMediationAdapter.GREEN_PLACEMENT_KEY)) {
-			placementId = serverParams.getString(VerizonMediationAdapter.GREEN_PLACEMENT_KEY);
-		} else if (serverParams.containsKey(VerizonMediationAdapter.CUSTOM_PLACEMENT_KEY)) {
-			placementId = serverParams.getString(VerizonMediationAdapter.CUSTOM_PLACEMENT_KEY);
 		}
 
 		return placementId;
