@@ -241,20 +241,33 @@ public class DuAdMediationAdapter extends Adapter
     }
 
     @Override
-    public void onAdEnd(AdResult adResult) {
+    public void onAdClick() {
+        if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.reportAdClicked();
+        }
+    }
+
+    @Override
+    public void onVideoCompleted() {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onVideoComplete();
+        }
+    }
 
-            if (adResult.isCallToActionClicked()) {
-                mRewardedAdCallback.reportAdClicked();
-            }
-
-            if (adResult.isSuccessfulView()) {
-                mRewardedAdCallback.onUserEarnedReward(null);
-            }
-
+    @Override
+    public void onAdClose() {
+        if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onAdClosed();
         }
         mRewardedAd.removeListener(DuAdMediationAdapter.this);
+    }
+
+    @Override
+    public void onAdEnd(AdResult adResult) {
+        if (mRewardedAdCallback != null) {
+            if (adResult.isSuccessfulView()) {
+                mRewardedAdCallback.onUserEarnedReward(null);
+            }
+        }
     }
 }
