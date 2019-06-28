@@ -36,6 +36,19 @@ final class AdapterInterstitialListener
 	public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
 
 		Log.e(TAG, "Verizon Ads SDK interstitial error: " + errorInfo);
+
+		ThreadUtils.postOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+
+				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+				if ((adapter != null) && (interstitialListener != null)) {
+					interstitialListener.onAdOpened(adapter);
+					interstitialListener.onAdClosed(adapter);
+				}
+			}
+		});
 	}
 
 
