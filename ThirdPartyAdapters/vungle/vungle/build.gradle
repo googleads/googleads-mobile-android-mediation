@@ -9,14 +9,13 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "6.3.24.1"
+    stringVersion = "6.4.11.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 28
 
     lintOptions {
         abortOnError false
@@ -24,8 +23,8 @@ android {
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 6032401
+        targetSdkVersion 28
+        versionCode 6041100
         versionName stringVersion
 
     }
@@ -38,16 +37,16 @@ android {
 }
 
 dependencies {
-    implementation('com.vungle:publisher-sdk-android:6.3.24') {
-        transitive=true
-    }
+
+    implementation 'vungle-android-beta:publisher-sdk-android:6.4.11'
+
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
 }
 
 /**
  * Jar task to make a sources jar.
  */
-task sourcesJar (type: Jar) {
+task sourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
