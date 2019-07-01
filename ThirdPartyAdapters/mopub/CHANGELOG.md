@@ -1,5 +1,8 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Next Version
+- Fixed an issue with loading ads using an `Application` Context.
+
 ## 5.7.1.0
 - Verified compatibility with MoPub SDK 5.7.1.
 - Fixed a bug where adapter would not invoke rewarded ad events when the MoPub SDK was initialized before sending an Ad Request.
