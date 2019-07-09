@@ -2,6 +2,8 @@
 
 ## Next Version
 - Fixed an issue with loading ads using an `Application` Context.
+- Migrated the adapter to AndroidX.
+- Updated the minimum required Google Mobile Ads SDK version to 18.0.0.
 
 ## 5.7.1.0
 - Verified compatibility with MoPub SDK 5.7.1.
