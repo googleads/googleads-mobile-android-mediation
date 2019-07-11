@@ -16,7 +16,7 @@ buildscript {
 allprojects {
     repositories {
         maven { url 'https://plugins.gradle.org/m2/' }
-        maven { url 'https://vungle.bintray.com/vungle-android-beta' }
+        //maven { url 'https://vungle.bintray.com/vungle-android-beta' }
         jcenter()
         google()
     }
