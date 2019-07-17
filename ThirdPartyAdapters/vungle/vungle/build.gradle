@@ -37,9 +37,9 @@ android {
 }
 
 dependencies {
-
-    implementation 'com.vungle:publisher-sdk-android:6.4.11'
-
+    implementation ('com.vungle:publisher-sdk-android:6.4.11') {
+        transitive=true
+    }
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
 }
 

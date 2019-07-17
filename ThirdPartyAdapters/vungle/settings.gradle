@@ -1,13 +1,1 @@
-rootProject.name = 'vungle'
-
 include ':vungle'
-
-// For Vungle SDK configure
-def sdkSrcDependency = hasProperty("SdkSrcDependency") ? "$SdkSrcDependency".toBoolean() : false
-if (file('../../../vungle-android-sdk').exists() && sdkSrcDependency) {
-    includeBuild('../../../vungle-android-sdk') {
-        dependencySubstitution {
-            substitute module('com.vungle:publisher-sdk-android') with project(':publisher-sdk-android')
-        }
-    }
-}
