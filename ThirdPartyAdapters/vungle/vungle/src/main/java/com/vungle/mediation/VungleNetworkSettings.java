@@ -38,6 +38,7 @@ public class VungleNetworkSettings {
                 .setMinimumSpaceForInit(minimumSpaceForInit)
                 .setMinimumSpaceForAd(minimumSpaceForAd)
                 .setAndroidIdOptOut(androidIdOptedOut)
+                .disableBannerRefresh()
                 .build();
         if (vungleSettingsChangedListener != null) {
             vungleSettingsChangedListener.onVungleSettingsChanged(vungleSettings);
