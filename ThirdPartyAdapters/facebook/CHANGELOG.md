@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Next Version
+- Fixed an issue that caused Smart Banner Ad requests to fail.
+
 ## 5.4.0.0
 - Verified compatibility with Facebook SDK v5.4.0.
 

@@ -15,13 +15,11 @@
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -521,10 +519,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
     private com.facebook.ads.AdSize getAdSize(Context context, AdSize adSize) {
 
-        ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
-        potentials.add(0, new AdSize(adSize.getWidth(), 50));
-        potentials.add(1, new AdSize(adSize.getWidth(), 90));
-        potentials.add(2, new AdSize(adSize.getWidth(), 250));
+        // Get the actual width of the ad size since Smart Banners and FULL_WIDTH sizes return a
+        // width of -1.
+        int width = adSize.getWidth();
+        if (width < 0) {
+            float density = context.getResources().getDisplayMetrics().density;
+            width = Math.round(adSize.getWidthInPixels(context) / density);
+        }
+
+        ArrayList<AdSize> potentials = new ArrayList<>(3);
+        potentials.add(0, new AdSize(width, 50));
+        potentials.add(1, new AdSize(width, 90));
+        potentials.add(2, new AdSize(width, 250));
         Log.i(TAG, "Potential ad sizes: " + potentials.toString());
         AdSize closestSize = findClosestSize(context, adSize, potentials);
         if (closestSize == null) {
@@ -551,7 +557,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
         return null;
     }
-
 
     // Start of helper code to remove when available in SDK
     /**
