@@ -1,5 +1,9 @@
 # AppLovin Adapter for Google Mobile Ads SDK for Android
 
+## 9.7.2.0
+- Verified compatibility with AppLovin SDK 9.7.2.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.0.
+
 ## 9.4.2.0
 - Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
 - Added support for flexible banner ad sizes.
