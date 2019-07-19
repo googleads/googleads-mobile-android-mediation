@@ -103,13 +103,14 @@ public final class UnitySingleton {
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.set("enable_metadata_load", new Boolean(true));
         mediationMetaData.set("adapter_version", "3.1.0");
         mediationMetaData.commit();
 
         UnitySingletonListener unitySingleton = UnitySingleton.getInstance();
         UnityBanners.setBannerListener(unitySingleton);
-        UnityAds.initialize(activity, gameId, UnitySingleton.getInstance());
+        bool testMode = false;
+        bool enablePerPlacementLoad = true;
+        initialize(activity, gameId, UnitySingleton.getInstance(), testMode, enablePerPlacementLoad);
 
         return true;
     }
@@ -162,38 +163,39 @@ public final class UnitySingleton {
      * @param delegate Used to forward Unity Ads events to the adapter.
      */
     protected static void loadAd(UnityAdapterDelegate delegate) {
-        // Unity ads does not have a load method and ads begin to load when initialize is called.
-        // So, we check if unity ads is initialized to determine whether or not the ads are loading.
+        // Unity ads added a load method in v3.2, but the game ID must be whitelisted to use load API.
+        // If game is not whitelisted, all ad placements begin load when initialize is called (like v3.0).
+
         // If Unity Ads is initialized, we call the appropriate callbacks by checking the isReady
         // method. If ads are currently being loaded, wait for the callbacks from
         // unitySingletonListenerInstance.
 
-        // Tells Unity Ads to load a placement, if "metadata_load_enabled" is set
-        // Calling this before UnityAds.inititalize() will cause the placement to load on init
-        String uuid = UUID.randomUUID().toString();
-        MediationMetaData metadata = new MediationMetaData(activity.get());
-        metadata.setCategory("load");
-        metadata.set(uuid, delegate.getPlacementId());
-        metadata.commit();
+        // UnityAds.load() can be called before initialize is complete, and will send a request after init completes
+        
+        UnityAds.load(delegate.getPlacementId());
 
-        if (UnityAds.isInitialized()) {
-
-            // Check if an AdMob Ad request has already loaded or is in progress of requesting
-            // an Ad from Unity Ads for a single placement, and fail if there's any.
-            if (mPlacementsInUse.containsKey(delegate.getPlacementId()) &&
-                    mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
-                Log.e(UnityMediationAdapter.TAG,
-                        "An ad is already loading for placement ID: " + delegate.getPlacementId());
-                delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR,
-                        delegate.getPlacementId());
-                return;
-            }
-
-            mPlacementsInUse.put(delegate.getPlacementId(), new WeakReference<>(delegate));
-            if (UnityAds.isReady(delegate.getPlacementId())) {
-                delegate.onUnityAdsReady(delegate.getPlacementId());
-            }
+        // If at this point, (for some reason) UnityAds is not longer initialized, init again
+        // Does nothing if UnityAds is already initialized, or in the process of inititalizing
+        if (!UnityAds.isInitialized()) {
+            initializeUnityAds(Activity activity, String gameId);
         }
+
+        if (UnityAds.isReady(delegate.getPlacementId())) {
+            delegate.onUnityAdsReady(delegate.getPlacementId());
+        }
+
+        // Check if an AdMob Ad request has already loaded or is in progress of requesting
+        // an Ad from Unity Ads for a single placement, and fail if there's any.
+        if (mPlacementsInUse.containsKey(delegate.getPlacementId()) &&
+                mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
+            Log.e(UnityMediationAdapter.TAG,
+                    "An ad is already loading for placement ID: " + delegate.getPlacementId());
+            delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR,
+                    delegate.getPlacementId());
+            return;
+        }
+
+        mPlacementsInUse.put(delegate.getPlacementId(), new WeakReference<>(delegate));
     }
 
     /**
