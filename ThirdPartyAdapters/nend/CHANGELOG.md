@@ -1,6 +1,6 @@
 # Nend Adapter for Google Mobile Ads SDK for Android Changelog
 
-## Next Version
+## 5.1.0.4
 - Fixed an issue where Banner and Interstitial ads were not forwarding the `onAdClicked()` event.
 - Fixed an issue where a `NullPointerException` was thrown when a nend Banner ad was destroyed.
 - Migrated the adapter to AndroidX.
