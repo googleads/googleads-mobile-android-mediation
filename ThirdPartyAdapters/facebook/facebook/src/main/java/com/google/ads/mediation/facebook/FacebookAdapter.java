@@ -538,11 +538,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
         Log.i(TAG, "Found closest ad size: " + closestSize.toString());
 
-        if (closestSize.getWidth() == com.facebook.ads.AdSize.BANNER_320_50.getWidth()
-                && closestSize.getHeight() == com.facebook.ads.AdSize.BANNER_320_50.getHeight()) {
-            return com.facebook.ads.AdSize.BANNER_320_50;
-        }
-
         int adHeight = closestSize.getHeight();
         if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_50.getHeight()) {
             return com.facebook.ads.AdSize.BANNER_HEIGHT_50;
