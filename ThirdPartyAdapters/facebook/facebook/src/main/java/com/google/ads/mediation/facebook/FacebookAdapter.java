@@ -41,6 +41,7 @@ import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
+import com.facebook.ads.NativeBannerAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -60,6 +61,8 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -84,11 +87,17 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private AdView mAdView;
     private RelativeLayout mWrappedAdView;
     private InterstitialAd mInterstitialAd;
+    private boolean isNativeBanner;
 
     /**
-     * Facebook rewarded video ad instance.
+     * Facebook native ad instance.
      */
     private NativeAd mNativeAd;
+
+    /**
+     * Facebook native banner ad instance.
+     */
+    private NativeBannerAd mNativeBannerAd;
 
     /**
      * Flag to determine whether or not an impression callback from Facebook SDK has already been
@@ -116,6 +125,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
         if (mMediaView != null) {
             mMediaView.destroy();
+        }
+        if (mNativeBannerAd != null) {
+            mNativeBannerAd.unregisterView();
+            mNativeBannerAd.destroy();
         }
     }
 
@@ -233,7 +246,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                 MediationNativeListener listener,
                                 Bundle serverParameters,
                                 final NativeMediationAdRequest mediationAdRequest,
-                                Bundle mediationExtras) {
+                                final Bundle mediationExtras) {
         mNativeListener = listener;
         if (!isValidRequestParameters(context, serverParameters)) {
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -255,7 +268,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 new FacebookInitializer.Listener() {
             @Override
             public void onInitializeSuccess() {
-                createAndLoadNativeAd(context, placementId, mediationAdRequest);
+                createAndLoadNativeAd(context, placementId, mediationAdRequest, mediationExtras);
             }
 
             @Override
@@ -415,13 +428,126 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     //region Native adapter utility methods and classes.
     private void createAndLoadNativeAd(Context context,
                                        String placementID,
-                                       NativeMediationAdRequest adRequest) {
-        mMediaView = new MediaView(context);
+                                       NativeMediationAdRequest adRequest,
+                                       Bundle mediationExtras) {
 
-        mNativeAd = new NativeAd(context, placementID);
-        mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
-        buildAdRequest(adRequest);
-        mNativeAd.loadAd();
+        if (mediationExtras != null) {
+            isNativeBanner = mediationExtras.getBoolean(NATIVE_BANNER);
+        }
+        if (isNativeBanner) {
+            mNativeBannerAd = new NativeBannerAd(context, placementID);
+            mNativeBannerAd.setAdListener(new NativeBannerListener(mNativeBannerAd, adRequest));
+            buildAdRequest(adRequest);
+            mNativeBannerAd.loadAd();
+        } else {
+            mMediaView = new MediaView(context);
+            mNativeAd = new NativeAd(context, placementID);
+            mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
+            buildAdRequest(adRequest);
+            mNativeAd.loadAd();
+        }
+    }
+
+    private class NativeBannerListener implements  AdListener, NativeAdListener {
+
+        private NativeBannerAd mNativeBannerAd;
+        private NativeMediationAdRequest mMediationAdRequest;
+
+        private NativeBannerListener(NativeBannerAd nativeBannerAd,
+                                     NativeMediationAdRequest mediationAdRequest) {
+            mNativeBannerAd = nativeBannerAd;
+            mMediationAdRequest = mediationAdRequest;
+        }
+
+        @Override
+        public void onMediaDownloaded(Ad ad) {
+            Log.d(TAG, "onMediaDownloaded");
+
+        }
+
+        @Override
+        public void onError(Ad ad, AdError adError) {
+            String errorMessage = adError.getErrorMessage();
+            if (!TextUtils.isEmpty(errorMessage)) {
+                Log.w(TAG, errorMessage);
+            }
+            FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
+                    FacebookAdapter.this, convertErrorCode(adError));
+
+        }
+
+        @Override
+        public void onAdLoaded(Ad ad) {
+            if (ad!= mNativeBannerAd)  {
+                Log.w(TAG, "Ad loaded is not a native banner ad.");
+                FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
+                        FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                return;
+            }
+
+            NativeAdOptions options = mMediationAdRequest.getNativeAdOptions();
+            if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
+                final UnifiedAdMapper mapper;
+                mapper = new UnifiedAdMapper(mNativeBannerAd, options);
+                mapper.mapUnifiedNativeAd(new NativeAdMapperListener() {
+                    @Override
+                    public void onMappingSuccess() {
+                        mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
+                        Log.e("INFO","On Ad Loaded");
+                    }
+
+                    @Override
+                    public void onMappingFailed() {
+                        mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                    }
+                });
+
+            } else if (mMediationAdRequest.isAppInstallAdRequested()) {
+                // We always convert the ad into an app install ad.
+                final AppInstallMapper mapper = new AppInstallMapper(mNativeBannerAd, options);
+                mapper.mapNativeAd(new NativeAdMapperListener() {
+                    @Override
+                    public void onMappingSuccess() {
+                        mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
+                    }
+
+                    @Override
+                    public void onMappingFailed() {
+                        mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                    }
+                });
+            } else {
+                Log.e(TAG, "Content Ads are not supported.");
+                FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
+                        FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
+
+        }
+
+        @Override
+        public void onAdClicked(Ad ad) {
+            FacebookAdapter.this.mNativeListener.onAdClicked(FacebookAdapter.this);
+            FacebookAdapter.this.mNativeListener.onAdOpened(FacebookAdapter.this);
+            // The test Facebook ads leave the application when the ad is clicked. Assuming all
+            // the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
+            FacebookAdapter.this.mNativeListener.onAdLeftApplication(FacebookAdapter.this);
+
+        }
+
+        @Override
+        public void onLoggingImpression(Ad ad) {
+            if (mIsImpressionRecorded) {
+                Log.d(TAG, "Received onLoggingImpression callback for a native whose impression"
+                        + " is already recorded. Ignoring the duplicate callback.");
+                return;
+            }
+            FacebookAdapter.this.mNativeListener.onAdImpression(FacebookAdapter.this);
+            mIsImpressionRecorded = true;
+
+        }
     }
 
     private class NativeListener implements AdListener, NativeAdListener {
@@ -626,6 +752,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         private NativeAd mNativeAd;
 
         /**
+         * The Facebook native banner ad to be mapped.
+         */
+        private NativeBannerAd mNativeBannerAd;
+
+        /**
          * Google Mobile Ads native ad options.
          */
         private NativeAdOptions mNativeAdOptions;
@@ -643,6 +774,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
 
         /**
+         * Constructor for {@link AppInstallMapper}.
+         *
+         * @param nativeBannerAd The Facebook native banner ad to be mapped.
+         * @param adOptions {@link NativeAdOptions} containing the preferences to be used when
+         *                  mapping the native ad.
+         */
+        public AppInstallMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions) {
+            AppInstallMapper.this.mNativeBannerAd = nativeBannerAd;
+            AppInstallMapper.this.mNativeAdOptions = adOptions;
+        }
+
+        /**
          * This method will map the Facebook {@link #mNativeAd} to this mapper and send a success
          * callback if the mapping was successful or a failure callback if the mapping was
          * unsuccessful.
@@ -650,85 +793,106 @@ public final class FacebookAdapter extends FacebookMediationAdapter
          * @param mapperListener used to send success/failure callbacks when mapping is done.
          */
         public void mapNativeAd(NativeAdMapperListener mapperListener) {
-            if (!containsRequiredFieldsForNativeAppInstallAd(mNativeAd)) {
-                Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
-                        + " format.");
-                mapperListener.onMappingFailed();
-                return;
-            }
-
-            // Map all required assets (headline, one image, body, icon and call to
-            // action).
-            setHeadline(mNativeAd.getAdHeadline());
-            List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-            images.add(new FacebookAdapterNativeAdImage(
-                    Uri.parse(mNativeAd.getAdCoverImage().toString())));
-            setImages(images);
-            setBody(mNativeAd.getAdBodyText());
-            setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
-            setCallToAction(mNativeAd.getAdCallToAction());
-
-            mMediaView.setListener(new MediaViewListener() {
-                @Override
-                public void onPlay(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+            if (isNativeBanner) {
+                if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
+                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the Native " +
+                            "Banner Ad"
+                            + " format.");
+                    mapperListener.onMappingFailed();
+                    return;
                 }
 
-                @Override
-                public void onVolumeChange(MediaView mediaView, float v) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                setHeadline(mNativeBannerAd.getAdHeadline());
+                setBody(mNativeBannerAd.getAdBodyText());
+                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().toString())));
+                setCallToAction(mNativeBannerAd.getAdCallToAction());
+                Bundle extras = new Bundle();
+                extras.putCharSequence(KEY_ID, mNativeBannerAd.getId());
+                extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET,
+                        mNativeBannerAd.getAdSocialContext());
+                setExtras(extras);
+            } else {
+                if (!containsRequiredFieldsForNativeAppInstallAd(mNativeAd)) {
+                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
+                            + " format.");
+                    mapperListener.onMappingFailed();
+                    return;
                 }
 
-                @Override
-                public void onPause(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
+                // Map all required assets (headline, one image, body, icon and call to
+                // action).
+                setHeadline(mNativeAd.getAdHeadline());
+                List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
+                images.add(new FacebookAdapterNativeAdImage(
+                        Uri.parse(mNativeAd.getAdCoverImage().toString())));
+                setImages(images);
+                setBody(mNativeAd.getAdBodyText());
+                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
+                setCallToAction(mNativeAd.getAdCallToAction());
 
-                @Override
-                public void onComplete(MediaView mediaView) {
-                    if (FacebookAdapter.this.mNativeListener != null) {
-                        FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
+                mMediaView.setListener(new MediaViewListener() {
+                    @Override
+                    public void onPlay(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
                     }
+
+                    @Override
+                    public void onVolumeChange(MediaView mediaView, float v) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onPause(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onComplete(MediaView mediaView) {
+                        if (FacebookAdapter.this.mNativeListener != null) {
+                            FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
+                        }
+                    }
+
+                    @Override
+                    public void onEnterFullscreen(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onExitFullscreen(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onFullscreenBackground(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onFullscreenForeground(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+                });
+
+                // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
+                // a video asset or not, the adapter always returns a MediaView and claims to have
+                // video content.
+                setMediaView(mMediaView);
+                setHasVideoContent(true);
+
+                // Map the optional assets.
+                Double starRating = getRating(mNativeAd.getAdStarRating());
+                if (starRating != null) {
+                    setStarRating(starRating);
                 }
 
-                @Override
-                public void onEnterFullscreen(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
 
-                @Override
-                public void onExitFullscreen(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-
-                @Override
-                public void onFullscreenBackground(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-
-                @Override
-                public void onFullscreenForeground(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-            });
-
-            // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
-            // a video asset or not, the adapter always returns a MediaView and claims to have
-            // video content.
-            setMediaView(mMediaView);
-            setHasVideoContent(true);
-
-            // Map the optional assets.
-            Double starRating = getRating(mNativeAd.getAdStarRating());
-            if (starRating != null) {
-                setStarRating(starRating);
+                // Pass all the assets not supported by Google as extras.
+                Bundle extras = new Bundle();
+                extras.putCharSequence(KEY_ID, mNativeAd.getId());
+                extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
+                setExtras(extras);
             }
-
-            // Pass all the assets not supported by Google as extras.
-            Bundle extras = new Bundle();
-            extras.putCharSequence(KEY_ID, mNativeAd.getId());
-            extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-            setExtras(extras);
 
             mapperListener.onMappingSuccess();
         }
@@ -747,22 +911,40 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                     && (nativeAd.getAdCallToAction() != null) && (mMediaView != null));
         }
 
+        /**
+         * This method will check whether or not the given Facebook native banner ad contains all the
+         * necessary fields for it to be mapped to Google Mobile Ads' native app install ad.
+         *
+         * @param nativeBannerAd Facebook native banner ad.
+         * @return {@code true} if the given ad contains all the necessary fields, {@link false}
+         * otherwise.
+         */
+        private boolean containsRequiredFieldsForNativeBannerAd(NativeBannerAd nativeBannerAd) {
+            return ((nativeBannerAd.getAdHeadline() != null)
+                    && (nativeBannerAd.getAdBodyText() != null) && (nativeBannerAd.getAdIcon() != null)
+                    && (nativeBannerAd.getAdCallToAction() != null));
+        }
+
         @Override
         public void trackViews(View view,
                                Map<String, View> clickableAssetViews,
                                Map<String, View> nonClickableAssetViews) {
 
             ViewGroup adView = (ViewGroup) view;
-
             // Find the overlay view in the given ad view. The overlay view will always be the
             // top most view in the hierarchy.
             View overlayView = adView.getChildAt(adView.getChildCount() - 1);
+            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
             if (overlayView instanceof FrameLayout) {
-                NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
                 ((FrameLayout) overlayView).addView(nativeAdLayout);
                 // Create and add Facebook's AdOptions to the overlay view.
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd,
-                        nativeAdLayout);
+                AdOptionsView adOptionsView;
+                if (isNativeBanner) {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
+                            nativeAdLayout);
+                } else {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                }
                 ((ViewGroup) overlayView).addView(adOptionsView);
                 // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
                 // LayoutParams from the AdOptionsView.
@@ -789,7 +971,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 }
                 adView.requestLayout();
             } else {
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, null);
+                AdOptionsView adOptionsView;
+                if (isNativeBanner) {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
+                            nativeAdLayout);
+                } else {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                }
                 this.setAdChoicesContent(adOptionsView);
             }
 
@@ -810,8 +998,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 }
 
             }
-
-            mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+            if (isNativeBanner) {
+                mNativeBannerAd.registerViewForInteraction(view, iconview);
+            } else {
+                mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+            }
         }
 
 
@@ -829,7 +1020,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 ((FrameLayout) overlayView).removeAllViews();
             }
 
-            mNativeAd.unregisterView();
+            if (isNativeBanner) {
+                mNativeAd.unregisterView();
+            } else {
+                mNativeBannerAd.unregisterView();
+            }
         }
 
         /**
@@ -854,6 +1049,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         private NativeAd mNativeAd;
 
         /**
+         * The Facebook native banner ad to be mapped.
+         */
+        private NativeBannerAd mNativeBannerAd;
+
+        /**
          * Google Mobile Ads native ad options.
          */
         private NativeAdOptions mNativeAdOptions;
@@ -871,6 +1071,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
 
         /**
+         * Constructor for {@link UnifiedAdMapper}.
+         *
+         * @param nativeBannerAd  The Facebook native banner ad to be mapped.
+         * @param adOptions {@link NativeAdOptions} containing the preferences to be used when
+         *                  mapping the native ad.
+         */
+        public UnifiedAdMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions){
+            UnifiedAdMapper.this.mNativeBannerAd = nativeBannerAd;
+            UnifiedAdMapper.this.mNativeAdOptions = adOptions;
+        }
+
+        /**
          * This method will map the Facebook {@link #mNativeAd} to this mapper and send a success
          * callback if the mapping was successful or a failure callback if the mapping was
          * unsuccessful.
@@ -878,87 +1090,105 @@ public final class FacebookAdapter extends FacebookMediationAdapter
          * @param mapperListener used to send success/failure callbacks when mapping is done.
          */
         public void mapUnifiedNativeAd(NativeAdMapperListener mapperListener) {
-            if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
-                Log.w(TAG, "Ad from Facebook doesn't have all assets required for the Unified Ad"
-                        + " format.");
-                mapperListener.onMappingFailed();
-                return;
-            }
 
-            // Map all required assets (headline, one image, body, icon and call to
-            // action).
-            setHeadline(mNativeAd.getAdHeadline());
-            List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-            images.add(new FacebookAdapterNativeAdImage(
-                    Uri.parse(mNativeAd.getAdCoverImage().toString())));
-            setImages(images);
-            setBody(mNativeAd.getAdBodyText());
-            setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
-            setCallToAction(mNativeAd.getAdCallToAction());
-            setAdvertiser(mNativeAd.getAdvertiserName());
-
-            mMediaView.setListener(new MediaViewListener() {
-                @Override
-                public void onPlay(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+            if (isNativeBanner) {
+                if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
+                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the " +
+                            "Native Banner Ad format.");
+                    mapperListener.onMappingFailed();
+                    return;
                 }
 
-                @Override
-                public void onVolumeChange(MediaView mediaView, float v) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
+                setHeadline(mNativeBannerAd.getAdHeadline());
+                setBody(mNativeBannerAd.getAdBodyText());
+                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().toString())));
+                setCallToAction(mNativeBannerAd.getAdCallToAction());
+                setAdvertiser(mNativeBannerAd.getAdvertiserName());
 
-                @Override
-                public void onPause(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                Bundle extras = new Bundle();
+                extras.putCharSequence(KEY_ID, mNativeBannerAd.getId());
+                extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET,
+                        mNativeBannerAd.getAdSocialContext());
+                setExtras(extras);
+            } else {
+                if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
+                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the" +
+                            " Native Ad format.");
+                    mapperListener.onMappingFailed();
+                    return;
                 }
+                // Map all required assets (headline, one image, body, icon and call to
+                // action).
+                setHeadline(mNativeAd.getAdHeadline());
+                List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
+                images.add(new FacebookAdapterNativeAdImage(
+                        Uri.parse(mNativeAd.getAdCoverImage().toString())));
+                setImages(images);
+                setBody(mNativeAd.getAdBodyText());
+                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
+                setCallToAction(mNativeAd.getAdCallToAction());
+                setAdvertiser(mNativeAd.getAdvertiserName());
 
-                @Override
-                public void onComplete(MediaView mediaView) {
-                    if (FacebookAdapter.this.mNativeListener != null) {
-                        FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
+                mMediaView.setListener(new MediaViewListener() {
+                    @Override
+                    public void onPlay(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
                     }
+
+                    @Override
+                    public void onVolumeChange(MediaView mediaView, float v) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onPause(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onComplete(MediaView mediaView) {
+                        if (FacebookAdapter.this.mNativeListener != null) {
+                            FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
+                        }
+                    }
+
+                    @Override
+                    public void onEnterFullscreen(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onExitFullscreen(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onFullscreenBackground(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+
+                    @Override
+                    public void onFullscreenForeground(MediaView mediaView) {
+                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                    }
+                });
+
+                // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
+                // a video asset or not, the adapter always returns a MediaView and claims to have
+                // video content.
+                setMediaView(mMediaView);
+                setHasVideoContent(true);
+
+                // Map the optional assets.
+                Double starRating = getRating(mNativeAd.getAdStarRating());
+                if (starRating != null) {
+                    setStarRating(starRating);
                 }
-
-                @Override
-                public void onEnterFullscreen(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-
-                @Override
-                public void onExitFullscreen(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-
-                @Override
-                public void onFullscreenBackground(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-
-                @Override
-                public void onFullscreenForeground(MediaView mediaView) {
-                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                }
-            });
-
-            // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
-            // a video asset or not, the adapter always returns a MediaView and claims to have
-            // video content.
-            setMediaView(mMediaView);
-            setHasVideoContent(true);
-
-            // Map the optional assets.
-            Double starRating = getRating(mNativeAd.getAdStarRating());
-            if (starRating != null) {
-                setStarRating(starRating);
+                Bundle extras = new Bundle();
+                extras.putCharSequence(KEY_ID, mNativeAd.getId());
+                extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
+                setExtras(extras);
             }
-
-            // Pass all the assets not supported by Google as extras.
-            Bundle extras = new Bundle();
-            extras.putCharSequence(KEY_ID, mNativeAd.getId());
-            extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-            setExtras(extras);
-
             mapperListener.onMappingSuccess();
         }
 
@@ -976,20 +1206,40 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                     && (nativeAd.getAdCallToAction() != null) && (mMediaView != null));
         }
 
+        /**
+         * This method will check whether or not the given Facebook native ad contains all the
+         * necessary fields for it to be mapped to Google Mobile Ads' Unified install ad.
+         *
+         * @param nativeBannerAd Facebook native ad.
+         * @return {@code true} if the given ad contains all the necessary fields, {@link false}
+         * otherwise.
+         */
+        private boolean containsRequiredFieldsForNativeBannerAd(NativeBannerAd nativeBannerAd) {
+            return ((nativeBannerAd.getAdHeadline() != null) &&
+                    (nativeBannerAd.getAdBodyText() != null) && (nativeBannerAd.getAdIcon() != null)
+                    && (nativeBannerAd.getAdCallToAction() != null));
+        }
+
+
         @Override
         public void trackViews(View view,
                                Map<String, View> clickableAssetViews,
                                Map<String, View> nonClickableAssetViews) {
 
             ViewGroup adView = (ViewGroup) view;
-
             // Find the overlay view in the given ad view. The overlay view will always be the
             // top most view in the hierarchy.
             View overlayView = adView.getChildAt(adView.getChildCount() - 1);
             NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
             if (overlayView instanceof FrameLayout) {
+                AdOptionsView adOptionsView;
                 // Create and add Facebook's AdOptions to the overlay view.
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(),mNativeAd,nativeAdLayout);
+                if (isNativeBanner) {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
+                            nativeAdLayout);
+                } else {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                }
                 ((ViewGroup) overlayView).addView(adOptionsView);
                 // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
                 // LayoutParams from the AdOptionsView.
@@ -1016,7 +1266,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 }
                 adView.requestLayout();
             } else {
-                AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                AdOptionsView adOptionsView;
+                if (isNativeBanner) {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
+                            nativeAdLayout);
+                } else {
+                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
+                }
                 this.setAdChoicesContent(adOptionsView);
             }
 
@@ -1035,10 +1291,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
                     iconview = (ImageView) clickableAssets.getValue();
                 }
-
             }
-
-            mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+            if (isNativeBanner) {
+                mNativeBannerAd.registerViewForInteraction(view, iconview);
+            } else {
+                mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+            }
         }
 
 
@@ -1055,8 +1313,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             if (overlayView instanceof FrameLayout) {
                 ((FrameLayout) overlayView).removeAllViews();
             }
-
-            mNativeAd.unregisterView();
+            if (isNativeBanner) {
+                mNativeAd.unregisterView();
+            } else {
+                mNativeBannerAd.unregisterView();
+            }
         }
 
         /**
