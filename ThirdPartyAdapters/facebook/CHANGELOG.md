@@ -2,6 +2,7 @@
 
 ## Next Version
 - Fixed an issue that caused Smart Banner Ad requests to fail.
+- Fixed an issue where Rewarded Video Ads were not forwarding the `onAdClosed()` event in some cases where the app was backgrounded while the video was in progress.
 
 ## 5.4.0.0
 - Verified compatibility with Facebook SDK v5.4.0.

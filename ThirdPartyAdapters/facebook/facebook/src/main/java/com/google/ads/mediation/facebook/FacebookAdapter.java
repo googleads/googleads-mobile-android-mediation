@@ -79,10 +79,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private MediationBannerListener mBannerListener;
     private MediationInterstitialListener mInterstitialListener;
 
-    /**
-     * Mediation rewarded video ad listener used to forward reward-based video ad events from
-     * Facebook SDK to Google Mobile Ads SDK.
-     */
     private MediationNativeListener mNativeListener;
     private AdView mAdView;
     private RelativeLayout mWrappedAdView;
