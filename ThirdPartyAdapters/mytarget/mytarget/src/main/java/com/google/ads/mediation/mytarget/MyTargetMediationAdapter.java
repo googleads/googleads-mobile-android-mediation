@@ -2,7 +2,7 @@ package com.google.ads.mediation.mytarget;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.ads.mediation.Adapter;
