@@ -28,7 +28,6 @@ import com.unity3d.services.banners.UnityBanners;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.UUID;
 
 /**
