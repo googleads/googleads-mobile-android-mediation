@@ -143,7 +143,9 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         }
 
         setMediaView( placeHolderView );
-        setHasVideoContent(true);
+        if (mInMobiNative.isVideo() != null) {
+            setHasVideoContent(mInMobiNative.isVideo());
+        }
         setOverrideClickHandling(false);
 
         // Download drawables.

@@ -9,19 +9,18 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.2.7.0"
+    stringVersion = "7.3.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 7020700
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 7030000
         versionName stringVersion
     }
     buildTypes {
@@ -34,12 +33,11 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.inmobi.monetization:inmobi-ads:7.2.7'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.inmobi.monetization:inmobi-ads:7.3.0'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
-    implementation 'com.google.android.gms:play-services-plus:16.0.0'
 }
 
 /**
