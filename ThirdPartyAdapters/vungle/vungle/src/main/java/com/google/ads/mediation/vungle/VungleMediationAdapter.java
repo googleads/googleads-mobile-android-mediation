@@ -37,10 +37,7 @@ public class VungleMediationAdapter extends Adapter
 
     public static final String TAG = VungleMediationAdapter.class.getSimpleName();
     private static final String KEY_APP_ID = "appid";
-    private static final String REWARDED = "rewarded";
-    private static int sCounter = 0;
 
-    private String mAdapterId;
     private AdConfig mAdConfig;
     private String mUserID;
     private String mPlacement;
@@ -112,9 +109,7 @@ public class VungleMediationAdapter extends Adapter
             }
 
             mInitializationCallback = initializationCompleteCallback;
-            mAdapterId = REWARDED + String.valueOf(sCounter);
-            sCounter++;
-            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(), mAdapterId,
+            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(),
                     VungleMediationAdapter.this);
         } else {
             initializationCompleteCallback.onInitializationFailed("Initialization failed: " +
@@ -154,7 +149,7 @@ public class VungleMediationAdapter extends Adapter
         if (mPlacementsInUse.containsKey(mPlacement) &&
                 mPlacementsInUse.get(mPlacement).get() != null){
             String logMessage = "Only a maximum of one ad can be loaded per placement";
-            Log.w(TAG + System.identityHashCode(mediationAdLoadCallback), logMessage);
+            Log.w(TAG, logMessage);
             mediationAdLoadCallback.onFailure(logMessage);
             return;
         }
@@ -170,8 +165,7 @@ public class VungleMediationAdapter extends Adapter
                 return;
             }
 
-            mAdapterId = REWARDED + String.valueOf(sCounter);
-            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(), mAdapterId,
+            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(),
                     VungleMediationAdapter.this);
         } else {
             Vungle.setIncentivizedFields(mUserID, null, null, null, null);
@@ -180,7 +174,7 @@ public class VungleMediationAdapter extends Adapter
             if (Vungle.canPlayAd(mPlacement)) {
                 mMediationRewardedAdCallback =
                         mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
-                Log.w(TAG + System.identityHashCode(mediationAdLoadCallback), "mMediationAdLoadCallback.onSuccess");
+                Log.w(TAG, "mMediationAdLoadCallback.onSuccess");
 
             } else {
                 Vungle.loadAd(mPlacement, VungleMediationAdapter.this);
@@ -208,7 +202,7 @@ public class VungleMediationAdapter extends Adapter
                 if (mMediationAdLoadCallback != null) {
                     mMediationRewardedAdCallback =
                             mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
-                    Log.w(TAG + System.identityHashCode(mMediationAdLoadCallback), "onInitializeSuccess: mMediationAdLoadCallback.onSuccess");
+                    Log.w(TAG, "onInitializeSuccess: mMediationAdLoadCallback.onSuccess");
                 }
             } else {
                 Vungle.loadAd(mPlacement, VungleMediationAdapter.this);
