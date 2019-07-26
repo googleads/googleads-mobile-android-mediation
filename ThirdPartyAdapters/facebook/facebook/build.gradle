@@ -15,10 +15,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 5040000
         versionName stringVersion
     }
@@ -31,9 +31,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:recyclerview-v7:26.1.0'
-    implementation 'com.google.android.gms:play-services-ads:17.2.1'
-    implementation 'com.facebook.android:audience-network-sdk:5.4.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+
+    implementation 'com.google.android.gms:play-services-ads:18.1.1'
+    implementation 'com.facebook.android:audience-network-sdk:5.4.1'
 }
 
 /**
