@@ -19,8 +19,9 @@ android {
 }
 
 dependencies {
-    implementation rootProject.ext.appcompatV7
+    implementation rootProject.ext.appcompat
     implementation rootProject.ext.playServicesAds
     implementation project(':adapter')
+    implementation project(':facebook')
     implementation project(':customevent')
 }

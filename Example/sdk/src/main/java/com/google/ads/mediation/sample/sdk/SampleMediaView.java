@@ -25,7 +25,7 @@ import android.view.Gravity;
  * contain an image or video asset. Since this one is just a mock, it displays a series of text
  * values instead.
  */
-public class SampleMediaView extends android.support.v7.widget.AppCompatTextView {
+public class SampleMediaView extends androidx.appcompat.widget.AppCompatTextView {
     SampleMediaViewListener listener;
 
     public SampleMediaView(Context context) {

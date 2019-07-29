@@ -17,7 +17,9 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -36,6 +38,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.initialization.AdapterStatus;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
@@ -59,7 +64,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+                for (String adapter : initializationStatus.getAdapterStatusMap().keySet()) {
+                    Log.d("Ads", String.format("Adapter: %s, Status: %s", adapter,
+                        initializationStatus.getAdapterStatusMap().get(adapter).getInitializationState().toString()));
+                }
+                setup();
+            }
+        });
 
+
+    }
+
+    private void setup() {
         /**
          * Sample Custom Event.
          * 1) Create the sample custom event banner.
@@ -84,13 +103,13 @@ public class MainActivity extends AppCompatActivity {
         // Sample custom event interstitial.
         customEventInterstitial = new InterstitialAd(this);
         customEventInterstitial.setAdUnitId(
-                getResources().getString(R.string.customevent_interstitial_ad_unit_id));
+            getResources().getString(R.string.customevent_interstitial_ad_unit_id));
         customEventInterstitial.setAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
-                        "Error loading custom event interstitial, code " + errorCode,
-                        Toast.LENGTH_SHORT).show();
+                    "Error loading custom event interstitial, code " + errorCode,
+                    Toast.LENGTH_SHORT).show();
                 customEventButton.setEnabled(true);
             }
 
@@ -126,14 +145,14 @@ public class MainActivity extends AppCompatActivity {
         // request information that's supported by the Sample SDK (but not by the Google Mobile
         // Ads SDK).
         Bundle extras = new SampleAdapter.MediationExtrasBundleBuilder()
-                .setIncome(100000)
-                .setShouldAddAwesomeSauce(true)
-                .build();
+            .setIncome(100000)
+            .setShouldAddAwesomeSauce(true)
+            .build();
         AdRequest bannerAdRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(SampleAdapter.class, extras)
-                .build();
+            .addNetworkExtrasBundle(SampleAdapter.class, extras)
+            .build();
         mAdapterAdView.loadAd(bannerAdRequest);
-        
+
         // Sample adapter interstitial button.
         adapterButton = (Button) findViewById(R.id.adapter_button);
         adapterButton.setOnClickListener(new View.OnClickListener() {
@@ -148,13 +167,13 @@ public class MainActivity extends AppCompatActivity {
         // Sample adapter interstitial.
         adapterInterstitial = new InterstitialAd(this);
         adapterInterstitial.setAdUnitId(
-                getResources().getString(R.string.adapter_interstitial_ad_unit_id));
+            getResources().getString(R.string.adapter_interstitial_ad_unit_id));
         adapterInterstitial.setAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
-                        "Error loading adapter interstitial, code " + errorCode,
-                        Toast.LENGTH_SHORT).show();
+                    "Error loading adapter interstitial, code " + errorCode,
+                    Toast.LENGTH_SHORT).show();
                 adapterButton.setEnabled(true);
             }
 
@@ -175,35 +194,35 @@ public class MainActivity extends AppCompatActivity {
         });
 
         AdRequest interstitialAdRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(SampleAdapter.class, extras)
-                .build();
+            .addNetworkExtrasBundle(SampleAdapter.class, extras)
+            .build();
         adapterInterstitial.loadAd(interstitialAdRequest);
 
         /**
          * Sample Custom Event Native ad.
          */
         customEventNativeLoader = new AdLoader.Builder(this,
-                getResources().getString(R.string.customevent_native_ad_unit_id))
-                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        FrameLayout frameLayout =
-                                (FrameLayout) findViewById(R.id.customeventnative_framelayout);
-                        UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater()
-                                .inflate(R.layout.ad_unified, null);
-                        populateUnifiedNativeAdView(unifiedNativeAd, adView);
-                        frameLayout.removeAllViews();
-                        frameLayout.addView(adView);
-                    }
-                })
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(int errorCode) {
-                        Toast.makeText(MainActivity.this,
-                                "Custom event native ad failed with code: " + errorCode,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }).build();
+            getResources().getString(R.string.customevent_native_ad_unit_id))
+            .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                @Override
+                public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                    FrameLayout frameLayout =
+                        (FrameLayout) findViewById(R.id.customeventnative_framelayout);
+                    UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater()
+                        .inflate(R.layout.ad_unified, null);
+                    populateUnifiedNativeAdView(unifiedNativeAd, adView);
+                    frameLayout.removeAllViews();
+                    frameLayout.addView(adView);
+                }
+            })
+            .withAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    Toast.makeText(MainActivity.this,
+                        "Custom event native ad failed with code: " + errorCode,
+                        Toast.LENGTH_SHORT).show();
+                }
+            }).build();
 
         customEventNativeLoader.loadAd(new AdRequest.Builder().build());
         Button refreshCustomEvent = (Button) findViewById(R.id.customeventnative_button);
@@ -219,27 +238,27 @@ public class MainActivity extends AppCompatActivity {
          * Sample Adapter Native ad.
          */
         adapterNativeLoader = new AdLoader.Builder(this,
-                getResources().getString(R.string.adapter_native_ad_unit_id))
-                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        FrameLayout frameLayout =
-                                (FrameLayout) findViewById(R.id.adapternative_framelayout);
-                        UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater()
-                                .inflate(R.layout.ad_unified, null);
-                        populateUnifiedNativeAdView(unifiedNativeAd, adView);
-                        frameLayout.removeAllViews();
-                        frameLayout.addView(adView);
-                    }
-                })
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(int errorCode) {
-                        Toast.makeText(MainActivity.this,
-                                "Sample adapter native ad failed with code: " + errorCode,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }).build();
+            getResources().getString(R.string.adapter_native_ad_unit_id))
+            .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                @Override
+                public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                    FrameLayout frameLayout =
+                        (FrameLayout) findViewById(R.id.adapternative_framelayout);
+                    UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater()
+                        .inflate(R.layout.ad_unified, null);
+                    populateUnifiedNativeAdView(unifiedNativeAd, adView);
+                    frameLayout.removeAllViews();
+                    frameLayout.addView(adView);
+                }
+            })
+            .withAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    Toast.makeText(MainActivity.this,
+                        "Sample adapter native ad failed with code: " + errorCode,
+                        Toast.LENGTH_SHORT).show();
+                }
+            }).build();
 
         loadAdapterNativeAd(extras);
         Button refreshAdapterNative = (Button) findViewById(R.id.adapternative_button);
@@ -247,9 +266,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View unusedView) {
                 loadAdapterNativeAd(new SampleAdapter.MediationExtrasBundleBuilder()
-                        .setIncome(100000)
-                        .setShouldAddAwesomeSauce(true)
-                        .build());
+                    .setIncome(100000)
+                    .setShouldAddAwesomeSauce(true)
+                    .build());
             }
         });
 
@@ -297,8 +316,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRewardedVideoAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
-                        "Sample adapter rewarded video ad failed with code: " + errorCode,
-                        Toast.LENGTH_SHORT).show();
+                    "Sample adapter rewarded video ad failed with code: " + errorCode,
+                    Toast.LENGTH_SHORT).show();
                 adapterVideoButton.setEnabled(true);
                 adapterVideoButton.setText("Load SampleAdapter Rewarded Video");
             }
@@ -313,8 +332,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Activity resumed, update the current activity in Sample SDK's sample rewarded video.
-        rewardedVideoAd.resume(MainActivity.this);
+        if (rewardedVideoAd != null) {
+            // Activity resumed, update the current activity in Sample SDK's sample rewarded video.
+            rewardedVideoAd.resume(MainActivity.this);
+        }
     }
 
     private void loadRewardedVideoAd() {

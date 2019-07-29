@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.ads.mediation.sample.mediationsample">
 
-    <uses-sdk
-      android:minSdkVersion="16"
-      android:targetSdkVersion="28"/>
 
     <!-- Include required permissions for Google Mobile Ads to run-->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -14,11 +11,15 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <meta-data
+            android:name="com.google.android.gms.ads.flag.rtb_enabled"
+            android:value="true"/>
+        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~2964678116"/>
+            android:value="ca-app-pub-7319269804560504~8998416027"/>
 
         <!--This meta-data tag is required to use Google Play Services.-->
         <meta-data
