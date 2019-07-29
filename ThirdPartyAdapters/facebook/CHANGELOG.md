@@ -1,6 +1,6 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
-## Next Version
+## 5.4.1.0
 - Verified compatibility with Facebook SDK v5.4.1.
 - Added support for Facebook Native Banner Ads.
   * Use `setNativeBanner()` from the `FacebookExtras` class to request for Native Banner Ads.
