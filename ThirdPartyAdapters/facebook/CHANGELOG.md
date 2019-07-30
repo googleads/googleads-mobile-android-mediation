@@ -1,8 +1,13 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
-## Next Version
+## 5.4.1.0
+- Verified compatibility with Facebook SDK v5.4.1.
+- Added support for Facebook Native Banner Ads.
+  * Use `setNativeBanner()` from the `FacebookExtras` class to request for Native Banner Ads.
 - Fixed an issue that caused Smart Banner Ad requests to fail.
 - Fixed an issue where Rewarded Video Ads were not forwarding the `onAdClosed()` event in some cases where the app was backgrounded while the video was in progress.
+- Migrated the adapter to `AndroidX`.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
 
 ## 5.4.0.0
 - Verified compatibility with Facebook SDK v5.4.0.

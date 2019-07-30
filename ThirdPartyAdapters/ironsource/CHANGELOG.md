@@ -1,5 +1,9 @@
 # ironSource Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Version 6.9.0.1
+- Fixed ironSource adapter to remove it's lock on an instance ID.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
 ## Version 6.9.0.0
 - Verified compatibility with ironSource SDK version 6.9.0.
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.0.
