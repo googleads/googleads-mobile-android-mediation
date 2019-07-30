@@ -3,6 +3,8 @@ package com.google.ads.mediation.imobile;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -35,9 +37,6 @@ public final class IMobileMediationAdapter implements MediationNativeAdapter {
     /** Listener for native ads. */
     private MediationNativeListener mediationNativeListener;
 
-    /** Ad image. */
-    private Bitmap adImage;
-
     // endregion
 
     // region - Methods for native ads.
@@ -56,10 +55,8 @@ public final class IMobileMediationAdapter implements MediationNativeAdapter {
         final Activity activity = (Activity) context;
 
         // Check request type.
-        final boolean isUnifiedNativeAd = mediationAdRequest.isUnifiedNativeAdRequested();
-        final boolean isContentAd = mediationAdRequest.isContentAdRequested();
-        if (!isUnifiedNativeAd && !isContentAd) {
-            Log.w(TAG, "Native : i-mobile SDK only support UnifiedNativeAd and NativeContentAd.");
+        if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
+            Log.w(TAG, "Native : i-mobile SDK only support UnifiedNativeAd.");
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -93,18 +90,9 @@ public final class IMobileMediationAdapter implements MediationNativeAdapter {
                 adData.getAdImage(activity, new ImobileSdkAdListener() {
                     @Override
                     public void onNativeAdImageReciveCompleted(Bitmap image) {
-                        adImage = image;
-                        if (isUnifiedNativeAd) {
-                            mediationNativeListener.onAdLoaded(IMobileMediationAdapter.this,
-                                    new IMobileUnifiedNativeAdMapper(adData, adImage));
-                        } else if (isContentAd) {
-                            mediationNativeListener.onAdLoaded(IMobileMediationAdapter.this,
-                                    new IMobileNativeContentAdMapper(adData, adImage));
-                        } else {
-                            Log.w(TAG, "Native : No ads.");
-                            mediationNativeListener.onAdFailedToLoad(IMobileMediationAdapter.this,
-                                    AdRequest.ERROR_CODE_NO_FILL);
-                        }
+                        Drawable drawable = new BitmapDrawable(activity.getResources(), image);
+                        mediationNativeListener.onAdLoaded(IMobileMediationAdapter.this,
+                                new IMobileUnifiedNativeAdMapper(adData, drawable));
                     }
                 });
             }
@@ -128,10 +116,6 @@ public final class IMobileMediationAdapter implements MediationNativeAdapter {
     public void onDestroy() {
         // Release objects.
         mediationNativeListener = null;
-        if (adImage != null) {
-            adImage.recycle();
-            adImage = null;
-        }
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.google.ads.mediation.imobile;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.View;
@@ -25,10 +23,10 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     /** Ad image. */
     private Drawable adDrawable;
 
-    public IMobileUnifiedNativeAdMapper(ImobileSdkAdsNativeAdData adData, Bitmap adImage) {
+    public IMobileUnifiedNativeAdMapper(ImobileSdkAdsNativeAdData adData, Drawable adImage) {
         // Initialize fields.
         this.clickEvent = adData.getClickEvent();
-        this.adDrawable = new BitmapDrawable(adImage);
+        this.adDrawable = adImage;
 
         // Set ad image.
         List<NativeAd.Image> images = new ArrayList<>(1);
