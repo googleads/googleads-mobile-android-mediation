@@ -17,7 +17,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url 'https://yahoo.bintray.com/maven/' }
+        maven { url 'https://maven.google.com' }
     }
 }
 
