@@ -176,10 +176,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         }
         vungleNativeAd = null;
         adLayout = null;
-
-        if (mVungleManager != null) {
-            mVungleManager.removeListeners(mAdapterId);
-        }
     }
 
     //banner

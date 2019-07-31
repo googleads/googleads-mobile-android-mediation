@@ -52,12 +52,12 @@ public class VungleManager {
         if (serverParameters != null && serverParameters.containsKey(PLAYING_PLACEMENT)) {
             if (placement != null) {
                 Log.i(TAG, "'placementID' had a value in both serverParameters and networkExtras. "
-                        + "Used one from serverParameters.");
+                        + "Used one from serverParameters");
             }
             placement = serverParameters.getString(PLAYING_PLACEMENT);
         }
         if (placement == null) {
-            Log.e(TAG, "placementID not provided from serverParameters. Load and play functionality will not work.");
+            Log.e(TAG, "placementID not provided from serverParameters.");
         }
         return placement;
     }
@@ -107,9 +107,6 @@ public class VungleManager {
                 }
             }
         };
-    }
-
-    void removeListeners(String adapterId) {
     }
 
     boolean isAdPlayable(String placement) {
@@ -162,7 +159,6 @@ public class VungleManager {
         Pair<String, VungleNativeAd> pair = activeBannerAds.get(placementId);
         if (pair != null) {
             String adapterId = pair.first;
-            removeListeners(adapterId);
             //Remove ad
             VungleNativeAd vungleNativeAd = pair.second;
             if (vungleNativeAd != null) {
