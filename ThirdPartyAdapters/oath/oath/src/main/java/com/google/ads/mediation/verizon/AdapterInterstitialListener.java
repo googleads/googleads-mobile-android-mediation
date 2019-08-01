@@ -15,229 +15,238 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 
 
-final class AdapterInterstitialListener
-	implements InterstitialAd.InterstitialAdListener, InterstitialAdFactory.InterstitialAdFactoryListener {
+final class AdapterInterstitialListener implements InterstitialAd.InterstitialAdListener,
+        InterstitialAdFactory.InterstitialAdFactoryListener {
 
-	private static final String TAG = AdapterInterstitialListener.class.getSimpleName();
+    private static final String TAG = AdapterInterstitialListener.class.getSimpleName();
 
-	private WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
-	private MediationInterstitialListener interstitialListener;
-	private InterstitialAd interstitialAd;
-
-
-	AdapterInterstitialListener(final MediationInterstitialAdapter adapter, final MediationInterstitialListener listener) {
-
-		interstitialAdapterWeakRef = new WeakReference<>(adapter);
-		interstitialListener = listener;
-	}
+    private WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
+    private MediationInterstitialListener interstitialListener;
+    private InterstitialAd interstitialAd;
 
 
-	@Override
-	public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
+    AdapterInterstitialListener(final MediationInterstitialAdapter adapter,
+                                final MediationInterstitialListener listener) {
 
-		Log.e(TAG, "Verizon Ads SDK interstitial error: " + errorInfo);
-
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdOpened(adapter);
-					interstitialListener.onAdClosed(adapter);
-				}
-			}
-		});
-	}
+        interstitialAdapterWeakRef = new WeakReference<>(adapter);
+        interstitialListener = listener;
+    }
 
 
-	@Override
-	public void onShown(final InterstitialAd interstitialAd) {
+    @Override
+    public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
 
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
+        Log.e(TAG, "Verizon Ads SDK interstitial error: " + errorInfo);
 
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdOpened(adapter);
-				}
-			}
-		});
-		Log.i(TAG, "Verizon Ads SDK interstitial shown.");
-	}
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
-
-	@Override
-	public void onClosed(final InterstitialAd interstitialAd) {
-
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdClosed(adapter);
-				}
-			}
-		});
-		Log.i(TAG, "Verizon Ads SDK ad closed");
-	}
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdOpened(adapter);
+                    interstitialListener.onAdClosed(adapter);
+                }
+            }
+        });
+    }
 
 
-	@Override
-	public void onClicked(final InterstitialAd interstitialAd) {
+    @Override
+    public void onShown(final InterstitialAd interstitialAd) {
 
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdClicked(adapter);
-				}
-			}
-		});
-		Log.i(TAG, "Verizon Ads SDK interstitial clicked.");
-	}
-
-
-	@Override
-	public void onAdLeftApplication(final InterstitialAd interstitialAd) {
-
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdLeftApplication(adapter);
-				}
-			}
-		});
-		Log.i(TAG, "Verizon Ads SDK interstitial left application.");
-	}
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdOpened(adapter);
+                }
+            }
+        });
+        Log.i(TAG, "Verizon Ads SDK interstitial shown.");
+    }
 
 
-	@Override
-	public void onEvent(final InterstitialAd interstitialAd, final String s, final String s1, final Map<String, Object> map) {
-		// no op.  events not supported in adapter
-	}
+    @Override
+    public void onClosed(final InterstitialAd interstitialAd) {
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdClosed(adapter);
+                }
+            }
+        });
+        Log.i(TAG, "Verizon Ads SDK ad closed");
+    }
 
 
-	@Override
-	public void onLoaded(final InterstitialAdFactory interstitialAdFactory, final InterstitialAd interstitialAd) {
+    @Override
+    public void onClicked(final InterstitialAd interstitialAd) {
 
-		this.interstitialAd = interstitialAd;
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-		ThreadUtils.postOnUiThread(new Runnable() {
-			@Override
-			public void run() {
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
-				MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-				if ((adapter != null) && (interstitialListener != null)) {
-					interstitialListener.onAdLoaded(adapter);
-				}
-			}
-		});
-
-		Log.i(TAG, "Verizon Ads SDK interstitial loaded.");
-	}
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdClicked(adapter);
+                }
+            }
+        });
+        Log.i(TAG, "Verizon Ads SDK interstitial clicked.");
+    }
 
 
-	@Override
-	public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory, final int i, final int i1) {
-		// no op.  caching not supported in adapter
-	}
+    @Override
+    public void onAdLeftApplication(final InterstitialAd interstitialAd) {
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdLeftApplication(adapter);
+                }
+            }
+        });
+        Log.i(TAG, "Verizon Ads SDK interstitial left application.");
+    }
 
 
-	@Override
-	public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory, final int i) {
-		// no op.  caching not supported in adapter
-	}
+    @Override
+    public void onEvent(final InterstitialAd interstitialAd, final String s, final String s1,
+                        final Map<String, Object> map) {
+        // no op.  events not supported in adapter
+    }
 
 
-	@Override
-	public void onError(final InterstitialAdFactory interstitialAdFactory, final ErrorInfo errorInfo) {
+    @Override
+    public void onLoaded(final InterstitialAdFactory interstitialAdFactory,
+                         final InterstitialAd interstitialAd) {
 
-		switch (errorInfo.getErrorCode()) {
-			case VASAds.ERROR_AD_REQUEST_FAILED:
-				ThreadUtils.postOnUiThread(new Runnable() {
-					@Override
-					public void run() {
+        this.interstitialAd = interstitialAd;
 
-						MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-						if ((adapter != null) && (interstitialListener != null)) {
-							interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-						}
-					}
-				});
-				break;
-			case VASAds.ERROR_AD_REQUEST_TIMED_OUT:
-				ThreadUtils.postOnUiThread(new Runnable() {
-					@Override
-					public void run() {
+                MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
-						MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+                if ((adapter != null) && (interstitialListener != null)) {
+                    interstitialListener.onAdLoaded(adapter);
+                }
+            }
+        });
 
-						if ((adapter != null) && (interstitialListener != null)) {
-							interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
-						}
-					}
-				});
-				break;
-
-			default:
-				ThreadUtils.postOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-
-						MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-						if ((adapter != null) && (interstitialListener != null)) {
-							interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_NO_FILL);
-						}
-					}
-				});
-				break;
-		}
-		Log.w(TAG, "Verizon Ads SDK interstitial request failed (" + errorInfo.getErrorCode() + "): " +
-			errorInfo.getDescription());
-	}
+        Log.i(TAG, "Verizon Ads SDK interstitial loaded.");
+    }
 
 
-	void show(final Context context) {
-
-		if ((interstitialAd == null) || (context == null)) {
-			ThreadUtils.postOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-
-					MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
-
-					if ((adapter != null) && (interstitialListener != null)) {
-						interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_NO_FILL);
-					}
-				}
-			});
-			return;
-		}
-
-		interstitialAd.show(context);
-	}
+    @Override
+    public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory, final int i,
+                              final int i1) {
+        // no op.  caching not supported in adapter
+    }
 
 
-	void destroy() {
+    @Override
+    public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory, final int i) {
+        // no op.  caching not supported in adapter
+    }
 
-		if (interstitialAd != null) {
-			interstitialAd.destroy();
-		}
-	}
+
+    @Override
+    public void onError(final InterstitialAdFactory interstitialAdFactory,
+                        final ErrorInfo errorInfo) {
+
+        switch (errorInfo.getErrorCode()) {
+            case VASAds.ERROR_AD_REQUEST_FAILED:
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                        if ((adapter != null) && (interstitialListener != null)) {
+                            interstitialListener.onAdFailedToLoad(adapter,
+                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        }
+                    }
+                });
+                break;
+            case VASAds.ERROR_AD_REQUEST_TIMED_OUT:
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                        if ((adapter != null) && (interstitialListener != null)) {
+                            interstitialListener.onAdFailedToLoad(adapter,
+                                    AdRequest.ERROR_CODE_NETWORK_ERROR);
+                        }
+                    }
+                });
+                break;
+
+            default:
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                        if ((adapter != null) && (interstitialListener != null)) {
+                            interstitialListener.onAdFailedToLoad(adapter,
+                                    AdRequest.ERROR_CODE_NO_FILL);
+                        }
+                    }
+                });
+                break;
+        }
+        Log.w(TAG, "Verizon Ads SDK interstitial request failed (" + errorInfo.getErrorCode()
+                + "): " + errorInfo.getDescription());
+    }
+
+
+    void show(final Context context) {
+
+        if ((interstitialAd == null) || (context == null)) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+
+                    if ((adapter != null) && (interstitialListener != null)) {
+                        interstitialListener.onAdFailedToLoad(adapter,
+                                AdRequest.ERROR_CODE_NO_FILL);
+                    }
+                }
+            });
+            return;
+        }
+
+        interstitialAd.show(context);
+    }
+
+
+    void destroy() {
+
+        if (interstitialAd != null) {
+            interstitialAd.destroy();
+        }
+    }
 }

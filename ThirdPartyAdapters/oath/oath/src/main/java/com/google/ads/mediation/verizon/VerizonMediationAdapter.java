@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -30,346 +31,411 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 
+public class VerizonMediationAdapter implements MediationBannerAdapter,
+        MediationInterstitialAdapter {
 
-public class VerizonMediationAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
+    private static final String VERSION = "1.1.1.0";
+    private static final String PLACEMENT_KEY = "placement_id";
+    private static final String SITE_KEY = "site_id";
+    private static final String ORANGE_PLACEMENT_KEY = "position";
+    private static final String DCN_KEY = "dcn";
 
-	private static final String VERSION = "1.1.1.0";
-	private static final String PLACEMENT_KEY = "placement_id";
-	private static final String SITE_KEY = "site_id";
-	private static final String ORANGE_PLACEMENT_KEY = "position";
-	private static final String DCN_KEY = "dcn";
+    protected static String TAG = VerizonMediationAdapter.class.getSimpleName();
 
-	protected static String TAG = VerizonMediationAdapter.class.getSimpleName();
+    @SuppressWarnings("FieldCanBeLocal")
+    private static String MEDIATOR_ID = "AdMobVAS-" + VERSION;
 
-	@SuppressWarnings("FieldCanBeLocal")
-	private static String MEDIATOR_ID = "AdMobVAS-" + VERSION;
+    static {
+        Log.i(TAG, "Verizon Ads SDK Adapter Version: " + MEDIATOR_ID);
+    }
 
-	static {
-		Log.i(TAG, "Verizon Ads SDK Adapter Version: " + MEDIATOR_ID);
-	}
+    private LinearLayout internalView;
+    private WeakReference<Context> contextWeakRef;
+    private InlineAdFactory inlineAdFactory;
+    private AdapterInterstitialListener adapterInterstitialListener;
+    private MediationInterstitialListener mediationInterstitialListener;
+    private AdapterInlineListener adapterInlineListener;
+    private InterstitialAdFactory interstitialAdFactory;
 
-	private LinearLayout internalView;
-	private WeakReference<Context> contextWeakRef;
-	private InlineAdFactory inlineAdFactory;
-	private AdapterInterstitialListener adapterInterstitialListener;
-	private MediationInterstitialListener mediationInterstitialListener;
-	private AdapterInlineListener adapterInlineListener;
-	private InterstitialAdFactory interstitialAdFactory;
+    @Override
+    public void requestBannerAd(final Context context, final MediationBannerListener listener,
+                                final Bundle serverParameters,
+                                com.google.android.gms.ads.AdSize adSize,
+                                final MediationAdRequest mediationAdRequest,
+                                final Bundle mediationExtras) {
 
+        String placementId = fetchPlacementId(serverParameters);
 
-	private static int dip(final int pixels, final Context context) {
+        setContext(context);
 
-		return (int) TypedValue
-			.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixels, context.getResources().getDisplayMetrics());
-	}
+        if (!initializeSDK(context, mediationExtras, serverParameters)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK");
 
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
-	@Override
-	public void requestBannerAd(final Context context, final MediationBannerListener listener, final Bundle serverParameters,
-		com.google.android.gms.ads.AdSize adSize, final MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this,
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                }
+            });
 
-		String placementId = fetchPlacementId(serverParameters);
-		LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            return;
+        }
 
-		setContext(context);
+        setCoppaValue(mediationAdRequest);
 
-		if (!initializeSDK(context, mediationExtras, serverParameters)) {
-			Log.e(TAG, "Unable to initialize Verizon Ads SDK");
+        adSize = normalizeSize(context, adSize);
 
-			ThreadUtils.postOnUiThread(new Runnable() {
-				@Override
-				public void run() {
+        internalView = new LinearLayout(context);
+        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER_HORIZONTAL;
+        internalView.setLayoutParams(lp);
 
-					listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-				}
-			});
+        try {
+            VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
 
-			return;
-		}
+            adapterInlineListener = new AdapterInlineListener(this, listener, internalView);
+            inlineAdFactory = new InlineAdFactory(context, placementId,
+                    Collections.singletonList(
+                            new com.verizon.ads.inlineplacement.AdSize(adSize.getWidth(),
+                                    adSize.getHeight())),
+                    adapterInlineListener);
 
-		setCoppaValue(mediationAdRequest);
+            inlineAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
 
-		adSize = normalizeSize(context, adSize);
+            inlineAdFactory.load(adapterInlineListener);
 
-		internalView = new LinearLayout(context);
-		lp.gravity = Gravity.CENTER_HORIZONTAL;
-		internalView.setLayoutParams(lp);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create InlineAd instance", e);
 
-		try {
-			VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
-			adapterInlineListener = new AdapterInlineListener(this, listener, internalView);
-			inlineAdFactory = new InlineAdFactory(context, placementId,
-				Collections.singletonList(new com.verizon.ads.inlineplacement.AdSize(adSize.getWidth(), adSize.getHeight())),
-				adapterInlineListener);
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this,
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
+                }
+            });
+        }
+    }
 
-			inlineAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
 
-			inlineAdFactory.load(adapterInlineListener);
+    @Override
+    public View getBannerView() {
 
-		} catch (Exception e) {
-			Log.e(TAG, "Failed to create InlineAd instance", e);
+        return internalView;
+    }
 
-			ThreadUtils.postOnUiThread(new Runnable() {
-				@Override
-				public void run() {
 
-					listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-				}
-			});
-		}
-	}
+    @Override
+    public void requestInterstitialAd(final Context context,
+                                      final MediationInterstitialListener listener,
+                                      final Bundle serverParameters,
+                                      final MediationAdRequest mediationAdRequest,
+                                      final Bundle mediationExtras) {
 
+        this.mediationInterstitialListener = listener;
 
-	@Override
-	public View getBannerView() {
+        String placementId = fetchPlacementId(serverParameters);
 
-		return internalView;
-	}
+        setContext(context);
 
+        if (!initializeSDK(context, mediationExtras, serverParameters)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK");
 
-	@Override
-	public void requestInterstitialAd(final Context context, final MediationInterstitialListener listener,
-		final Bundle serverParameters, final MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
-		this.mediationInterstitialListener = listener;
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this,
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                }
+            });
 
-		String placementId = fetchPlacementId(serverParameters);
+            return;
+        }
 
-		setContext(context);
+        setCoppaValue(mediationAdRequest);
 
-		if (!initializeSDK(context, mediationExtras, serverParameters)) {
-			Log.e(TAG, "Unable to initialize Verizon Ads SDK");
+        try {
+            VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+            adapterInterstitialListener = new AdapterInterstitialListener(this, listener);
+            interstitialAdFactory = new InterstitialAdFactory(context, placementId,
+                    adapterInterstitialListener);
+            interstitialAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
+            interstitialAdFactory.load(adapterInterstitialListener);
 
-			ThreadUtils.postOnUiThread(new Runnable() {
-				@Override
-				public void run() {
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create InterstitialAd instance", e);
 
-					listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-				}
-			});
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
-			return;
-		}
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this,
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
+                }
+            });
+        }
+    }
 
-		setCoppaValue(mediationAdRequest);
 
-		try {
-			VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
-			adapterInterstitialListener = new AdapterInterstitialListener(this, listener);
-			interstitialAdFactory = new InterstitialAdFactory(context, placementId, adapterInterstitialListener);
-			interstitialAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
-			interstitialAdFactory.load(adapterInterstitialListener);
+    @Override
+    public void showInterstitial() {
 
-		} catch (Exception e) {
-			Log.e(TAG, "Failed to create InterstitialAd instance", e);
+        if (adapterInterstitialListener == null) {
+            if (mediationInterstitialListener != null) {
+                mediationInterstitialListener.onAdFailedToLoad(VerizonMediationAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
 
-			ThreadUtils.postOnUiThread(new Runnable() {
-				@Override
-				public void run() {
+            return;
+        }
 
-					listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-				}
-			});
-		}
-	}
+        try {
+            adapterInterstitialListener.show(getContext());
+        } catch (Exception e) {
+            Log.e(TAG, "Error occurred attempting to show Interstitial Ad.", e);
+        }
+    }
 
 
-	@Override
-	public void showInterstitial() {
+    @Override
+    public void onDestroy() {
 
-		if (adapterInterstitialListener == null) {
-			if (mediationInterstitialListener != null) {
-				mediationInterstitialListener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-			}
+        Log.i(TAG, "Aborting.");
+        if (inlineAdFactory != null) {
+            inlineAdFactory.abortLoad();
+        }
 
-			return;
-		}
+        if (interstitialAdFactory != null) {
+            interstitialAdFactory.abortLoad();
+        }
 
-		try {
-			adapterInterstitialListener.show(getContext());
-		} catch (Exception e) {
-			Log.e(TAG, "Error occurred attempting to show Interstitial Ad.", e);
-		}
-	}
 
+        if (adapterInterstitialListener != null) {
+            adapterInterstitialListener.destroy();
+        }
 
-	@Override
-	public void onDestroy() {
+        if (adapterInlineListener != null) {
+            adapterInlineListener.destroy();
+        }
 
-		Log.i(TAG, "Aborting.");
-		if (inlineAdFactory != null) {
-			inlineAdFactory.abortLoad();
-		}
+    }
 
-		if (interstitialAdFactory != null) {
-			interstitialAdFactory.abortLoad();
-		}
 
+    @Override
+    public void onPause() {
 
-		if (adapterInterstitialListener != null) {
-			adapterInterstitialListener.destroy();
-		}
+    }
 
-		if (adapterInlineListener != null) {
-			adapterInlineListener.destroy();
-		}
 
-	}
+    @Override
+    public void onResume() {
 
+    }
 
-	@Override
-	public void onPause() {
 
-	}
+    private RequestMetadata getRequestMetadata(final MediationAdRequest mediationAdRequest) {
 
+        RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder();
 
-	@Override
-	public void onResume() {
+        // Keywords
+        if (mediationAdRequest.getKeywords() != null) {
+            requestMetadataBuilder.setKeywords(new ArrayList<>(mediationAdRequest.getKeywords()));
+        }
 
-	}
+        requestMetadataBuilder.setMediator(MEDIATOR_ID);
 
+        return requestMetadataBuilder.build();
+    }
 
-	private RequestMetadata getRequestMetadata(final MediationAdRequest mediationAdRequest) {
 
-		RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder();
+    private void setCoppaValue(final MediationAdRequest mediationAdRequest) {
+        // COPPA
+        if (mediationAdRequest.taggedForChildDirectedTreatment() ==
+                MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            VASAds.setCoppa(true);
+        } else if (mediationAdRequest.taggedForChildDirectedTreatment() ==
+                MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+            VASAds.setCoppa(false);
+        }
+    }
 
-		// Keywords
-		if (mediationAdRequest.getKeywords() != null) {
-			requestMetadataBuilder.setKeywords(new ArrayList<>(mediationAdRequest.getKeywords()));
-		}
 
-		requestMetadataBuilder.setMediator(MEDIATOR_ID);
+    private AdSize normalizeSize(final Context context,
+                                 final AdSize adSize) {
 
-		return requestMetadataBuilder.build();
-	}
+        int width = adSize.getWidth();
+        if (width < 0) {
+            float density = context.getResources().getDisplayMetrics().density;
+            width = Math.round(adSize.getWidthInPixels(context) / density);
+        }
 
+        ArrayList<AdSize> potentials = new ArrayList<>(3);
+        potentials.add(0, new AdSize(width, 50));
+        potentials.add(1, new AdSize(width, 90));
+        potentials.add(2, new AdSize(width, 250));
+        Log.i(TAG, "Potential ad sizes: " + potentials.toString());
 
-	private void setCoppaValue(final MediationAdRequest mediationAdRequest) {
-		// COPPA
-		if (mediationAdRequest.taggedForChildDirectedTreatment() ==
-			MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-			VASAds.setCoppa(true);
-		} else if (mediationAdRequest.taggedForChildDirectedTreatment() ==
-			MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
-			VASAds.setCoppa(false);
-		}
-	}
+        return findClosestSize(context, adSize, potentials);
+    }
 
+    private boolean initializeSDK(final Context context, final Bundle mediationExtras,
+                                  final Bundle serverParams) {
 
-	private com.google.android.gms.ads.AdSize normalizeSize(final Context context, final com.google.android.gms.ads.AdSize adSize) {
-		// SmartBanners... http://bit.ly/1D9Sg2E
-		int screenWidth = context.getResources().getDisplayMetrics().widthPixels;
-		int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
 
-		if (adSize.isAutoHeight() && adSize.isFullWidth()) {
-			if (screenWidth >= dip(728, context)) {
-				return new com.google.android.gms.ads.AdSize(728, 90);
-			} else if (screenWidth > screenHeight && screenHeight > dip(400, context)) {
-				return new com.google.android.gms.ads.AdSize(320, 50);
-			} else if (screenWidth > screenHeight && screenHeight < dip(400, context)) {
-				return new com.google.android.gms.ads.AdSize(120, 30);
-			} else {
-				return new com.google.android.gms.ads.AdSize(320, 50);
-			}
-		}
+            return false;
+        }
 
-		return adSize;
-	}
+        boolean success = true;
 
+        if (!VASAds.isInitialized()) {
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	private boolean initializeSDK(final Context context, final Bundle mediationExtras,
-		final Bundle serverParams) {
+            if (!(context instanceof Activity)) {
+                Log.e(TAG, "StandardEdition.initialize must be explicitly called when " +
+                        "instantiating the AdMob " +
+                        "AdView or InterstitialAd without an Activity.");
 
-		if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-			Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
+                return false;
+            }
 
-			return false;
-		}
+            String siteId = null;
+            try {
+                if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
+                    siteId = mediationExtras.getString(SITE_KEY);
+                }
+                // If we get site ID from the serverParams (not yet implemented), overwrite
+                // everything!
+                if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
+                    siteId = serverParams.getString(SITE_KEY);
+                }
 
-		boolean success = true;
+                // Support for legacy Nexage and MM mediation
+                if (TextUtils.isEmpty(siteId)) {
+                    if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
+                        siteId = mediationExtras.getString(DCN_KEY);
+                    }
+                    // If we get site ID from the serverParams (not yet implemented), overwrite
+                    // everything!
+                    if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
+                        siteId = serverParams.getString(DCN_KEY);
+                    }
+                }
 
-		if (!VASAds.isInitialized()) {
+                if (TextUtils.isEmpty(siteId)) {
+                    Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or "
+                            + "server params");
 
-			if (!(context instanceof Activity)) {
-				Log.e(TAG, "StandardEdition.initialize must be explicitly called when instantiating the AdMob " +
-					"AdView or InterstitialAd without an Activity.");
+                    return false;
+                }
 
-				return false;
-			}
+                Log.d(TAG, "Using site ID: " + siteId);
 
-			String siteId = null;
-			try {
-				if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
-					siteId = mediationExtras.getString(SITE_KEY);
-				}
-				// If we get site ID from the serverParams (not yet implemented), overwrite everything!
-				if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
-					siteId = serverParams.getString(SITE_KEY);
-				}
+                success = StandardEdition.initialize(((Activity) context).getApplication(), siteId);
+            } catch (Exception e) {
+                Log.e(TAG, "Error occurred initializing Verizon Ads SDK.", e);
 
-				// Support for legacy Nexage and MM mediation
-				if (TextUtils.isEmpty(siteId)) {
-					if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
-						siteId = mediationExtras.getString(DCN_KEY);
-					}
-					// If we get site ID from the serverParams (not yet implemented), overwrite everything!
-					if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
-						siteId = serverParams.getString(DCN_KEY);
-					}
-				}
+                return false;
+            }
+        }
 
-				if (TextUtils.isEmpty(siteId)) {
-					Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or server params");
+        VASAds.getActivityStateManager().setState((Activity) context,
+                ActivityStateManager.ActivityState.RESUMED);
 
-					return false;
-				}
+        return success;
+    }
 
-				Log.d(TAG, "Using site ID: " + siteId);
 
-				success = StandardEdition.initialize(((Activity) context).getApplication(), siteId);
-			} catch (Exception e) {
-				Log.e(TAG, "Error occurred initializing Verizon Ads SDK.", e);
+    private String fetchPlacementId(final Bundle serverParams) {
 
-				return false;
-			}
-		}
+        String placementId = null;
+        if (serverParams == null) {
+            return null;
+        } else if (serverParams.containsKey(VerizonMediationAdapter.PLACEMENT_KEY)) {
+            placementId = serverParams.getString(VerizonMediationAdapter.PLACEMENT_KEY);
+        } else if (serverParams.containsKey(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY)) {
+            placementId = serverParams.getString(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY);
+        }
 
-		VASAds.getActivityStateManager().setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
+        return placementId;
+    }
 
-		return success;
-	}
 
+    private void setContext(final Context context) {
 
-	private String fetchPlacementId(final Bundle serverParams) {
+        contextWeakRef = new WeakReference<>(context);
+    }
 
-		String placementId = null;
-		if (serverParams == null) {
-			return null;
-		} else if (serverParams.containsKey(VerizonMediationAdapter.PLACEMENT_KEY)) {
-			placementId = serverParams.getString(VerizonMediationAdapter.PLACEMENT_KEY);
-		} else if (serverParams.containsKey(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY)) {
-			placementId = serverParams.getString(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY);
-		}
 
-		return placementId;
-	}
+    private Context getContext() {
 
+        if (contextWeakRef == null) {
 
-	private void setContext(final Context context) {
+            return null;
+        }
 
-		contextWeakRef = new WeakReference<>(context);
-	}
+        return contextWeakRef.get();
+    }
 
+    // Start of helper code to remove when available in SDK
 
-	private Context getContext() {
+    /**
+     * Find the closest supported AdSize from the list of potentials to the provided size. Returns
+     * null if none are within given threshold size range.
+     */
+    public static AdSize findClosestSize(
+            Context context, AdSize original, ArrayList<AdSize> potentials) {
+        if (potentials == null || original == null) {
+            return null;
+        }
+        float density = context.getResources().getDisplayMetrics().density;
+        int actualWidth = Math.round(original.getWidthInPixels(context) / density);
+        int actualHeight = Math.round(original.getHeightInPixels(context) / density);
+        original = new AdSize(actualWidth, actualHeight);
 
-		if (contextWeakRef == null) {
+        AdSize largestPotential = null;
+        for (AdSize potential : potentials) {
+            if (isSizeInRange(original, potential)) {
+                if (largestPotential == null) {
+                    largestPotential = potential;
+                } else {
+                    largestPotential = getLargerByArea(largestPotential, potential);
+                }
+            }
+        }
+        return largestPotential;
+    }
 
-			return null;
-		}
+    public static boolean isSizeInRange(AdSize original, AdSize potential) {
+        if (potential == null) {
+            return false;
+        }
+        double minWidthRatio = 0.5;
+        double minHeightRatio = 0.7;
 
-		return contextWeakRef.get();
-	}
+        int originalWidth = original.getWidth();
+        int potentialWidth = potential.getWidth();
+        int originalHeight = original.getHeight();
+        int potentialHeight = potential.getHeight();
+
+        if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
+            return false;
+        }
+
+        if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
+            return false;
+        }
+        return true;
+    }
+
+    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+        int area1 = size1.getWidth() * size1.getHeight();
+        int area2 = size2.getWidth() * size2.getHeight();
+        return area1 > area2 ? size1 : size2;
+    }
+    // End code to remove when available in SDK
 }

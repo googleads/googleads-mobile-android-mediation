@@ -9,14 +9,14 @@ import android.os.Looper;
  */
 class ThreadUtils {
 
-	private static Handler uiHandler;
+    private static Handler uiHandler;
 
 
-	static void postOnUiThread(final Runnable runnable) {
+    static void postOnUiThread(final Runnable runnable) {
 
-		if (uiHandler == null) {
-			uiHandler = new Handler(Looper.getMainLooper());
-		}
-		uiHandler.post(runnable);
-	}
+        if (uiHandler == null) {
+            uiHandler = new Handler(Looper.getMainLooper());
+        }
+        uiHandler.post(runnable);
+    }
 }
