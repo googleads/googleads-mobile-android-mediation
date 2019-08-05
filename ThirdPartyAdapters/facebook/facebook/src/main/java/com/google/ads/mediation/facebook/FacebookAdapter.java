@@ -1012,9 +1012,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             }
 
             if (isNativeBanner) {
-                mNativeAd.unregisterView();
-            } else {
                 mNativeBannerAd.unregisterView();
+            } else {
+                mNativeAd.unregisterView();
             }
         }
 
@@ -1305,9 +1305,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 ((FrameLayout) overlayView).removeAllViews();
             }
             if (isNativeBanner) {
-                mNativeAd.unregisterView();
-            } else {
                 mNativeBannerAd.unregisterView();
+            } else {
+                mNativeAd.unregisterView();
             }
         }
 

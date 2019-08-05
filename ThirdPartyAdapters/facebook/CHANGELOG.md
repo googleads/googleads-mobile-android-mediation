@@ -1,5 +1,8 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.4.1.1
+- Fixed an issue that causes a crash when Native Ads are removed.
+
 ## 5.4.1.0
 - Verified compatibility with Facebook SDK v5.4.1.
 - Added support for Facebook Native Banner Ads.
