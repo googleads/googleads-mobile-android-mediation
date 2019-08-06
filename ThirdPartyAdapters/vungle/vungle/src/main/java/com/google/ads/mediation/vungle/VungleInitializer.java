@@ -12,14 +12,13 @@ import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
 import com.vungle.warren.VungleSettings;
 
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class VungleInitializer implements InitCallback {
 
     private static VungleInitializer instance;
     private boolean mIsInitializing = false;
-
-    private ArrayList<VungleInitializationListener> mInitListeners;
+    private ConcurrentHashMap<String, VungleInitializationListener> mInitListeners;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -31,7 +30,7 @@ public class VungleInitializer implements InitCallback {
     }
 
     private VungleInitializer() {
-        mInitListeners = new ArrayList<>();
+        mInitListeners = new ConcurrentHashMap<>();
     }
 
     boolean isInitializing() {
@@ -42,9 +41,9 @@ public class VungleInitializer implements InitCallback {
         return Vungle.isInitialized();
     }
 
-    public void initialize(final String appId, final Context context, VungleInitializationListener listener) {
+    public void initialize(final String appId, final Context context, String adapterId, VungleInitializationListener listener) {
         if (isInitializing()) {
-            mInitListeners.add(listener);
+            mInitListeners.put(adapterId, listener);
             return;
         }
 
@@ -78,7 +77,7 @@ public class VungleInitializer implements InitCallback {
             vungleSettings = new VungleSettings.Builder().build();
         }
         Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
-        mInitListeners.add(listener);
+        mInitListeners.put(adapterId, listener);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class VungleInitializer implements InitCallback {
                     Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
                             VungleConsent.getCurrentVungleConsentMessageVersion());
                 }
-                for (VungleInitializationListener listener : mInitListeners) {
+                for (VungleInitializationListener listener : mInitListeners.values()) {
                     listener.onInitializeSuccess();
                 }
                 mInitListeners.clear();
@@ -104,7 +103,7 @@ public class VungleInitializer implements InitCallback {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                for (VungleInitializationListener listener : mInitListeners) {
+                for (VungleInitializationListener listener : mInitListeners.values()) {
                     listener.onInitializeError(throwable.getLocalizedMessage());
                 }
                 mInitListeners.clear();

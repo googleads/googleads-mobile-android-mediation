@@ -87,7 +87,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         mAdapterId = INTERSTITIAL + String.valueOf(sCounter);
         sCounter++;
         VungleInitializer.getInstance().initialize(config.getAppId(),
-                context.getApplicationContext(), new VungleInitializer.VungleInitializationListener() {
+                context.getApplicationContext(), mAdapterId, new VungleInitializer.VungleInitializationListener() {
                     @Override
                     public void onInitializeSuccess() {
                         loadAd();
@@ -236,7 +236,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
                 }
             };
             VungleInitializer.getInstance().initialize(config.getAppId(),
-                    context.getApplicationContext(), new VungleInitializer.VungleInitializationListener() {
+                    context.getApplicationContext(), mAdapterId, new VungleInitializer.VungleInitializationListener() {
                         @Override
                         public void onInitializeSuccess() {
                             loadBanner();

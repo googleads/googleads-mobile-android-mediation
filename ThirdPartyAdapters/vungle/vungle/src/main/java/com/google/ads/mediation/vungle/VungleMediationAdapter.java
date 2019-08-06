@@ -37,7 +37,10 @@ public class VungleMediationAdapter extends Adapter
 
     public static final String TAG = VungleMediationAdapter.class.getSimpleName();
     private static final String KEY_APP_ID = "appid";
+    private static final String REWARDED = "rewarded";
+    private static int sCounter = 0;
 
+    private String mAdapterId;
     private AdConfig mAdConfig;
     private String mUserID;
     private String mPlacement;
@@ -109,7 +112,9 @@ public class VungleMediationAdapter extends Adapter
             }
 
             mInitializationCallback = initializationCompleteCallback;
-            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(),
+            mAdapterId = REWARDED + String.valueOf(sCounter);
+            sCounter++;
+            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(), mAdapterId,
                     VungleMediationAdapter.this);
         } else {
             initializationCompleteCallback.onInitializationFailed("Initialization failed: " +
@@ -165,7 +170,8 @@ public class VungleMediationAdapter extends Adapter
                 return;
             }
 
-            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(),
+            mAdapterId = REWARDED + String.valueOf(sCounter);
+            VungleInitializer.getInstance().initialize(appID, context.getApplicationContext(), mAdapterId,
                     VungleMediationAdapter.this);
         } else {
             Vungle.setIncentivizedFields(mUserID, null, null, null, null);
