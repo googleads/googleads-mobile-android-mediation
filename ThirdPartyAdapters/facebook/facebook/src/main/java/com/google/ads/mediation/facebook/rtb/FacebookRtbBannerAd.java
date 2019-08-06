@@ -1,7 +1,7 @@
 package com.google.ads.mediation.facebook.rtb;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 
 import com.facebook.ads.Ad;

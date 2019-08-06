@@ -75,63 +75,59 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
             return;
         }
 
-        if (isRtbAd) {
-            createVideoPlacementAndRequestContent(placementName);
-        } else {
-            Log.i(TAG, "Loading ad for Tapjoy-AdMob adapter");
-            Bundle networkExtras = adConfiguration.getMediationExtras();
+        Log.i(TAG, "Loading ad for Tapjoy-AdMob adapter");
+        Bundle networkExtras = adConfiguration.getMediationExtras();
 
-            Context context = adConfiguration.getContext();
-            if (!(context instanceof Activity)) {
-                String logMessage = "Tapjoy SDK requires an Activity context to request ads";
-                Log.e(TAG, logMessage);
-                mAdLoadCallback.onFailure(logMessage);
-                return;
-            }
-            Activity activity = (Activity) context;
-            String sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
+        Context context = adConfiguration.getContext();
+        if (!(context instanceof Activity)) {
+            String logMessage = "Tapjoy SDK requires an Activity context to request ads";
+            Log.e(TAG, logMessage);
+            mAdLoadCallback.onFailure(logMessage);
+            return;
+        }
+        Activity activity = (Activity) context;
+        String sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
 
-            if (TextUtils.isEmpty(sdkKey)) {
-                String logMessage = "Failed to request ad from Tapjoy: Missing or Invalid SDK Key.";
-                Log.w(TAG, logMessage);
-                mAdLoadCallback.onFailure(logMessage);
-                return;
-            }
+        if (TextUtils.isEmpty(sdkKey)) {
+            String logMessage = "Failed to request ad from Tapjoy: Missing or Invalid SDK Key.";
+            Log.w(TAG, logMessage);
+            mAdLoadCallback.onFailure(logMessage);
+            return;
+        }
 
-            Tapjoy.setActivity(activity);
+        Tapjoy.setActivity(activity);
 
-            Hashtable<String, Object> connectFlags = new Hashtable<>();
-            if (networkExtras != null && networkExtras.containsKey(TAPJOY_DEBUG_FLAG_KEY)) {
-                connectFlags.put("TJC_OPTION_ENABLE_LOGGING",
-                        networkExtras.getBoolean(TAPJOY_DEBUG_FLAG_KEY, false));
-            }
+        Hashtable<String, Object> connectFlags = new Hashtable<>();
+        if (networkExtras != null && networkExtras.containsKey(TAPJOY_DEBUG_FLAG_KEY)) {
+            connectFlags.put("TJC_OPTION_ENABLE_LOGGING",
+                    networkExtras.getBoolean(TAPJOY_DEBUG_FLAG_KEY, false));
+        }
 
-            TapjoyInitializer.getInstance().initialize(activity, sdkKey, connectFlags,
-                    new TapjoyInitializer.Listener() {
-                @Override
-                public void onInitializeSucceeded() {
-                    if (mPlacementsInUse.containsKey(placementName) &&
-                            mPlacementsInUse.get(placementName).get() != null) {
-                        String logMessage =
-                                "An ad has already been requested for placement: " + placementName;
-                        Log.w(TAG, logMessage);
-                        mAdLoadCallback.onFailure(logMessage);
-                        return;
-                    }
-
-                    mPlacementsInUse.put(placementName,
-                            new WeakReference<>(TapjoyRewardedRenderer.this));
-                    createVideoPlacementAndRequestContent(placementName);
-                }
-
-                @Override
-                public void onInitializeFailed(String message) {
-                    String logMessage = "Failed to request ad from Tapjoy: " + message;
+        TapjoyInitializer.getInstance().initialize(activity, sdkKey, connectFlags,
+                new TapjoyInitializer.Listener() {
+            @Override
+            public void onInitializeSucceeded() {
+                if (mPlacementsInUse.containsKey(placementName) &&
+                        mPlacementsInUse.get(placementName).get() != null) {
+                    String logMessage =
+                            "An ad has already been requested for placement: " + placementName;
                     Log.w(TAG, logMessage);
                     mAdLoadCallback.onFailure(logMessage);
+                    return;
                 }
-            });
-        }
+
+                mPlacementsInUse.put(placementName,
+                        new WeakReference<>(TapjoyRewardedRenderer.this));
+                createVideoPlacementAndRequestContent(placementName);
+            }
+
+            @Override
+            public void onInitializeFailed(String message) {
+                String logMessage = "Failed to request ad from Tapjoy: " + message;
+                Log.w(TAG, logMessage);
+                mAdLoadCallback.onFailure(logMessage);
+            }
+        });
     }
 
     private void createVideoPlacementAndRequestContent(final String placementName) {

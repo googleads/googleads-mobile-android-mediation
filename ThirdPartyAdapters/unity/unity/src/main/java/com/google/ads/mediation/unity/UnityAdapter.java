@@ -69,17 +69,12 @@ public class UnityAdapter extends UnityMediationAdapter
      * Callback object for Google's Banner Lifecycle.
      */
     private MediationBannerListener bannerListener;
-
-    /**
-     * Requested Banner AdSize
-     */
-    private AdSize requestedAdSize;
     
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
-    private UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
+    private final UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
 
         @Override
         public String getPlacementId() {
@@ -148,7 +143,7 @@ public class UnityAdapter extends UnityMediationAdapter
         }
     };
 
-    private UnityAdapterBannerDelegate bannerDelegate = new UnityAdapterBannerDelegate() {
+    private final UnityAdapterBannerDelegate bannerDelegate = new UnityAdapterBannerDelegate() {
         @Override
         public String getPlacementId() {
             return bannerPlacementId;
@@ -158,15 +153,6 @@ public class UnityAdapter extends UnityMediationAdapter
         public void onUnityBannerLoaded(String placementId, View view) {
             // Unity Ads Banner ad has been loaded and is ready to be shown.
             bannerView = view;
-            bannerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            int adHeight =  bannerView.getMeasuredHeight();
-            int adwidth = bannerView.getMeasuredWidth();
-            AdSize adSize = new AdSize(adwidth,adHeight);
-            if (!isSizeInRange(requestedAdSize, adSize)) {
-                Log.e(TAG, "The banner adsize loaded does not match the requested size");
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,AdRequest.ERROR_CODE_INVALID_REQUEST);
-                return;
-            }
             if (bannerListener != null) {
                 bannerListener.onAdLoaded(UnityAdapter.this);
             }
@@ -323,7 +309,7 @@ public class UnityAdapter extends UnityMediationAdapter
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         bannerListener = listener;
-        requestedAdSize = adSize;
+
         AdSize supportedSize = getSupportedAdSize(context, adSize);
         if (supportedSize == null) {
             Log.e(TAG, "Invalid ad size requested: " + adSize);
@@ -410,6 +396,7 @@ public class UnityAdapter extends UnityMediationAdapter
         if (potential == null) {
           return false;
         }
+
         double minWidthRatio = 0.5;
         double minHeightRatio = 0.7;
 
@@ -427,6 +414,7 @@ public class UnityAdapter extends UnityMediationAdapter
             originalHeight < potentialHeight) {
             return false;
         }
+
         return true;
     }
 

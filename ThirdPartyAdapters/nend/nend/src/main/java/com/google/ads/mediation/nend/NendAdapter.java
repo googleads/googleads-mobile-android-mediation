@@ -107,15 +107,18 @@ public class NendAdapter extends NendMediationAdapter
     @Override
     public void onDestroy() {
         if (smartBannerAdjustContainer != null) {
-            removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
+            removeOnGlobalLayoutListener(
+                    smartBannerAdjustContainer.getViewTreeObserver(),globalLayoutListener);
             smartBannerAdjustContainer = null;
         }
         globalLayoutListener = null;
         mNendAdView = null;
         mListener = null;
         mListenerInterstitial = null;
-        mActivityWeakReference.clear();
-        mActivityWeakReference = null;
+        if (mActivityWeakReference != null) {
+            mActivityWeakReference.clear();
+            mActivityWeakReference = null;
+        }
         if (mNendAdInterstitialVideo != null) {
             mNendAdInterstitialVideo.releaseAd();
             mNendAdInterstitialVideo = null;
@@ -273,6 +276,7 @@ public class NendAdapter extends NendMediationAdapter
 
             @Override
             public void onAdClicked(NendAdVideo nendAdVideo) {
+                adClicked();
                 switch (mInterstitialVideoStatus) {
                     case PLAYING:
                     case PLAYING_WHEN_CLICKED:
@@ -318,6 +322,7 @@ public class NendAdapter extends NendMediationAdapter
                                 adClosed();
                                 break;
                             case DOWNLOAD:
+                                adClicked();
                                 adLeftApplication();
                                 adClosed();
                                 break;
@@ -394,7 +399,8 @@ public class NendAdapter extends NendMediationAdapter
                         smartBannerHeightPixel);
                 smartBannerAdjustContainer.setLayoutParams(containerViewParams);
 
-                removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
+                removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(),
+                        globalLayoutListener);
             }
         };
 
@@ -408,10 +414,12 @@ public class NendAdapter extends NendMediationAdapter
         smartBannerAdjustContainer = new FrameLayout(context);
         smartBannerAdjustContainer.setLayoutParams(containerViewParams);
 
-        smartBannerAdjustContainer.getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
+        smartBannerAdjustContainer.getViewTreeObserver()
+                .addOnGlobalLayoutListener(globalLayoutListener);
 
-        FrameLayout.LayoutParams adViewParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams adViewParams =
+                new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
         adViewParams.gravity = Gravity.CENTER;
         smartBannerAdjustContainer.addView(mNendAdView, adViewParams);
     }
@@ -625,6 +633,7 @@ public class NendAdapter extends NendMediationAdapter
     @Override
     public void onClick(NendAdView adView) {
         if (mListener != null) {
+            mListener.onAdClicked(this);
             mListener.onAdOpened(this);
             mListener.onAdLeftApplication(this);
         }
@@ -649,6 +658,12 @@ public class NendAdapter extends NendMediationAdapter
     public void adLeftApplication() {
         if (mListenerInterstitial != null) {
             mListenerInterstitial.onAdLeftApplication(this);
+        }
+    }
+
+    public void adClicked() {
+        if (mListenerInterstitial != null) {
+            mListenerInterstitial.onAdClicked(this);
         }
     }
 

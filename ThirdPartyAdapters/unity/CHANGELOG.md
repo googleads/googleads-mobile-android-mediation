@@ -1,5 +1,8 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## Next Version
+- Fixed an issue that caused Banner Ad requests to fail.
+
 ## 3.1.0.0
 - Added support for flexible banner ad sizes.
 - Adapter fails the ad request if the requested size isn't compatible

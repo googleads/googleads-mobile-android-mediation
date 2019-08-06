@@ -2,7 +2,12 @@
 
 ## 5.1.1.0
 - Verified compatibility with nend SDK 5.1.1.
-- Migrated to `AndroidX`.
+
+## 5.1.0.4
+- Fixed an issue where Banner and Interstitial ads were not forwarding the `onAdClicked()` event.
+- Fixed an issue where a `NullPointerException` was thrown when a nend Banner ad was destroyed.
+- Migrated the adapter to AndroidX.
+- Updated the minimum required Google Mobile Ads SDK version to 18.0.0.
 
 ## 5.1.0.3
 - Added implementation to display a part of nend banner in SmartBanner. Appropriate size for SmartBanner

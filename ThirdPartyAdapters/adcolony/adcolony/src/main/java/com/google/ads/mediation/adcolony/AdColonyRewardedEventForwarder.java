@@ -1,6 +1,6 @@
 package com.google.ads.mediation.adcolony;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;

@@ -3,7 +3,7 @@ package com.google.ads.mediation.mopub;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -113,14 +113,6 @@ public class MoPubMediationAdapter extends Adapter
                     MediationRewardedAdCallback> mediationAdLoadCallback) {
 
         Context context = mediationRewardedAdConfiguration.getContext();
-        if (!(context instanceof Activity)) {
-            String logMessage = "Failed to request ad from MoPub: "
-                    + "MoPub SDK requires an Activity context to load ads.";
-            Log.w(TAG, logMessage);
-            mediationAdLoadCallback.onFailure(logMessage);
-            return;
-        }
-
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
         adUnitID = serverParameters.getString(MOPUB_AD_UNIT_KEY);
 
@@ -140,7 +132,7 @@ public class MoPubMediationAdapter extends Adapter
                         mediationRewardedAdConfiguration.getLocation()
                 );
         MoPubSingleton.getInstance().loadRewardedAd(
-                (Activity) context, adUnitID, requestParameters, MoPubMediationAdapter.this);
+                context, adUnitID, requestParameters, MoPubMediationAdapter.this);
     }
 
     @Override

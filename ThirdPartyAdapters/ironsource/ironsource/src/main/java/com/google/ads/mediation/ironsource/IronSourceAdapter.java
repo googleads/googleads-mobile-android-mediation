@@ -10,10 +10,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
 
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -21,9 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.ADAPTER_VERSION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT_INSTANCE_ID;
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 
 /**
@@ -48,6 +46,22 @@ public class IronSourceAdapter
 
     private final static List<IronSource.AD_UNIT> mAdUnitsToInit =
             new ArrayList<>(Collections.singletonList(IronSource.AD_UNIT.INTERSTITIAL));
+
+    /**
+     * Holds the interstitial instance state
+     */
+    private INSTANCE_STATE mState = INSTANCE_STATE.START;
+
+    /**
+     * This is the id of interstitial instance requested.
+     */
+    INSTANCE_STATE getInstanceState() {
+        return mState;
+    }
+
+    void setInstanceState(IronSourceMediationAdapter.INSTANCE_STATE mState) {
+        this.mState = mState;
+    }
 
     //region MediationInterstitialAdapter implementation.
     @Override
@@ -89,7 +103,7 @@ public class IronSourceAdapter
                 onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
             }
         } else {
-            Log.d(TAG, String.format("IronSource loadRewardedVideo called with instanceId: %s", this.mInstanceID));
+            Log.d(TAG, String.format("IronSource loadInterstitial called with instanceId: %s", this.mInstanceID));
             IronSourceManager.getInstance().loadInterstitial(mInstanceID, new WeakReference<>(IronSourceAdapter.this));
         }
     }
