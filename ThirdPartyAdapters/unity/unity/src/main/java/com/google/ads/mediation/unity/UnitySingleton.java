@@ -165,17 +165,13 @@ public final class UnitySingleton {
     protected static void loadAd(UnityAdapterDelegate delegate) {
         // Unity ads added a load method in v3.2, but the game ID must be whitelisted to use load API.
         // If game is not whitelisted, all ad placements begin load when initialize is called (like v3.0).
-
         // If Unity Ads is initialized, we call the appropriate callbacks by checking the isReady
         // method. If ads are currently being loaded, wait for the callbacks from
         // unitySingletonListenerInstance.
 
-        // UnityAds.load() can be called before initialize is complete, and will send a request after init completes
-
         UnityAds.load(delegate.getPlacementId());
 
-        // If at this point, (for some reason) UnityAds is no longer initialized, init again
-        // Does nothing if UnityAds is already initialized, or in the process of inititalizing
+        // If at this point, UnityAds is not initialized, init again
         if (!UnityAds.isInitialized()) {
             initializeUnityAds(UnitySingleton.activity.get(), currentGameID);
         }
