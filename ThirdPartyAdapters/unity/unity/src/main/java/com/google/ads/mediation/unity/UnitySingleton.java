@@ -63,6 +63,7 @@ public final class UnitySingleton {
      */
     private static int impressionOrdinal;
     private static int missedImpressionOrdinal;
+    private static String currentGameID;
 
     /**
      * This method will return the
@@ -87,6 +88,8 @@ public final class UnitySingleton {
      */
     static boolean initializeUnityAds(Activity activity, String gameId) {
         // Check if the current device is supported by Unity Ads before initializing.
+        currentGameID = gameId;
+
         if (!UnityAds.isSupported()) {
             Log.w(UnityAdapter.TAG, "The current device is not supported by Unity Ads.");
             return false;
@@ -103,15 +106,12 @@ public final class UnitySingleton {
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.set("adapter_version", "3.1.0");
+        mediationMetaData.set("adapter_version", "3.2.0");
         mediationMetaData.commit();
 
         UnitySingletonListener unitySingleton = UnitySingleton.getInstance();
         UnityBanners.setBannerListener(unitySingleton);
-        bool testMode = false;
-        bool enablePerPlacementLoad = true;
-        initialize(activity, gameId, UnitySingleton.getInstance(), testMode, enablePerPlacementLoad);
-
+        UnityAds.initialize(activity, gameId, UnitySingleton.getInstance(), false, true);
         return true;
     }
 
@@ -126,9 +126,9 @@ public final class UnitySingleton {
      * otherwise.
      */
     static boolean initializeUnityAds(UnityAdapterDelegate delegate,
-                                             Activity activity,
-                                             String gameId,
-                                             @NonNull String placementId) {
+                                      Activity activity,
+                                      String gameId,
+                                      @NonNull String placementId) {
         if (!TextUtils.isEmpty(placementId) && !mPlacementsInUse.containsKey(placementId)) {
             mPlacementsInUse.put(placementId, new WeakReference<>(delegate));
         }
@@ -171,13 +171,13 @@ public final class UnitySingleton {
         // unitySingletonListenerInstance.
 
         // UnityAds.load() can be called before initialize is complete, and will send a request after init completes
-        
+
         UnityAds.load(delegate.getPlacementId());
 
-        // If at this point, (for some reason) UnityAds is not longer initialized, init again
+        // If at this point, (for some reason) UnityAds is no longer initialized, init again
         // Does nothing if UnityAds is already initialized, or in the process of inititalizing
         if (!UnityAds.isInitialized()) {
-            initializeUnityAds(Activity activity, String gameId);
+            initializeUnityAds(UnitySingleton.activity.get(), currentGameID);
         }
 
         if (UnityAds.isReady(delegate.getPlacementId())) {
@@ -188,8 +188,6 @@ public final class UnitySingleton {
         // an Ad from Unity Ads for a single placement, and fail if there's any.
         if (mPlacementsInUse.containsKey(delegate.getPlacementId()) &&
                 mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
-            Log.e(UnityMediationAdapter.TAG,
-                    "An ad is already loading for placement ID: " + delegate.getPlacementId());
             delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR,
                     delegate.getPlacementId());
             return;
