@@ -4,7 +4,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
-
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -14,7 +13,6 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
 import com.inmobi.ads.listeners.BannerAdEventListener;
-
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,8 +1,8 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.annotation.Size;
+import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 
 import com.vungle.warren.AdConfig;
 

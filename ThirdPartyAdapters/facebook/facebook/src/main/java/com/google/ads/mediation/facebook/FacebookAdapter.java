@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.facebook;
 
+import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -27,7 +29,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -57,12 +58,9 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -804,8 +802,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 setExtras(extras);
             } else {
                 if (!containsRequiredFieldsForNativeAppInstallAd(mNativeAd)) {
-                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
-                            + " format.");
+                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app"
+                                   + " install format.");
                     mapperListener.onMappingFailed();
                     return;
                 }

@@ -3,7 +3,6 @@ package com.google.ads.mediation.facebook.rtb;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import android.view.View;
-
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -13,7 +12,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-
 
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 

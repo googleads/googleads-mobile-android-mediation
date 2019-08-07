@@ -5,10 +5,9 @@ import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import android.util.Log;
-
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.sdk.InMobiSdk;

@@ -1,14 +1,12 @@
 package com.google.ads.mediation.adcolony;
 
 import androidx.annotation.NonNull;
-
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
 import com.adcolony.sdk.AdColonyRewardListener;
 import com.adcolony.sdk.AdColonyZone;
-
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 

@@ -4,7 +4,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -16,7 +15,6 @@ import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.MoPubRewardedVideos;
 import com.mopub.mobileads.dfp.adapters.MoPubAdapter;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;

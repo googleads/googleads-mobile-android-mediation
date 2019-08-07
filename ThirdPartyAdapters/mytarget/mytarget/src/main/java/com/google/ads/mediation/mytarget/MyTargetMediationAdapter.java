@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import android.util.Log;
-
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -18,7 +17,6 @@ import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.InterstitialAd.InterstitialAdListener;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetVersion;
-
 import java.util.List;
 
 public class MyTargetMediationAdapter extends Adapter

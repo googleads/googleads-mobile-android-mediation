@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd.Image;
@@ -32,7 +31,6 @@ import com.my.target.common.models.ImageData;
 import com.my.target.nativeads.NativeAd;
 import com.my.target.nativeads.banners.NativePromoBanner;
 import com.my.target.nativeads.views.MediaAdView;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;

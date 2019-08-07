@@ -18,6 +18,7 @@ package com.google.ads.mediation.sample.sdk;
 
 import android.content.Context;
 import android.os.Handler;
+import androidx.appcompat.widget.AppCompatTextView;
 import android.view.Gravity;
 
 /**
@@ -25,7 +26,7 @@ import android.view.Gravity;
  * contain an image or video asset. Since this one is just a mock, it displays a series of text
  * values instead.
  */
-public class SampleMediaView extends android.support.v7.widget.AppCompatTextView {
+public class SampleMediaView extends AppCompatTextView {
     SampleMediaViewListener listener;
 
     public SampleMediaView(Context context) {

@@ -1,22 +1,20 @@
 package com.google.ads.mediation.ironsource;
 
+import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.ADAPTER_VERSION_NAME;
+import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATION_NAME;
+
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
-
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.ADAPTER_VERSION_NAME;
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATION_NAME;
 
 /**
  * A centralized {@link ISDemandOnlyRewardedVideoListener} to forward IronSource ad events
@@ -66,7 +64,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
             IronSource.loadISDemandOnlyInterstitial(instanceId);
         } else {
             ironSourceAdapter.onInterstitialAdLoadFailed(instanceId, new IronSourceError(IronSourceError.ERROR_CODE_GENERIC,
-                    "interstitial instance already exists, couldn't load another one at the same time!"));
+                    "interstitial instance already exists, couldn't load another one at the same"
+                        + " time!"));
         }
     }
 
@@ -342,7 +341,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdReady(String instanceId) {
-        log(String.format("IronSourceManager got interstitial Load success for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial Load success for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -356,7 +356,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        log(String.format("IronSourceManager got interstitial Load failed for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial Load failed for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -375,7 +376,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdOpened(String instanceId) {
-        log(String.format("IronSourceManager got interstitial ad opened for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial ad opened for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -390,7 +392,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdClosed(String instanceId) {
-        log(String.format("IronSourceManager got interstitial ad closed for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial ad closed for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -407,7 +410,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-        log(String.format("IronSourceManager got interstitial show failed for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial show failed for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -424,7 +428,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
 
     @Override
     public void onInterstitialAdClicked(String instanceId) {
-        log(String.format("IronSourceManager got interstitial ad clicked for instance %s", instanceId));
+        log(String.format("IronSourceManager got interstitial ad clicked for"
+                              + " instance %s", instanceId));
 
         WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 

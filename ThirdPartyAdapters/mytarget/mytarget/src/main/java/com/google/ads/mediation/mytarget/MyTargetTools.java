@@ -6,9 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.android.gms.ads.AdSize;
-
 import java.util.ArrayList;
 
 /**

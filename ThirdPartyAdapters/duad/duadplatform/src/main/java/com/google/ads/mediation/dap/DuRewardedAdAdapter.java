@@ -1,6 +1,6 @@
 package com.google.ads.mediation.dap;
 
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import com.google.ads.mediation.duad.DuAdMediationAdapter;
 
 /**

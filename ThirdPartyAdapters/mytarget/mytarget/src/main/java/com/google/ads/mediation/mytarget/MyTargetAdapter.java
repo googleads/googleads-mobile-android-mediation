@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -18,7 +17,6 @@ import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
 import com.my.target.common.CustomParams;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;

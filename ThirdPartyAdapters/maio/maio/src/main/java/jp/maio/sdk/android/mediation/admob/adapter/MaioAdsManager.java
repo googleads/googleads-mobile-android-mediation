@@ -4,13 +4,10 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.ads.mediation.maio.MaioMediationAdapter;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.MaioAdsInstance;
