@@ -1,1 +1,14 @@
-include ':app', ':adapter', ':customevent', ':sdk'
+include ':app', ':adapter', ':customevent', ':sdk',
+':facebook',
+':fyber',
+':ironsource'
+
+Properties properties = new Properties()
+properties.load(new File(rootProject.projectDir, "local.properties").newDataInputStream());
+def thirdPartyAdapterPath = properties.getProperty("thirdPartyAdapterPath", null);
+
+println "third party adapter path =" + thirdPartyAdapterPath
+
+project(':facebook').projectDir = new File(thirdPartyAdapterPath + 'facebook/facebook');
+project(':fyber').projectDir = new File(thirdPartyAdapterPath + 'fyber/fyber');
+project(':ironsource').projectDir = new File(thirdPartyAdapterPath + 'ironsource/ironsource');

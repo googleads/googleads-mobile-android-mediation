@@ -17,7 +17,6 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -26,6 +25,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.ads.mediation.fyber.FyberMediationAdapter;
 import com.google.ads.mediation.sample.adapter.SampleAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -68,7 +70,11 @@ public class MainActivity extends AppCompatActivity {
          */
         // Sample custom event banner.
         AdView mCustomEventAdView = (AdView) findViewById(R.id.customevent_adview);
-        mCustomEventAdView.loadAd(new AdRequest.Builder().build());
+      //  mCustomEventAdView.loadAd(new AdRequest.Builder().build());
+
+        System.setProperty("ia.testEnvironmentConfiguration.name", "ia-cert");
+        System.setProperty("ia.testEnvironmentConfiguration.number", "5430");
+        System.setProperty("ia.testEnvironmentConfiguration.response", "interstitialadresponseforci");
 
         // Sample custom event interstitial button.
         customEventButton = (Button) findViewById(R.id.customevent_button);
@@ -109,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 customEventInterstitial.loadAd(new AdRequest.Builder().build());
             }
         });
-        customEventInterstitial.loadAd(new AdRequest.Builder().build());
+        //customEventInterstitial.loadAd(new AdRequest.Builder().build());
 
         /**
          * Sample Adapter.
@@ -147,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Sample adapter interstitial.
         adapterInterstitial = new InterstitialAd(this);
-        adapterInterstitial.setAdUnitId(
-                getResources().getString(R.string.adapter_interstitial_ad_unit_id));
+        String interstitialAdUnitId = getResources().getString(R.string.adapter_interstitial_ad_unit_id);
+        adapterInterstitial.setAdUnitId(interstitialAdUnitId);
         adapterInterstitial.setAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
@@ -175,8 +181,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         AdRequest interstitialAdRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(SampleAdapter.class, extras)
                 .build();
+
         adapterInterstitial.loadAd(interstitialAdRequest);
 
         /**
@@ -205,12 +211,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).build();
 
-        customEventNativeLoader.loadAd(new AdRequest.Builder().build());
+        //customEventNativeLoader.loadAd(new AdRequest.Builder().build());
         Button refreshCustomEvent = (Button) findViewById(R.id.customeventnative_button);
         refreshCustomEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View unusedView) {
-                customEventNativeLoader.loadAd(new AdRequest.Builder().build());
+           //     customEventNativeLoader.loadAd(new AdRequest.Builder().build());
             }
         });
 
@@ -241,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).build();
 
-        loadAdapterNativeAd(extras);
+       // loadAdapterNativeAd(extras);
         Button refreshAdapterNative = (Button) findViewById(R.id.adapternative_button);
         refreshAdapterNative.setOnClickListener(new View.OnClickListener() {
             @Override

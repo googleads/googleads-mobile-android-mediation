@@ -21,20 +21,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="SampleCustomEvent Native Ad"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:visibility="gone"/>
 
         <FrameLayout
             android:id="@+id/customeventnative_framelayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/customeventnative_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Refresh" />
+            android:text="Refresh"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/adapternative_label"
@@ -42,20 +45,23 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="SampleAdapter Native Ad"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:visibility="gone"/>
 
         <FrameLayout
             android:id="@+id/adapternative_framelayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/adapternative_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Refresh" />
+            android:text="Refresh"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/customeventbanner_label"
@@ -63,7 +69,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="SampleCustomEvent Banner"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:visibility="gone"/>
 
         <com.google.android.gms.ads.AdView
             android:id="@+id/customevent_adview"
@@ -72,7 +79,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             ads:adSize="BANNER"
-            ads:adUnitId="@string/customevent_banner_ad_unit_id" />
+            ads:adUnitId="@string/customevent_banner_ad_unit_id"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/adapter_label"
@@ -80,7 +88,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="SampleAdapter Banner"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:visibility="gone"/>
 
         <com.google.android.gms.ads.AdView
             android:id="@+id/adapter_adview"
@@ -89,14 +98,16 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             ads:adSize="BANNER"
-            ads:adUnitId="@string/adapter_banner_ad_unit_id" />
+            ads:adUnitId="@string/adapter_banner_ad_unit_id"
+            android:background="@android:color/black"/>
 
         <Button
             android:id="@+id/customevent_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Show SampleCustomEvent Interstitial" />
+            android:text="Show SampleCustomEvent Interstitial"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/adapter_button"

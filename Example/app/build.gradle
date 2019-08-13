@@ -1,5 +1,19 @@
 apply plugin: 'com.android.application'
 
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+
+    maven {
+        url "https://fyber.bintray.com/marketplace"
+    }
+
+    maven {
+        url "https://dl.bintray.com/ironsource-mobile/android-sdk"
+    }
+}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -23,4 +37,13 @@ dependencies {
     implementation rootProject.ext.playServicesAds
     implementation project(':adapter')
     implementation project(':customevent')
+
+    implementation project(':facebook')
+    implementation project(':fyber')
+    implementation project(':ironsource')
+
+    implementation 'com.fyber.vamp:core-sdk:7.3.0'
+    implementation 'com.fyber.vamp:mraid-kit:7.3.0'
+    implementation 'com.fyber.vamp:video-kit:7.3.0'
+    implementation 'com.ironsource.sdk:mediationsdk:6.9.0'
 }

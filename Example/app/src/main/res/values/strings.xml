@@ -8,8 +8,13 @@
     <string name="customevent_native_ad_unit_id">ca-app-pub-3940256099942544/9051804115</string>
     <string name="customevent_rewarded_video_ad_unit_id">ca-app-pub-3940256099942544/6223236111
     </string>
-    <string name="adapter_banner_ad_unit_id">ca-app-pub-3940256099942544/4049634119</string>
-    <string name="adapter_interstitial_ad_unit_id">ca-app-pub-3940256099942544/5526367317</string>
+    <!-- <string name="adapter_banner_ad_unit_id">ca-app-pub-3940256099942544/4049634119</string> -->
+    <!-- <string name="adapter_interstitial_ad_unit_id">ca-app-pub-3940256099942544/5526367317</string> -->
     <string name="adapter_native_ad_unit_id">ca-app-pub-3940256099942544/9782828514</string>
-    <string name="adapter_rewarded_video_ad_unit_id">ca-app-pub-3940256099942544/9793981313</string>
+    <!-- <string name="adapter_rewarded_video_ad_unit_id">ca-app-pub-3940256099942544/9793981313</string> -->
+
+    <string name="adapter_banner_ad_unit_id">ca-app-pub-4717668825439871/9233969686</string>
+    <string name="adapter_interstitial_ad_unit_id">ca-app-pub-4717668825439871/6224662967</string>
+    <string name="adapter_rewarded_video_ad_unit_id">ca-app-pub-4717668825439871/8467682920</string>
+
 </resources>

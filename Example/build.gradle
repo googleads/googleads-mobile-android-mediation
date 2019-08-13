@@ -22,12 +22,12 @@ allprojects {
 
 ext {
     minSdkVersion = 15
-    compileSdkVersion = 26
-    targetSdkVersion = 26
+    compileSdkVersion = 28
+    targetSdkVersion = 28
 
-    support = '26.1.0'
+    support = '27.1.1'
     appcompatV7 = "com.android.support:appcompat-v7:$support"
 
-    play = '17.2.0'
+    play = '18.1.1'
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }
