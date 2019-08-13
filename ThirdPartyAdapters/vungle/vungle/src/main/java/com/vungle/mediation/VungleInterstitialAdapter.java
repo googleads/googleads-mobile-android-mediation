@@ -35,21 +35,15 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
     private MediationInterstitialListener mMediationInterstitialListener;
     private VungleManager mVungleManager;
     private AdConfig mAdConfig;
-    private static final String INTERSTITIAL = "interstitial";
-    private static int sCounter = 0;
-    private String mAdapterId;
     private String mPlacementForPlay;
 
     //banner
-    private static final String BANNER = "banner";
-    private Context mContext;
     private volatile RelativeLayout adLayout;
     private VungleNativeAd vungleNativeAd;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
     private MediationBannerListener mMediationBannerListener;
     private AdConfig adConfig = new AdConfig();
     private boolean paused;
-    private boolean visible;
 
     @Override
     public void requestInterstitialAd(Context context,
@@ -84,10 +78,8 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         }
 
         mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
-        mAdapterId = INTERSTITIAL + String.valueOf(sCounter);
-        sCounter++;
         VungleInitializer.getInstance().initialize(config.getAppId(),
-                context.getApplicationContext(), mAdapterId, new VungleInitializer.VungleInitializationListener() {
+                context.getApplicationContext(), new VungleInitializer.VungleInitializationListener() {
                     @Override
                     public void onInitializeSuccess() {
                         loadAd();
@@ -172,7 +164,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         pendingRequestBanner.set(false);
         if (vungleNativeAd != null) {
             vungleNativeAd.finishDisplayingAd();
-            mVungleManager.removeActiveBanner(mPlacementForPlay, mAdapterId);
+            mVungleManager.removeActiveBanner(mPlacementForPlay);
         }
         vungleNativeAd = null;
         adLayout = null;
@@ -201,7 +193,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
                                 MediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         Log.d(TAG, "requestBannerAd");
-        mContext = context;
         pendingRequestBanner.set(true);
         mMediationBannerListener = mediationBannerListener;
         AdapterParametersParser.Config config;
@@ -224,19 +215,10 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         boolean isBannerSizeValid = hasBannerSizeAd(adSize);
         if (isPlacementValid && isBannerSizeValid) {
             mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
-            mAdapterId = BANNER + String.valueOf(sCounter);
-            sCounter++;
             //workaround for missing onPause/onResume/onDestroy
-            adLayout = new RelativeLayout(mContext) {
-                @Override
-                protected void onWindowVisibilityChanged(int visibility) {
-                    super.onWindowVisibilityChanged(visibility);
-                    visible = (visibility == VISIBLE);
-                    updateVisibility();
-                }
-            };
+            adLayout = new RelativeLayout(context);
             VungleInitializer.getInstance().initialize(config.getAppId(),
-                    context.getApplicationContext(), mAdapterId, new VungleInitializer.VungleInitializationListener() {
+                    context.getApplicationContext(), new VungleInitializer.VungleInitializationListener() {
                         @Override
                         public void onInitializeSuccess() {
                             loadBanner();
@@ -303,7 +285,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
             return;
 
         mVungleManager.cleanUpBanner(mPlacementForPlay);
-        vungleNativeAd = mVungleManager.getVungleNativeAd(mAdapterId, mPlacementForPlay, adConfig, new VungleListener() {
+        vungleNativeAd = mVungleManager.getVungleNativeAd(mPlacementForPlay, adConfig, new VungleListener() {
             @Override
             void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {
                 if (mMediationBannerListener != null) {
@@ -345,7 +327,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
 
     private void updateVisibility() {
         if (vungleNativeAd != null) {
-            vungleNativeAd.setAdVisibility(!paused && visible);
+            vungleNativeAd.setAdVisibility(!paused);
         }
     }
 
