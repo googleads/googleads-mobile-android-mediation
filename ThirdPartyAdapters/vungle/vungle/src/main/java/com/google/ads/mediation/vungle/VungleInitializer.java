@@ -18,6 +18,7 @@ public class VungleInitializer implements InitCallback {
 
     private static VungleInitializer instance;
     private boolean mIsInitializing = false;
+
     private ArrayList<VungleInitializationListener> mInitListeners;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());

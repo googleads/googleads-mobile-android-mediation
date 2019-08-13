@@ -46,7 +46,7 @@ dependencies {
 /**
  * Jar task to make a sources jar.
  */
-task sourcesJar(type: Jar) {
+task sourcesJar (type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
