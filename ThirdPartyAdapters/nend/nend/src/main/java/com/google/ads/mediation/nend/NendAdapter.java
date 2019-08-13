@@ -342,7 +342,7 @@ public class NendAdapter extends NendMediationAdapter
                 break;
             case AD_SHOW_ALREADY:
                 break;
-            case AD_FREQUENCY_NOT_RECHABLE:
+            case AD_FREQUENCY_NOT_REACHABLE:
                 break;
             case AD_REQUEST_INCOMPLETE:
                 break;
