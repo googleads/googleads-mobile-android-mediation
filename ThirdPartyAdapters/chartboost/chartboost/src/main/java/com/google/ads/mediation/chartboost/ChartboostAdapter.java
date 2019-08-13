@@ -16,8 +16,9 @@ package com.google.ads.mediation.chartboost;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Keep;
 import android.util.Log;
+
+import androidx.annotation.Keep;
 
 import com.chartboost.sdk.Chartboost.CBFramework;
 import com.chartboost.sdk.Model.CBError;
