@@ -42,14 +42,14 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
     private ViewGroup bannerView;
 
     /** Supported ad sizes. */
-    private static final AdSize[] SUPPORTED_SIZES;
+    private static final AdSize[] supportedSizes;
 
     static {
         // Initialize static fields.
         AdMobMediationSupportAdSize[] iMobileAdSizes = AdMobMediationSupportAdSize.values();
-        SUPPORTED_SIZES = new AdSize[iMobileAdSizes.length];
+        supportedSizes = new AdSize[iMobileAdSizes.length];
         for (int i = 0; i < iMobileAdSizes.length; i++) {
-            SUPPORTED_SIZES[i] = new AdSize(iMobileAdSizes[i].getWidth(),
+            supportedSizes[i] = new AdSize(iMobileAdSizes[i].getWidth(),
                     iMobileAdSizes[i].getHeight());
         }
     }
@@ -65,7 +65,7 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
         // Validate AdSize.
         boolean isSupportedSize = false;
-        for (AdSize iMobileSize : SUPPORTED_SIZES) {
+        for (AdSize iMobileSize : supportedSizes) {
             if (adSize.getWidth() == iMobileSize.getWidth()
                     && adSize.getHeight() == iMobileSize.getHeight()) {
                 isSupportedSize = true;

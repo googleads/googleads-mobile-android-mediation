@@ -7,7 +7,7 @@ import jp.co.imobile.sdkads.android.FailNotificationReason;
 /**
  * Helper of mediation adapter.
  */
-final public class AdapterHelper {
+public final class AdapterHelper {
 
     /**
      * Convert i-mobile fail reason to AdMob error code.
