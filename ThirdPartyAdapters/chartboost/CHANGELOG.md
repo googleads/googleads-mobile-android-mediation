@@ -1,6 +1,6 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
-## Next Version
+## 7.5.0.0
 - Verified compatibility with Chartboost SDK 7.5.0.
 - Migrated the adapter to use AndroidX dependencies.
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
