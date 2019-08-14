@@ -136,7 +136,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
                             // Only the call to action button is clickable for Vungle ads. So the
                             // wasCallToActionClicked can be used for tracking clicks.
                             mMediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
-                            mMediationInterstitialListener.onAdLeftApplication(VungleInterstitialAdapter.this);
                         }
                         mMediationInterstitialListener.onAdClosed(VungleInterstitialAdapter.this);
                     }
@@ -302,7 +301,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
                         // wasCallToActionClicked can be used for tracking clicks.
                         mMediationBannerListener.onAdClicked(VungleInterstitialAdapter.this);
                         mMediationBannerListener.onAdOpened(VungleInterstitialAdapter.this);
-                        mMediationBannerListener.onAdLeftApplication(VungleInterstitialAdapter.this);
                         mMediationBannerListener.onAdClosed(VungleInterstitialAdapter.this);
                     }
                 }
