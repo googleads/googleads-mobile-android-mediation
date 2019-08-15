@@ -2,12 +2,12 @@ package com.google.ads.mediation.verizon;
 
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,12 +15,17 @@ import android.widget.LinearLayout.LayoutParams;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.VersionInfo;
 import com.verizon.ads.ActivityStateManager;
+import com.verizon.ads.BuildConfig;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
@@ -30,8 +35,10 @@ import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
-public class VerizonMediationAdapter implements MediationBannerAdapter,
+public class VerizonMediationAdapter extends Adapter implements MediationBannerAdapter,
         MediationInterstitialAdapter {
 
     private static final String VERSION = "1.1.1.0";
@@ -58,6 +65,77 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
     private InterstitialAdFactory interstitialAdFactory;
 
     @Override
+    public VersionInfo getVersionInfo() {
+        String versionString = BuildConfig.VERSION_NAME;
+        String splits[] = versionString.split("\\.");
+        if (splits.length >= 4) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            return new VersionInfo(major, minor, micro);
+        }
+        Log.w(TAG, "Returning null adapter version due to unexpected format: " + versionString);
+        return null;
+    }
+
+    @Override
+    public VersionInfo getSDKVersionInfo() {
+        String versionString = VASAds.getSDKInfo().version;
+        String splits[] = versionString.split("\\.");
+        if (splits.length >= 3) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]);
+            return new VersionInfo(major, minor, micro);
+        }
+        Log.w(TAG, "Returning null SDK version due to unexpected format: " + versionString);
+        return null;
+    }
+
+    @Override
+    public void initialize(Context context,
+                           InitializationCompleteCallback initializationCompleteCallback,
+                           List<MediationConfiguration> mediationConfigurations) {
+
+        if (!(context instanceof Activity)) {
+            initializationCompleteCallback.onInitializationFailed(
+                    "Verizon Media SDK requires an Activity context to initialize");
+            return;
+        }
+
+        HashSet<String> siteIDs = new HashSet<>();
+        for (MediationConfiguration mediationConfiguration : mediationConfigurations) {
+            String siteID = getSiteId(mediationConfiguration.getServerParameters(), null);
+            if (!TextUtils.isEmpty(siteID)) {
+                siteIDs.add(siteID);
+            }
+        }
+        int count = siteIDs.size();
+        if (count <= 0) {
+            String logMessage = "Initialization failed: Missing or invalid Site ID";
+            Log.e(TAG, logMessage);
+            initializationCompleteCallback.onInitializationFailed(logMessage);
+            return;
+        }
+        String siteID = siteIDs.iterator().next();
+        if (count > 1) {
+            String message = String.format("Multiple '%s' entries found: %s. " +
+                    "Using '%s' to initialize Verizon SDK.", SITE_KEY, siteIDs, siteID);
+            Log.w(TAG, message);
+        }
+        if (initializeSDK(context, siteID)) {
+            if (VerizonConsent.getInstance().getConsentMap() != null) {
+                VASAds.setConsentData(VerizonConsent.getInstance().getConsentMap(),
+                        VerizonConsent.getInstance().isRestricted());
+            }
+            initializationCompleteCallback.onInitializationSucceeded();
+        } else {
+            initializationCompleteCallback.onInitializationFailed(
+                    "Verizon SDK initialization failed");
+        }
+    }
+
+    @Override
     public void requestBannerAd(final Context context, final MediationBannerListener listener,
                                 final Bundle serverParameters,
                                 com.google.android.gms.ads.AdSize adSize,
@@ -65,10 +143,11 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
                                 final Bundle mediationExtras) {
 
         String placementId = fetchPlacementId(serverParameters);
+        String siteId = getSiteId(serverParameters, mediationExtras);
 
         setContext(context);
 
-        if (!initializeSDK(context, mediationExtras, serverParameters)) {
+        if (!initializeSDK(context, siteId)) {
             Log.e(TAG, "Unable to initialize Verizon Ads SDK");
 
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -123,7 +202,6 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
 
     @Override
     public View getBannerView() {
-
         return internalView;
     }
 
@@ -138,10 +216,11 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
         this.mediationInterstitialListener = listener;
 
         String placementId = fetchPlacementId(serverParameters);
+        String siteId = getSiteId(serverParameters, mediationExtras);
 
         setContext(context);
 
-        if (!initializeSDK(context, mediationExtras, serverParameters)) {
+        if (!initializeSDK(context, siteId)) {
             Log.e(TAG, "Unable to initialize Verizon Ads SDK");
 
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -282,8 +361,7 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
         return findClosestSize(context, adSize, potentials);
     }
 
-    private boolean initializeSDK(final Context context, final Bundle mediationExtras,
-                                  final Bundle serverParams) {
+    private boolean initializeSDK(final Context context, final String siteId) {
 
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
             Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
@@ -302,42 +380,18 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
 
                 return false;
             }
+            if (TextUtils.isEmpty(siteId)) {
+                Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or "
+                        + "server params");
 
-            String siteId = null;
+                return false;
+            }
             try {
-                if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
-                    siteId = mediationExtras.getString(SITE_KEY);
-                }
-                // If we get site ID from the serverParams (not yet implemented), overwrite
-                // everything!
-                if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
-                    siteId = serverParams.getString(SITE_KEY);
-                }
-
-                // Support for legacy Nexage and MM mediation
-                if (TextUtils.isEmpty(siteId)) {
-                    if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
-                        siteId = mediationExtras.getString(DCN_KEY);
-                    }
-                    // If we get site ID from the serverParams (not yet implemented), overwrite
-                    // everything!
-                    if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
-                        siteId = serverParams.getString(DCN_KEY);
-                    }
-                }
-
-                if (TextUtils.isEmpty(siteId)) {
-                    Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or "
-                            + "server params");
-
-                    return false;
-                }
-
+                Application application = ((Activity) context).getApplication();
                 Log.d(TAG, "Using site ID: " + siteId);
-
-                success = StandardEdition.initialize(((Activity) context).getApplication(), siteId);
+                success = StandardEdition.initialize(application, siteId);
             } catch (Exception e) {
-                Log.e(TAG, "Error occurred initializing Verizon Ads SDK.", e);
+                Log.e(TAG, "Error occurred initializing Verizon Ads SDK, " + e.getMessage());
 
                 return false;
             }
@@ -345,8 +399,35 @@ public class VerizonMediationAdapter implements MediationBannerAdapter,
 
         VASAds.getActivityStateManager().setState((Activity) context,
                 ActivityStateManager.ActivityState.RESUMED);
+        VASAds.setConsentData(VerizonConsent.getInstance().getConsentMap(),
+                VerizonConsent.getInstance().isRestricted());
 
         return success;
+    }
+
+    private String getSiteId(final Bundle serverParams, final Bundle mediationExtras) {
+        String siteId = null;
+        if (mediationExtras != null && mediationExtras.containsKey(SITE_KEY)) {
+            siteId = mediationExtras.getString(SITE_KEY);
+        }
+        // If we get site ID from the serverParams (not yet implemented), overwrite
+        // everything!
+        if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
+            siteId = serverParams.getString(SITE_KEY);
+        }
+
+        // Support for legacy Nexage and MM mediation
+        if (TextUtils.isEmpty(siteId)) {
+            if (mediationExtras != null && mediationExtras.containsKey(DCN_KEY)) {
+                siteId = mediationExtras.getString(DCN_KEY);
+            }
+            // If we get site ID from the serverParams (not yet implemented), overwrite
+            // everything!
+            if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
+                siteId = serverParams.getString(DCN_KEY);
+            }
+        }
+        return siteId;
     }
 
 
