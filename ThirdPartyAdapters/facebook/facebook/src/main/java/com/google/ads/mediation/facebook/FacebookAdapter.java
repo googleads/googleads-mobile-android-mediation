@@ -35,7 +35,7 @@ import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
 import com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.InterstitialAdExtendedListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
@@ -377,7 +377,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mInterstitialAd.loadAd();
     }
 
-    private class InterstitialListener implements InterstitialAdListener {
+    private class InterstitialListener implements InterstitialAdExtendedListener {
         private InterstitialListener() {
         }
 
@@ -417,6 +417,26 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         @Override
         public void onInterstitialDisplayed(Ad ad) {
             FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        }
+
+        @Override
+        public void onInterstitialActivityDestroyed() {
+            FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+        }
+
+        @Override
+        public void onRewardedAdCompleted() {
+            //no-op
+        }
+
+        @Override
+        public void onRewardedAdServerSucceeded() {
+            //no-op
+        }
+
+        @Override
+        public void onRewardedAdServerFailed() {
+            //no-op
         }
     }
     //endregion
