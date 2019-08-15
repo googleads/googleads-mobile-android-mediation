@@ -164,7 +164,19 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
 
         setCoppaValue(mediationAdRequest);
 
-        adSize = normalizeSize(context, adSize);
+        if (adSize == null) {
+            Log.w(TAG, "Fail to request banner ad, adSize is null");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        AdSize normalizedSize = normalizeSize(context, adSize);
+        if (normalizedSize == null) {
+            Log.w(TAG,
+                    "The input ad size " + adSize.toString() + " is not currently supported.");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
 
         internalView = new LinearLayout(context);
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -177,8 +189,8 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
             adapterInlineListener = new AdapterInlineListener(this, listener, internalView);
             inlineAdFactory = new InlineAdFactory(context, placementId,
                     Collections.singletonList(
-                            new com.verizon.ads.inlineplacement.AdSize(adSize.getWidth(),
-                                    adSize.getHeight())),
+                            new com.verizon.ads.inlineplacement.AdSize(normalizedSize.getWidth(),
+                                    normalizedSize.getHeight())),
                     adapterInlineListener);
 
             inlineAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
@@ -346,16 +358,10 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
     private AdSize normalizeSize(final Context context,
                                  final AdSize adSize) {
 
-        int width = adSize.getWidth();
-        if (width < 0) {
-            float density = context.getResources().getDisplayMetrics().density;
-            width = Math.round(adSize.getWidthInPixels(context) / density);
-        }
-
         ArrayList<AdSize> potentials = new ArrayList<>(3);
-        potentials.add(0, new AdSize(width, 50));
-        potentials.add(1, new AdSize(width, 90));
-        potentials.add(2, new AdSize(width, 250));
+        potentials.add(0, AdSize.BANNER);
+        potentials.add(1, AdSize.LEADERBOARD);
+        potentials.add(2, AdSize.MEDIUM_RECTANGLE);
         Log.i(TAG, "Potential ad sizes: " + potentials.toString());
 
         return findClosestSize(context, adSize, potentials);
