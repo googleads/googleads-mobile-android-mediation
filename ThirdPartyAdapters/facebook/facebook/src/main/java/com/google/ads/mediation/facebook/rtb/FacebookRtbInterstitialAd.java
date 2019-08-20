@@ -13,12 +13,15 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 public class FacebookRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdExtendedListener {
     private MediationInterstitialAdConfiguration adConfiguration;
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
     private InterstitialAd interstitialAd;
     private MediationInterstitialAdCallback mInterstitalAdCallback;
+    private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
     public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
                                      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
@@ -54,7 +57,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialDismissed(Ad ad) {
-        if (mInterstitalAdCallback != null) {
+        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }
@@ -88,7 +91,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialActivityDestroyed() {
-        if (mInterstitalAdCallback != null) {
+        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }

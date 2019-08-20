@@ -61,6 +61,7 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
 
@@ -84,6 +85,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private RelativeLayout mWrappedAdView;
     private InterstitialAd mInterstitialAd;
     private boolean isNativeBanner;
+    private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     /**
      * Facebook native ad instance.
@@ -411,7 +413,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
         @Override
         public void onInterstitialDismissed(Ad ad) {
-            FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            if(!didInterstitialAdClose.getAndSet(true)) {
+                FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            }
         }
 
         @Override
@@ -421,7 +425,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
         @Override
         public void onInterstitialActivityDestroyed() {
-            FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            if(!didInterstitialAdClose.getAndSet(true)) {
+                FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            }
         }
 
         @Override
