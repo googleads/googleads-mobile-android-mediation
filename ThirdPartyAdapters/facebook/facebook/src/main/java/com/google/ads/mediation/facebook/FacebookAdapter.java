@@ -35,7 +35,7 @@ import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdView;
 import com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.InterstitialAdExtendedListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
@@ -61,6 +61,7 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
 
@@ -84,6 +85,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private RelativeLayout mWrappedAdView;
     private InterstitialAd mInterstitialAd;
     private boolean isNativeBanner;
+    private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     /**
      * Facebook native ad instance.
@@ -377,7 +379,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mInterstitialAd.loadAd();
     }
 
-    private class InterstitialListener implements InterstitialAdListener {
+    private class InterstitialListener implements InterstitialAdExtendedListener {
         private InterstitialListener() {
         }
 
@@ -411,12 +413,36 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
         @Override
         public void onInterstitialDismissed(Ad ad) {
-            FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            if(!didInterstitialAdClose.getAndSet(true)) {
+                FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            }
         }
 
         @Override
         public void onInterstitialDisplayed(Ad ad) {
             FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        }
+
+        @Override
+        public void onInterstitialActivityDestroyed() {
+            if(!didInterstitialAdClose.getAndSet(true)) {
+                FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+            }
+        }
+
+        @Override
+        public void onRewardedAdCompleted() {
+            //no-op
+        }
+
+        @Override
+        public void onRewardedAdServerSucceeded() {
+            //no-op
+        }
+
+        @Override
+        public void onRewardedAdServerFailed() {
+            //no-op
         }
     }
     //endregion
