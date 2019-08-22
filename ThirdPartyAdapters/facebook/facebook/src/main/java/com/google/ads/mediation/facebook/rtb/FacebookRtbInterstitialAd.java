@@ -6,19 +6,22 @@ import android.os.Bundle;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import  com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.InterstitialAdExtendedListener;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FacebookRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdListener {
+
+public class FacebookRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdExtendedListener {
     private MediationInterstitialAdConfiguration adConfiguration;
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
     private InterstitialAd interstitialAd;
     private MediationInterstitialAdCallback mInterstitalAdCallback;
+    private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
     public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
                                      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
@@ -54,7 +57,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialDismissed(Ad ad) {
-        if (mInterstitalAdCallback != null) {
+        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }
@@ -84,5 +87,27 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
             // TODO: Upon approval, add this callback back in.
             // mInterstitalAdCallback.reportAdImpression();
         }
+    }
+
+    @Override
+    public void onInterstitialActivityDestroyed() {
+        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
+            mInterstitalAdCallback.onAdClosed();
+        }
+    }
+
+    @Override
+    public void onRewardedAdCompleted() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerSucceeded() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerFailed() {
+        //no-op
     }
 }

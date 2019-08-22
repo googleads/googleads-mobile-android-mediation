@@ -1,13 +1,12 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
-        applicationId "com.google.ads.mediation.imobile"
         minSdkVersion 14
-        targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 28
+        versionCode 2002000
+        versionName "2.0.20.0"
     }
     buildTypes {
         release {
@@ -18,7 +17,6 @@ android {
 }
 
 dependencies {
-
-    implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.google.android.gms:play-services-ads:17.2.0'
+    implementation 'jp.co.imobile:adnw-sdk-android:2.0.20'
 }

@@ -1,7 +1,13 @@
 # MoPub Adapter for Google Mobile Ads SDK for Android Changelog
 
-## Next Version
+## 5.8.0.0
+- Verified compatibility with MoPub SDK 5.8.0.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
+## 5.7.1.1
 - Fixed an issue with loading ads using an `Application` Context.
+- Migrated the adapter to AndroidX.
+- Updated the minimum required Google Mobile Ads SDK version to 18.0.0.
 
 ## 5.7.1.0
 - Verified compatibility with MoPub SDK 5.7.1.

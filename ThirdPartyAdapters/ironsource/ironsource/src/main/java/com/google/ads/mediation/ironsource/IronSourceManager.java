@@ -1,7 +1,7 @@
 package com.google.ads.mediation.ironsource;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -61,6 +61,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         }
 
         if (canLoadInterstitialInstance(instanceId)) {
+            changeInterstitialInstanceState(ironSourceAdapter, INSTANCE_STATE.LOCKED);
             registerISInterstitialAdapter(instanceId, weakAdapter);
             IronSource.loadISDemandOnlyInterstitial(instanceId);
         } else {
@@ -83,7 +84,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         }
 
         if (canLoadRewardedVideoInstance(instanceId)) {
-            changeInstanceState(ironSourceMediationAdapter, INSTANCE_STATE.LOCKED);
+            changeRewardedInstanceState(ironSourceMediationAdapter, INSTANCE_STATE.LOCKED);
             registerISRewardedVideoAdapter(instanceId, weakAdapter);
             IronSource.loadISDemandOnlyRewardedVideo(instanceId);
         } else {
@@ -122,7 +123,10 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
             return true;
         }
         IronSourceAdapter ironSourceAdapter = weakAdapter.get();
-        if (ironSourceAdapter != null) {
+        if (ironSourceAdapter == null) {
+            return true;
+        }
+        if (!ironSourceAdapter.getInstanceState().equals(INSTANCE_STATE.CAN_LOAD)) {
             return false;
         }
         return true;
@@ -227,24 +231,35 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
             if (ironSourceMediationAdapter != null) {
-                changeInstanceState(ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+                changeRewardedInstanceState(ironSourceMediationAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(instanceId, ironSourceError);
             }
         }
     }
 
-
-    private void changeInstanceState(IronSourceMediationAdapter ironSourceMediationAdapter,
+    private void changeRewardedInstanceState(IronSourceMediationAdapter ironSourceMediationAdapter,
                                      INSTANCE_STATE newState) {
 
         if (ironSourceMediationAdapter == null) {
-            log("changeInstanceState - IronSourceMediationAdapter is null");
+            log("changeRewardedInstanceState - IronSourceMediationAdapter is null");
             return;
         }
 
         log(String.format("IronSourceManager change state to %s", newState));
         ironSourceMediationAdapter.setInstanceState(newState);
 
+    }
+
+    private void changeInterstitialInstanceState(IronSourceAdapter ironSourceAdapter,
+                                                INSTANCE_STATE newState) {
+        if (ironSourceAdapter == null) {
+            log("changeInterstitialInstanceState - IronSourceAdapter is null");
+            return;
+        }
+
+        log(String.format("IronSourceManager change state to %s", newState));
+        ironSourceAdapter.setInstanceState(newState);
     }
 
     @Override
@@ -274,7 +289,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
             if (ironSourceMediationAdapter != null) {
-                changeInstanceState(ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+                changeRewardedInstanceState(ironSourceMediationAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceMediationAdapter.onRewardedVideoAdClosed(instanceId);
             }
         }
@@ -289,7 +305,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
             if (ironSourceMediationAdapter != null) {
-                changeInstanceState(ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+                changeRewardedInstanceState(ironSourceMediationAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceMediationAdapter.onRewardedVideoAdShowFailed(instanceId, ironSourceError);
             }
         }
@@ -346,6 +363,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceAdapter ironSourceAdapter = weakAdapter.get();
             if (ironSourceAdapter != null) {
+                changeInterstitialInstanceState(ironSourceAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceAdapter.onInterstitialAdLoadFailed(instanceId, ironSourceError);
 
             }
@@ -378,6 +397,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceAdapter ironSourceAdapter = weakAdapter.get();
             if (ironSourceAdapter != null) {
+                changeInterstitialInstanceState(ironSourceAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceAdapter.onInterstitialAdClosed(instanceId);
             }
         }
@@ -393,6 +414,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceAdapter ironSourceAdapter = weakAdapter.get();
             if (ironSourceAdapter != null) {
+                changeInterstitialInstanceState(ironSourceAdapter,
+                        IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
                 ironSourceAdapter.onInterstitialAdShowFailed(instanceId, ironSourceError);
             }
         }

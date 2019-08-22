@@ -1,1 +1,18 @@
-<manifest package="com.google.ads.mediation.chartboost" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.ads.mediation.chartboost">
+
+    <!--Chartboost Required Permissions-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application>
+        <!--Chartboost Required Activity-->
+        <activity android:name="com.chartboost.sdk.CBImpressionActivity"
+            android:excludeFromRecents="true"
+            android:hardwareAccelerated="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false" />
+    </application>
+
+</manifest>

@@ -1,5 +1,10 @@
 # Chartboost Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.5.0.0
+- Verified compatibility with Chartboost SDK 7.5.0.
+- Migrated the adapter to use AndroidX dependencies.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
 ## 7.3.1.1
 - Updated adapter to support new open-beta Rewarded API.
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
@@ -43,7 +48,7 @@
 - Changed the version naming system to
   [Chartboost SDK version].[adapter patch version].
 - The adapters can now be added as a compile dependency by adding the following
-  to the build.gradle file's dependencies tag:  
+  to the build.gradle file's dependencies tag:
   `compile 'com.google.ads.mediation:chartboost:6.6.0.0'`
 - Moved to distributing the adapter as an aar instead of a jar file
   (see README for additional instructions).

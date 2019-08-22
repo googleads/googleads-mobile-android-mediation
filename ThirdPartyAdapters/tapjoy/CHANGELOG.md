@@ -1,5 +1,8 @@
 # Tapjoy Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 12.3.1.1
+- Tapjoy Adapter now only requests a single ad for every placement.
+
 ## 12.3.1.0
 - Updated the adapter to invoke 'onClick()' ad event.
 - Verified compatibility with tapjoy SDK version 12.3.1.

@@ -387,6 +387,12 @@ public final class ChartboostSingleton {
         }
 
         @Override
+        public void didCompleteInterstitial(String location) {
+            super.didCompleteInterstitial(location);
+            // No relevant callback to be forwarded to the Google Mobile Ads SDK.
+        }
+
+        @Override
         public void didCacheRewardedVideo(String location) {
             // Rewarded video has been loaded from the Chartboost API servers and cached locally.
             super.didCacheRewardedVideo(location);
