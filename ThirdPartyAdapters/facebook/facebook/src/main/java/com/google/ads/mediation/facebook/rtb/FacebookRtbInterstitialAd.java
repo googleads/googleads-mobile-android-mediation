@@ -21,7 +21,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
     private InterstitialAd interstitialAd;
     private MediationInterstitialAdCallback mInterstitalAdCallback;
-    private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
+    private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
                                      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
@@ -57,7 +57,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialDismissed(Ad ad) {
-        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
+        if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }
@@ -91,7 +91,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialActivityDestroyed() {
-        if (!didRewardedAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
+        if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }

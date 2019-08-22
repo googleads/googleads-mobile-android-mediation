@@ -251,11 +251,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        // Verify that the request is for both app install and content ads.
-        if (!(mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested())) {
-            Log.w(TAG, "Failed to request native ad. Both app install and content ad should be "
-                    + "requested");
+        // Verify that the request is either unified native ads or
+        // both app install and content ads.
+        boolean isNativeAppInstallAndContentAdRequested =
+                mediationAdRequest.isAppInstallAdRequested()
+                        && mediationAdRequest.isContentAdRequested();
+        if (!(mediationAdRequest.isUnifiedNativeAdRequested()
+                || isNativeAppInstallAndContentAdRequested)) {
+            Log.w(TAG, "Either unified native ads or both app install and content ads "
+                    + "must be requested.");
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
