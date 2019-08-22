@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.applovin.adview.AppLovinAdView;
-import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.sdk.AppLovinAd;
@@ -17,20 +16,16 @@ import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
-import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -47,9 +42,6 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         implements MediationBannerAdapter, MediationInterstitialAdapter,
         OnContextChangedListener, MediationRewardedAd {
     private static final boolean LOGGING_ENABLED = true;
-
-    private static final int BANNER_STANDARD_HEIGHT = 50;
-    private static final int BANNER_HEIGHT_OFFSET_TOLERANCE = 10;
 
     // Interstitial globals.
     private static final HashMap<String, Queue<AppLovinAd>> INTERSTITIAL_AD_QUEUES =
