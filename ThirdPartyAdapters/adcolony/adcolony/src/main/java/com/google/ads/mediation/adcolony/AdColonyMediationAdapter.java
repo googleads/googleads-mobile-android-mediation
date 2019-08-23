@@ -13,6 +13,9 @@ import com.adcolony.sdk.AdColonyCustomMessageListener;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -132,6 +135,15 @@ public class AdColonyMediationAdapter extends RtbAdapter {
             initializationCompleteCallback.onInitializationFailed("Initialization Failed: " +
                     "Internal Error on Configuration");
         }
+    }
+
+    @Override
+    public void loadBannerAd(MediationBannerAdConfiguration mediationBannerAdConfiguration,
+                             MediationAdLoadCallback<MediationBannerAd,
+                                     MediationBannerAdCallback> mediationAdLoadCallback) {
+        AdColonyBannerRenderer bannerAd =
+                new AdColonyBannerRenderer(mediationBannerAdConfiguration);
+        bannerAd.requestBanner(mediationAdLoadCallback);
     }
 
     @Override
