@@ -9,6 +9,5 @@ def thirdPartyAdapterPath = properties.getProperty("thirdPartyAdapterPath", null
 
 println "third party adapter path =" + thirdPartyAdapterPath
 
-project(':facebook').projectDir = new File(thirdPartyAdapterPath + 'facebook/facebook');
-project(':fyber').projectDir = new File(thirdPartyAdapterPath + 'fyber/fyber');
-project(':ironsource').projectDir = new File(thirdPartyAdapterPath + 'ironsource/ironsource');
+project(':facebook').projectDir = new File(thirdPartyAdapterPath + 'facebook/facebook')
+project(':fyber').projectDir = new File(thirdPartyAdapterPath + 'fyber/fyber')

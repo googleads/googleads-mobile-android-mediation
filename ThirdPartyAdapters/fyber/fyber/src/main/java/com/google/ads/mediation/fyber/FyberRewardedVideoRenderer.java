@@ -7,19 +7,18 @@ import android.util.Log;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
-import com.fyber.inneractive.sdk.external.InneractiveContentController;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
+import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
 import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
 import com.fyber.inneractive.sdk.external.InneractiveUnitController;
 import com.fyber.inneractive.sdk.external.VideoContentListener;
+import com.fyber.inneractive.sdk.external.VideoContentListenerAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -110,28 +109,13 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             @Override
             public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                      InneractiveErrorCode errorCode) {
-                Log.d(TAG,
-                        "Failed loading Interstitial! with error: " + errorCode);
-
                 mAdLoadCallback.onFailure("Error code: " + errorCode.toString());
-
-                /** No specific error codes anymore? */
-
-                /*
-                if (errorCode == InneractiveErrorCode.CONNECTION_ERROR
-                        || errorCode == InneractiveErrorCode.CONNECTION_TIMEOUT) {
-                    mAdLoadCallback.onFailure(AdRequest.ERROR_CODE_NETWORK_ERROR);
-                } else if (errorCode == InneractiveErrorCode.NO_FILL) {
-                    customEventListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
-                } else {
-                    customEventListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }*/
             }
         });
     }
 
     private void createFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
-        mAdListener = new InneractiveFullscreenAdEventsListener() {
+        mAdListener = new InneractiveFullscreenAdEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
                 callback.reportAdImpression();
@@ -145,22 +129,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             }
 
             @Override
-            public void onAdWillOpenExternalApp(InneractiveAdSpot inneractiveAdSpot) {
-                // No relevant callback for rewarded videos
-            }
-
-            @Override
-            public void onAdEnteredErrorState(InneractiveAdSpot inneractiveAdSpot, InneractiveUnitController.AdDisplayError adDisplayError) {
-                //Do not call callback.onAdFailedToShow(adDisplayError.getMessage());
-                // This callback is only used for MRaid videos, which were already displayed
-            }
-
-            @Override
-            public void onAdWillCloseInternalBrowser(InneractiveAdSpot inneractiveAdSpot) {
-                // No relevant callback for rewarded videos
-            }
-
-            @Override
             public void onAdDismissed(InneractiveAdSpot inneractiveAdSpot) {
                 callback.onAdClosed();
                 userEarnedReward(callback);
@@ -171,12 +139,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         InneractiveFullscreenVideoContentController videoContentController =
                 new InneractiveFullscreenVideoContentController();
 
-        videoContentController.setEventsListener(new VideoContentListener() {
-            @Override
-            public void onProgress(int totalDurationInMsec, int positionInMsec) {
-                Log.d(InneractiveMediationDefs.IA_LOG_FOR_ADMOB_INTERSTITIAL, "Interstitial: Got video content progress: total time = " + totalDurationInMsec + " position = " + positionInMsec);
-            }
-
+        videoContentController.setEventsListener(new VideoContentListenerAdapter() {
             /**
              * Called by inneractive when an Intersititial video ad was played to the end
              * <br>Can be used for incentive flow
@@ -185,19 +148,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             @Override
             public void onCompleted() {
                 callback.onVideoComplete();
-
-                // TODO: Show we send the reward back when the video is completed, or only when the ad is dismissed?
-                // Isn't this redundant?
                 userEarnedReward(callback);
 
                 Log.d(InneractiveMediationDefs.IA_LOG_FOR_ADMOB_INTERSTITIAL, "Interstitial: Got video content completed event");
-            }
-
-            // Deprecated
-            @Override
-            public void onPlayerError() {
-                // No relevant callback for player error
-                // We automatically move to the end card, so we still report the reward back in onAdDismissed
             }
         });
 
@@ -222,20 +175,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             mReceivedRewardItem = true;
 
             callback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
-
-            // For now, the reward item always equals 1
-            // Where was this taken from?
-            /*callback.onUserEarnedReward(new RewardItem() {
-                @Override
-                public String getType() {
-                    return "";
-                }
-
-                @Override
-                public int getAmount() {
-                    return 1;
-                }
-            });*/
         }
     }
 }

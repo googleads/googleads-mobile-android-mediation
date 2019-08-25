@@ -40,10 +40,8 @@ dependencies {
 
     implementation project(':facebook')
     implementation project(':fyber')
-    implementation project(':ironsource')
 
     implementation 'com.fyber.vamp:core-sdk:7.3.0'
     implementation 'com.fyber.vamp:mraid-kit:7.3.0'
     implementation 'com.fyber.vamp:video-kit:7.3.0'
-    implementation 'com.ironsource.sdk:mediationsdk:6.9.0'
 }
