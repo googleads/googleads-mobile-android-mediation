@@ -126,7 +126,6 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
     @Override
     public void requestBannerAd(Context context, MediationBannerListener mediationBannerListener,
                                 Bundle serverParams, AdSize adSize, MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
-
         _adColonyBannerAdListener =
                 new AdColonyBannerAdListener(this, mediationBannerListener);
         // Initialize AdColony.
@@ -135,7 +134,6 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
 
         // If we were unable to configure, notify the listener.
         if (success) {
-
             //convert the admob size into adcolony size.
             AdColonyAdSize adColonyAdSize = AdColonyAdapterUtils.adColonyAdSizeFromAdMobAdSize(context,adSize);
             if(adColonyAdSize !=null) {
@@ -157,7 +155,6 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
                 success = false;
             }
         }
-
         if (!success) {
             mediationBannerListener
                     .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
