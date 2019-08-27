@@ -15,7 +15,6 @@ public class AdColonyAdapterUtils {
 
 
     public static AdColonyAdSize adColonyAdSizeFromAdMobAdSize(Context context, AdSize adSize) {
-
         ArrayList<AdSize> potentials = new ArrayList<>(3);
         potentials.add(0, AdSize.BANNER);
         potentials.add(1, AdSize.LEADERBOARD);
@@ -23,9 +22,6 @@ public class AdColonyAdapterUtils {
         potentials.add(3, AdSize.WIDE_SKYSCRAPER);
 
         AdSize closestSize = AdColonyAdapterUtils.findClosestSize(context, adSize, potentials);
-        if (closestSize == null) {
-            return null;
-        }
 
         if (AdSize.BANNER.equals(closestSize)) {
             return AdColonyAdSize.BANNER;
@@ -35,16 +31,16 @@ public class AdColonyAdapterUtils {
             return AdColonyAdSize.LEADERBOARD;
         } else if (AdSize.WIDE_SKYSCRAPER.equals(closestSize)) {
             return AdColonyAdSize.SKYSCRAPER;
+        } else {
+            return new AdColonyAdSize(adSize.getWidth(),adSize.getHeight());
         }
-
-        return null;
     }
 
     /**
      * Find the closest supported AdSize from the list of potentials to the provided size.
      * Returns null if none are within given threshold size range.
      */
-    public static AdSize findClosestSize(Context context,
+    private static AdSize findClosestSize(Context context,
                                          AdSize original, ArrayList<AdSize> potentials) {
         if (potentials == null || original == null) {
             return null;
