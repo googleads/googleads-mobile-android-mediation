@@ -121,8 +121,7 @@ public class VungleManager {
 
     VungleNativeAd getVungleNativeAd(String placement, AdConfig adConfig, VungleListener vungleListener) {
         Log.d(TAG, "getVungleNativeAd");
-        //Since we VungleInterstitialAdapter#onDestroy() does not called by AdMob SDK,
-        // we have to take care of removal of listener
+
         cleanUpBanner(placement);
         //Fetch new ad
 

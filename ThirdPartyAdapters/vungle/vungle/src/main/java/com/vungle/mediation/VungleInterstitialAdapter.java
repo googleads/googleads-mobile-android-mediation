@@ -174,7 +174,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
-        paused = false;
+        paused = true;
         updateVisibility();
     }
 
@@ -257,18 +257,12 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
 
     private void loadBanner() {
         if (mVungleManager.isAdPlayable(mPlacementForPlay)) {
-            if (mMediationBannerListener != null) {
-                createBanner();
-                mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
-            }
+            createBanner();
         } else if (mVungleManager.isValidPlacement(mPlacementForPlay)) {
             mVungleManager.loadAd(mPlacementForPlay, new VungleListener() {
                 @Override
                 void onAdAvailable() {
-                    if (mMediationBannerListener != null) {
-                        createBanner();
-                        mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
-                    }
+                    createBanner();
                 }
 
                 @Override
@@ -323,6 +317,9 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         if (adView != null) {
             updateVisibility();
             adLayout.addView(adView);
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
+            }
         } else {
             //missing resources
             if (mMediationBannerListener != null) {
