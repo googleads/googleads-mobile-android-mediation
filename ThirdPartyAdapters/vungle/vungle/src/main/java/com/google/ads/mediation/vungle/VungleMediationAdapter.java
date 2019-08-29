@@ -35,7 +35,7 @@ public class VungleMediationAdapter extends Adapter
         implements MediationRewardedAd, VungleInitializer.VungleInitializationListener,
         LoadAdCallback, PlayAdCallback {
 
-    public static final String TAG = VungleMediationAdapter.class.getSimpleName();
+    private static final String TAG = VungleMediationAdapter.class.getSimpleName();
     private static final String KEY_APP_ID = "appid";
 
     private AdConfig mAdConfig;
