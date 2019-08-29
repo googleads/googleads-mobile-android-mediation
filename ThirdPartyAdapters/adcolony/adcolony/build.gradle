@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "3.3.11.0"
+    stringVersion = "4.0.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -39,7 +39,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.adcolony:sdk:3.3.11'
+    implementation 'com.adcolony:sdk:4.0.0'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:18.1.1'
 }
