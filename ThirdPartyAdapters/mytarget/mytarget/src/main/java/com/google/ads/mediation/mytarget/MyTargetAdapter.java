@@ -2,8 +2,8 @@ package com.google.ads.mediation.mytarget;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
@@ -19,13 +19,15 @@ import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
 import com.my.target.common.CustomParams;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
  * Mediation adapter for myTarget.
  */
-public class MyTargetAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
+public class MyTargetAdapter extends MyTargetMediationAdapter
+    implements MediationBannerAdapter, MediationInterstitialAdapter {
 
     @NonNull
     private static final String TAG = "MyTargetAdapter";
@@ -52,6 +54,7 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             }
             return;
         }
+        adSize = getSupportedAdSize(context, adSize);
 
         if (adSize == null) {
             Log.w(TAG, "Failed to request ad, AdSize is null.");
@@ -67,21 +70,21 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             bannerListener = new MyTargetBannerListener(mediationBannerListener);
         }
 
-        if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
+        if (adSize.getWidth() == 300 && adSize.getHeight() == 250) {
             Log.d(TAG, "Loading myTarget banner, size: 300x250");
             loadBanner(bannerListener,
                     mediationAdRequest,
                     slotId,
                     MyTargetView.AdSize.BANNER_300x250,
                     context);
-        } else if (AdSize.LEADERBOARD.equals(adSize)) {
+        } else if (adSize.getWidth() == 728 && adSize.getHeight() == 90) {
             Log.d(TAG, "Loading myTarget banner, size: 728x90");
             loadBanner(bannerListener,
                     mediationAdRequest,
                     slotId,
                     MyTargetView.AdSize.BANNER_728x90,
                     context);
-        } else if (AdSize.BANNER.equals(adSize)) {
+        } else if (adSize.getWidth() == 320 && adSize.getHeight() == 50) {
             Log.d(TAG, "Loading myTarget banner, size: 320x50");
             loadBanner(bannerListener,
                     mediationAdRequest,
@@ -96,6 +99,25 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
             }
         }
 
+    }
+
+    AdSize getSupportedAdSize(Context context, AdSize adSize) {
+        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
+
+        /*
+            Supported Sizes:
+            MyTargetView.AdSize.BANNER_300x250;
+            MyTargetView.AdSize.BANNER_320x50;
+            MyTargetView.AdSize.BANNER_728x90;
+        */
+
+        ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
+        potentials.add(AdSize.BANNER);
+        potentials.add(AdSize.MEDIUM_RECTANGLE);
+        potentials.add(AdSize.LEADERBOARD);
+
+        Log.i(TAG, "Potential ad sizes: " + potentials.toString());
+        return MyTargetTools.findClosestSize(context, original, potentials);
     }
 
     @Override
@@ -174,16 +196,10 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
     @Override
     public void onPause() {
-        if (mMyTargetView != null) {
-            mMyTargetView.pause();
-        }
     }
 
     @Override
     public void onResume() {
-        if (mMyTargetView != null) {
-            mMyTargetView.resume();
-        }
     }
 
     /**
@@ -253,14 +269,19 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
         @Override
         public void onLoad(@NonNull final MyTargetView view) {
             Log.d(TAG, "Banner mediation Ad loaded");
-            view.start();
             listener.onAdLoaded(MyTargetAdapter.this);
         }
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-            Log.d(TAG, "Banner mediation Ad failed to load: " + reason);
-            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+             Log.i(TAG, "Banner mediation Ad failed to load: " + reason);
+             listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+        }
+
+        @Override
+        public void onShow(@NonNull MyTargetView view)
+        {
+            Log.d(TAG, "Banner mediation Ad show");
         }
 
         @Override
@@ -295,8 +316,8 @@ public class MyTargetAdapter implements MediationBannerAdapter, MediationInterst
 
         @Override
         public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-            Log.d(TAG, "Interstitial mediation Ad failed to load: " + reason);
-            listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                Log.i(TAG, "Interstitial mediation Ad failed to load: " + reason);
+                listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
 
         @Override

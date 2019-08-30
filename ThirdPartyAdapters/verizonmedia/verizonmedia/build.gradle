@@ -1,0 +1,129 @@
+plugins {
+    id "com.jfrog.bintray" version "1.8.1"
+}
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+/**
+ * Extra properties used by the project.
+ */
+ext {
+    // String property to store version name.
+    stringVersion = "1.1.1.0"
+    // String property to store group id.
+    stringGroupId = "com.google.ads.mediation"
+}
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1010100
+        versionName stringVersion
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.google.android.gms:play-services-ads:18.1.1'
+    implementation 'com.verizon.ads:android-vas-standard-edition:1.1.1'
+}
+
+/**
+ * Jar task to make a sources jar.
+ */
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+ * Publish closure consisting of maven publications that will be published using bintrayUpload.
+ */
+publishing {
+    publications {
+        verizonMediaPublications(MavenPublication) {
+            groupId = stringGroupId
+            artifactId = project.name
+            version = stringVersion
+
+            // Add the aar artifact to publication.
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy build
+            }
+
+            // Add the sources jar artifact to the publication.
+            artifact(sourcesJar)
+
+            // Add the required dependencies to the published `pom.xml` file.
+            pom.withXml {
+                final dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each {
+                    // Exclude filetree dependencies.
+                    if (it.name != 'unspecified') {
+                        println("Adding dependency: " + it.group + ":" + it.name + ":" + it.version)
+
+                        final dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                        if (it.artifacts.size() > 0) {
+                            dependencyNode.appendNode('type', it.artifacts[0].type)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Bintray closure needed to run the bintrayUpload task.
+ *
+ * Usage:
+ * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
+ *
+ * The Bintray User ID and API key can be added to your system environment variables as BINTRAY_USER
+ * and BINTRAY_API_KEY respectively, and the command could be reduced to:
+ * ./gradlew bintrayUpload
+ */
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser')
+            : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey')
+            : System.getenv('BINTRAY_API_KEY')
+    publications = ['verizonMediaPublications']
+
+    dryRun = false // Deploy after running.
+    publish = false // Don't auto publish after deploying.
+
+    pkg {
+        repo = 'mobile-ads-adapters-android'
+        name = "${stringGroupId}.${project.name}" // Display name for the package.
+        userOrg = 'google'
+        desc = 'Verizon Media adapter for Google Mobile Ads mediation.'
+        licenses = ['Apache-2.0']
+        websiteUrl = 'https://developers.google.com/admob/android/mediation/verizon-media'
+        vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
+        issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
+        githubRepo = 'googleads/googleads-mobile-android-mediation'
+        version {
+            name = stringVersion
+        }
+    }
+}
+
+/**
+ * Add dependency tasks for bintrayUpload. The project needs to be built before bintrayUpload
+ * task is run.
+ */
+bintrayUpload.dependsOn(clean, build)
+bintrayUpload.mustRunAfter build
+build.mustRunAfter clean

@@ -1,6 +1,6 @@
 package com.google.ads.mediation.nend;
 
-import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardItem;
 
 import net.nend.android.NendAdRewardItem;
 

@@ -1,5 +1,76 @@
 # Facebook Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 5.5.0.0
+- Verified compatibility with Facebook SDK v5.5.0.
+
+## 5.4.1.1
+- Fixed an issue that causes a crash when Native Ads are removed.
+
+## 5.4.1.0
+- Verified compatibility with Facebook SDK v5.4.1.
+- Added support for Facebook Native Banner Ads.
+  * Use `setNativeBanner()` from the `FacebookExtras` class to request for Native Banner Ads.
+- Fixed an issue that caused Smart Banner Ad requests to fail.
+- Fixed an issue where Rewarded Video Ads were not forwarding the `onAdClosed()` event in some cases where the app was backgrounded while the video was in progress.
+- Migrated the adapter to `AndroidX`.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
+## 5.4.0.0
+- Verified compatibility with Facebook SDK v5.4.0.
+
+## 5.3.1.2
+- Fixed a bug where Facebook open bidding failed to initialize due
+  to "No placement IDs found".
+
+## 5.3.1.1
+- Updated native RTB ads impression tracking.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
+
+## 5.3.1.0
+- Added open bidding capability to the adapter for banner, interstitial,
+  rewarded and native ads.
+- Verified compatibility with Facebook SDK v5.3.1.
+
+## 5.3.0.0
+- Updated mediation service name for Google Mobile Ads.
+- Added adapter version to the initialization call.
+- Verified compatibility with Facebook SDK v5.3.0.
+
+## 5.2.0.2
+- Added support for flexible banner ad sizes.
+
+## 5.2.0.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 5.2.0.0
+- Verified compatibility with Facebook SDK v5.2.0.
+
+## 5.1.1.1
+- Updated the adapter to populate Advertiser Name for Unified Native Ads.
+
+## 5.1.1.0
+- Replaced AdChoices View with AdOptions View.
+- Verified compatibility with Facebook SDK v5.1.1
+
+## 5.1.0.1
+- Fixed an ANR issue caused by 'getGMSVersionCode()'.
+
+## 5.1.0.0
+- Initialize Facebook SDK for each ad format.
+
+## 5.0.1.0
+- Verified compatibility with Facebook SDK v5.0.1.
+
+## 5.0.0.1
+- Updated the adapter to create the rewarded ad object at ad request time.
+
+## 5.0.0.0
+- Verified compatibility with Facebook SDK v5.0.0.
+
+## 4.99.3.0
+- Verified compatibility with Facebook SDK v4.99.3.
+
 ## 4.99.1.1
 - Fixed a bug where the Ad Choices icon is not shown for Unified Native Ads.
 - Fixed a bug where the adapter would throw an exception when trying to download images.

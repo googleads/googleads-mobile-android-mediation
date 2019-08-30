@@ -77,19 +77,19 @@ public class SampleNativeAdLoader {
         Random random = new Random();
         int nextInt = random.nextInt(100);
         if (listener != null) {
-            if (nextInt < 80) {
+            if (nextInt < 92) {
                 // Act as if the request was successful and create a sample native ad
                 // of the request type filled with dummy data.
                 if (random.nextBoolean()) {
-                    listener.onNativeAdFetched(createFakeAppInstallAd(request));
+                    listener.onNativeAdFetched(createSampleAppInstallAd(request));
                 } else {
-                    listener.onNativeAdFetched(createFakeContentAd(request));
+                    listener.onNativeAdFetched(createSampleContentAd(request));
                 }
-            } else if (nextInt < 85) {
+            } else if (nextInt < 94) {
                 listener.onAdFetchFailed(SampleErrorCode.UNKNOWN);
-            } else if (nextInt < 90) {
+            } else if (nextInt < 96) {
                 listener.onAdFetchFailed(SampleErrorCode.BAD_REQUEST);
-            } else if (nextInt < 95) {
+            } else if (nextInt < 98) {
                 listener.onAdFetchFailed(SampleErrorCode.NETWORK_ERROR);
             } else {
                 listener.onAdFetchFailed(SampleErrorCode.NO_INVENTORY);
@@ -97,69 +97,69 @@ public class SampleNativeAdLoader {
         }
     }
 
-    private SampleNativeAd createFakeAppInstallAd(SampleNativeAdRequest request) {
-        SampleNativeAd fakeAd = new SampleNativeAd();
+    private SampleNativeAd createSampleAppInstallAd(SampleNativeAdRequest request) {
+        SampleNativeAd nativeAd = new SampleNativeAd();
 
-        fakeAd.setHeadline("Sample App!");
-        fakeAd.setBody("This app doesn't actually exist.");
-        fakeAd.setCallToAction("Take Action!");
-        fakeAd.setDegreeOfAwesomeness("Quite Awesome");
-        fakeAd.setPrice(1.99);
-        fakeAd.setStarRating(4.5);
-        fakeAd.setStoreName("Sample Store");
-        fakeAd.setImageUri(Uri.parse("http://www.example.com/"));
-        fakeAd.setIconUri(Uri.parse("http://www.example.com/"));
+        nativeAd.setHeadline("Sample App!");
+        nativeAd.setBody("This app doesn't actually exist.");
+        nativeAd.setCallToAction("Take Action!");
+        nativeAd.setDegreeOfAwesomeness("Quite Awesome");
+        nativeAd.setPrice(1.99);
+        nativeAd.setStarRating(4.5);
+        nativeAd.setStoreName("Sample Store");
+        nativeAd.setImageUri(Uri.parse("http://www.example.com/"));
+        nativeAd.setIconUri(Uri.parse("http://www.example.com/"));
 
         // We pretend 80% of network's inventory has video assets and 20% doesn't.
         if ((new Random()).nextInt(100) < 80) {
-            fakeAd.setMediaView(new SampleMediaView(context));
+            nativeAd.setMediaView(new SampleMediaView(context));
         } else {
-            fakeAd.setMediaView(null);
+            nativeAd.setMediaView(null);
         }
 
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
         if (request.getShouldDownloadImages()) {
-            fakeAd.setIcon(context.getResources()
+            nativeAd.setIcon(context.getResources()
                     .getDrawable(R.drawable.sample_app_icon));
-            fakeAd.setImage(context.getResources()
+            nativeAd.setImage(context.getResources()
                     .getDrawable(R.drawable.sample_app_image));
         }
 
-        fakeAd.setInformationIcon(createInformationIconImageView());
+        nativeAd.setInformationIcon(createInformationIconImageView());
 
-        return fakeAd;
+        return nativeAd;
     }
 
-    private SampleNativeAd createFakeContentAd(SampleNativeAdRequest request) {
-        SampleNativeAd fakeAd = new SampleNativeAd();
+    private SampleNativeAd createSampleContentAd(SampleNativeAdRequest request) {
+        SampleNativeAd nativeAd = new SampleNativeAd();
 
-        fakeAd.setHeadline("Sample Content!");
-        fakeAd.setBody("This is a sample ad, so there's no real content. In the event of a real "
+        nativeAd.setHeadline("Sample Content!");
+        nativeAd.setBody("This is a sample ad, so there's no real content. In the event of a real "
                 + "ad, though, some persuasive text would appear here.");
-        fakeAd.setAdvertiser("The very best advertiser!");
-        fakeAd.setCallToAction("Take Action!");
-        fakeAd.setDegreeOfAwesomeness("Fairly Awesome");
+        nativeAd.setAdvertiser("The very best advertiser!");
+        nativeAd.setCallToAction("Take Action!");
+        nativeAd.setDegreeOfAwesomeness("Fairly Awesome");
 
         // We pretend 80% of network's inventory has video assets and 20% doesn't.
         if ((new Random()).nextInt(100) < 80) {
-            fakeAd.setMediaView(new SampleMediaView(context));
+            nativeAd.setMediaView(new SampleMediaView(context));
         } else {
-            fakeAd.setMediaView(null);
+            nativeAd.setMediaView(null);
         }
 
         // There are other options offered in the SampleNativeAdRequest,
         // but for simplicity's sake, this is the only one we'll put to use.
         if (request.getShouldDownloadImages()) {
-            fakeAd.setIcon(context.getResources()
+            nativeAd.setIcon(context.getResources()
                     .getDrawable(R.drawable.sample_content_logo));
-            fakeAd.setImage(context.getResources()
+            nativeAd.setImage(context.getResources()
                     .getDrawable(R.drawable.sample_content_ad_image));
         }
 
-        fakeAd.setInformationIcon(createInformationIconImageView());
+        nativeAd.setInformationIcon(createInformationIconImageView());
 
-        return fakeAd;
+        return nativeAd;
     }
 
     /**

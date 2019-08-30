@@ -10,6 +10,12 @@ public class VungleConsent {
     private static Vungle.Consent sCurrentVungleConsent = null;
     private static String sCurrentVungleConsentMessageVersion = "";
 
+    /**
+     * Update GDPR consent status and corresponding version number
+     *
+     * @param consentStatus
+     * @param consentMessageVersion
+     */
     public static void updateConsentStatus(Vungle.Consent consentStatus,
                                            String consentMessageVersion) {
         sCurrentVungleConsent = consentStatus;

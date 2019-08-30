@@ -1,5 +1,26 @@
 # maio Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 1.1.8.0
+- Verified compatibility with maio SDK version 1.1.8.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.0.
+
+## 1.1.7.0
+- Bug Fixes.
+- Verified compatibility with maio SDK version 1.1.7.
+
+## 1.1.6.1
+- Updated adapter to support new Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 1.1.6.0
+- Verified compatibility with maio SDK version 1.1.6.
+
+## 1.1.5.0
+- Verified compatibility with maio SDK version 1.1.5.
+
+## 1.1.4.0
+- Verified compatibility with maio SDK version 1.1.4.
+
 ##1.1.3.1
 - Updated the adapter to work with instance class instead of singleton.
 

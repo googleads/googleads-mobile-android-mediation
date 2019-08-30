@@ -5,8 +5,10 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
+import com.google.ads.mediation.applovin.AppLovinRewardItem;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 import java.util.Map;
 
@@ -17,57 +19,54 @@ import static android.util.Log.ERROR;
  * The {@link AppLovinIncentivizedAdListener} class is used to forward Rewarded ad events from
  * the AppLovin SDK to the Google Mobile Ads SDK.
  */
-class AppLovinIncentivizedAdListener
+public class AppLovinIncentivizedAdListener
         implements AppLovinAdRewardListener, AppLovinAdDisplayListener,
         AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
-    private final ApplovinAdapter mAdapter;
-    private final MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
+
+    private MediationRewardedAdCallback mRewardedAdCallback;
 
     private boolean mFullyWatched;
     private AppLovinRewardItem mRewardItem;
+    private String mZoneId;
 
-    AppLovinIncentivizedAdListener(
-            ApplovinAdapter adapter,
-            MediationRewardedVideoAdListener mediationRewardedVideoAdListener) {
-        mAdapter = adapter;
-        mMediationRewardedVideoAdListener = mediationRewardedVideoAdListener;
+    public AppLovinIncentivizedAdListener(MediationRewardedAdConfiguration adConfiguration,
+                                          MediationRewardedAdCallback mRewardedAdCallback) {
+        mZoneId = AppLovinUtils.retrieveZoneId(adConfiguration.getServerParameters());
+        this.mRewardedAdCallback = mRewardedAdCallback;
     }
 
     // Ad Display Listener.
     @Override
     public void adDisplayed(AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Rewarded video displayed");
-        mMediationRewardedVideoAdListener.onAdOpened(mAdapter);
+        mRewardedAdCallback.onAdOpened();
+        mRewardedAdCallback.reportAdImpression();
     }
 
     @Override
     public void adHidden(AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Rewarded video dismissed");
-        if (mFullyWatched && mRewardItem != null) {
-            mMediationRewardedVideoAdListener.onRewarded(mAdapter, mRewardItem);
+        AppLovinMediationAdapter.INCENTIVIZED_ADS.remove(mZoneId);
+        if (mFullyWatched) {
+            mRewardedAdCallback.onUserEarnedReward(mRewardItem);
         }
 
-        mMediationRewardedVideoAdListener.onAdClosed(mAdapter);
+        mRewardedAdCallback.onAdClosed();
 
-        // Clear states in the case this listener gets re-used in the future.
-        mFullyWatched = false;
-        mRewardItem = null;
     }
 
     // Ad Click Listener.
     @Override
     public void adClicked(AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Rewarded video clicked");
-
-        mMediationRewardedVideoAdListener.onAdClicked(mAdapter);
-        mMediationRewardedVideoAdListener.onAdLeftApplication(mAdapter);
+        mRewardedAdCallback.reportAdClicked();
     }
 
     // Video Playback Listener.
     @Override
     public void videoPlaybackBegan(AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Rewarded video playback began");
-        mMediationRewardedVideoAdListener.onVideoStarted(mAdapter);
+        mRewardedAdCallback.onVideoStart();
     }
 
     @Override
@@ -75,9 +74,8 @@ class AppLovinIncentivizedAdListener
         ApplovinAdapter.log(DEBUG, "Rewarded video playback ended at playback percent: "
                 + percentViewed + "%");
         mFullyWatched = fullyWatched;
-
         if (fullyWatched) {
-            mMediationRewardedVideoAdListener.onVideoCompleted(mAdapter);
+            mRewardedAdCallback.onVideoComplete();
         }
     }
 
@@ -115,29 +113,5 @@ class AppLovinIncentivizedAdListener
 
         ApplovinAdapter.log(DEBUG, "Rewarded " + amount + " " + currency);
         mRewardItem = new AppLovinRewardItem(amount, currency);
-    }
-
-    /**
-     * Reward item wrapper class.
-     */
-    private static final class AppLovinRewardItem
-            implements RewardItem {
-        private final int mAmount;
-        private final String mType;
-
-        private AppLovinRewardItem(int amount, final String type) {
-            mAmount = amount;
-            mType = type;
-        }
-
-        @Override
-        public String getType() {
-            return mType;
-        }
-
-        @Override
-        public int getAmount() {
-            return mAmount;
-        }
     }
 }

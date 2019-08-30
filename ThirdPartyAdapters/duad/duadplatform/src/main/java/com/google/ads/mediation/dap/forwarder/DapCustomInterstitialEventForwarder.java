@@ -8,11 +8,13 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 public class DapCustomInterstitialEventForwarder implements InterstitialListener {
+
     private static final String TAG = DapCustomInterstitialEventForwarder.class.getSimpleName();
     private final MediationInterstitialAdapter mAdapter;
     private MediationInterstitialListener mInterstitialListener;
 
-    public DapCustomInterstitialEventForwarder(MediationInterstitialAdapter adapter, MediationInterstitialListener listener) {
+    public DapCustomInterstitialEventForwarder(MediationInterstitialAdapter adapter,
+                                               MediationInterstitialListener listener) {
         mInterstitialListener = listener;
         mAdapter = adapter;
     }
@@ -20,7 +22,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdFail(int i) {
         if (mInterstitialListener != null) {
-            DuAdMediation.d(TAG, "Interstitial onAdFail -  " + i);
+            DuAdMediation.debugLog(TAG, "Interstitial onAdFail -  " + i);
             mInterstitialListener.onAdFailedToLoad(mAdapter, getAdMobErrorCode(i));
         }
     }
@@ -28,7 +30,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdReceive() {
         if (mInterstitialListener != null) {
-            DuAdMediation.d(TAG, "Interstitial onAdReceive ");
+            DuAdMediation.debugLog(TAG, "Interstitial onAdReceive ");
             mInterstitialListener.onAdLoaded(mAdapter);
         }
     }
@@ -36,7 +38,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdDismissed() {
         if (mInterstitialListener != null) {
-            DuAdMediation.d(TAG, "Interstitial onAdDismissed ");
+            DuAdMediation.debugLog(TAG, "Interstitial onAdDismissed ");
             mInterstitialListener.onAdClosed(mAdapter);
         }
     }
@@ -44,7 +46,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdPresent() {
         if (mInterstitialListener != null) {
-            DuAdMediation.d(TAG, "Interstitial onAdPresent ");
+            DuAdMediation.debugLog(TAG, "Interstitial onAdPresent ");
             mInterstitialListener.onAdOpened(mAdapter);
         }
     }
@@ -52,7 +54,7 @@ public class DapCustomInterstitialEventForwarder implements InterstitialListener
     @Override
     public void onAdClicked() {
         if (mInterstitialListener != null) {
-            DuAdMediation.d(TAG, "Interstitial onAdClicked ");
+            DuAdMediation.debugLog(TAG, "Interstitial onAdClicked ");
             mInterstitialListener.onAdClicked(mAdapter);
             mInterstitialListener.onAdLeftApplication(mAdapter);
         }

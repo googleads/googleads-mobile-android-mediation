@@ -19,8 +19,9 @@ package com.google.ads.mediation.sample.customevent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
@@ -55,8 +56,7 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     /**
      * Example of an extra field that publishers can use for a Native ad. In this example, the
-     * String is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper},
-     * {@link SampleNativeAppInstallAdMapper} and {@link SampleNativeContentAdMapper}.
+     * String is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper}.
      */
     public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
 
@@ -218,20 +218,7 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
         // Create a native request to give to the SampleNativeAdLoader.
         SampleNativeAdRequest request = new SampleNativeAdRequest();
-
-        // The Google Mobile Ads SDK requires the image assets to be downloaded automatically unless
-        // the publisher specifies otherwise by using the NativeAdOptions object's
-        // shouldReturnUrlsForImageAssets method. If your network doesn't have an option like this
-        // and instead only ever returns URLs for images (rather than the images themselves), your
-        // adapter should download image assets on behalf of the publisher. See the
-        // SampleNativeMediationEventForwarder for information on how to do so.
-        request.setShouldDownloadImages(true);
-
-        request.setShouldDownloadMultipleImages(false);
-        request.setPreferredImageOrientation(SampleNativeAdRequest.IMAGE_ORIENTATION_ANY);
-
         NativeAdOptions options = nativeMediationAdRequest.getNativeAdOptions();
-
         if (options != null) {
             // If the NativeAdOptions' shouldReturnUrlsForImageAssets is true, the adapter should
             // send just the URLs for the images.
@@ -256,24 +243,15 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
             }
         }
 
-        // Set App Install and Content Ad requests.
-        //
-        // NOTE: Care needs to be taken to make sure the custom event respects the publisher's
-        // wishes in regard to native ad formats. For example, if the mediated ad network only
-        // provides app install ads, and the publisher requests content ads alone, the custom event
-        // must report an error by calling the listener's onAdFailedToLoad method with an error code
-        // of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
-        // anyway, and then attempt to map it to the content ad format.
-        if (!(nativeMediationAdRequest.isAppInstallAdRequested()
-                && nativeMediationAdRequest.isContentAdRequested()) &&
-                !nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
+        if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
+            Log.e(TAG, "Failed to load ad. Request must be for unified native ads.");
             customEventNativeListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
         loader.setNativeAdListener(
                 new SampleCustomNativeEventForwarder(customEventNativeListener,
-                        nativeMediationAdRequest));
+                        nativeMediationAdRequest.getNativeAdOptions()));
 
         // Begin a request.
         loader.fetchAd(request);

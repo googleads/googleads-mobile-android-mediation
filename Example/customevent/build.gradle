@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.tools
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
@@ -19,7 +18,7 @@ android {
 }
 
 dependencies {
-    compile project(':sdk')
-    compile rootProject.ext.playServicesAds
-    compile rootProject.ext.appcompatV7
+    implementation project(':sdk')
+    implementation rootProject.ext.playServicesAds
+    implementation rootProject.ext.appcompat
 }

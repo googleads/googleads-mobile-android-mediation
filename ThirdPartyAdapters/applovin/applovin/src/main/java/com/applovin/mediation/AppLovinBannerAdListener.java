@@ -24,10 +24,9 @@ class AppLovinBannerAdListener
     private final MediationBannerListener mMediationBannerListener;
     private final AppLovinAdView mAdView;
     private final String mZoneId;
-    private final String mPlacement;
+
 
     AppLovinBannerAdListener(String zoneId,
-                             String placement,
                              AppLovinAdView adView,
                              ApplovinAdapter adapter,
                              MediationBannerListener mediationBannerListener) {
@@ -35,16 +34,16 @@ class AppLovinBannerAdListener
         mMediationBannerListener = mediationBannerListener;
         mAdView = adView;
         mZoneId = zoneId;
-        mPlacement = placement;
+
     }
 
     // Ad Load Listener.
     @Override
     public void adReceived(final AppLovinAd ad) {
         ApplovinAdapter.log(DEBUG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: "
-                + mZoneId + " and placement: " + mPlacement);
+                + mZoneId );
 
-        mAdView.renderAd(ad, mPlacement);
+        mAdView.renderAd(ad);
 
         AppLovinSdkUtils.runOnUiThread(new Runnable() {
             @Override
