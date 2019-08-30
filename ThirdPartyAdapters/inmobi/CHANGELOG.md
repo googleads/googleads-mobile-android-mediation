@@ -1,5 +1,29 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.2.9.0
+- Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
+- Verified compatibility with InMobi SDK version 7.2.9.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
+## 7.2.7.0
+- Verified compatibility with InMobi SDK version 7.2.7.
+
+## 7.2.2.2
+- Added support for flexible banner ad sizes.
+
+## 7.2.2.1
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 7.2.2.0
+- Verified compatibility with InMobi SDK version 7.2.2.
+
+## 7.2.1.0
+- Verified compatibility with InMobi SDK version 7.2.1.
+
+## 7.2.0.0
+- Verified compatibility with InMobi SDK version 7.2.0.
+
 ## 7.1.1.1
 - Updated the adapter to invoke the `onRewardedVideoComplete` ad event.
 

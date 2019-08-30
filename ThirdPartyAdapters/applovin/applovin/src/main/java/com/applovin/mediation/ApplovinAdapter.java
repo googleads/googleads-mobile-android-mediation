@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.applovin.adview.AppLovinAdView;
-import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.sdk.AppLovinAd;
@@ -22,14 +21,14 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdAdapter;
-import com.google.android.gms.ads.reward.mediation.MediationRewardedVideoAdListener;
+
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
@@ -39,24 +38,15 @@ import static android.util.Log.ERROR;
  * rewarded-based video ads and to mediate the callbacks between the AppLovin SDK and the Google
  * Mobile Ads SDK.
  */
-public class ApplovinAdapter
+public class ApplovinAdapter extends AppLovinMediationAdapter
         implements MediationBannerAdapter, MediationInterstitialAdapter,
-        MediationRewardedVideoAdAdapter, OnContextChangedListener {
+        OnContextChangedListener, MediationRewardedAd {
     private static final boolean LOGGING_ENABLED = true;
-    private static final String DEFAULT_ZONE = "";
-
-    private static final int BANNER_STANDARD_HEIGHT         = 50;
-    private static final int BANNER_HEIGHT_OFFSET_TOLERANCE = 10;
 
     // Interstitial globals.
     private static final HashMap<String, Queue<AppLovinAd>> INTERSTITIAL_AD_QUEUES =
             new HashMap<>();
     private static final Object INTERSTITIAL_AD_QUEUES_LOCK = new Object();
-
-    // Rewarded video globals.
-    private static final HashMap<String, AppLovinIncentivizedInterstitial> INCENTIVIZED_ADS =
-            new HashMap<>();
-    private static final Object INCENTIVIZED_ADS_LOCK = new Object();
 
     // Parent objects.
     private AppLovinSdk mSdk;
@@ -65,11 +55,6 @@ public class ApplovinAdapter
 
     // Interstitial objects.
     private MediationInterstitialListener mMediationInterstitialListener;
-
-    // Rewarded Video objects.
-    private final AtomicBoolean mInitialized = new AtomicBoolean();
-    private MediationRewardedVideoAdListener mMediationRewardedVideoAdListener;
-    private AppLovinIncentivizedInterstitial mIncentivizedInterstitial;
 
     // Banner objects.
     private AppLovinAdView mAdView;
@@ -199,127 +184,6 @@ public class ApplovinAdapter
     }
     //endregion
 
-    //region MediationRewardedVideoAdAdapter implementation.
-    @Override
-    public void initialize(Context context,
-                           MediationAdRequest adRequest,
-                           String userId,
-                           MediationRewardedVideoAdListener rewardedVideoAdListener,
-                           Bundle serverParameters,
-                           Bundle networkExtras) {
-        log(DEBUG, "Attempting to initialize SDK");
-
-        if (!mInitialized.getAndSet(true)) {
-            // Store parent objects.
-            mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-            mContext = context;
-            mNetworkExtras = networkExtras;
-            mMediationRewardedVideoAdListener = rewardedVideoAdListener;
-        }
-
-        rewardedVideoAdListener.onInitializationSucceeded(this);
-    }
-
-    @Override
-    public boolean isInitialized() {
-        // Please note: AdMob re-uses the adapter for rewarded videos, so be cognizant of states.
-        return mInitialized.get();
-    }
-
-    @Override
-    public void loadAd(MediationAdRequest adRequest,
-                       Bundle serverParameters,
-                       Bundle networkExtras) {
-        synchronized (INCENTIVIZED_ADS_LOCK) {
-            mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
-            mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-
-            log(DEBUG, "Requesting rewarded video for zone: " + mZoneId + " and placement: "
-                    + mPlacement);
-
-            // Check if incentivized ad for zone already exists.
-            if (INCENTIVIZED_ADS.containsKey(mZoneId)) {
-                mIncentivizedInterstitial = INCENTIVIZED_ADS.get(mZoneId);
-            } else {
-                // If this is a default Zone, create the incentivized ad normally
-                if (DEFAULT_ZONE.equals(mZoneId)) {
-                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
-                }
-                // Otherwise, use the Zones API
-                else {
-                    mIncentivizedInterstitial =
-                            AppLovinIncentivizedInterstitial.create(mZoneId, mSdk);
-                }
-
-                INCENTIVIZED_ADS.put(mZoneId, mIncentivizedInterstitial);
-            }
-        }
-
-        if (mIncentivizedInterstitial.isAdReadyToDisplay()) {
-            AppLovinSdkUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mMediationRewardedVideoAdListener.onAdLoaded(ApplovinAdapter.this);
-                }
-            });
-        } else {
-            // Save placement and zone id, in case the adapter is re-used with new values but the
-            // callbacks are for the old values.
-            final String placement = mPlacement;
-            final String zoneId = mZoneId;
-
-            mIncentivizedInterstitial.preload(new AppLovinAdLoadListener() {
-                @Override
-                public void adReceived(final AppLovinAd ad) {
-                    log(DEBUG, "Rewarded video did load ad: " + ad.getAdIdNumber() + " for zone: "
-                            + zoneId + " and placement: " + placement);
-
-                    AppLovinSdkUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mMediationRewardedVideoAdListener.onAdLoaded(ApplovinAdapter.this);
-                        }
-                    });
-                }
-
-                @Override
-                public void failedToReceiveAd(final int code) {
-                    log(ERROR, "Rewarded video failed to load with error: " + code);
-
-                    AppLovinSdkUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mMediationRewardedVideoAdListener.onAdFailedToLoad(ApplovinAdapter.this,
-                                    AppLovinUtils.toAdMobErrorCode(code));
-                        }
-                    });
-                }
-            });
-        }
-    }
-
-    @Override
-    public void showVideo() {
-        if (mIncentivizedInterstitial.isAdReadyToDisplay()) {
-            // Update mute state
-            mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
-
-            log(DEBUG, "Showing rewarded video for zone: " + mZoneId + " placement: " + mPlacement);
-
-            final AppLovinIncentivizedAdListener listener =
-                    new AppLovinIncentivizedAdListener(this, mMediationRewardedVideoAdListener);
-            mIncentivizedInterstitial.show(mContext, mPlacement, listener, listener, listener,
-                    listener);
-        } else {
-            log(DEBUG, "Attempting to show rewarded video before one was loaded");
-
-            // TODO: Add support for checking default SDK-preloaded ad
-            mMediationRewardedVideoAdListener.onAdOpened(this);
-            mMediationRewardedVideoAdListener.onAdClosed(this);
-        }
-    }
-    //endregion
-
     //region MediationBannerAdapter implementation.
     @Override
     public void requestBannerAd(Context context,
@@ -338,12 +202,12 @@ public class ApplovinAdapter
                 + mZoneId + " and placement: " + mPlacement);
 
         // Convert requested size to AppLovin Ad Size.
-        final AppLovinAdSize appLovinAdSize = appLovinAdSizeFromAdMobAdSize(adSize);
+        final AppLovinAdSize appLovinAdSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
         if (appLovinAdSize != null) {
             mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
 
             final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(
-                    mZoneId, mPlacement, mAdView, this, mediationBannerListener);
+                    mZoneId, mAdView, this, mediationBannerListener);
             mAdView.setAdDisplayListener(listener);
             mAdView.setAdClickListener(listener);
             mAdView.setAdViewEventListener(listener);
@@ -355,14 +219,15 @@ public class ApplovinAdapter
             }
         } else {
             log(ERROR, "Failed to request banner with unsupported size");
-
-            AppLovinSdkUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mediationBannerListener.onAdFailedToLoad(
-                            ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-                }
-            });
+            if (mediationBannerListener != null) {
+              AppLovinSdkUtils.runOnUiThread(new Runnable() {
+                  @Override
+                  public void run() {
+                      mediationBannerListener.onAdFailedToLoad(
+                              ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                  }
+              });
+            }
         }
     }
 
@@ -371,27 +236,6 @@ public class ApplovinAdapter
         return mAdView;
     }
     //endregion
-
-    private AppLovinAdSize appLovinAdSizeFromAdMobAdSize(AdSize adSize) {
-        final boolean isSmartBanner = (adSize.getWidth() == AdSize.FULL_WIDTH) &&
-                (adSize.getHeight() == AdSize.AUTO_HEIGHT);
-
-        if (AdSize.BANNER.equals(adSize) || AdSize.LARGE_BANNER.equals(adSize) || isSmartBanner) {
-            return AppLovinAdSize.BANNER;
-        } else if (AdSize.MEDIUM_RECTANGLE.equals(adSize)) {
-            return AppLovinAdSize.MREC;
-        } else if (AdSize.LEADERBOARD.equals(adSize)) {
-            return AppLovinAdSize.LEADER;
-        }
-
-        // Assume fluid width, and check for height with offset tolerance
-        final int offset = Math.abs( BANNER_STANDARD_HEIGHT - adSize.getHeight() );
-        if (offset <= BANNER_HEIGHT_OFFSET_TOLERANCE)  {
-            return AppLovinAdSize.BANNER;
-        }
-
-        return null;
-    }
 
     //region MediationAdapter.
     @Override
@@ -411,13 +255,13 @@ public class ApplovinAdapter
     @Override
     public void onContextChanged(Context context) {
         if (context != null) {
-            log(DEBUG, "Context changed: " + context);
-            mContext = context;
+          log(DEBUG, "Context changed: " + context);
+          mContext = context;
         }
     }
 
     // Logging
-    static void log(int priority, final String message) {
+    public static void log(int priority, final String message) {
         if (LOGGING_ENABLED) {
             Log.println(priority, "AppLovinAdapter", message);
         }

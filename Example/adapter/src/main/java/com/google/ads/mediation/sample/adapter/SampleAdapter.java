@@ -20,7 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -66,8 +66,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
 
     /**
      * Example of an extra field that publishers can use for a Native ad. In this example, the
-     * String is added to a {@link Bundle} in {@link SampleNativeAppInstallAdMapper} and
-     * {@link SampleNativeContentAdMapper}.
+     * String is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper}.
      */
     public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
 
@@ -312,27 +311,16 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
             return;
         }
 
+        NativeAdOptions nativeAdOptions = mediationAdRequest.getNativeAdOptions();
+
         /**
          * Set the native ad listener and forward callbacks to mediation. The callback forwarding
          * is handled by {@link SampleNativeMediationEventForwarder}.
          */
-        loader.setNativeAdListener(new SampleNativeMediationEventForwarder(
-                listener, this, mediationAdRequest));
+        loader.setNativeAdListener(
+                new SampleNativeMediationEventForwarder(listener, this, nativeAdOptions));
+
         SampleNativeAdRequest request = new SampleNativeAdRequest();
-
-        // The Google Mobile Ads SDK requires the image assets to be downloaded automatically unless
-        // the publisher specifies otherwise by using the NativeAdOptions object's
-        // shouldReturnUrlsForImageAssets method. If your network doesn't have an option like this
-        // and instead only ever returns URLs for images (rather than the images themselves), your
-        // adapter should download image assets on behalf of the publisher. See the
-        // SampleNativeMediationEventForwarder for information on how to do so.
-        request.setShouldDownloadImages(true);
-
-        request.setShouldDownloadMultipleImages(false);
-        request.setPreferredImageOrientation(SampleNativeAdRequest.IMAGE_ORIENTATION_ANY);
-
-        NativeAdOptions nativeAdOptions = mediationAdRequest.getNativeAdOptions();
-
         if (nativeAdOptions != null) {
             // If the NativeAdOptions' shouldReturnUrlsForImageAssets is true, the adapter should
             // send just the URLs for the images.
@@ -357,19 +345,8 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
             }
         }
 
-        // Set App Install and Content Ad requests.
-        //
-        // NOTE: Care needs to be taken to make sure the adapter respects the publisher's wishes
-        // in regard to native ad formats. This sample SDK provides native ads of a single type
-        // that represent both semantic types of ads (app install and content ads), and therefore
-        // the ad request is required to request both app install and content ad formats, or the
-        // unified native ad format.
-        // If this is not the case, we call the listener's onAdFailedToLoad method with an error
-        // code of AdRequest.ERROR_CODE_INVALID_REQUEST. It should *not* request an app install ad
-        // anyway, and then attempt to map it to the content ad format.
-        if (!(mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested())
-                && !mediationAdRequest.isUnifiedNativeAdRequested()) {
+        if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
+            Log.e(TAG, "Failed to load ad. Request must be for unified native ads.");
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -407,9 +384,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
         // The sample SDK requires activity context to initialize, so check that the context
         // provided by the app is an activity context before initializing.
         if (!(context instanceof Activity)) {
-            // Context not an Activity context, log the reason for failure and fail the
-            // initialization.
-            Log.d(TAG, "Sample SDK requires an Activity context to initialize");
+            Log.e(TAG, "Sample SDK requires an Activity context to initialize");
             listener.onInitializationFailed(
                     SampleAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
@@ -417,12 +392,7 @@ public class SampleAdapter implements MediationBannerAdapter, MediationInterstit
 
         /**
          * Get the Ad Unit ID for the Sample SDK from serverParameters bundle using the pre
-         * configured keys.
-         *
-         * For custom events, there is a single parameter that can be accessed via
-         *
-         * String serverParameter = serverParameters.getString(
-         *         MediationRewardedVideoAdAdapter.CUSTOM_EVENT_SERVER_PARAMETER_FIELD);
+         * configured key.
          */
         String adUnit = serverParameters.getString(SAMPLE_AD_UNIT_KEY);
         if (TextUtils.isEmpty(adUnit)) {

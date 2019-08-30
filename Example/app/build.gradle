@@ -6,7 +6,6 @@ repositories {
 }
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.tools
 
     defaultConfig {
         applicationId "com.google.ads.mediation.sample.mediationsample"
@@ -24,9 +23,8 @@ android {
 }
 
 dependencies {
-    compile rootProject.ext.appcompatV7
-    compile rootProject.ext.playServicesAds
-    compile project(':adapter')
-    compile project(':customevent')
-    compile(name: 'du-ad-platform-release', ext: 'aar')
+    implementation rootProject.ext.appcompat
+    implementation rootProject.ext.playServicesAds
+    implementation project(':adapter')
+    implementation project(':customevent')
 }

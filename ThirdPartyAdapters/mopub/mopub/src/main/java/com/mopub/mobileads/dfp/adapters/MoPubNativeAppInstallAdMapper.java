@@ -136,19 +136,19 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
 
             switch (privacyIconPlacement) {
                 case NativeAdOptions.ADCHOICES_TOP_LEFT:
-                    params.gravity = Gravity.TOP | Gravity.LEFT;
+                    params.gravity = Gravity.TOP | Gravity.START;
                     break;
                 case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-                    params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+                    params.gravity = Gravity.BOTTOM | Gravity.END;
                     break;
                 case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-                    params.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                    params.gravity = Gravity.BOTTOM | Gravity.START;
                     break;
                 case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-                    params.gravity = Gravity.TOP | Gravity.RIGHT;
+                    params.gravity = Gravity.TOP | Gravity.END;
                     break;
                 default:
-                    params.gravity = Gravity.TOP | Gravity.RIGHT;
+                    params.gravity = Gravity.TOP | Gravity.END;
             }
             privacyInformationIconImageView.setLayoutParams(params);
             adView.requestLayout();

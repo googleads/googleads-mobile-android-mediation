@@ -14,20 +14,10 @@ class AdapterParametersParser {
             return appId;
         }
 
-        String[] getAllPlacements() {
-            return allPlacements;
-        }
-
         private String appId;
-        private String[] allPlacements;
     }
 
     public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
-        String[] placements = null;
-        if (networkExtras != null) {
-            placements = networkExtras.getStringArray(VungleExtrasBuilder.EXTRA_ALL_PLACEMENTS);
-        }
-
         String appId = serverParameters.getString("appid");
         if (appId == null || appId.isEmpty()) {
             Log.e(TAG, "Vungle app ID should be specified!");
@@ -36,7 +26,6 @@ class AdapterParametersParser {
 
         Config ret = new Config();
         ret.appId = appId;
-        ret.allPlacements = placements;
         return ret;
     }
 }

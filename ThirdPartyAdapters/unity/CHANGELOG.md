@@ -1,5 +1,31 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.2.0.0
+- Fixed an issue that caused Banner Ad requests to fail.
+- Verified compatibility with Unity Ads SDK 3.2.0.
+- Migrated the adapter to AndroidX.
+- Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
+
+## 3.1.0.0
+- Added support for flexible banner ad sizes.
+- Adapter fails the ad request if the requested size isn't compatible
+  with any Unity Ads banner sizes
+- Verified compatibility with Unity Ads SDK 3.1.0.
+
+## 3.0.1.0
+- Verified compatibility with Unity Ads SDK 3.0.1.
+- Fixed a bug that caused 'NPE' while showing an interstitial ad.
+
+## 3.0.0.2
+- Updated adapter to support new open-beta Rewarded API.
+- Updated the minimum required Google Mobile Ads SDK version to 17.2.0.
+
+## 3.0.0.1
+- Added support for Unity Ads Banner.
+
+## 3.0.0.0
+- Verified compatibility with Unity Ads SDK 3.0.0.
+
 ## 2.3.0.0
 - Verified compatibility with Unity Ads SDK 2.3.0.
 

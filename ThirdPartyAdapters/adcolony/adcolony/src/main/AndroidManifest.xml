@@ -1,1 +1,11 @@
-<manifest package="com.jirbo.adcolony"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jirbo.adcolony">
+
+    <application>
+        <activity
+            android:name="com.adcolony.sdk.AdColonyInterstitialActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false"
+            android:hardwareAccelerated="true" />
+    </application>
+</manifest>

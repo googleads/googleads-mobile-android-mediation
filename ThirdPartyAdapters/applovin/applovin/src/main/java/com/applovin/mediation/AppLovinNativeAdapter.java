@@ -31,7 +31,8 @@ public class AppLovinNativeAdapter
         }
 
         final AppLovinSdk sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-        AppLovinNativeAdListener listener = new AppLovinNativeAdListener(this, mediationNativeListener, sdk, context);
+        AppLovinNativeAdListener listener =
+                new AppLovinNativeAdListener(this, mediationNativeListener, sdk, context);
         sdk.getNativeAdService().loadNativeAds(1, listener);
     }
 

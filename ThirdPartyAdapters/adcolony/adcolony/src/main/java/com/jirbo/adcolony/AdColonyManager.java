@@ -1,16 +1,21 @@
 package com.jirbo.adcolony;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyUserMetadata;
+import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
+import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,124 +24,99 @@ import java.util.Date;
 /**
  * A helper class used by the {@link AdColonyAdapter}.
  */
-class AdColonyManager {
+public class AdColonyManager {
+    private static final String TAG = AdColonyAdapter.class.getSimpleName();
+
     private static AdColonyManager _instance = null;
-    private ArrayList<String> _configuredListOfZones;
-    private boolean _isConfigured = false;
-    boolean rewardedAdsConfigured = false;
-    private Context _context = null;
+    private ArrayList<String> configuredZones;
+    private boolean isConfigured = false;
 
     private AdColonyManager() {
-        this._configuredListOfZones = new ArrayList<>();
+        this.configuredZones = new ArrayList<>();
     }
 
-    static AdColonyManager getInstance() {
+    public static AdColonyManager getInstance() {
         if (_instance == null) {
             _instance = new AdColonyManager();
         }
         return _instance;
     }
 
-    void onDestroy() {
-        _context = null;
+    private boolean configureAdColony(Context context,
+                                      AdColonyAppOptions options,
+                                      String appID,
+                                      ArrayList<String> zones) {
+
+        if (!(context instanceof Activity || context instanceof Application)) {
+            Log.w(TAG, "Context must be of type Activity or Application.");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(appID)) {
+            Log.w(TAG, "A valid appId wasn't provided.");
+            return false;
+        }
+
+        if (zones == null || zones.isEmpty()) {
+            Log.w(TAG, "No zones provided to request ad.");
+            return false;
+        }
+
+        // Check to see if the stored list of zones is missing any values.
+        for (String zone : zones) {
+            if (!configuredZones.contains(zone)) {
+                // Not contained in our list.
+                configuredZones.add(zone);
+                isConfigured = false;
+            }
+        }
+        if (isConfigured) {
+            AdColony.setAppOptions(options);
+        } else {
+            // We are requesting zones that we haven't configured with yet.
+            String[] zoneArray = configuredZones.toArray(new String[0]);
+
+            // Always set mediation network info.
+            options.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
+            isConfigured = context instanceof Activity
+                    ? AdColony.configure((Activity) context, options, appID, zoneArray)
+                    : AdColony.configure((Application) context, options, appID, zoneArray);
+        }
+        return isConfigured;
     }
 
     boolean configureAdColony(Context context,
                               Bundle serverParams,
                               MediationAdRequest adRequest,
                               Bundle networkExtras) {
-        String appId = serverParams.getString("app_id");
+        String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
         ArrayList<String> newZoneList = parseZoneList(serverParams);
-        boolean needToConfigure = false;
+        AdColonyAppOptions appOptions = buildAppOptions(adRequest);
+        return configureAdColony(context, appOptions, appId, newZoneList);
+    }
 
-        if (context != null) {
-            _context = context; // Update the context if its non-null.
-        }
-
-        if (_context != null && !(_context instanceof Activity)) {
-            Log.w("AdColonyAdapter", "Context must be of type Activity.");
-            return false;
-        }
-
-        if (appId == null) {
-            Log.w("AdColonyAdapter", "A valid appId wasn't provided.");
-            return false;
-        }
-
-        if (newZoneList == null || newZoneList.isEmpty()) {
-            Log.w("AdColonyAdapter", "No zones provided to request ad.");
-            return false;
-        }
-
-        // Check to see if the stored list of zones is missing any values.
-        for (String zone : newZoneList) {
-            if (!_configuredListOfZones.contains(zone)) {
-                // Not contained in our list.
-                _configuredListOfZones.add(zone);
-                needToConfigure = true;
-            }
-        }
-
-        // Update app-options if necessary.
-        AdColonyAppOptions appOptions = buildAppOptions(adRequest, networkExtras);
-
-        // We are requesting zones that we haven't configured with yet.
-        if (_isConfigured && !needToConfigure) {
-            if (appOptions != null) {
-                // Always set the appOptions if non-null.
-                AdColony.setAppOptions(appOptions);
-            }
-        } else {
-            // Convert _configuredListOfZones into array.
-            String[] zones =
-                    _configuredListOfZones.toArray(new String[_configuredListOfZones.size()]);
-
-            // Instantiate app options if null so that we can always send mediation network info.
-            if (appOptions == null) {
-                appOptions = new AdColonyAppOptions();
-            }
-
-            // Always set mediation network info.
-            appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
-            _isConfigured = AdColony.configure((Activity) _context, appOptions, appId, zones);
-        }
-        return _isConfigured;
+    public boolean configureAdColony(MediationRewardedAdConfiguration adConfiguration) {
+        Context context = adConfiguration.getContext();
+        Bundle serverParams = adConfiguration.getServerParameters();
+        String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
+        ArrayList<String> newZoneList = parseZoneList(serverParams);
+        AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
+        return configureAdColony(context, appOptions, appId, newZoneList);
     }
 
     /**
      * Places user_id, age, location, and gender into AdColonyAppOptions.
      *
-     * @param adRequest     request received from AdMob.
-     * @param networkExtras possible network parameters sent from AdMob.
-     * @return a valid AppOptions object or null if nothing valid was passed from AdMob.
+     * @param adRequest request received from AdMob.
+     * @return a valid AppOptions object.
      */
-    private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest,
-                                               Bundle networkExtras) {
-        AdColonyAppOptions options = new AdColonyAppOptions();
-        boolean updatedOptions = false;
-
-        if (networkExtras != null) {
-            String userId = networkExtras.getString("user_id");
-            String gdprConsentString = networkExtras.getString("gdpr_consent_string");
-            if (userId != null) {
-                options.setUserID(userId);
-                updatedOptions = true;
-            }
-            if (gdprConsentString != null) {
-                options.setGDPRConsentString(gdprConsentString);
-                updatedOptions = true;
-            }
-            if (networkExtras.containsKey("gdpr_required")) {
-                options.setGDPRRequired(networkExtras.getBoolean("gdpr_required"));
-                updatedOptions = true;
-            }
-        }
+    private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest) {
+        AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
         if (adRequest != null) {
             // Enable test ads from AdColony when a Test Ad Request was sent.
             if (adRequest.isTesting()) {
                 options.setTestModeEnabled(true);
-                updatedOptions = true;
             }
 
             AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
@@ -144,17 +124,14 @@ class AdColonyManager {
             // Try to update userMetaData with gender field.
             int genderVal = adRequest.getGender();
             if (genderVal == AdRequest.GENDER_FEMALE) {
-                updatedOptions = true;
                 userMetadata.setUserGender(AdColonyUserMetadata.USER_FEMALE);
             } else if (genderVal == AdRequest.GENDER_MALE) {
-                updatedOptions = true;
                 userMetadata.setUserGender(AdColonyUserMetadata.USER_MALE);
             }
 
             // Try to update userMetaData with location (if provided).
             Location location = adRequest.getLocation();
             if (location != null) {
-                updatedOptions = true;
                 userMetadata.setUserLocation(location);
             }
 
@@ -167,23 +144,49 @@ class AdColonyManager {
                 if (diff > 0) {
                     long day = (1000 * 60 * 60 * 24);
                     long yearsPassed = diff / day / 365;
-                    updatedOptions = true;
                     userMetadata.setUserAge((int) yearsPassed);
                 }
             }
             options.setUserMetadata(userMetadata);
         }
-        if (updatedOptions) {
-            return options;
-        } else {
-            return null;
-        }
+        return options;
     }
 
-    ArrayList<String> parseZoneList(Bundle serverParams) {
+    /**
+     * Places user_id, age, location, and gender into AdColonyAppOptions.
+     *
+     * @param adConfiguration rewarded ad configuration received from AdMob.
+     * @return a valid AppOptions object.
+     */
+    private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
+        AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
+
+        // Enable test ads from AdColony when a Test Ad Request was sent.
+        if (adConfiguration.isTestRequest()) {
+            options.setTestModeEnabled(true);
+        }
+
+        AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
+
+        // Try to update userMetaData with location (if provided).
+        Location location = adConfiguration.getLocation();
+        if (location != null) {
+            userMetadata.setUserLocation(location);
+        }
+
+        options.setUserMetadata(userMetadata);
+        return options;
+    }
+
+    public ArrayList<String> parseZoneList(Bundle serverParams) {
         ArrayList<String> newZoneList = null;
         if (serverParams != null) {
-            String requestedZones = serverParams.getString("zone_ids");
+            String requestedZones = null;
+            if (serverParams.getString(AdColonyAdapterUtils.KEY_ZONE_IDS) != null) {
+                requestedZones = serverParams.getString(AdColonyAdapterUtils.KEY_ZONE_IDS);
+            } else {
+                requestedZones = serverParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
+            }
             if (requestedZones != null) {
                 newZoneList = new ArrayList<>(Arrays.asList(requestedZones.split(";")));
             }
@@ -191,13 +194,13 @@ class AdColonyManager {
         return newZoneList;
     }
 
-    String getZoneFromRequest(ArrayList<String> serverListOfZones, Bundle adRequestParams) {
+    public String getZoneFromRequest(ArrayList<String> serverListOfZones, Bundle adRequestParams) {
         String requestedZone = null;
         if (serverListOfZones != null && !serverListOfZones.isEmpty()) {
             requestedZone = serverListOfZones.get(0);
         }
-        if (adRequestParams != null && adRequestParams.getString("zone_id") != null) {
-            requestedZone = adRequestParams.getString("zone_id");
+        if (adRequestParams != null && adRequestParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID) != null) {
+            requestedZone = adRequestParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
         }
         return requestedZone;
     }

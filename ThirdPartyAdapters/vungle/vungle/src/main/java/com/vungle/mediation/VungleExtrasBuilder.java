@@ -1,11 +1,10 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.Size;
 
 import com.vungle.warren.AdConfig;
-import com.vungle.warren.Vungle;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
@@ -13,7 +12,7 @@ import com.vungle.warren.Vungle;
  */
 public final class VungleExtrasBuilder {
 
-    static final String EXTRA_USER_ID = "userId";
+    public static final String EXTRA_USER_ID = "userId";
     private static final String EXTRA_SOUND_ENABLED = "soundEnabled";
     private static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
     private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
@@ -22,11 +21,11 @@ public final class VungleExtrasBuilder {
 
     private final Bundle mBundle = new Bundle();
 
-    public VungleExtrasBuilder(@NonNull @Size(min = 1L) String[] placements) {
+    public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
         mBundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
     }
 
-    public VungleExtrasBuilder setPlayingPlacement(@NonNull String placement) {
+    public VungleExtrasBuilder setPlayingPlacement(String placement) {
         mBundle.putString(EXTRA_PLAY_PLACEMENT, placement);
         return this;
     }
@@ -55,7 +54,7 @@ public final class VungleExtrasBuilder {
         return mBundle;
     }
 
-    static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
+    public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
         AdConfig adConfig = new AdConfig();
         if (networkExtras != null) {
             adConfig.setMuted(!networkExtras.getBoolean(EXTRA_SOUND_ENABLED, true));
