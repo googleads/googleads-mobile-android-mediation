@@ -1,4 +1,4 @@
-## Facebook Adapter for Google Mobile Ads SDK for Android Changelog
+## Facebook Android Mediation Adapter Changelog
 
 #### 5.5.0.0
 - Verified compatibility with Facebook SDK v5.5.0.
