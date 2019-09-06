@@ -2,7 +2,7 @@ package com.vungle.mediation;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
