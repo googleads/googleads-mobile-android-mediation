@@ -2,9 +2,11 @@ package com.google.ads.mediation.facebook.rtb;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.ExtraHints;
 import  com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdExtendedListener;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
@@ -38,6 +40,10 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
         }
         interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementId);
         interstitialAd.setAdListener(this);
+        if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+            interstitialAd.setExtraHints(new ExtraHints.Builder()
+                    .mediationData(adConfiguration.getWatermark()).build());
+        }
         interstitialAd.loadAdFromBid(adConfiguration.getBidResponse());
     }
 
