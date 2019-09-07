@@ -29,7 +29,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.google.android.gms.ads.mediation.OnContextChangedListener;
 
 import com.unity3d.ads.UnityAds;
 
@@ -42,7 +41,7 @@ import java.util.ArrayList;
  */
 @Keep
 public class UnityAdapter extends UnityMediationAdapter
-        implements MediationInterstitialAdapter, MediationBannerAdapter, OnContextChangedListener {
+        implements MediationInterstitialAdapter, MediationBannerAdapter {
 
     /**
      * Mediation interstitial listener used to forward events from {@link UnitySingleton} to
@@ -69,7 +68,12 @@ public class UnityAdapter extends UnityMediationAdapter
      * Callback object for Google's Banner Lifecycle.
      */
     private MediationBannerListener bannerListener;
-    
+
+    /**
+     * An Android {@link Activity} weak reference used to show ads.
+     */
+    private WeakReference<Activity> mActivityWeakReference;
+
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
@@ -218,27 +222,6 @@ public class UnityAdapter extends UnityMediationAdapter
         return true;
     }
 
-    /**
-     * Unity Ads requires an Activity context to Initialize. This method will return false if
-     * the context provided is either null or is not an Activity context.
-     *
-     * @param context to be checked if it is valid.
-     * @return {@code true} if the context provided is valid, {@code false} otherwise.
-     */
-    private static boolean isValidContext(Context context) {
-        if (context == null) {
-            Log.w(TAG, "Context cannot be null.");
-            return false;
-        }
-
-        if (!(context instanceof Activity)) {
-            Log.w(TAG, "Context is not an Activity. Unity Ads requires an Activity context to load "
-                    + "ads.");
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public void requestInterstitialAd(Context context,
                                       MediationInterstitialListener mediationInterstitialListener,
@@ -257,24 +240,21 @@ public class UnityAdapter extends UnityMediationAdapter
             return;
         }
 
-        if (!isValidContext(context)) {
+        if (context == null || !(context instanceof Activity)) {
+            Log.e(TAG, "Context is not an Activity. Unity Ads requires an Activity context to load "
+                    + "ads.");
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
         }
-        // Storing a weak reference to the Activity.
-        mActivityWeakReference = new WeakReference<>((Activity) context);
+        Activity activity = (Activity) context;
+        mActivityWeakReference = new WeakReference<>(activity);
 
-        // Check if the Unity Ads initialized successfully.
-        if (UnityAds.isInitialized()) {
-            // Unity Ads initialized successfully, request UnitySingleton to load an ad.
-            UnitySingleton.loadAd(mUnityAdapterDelegate);
-        } else {
-            UnitySingleton.initializeUnityAds(mUnityAdapterDelegate,
-                    (Activity) context, gameId, mPlacementId);
-        }
+        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
+        UnitySingleton.getInstance().loadAd(mUnityAdapterDelegate);
+
     }
 
     @Override
@@ -285,7 +265,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
             // Request UnitySingleton to show interstitial ads.
-            UnitySingleton.showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+            UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
@@ -330,24 +310,21 @@ public class UnityAdapter extends UnityMediationAdapter
             return;
         }
 
-        if (!isValidContext(context)) {
+        if (context == null || !(context instanceof Activity)) {
+            Log.e(TAG, "Context is not an Activity. Unity Ads requires an Activity context to load "
+                    + "ads.");
             if (bannerListener != null) {
                 bannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
         }
+        Activity activity = (Activity) context;
 
         // Even though we are a banner request, we still need to initialize UnityAds.
-        // Check if the Unity Ads initialized successfully.
-        if (UnityAds.isInitialized()) {
-            // Storing a weak reference to the Activity.
-            mActivityWeakReference = new WeakReference<>((Activity) context);
-            UnitySingleton.loadBannerAd(bannerDelegate);
-        } else {
-            UnitySingleton.initializeUnityAds(mUnityAdapterDelegate, (Activity) context,
-                    gameId, bannerPlacementId, bannerDelegate);
-        }
+        UnitySingleton.getInstance().initializeUnityAds(mUnityAdapterDelegate, activity,
+                gameId, bannerPlacementId, bannerDelegate);
+        UnitySingleton.getInstance().loadBannerAd(activity, bannerDelegate);
     }
 
     @Override
@@ -371,21 +348,21 @@ public class UnityAdapter extends UnityMediationAdapter
      * Returns null if none are within given threshold size range.
      */
     public static AdSize findClosestSize(
-          Context context, AdSize original, ArrayList<AdSize> potentials) {
-       if (potentials == null || original == null) {
-           return null;
-       }
-       float density = context.getResources().getDisplayMetrics().density;
-       int actualWidth = Math.round(original.getWidthInPixels(context)/density);
-       int actualHeight = Math.round(original.getHeightInPixels(context)/density);
-       original = new AdSize(actualWidth, actualHeight);
+            Context context, AdSize original, ArrayList<AdSize> potentials) {
+        if (potentials == null || original == null) {
+            return null;
+        }
+        float density = context.getResources().getDisplayMetrics().density;
+        int actualWidth = Math.round(original.getWidthInPixels(context)/density);
+        int actualHeight = Math.round(original.getHeightInPixels(context)/density);
+        original = new AdSize(actualWidth, actualHeight);
         AdSize largestPotential = null;
         for (AdSize potential : potentials) {
             if (isSizeInRange(original, potential)) {
                 if (largestPotential == null) {
-                  largestPotential = potential;
+                    largestPotential = potential;
                 } else {
-                  largestPotential = getLargerByArea(largestPotential, potential);
+                    largestPotential = getLargerByArea(largestPotential, potential);
                 }
             }
         }
@@ -394,7 +371,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
     private static boolean isSizeInRange(AdSize original, AdSize potential) {
         if (potential == null) {
-          return false;
+            return false;
         }
 
         double minWidthRatio = 0.5;
@@ -406,12 +383,12 @@ public class UnityAdapter extends UnityMediationAdapter
         int potentialHeight = potential.getHeight();
 
         if (originalWidth * minWidthRatio > potentialWidth ||
-            originalWidth < potentialWidth) {
+                originalWidth < potentialWidth) {
             return false;
         }
 
         if (originalHeight * minHeightRatio > potentialHeight ||
-            originalHeight < potentialHeight) {
+                originalHeight < potentialHeight) {
             return false;
         }
 
@@ -419,9 +396,9 @@ public class UnityAdapter extends UnityMediationAdapter
     }
 
     private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-      int area1 = size1.getWidth() * size1.getHeight();
-      int area2 = size2.getWidth() * size2.getHeight();
-      return area1 > area2 ? size1 : size2;
+        int area1 = size1.getWidth() * size1.getHeight();
+        int area2 = size2.getWidth() * size2.getHeight();
+        return area1 > area2 ? size1 : size2;
     }
     // End code to remove when available in SDK
 }
