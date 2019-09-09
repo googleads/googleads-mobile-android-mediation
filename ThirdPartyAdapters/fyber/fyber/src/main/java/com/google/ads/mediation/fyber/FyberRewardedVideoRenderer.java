@@ -35,11 +35,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     /** AdMob's callback object */
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
 
-    // Definitions
     // TODO: Can we somehow separate AdMob from DFP?
     private final static InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
-    // Members
     /**
      * The Spot object for the banner
      */
@@ -99,7 +97,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
 
                 // Report load success to AdMob, and cache the returned callback for a later use
                 MediationRewardedAdCallback interstitialAdCallback = mAdLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
-                createFyberAdListener(mUnitController, interstitialAdCallback);
+                mAdListener = createFyberAdListener(mUnitController, interstitialAdCallback);
             }
 
             @Override
@@ -110,8 +108,14 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         });
     }
 
-    private void createFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
-        mAdListener = new InneractiveFullscreenAdEventsListenerAdapter() {
+    /**
+     * Creates a listener for Fyber's fullscreen placement events
+     * @param controller the full screen controller
+     * @param callback Google's rewarded ad callback
+     * @return the created events listener
+     */
+    private InneractiveFullscreenAdEventsListenerAdapter createFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
+        InneractiveFullscreenAdEventsListenerAdapter adListener = new InneractiveFullscreenAdEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
                 callback.reportAdImpression();
@@ -150,6 +154,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
 
         controller.addContentController(videoContentController);
         controller.setEventsListener(mAdListener);
+
+        return adListener;
     }
 
     @Override

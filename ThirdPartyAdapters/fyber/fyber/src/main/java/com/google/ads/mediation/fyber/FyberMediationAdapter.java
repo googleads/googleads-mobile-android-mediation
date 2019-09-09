@@ -260,8 +260,12 @@ public class FyberMediationAdapter extends Adapter
         // Prepare wrapper view before making request
         mBannerWrapperView = new RelativeLayout(context);
 
-        createFyberBannerAdListener();
-        mBannerSpot.requestAd(request);
+        InneractiveAdSpot.RequestListener requestListener = createFyberBannerAdListener(mBannerSpot, mMediationBannerListener);
+        if (requestListener != null) {
+            mBannerSpot.requestAd(request);
+        } else {
+            mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
     }
 
     @Override
@@ -289,15 +293,20 @@ public class FyberMediationAdapter extends Adapter
 
     /**
      * Creates Fyber's banner ad request listener
+     * @param adSpot the Fyber's spot which makes the request
+     * @param mediationBannerListener Google's mediation banner listener
+     * @return the created request listener
      */
-    private void createFyberBannerAdListener() {
-        mBannerSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
+    private InneractiveAdSpot.RequestListener createFyberBannerAdListener(InneractiveAdSpot adSpot, final MediationBannerListener mediationBannerListener) {
+        InneractiveAdSpot.RequestListener requestListener = new InneractiveAdSpot.RequestListener() {
             @Override
             public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot inneractiveAdSpot) {
-                if(createFyberAdViewListener()) {
-                    mMediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
+                InneractiveAdViewEventsListener listener = createFyberAdViewListener(inneractiveAdSpot, mediationBannerListener);
+
+                if (listener != null) {
+                    mediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
                 } else {
-                    mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
 
@@ -314,17 +323,22 @@ public class FyberMediationAdapter extends Adapter
 
                 mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, adMobErrorCode);
             }
-        });
+        };
+
+        adSpot.setRequestListener(requestListener);
+        return requestListener;
     }
 
     /**
      * When an ad is fetched successfully, creates a listener for Fyber's AdView events
+     * @param adSpot Fyber's ad view spot
+     * @param mediationBannerListener Google's mediation banner listener
      * @return true if created succesfully, false otherwise
      */
-    private boolean createFyberAdViewListener() {
+    private InneractiveAdViewEventsListener createFyberAdViewListener(InneractiveAdSpot adSpot, MediationBannerListener mediationBannerListener) {
         // Just a double check that we have the right time of selected controller
-        if (mBannerSpot == null || false == (mBannerSpot.getSelectedUnitController() instanceof InneractiveAdViewUnitController)) {
-            return false;
+        if (adSpot == null || false == (adSpot.getSelectedUnitController() instanceof InneractiveAdViewUnitController)) {
+            return null;
         }
 
         InneractiveAdViewUnitController controller = (InneractiveAdViewUnitController)mBannerSpot.getSelectedUnitController();
@@ -356,7 +370,7 @@ public class FyberMediationAdapter extends Adapter
 
         controller.setEventsListener(adViewListener);
 
-        return true;
+        return adViewListener;
     }
 
     /** MediationInterstitialAdapter implementation */
