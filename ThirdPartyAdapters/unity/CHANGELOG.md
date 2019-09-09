@@ -1,5 +1,10 @@
 # Unity Ads Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 3.2.0.1
+- Fixed a null pointer exception crash that occurred when calling `loadAd()`
+  before calling `UnityAds.initialize()`.
+- Updated the minimum required Google Mobile Ads SDK version to 18.2.0.
+
 ## 3.2.0.0
 - Fixed an issue that caused Banner Ad requests to fail.
 - Verified compatibility with Unity Ads SDK 3.2.0.
