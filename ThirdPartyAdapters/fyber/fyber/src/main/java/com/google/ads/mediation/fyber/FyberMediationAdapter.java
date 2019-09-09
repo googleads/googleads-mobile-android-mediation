@@ -58,7 +58,6 @@ import java.util.List;
  */
 public class FyberMediationAdapter extends Adapter
         implements MediationBannerAdapter, MediationInterstitialAdapter {
-    // Definitions
     /**
      * Adapter class name for logging.
      */
@@ -78,11 +77,10 @@ public class FyberMediationAdapter extends Adapter
      */
     static final String KEY_SPOT_ID = "spotId";
 
-    // Members
-    /** Call initialize only once. Sometimes Adapter.initialize is not called. So also try to initialize the Fyber SDK from the requests */
+    /**
+     * Call initialize only once. Sometimes Adapter.initialize is not called. So also try to initialize the Fyber SDK from the requests
+     */
     private boolean mInitializedCalled = false;
-
-    // Banner related members
 
     /**
      * Admob's external banner listener
@@ -110,8 +108,10 @@ public class FyberMediationAdapter extends Adapter
      */
     InneractiveAdSpot mInterstitialSpot;
 
+    /**
+     * Default C'tor
+     */
     public FyberMediationAdapter() {
-        Log.d(TAG, "FyberMediationAdapter ctor");
     }
 
     /**
@@ -120,7 +120,7 @@ public class FyberMediationAdapter extends Adapter
      * @param callback
      */
     public void loadBannerAd(MediationBannerAdConfiguration configuration, MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        callback.onFailure(String.valueOf(this.getClass().getSimpleName()).concat(" does not support MediationBannerAd"));
+        callback.onFailure(String.format("%s does not support MediationBannerAd", getClass().getSimpleName()));
     }
 
     /**
@@ -129,7 +129,16 @@ public class FyberMediationAdapter extends Adapter
      * @param callback
      */
     public void loadInterstitialAd(MediationInterstitialAdConfiguration configuration, MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-        callback.onFailure(String.valueOf(this.getClass().getSimpleName()).concat(" does not support MediationInterstitialAd"));
+        callback.onFailure(String.format("%s does not support MediationInterstitialAd", getClass().getSimpleName()));
+    }
+
+    /**
+     * Native ads mediaqtion is not supported by the FyberMediationAdapter
+     * @param var1
+     * @param callback
+     */
+    public void loadNativeAd(MediationNativeAdConfiguration var1, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+        callback.onFailure(String.format("%s does not support native ads", getClass().getSimpleName()));
     }
 
     /**
@@ -145,26 +154,19 @@ public class FyberMediationAdapter extends Adapter
         rewardedVideoRenderer.render();
     }
 
-    /**
-     * Native ads mediaqtion is not supported by the FyberMediationAdapter
-     * @param var1
-     * @param callback
-     */
-    public void loadNativeAd(MediationNativeAdConfiguration var1, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-        Log.d(TAG, "loadNativeAd called");
-        callback.onFailure(String.valueOf(this.getClass().getSimpleName()).concat(" does not support native ads."));
-    }
-
     @Override
     public void initialize(Context context, final InitializationCompleteCallback completionCallback, List<MediationConfiguration> mediationConfigurations) {
-
-        Log.d(TAG, "FyberMediationAdapter initialize called with: " + mediationConfigurations);
-
         String appId = null;
 
         // Get AppId from configuration
         for (MediationConfiguration configuration : mediationConfigurations) {
             Bundle serverParameters = configuration.getServerParameters();
+
+            // check for null
+            if (serverParameters == null) {
+                continue;
+            }
+
             appId = serverParameters.getString(KEY_APP_ID);
 
             // Found an app id in server params
@@ -191,7 +193,6 @@ public class FyberMediationAdapter extends Adapter
                             completionCallback.onInitializationSucceeded();
                         } else {
                             completionCallback.onInitializationFailed("Fyber SDK initialization failed");
-                            Log.d(TAG, "reporting initialization failed");
                         }
                     }
 
@@ -237,7 +238,6 @@ public class FyberMediationAdapter extends Adapter
     @Override
     public void requestBannerAd(final Context context, final MediationBannerListener mediationBannerListener, Bundle bundle, AdSize adSize,
                                 MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
-        Log.d(TAG, "requestBannerAd called with bundle: " + bundle);
         initializeFromBundle(context, bundle);
 
         // Check that we got a valid spot id from the server

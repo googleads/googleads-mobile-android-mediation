@@ -25,13 +25,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
 /**
- * Class for rendering a Fyber Marketplace banner
+ * Class for rendering a Fyber Marketplace rewarded video
  */
 public class FyberRewardedVideoRenderer implements MediationRewardedAd {
-    // Definitions
     private final static String TAG = FyberRewardedVideoRenderer.class.getSimpleName();;
 
-    // Members
     /** AdMob's Interstitial ad configuration object */
     MediationRewardedAdConfiguration mAdConfiguration;
     /** AdMob's callback object */
@@ -69,8 +67,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     }
 
     public void render() {
-        Log.d(TAG, "render start");
-
         // Check that we got a valid spot id from the server
         String spotId = mAdConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
@@ -149,8 +145,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             public void onCompleted() {
                 callback.onVideoComplete();
                 userEarnedReward(callback);
-
-                Log.d(InneractiveMediationDefs.IA_LOG_FOR_ADMOB_INTERSTITIAL, "Interstitial: Got video content completed event");
             }
         });
 
