@@ -1,7 +1,6 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.vungle.warren.AdConfig;
@@ -11,6 +10,8 @@ import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleNativeAd;
 
 import java.util.concurrent.ConcurrentHashMap;
+
+import androidx.annotation.Nullable;
 
 /**
  * A helper class to load and show Vungle ads and keep track of multiple
@@ -137,7 +138,11 @@ public class VungleManager {
         }
         Log.d(TAG, "removeActiveBanner");
         VungleNativeAd activeBannerAd = activeBannerAds.get(placementId);
-        // must make sure that will be removed active banner ad is what you want.
+        //because onDestroy from an instance of VungleInterstitialAdapter could be called
+        //before or after the subsequent requestBanner for another VungleInterstitialAdapter instance
+        //we need to ensure that the Banner ad we are removing is the same as one we intended to remove from
+        //specific VungleInterstitialAdapter instance. Without this check as we only use placementId
+        // to remove Banner instance we could end up removing instance that should actually be currently playing
         if (activeBannerAd == willRemoveBannerAd) {
             Log.d(TAG, "removeActiveBanner # deal");
             activeBannerAds.remove(placementId);
