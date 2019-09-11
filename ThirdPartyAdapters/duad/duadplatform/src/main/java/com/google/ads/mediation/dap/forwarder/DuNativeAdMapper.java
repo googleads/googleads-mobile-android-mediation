@@ -11,19 +11,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.widget.ImageView;
 
+import com.duapps.ad.DuMediaVIew;
 import com.duapps.ad.DuNativeAd;
 import com.google.ads.mediation.dap.DuAdMediation;
 import com.google.ads.mediation.dap.DuNativeAdAdapter;
-import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +38,7 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
     private NativeAdMapperListener mNativeAdMapperListener;
 
     private static final int DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
+    private DuMediaVIew mDuMediaView;
 
     public DuNativeAdMapper(Context context, DuNativeAd nativeAd, NativeAdOptions nativeAdOptions) {
         mContext = context;
@@ -55,10 +53,6 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
         setCallToAction(mNativeAd.getCallToAction());
         setStarRating(mNativeAd.getRatings());
         setIcon(new DuNativeMappedImage(Uri.parse(mNativeAd.getIconUrl())));
-        List<NativeAd.Image> imageList = new ArrayList<>();
-
-        imageList.add(new DuNativeMappedImage(Uri.parse(mNativeAd.getImageUrl())));
-        setImages(imageList);
 
         Bundle extras = new Bundle();
         extras.putString(DuNativeAdAdapter.KEY_SOURCE, mNativeAd.getSource());
@@ -72,13 +66,18 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             urlsOnly = mNativeAdOptions.shouldReturnUrlsForImageAssets();
         }
 
-        new DownloadDrawablesAsync(mContext, mNativeAdMapperListener, urlsOnly)
+        mDuMediaView = new DuMediaVIew(mContext);
+        if (!urlsOnly) {
+            setMediaView(mDuMediaView);
+        }
+
+        new DownloadDrawablesAsync(mNativeAdMapperListener)
                 .execute(DuNativeAdMapper.this);
     }
 
     @Override
     public void trackView(View view) {
-        mNativeAd.registerViewForInteraction(view);
+        mNativeAd.registerViewForInteraction(view, mDuMediaView);
     }
 
     @Override
@@ -92,16 +91,10 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
     }
 
     private static class DownloadDrawablesAsync extends AsyncTask<Object, Void, Boolean> {
-        private final Context mContext;
         private NativeAdMapperListener mDrawableListener;
-        private boolean mUrlsOnly;
 
-        public DownloadDrawablesAsync(Context context,
-                                      NativeAdMapperListener listener,
-                                      boolean urlsOnly) {
-            this.mContext = context;
+        public DownloadDrawablesAsync(NativeAdMapperListener listener) {
             this.mDrawableListener = listener;
-            this.mUrlsOnly = urlsOnly;
         }
 
         @Override
@@ -109,30 +102,11 @@ public class DuNativeAdMapper extends NativeAppInstallAdMapper {
             DuNativeAdMapper mapper = (DuNativeAdMapper) params[0];
             ExecutorService executorService = Executors.newCachedThreadPool();
 
-            // Download ad image
-            DuNativeMappedImage image = (DuNativeMappedImage) mapper.getImages().get(0);
-            Uri uri = image.getUri();
-            Future<Drawable> drawableFuture = getDrawableFuture(uri, executorService);
-            Drawable drawable = null;
-            DuAdMediation.debugLog(TAG, "start to download ad image: " + uri);
-            try {
-                drawable = drawableFuture.get(DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-                return false;
-            }
-
-            image.setDrawable(drawable);
-            if (!mUrlsOnly) {
-                ImageView imageView = new ImageView(mContext);
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setImageDrawable(drawable);
-                mapper.setMediaView(imageView);
-            }
-
             // Download icon image
             DuNativeMappedImage iconImage = (DuNativeMappedImage) mapper.getIcon();
-            uri = iconImage.getUri();
-            drawableFuture = getDrawableFuture(uri, executorService);
+            Uri uri = iconImage.getUri();
+            Future<Drawable> drawableFuture = getDrawableFuture(uri, executorService);
+            Drawable drawable = null;
             DuAdMediation.debugLog(TAG, "start to download icon image: " + uri);
             try {
                 drawable = drawableFuture.get(DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
