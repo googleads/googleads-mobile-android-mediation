@@ -164,9 +164,9 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         pendingRequestBanner.set(false);
         if (vungleNativeAd != null) {
             vungleNativeAd.finishDisplayingAd();
-            mVungleManager.removeActiveBanner(mPlacementForPlay);
+            mVungleManager.removeActiveBanner(mPlacementForPlay, vungleNativeAd);
+            vungleNativeAd = null;
         }
-        vungleNativeAd = null;
         adLayout = null;
     }
 
@@ -285,7 +285,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter, 
         if (mVungleManager == null || !pendingRequestBanner.get())
             return;
 
-        mVungleManager.cleanUpBanner(mPlacementForPlay);
         vungleNativeAd = mVungleManager.getVungleNativeAd(mPlacementForPlay, adConfig, new VungleListener() {
             @Override
             void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {

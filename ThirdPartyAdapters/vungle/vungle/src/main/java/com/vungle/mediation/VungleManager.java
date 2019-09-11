@@ -120,11 +120,9 @@ public class VungleManager {
     }
 
     VungleNativeAd getVungleNativeAd(String placement, AdConfig adConfig, VungleListener vungleListener) {
-        Log.d(TAG, "getVungleNativeAd");
-
         cleanUpBanner(placement);
         //Fetch new ad
-
+        Log.d(TAG, "getVungleNativeAd");
         VungleNativeAd bannerAd = Vungle.getNativeAd(placement, adConfig, playAdCallback(vungleListener));
         if (bannerAd != null) {
             activeBannerAds.put(placement, bannerAd);
@@ -133,11 +131,17 @@ public class VungleManager {
         return bannerAd;
     }
 
-    void removeActiveBanner(String placementId) {
+    void removeActiveBanner(String placementId, VungleNativeAd willRemoveBannerAd) {
         if (placementId == null) {
             return;
         }
-        activeBannerAds.remove(placementId);
+        Log.d(TAG, "removeActiveBanner");
+        VungleNativeAd activeBannerAd = activeBannerAds.get(placementId);
+        // must make sure that will be removed active banner ad is what you want.
+        if (activeBannerAd == willRemoveBannerAd) {
+            Log.d(TAG, "removeActiveBanner # deal");
+            activeBannerAds.remove(placementId);
+        }
     }
 
     /**
@@ -153,7 +157,7 @@ public class VungleManager {
             //We should do Report ad
             Log.d(TAG, "cleanUpBanner # finishDisplayingAd");
             vungleNativeAd.finishDisplayingAd();
-            removeActiveBanner(placementId);
+            removeActiveBanner(placementId, vungleNativeAd);
         }
     }
 }
