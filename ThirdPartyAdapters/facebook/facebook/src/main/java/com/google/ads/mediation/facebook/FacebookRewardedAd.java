@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -63,6 +64,10 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
         if (isRtbAd) {
             rewardedAd = new RewardedVideoAd(context, placementID);
             rewardedAd.setAdListener(this);
+            if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+                rewardedAd.setExtraHints(new ExtraHints.Builder()
+                        .mediationData(adConfiguration.getWatermark()).build());
+            }
             rewardedAd.loadAdFromBid(decodedBid);
         } else {
             FacebookInitializer.getInstance().initialize(context, placementID,

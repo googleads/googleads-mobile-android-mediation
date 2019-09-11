@@ -15,6 +15,7 @@ import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
+import com.facebook.ads.ExtraHints;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
@@ -62,6 +63,10 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         mMediaView = new MediaView(adConfiguration.getContext());
         mNativeAd = new NativeAd(adConfiguration.getContext(), placementId);
         mNativeAd.setAdListener(new NativeListener(mNativeAd));
+        if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+            mNativeAd.setExtraHints(new ExtraHints.Builder()
+                    .mediationData(adConfiguration.getWatermark()).build());
+        }
         mNativeAd.loadAdFromBid(adConfiguration.getBidResponse());
     }
 

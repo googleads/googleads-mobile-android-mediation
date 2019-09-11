@@ -2,12 +2,15 @@ package com.google.ads.mediation.facebook.rtb;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import android.text.TextUtils;
 import android.view.View;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdView;
+import com.facebook.ads.ExtraHints;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -38,6 +41,10 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
         try {
             adView = new AdView(adConfiguration.getContext(), placementId, adConfiguration.getBidResponse());
             adView.setAdListener(this);
+            if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+                adView.setExtraHints(new ExtraHints.Builder()
+                        .mediationData(adConfiguration.getWatermark()).build());
+            }
             adView.loadAdFromBid(adConfiguration.getBidResponse());
         } catch (Exception e) {
             callback.onFailure("FacebookRtbBannerAd Failed to load: " + e.getMessage());
