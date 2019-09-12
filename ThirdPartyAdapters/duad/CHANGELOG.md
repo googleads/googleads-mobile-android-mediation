@@ -1,5 +1,10 @@
 # Du Ad Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 1.2.8.3.0
+- Verified compatibility with DuAd SDK 1.2.8.3 and DuAd Video Ads SDK 1.2.8.3.
+- Migrated adapter to `AndroidX`.
+- Updated the minimum required Google Mobile Ads SDK version to 18.2.0.
+
 ## 1.2.7.3.0
 - Verified compatibility with DuAd SDK 1.2.7.3 and DuAd Video Ads SDK 1.1.0.
 
