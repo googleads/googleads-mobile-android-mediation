@@ -1,9 +1,9 @@
-# Verizon Media Adapter for Google Mobile Ads SDK for Android Changelog
+## Verizon Media Android Mediation Adapter Changelog
 
-## 1.1.1.0
+#### Version 1.1.1.0
 - Adapter has been rebranded to "Verizon Media".
 - Compatible with Verizon Media SDK 1.1.1.
 
-## Earlier versions
+#### Earlier versions
 - Supports banner and interstitial ads.
 
