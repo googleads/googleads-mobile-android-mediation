@@ -1,5 +1,8 @@
 # InMobi Adapter for Google Mobile Ads SDK for Android Changelog
 
+## 7.3.0.0
+- Verified compatibility with InMobi SDK version 7.3.0.
+
 ## 7.2.9.0
 - Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
 - Verified compatibility with InMobi SDK version 7.2.9.
