@@ -2,6 +2,7 @@
 
 #### Version 7.3.0.0
 - Verified compatibility with InMobi SDK version 7.3.0.
+- Updated the minimum required Google Mobile Ads SDK version to 18.2.0.
 
 #### Version 7.2.9.0
 - Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
