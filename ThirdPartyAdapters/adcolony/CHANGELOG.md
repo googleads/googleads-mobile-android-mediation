@@ -1,6 +1,10 @@
 ## AdColony Android Mediation Adapter Changelog
 
-#### Version 3.3.11.0
+#### 4.1.0.0
+- Verified compatibility with AdColony SDK version 4.1.0.
+- Added support for banners
+
+#### 3.3.11.0
 - Verified compatibility with AdColony SDK version 3.3.11.
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
 
