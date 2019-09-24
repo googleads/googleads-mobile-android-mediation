@@ -1,5 +1,9 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
+#### Version 12.3.2.0
+- Verified compatibility with Tapjoy SDK version 12.3.2.
+- Updated the minimum required Google Mobile Ads SDK version to 18.2.0.
+
 #### Version 12.3.1.1
 - Tapjoy Adapter now only requests a single ad for every placement.
 
