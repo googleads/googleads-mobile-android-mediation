@@ -32,6 +32,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:18.1.1'
 
     compileOnly 'com.fyber.vamp:core-sdk:7.3.4'
-    compileOnly 'com.fyber.vamp:mraid-kit:7.3.0'
-    compileOnly 'com.fyber.vamp:video-kit:7.3.0'
+    compileOnly 'com.fyber.vamp:mraid-kit:7.3.4'
+    compileOnly 'com.fyber.vamp:video-kit:7.3.4'
 }
