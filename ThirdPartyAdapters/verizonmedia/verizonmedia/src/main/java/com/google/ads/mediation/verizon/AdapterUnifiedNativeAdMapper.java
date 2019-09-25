@@ -81,15 +81,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 				imagesList.add(mappedImageFromJSON(mainImageJSON));
 				setImages(imagesList);
 			}
-
-			// video
-			VASDisplayMediaView videoView = nativeAd.getDisplayMedia(context, "video");
-			if (videoView != null) {
-				setMediaView(videoView);
-				setHasVideoContent(true);
-			} else {
-				setHasVideoContent(false);
-			}
 		}
 	}
 

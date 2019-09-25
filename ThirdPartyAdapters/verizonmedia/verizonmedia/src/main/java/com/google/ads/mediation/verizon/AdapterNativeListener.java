@@ -28,7 +28,6 @@ final class AdapterNativeListener implements NativeAd.NativeAdListener, NativeAd
 
 
 	AdapterNativeListener(final Context context, final MediationNativeAdapter adapter, final MediationNativeListener listener) {
-
 		this.nativeAdapterWeakRef = new WeakReference<>(adapter);
 		this.nativeListener = listener;
 		this.context = context;

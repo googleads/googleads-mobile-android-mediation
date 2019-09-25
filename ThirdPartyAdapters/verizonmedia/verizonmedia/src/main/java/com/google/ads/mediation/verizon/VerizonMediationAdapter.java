@@ -155,13 +155,6 @@ public class VerizonMediationAdapter extends Adapter
         }
     }
 
-    private static int dip(final int pixels, final Context context) {
-
-        return (int) TypedValue
-            .applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixels, context.getResources().getDisplayMetrics());
-    }
-
-
     @Override
     public void requestBannerAd(final Context context, final MediationBannerListener listener,
                                 final Bundle serverParameters,
@@ -387,7 +380,6 @@ public class VerizonMediationAdapter extends Adapter
             nativeAdFactory.abortLoad();
         }
 
-
         if (adapterInterstitialListener != null) {
             adapterInterstitialListener.destroy();
         }
@@ -592,7 +584,9 @@ public class VerizonMediationAdapter extends Adapter
         }
 
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-        String placementId = serverParameters.getString(PLACEMENT_KEY);
+        String placementId = fetchPlacementId(serverParameters);
+
+        setContext(mediationRewardedAdConfiguration.getContext());
 
         if (TextUtils.isEmpty(placementId)) {
             mediationAdLoadCallback.onFailure(
@@ -610,7 +604,6 @@ public class VerizonMediationAdapter extends Adapter
         try {
             interstitialAdFactory = new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(), placementId,
                 adapterIncentivizedEventListener);
-
             interstitialAdFactory.setRequestMetaData(getRequestMetadata());
             interstitialAdFactory.load(adapterIncentivizedEventListener);
         } catch (Exception e) {
