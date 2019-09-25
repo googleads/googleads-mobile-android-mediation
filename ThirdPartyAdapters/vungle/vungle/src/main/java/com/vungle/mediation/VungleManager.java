@@ -1,7 +1,10 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.util.Log;
 
 import com.vungle.warren.AdConfig;
@@ -119,13 +122,13 @@ public class VungleManager {
                 Vungle.getValidPlacements().contains(placementId);
     }
 
-    VungleNativeAd getVungleNativeAd(String placement, AdConfig adConfig, VungleListener vungleListener) {
+    VungleNativeAd getVungleNativeAd(String placement, AdConfig adConfig,
+                                     VungleListener vungleListener) {
         Log.d(TAG, "getVungleNativeAd");
 
-        cleanUpBanner(placement);
         //Fetch new ad
-
-        VungleNativeAd bannerAd = Vungle.getNativeAd(placement, adConfig, playAdCallback(vungleListener));
+        VungleNativeAd bannerAd = Vungle.getNativeAd(placement, adConfig,
+                playAdCallback(vungleListener));
         if (bannerAd != null) {
             activeBannerAds.put(placement, bannerAd);
         }
@@ -133,11 +136,15 @@ public class VungleManager {
         return bannerAd;
     }
 
-    void removeActiveBanner(String placementId) {
-        if (placementId == null) {
-            return;
+    void cleanUpBanner(@NonNull String placementId, VungleNativeAd bannerAd) {
+        VungleNativeAd activeBannerAd = activeBannerAds.get(placementId);
+        if (activeBannerAd == bannerAd) {
+            //Remove ad
+            //We should do Report ad
+            Log.d(TAG, "cleanUpBanner # finishDisplayingAd");
+            bannerAd.finishDisplayingAd();
+            activeBannerAds.remove(placementId);
         }
-        activeBannerAds.remove(placementId);
     }
 
     /**
@@ -145,15 +152,11 @@ public class VungleManager {
      *
      * @param placementId
      */
-    void cleanUpBanner(String placementId) {
+    void cleanUpBanner(@NonNull String placementId) {
         Log.d(TAG, "cleanUpBanner");
         VungleNativeAd vungleNativeAd = activeBannerAds.get(placementId);
         if (vungleNativeAd != null) {
-            //Remove ad
-            //We should do Report ad
-            Log.d(TAG, "cleanUpBanner # finishDisplayingAd");
-            vungleNativeAd.finishDisplayingAd();
-            removeActiveBanner(placementId);
+            cleanUpBanner(placementId, vungleNativeAd);
         }
     }
 }

@@ -42,7 +42,8 @@ public class VungleInitializer implements InitCallback {
         return Vungle.isInitialized();
     }
 
-    public void initialize(final String appId, final Context context, VungleInitializationListener listener) {
+    public void initialize(final String appId, final Context context,
+                           VungleInitializationListener listener) {
         if (isInitializing()) {
             mInitListeners.add(listener);
             return;
@@ -58,18 +59,21 @@ public class VungleInitializer implements InitCallback {
         Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
                 com.vungle.warren.BuildConfig.VERSION_NAME.replace('.', '_'));
 
-        //Keep monitoring VungleSettings in case of any changes we need to re-init SDK to apply updated settings.
+        //Keep monitoring VungleSettings in case of any changes we need to re-init SDK to apply
+        // updated settings.
         VungleNetworkSettings.setVungleSettingsChangedListener(new VungleNetworkSettings.VungleSettingsChangedListener() {
             @Override
             public void onVungleSettingsChanged(VungleSettings updatedSettings) {
                 //Ignore if sdk is yet to initialize, it will get considered while init
-                if(!Vungle.isInitialized()){
+                if (!Vungle.isInitialized()) {
                     return;
                 }
 
-                VungleSettings settings = (updatedSettings != null) ? updatedSettings : new VungleSettings.Builder().build();
+                VungleSettings settings = (updatedSettings != null) ? updatedSettings :
+                        new VungleSettings.Builder().build();
                 //Pass new settings to SDK.
-                Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
+                Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this,
+                        settings);
             }
         });
 
@@ -120,6 +124,7 @@ public class VungleInitializer implements InitCallback {
 
     public interface VungleInitializationListener {
         void onInitializeSuccess();
+
         void onInitializeError(String errorMessage);
     }
 
