@@ -201,7 +201,7 @@ public class UnityMediationAdapter extends Adapter
             return;
         }
 
-        UnitySingleton.initializeUnityAds((Activity) context, gameID);
+        UnitySingleton.initializeUnityAds(mUnityAdapterRewardedAdDelegate, (Activity) context, gameID);
         initializationCompleteCallback.onInitializationSucceeded();
     }
 
