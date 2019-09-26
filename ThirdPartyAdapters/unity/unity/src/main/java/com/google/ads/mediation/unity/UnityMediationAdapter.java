@@ -61,6 +61,11 @@ public class UnityMediationAdapter extends Adapter
     private String mPlacementId;
 
     /**
+     * Placement ID used to determine what type of ad to load.
+     */
+    private Boolean loadOnInititalize;
+
+    /**
      * An Android {@link Activity} weak reference used to show ads.
      */
     WeakReference<Activity> mActivityWeakReference;
@@ -201,7 +206,7 @@ public class UnityMediationAdapter extends Adapter
             return;
         }
 
-        UnitySingleton.initializeUnityAds((Activity) context, gameID);
+        UnitySingleton.initializeUnityAds(mUnityAdapterRewardedAdDelegate, (Activity) context, gameID);
         initializationCompleteCallback.onInitializationSucceeded();
     }
 
@@ -228,12 +233,12 @@ public class UnityMediationAdapter extends Adapter
 
         mMediationAdLoadCallback = mediationAdLoadCallback;
 
-        if (UnityAds.isInitialized()) {
-            // Request UnitySingleton to load ads for mPlacementId.
-            UnitySingleton.loadAd(mUnityAdapterRewardedAdDelegate);
-        } else {
+        // Request UnitySingleton to load ads for mPlacementId.
+        UnitySingleton.loadAd(mUnityAdapterRewardedAdDelegate);
+
+        if (!UnityAds.isInitialized()) {
             UnitySingleton.initializeUnityAds(mUnityAdapterRewardedAdDelegate,
-                    (Activity) context, gameID, mPlacementId);
+                    (Activity) context, gameID);
         }
     }
 
