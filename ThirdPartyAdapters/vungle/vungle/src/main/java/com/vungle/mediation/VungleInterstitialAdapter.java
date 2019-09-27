@@ -210,9 +210,8 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         }
 
         mVungleManager = VungleManager.getInstance();
-
+        mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
         mPlacementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
-
 
         if (TextUtils.isEmpty(mPlacementForPlay)) {
             String message = "Failed to load ad from Vungle: Missing or Invalid Placement ID.";
@@ -230,7 +229,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
                             AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
         //workaround for missing onPause/onResume/onDestroy
         adLayout = new RelativeLayout(context) {
