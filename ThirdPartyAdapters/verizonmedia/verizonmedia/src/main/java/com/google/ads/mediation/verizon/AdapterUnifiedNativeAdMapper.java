@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 
 public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
@@ -21,66 +23,64 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 	private final Context context;
 
 
-	AdapterUnifiedNativeAdMapper(final Context context, final NativeAd nativeAd) {
+	AdapterUnifiedNativeAdMapper(final Context context, @NonNull final NativeAd nativeAd) {
 
 		this.context = context;
-		this.verizonAd = nativeAd;
+		verizonAd = nativeAd;
 
-		if (nativeAd != null) {
-			// title
-			JSONObject titleJSON = nativeAd.getJSON("title");
-			if (titleJSON != null) {
-				setHeadline(titleJSON.optString("data"));
-			}
+		// title
+		JSONObject titleJSON = nativeAd.getJSON("title");
+		if (titleJSON != null) {
+			setHeadline(titleJSON.optString("data"));
+		}
 
-			// body
-			JSONObject bodyJSON = nativeAd.getJSON("body");
-			if (bodyJSON != null) {
-				setBody(bodyJSON.optString("data"));
-			}
+		// body
+		JSONObject bodyJSON = nativeAd.getJSON("body");
+		if (bodyJSON != null) {
+			setBody(bodyJSON.optString("data"));
+		}
 
-			// callToAction
-			JSONObject callToActionJSON = nativeAd.getJSON("callToAction");
-			if (callToActionJSON != null) {
-				setCallToAction(callToActionJSON.optString("data"));
-			}
+		// callToAction
+		JSONObject callToActionJSON = nativeAd.getJSON("callToAction");
+		if (callToActionJSON != null) {
+			setCallToAction(callToActionJSON.optString("data"));
+		}
 
-			// disclaimer
-			JSONObject disclaimerJSON = nativeAd.getJSON("disclaimer");
-			if (disclaimerJSON != null) {
-				setAdvertiser(disclaimerJSON.optString("data"));
-			}
+		// disclaimer
+		JSONObject disclaimerJSON = nativeAd.getJSON("disclaimer");
+		if (disclaimerJSON != null) {
+			setAdvertiser(disclaimerJSON.optString("data"));
+		}
 
-			// rating
-			JSONObject ratingJSON = nativeAd.getJSON("rating");
-			if (ratingJSON != null) {
-				String ratingString = ratingJSON.optString("data");
-				if (ratingString != null) {
-					String[] ratingArray = ratingString.trim().split("\\s+");
-					if (ratingArray.length >= 1) {
-						try {
-							Double rating = Double.parseDouble(ratingArray[0]);
-							setStarRating(rating);
-						} catch (NumberFormatException e) {
-							// do nothing
-						}
+		// rating
+		JSONObject ratingJSON = nativeAd.getJSON("rating");
+		if (ratingJSON != null) {
+			String ratingString = ratingJSON.optString("data");
+			if (ratingString != null) {
+				String[] ratingArray = ratingString.trim().split("\\s+");
+				if (ratingArray.length >= 1) {
+					try {
+						Double rating = Double.parseDouble(ratingArray[0]);
+						setStarRating(rating);
+					} catch (NumberFormatException e) {
+						// do nothing
 					}
 				}
 			}
+		}
 
-			// iconImage
-			JSONObject iconImageJSON = nativeAd.getJSON("iconImage");
-			if (iconImageJSON != null) {
-				setIcon(mappedImageFromJSON(iconImageJSON));
-			}
+		// iconImage
+		JSONObject iconImageJSON = nativeAd.getJSON("iconImage");
+		if (iconImageJSON != null) {
+			setIcon(mappedImageFromJSON(iconImageJSON));
+		}
 
-			// mainImage
-			JSONObject mainImageJSON = nativeAd.getJSON("mainImage");
-			if (mainImageJSON != null) {
-				List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
-				imagesList.add(mappedImageFromJSON(mainImageJSON));
-				setImages(imagesList);
-			}
+		// mainImage
+		JSONObject mainImageJSON = nativeAd.getJSON("mainImage");
+		if (mainImageJSON != null) {
+			List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
+			imagesList.add(mappedImageFromJSON(mainImageJSON));
+			setImages(imagesList);
 		}
 	}
 

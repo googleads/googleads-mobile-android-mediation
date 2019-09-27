@@ -78,13 +78,15 @@ public class VerizonMediationAdapter extends Adapter
     private InlineAdFactory inlineAdFactory;
     private AdapterInterstitialListener adapterInterstitialListener;
     private MediationInterstitialListener mediationInterstitialListener;
+	private AdapterIncentivizedEventListener adapterIncentivizedEventListener;
     private AdapterInlineListener adapterInlineListener;
     private InterstitialAdFactory interstitialAdFactory;
     private NativeAdFactory nativeAdFactory;
     private AdapterNativeListener adapterNativeListener;
     private String[] adTypes = new String[]{"inline"};
 
-    @Override
+
+	@Override
     public VersionInfo getVersionInfo() {
         String versionString = BuildConfig.VERSION_NAME;
         String splits[] = versionString.split("\\.");
@@ -392,6 +394,9 @@ public class VerizonMediationAdapter extends Adapter
             adapterNativeListener.destroy();
         }
 
+		if (adapterIncentivizedEventListener != null) {
+			adapterIncentivizedEventListener.destroy();
+		}
     }
 
 
@@ -599,7 +604,7 @@ public class VerizonMediationAdapter extends Adapter
 
         VASAds.setLocationEnabled((mediationRewardedAdConfiguration.getLocation() != null));
 
-        AdapterIncentivizedEventListener adapterIncentivizedEventListener = new AdapterIncentivizedEventListener(mediationAdLoadCallback);
+        adapterIncentivizedEventListener = new AdapterIncentivizedEventListener(mediationAdLoadCallback);
 
         try {
             interstitialAdFactory = new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(), placementId,

@@ -220,8 +220,8 @@ public class AdapterIncentivizedEventListener
 				@Override
 				public void run() {
 
-					if (mediationAdLoadCallback != null) {
-						mediationAdLoadCallback.onFailure(
+					if (mediationRewardedAdCallback != null) {
+						mediationRewardedAdCallback.onAdFailedToShow(
 							"Verizon Ads SDK incentivized video interstitial failed to load and cannot be shown");
 					}
 				}
@@ -230,5 +230,13 @@ public class AdapterIncentivizedEventListener
 		}
 
 		interstitialAd.show(context);
+	}
+
+
+	void destroy() {
+
+		if (interstitialAd != null) {
+			interstitialAd.destroy();
+		}
 	}
 }
