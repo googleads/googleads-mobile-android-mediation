@@ -32,6 +32,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 
 import com.unity3d.ads.UnityAds;
+import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -316,16 +317,22 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void onBannerClick(BannerView bannerView) {
-
+        mBannerListener.onAdClicked(this);
     }
 
     @Override
     public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo bannerErrorInfo) {
-
+        if (bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL) {
+            Log.w(TAG, "Banner Ad failed to load - NO FILL");
+            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NO_FILL);
+        } else {
+            Log.w(TAG, "Banner Ad failed to load");
+            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NETWORK_ERROR);
+        }
     }
 
     @Override
     public void onBannerLeftApplication(BannerView bannerView) {
-
+        mBannerListener.onAdLeftApplication(this);
     }
 }
