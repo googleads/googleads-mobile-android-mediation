@@ -12,13 +12,9 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
-import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
-import com.fyber.inneractive.sdk.external.InneractiveUnitController;
-import com.fyber.inneractive.sdk.external.VideoContentListener;
 import com.fyber.inneractive.sdk.external.VideoContentListenerAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -39,32 +35,34 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     private final static InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
     /**
+     * AbMob's rewarded ad callback. as returned from {@link MediationAdLoadCallback#onSuccess}
+     */
+    private MediationRewardedAdCallback mRewardedAdCallback;
+
+    /**
      * The Spot object for the banner
      */
-    InneractiveAdSpot mInterstitialSpot;
-    InneractiveFullscreenUnitController mUnitController;
+    private InneractiveAdSpot mRewardedSpot;
+    private InneractiveFullscreenUnitController mUnitController;
     private boolean mReceivedRewardItem = false;
 
     /**
      * The event listener of the Ad
      */
-    InneractiveFullscreenAdEventsListener mAdListener;
-
-    /** Returned after calling {@link MediationAdLoadCallback#onSuccess(Object)} */
-    private MediationInterstitialAdCallback mIntersititialAdCallback;
+    private InneractiveFullscreenAdEventsListener mAdListener;
 
     /**
      * Constructor
      * @param adConfiguration AdMob interstitial ad configuration
      * @param adLoadCallback AdMob load callback
      */
-    public FyberRewardedVideoRenderer(MediationRewardedAdConfiguration adConfiguration,
+    FyberRewardedVideoRenderer(MediationRewardedAdConfiguration adConfiguration,
                                       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
         mAdConfiguration = adConfiguration;
         mAdLoadCallback = adLoadCallback;
     }
 
-    public void render() {
+    void render() {
         // Check that we got a valid spot id from the server
         String spotId = mAdConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
@@ -72,32 +70,32 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             return;
         }
 
-        mInterstitialSpot = InneractiveAdSpotManager.get().createSpot();
-        mInterstitialSpot.setMediationName(MEDIATOR_NAME);
+        mRewardedSpot = InneractiveAdSpotManager.get().createSpot();
+        mRewardedSpot.setMediationName(MEDIATOR_NAME);
 
         mUnitController = new InneractiveFullscreenUnitController();
-        mInterstitialSpot.addUnitController(mUnitController);
+        mRewardedSpot.addUnitController(mUnitController);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
 
         // TODO: Parse network extras
         initRequestListener();
 
-        mInterstitialSpot.requestAd(request);
+        mRewardedSpot.requestAd(request);
     }
 
     private void initRequestListener() {
-        mInterstitialSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
+        mRewardedSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
             @Override
             public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-                if (adSpot != mInterstitialSpot) {
-                    Log.d(TAG, "Wrong Interstitial Spot: Received - " + adSpot + ", Actual - " + mInterstitialSpot);
+                if (adSpot != mRewardedSpot) {
+                    Log.d(TAG, "Wrong Interstitial Spot: Received - " + adSpot + ", Actual - " + mRewardedSpot);
                     return;
                 }
 
                 // Report load success to AdMob, and cache the returned callback for a later use
-                MediationRewardedAdCallback interstitialAdCallback = mAdLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
-                mAdListener = createFyberAdListener(mUnitController, interstitialAdCallback);
+                mRewardedAdCallback = mAdLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
+                mAdListener = createFyberAdListener(mUnitController, mRewardedAdCallback);
             }
 
             @Override
@@ -118,9 +116,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         InneractiveFullscreenAdEventsListenerAdapter adListener = new InneractiveFullscreenAdEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
-                callback.reportAdImpression();
                 callback.onAdOpened();
                 callback.onVideoStart();
+                callback.reportAdImpression();
             }
 
             @Override
@@ -161,8 +159,10 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     @Override
     public void showAd(Context context) {
         // TODO: What about show errors. Is there an interface for that?
-        if (mInterstitialSpot != null && mUnitController != null && mInterstitialSpot.isReady()) {
+        if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
             mUnitController.show(context);
+        } else if (mRewardedAdCallback != null) {
+            mRewardedAdCallback.onAdFailedToShow("showAd called, but Fyber's rewarded spot is not ready");
         }
     }
 
