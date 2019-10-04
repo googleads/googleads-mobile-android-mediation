@@ -25,14 +25,13 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     public void onRequestFilled(AdColonyInterstitial ad) {
         if (_adapter != null) {
             _adapter.setAd(ad);
-            notifyAdLoaded();
+            _mediationInterstitialListener.onAdLoaded(_adapter);
         }
     }
 
     @Override
     public void onClicked(AdColonyInterstitial ad) {
         if (_adapter != null) {
-            _adapter.setAd(ad);
             _mediationInterstitialListener.onAdClicked(_adapter);
         }
     }
@@ -40,7 +39,6 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     @Override
     public void onClosed(AdColonyInterstitial ad) {
         if (_adapter != null) {
-            _adapter.setAd(ad);
             _mediationInterstitialListener.onAdClosed(_adapter);
         }
     }
@@ -48,22 +46,17 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     @Override
     public void onExpiring(AdColonyInterstitial ad) {
         if (_adapter != null) {
-            _adapter.setAd(ad);
             AdColony.requestInterstitial(ad.getZoneID(), this);
         }
     }
 
     @Override
     public void onIAPEvent(AdColonyInterstitial ad, String productId, int engagementType) {
-        if (_adapter != null) {
-            _adapter.setAd(ad);
-        }
     }
 
     @Override
     public void onLeftApplication(AdColonyInterstitial ad) {
         if (_adapter != null) {
-            _adapter.setAd(ad);
             _mediationInterstitialListener.onAdLeftApplication(_adapter);
         }
     }
@@ -71,7 +64,6 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     @Override
     public void onOpened(AdColonyInterstitial ad) {
         if (_adapter != null) {
-            _adapter.setAd(ad);
             _mediationInterstitialListener.onAdOpened(_adapter);
         }
     }
@@ -79,7 +71,6 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     @Override
     public void onRequestNotFilled(AdColonyZone zone) {
         if (_adapter != null) {
-            _adapter.setAd(null);
             _mediationInterstitialListener.onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
         }
     }
@@ -87,9 +78,5 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
     void destroy() {
         _adapter = null;
         _mediationInterstitialListener = null;
-    }
-
-    void notifyAdLoaded() {
-        _mediationInterstitialListener.onAdLoaded(_adapter);
     }
 }

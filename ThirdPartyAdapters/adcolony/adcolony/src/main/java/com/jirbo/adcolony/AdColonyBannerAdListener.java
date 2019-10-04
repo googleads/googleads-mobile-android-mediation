@@ -23,7 +23,6 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     @Override
     public void onClicked(AdColonyAdView ad) {
         if (_adapter != null) {
-            _adapter.setAdView(ad);
             _mediationBannerListener.onAdClicked(_adapter);
         }
     }
@@ -31,7 +30,6 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     @Override
     public void onOpened(AdColonyAdView ad) {
         if (_adapter != null) {
-            _adapter.setAdView(ad);
             _mediationBannerListener.onAdOpened(_adapter);
         }
     }
@@ -39,7 +37,6 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     @Override
     public void onClosed(AdColonyAdView ad) {
         if (_adapter != null) {
-            _adapter.setAdView(ad);
             _mediationBannerListener.onAdClosed(_adapter);
         }
     }
@@ -47,7 +44,6 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     @Override
     public void onLeftApplication(AdColonyAdView ad) {
         if (_adapter != null) {
-            _adapter.setAdView(ad);
             _mediationBannerListener.onAdLeftApplication(_adapter);
         }
     }
@@ -56,14 +52,13 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     public void onRequestFilled(AdColonyAdView adColonyAdView) {
         if (_adapter != null) {
             _adapter.setAdView(adColonyAdView);
-            notifyAdLoaded();
+            _mediationBannerListener.onAdLoaded(_adapter);
         }
     }
 
     @Override
     public void onRequestNotFilled(AdColonyZone zone) {
         if (_adapter != null) {
-            _adapter.setAdView(null);
             _mediationBannerListener.onAdFailedToLoad(_adapter, AdRequest.ERROR_CODE_NO_FILL);
         }
     }
@@ -71,9 +66,5 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     void destroy() {
         _adapter = null;
         _mediationBannerListener = null;
-    }
-
-    void notifyAdLoaded() {
-        _mediationBannerListener.onAdLoaded(_adapter);
     }
 }

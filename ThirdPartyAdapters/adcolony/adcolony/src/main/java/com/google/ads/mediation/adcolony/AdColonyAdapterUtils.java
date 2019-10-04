@@ -13,7 +13,6 @@ public class AdColonyAdapterUtils {
     public static final String KEY_ZONE_ID = "zone_id";
     public static final String KEY_ZONE_IDS = "zone_ids";
 
-
     public static AdColonyAdSize adColonyAdSizeFromAdMobAdSize(Context context, AdSize adSize) {
         ArrayList<AdSize> potentials = new ArrayList<>(3);
         potentials.add(0, AdSize.BANNER);

@@ -20,20 +20,19 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
     private final String requestedZone;
     private final AdColonyAdSize adSize;
     private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback;
-    private MediationBannerAdCallback mAdLoadCallback;
+    private MediationBannerAdCallback mBannerAdCallback;
     private AdColonyAdView adColonyAdView;
 
     public AdColonyBannerRenderer(MediationBannerAdConfiguration adConfiguration) {
        requestedZone = adConfiguration.getServerParameters().getString(AdColonyAdapterUtils.KEY_ZONE_ID);
-        // Convert requested size to AdColony Ad Size.
-        this.adSize = AdColonyAdapterUtils.adColonyAdSizeFromAdMobAdSize(
-                adConfiguration.getContext(), adConfiguration.getAdSize());
+        // Setting the requested size as it is as adcolony view size.
+        this.adSize = new AdColonyAdSize(adConfiguration.getAdSize().getWidth(),adConfiguration.getAdSize().getHeight());
     }
 
     @Override
     public void onRequestFilled(AdColonyAdView adColonyAdView) {
         this.adColonyAdView = adColonyAdView;
-        this.mAdLoadCallback = mediationAdLoadCallback.onSuccess(this);
+        this.mBannerAdCallback = mediationAdLoadCallback.onSuccess(this);
     }
 
     @Override
@@ -43,22 +42,22 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
 
     @Override
     public void onLeftApplication(AdColonyAdView ad) {
-        this.mAdLoadCallback.onAdLeftApplication();
+        this.mBannerAdCallback.onAdLeftApplication();
     }
 
     @Override
     public void onClosed(AdColonyAdView ad) {
-        this.mAdLoadCallback.onAdClosed();
+        this.mBannerAdCallback.onAdClosed();
     }
 
     @Override
     public void onOpened(AdColonyAdView ad) {
-        this.mAdLoadCallback.onAdOpened();
+        this.mBannerAdCallback.onAdOpened();
     }
 
     @Override
     public void onClicked(AdColonyAdView ad) {
-        this.mAdLoadCallback.reportAdClicked();
+        this.mBannerAdCallback.reportAdClicked();
     }
 
     @NonNull
