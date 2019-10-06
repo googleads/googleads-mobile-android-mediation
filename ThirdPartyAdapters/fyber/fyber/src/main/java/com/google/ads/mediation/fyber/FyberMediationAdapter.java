@@ -78,11 +78,6 @@ public class FyberMediationAdapter extends Adapter
     static final String KEY_SPOT_ID = "spotId";
 
     /**
-     * Call initialize only once. Sometimes Adapter.initialize is not called. So also try to initialize the Fyber SDK from the requests
-     */
-    private boolean mInitializedCalled = false;
-
-    /**
      * Fyber's Spot object for the banner
      */
     private InneractiveAdSpot mBannerSpot;
@@ -152,6 +147,11 @@ public class FyberMediationAdapter extends Adapter
 
     @Override
     public void initialize(Context context, final InitializationCompleteCallback completionCallback, List<MediationConfiguration> mediationConfigurations) {
+        // Initialize only once
+        if (InneractiveAdManager.wasInitialized()) {
+            return;
+        }
+
         String appId = null;
 
         List<String> configuredAppIds = new ArrayList<>();
@@ -282,6 +282,16 @@ public class FyberMediationAdapter extends Adapter
             mBannerSpot.destroy();
             mBannerSpot = null;
         }
+
+        if (mInterstitialSpot != null) {
+            mInterstitialSpot.destroy();;
+            mInterstitialSpot = null;
+        }
+
+        if (mInterstitialContext != null) {
+            mInterstitialContext.clear();
+            mInterstitialContext = null;
+        }
     }
 
     @Override
@@ -337,7 +347,7 @@ public class FyberMediationAdapter extends Adapter
      * @return true if created succesfully, false otherwise
      */
     private InneractiveAdViewEventsListener createFyberAdViewListener(InneractiveAdSpot adSpot, final MediationBannerListener mediationBannerListener) {
-        // Just a double check that we have the right time of selected controller
+        // Just a double check that we have the right type of selected controller
         if (adSpot == null || !(adSpot.getSelectedUnitController() instanceof InneractiveAdViewUnitController)) {
             return null;
         }
@@ -461,7 +471,7 @@ public class FyberMediationAdapter extends Adapter
      * @return the created event listener, or null otherwise
      */
     private InneractiveFullscreenAdEventsListener createFyberInterstitialListener() {
-        // Just a double check that we have the right time of selected controller
+        // Just a double check that we have the right type of selected controller
         if (mInterstitialSpot == null || !(mInterstitialSpot.getSelectedUnitController() instanceof InneractiveFullscreenUnitController)) {
             return null;
         }
@@ -501,12 +511,10 @@ public class FyberMediationAdapter extends Adapter
      * @param bundle
      */
     private void initializeFromBundle(Context context, Bundle bundle) {
-        if (mInitializedCalled == false) {
-            List<MediationConfiguration> configs = new ArrayList<>();
-            configs.add(new MediationConfiguration(AdFormat.BANNER, bundle));
+        List<MediationConfiguration> configs = new ArrayList<>();
+        configs.add(new MediationConfiguration(AdFormat.BANNER, bundle));
 
-            initialize(context, null, configs);
-        }
+        initialize(context, null, configs);
     }
 
 }

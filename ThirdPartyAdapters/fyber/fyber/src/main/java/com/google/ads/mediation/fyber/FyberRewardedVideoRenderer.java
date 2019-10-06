@@ -27,12 +27,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     private final static String TAG = FyberRewardedVideoRenderer.class.getSimpleName();;
 
     /** AdMob's Interstitial ad configuration object */
-    MediationRewardedAdConfiguration mAdConfiguration;
+    private MediationRewardedAdConfiguration mAdConfiguration;
     /** AdMob's callback object */
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-
-    // TODO: Can we somehow separate AdMob from DFP?
-    private final static InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
+    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
 
     /**
      * AbMob's rewarded ad callback. as returned from {@link MediationAdLoadCallback#onSuccess}
@@ -45,11 +42,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     private InneractiveAdSpot mRewardedSpot;
     private InneractiveFullscreenUnitController mUnitController;
     private boolean mReceivedRewardItem = false;
-
-    /**
-     * The event listener of the Ad
-     */
-    private InneractiveFullscreenAdEventsListener mAdListener;
 
     /**
      * Constructor
@@ -66,53 +58,53 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         // Check that we got a valid spot id from the server
         String spotId = mAdConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
+            Log.w(TAG, "Cannot render interstitial ad. Please define a valid spot id on the AdMob console");
             mAdLoadCallback.onFailure("Cannot render interstitial ad. Please define a valid spot id on the AdMob console");
             return;
         }
 
         mRewardedSpot = InneractiveAdSpotManager.get().createSpot();
-        mRewardedSpot.setMediationName(MEDIATOR_NAME);
+        mRewardedSpot.setMediationName(InneractiveMediationName.ADMOB);
 
         mUnitController = new InneractiveFullscreenUnitController();
         mRewardedSpot.addUnitController(mUnitController);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-
-        // TODO: Parse network extras
-        initRequestListener();
+        InneractiveAdSpot.RequestListener requestListener = createRequestListener();
+        mRewardedSpot.setRequestListener(requestListener);
 
         mRewardedSpot.requestAd(request);
     }
 
-    private void initRequestListener() {
-        mRewardedSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
+    private InneractiveAdSpot.RequestListener createRequestListener() {
+        InneractiveAdSpot.RequestListener requestListener = new InneractiveAdSpot.RequestListener() {
             @Override
             public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-                if (adSpot != mRewardedSpot) {
-                    Log.d(TAG, "Wrong Interstitial Spot: Received - " + adSpot + ", Actual - " + mRewardedSpot);
-                    return;
-                }
-
                 // Report load success to AdMob, and cache the returned callback for a later use
                 mRewardedAdCallback = mAdLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
-                mAdListener = createFyberAdListener(mUnitController, mRewardedAdCallback);
+                registerFyberAdListener(mUnitController, mRewardedAdCallback);
             }
 
             @Override
             public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                      InneractiveErrorCode errorCode) {
+                if (errorCode != InneractiveErrorCode.NO_FILL && errorCode != InneractiveErrorCode.CONNECTION_ERROR) {
+                    Log.w(TAG, "Fyber rewarded video request failed. Error: " + errorCode);
+                }
+
                 mAdLoadCallback.onFailure("Error code: " + errorCode.toString());
             }
-        });
+        };
+
+        return requestListener;
     }
 
     /**
      * Creates a listener for Fyber's fullscreen placement events
      * @param controller the full screen controller
      * @param callback Google's rewarded ad callback
-     * @return the created events listener
      */
-    private InneractiveFullscreenAdEventsListenerAdapter createFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
+    private void registerFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
         InneractiveFullscreenAdEventsListenerAdapter adListener = new InneractiveFullscreenAdEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
@@ -151,14 +143,11 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         });
 
         controller.addContentController(videoContentController);
-        controller.setEventsListener(mAdListener);
-
-        return adListener;
+        controller.setEventsListener(adListener);
     }
 
     @Override
     public void showAd(Context context) {
-        // TODO: What about show errors. Is there an interface for that?
         if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
             mUnitController.show(context);
         } else if (mRewardedAdCallback != null) {
