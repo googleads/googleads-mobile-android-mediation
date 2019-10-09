@@ -152,7 +152,6 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
                     success = false;
                 }
             } else {
-                // log here as "Failed to request banner with unsupported size."
                 success = false;
                 Log.e(TAG,"Failed to request banner with unsupported size");
             }
