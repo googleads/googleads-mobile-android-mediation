@@ -31,7 +31,7 @@ public class AdColonyAdapterUtils {
         } else if (AdSize.WIDE_SKYSCRAPER.equals(closestSize)) {
             return AdColonyAdSize.SKYSCRAPER;
         } else {
-            return new AdColonyAdSize(adSize.getWidth(),adSize.getHeight());
+            return null;
         }
     }
 

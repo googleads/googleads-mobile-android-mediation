@@ -2,6 +2,7 @@ package com.jirbo.adcolony;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.adcolony.sdk.AdColonyAdSize;
@@ -153,6 +154,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
             } else {
                 // log here as "Failed to request banner with unsupported size."
                 success = false;
+                Log.e(TAG,"Failed to request banner with unsupported size");
             }
         }
         if (!success) {
