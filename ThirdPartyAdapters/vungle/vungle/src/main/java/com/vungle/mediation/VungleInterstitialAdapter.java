@@ -349,6 +349,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
                 }
             }
         } else {
+            mAdConfig.setMuted(true);
             vungleNativeAd = mVungleManager.getVungleNativeAd(mPlacementForPlay, mAdConfig, mVunglePlayListener);
             View adView = vungleNativeAd != null ? vungleNativeAd.renderNativeView() : null;
             if (adView != null) {
