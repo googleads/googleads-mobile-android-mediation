@@ -111,12 +111,37 @@ final class AdapterNativeListener implements NativeAd.NativeAdListener, NativeAd
 			@Override
 			public void run() {
 
-				MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
+				final MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
+				final AdapterUnifiedNativeAdMapper mapper = new AdapterUnifiedNativeAdMapper(context, nativeAd);
 
-				if ((nativeListener != null) && (adapter != null)) {
-					AdapterUnifiedNativeAdMapper mapper = new AdapterUnifiedNativeAdMapper(context, nativeAd);
-					nativeListener.onAdLoaded(adapter, mapper);
-				}
+				mapper.loadResources(new AdapterUnifiedNativeAdMapper.LoadListener() {
+
+					@Override
+					public void onLoadComplete() {
+
+						ThreadUtils.postOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+
+								nativeListener.onAdLoaded(adapter, mapper);
+							}
+						});
+					}
+
+
+					@Override
+					public void onLoadError() {
+
+						ThreadUtils.postOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+
+								nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+							}
+						});
+
+					}
+				});
 			}
 		});
 		Log.i(TAG, "Verizon Ads SDK native ad request succeeded.");

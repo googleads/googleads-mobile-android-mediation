@@ -1,16 +1,24 @@
 package com.google.ads.mediation.verizon;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.verizon.ads.nativeplacement.NativeAd;
-import com.verizon.ads.nativeplacement.VASDisplayMediaView;
 
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +26,8 @@ import androidx.annotation.NonNull;
 
 
 public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+
+	private static final String TAG = AdapterUnifiedNativeAdMapper.class.getSimpleName();
 
 	private final NativeAd verizonAd;
 	private final Context context;
@@ -68,20 +78,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 				}
 			}
 		}
-
-		// iconImage
-		JSONObject iconImageJSON = nativeAd.getJSON("iconImage");
-		if (iconImageJSON != null) {
-			setIcon(mappedImageFromJSON(iconImageJSON));
-		}
-
-		// mainImage
-		JSONObject mainImageJSON = nativeAd.getJSON("mainImage");
-		if (mainImageJSON != null) {
-			List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
-			imagesList.add(mappedImageFromJSON(mainImageJSON));
-			setImages(imagesList);
-		}
 	}
 
 
@@ -99,15 +95,85 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 	}
 
 
-	private AdapterNativeMappedImage mappedImageFromJSON(final JSONObject jsonObject) {
+	void loadResources(final LoadListener loadListener) {
 
-		Uri url = Uri.parse(jsonObject.optString("url"));
-		String assetPath = jsonObject.optString("asset");
-		Drawable drawable = null;
-		if (assetPath != null) {
-			drawable = Drawable.createFromPath(assetPath);
-		}
-		return new AdapterNativeMappedImage(drawable, url, VerizonMediationAdapter.VAS_IMAGE_SCALE);
+		com.verizon.ads.utils.ThreadUtils.runOffUiThread(new Runnable() {
+			@Override
+			public void run() {
+
+				try {
+					// iconImage
+					JSONObject iconImageJSON = verizonAd.getJSON("iconImage");
+					if (iconImageJSON != null) {
+						AdapterNativeMappedImage adapterNativeMappedImage = nativeMappedImageFromJSON(iconImageJSON.optString("url"));
+						if (adapterNativeMappedImage != null) {
+							setIcon(adapterNativeMappedImage);
+						}
+					}
+
+					// mainImage
+					JSONObject mainImageJSON = verizonAd.getJSON("mainImage");
+					if (mainImageJSON != null) {
+						List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
+						AdapterNativeMappedImage adapterNativeMappedImage = nativeMappedImageFromJSON(mainImageJSON.optString("url"));
+						if (adapterNativeMappedImage != null) {
+							imagesList.add(adapterNativeMappedImage);
+
+							// Setting main image as the AdMob's MediaView
+							ImageView imageView = new ImageView(context);
+							imageView.setImageDrawable(adapterNativeMappedImage.getDrawable());
+							ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
+								ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+							imageView.setLayoutParams(layoutParams);
+							setMediaView(imageView);
+						}
+						setImages(imagesList);
+					}
+
+					loadListener.onLoadComplete();
+				} catch (Exception e) {
+					Log.e(TAG, "Unable to load resources.", e);
+					loadListener.onLoadError();
+				}
+			}
+		});
 	}
 
+
+	private AdapterNativeMappedImage nativeMappedImageFromJSON(final String url) {
+
+		HttpURLConnection connection = null;
+		InputStream input = null;
+		try {
+			connection = (HttpURLConnection) new URL(url).openConnection();
+			connection.connect();
+			input = connection.getInputStream();
+
+			Bitmap bitmap = BitmapFactory.decodeStream(input);
+			return new AdapterNativeMappedImage(new BitmapDrawable(Resources.getSystem(), bitmap), Uri.parse(url), VerizonMediationAdapter.VAS_IMAGE_SCALE);
+		} catch (Exception e) {
+			Log.e(TAG, "Unable to create drawable from URL " + url, e);
+		} finally {
+			try {
+				if (input != null) {
+					input.close();
+				}
+			} catch (Exception e) {
+				Log.e(TAG, "Error closing input stream.", e);
+			}
+
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+
+		return null;
+	}
+
+
+	interface LoadListener {
+
+		void onLoadComplete();
+		void onLoadError();
+	}
 }
