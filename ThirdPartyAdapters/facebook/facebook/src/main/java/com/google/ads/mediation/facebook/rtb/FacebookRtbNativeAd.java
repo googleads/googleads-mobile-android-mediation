@@ -62,12 +62,15 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         }
         mMediaView = new MediaView(adConfiguration.getContext());
         mNativeAd = new NativeAd(adConfiguration.getContext(), placementId);
-        mNativeAd.setAdListener(new NativeListener(mNativeAd));
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
             mNativeAd.setExtraHints(new ExtraHints.Builder()
-                    .mediationData(adConfiguration.getWatermark()).build());
+                .mediationData(adConfiguration.getWatermark()).build());
         }
-        mNativeAd.loadAdFromBid(adConfiguration.getBidResponse());
+        mNativeAd.loadAd(
+            mNativeAd.buildLoadAdConfig()
+            .withAdListener(new NativeListener(mNativeAd))
+            .withBid(adConfiguration.getBidResponse())
+            .build());
     }
 
     private class NativeListener implements AdListener, NativeAdListener {
