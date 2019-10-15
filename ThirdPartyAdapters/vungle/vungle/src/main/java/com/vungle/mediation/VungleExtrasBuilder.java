@@ -70,4 +70,8 @@ public final class VungleExtrasBuilder {
         }
         return adConfig;
     }
+
+    public static boolean isStartMuteConfigured(Bundle networkExtras) {
+        return networkExtras.containsKey(EXTRA_SOUND_ENABLED);
+    }
 }
