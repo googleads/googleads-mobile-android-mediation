@@ -6,11 +6,11 @@ import android.util.Log;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.verizon.ads.Component;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.nativeplacement.NativeAd;
 import com.verizon.ads.nativeplacement.NativeAdFactory;
-import com.verizon.ads.nativeplacement.NativeComponentBundle;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -60,7 +60,7 @@ final class AdapterNativeListener implements NativeAd.NativeAdListener, NativeAd
 
 
     @Override
-    public void onClicked(final NativeComponentBundle nativeComponentBundle) {
+    public void onClicked(final NativeAd nativeAd, final Component component) {
 
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override

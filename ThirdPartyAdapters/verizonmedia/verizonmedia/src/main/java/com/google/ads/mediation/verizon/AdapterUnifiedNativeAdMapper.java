@@ -5,7 +5,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import android.widget.ImageView;
 
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.verizon.ads.nativeplacement.NativeAd;
+import com.verizon.ads.utils.ThreadUtils;
 
 import org.json.JSONObject;
 
@@ -39,45 +42,61 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         verizonAd = nativeAd;
 
         // title
-        JSONObject titleJSON = nativeAd.getJSON("title");
-        if (titleJSON != null) {
-            setHeadline(titleJSON.optString("data"));
-        }
+        setHeadline(parseTextComponent("title", nativeAd));
 
         // body
-        JSONObject bodyJSON = nativeAd.getJSON("body");
-        if (bodyJSON != null) {
-            setBody(bodyJSON.optString("data"));
-        }
+        setBody(parseTextComponent("body", nativeAd));
 
         // callToAction
-        JSONObject callToActionJSON = nativeAd.getJSON("callToAction");
-        if (callToActionJSON != null) {
-            setCallToAction(callToActionJSON.optString("data"));
-        }
+        setCallToAction(parseTextComponent("callToAction", nativeAd));
 
         // disclaimer
-        JSONObject disclaimerJSON = nativeAd.getJSON("disclaimer");
-        if (disclaimerJSON != null) {
-            setAdvertiser(disclaimerJSON.optString("data"));
-        }
+        setAdvertiser(parseTextComponent("disclaimer", nativeAd));
 
         // rating
-        JSONObject ratingJSON = nativeAd.getJSON("rating");
-        if (ratingJSON != null) {
-            String ratingString = ratingJSON.optString("data");
-            if (ratingString != null) {
-                String[] ratingArray = ratingString.trim().split("\\s+");
-                if (ratingArray.length >= 1) {
-                    try {
-                        Double rating = Double.parseDouble(ratingArray[0]);
-                        setStarRating(rating);
-                    } catch (NumberFormatException e) {
-                        // do nothing
-                    }
+        String ratingString = parseTextComponent("rating", nativeAd);
+        if (!TextUtils.isEmpty(ratingString)) {
+            String[] ratingArray = ratingString.trim().split("\\s+");
+            if (ratingArray.length >= 1) {
+                try {
+                    Double rating = Double.parseDouble(ratingArray[0]);
+                    setStarRating(rating);
+                } catch (NumberFormatException e) {
+                    // do nothing
                 }
             }
         }
+    }
+
+
+    private Drawable drawableFromUrl(final String url) {
+
+        HttpURLConnection connection = null;
+        InputStream input = null;
+        try {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.connect();
+            input = connection.getInputStream();
+
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            return new BitmapDrawable(Resources.getSystem(), bitmap);
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to create drawable from URL " + url, e);
+        } finally {
+            try {
+                if (input != null) {
+                    input.close();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error closing input stream.", e);
+            }
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        return null;
     }
 
 
@@ -95,9 +114,48 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
 
 
+    private AdapterNativeMappedImage parseImageComponent(final JSONObject jsonObject) {
+
+        if (jsonObject != null) {
+            try {
+                JSONObject dataObject = jsonObject.getJSONObject("data");
+                Uri url = Uri.parse(dataObject.optString("url"));
+                String assetPath = dataObject.optString("asset");
+                Drawable drawable;
+                if (!TextUtils.isEmpty(assetPath)) {
+                    drawable = Drawable.createFromPath(assetPath);
+                } else {
+                    drawable = drawableFromUrl(url.toString());
+                }
+                return new AdapterNativeMappedImage(drawable, url, VerizonMediationAdapter.VAS_IMAGE_SCALE);
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to parse data object.", e);
+            }
+        }
+
+        return null;
+    }
+
+
+    private String parseTextComponent(final String key, final NativeAd nativeAd) {
+
+        String value = "";
+        JSONObject jsonObject = nativeAd.getJSON(key);
+        if (jsonObject != null) {
+            try {
+                JSONObject dataObject = jsonObject.getJSONObject("data");
+                value = dataObject.optString("value");
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to parse " + key, e);
+            }
+        }
+        return value;
+    }
+
+
     void loadResources(final LoadListener loadListener) {
 
-        com.verizon.ads.utils.ThreadUtils.runOffUiThread(new Runnable() {
+        ThreadUtils.runOffUiThread(new Runnable() {
             @Override
             public void run() {
 
@@ -105,7 +163,7 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     // iconImage
                     JSONObject iconImageJSON = verizonAd.getJSON("iconImage");
                     if (iconImageJSON != null) {
-                        AdapterNativeMappedImage adapterNativeMappedImage = nativeMappedImageFromJSON(iconImageJSON.optString("url"));
+                        AdapterNativeMappedImage adapterNativeMappedImage = parseImageComponent(iconImageJSON);
                         if (adapterNativeMappedImage != null) {
                             setIcon(adapterNativeMappedImage);
                         }
@@ -115,7 +173,7 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     JSONObject mainImageJSON = verizonAd.getJSON("mainImage");
                     if (mainImageJSON != null) {
                         List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
-                        AdapterNativeMappedImage adapterNativeMappedImage = nativeMappedImageFromJSON(mainImageJSON.optString("url"));
+                        AdapterNativeMappedImage adapterNativeMappedImage = parseImageComponent(mainImageJSON);
                         if (adapterNativeMappedImage != null) {
                             imagesList.add(adapterNativeMappedImage);
 
@@ -137,37 +195,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                 }
             }
         });
-    }
-
-
-    private AdapterNativeMappedImage nativeMappedImageFromJSON(final String url) {
-
-        HttpURLConnection connection = null;
-        InputStream input = null;
-        try {
-            connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.connect();
-            input = connection.getInputStream();
-
-            Bitmap bitmap = BitmapFactory.decodeStream(input);
-            return new AdapterNativeMappedImage(new BitmapDrawable(Resources.getSystem(), bitmap), Uri.parse(url), VerizonMediationAdapter.VAS_IMAGE_SCALE);
-        } catch (Exception e) {
-            Log.e(TAG, "Unable to create drawable from URL " + url, e);
-        } finally {
-            try {
-                if (input != null) {
-                    input.close();
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error closing input stream.", e);
-            }
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-
-        return null;
     }
 
 
