@@ -8,37 +8,37 @@ import com.google.android.gms.ads.formats.NativeAd;
 
 public class AdapterNativeMappedImage extends NativeAd.Image {
 
-	private final Drawable drawable;
-	private final Uri imageUri;
-	private final double scale;
+    private final Drawable drawable;
+    private final Uri imageUri;
+    private final double scale;
 
 
-	AdapterNativeMappedImage(final Drawable drawable, final Uri imageUri, final double scale) {
+    AdapterNativeMappedImage(final Drawable drawable, final Uri imageUri, final double scale) {
 
-		this.drawable = drawable;
-		this.imageUri = imageUri;
-		this.scale = scale;
-	}
-
-
-	@Override
-	public Drawable getDrawable() {
-
-		return drawable;
-	}
+        this.drawable = drawable;
+        this.imageUri = imageUri;
+        this.scale = scale;
+    }
 
 
-	@Override
-	public Uri getUri() {
+    @Override
+    public Drawable getDrawable() {
 
-		return imageUri;
-	}
+        return drawable;
+    }
 
 
-	@Override
-	public double getScale() {
+    @Override
+    public Uri getUri() {
 
-		return scale;
-	}
+        return imageUri;
+    }
+
+
+    @Override
+    public double getScale() {
+
+        return scale;
+    }
 
 }
