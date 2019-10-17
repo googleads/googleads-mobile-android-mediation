@@ -24,7 +24,8 @@ import com.google.android.gms.ads.rewarded.RewardItem;
  * Class for rendering a Fyber Marketplace rewarded video
  */
 public class FyberRewardedVideoRenderer implements MediationRewardedAd {
-    private final static String TAG = FyberRewardedVideoRenderer.class.getSimpleName();;
+    private final static String TAG = FyberRewardedVideoRenderer.class.getSimpleName();
+    private final static String RENDER_FAILURE_ERROR_STR = "Cannot render rewarded ad. Please define a valid spot id on the AdMob UI";
 
     /** AdMob's Interstitial ad configuration object */
     private MediationRewardedAdConfiguration mAdConfiguration;
@@ -58,8 +59,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         // Check that we got a valid spot id from the server
         String spotId = mAdConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
-            Log.w(TAG, "Cannot render interstitial ad. Please define a valid spot id on the AdMob console");
-            mAdLoadCallback.onFailure("Cannot render interstitial ad. Please define a valid spot id on the AdMob console");
+            Log.w(TAG, RENDER_FAILURE_ERROR_STR);
+            mAdLoadCallback.onFailure(RENDER_FAILURE_ERROR_STR);
             return;
         }
 
@@ -131,9 +132,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
 
         videoContentController.setEventsListener(new VideoContentListenerAdapter() {
             /**
-             * Called by inneractive when an Intersititial video ad was played to the end
-             * <br>Can be used for incentive flow
-             * <br>Note: This event does not indicate that the interstitial was closed
+             * Called by inneractive when a rewarded video ad was played to the end
+             * <br>Note: This event does not indicate that the rewarded video was closed
              */
             @Override
             public void onCompleted() {

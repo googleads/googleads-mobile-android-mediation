@@ -149,6 +149,7 @@ public class FyberMediationAdapter extends Adapter
     public void initialize(Context context, final InitializationCompleteCallback completionCallback, List<MediationConfiguration> mediationConfigurations) {
         // Initialize only once
         if (InneractiveAdManager.wasInitialized()) {
+            waitForInitializationStatusAndReport(completionCallback);
             return;
         }
 
@@ -176,7 +177,7 @@ public class FyberMediationAdapter extends Adapter
         if (configuredAppIds.isEmpty()) {
             Log.w(TAG, "No appId received from AdMob. Cannot initialize Fyber Marketplace");
             if (completionCallback != null) {
-                completionCallback.onInitializationFailed("Fyber SDK requires an appId to be configured on the AdMob console");
+                completionCallback.onInitializationFailed("Fyber SDK requires an appId to be configured on the AdMob UI");
             }
 
             return;
@@ -194,21 +195,31 @@ public class FyberMediationAdapter extends Adapter
 
         InneractiveAdManager.initialize(context, appIdForInitialization);
 
-        IAConfigManager.addListener(new IAConfigManager.OnConfigurationReadyAndValidListener() {
-            @Override
-            public void onConfigurationReadyAndValid(IAConfigManager iaConfigManager, boolean success, Exception e) {
-                // Can be called more than once
-                if (completionCallback != null) {
-                    if (success) {
-                        completionCallback.onInitializationSucceeded();
-                    } else {
-                        completionCallback.onInitializationFailed("Fyber SDK initialization failed");
-                    }
-                }
+        waitForInitializationStatusAndReport(completionCallback);
+    }
 
-                IAConfigManager.removeListener(this);
-            }
-        });
+    /**
+     * A helper for checking out Fyber's initialization status
+     * @param completionCallback Admob's initialization callback
+     */
+    private void waitForInitializationStatusAndReport(final InitializationCompleteCallback completionCallback) {
+        if (completionCallback != null) {
+            IAConfigManager.addListener(new IAConfigManager.OnConfigurationReadyAndValidListener() {
+                @Override
+                public void onConfigurationReadyAndValid(IAConfigManager iaConfigManager, boolean success, Exception e) {
+                    // Can be called more than once
+                    if (completionCallback != null) {
+                        if (success) {
+                            completionCallback.onInitializationSucceeded();
+                        } else {
+                            completionCallback.onInitializationFailed("Fyber SDK initialization failed");
+                        }
+                    }
+
+                    IAConfigManager.removeListener(this);
+                }
+            });
+        }
     }
 
     public VersionInfo getVersionInfo() {
@@ -252,7 +263,7 @@ public class FyberMediationAdapter extends Adapter
         String spotId = bundle.getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
             mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            Log.w(TAG, "Cannot render banner ad. Please define a valid spot id on the AdMob console");
+            Log.w(TAG, "Cannot render banner ad. Please define a valid spot id on the AdMob UI");
             return;
         }
 
@@ -360,12 +371,13 @@ public class FyberMediationAdapter extends Adapter
         InneractiveAdViewEventsListener adViewListener = new InneractiveAdViewEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot adSpot) {
-                mediationBannerListener.onAdOpened(FyberMediationAdapter.this);
+                // Nothing to report back here
             }
 
             @Override
             public void onAdClicked(InneractiveAdSpot adSpot) {
                 mediationBannerListener.onAdClicked(FyberMediationAdapter.this);
+                mediationBannerListener.onAdOpened(FyberMediationAdapter.this);
             }
 
             @Override
@@ -399,7 +411,7 @@ public class FyberMediationAdapter extends Adapter
         String spotId = bundle.getString(FyberMediationAdapter.KEY_SPOT_ID);
         if (TextUtils.isEmpty(spotId)) {
             mediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            Log.w(TAG, "Cannot render banner ad. Please define a valid spot id on the AdMob console");
+            Log.w(TAG, "Cannot render interstitial ad. Please define a valid spot id on the AdMob UI");
             return;
         }
 
@@ -512,8 +524,9 @@ public class FyberMediationAdapter extends Adapter
      */
     private void initializeFromBundle(Context context, Bundle bundle) {
         List<MediationConfiguration> configs = new ArrayList<>();
-        configs.add(new MediationConfiguration(AdFormat.BANNER, bundle));
 
+        // Bridge between the legacy API and the new Adapter API. The ad format parameter is not actually used in the initialize method
+        configs.add(new MediationConfiguration(null, bundle));
         initialize(context, null, configs);
     }
 
