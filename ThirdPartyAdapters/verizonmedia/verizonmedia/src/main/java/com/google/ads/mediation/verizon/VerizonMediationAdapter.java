@@ -52,7 +52,7 @@ import java.util.List;
 public class VerizonMediationAdapter extends Adapter
     implements MediationBannerAdapter, MediationInterstitialAdapter, MediationNativeAdapter {
 
-    private static final String VERSION = "1.1.4.0";
+    private static final String VERSION = "1.2.0.0";
     private static final String PLACEMENT_KEY = "placement_id";
     private static final String CUSTOM_PLACEMENT_KEY = "parameter";
     private static final String SITE_KEY = "site_id";

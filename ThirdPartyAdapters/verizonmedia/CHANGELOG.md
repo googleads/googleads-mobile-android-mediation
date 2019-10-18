@@ -1,6 +1,7 @@
 ## Verizon Media Android Mediation Adapter Changelog
 
-## Version 1.1.4.0
+## Version 1.2.0.0
+- Support for Verizon Media SDK v1.2.0.
 - Support for Native ads added.
 - Support for Rewarded Video added.
 
