@@ -102,8 +102,13 @@ public class VerizonMediationAdapter extends Adapter
 
     @Override
     public VersionInfo getSDKVersionInfo() {
-        String versionString = VASAds.getSDKInfo().version;
-        String splits[] = versionString.split("\\.");
+        String versionString = Configuration.getString("com.verizon.ads",
+            "editionVersion", null);
+
+        if (TextUtils.isEmpty(versionString)) {
+            versionString = VASAds.getSDKInfo().version;
+        }
+        String[] splits = versionString.split("\\.");
         if (splits.length >= 3) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
