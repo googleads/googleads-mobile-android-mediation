@@ -263,9 +263,7 @@ public class UnityAdapter extends UnityMediationAdapter
         // Even though we are a banner request, we still need to initialize UnityAds.
         UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
 
-        Integer bannerWidth = adSize.getWidth() < 320 ? 320 : adSize.getWidth();
-        Integer bannerHeight = adSize.getHeight() < 50 ? 50 : adSize.getHeight();
-        UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
+        UnityBannerSize size = new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
 
         if (mBannerView == null){
             mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
@@ -278,16 +276,15 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public View getBannerView() {
         if(mBannerView == null) {
-            Log.v(TAG, "Unity Ads Adaptor null banner view");
+            Log.v(TAG, "Unity Ads Adapter null banner view");
         } else {
-            Log.v(TAG, "Unity Ads Adaptor provided a banner view for placement: " + mBannerView.getPlacementId());
+            Log.v(TAG, "Unity Ads Adapter provided a banner view for placement: " + mBannerView.getPlacementId());
         }
         return mBannerView;
     }
 
     @Override
     public void onBannerLoaded(BannerView bannerView) {
-        mBannerView = bannerView;
         bannerListener.onAdLoaded(UnityAdapter.this);
         Log.v(TAG, "Unity Ads Banner finished loading banner for placement: " + mBannerView.getPlacementId());
     }
