@@ -13,7 +13,7 @@ import com.vungle.warren.AdConfig;
 public final class VungleExtrasBuilder {
 
     public static final String EXTRA_USER_ID = "userId";
-    private static final String EXTRA_SOUND_ENABLED = "soundEnabled";
+    private static final String EXTRA_START_MUTED = "startMuted";
     private static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
     private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
     private static final String EXTRA_ORIENTATION = "adOrientation";
@@ -31,8 +31,13 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
+    @Deprecated
     public VungleExtrasBuilder setSoundEnabled(boolean enabled) {
-        mBundle.putBoolean(EXTRA_SOUND_ENABLED, enabled);
+        return setStartMuted(!enabled);
+    }
+
+    public VungleExtrasBuilder setStartMuted(boolean muted) {
+        mBundle.putBoolean(EXTRA_START_MUTED, muted);
         return this;
     }
 
@@ -63,7 +68,7 @@ public final class VungleExtrasBuilder {
     public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
         AdConfig adConfig = new AdConfig();
         if (networkExtras != null) {
-            adConfig.setMuted(!networkExtras.getBoolean(EXTRA_SOUND_ENABLED, true));
+            adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, false));
             adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
             adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
             adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
@@ -71,7 +76,7 @@ public final class VungleExtrasBuilder {
         return adConfig;
     }
 
-    public static boolean isStartMuteConfigured(Bundle networkExtras) {
-        return networkExtras.containsKey(EXTRA_SOUND_ENABLED);
+    static boolean isStartMutedNotConfigured(Bundle networkExtras) {
+        return !networkExtras.containsKey(EXTRA_START_MUTED);
     }
 }
