@@ -42,7 +42,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
      */
     private InneractiveAdSpot mRewardedSpot;
     private InneractiveFullscreenUnitController mUnitController;
-    private boolean mReceivedRewardItem = false;
 
     /**
      * Constructor
@@ -105,12 +104,21 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
      * @param controller the full screen controller
      * @param callback Google's rewarded ad callback
      */
-    private void registerFyberAdListener(InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
+    private void registerFyberAdListener(final InneractiveFullscreenUnitController controller, final MediationRewardedAdCallback callback) {
+        // Check for the returned ad type, in order to send back the reward callback properly
+        // For video ads, the reward is earned only if the video is completed
+        // For Display ads, the reward is earned when the ad is dismissed
+
         InneractiveFullscreenAdEventsListenerAdapter adListener = new InneractiveFullscreenAdEventsListenerAdapter() {
             @Override
             public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
                 callback.onAdOpened();
-                callback.onVideoStart();
+
+                // Code review note: Report video start should be called before reporting ad impression
+                if (isVideoAdAvailable(controller)) {
+                    callback.onVideoStart();
+                }
+
                 callback.reportAdImpression();
             }
 
@@ -122,12 +130,16 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             @Override
             public void onAdDismissed(InneractiveAdSpot inneractiveAdSpot) {
                 callback.onAdClosed();
-                userEarnedReward(callback);
+
+                // Display ad closed
+                if (!isVideoAdAvailable(controller)) {
+                    callback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+                }
             }
         };
 
-        // Listen to video completion event
-        InneractiveFullscreenVideoContentController videoContentController =
+        // If the ad is a video ad, wait for the video completion event
+         final InneractiveFullscreenVideoContentController videoContentController =
                 new InneractiveFullscreenVideoContentController();
 
         videoContentController.setEventsListener(new VideoContentListenerAdapter() {
@@ -138,7 +150,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
             @Override
             public void onCompleted() {
                 callback.onVideoComplete();
-                userEarnedReward(callback);
+
+                // The video is completed. an end card is shown. the ad is not dismissed yet, but a reward is in order
+                callback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
             }
         });
 
@@ -156,14 +170,15 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     }
 
     /**
-     * Small helper method, in order to report user earned reward for both video and mraid video ads
-     * @param callback
+     * Checks if the given unit controller, contains a video ad
+     * @param controller a populated content controller
+     * @return true if a video ad is available, false otherwise
      */
-    private void userEarnedReward(MediationRewardedAdCallback callback) {
-        if(!mReceivedRewardItem) {
-            mReceivedRewardItem = true;
-
-            callback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+    private boolean isVideoAdAvailable(InneractiveFullscreenUnitController controller) {
+        if (controller != null && controller.getSelectedContentController() != null && controller.getSelectedContentController() instanceof InneractiveFullscreenVideoContentController) {
+            return true;
         }
+
+        return false;
     }
 }

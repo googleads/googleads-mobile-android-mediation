@@ -106,33 +106,6 @@ public class FyberMediationAdapter extends Adapter
     }
 
     /**
-     * Not supported. Use {@link MediationBannerAdapter#requestBannerAd} instead
-     * @param configuration
-     * @param callback
-     */
-    public void loadBannerAd(MediationBannerAdConfiguration configuration, MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        callback.onFailure(String.format("%s does not support MediationBannerAd", getClass().getSimpleName()));
-    }
-
-    /**
-     * Not supported. Use {@link MediationInterstitialAdapter#requestInterstitialAd} instead
-     * @param configuration
-     * @param callback
-     */
-    public void loadInterstitialAd(MediationInterstitialAdConfiguration configuration, MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-        callback.onFailure(String.format("%s does not support MediationInterstitialAd", getClass().getSimpleName()));
-    }
-
-    /**
-     * Native ads mediaqtion is not supported by the FyberMediationAdapter
-     * @param var1
-     * @param callback
-     */
-    public void loadNativeAd(MediationNativeAdConfiguration var1, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-        callback.onFailure(String.format("%s does not support native ads", getClass().getSimpleName()));
-    }
-
-    /**
      * Only rewarded ads are implemented using the new Adapter interface
      * @param configuration
      * @param callback
@@ -225,9 +198,23 @@ public class FyberMediationAdapter extends Adapter
     public VersionInfo getVersionInfo() {
         String versionString = BuildConfig.VERSION_NAME;
         String splits[] = versionString.split("\\.");
-        int major = Integer.parseInt(splits[0]);
-        int minor = Integer.parseInt(splits[1]);
-        int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+        int major = 0;
+        int minor = 0;
+        int micro = 0;
+        if (splits.length > 2) {
+            major = Integer.parseInt(splits[0]);
+            minor = Integer.parseInt(splits[1]);
+            micro = Integer.parseInt(splits[2]) * 100;
+            if (splits.length > 3) {
+                micro += Integer.parseInt(splits[3]);
+            }
+        } else if (splits.length == 2) {
+            major = Integer.parseInt(splits[0]);
+            minor = Integer.parseInt(splits[1]);
+        } else if (splits.length == 1) {
+            major = Integer.parseInt(splits[0]);
+        }
+
         return new VersionInfo(major, minor, micro);
     }
 
@@ -247,6 +234,7 @@ public class FyberMediationAdapter extends Adapter
         } else if (splits.length == 1) {
             major = Integer.parseInt(splits[0]);
         }
+
         return new VersionInfo(major, minor, micro);
     }
 
