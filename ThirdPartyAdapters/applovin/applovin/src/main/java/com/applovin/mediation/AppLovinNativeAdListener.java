@@ -9,7 +9,9 @@ import com.applovin.nativeAds.AppLovinNativeAdPrecacheListener;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -23,15 +25,18 @@ class AppLovinNativeAdListener
     private final MediationNativeListener mNativeListener;
     private final AppLovinSdk mSdk;
     private final WeakReference<Context> mContextWeakReference;
+    private final NativeMediationAdRequest mMediationAdRequest;
 
-    AppLovinNativeAdListener(AppLovinNativeAdapter adapter,
+    public AppLovinNativeAdListener(AppLovinNativeAdapter adapter,
                              MediationNativeListener nativeListener,
                              AppLovinSdk sdk,
-                             Context context) {
+                             Context context,
+                             NativeMediationAdRequest mediationAdRequest) {
         mAdapter = adapter;
         mNativeListener = nativeListener;
         mSdk = sdk;
         mContextWeakReference = new WeakReference<>(context);
+        mMediationAdRequest = mediationAdRequest;
     }
 
     @Override
@@ -60,14 +65,26 @@ class AppLovinNativeAdListener
             notifyAdFailure(AdRequest.ERROR_CODE_INTERNAL_ERROR);
             return;
         }
-        final AppLovinNativeAdMapper mapper = new AppLovinNativeAdMapper(ad, context);
-        Log.d(TAG, "Native ad loaded.");
-        AppLovinSdkUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mNativeListener.onAdLoaded(mAdapter, mapper);
-            }
-        });
+        if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
+            final AppLovinUnifiedNativeAdMapper mapper = new AppLovinUnifiedNativeAdMapper(context,
+                    ad);
+            Log.d(TAG, "UnifiedNativeAd loaded.");
+            AppLovinSdkUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mNativeListener.onAdLoaded(mAdapter, mapper);
+                }
+            });
+        } else if (mMediationAdRequest.isAppInstallAdRequested()) {
+            final AppLovinNativeAdMapper mapper = new AppLovinNativeAdMapper(ad, context);
+            Log.d(TAG, "AppInstallAd loaded.");
+            AppLovinSdkUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mNativeListener.onAdLoaded(mAdapter, mapper);
+                }
+            });
+        }
     }
 
     @Override

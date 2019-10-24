@@ -10,38 +10,37 @@ import android.widget.ImageView;
 
 import com.applovin.nativeAds.AppLovinNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
 import java.util.ArrayList;
 
 /**
- * A {@link NativeAppInstallAdMapper} used to map an AppLovin Native ad to Google Native App Install
- * ad.
+ * A {@link UnifiedNativeAdMapper} used to map an AppLovin Native ad to Google Unified Native Ad.
  */
-class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
+ class AppLovinUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     /**
      * AppLovin native ad instance.
      */
     private AppLovinNativeAd mNativeAd;
 
-    AppLovinNativeAdMapper(AppLovinNativeAd nativeAd, Context context) {
+    public AppLovinUnifiedNativeAdMapper(Context context, AppLovinNativeAd nativeAd) {
         mNativeAd = nativeAd;
-        setHeadline(nativeAd.getTitle());
-        setBody(nativeAd.getDescriptionText());
-        setCallToAction(nativeAd.getCtaText());
+        setHeadline(mNativeAd.getTitle());
+        setBody(mNativeAd.getDescriptionText());
+        setCallToAction(mNativeAd.getCtaText());
 
-        ImageView mediaView = new ImageView(context);
+        final ImageView mediaView = new ImageView(context);
         ViewGroup.LayoutParams layoutParams =
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mediaView.setLayoutParams(layoutParams);
 
         ArrayList<NativeAd.Image> images = new ArrayList<>(1);
-        Uri imageUri = Uri.parse(nativeAd.getImageUrl());
+        Uri imageUri = Uri.parse(mNativeAd.getImageUrl());
         Drawable imageDrawable = Drawable.createFromPath(imageUri.getPath());
 
-        Uri iconUri = Uri.parse(nativeAd.getIconUrl());
+        Uri iconUri = Uri.parse(mNativeAd.getIconUrl());
         Drawable iconDrawable = Drawable.createFromPath(iconUri.getPath());
 
         AppLovinNativeAdImage image = new AppLovinNativeAdImage(imageUri, imageDrawable);
@@ -53,12 +52,16 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
 
         mediaView.setImageDrawable(imageDrawable);
         setMediaView(mediaView);
-        setStarRating(nativeAd.getStarRating());
+        int imageHeight = imageDrawable.getIntrinsicHeight();
+        if (imageHeight > 0) {
+            setMediaContentAspectRatio(imageDrawable.getIntrinsicWidth() / imageHeight);
+        }
+        setStarRating((double) mNativeAd.getStarRating());
 
         Bundle extraAssets = new Bundle();
-        extraAssets.putLong(AppLovinNativeAdapter.KEY_EXTRA_AD_ID, nativeAd.getAdId());
+        extraAssets.putLong(AppLovinNativeAdapter.KEY_EXTRA_AD_ID, mNativeAd.getAdId());
         extraAssets.putString(
-                AppLovinNativeAdapter.KEY_EXTRA_CAPTION_TEXT, nativeAd.getCaptionText());
+                AppLovinNativeAdapter.KEY_EXTRA_CAPTION_TEXT, mNativeAd.getCaptionText());
         setExtras(extraAssets);
 
         setOverrideClickHandling(false);
@@ -74,4 +77,5 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
     public void handleClick(View view) {
         mNativeAd.launchClickTarget(view.getContext());
     }
+
 }
