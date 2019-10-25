@@ -58,6 +58,7 @@ import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +186,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 Log.w(TAG, "Failed to load ad from Facebook: " + message);
                 if (mBannerListener != null) {
                     mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
-                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
         });
@@ -224,7 +225,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 Log.w(TAG, "Failed to load ad from Facebook: " + message);
                 if (mInterstitialListener != null) {
                     mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                          AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
         });
@@ -462,25 +463,36 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
         if (isNativeBanner) {
             mNativeBannerAd = new NativeBannerAd(context, placementID);
-            mNativeBannerAd.setAdListener(new NativeBannerListener(mNativeBannerAd, adRequest));
+            mNativeBannerAd.setAdListener(new NativeBannerListener(context, mNativeBannerAd,
+                    adRequest));
             buildAdRequest(adRequest);
             mNativeBannerAd.loadAd();
         } else {
             mMediaView = new MediaView(context);
             mNativeAd = new NativeAd(context, placementID);
-            mNativeAd.setAdListener(new NativeListener(mNativeAd, adRequest));
+            mNativeAd.setAdListener(new NativeListener(context, mNativeAd, adRequest));
             buildAdRequest(adRequest);
             mNativeAd.loadAd();
         }
     }
 
     private class NativeBannerListener implements  AdListener, NativeAdListener {
-
+        /**
+         * @param mContext required to create AdOptions View.
+         */
+        private WeakReference<Context> mContext;
+        /**
+         * Facebook native banner ad instance.
+         */
         private NativeBannerAd mNativeBannerAd;
+        /**
+         * NativeMediationAdRequest instance.
+         */
         private NativeMediationAdRequest mMediationAdRequest;
 
-        private NativeBannerListener(NativeBannerAd nativeBannerAd,
+        private NativeBannerListener(Context context, NativeBannerAd nativeBannerAd,
                                      NativeMediationAdRequest mediationAdRequest) {
+            mContext = new WeakReference<>(context);
             mNativeBannerAd = nativeBannerAd;
             mMediationAdRequest = mediationAdRequest;
         }
@@ -510,16 +522,21 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 return;
             }
+            Context context = mContext.get();
+            if (context == null) {
+                Log.w(TAG, "Failed to create ad options view, Context is null.");
+                mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
 
             NativeAdOptions options = mMediationAdRequest.getNativeAdOptions();
             if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
-                final UnifiedAdMapper mapper;
-                mapper = new UnifiedAdMapper(mNativeBannerAd, options);
-                mapper.mapUnifiedNativeAd(new NativeAdMapperListener() {
+                final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeBannerAd, options);
+                mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
                     @Override
                     public void onMappingSuccess() {
                         mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
-                        Log.e("INFO","On Ad Loaded");
                     }
 
                     @Override
@@ -532,7 +549,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             } else if (mMediationAdRequest.isAppInstallAdRequested()) {
                 // We always convert the ad into an app install ad.
                 final AppInstallMapper mapper = new AppInstallMapper(mNativeBannerAd, options);
-                mapper.mapNativeAd(new NativeAdMapperListener() {
+                mapper.mapNativeAd(context, new NativeAdMapperListener() {
                     @Override
                     public void onMappingSuccess() {
                         mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
@@ -577,10 +594,22 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     private class NativeListener implements AdListener, NativeAdListener {
+        /**
+         * @param mContext required to create AdOptions View.
+         */
+        private WeakReference<Context> mContext;
+        /**
+         * Facebook native banner ad instance.
+         */
         private NativeAd mNativeAd;
+        /**
+         * NativeMediationAdRequest instance.
+         */
         private NativeMediationAdRequest mMediationAdRequest;
 
-        private NativeListener(NativeAd nativeAd, NativeMediationAdRequest mediationAdRequest) {
+        private NativeListener(Context context, NativeAd nativeAd,
+                               NativeMediationAdRequest mediationAdRequest) {
+            mContext = new WeakReference<>(context);
             mNativeAd = nativeAd;
             mMediationAdRequest = mediationAdRequest;
         }
@@ -613,11 +642,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 return;
             }
+            Context context = mContext.get();
+            if (context == null) {
+                Log.w(TAG, "Failed to create ad options view, Context is null.");
+                mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
 
             NativeAdOptions options = mMediationAdRequest.getNativeAdOptions();
             if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
                 final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeAd, options);
-                mapper.mapUnifiedNativeAd(new NativeAdMapperListener() {
+                mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
                     @Override
                     public void onMappingSuccess() {
                         mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
@@ -633,7 +669,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             } else if (mMediationAdRequest.isAppInstallAdRequested()) {
                 // We always convert the ad into an app install ad.
                 final AppInstallMapper mapper = new AppInstallMapper(mNativeAd, options);
-                mapper.mapNativeAd(new NativeAdMapperListener() {
+                mapper.mapNativeAd(context, new NativeAdMapperListener() {
                     @Override
                     public void onMappingSuccess() {
                         mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
@@ -813,7 +849,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
          *
          * @param mapperListener used to send success/failure callbacks when mapping is done.
          */
-        public void mapNativeAd(NativeAdMapperListener mapperListener) {
+        public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
             if (isNativeBanner) {
                 if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
                     Log.w(TAG, "Ad from Facebook doesn't have all assets required for the Native " +
@@ -914,7 +950,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
                 setExtras(extras);
             }
-
+            NativeAdLayout nativeAdLayout = new NativeAdLayout(context);
+            AdOptionsView adOptionsView;
+            if (isNativeBanner) {
+                adOptionsView = new AdOptionsView(context, mNativeBannerAd,
+                        nativeAdLayout);
+            } else {
+                adOptionsView = new AdOptionsView(context, mNativeAd, nativeAdLayout);
+            }
+            setAdChoicesContent(adOptionsView);
             mapperListener.onMappingSuccess();
         }
 
@@ -950,58 +994,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         public void trackViews(View view,
                                Map<String, View> clickableAssetViews,
                                Map<String, View> nonClickableAssetViews) {
-
-            ViewGroup adView = (ViewGroup) view;
-            // Find the overlay view in the given ad view. The overlay view will always be the
-            // top most view in the hierarchy.
-            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
-            if (overlayView instanceof FrameLayout) {
-                ((FrameLayout) overlayView).addView(nativeAdLayout);
-                // Create and add Facebook's AdOptions to the overlay view.
-                AdOptionsView adOptionsView;
-                if (isNativeBanner) {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
-                            nativeAdLayout);
-                } else {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
-                }
-                ((ViewGroup) overlayView).addView(adOptionsView);
-                // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
-                // LayoutParams from the AdOptionsView.
-                FrameLayout.LayoutParams params =
-                        (FrameLayout.LayoutParams) adOptionsView.getLayoutParams();
-                if (mNativeAdOptions != null) {
-                    switch (mNativeAdOptions.getAdChoicesPlacement()) {
-                        case NativeAdOptions.ADCHOICES_TOP_LEFT:
-                            params.gravity = Gravity.TOP | Gravity.LEFT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-                            params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-                            params.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-                        default:
-                            params.gravity = Gravity.TOP | Gravity.RIGHT;
-                    }
-                } else {
-                    // Default to top right if native ad options are not provided.
-                    params.gravity = Gravity.TOP | Gravity.RIGHT;
-                }
-                adView.requestLayout();
-            } else {
-                AdOptionsView adOptionsView;
-                if (isNativeBanner) {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
-                            nativeAdLayout);
-                } else {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
-                }
-                this.setAdChoicesContent(adOptionsView);
-            }
-
             // Facebook does its own impression tracking.
             setOverrideImpressionRecording(true);
 
@@ -1017,7 +1009,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
                     iconview = (ImageView) clickableAssets.getValue();
                 }
-
             }
             if (isNativeBanner) {
                 mNativeBannerAd.registerViewForInteraction(view, iconview);
@@ -1030,22 +1021,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         @Override
         public void untrackView(View view) {
             super.untrackView(view);
-            // Called when the native ad view no longer needs tracking. Remove any previously
-            // added trackers.
-
-            ViewGroup adView = (ViewGroup) view;
-            // Find the overlay view in the given ad view. The overlay view will always be the
-            // top most view in the hierarchy.
-            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            if (overlayView instanceof FrameLayout) {
-                ((FrameLayout) overlayView).removeAllViews();
-            }
-
-            if (isNativeBanner) {
-                mNativeBannerAd.unregisterView();
-            } else {
-                mNativeAd.unregisterView();
-            }
         }
 
         /**
@@ -1110,7 +1085,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
          *
          * @param mapperListener used to send success/failure callbacks when mapping is done.
          */
-        public void mapUnifiedNativeAd(NativeAdMapperListener mapperListener) {
+        public void mapUnifiedNativeAd(Context context, NativeAdMapperListener mapperListener) {
 
             if (isNativeBanner) {
                 if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
@@ -1210,6 +1185,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
                 setExtras(extras);
             }
+            NativeAdLayout nativeAdLayout = new NativeAdLayout(context);
+            AdOptionsView adOptionsView;
+            if (isNativeBanner) {
+                adOptionsView = new AdOptionsView(context, mNativeBannerAd,
+                        nativeAdLayout);
+            } else {
+                adOptionsView = new AdOptionsView(context, mNativeAd, nativeAdLayout);
+            }
+            setAdChoicesContent(adOptionsView);
             mapperListener.onMappingSuccess();
         }
 
@@ -1247,56 +1231,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                Map<String, View> clickableAssetViews,
                                Map<String, View> nonClickableAssetViews) {
 
-            ViewGroup adView = (ViewGroup) view;
-            // Find the overlay view in the given ad view. The overlay view will always be the
-            // top most view in the hierarchy.
-            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
-            if (overlayView instanceof FrameLayout) {
-                AdOptionsView adOptionsView;
-                // Create and add Facebook's AdOptions to the overlay view.
-                if (isNativeBanner) {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
-                            nativeAdLayout);
-                } else {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
-                }
-                ((ViewGroup) overlayView).addView(adOptionsView);
-                // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
-                // LayoutParams from the AdOptionsView.
-                FrameLayout.LayoutParams params =
-                        (FrameLayout.LayoutParams) adOptionsView.getLayoutParams();
-                if (mNativeAdOptions != null) {
-                    switch (mNativeAdOptions.getAdChoicesPlacement()) {
-                        case NativeAdOptions.ADCHOICES_TOP_LEFT:
-                            params.gravity = Gravity.TOP | Gravity.LEFT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-                            params.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-                            params.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                            break;
-                        case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-                        default:
-                            params.gravity = Gravity.TOP | Gravity.RIGHT;
-                    }
-                } else {
-                    // Default to top right if native ad options are not provided.
-                    params.gravity = Gravity.TOP | Gravity.RIGHT;
-                }
-                adView.requestLayout();
-            } else {
-                AdOptionsView adOptionsView;
-                if (isNativeBanner) {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeBannerAd,
-                            nativeAdLayout);
-                } else {
-                    adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, nativeAdLayout);
-                }
-                this.setAdChoicesContent(adOptionsView);
-            }
-
             // Facebook does its own impression tracking.
             setOverrideImpressionRecording(true);
 
@@ -1324,21 +1258,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         @Override
         public void untrackView(View view) {
             super.untrackView(view);
-            // Called when the native ad view no longer needs tracking. Remove any previously
-            // added trackers.
-
-            ViewGroup adView = (ViewGroup) view;
-            // Find the overlay view in the given ad view. The overlay view will always be the
-            // top most view in the hierarchy.
-            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            if (overlayView instanceof FrameLayout) {
-                ((FrameLayout) overlayView).removeAllViews();
-            }
-            if (isNativeBanner) {
-                mNativeBannerAd.unregisterView();
-            } else {
-                mNativeAd.unregisterView();
-            }
         }
 
         /**

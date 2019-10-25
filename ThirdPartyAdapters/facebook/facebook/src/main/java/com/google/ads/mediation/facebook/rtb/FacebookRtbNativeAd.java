@@ -1,5 +1,6 @@
 package com.google.ads.mediation.facebook.rtb;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +64,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         }
         mMediaView = new MediaView(adConfiguration.getContext());
         mNativeAd = new NativeAd(adConfiguration.getContext(), placementId);
-        mNativeAd.setAdListener(new NativeListener(mNativeAd));
+        mNativeAd.setAdListener(new NativeListener(adConfiguration.getContext(), mNativeAd));
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
             mNativeAd.setExtraHints(new ExtraHints.Builder()
                     .mediationData(adConfiguration.getWatermark()).build());
@@ -71,11 +73,18 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     private class NativeListener implements AdListener, NativeAdListener {
-
+        /**
+         * @param mContext required to create AdOptions View.
+         */
+        private WeakReference<Context> mContext;
+        /**
+         * Facebook native ad instance.
+         */
         private NativeAd mNativeAd;
 
-        NativeListener(NativeAd mNativeAd) {
+        NativeListener(Context mContext, NativeAd mNativeAd) {
             this.mNativeAd = mNativeAd;
+            this.mContext  = new WeakReference<>(mContext);
         }
 
         @Override
@@ -88,7 +97,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
         @Override
         public void onLoggingImpression(Ad ad) {
-          // Google Mobile Ads handles impression tracking.
+            // Google Mobile Ads handles impression tracking.
         }
 
         @Override
@@ -98,8 +107,14 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
                 FacebookRtbNativeAd.this.callback.onFailure("Ad Loaded is not a Native Ad");
                 return;
             }
+            Context context = mContext.get();
+            if (context == null) {
+                Log.w(TAG, "Failed to create ad options view, Context is null.");
+                FacebookRtbNativeAd.this.callback.onFailure("Context is null");
+                return;
+            }
 
-            FacebookRtbNativeAd.this.mapNativeAd(new NativeAdMapperListener() {
+            FacebookRtbNativeAd.this.mapNativeAd(context, new NativeAdMapperListener() {
                 @Override
                 public void onMappingSuccess() {
                     mNativeAdCallback = callback.onSuccess(FacebookRtbNativeAd.this);
@@ -135,7 +150,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
      *
      * @param mapperListener used to send success/failure callbacks when mapping is done.
      */
-    public void mapNativeAd(NativeAdMapperListener mapperListener) {
+    public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
         if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
             Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
                     + " format.");
@@ -213,6 +228,9 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, FacebookRtbNativeAd.this.mNativeAd.getAdSocialContext());
         setExtras(extras);
 
+        NativeAdLayout nativeAdLayout = new NativeAdLayout(context);
+        AdOptionsView adOptionsView = new AdOptionsView(context, mNativeAd, nativeAdLayout);
+        setAdChoicesContent(adOptionsView);
         mapperListener.onMappingSuccess();
 
     }
@@ -236,31 +254,6 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
                            Map<String, View> clickableAssetViews,
                            Map<String, View> nonClickableAssetViews) {
 
-        ViewGroup adView = (ViewGroup) view;
-
-        // Find the overlay view in the given ad view. The overlay view will always be the
-        // top most view in the hierarchy.
-        View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-        if (overlayView instanceof FrameLayout) {
-            NativeAdLayout nativeAdLayout = new NativeAdLayout(view.getContext());
-            ((FrameLayout) overlayView).addView(nativeAdLayout);
-            // Create and add Facebook's AdOptions to the overlay view.
-            AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd,
-                    nativeAdLayout);
-            ((ViewGroup) overlayView).addView(adOptionsView);
-            // We know that the overlay view is a FrameLayout, so we get the FrameLayout's
-            // LayoutParams from the AdOptionsView.
-            FrameLayout.LayoutParams params =
-                    (FrameLayout.LayoutParams) adOptionsView.getLayoutParams();
-            // Default to top right if native ad options are not provided.
-            params.gravity = Gravity.TOP | Gravity.RIGHT;
-
-            adView.requestLayout();
-        } else {
-            AdOptionsView adOptionsView = new AdOptionsView(view.getContext(), mNativeAd, null);
-            this.setAdChoicesContent(adOptionsView);
-        }
-
         // Facebook does its own click handling.
         setOverrideClickHandling(true);
         ImageView iconview = null;
@@ -282,18 +275,6 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     @Override
     public void untrackView(View view) {
         super.untrackView(view);
-        // Called when the native ad view no longer needs tracking. Remove any previously
-        // added trackers.
-
-        ViewGroup adView = (ViewGroup) view;
-        // Find the overlay view in the given ad view. The overlay view will always be the
-        // top most view in the hierarchy.
-        View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-        if (overlayView instanceof FrameLayout) {
-            ((FrameLayout) overlayView).removeAllViews();
-        }
-
-        mNativeAd.unregisterView();
     }
 
     private class FacebookAdapterNativeAdImage extends
