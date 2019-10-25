@@ -151,12 +151,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                 final MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
         mBannerListener = listener;
-        if (!isValidRequestParameters(context, serverParameters)) {
-            if (mBannerListener != null) {
-                mBannerListener.onAdFailedToLoad(
-                        FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-                return;
-            }
+        final String placementID = getPlacementID(serverParameters);
+
+        if (TextUtils.isEmpty(placementID)) {
+            Log.e(TAG, "Failed to request ad, placementID is null or empty");
+            mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
         }
 
         if (adSize == null) {
@@ -173,12 +173,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-        FacebookInitializer.getInstance().initialize(context, placementId,
+        FacebookInitializer.getInstance().initialize(context, placementID,
                 new FacebookInitializer.Listener() {
             @Override
             public void onInitializeSuccess() {
-                createAndLoadBannerAd(context, placementId, adSize, adRequest);
+                createAndLoadBannerAd(context, placementID, adSize, adRequest);
             }
 
             @Override
@@ -206,18 +205,19 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                       final MediationAdRequest adRequest,
                                       Bundle mediationExtras) {
         mInterstitialListener = listener;
-        if (!isValidRequestParameters(context, serverParameters)) {
+        final String placementID = getPlacementID(serverParameters);
+
+        if (TextUtils.isEmpty(placementID)) {
+            Log.e(TAG, "Failed to request ad, placementID is null or empty");
             mInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
-        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-
-        FacebookInitializer.getInstance().initialize(context, placementId,
+        FacebookInitializer.getInstance().initialize(context, placementID,
                 new FacebookInitializer.Listener() {
             @Override
             public void onInitializeSuccess() {
-                createAndLoadInterstitial(context, placementId, adRequest);
+                createAndLoadInterstitial(context, placementID, adRequest);
             }
 
             @Override
@@ -247,7 +247,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                 final NativeMediationAdRequest mediationAdRequest,
                                 final Bundle mediationExtras) {
         mNativeListener = listener;
-        if (!isValidRequestParameters(context, serverParameters)) {
+        final String placementID = getPlacementID(serverParameters);
+
+        if (TextUtils.isEmpty(placementID)) {
+            Log.e(TAG, "Failed to request ad, placementID is null or empty.");
             mNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -265,13 +268,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        final String placementId = serverParameters.getString(PLACEMENT_PARAMETER);
-
-        FacebookInitializer.getInstance().initialize(context, placementId,
+        FacebookInitializer.getInstance().initialize(context, placementID,
                 new FacebookInitializer.Listener() {
             @Override
             public void onInitializeSuccess() {
-                createAndLoadNativeAd(context, placementId, mediationAdRequest, mediationExtras);
+                createAndLoadNativeAd(context, placementID, mediationAdRequest, mediationExtras);
             }
 
             @Override

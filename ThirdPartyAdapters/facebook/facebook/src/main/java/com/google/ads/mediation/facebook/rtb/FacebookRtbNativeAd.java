@@ -46,24 +46,25 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     private MediationNativeAdCallback mNativeAdCallback;
     private MediaView mMediaView;
 
-
     public FacebookRtbNativeAd(MediationNativeAdConfiguration adConfiguration,
-                               MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+                               MediationAdLoadCallback<UnifiedNativeAdMapper,
+                                       MediationNativeAdCallback> callback) {
         this.callback = callback;
         this.adConfiguration = adConfiguration;
     }
 
-
     public void render() {
         Bundle serverParameters = adConfiguration.getServerParameters();
-        String placementId =
+        String placementID =
                 FacebookMediationAdapter.getPlacementID(serverParameters);
-        if (placementId == null || placementId.isEmpty()) {
-            callback.onFailure("FacebookRtbNativeAd received a null or empty placement ID.");
+        if (TextUtils.isEmpty(placementID)) {
+            String message = "Failed to request ad, placementID is null or empty.";
+            Log.e(TAG, message);
+            callback.onFailure(message);
             return;
         }
         mMediaView = new MediaView(adConfiguration.getContext());
-        mNativeAd = new NativeAd(adConfiguration.getContext(), placementId);
+        mNativeAd = new NativeAd(adConfiguration.getContext(), placementID);
         mNativeAd.setAdListener(new NativeListener(adConfiguration.getContext(), mNativeAd));
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
             mNativeAd.setExtraHints(new ExtraHints.Builder()
