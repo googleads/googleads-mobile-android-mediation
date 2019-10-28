@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
@@ -22,7 +24,8 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     /** Called when clicked. */
     private Runnable clickEvent;
 
-    public IMobileUnifiedNativeAdMapper(ImobileSdkAdsNativeAdData adData, Drawable adImage) {
+    public IMobileUnifiedNativeAdMapper(@NonNull ImobileSdkAdsNativeAdData adData,
+                                        @NonNull Drawable adImage) {
         // Initialize fields.
         this.clickEvent = adData.getClickEvent();
 
@@ -30,6 +33,10 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         List<NativeAd.Image> images = new ArrayList<>(1);
         images.add(new NativeAdImage(adImage, null, 1));
         setImages(images);
+        int height = adImage.getIntrinsicHeight();
+        if (height > 0) {
+            setMediaContentAspectRatio(adImage.getIntrinsicWidth() / height);
+        }
 
         // Set ad data.
         setAdvertiser(adData.getSponsored());
