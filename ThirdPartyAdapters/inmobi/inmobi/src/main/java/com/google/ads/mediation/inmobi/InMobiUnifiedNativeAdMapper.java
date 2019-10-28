@@ -7,15 +7,15 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
 
 import org.json.JSONException;
@@ -30,40 +30,36 @@ import java.util.List;
 
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
-/**
- * A {@link NativeAppInstallAdMapper} used to map an InMobi Native ad to Google Native App install
- * ad.
- */
-class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
-    /**
-     * InMobi native ad instance.
-     */
-    private final InMobiNative mInMobiNative;
-    /**
-     * Flag to check whether urls are returned for image assets.
-     */
-    private final boolean mIsOnlyURL;
-    /**
-     * MediationNativeListener instance.
-     */
-    private final MediationNativeListener mMediationNativeListener;
-    /**
-     * InMobi adapter instance.
-     */
-    private final InMobiAdapter mInMobiAdapter;
+class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+     /**
+      * InMobi native ad instance.
+      */
+     private final InMobiNative mInMobiNative;
+     /**
+      * Flag to check whether urls are returned for image assets.
+      */
+     private final boolean mIsOnlyURL;
+     /**
+      * MediationNativeListener instance.
+      */
+     private final MediationNativeListener mMediationNativeListener;
+     /**
+      * InMobi adapter instance.
+      */
+     private final InMobiAdapter mInMobiAdapter;
 
-    public InMobiAppInstallNativeAdMapper(InMobiAdapter inMobiAdapter,
-                                          InMobiNative inMobiNative,
-                                          Boolean isOnlyURL,
-                                          MediationNativeListener mediationNativeListener) {
-        this.mInMobiAdapter = inMobiAdapter;
-        this.mInMobiNative = inMobiNative;
-        this.mIsOnlyURL = isOnlyURL;
-        this.mMediationNativeListener = mediationNativeListener;
-    }
+     public InMobiUnifiedNativeAdMapper(InMobiAdapter inMobiAdapter,
+                                        InMobiNative inMobiNative,
+                                        Boolean isOnlyURL,
+                                        MediationNativeListener mediationNativeListener) {
+         this.mInMobiAdapter = inMobiAdapter;
+         this.mInMobiNative = inMobiNative;
+         this.mIsOnlyURL = isOnlyURL;
+         this.mMediationNativeListener = mediationNativeListener;
+     }
 
-    // Map InMobi Native Ad to AdMob App Install Ad.
-    void mapAppInstallAd(final Context context) {
+    // Map InMobi Native Ad to AdMob Unified Native Ad.
+    void mapUnifiedNativeAd(final Context context) {
         JSONObject payLoad;
         HashMap<String, URL> map;
         final Uri iconUri;
@@ -149,8 +145,14 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                     Log.d(TAG, "parent layout width is " + width);
                     final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null,
                             placeHolderView, width);
+                    primaryView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
                     if (primaryView != null) {
                         placeHolderView.addView(primaryView);
+                        int viewHeight = primaryView.getMeasuredHeight();
+                        if (viewHeight > 0) {
+                            setMediaContentAspectRatio(
+                                    (float) (primaryView.getMeasuredWidth() / viewHeight));
+                        }
                     }
                 }
             });
@@ -177,7 +179,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
 
                     if ((null != iconDrawable)) {
                         mMediationNativeListener.onAdLoaded(mInMobiAdapter,
-                                InMobiAppInstallNativeAdMapper.this);
+                                InMobiUnifiedNativeAdMapper.this);
                     } else {
                         mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter,
                                 AdRequest.ERROR_CODE_NETWORK_ERROR);
@@ -192,7 +194,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             }).execute(map);
         } else {
             mMediationNativeListener
-                    .onAdLoaded(mInMobiAdapter, InMobiAppInstallNativeAdMapper.this);
+                    .onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
         }
     }
 
@@ -207,10 +209,6 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     public void handleClick(View view) {
         // Handle click.
         mInMobiNative.reportAdClickAndOpenLandingPage();
-    }
-
-    @Override
-    public void trackView(View view) {
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.isSdkInitialized;
 
 public class InMobiRewardedAd implements MediationRewardedAd {
@@ -31,7 +32,6 @@ public class InMobiRewardedAd implements MediationRewardedAd {
     private MediationRewardedAdCallback mRewardedAdCallback;
     private static HashMap<Long, WeakReference<InMobiRewardedAd>>
             mPlacementsInUse = new HashMap<>();
-    public static final String TAG = InMobiRewardedAd.class.getName();
 
     public InMobiRewardedAd(Context context, final long placementId) {
         mInMobiRewardedAd = new InMobiInterstitial(context, placementId,
