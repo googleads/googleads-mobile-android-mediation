@@ -46,12 +46,16 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
         try {
             adView = new AdView(adConfiguration.getContext(), placementID,
                     adConfiguration.getBidResponse());
-            adView.setAdListener(this);
             if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
                 adView.setExtraHints(new ExtraHints.Builder()
                         .mediationData(adConfiguration.getWatermark()).build());
             }
-            adView.loadAdFromBid(adConfiguration.getBidResponse());
+            adView.loadAd(
+                    adView.buildLoadAdConfig()
+                            .withAdListener(this)
+                            .withBid(adConfiguration.getBidResponse())
+                            .build()
+            );
         } catch (Exception e) {
             callback.onFailure("FacebookRtbBannerAd Failed to load: " + e.getMessage());
         }

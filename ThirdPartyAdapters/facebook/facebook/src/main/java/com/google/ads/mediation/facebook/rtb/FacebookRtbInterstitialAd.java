@@ -45,12 +45,15 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
             return;
         }
         interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementID);
-        interstitialAd.setAdListener(this);
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
             interstitialAd.setExtraHints(new ExtraHints.Builder()
                     .mediationData(adConfiguration.getWatermark()).build());
         }
-        interstitialAd.loadAdFromBid(adConfiguration.getBidResponse());
+        interstitialAd.loadAd(
+                interstitialAd.buildLoadAdConfig()
+                        .withBid(adConfiguration.getBidResponse())
+                        .withAdListener(this)
+                        .build());
     }
 
     @Override

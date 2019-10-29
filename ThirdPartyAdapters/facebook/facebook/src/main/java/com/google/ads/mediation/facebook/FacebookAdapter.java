@@ -329,7 +329,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
 
         mAdView = new AdView(context, placementID, facebookAdSize);
-        mAdView.setAdListener(new BannerListener());
         buildAdRequest(adRequest);
 
         RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
@@ -337,7 +336,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         mWrappedAdView = new RelativeLayout(context);
         mAdView.setLayoutParams(adViewLayoutParams);
         mWrappedAdView.addView(mAdView);
-        mAdView.loadAd();
+        mAdView.loadAd(
+                mAdView.buildLoadAdConfig()
+                        .withAdListener(new BannerListener())
+                        .build()
+        );
     }
 
     private class BannerListener implements AdListener {
@@ -380,9 +383,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                                            String placementID,
                                            MediationAdRequest adRequest) {
         mInterstitialAd = new InterstitialAd(context, placementID);
-        mInterstitialAd.setAdListener(new InterstitialListener());
         buildAdRequest(adRequest);
-        mInterstitialAd.loadAd();
+        mInterstitialAd.loadAd(
+                mInterstitialAd.buildLoadAdConfig()
+                        .withAdListener(new InterstitialListener())
+                        .build()
+        );
     }
 
     private class InterstitialListener implements InterstitialAdExtendedListener {
@@ -464,16 +470,20 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
         if (isNativeBanner) {
             mNativeBannerAd = new NativeBannerAd(context, placementID);
-            mNativeBannerAd.setAdListener(new NativeBannerListener(context, mNativeBannerAd,
-                    adRequest));
             buildAdRequest(adRequest);
-            mNativeBannerAd.loadAd();
+            mNativeBannerAd.loadAd(
+                    mNativeBannerAd.buildLoadAdConfig()
+                            .withAdListener(new NativeBannerListener(context, mNativeBannerAd,
+                                    adRequest))
+                            .build());
         } else {
             mMediaView = new MediaView(context);
             mNativeAd = new NativeAd(context, placementID);
-            mNativeAd.setAdListener(new NativeListener(context, mNativeAd, adRequest));
             buildAdRequest(adRequest);
-            mNativeAd.loadAd();
+            mNativeAd.loadAd(
+                    mNativeAd.buildLoadAdConfig()
+                            .withAdListener(new NativeListener(context, mNativeAd, adRequest))
+                            .build());
         }
     }
 
