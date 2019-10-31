@@ -15,6 +15,8 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
+import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.convertPixelsToDp;
+
 public class AdColonyBannerRenderer extends AdColonyAdViewListener implements MediationBannerAd {
 
     private final String requestedZone;
@@ -26,7 +28,10 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
     public AdColonyBannerRenderer(MediationBannerAdConfiguration adConfiguration) {
        requestedZone = adConfiguration.getServerParameters().getString(AdColonyAdapterUtils.KEY_ZONE_ID);
         // Setting the requested size as it is as adcolony view size.
-        this.adSize = new AdColonyAdSize(adConfiguration.getAdSize().getWidth(),adConfiguration.getAdSize().getHeight());
+        this.adSize = new AdColonyAdSize(convertPixelsToDp(
+                        adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
+                        convertPixelsToDp(
+                        adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext())));
     }
 
     @Override
