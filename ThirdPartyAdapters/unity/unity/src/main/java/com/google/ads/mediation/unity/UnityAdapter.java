@@ -263,7 +263,11 @@ public class UnityAdapter extends UnityMediationAdapter
         // Even though we are a banner request, we still need to initialize UnityAds.
         UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
 
-        UnityBannerSize size = new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
+        float density = context.getResources().getDisplayMetrics().density;
+        int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
+        int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
+
+        UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
 
         if (mBannerView == null){
             mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
@@ -275,18 +279,13 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public View getBannerView() {
-        if(mBannerView == null) {
-            Log.v(TAG, "Unity Ads Adapter null banner view");
-        } else {
-            Log.v(TAG, "Unity Ads Adapter provided a banner view for placement: " + mBannerView.getPlacementId());
-        }
         return mBannerView;
     }
 
     @Override
     public void onBannerLoaded(BannerView bannerView) {
-        bannerListener.onAdLoaded(UnityAdapter.this);
         Log.v(TAG, "Unity Ads Banner finished loading banner for placement: " + mBannerView.getPlacementId());
+        bannerListener.onAdLoaded(UnityAdapter.this);
     }
 
     @Override
@@ -296,10 +295,11 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo bannerErrorInfo) {
-        if(bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL){
-            Log.e(TAG, "Unity Ads Banner returned NO FILL");
+        Log.w(TAG, "Unity Ads Banner encountered an error: " + bannerErrorInfo.errorMessage);
+        if (bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL) {
+            bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         } else {
-            Log.e(TAG, "Unity Ads Banner encountered an error: " + bannerErrorInfo.errorMessage);
+            bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
     }
 
