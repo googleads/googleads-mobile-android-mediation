@@ -35,12 +35,14 @@ import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.verizon.ads.ActivityStateManager;
 import com.verizon.ads.BuildConfig;
+import com.verizon.ads.Configuration;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 import com.verizon.ads.nativeplacement.NativeAdFactory;
+import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -54,9 +56,7 @@ public class VerizonMediationAdapter extends Adapter
 
     private static final String VERSION = "1.2.0.0";
     private static final String PLACEMENT_KEY = "placement_id";
-    private static final String CUSTOM_PLACEMENT_KEY = "parameter";
     private static final String SITE_KEY = "site_id";
-    private static final String GREEN_PLACEMENT_KEY = "pubid";
     private static final String ORANGE_PLACEMENT_KEY = "position";
     private static final String DCN_KEY = "dcn";
     /**
@@ -556,10 +556,6 @@ public class VerizonMediationAdapter extends Adapter
             placementId = serverParams.getString(VerizonMediationAdapter.PLACEMENT_KEY);
         } else if (serverParams.containsKey(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY)) {
             placementId = serverParams.getString(VerizonMediationAdapter.ORANGE_PLACEMENT_KEY);
-        } else if (serverParams.containsKey(VerizonMediationAdapter.GREEN_PLACEMENT_KEY)) {
-            placementId = serverParams.getString(VerizonMediationAdapter.GREEN_PLACEMENT_KEY);
-        } else if (serverParams.containsKey(VerizonMediationAdapter.CUSTOM_PLACEMENT_KEY)) {
-            placementId = serverParams.getString(VerizonMediationAdapter.CUSTOM_PLACEMENT_KEY);
         }
 
         return placementId;

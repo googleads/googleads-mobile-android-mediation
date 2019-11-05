@@ -11,6 +11,7 @@ import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
+import com.verizon.ads.utils.ThreadUtils;
 
 import java.util.Map;
 
@@ -116,8 +117,18 @@ public class AdapterIncentivizedEventListener
 
 
     @Override
-    public void onError(final InterstitialAd interstitialAd, ErrorInfo errorInfo) {
+    public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
 
+        // This error callback is used if the interstitial ad is loaded successfully, but an error occurs while trying to display
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                if (mediationRewardedAdCallback != null) {
+                    mediationRewardedAdCallback.onAdFailedToShow(errorInfo.getDescription());
+                }
+            }
+        });
         Log.e(TAG, "Verizon Ads SDK incentivized video interstitial error: " + errorInfo);
     }
 
@@ -216,16 +227,9 @@ public class AdapterIncentivizedEventListener
     public void showAd(Context context) {
 
         if ((interstitialAd == null) || (context == null)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    if (mediationRewardedAdCallback != null) {
-                        mediationRewardedAdCallback.onAdFailedToShow(
-                            "Verizon Ads SDK incentivized video interstitial failed to load and cannot be shown");
-                    }
-                }
-            });
+            if (mediationAdLoadCallback != null) {
+                mediationAdLoadCallback.onFailure("Verizon Ads SDK incentivized video interstitial failed to load and cannot be shown");
+            }
             return;
         }
 

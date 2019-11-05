@@ -11,6 +11,7 @@ import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.nativeplacement.NativeAd;
 import com.verizon.ads.nativeplacement.NativeAdFactory;
+import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -37,6 +38,7 @@ final class AdapterNativeListener implements NativeAd.NativeAdListener, NativeAd
     @Override
     public void onError(final NativeAd nativeAd, final ErrorInfo errorInfo) {
 
+        // This error callback is used if the native ad is loaded successfully, but an error occurs while trying to display a component
         Log.e(TAG, "Verizon Ads SDK native ad error: " + errorInfo);
     }
 

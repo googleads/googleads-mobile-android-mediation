@@ -160,12 +160,16 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
             public void run() {
 
                 try {
+                    boolean iconSet = false;
+                    boolean mediaViewSet = false;
+
                     // iconImage
                     JSONObject iconImageJSON = verizonAd.getJSON("iconImage");
                     if (iconImageJSON != null) {
                         AdapterNativeMappedImage adapterNativeMappedImage = parseImageComponent(iconImageJSON);
                         if (adapterNativeMappedImage != null) {
                             setIcon(adapterNativeMappedImage);
+                            iconSet = true;
                         }
                     }
 
@@ -184,11 +188,17 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                             imageView.setLayoutParams(layoutParams);
                             setMediaView(imageView);
+                            mediaViewSet = true;
                         }
                         setImages(imagesList);
                     }
 
-                    loadListener.onLoadComplete();
+                    if (mediaViewSet && iconSet) {
+                        loadListener.onLoadComplete();
+                    } else {
+                        Log.e(TAG, "Failed to set icon and/or media view");
+                        loadListener.onLoadError();
+                    }
                 } catch (Exception e) {
                     Log.e(TAG, "Unable to load resources.", e);
                     loadListener.onLoadError();
