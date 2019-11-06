@@ -204,9 +204,6 @@ public class NendAdapter extends NendMediationAdapter
                     case FAILED_AD_DOWNLOAD:
                         adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                         break;
-                    case FAILED_AD_INCOMPLETE:
-                        adFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                        break;
                     case FAILED_AD_REQUEST:
                         adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
                         break;
