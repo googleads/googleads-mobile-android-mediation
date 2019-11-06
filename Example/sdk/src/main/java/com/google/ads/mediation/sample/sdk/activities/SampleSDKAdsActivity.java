@@ -19,10 +19,10 @@ package com.google.ads.mediation.sample.sdk.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.ads.mediation.sample.sdk.R;
 import com.google.ads.mediation.sample.sdk.SampleRewardedVideo;

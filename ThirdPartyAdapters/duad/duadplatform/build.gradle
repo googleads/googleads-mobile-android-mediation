@@ -7,7 +7,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "1.2.7.3.0"
+    stringVersion = "1.2.8.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -17,7 +17,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 102070300
+        versionCode 102080300
         versionName stringVersion
     }
     buildTypes {
@@ -29,9 +29,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:17.2.1'
-    implementation 'com.dap:duapp:CW-1.2.7.3@aar'
-    implementation 'com.dap:video:DuVideoSdk-v1.1.0@aar'
+    implementation 'com.google.android.gms:play-services-ads:18.2.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.dap:duapp:CW-1.2.8.3@aar'
+    implementation 'com.dap:video:DuVideoSdk-v1.2.8.3@aar'
 }
 
 /**

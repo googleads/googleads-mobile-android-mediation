@@ -57,8 +57,6 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
     private NativeMediationAdRequest mNativeMedAdReq;
 
-    private Boolean mIsOnlyUrl = false;
-
     private InMobiNative mAdNative;
 
     public static Boolean isAppInitialized() {
@@ -420,7 +418,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     public void requestNativeAd(final Context context,
                                 MediationNativeListener listener,
                                 Bundle serverParameters,
-                                NativeMediationAdRequest mediationAdRequest,
+                                final NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
         this.mNativeMedAdReq = mediationAdRequest;
 
@@ -432,17 +430,11 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         }
         this.mNativeListener = listener;
 
-        final Boolean serveAnyAd = (mediationAdRequest.isAppInstallAdRequested()
-                && mediationAdRequest.isContentAdRequested())
-                || mediationAdRequest.isUnifiedNativeAdRequested();
-
-        /*
-         * InMobi Adapter will serve ad only if publisher requests for both AppInstall and Content
-         * Ads else we will give No-Fill to Publisher
-         */
-        if (!serveAnyAd) {
-            this.mNativeListener
-                    .onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        if (!mNativeMedAdReq.isUnifiedNativeAdRequested()
+                && !mNativeMedAdReq.isAppInstallAdRequested()) {
+            Log.e(TAG, "Failed to request native ad. Unified Native Ad or App install Ad should " +
+                    "be requested");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
@@ -462,19 +454,29 @@ public final class InMobiAdapter extends InMobiMediationAdapter
                         //This setting decides whether to download images or not
                         NativeAdOptions nativeAdOptions =
                                 InMobiAdapter.this.mNativeMedAdReq.getNativeAdOptions();
-
+                         boolean mIsOnlyUrl = false;
 
                         if (null != nativeAdOptions) {
                             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
                         }
 
-                        InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
-                                new InMobiAppInstallNativeAdMapper(
-                                        InMobiAdapter.this,
-                                        imNativeAd,
-                                        mIsOnlyUrl,
-                                        mNativeListener);
-                        inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
+                        if (mediationAdRequest.isUnifiedNativeAdRequested()) {
+                            InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
+                                    new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
+                                            imNativeAd,
+                                            mIsOnlyUrl,
+                                            mNativeListener);
+                            inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
+                        } else if (mediationAdRequest.isAppInstallAdRequested()) {
+
+                            InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
+                                    new InMobiAppInstallNativeAdMapper(
+                                            InMobiAdapter.this,
+                                            imNativeAd,
+                                            mIsOnlyUrl,
+                                            mNativeListener);
+                            inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
+                        }
                     }
 
                     @Override

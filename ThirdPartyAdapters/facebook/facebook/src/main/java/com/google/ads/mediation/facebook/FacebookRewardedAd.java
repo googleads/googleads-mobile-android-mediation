@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -17,6 +18,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
 
 public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdExtendedListener {
 
@@ -48,9 +50,12 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     public void render() {
         final Context context = adConfiguration.getContext();
         Bundle serverParameters = adConfiguration.getServerParameters();
+        final String placementID = getPlacementID(serverParameters);
 
-        if (!FacebookMediationAdapter.isValidRequestParameters(context, serverParameters)) {
-            mMediationAdLoadCallback.onFailure("Invalid request");
+        if (TextUtils.isEmpty(placementID)) {
+            String message = "Failed to request ad, placementID is null or empty.";
+            Log.e(TAG, message);
+            mMediationAdLoadCallback.onFailure(message);
             return;
         }
 
@@ -59,11 +64,18 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
             isRtbAd = true;
         }
 
-        final String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
         if (isRtbAd) {
             rewardedAd = new RewardedVideoAd(context, placementID);
-            rewardedAd.setAdListener(this);
-            rewardedAd.loadAdFromBid(decodedBid);
+            if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+                rewardedAd.setExtraHints(new ExtraHints.Builder()
+                        .mediationData(adConfiguration.getWatermark()).build());
+            }
+            rewardedAd.loadAd(
+                    rewardedAd.buildLoadAdConfig()
+                            .withAdListener(this)
+                            .withBid(decodedBid)
+                            .build()
+            );
         } else {
             FacebookInitializer.getInstance().initialize(context, placementID,
                     new FacebookInitializer.Listener() {
@@ -101,8 +113,11 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
     private void createAndLoadRewardedVideo(Context context, String placementID) {
         rewardedAd = new RewardedVideoAd(context, placementID);
-        rewardedAd.setAdListener(this);
-        rewardedAd.loadAd(true);
+        rewardedAd.loadAd(
+                rewardedAd.buildLoadAdConfig()
+                        .withAdListener(this)
+                        .build()
+        );
     }
 
     @Override

@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
@@ -142,7 +145,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
     }
 
 
-    public static String getPlacementID(Bundle serverParameters) {
+    public static @Nullable String getPlacementID(@NonNull Bundle serverParameters) {
         // Open bidding uses a different key for Placement ID than non-open bidding. Try the open bidding
         // key first.
         String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);
@@ -152,33 +155,4 @@ public class FacebookMediationAdapter extends RtbAdapter {
         }
         return placementId;
     }
-
-    //region Helper methods
-
-    /**
-     * Checks whether or not the request parameters needed to load Facebook ads are null.
-     *
-     * @param context          an Android {@link Context}.
-     * @param serverParameters a {@link Bundle} containing server parameters needed to request ads
-     *                         from Facebook.
-     * @return {@code false} if any of the request parameters are null.
-     */
-    static boolean isValidRequestParameters(Context context, Bundle serverParameters) {
-        if (context == null) {
-            Log.w(TAG, "Failed to request ad, Context is null.");
-            return false;
-        }
-
-        if (serverParameters == null) {
-            Log.w(TAG, "Failed to request ad, serverParameters is null.");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(serverParameters.getString(PLACEMENT_PARAMETER))) {
-            Log.w(TAG, "Failed to request ad, placementId is null or empty.");
-            return false;
-        }
-        return true;
-    }
-    //endregion
 }

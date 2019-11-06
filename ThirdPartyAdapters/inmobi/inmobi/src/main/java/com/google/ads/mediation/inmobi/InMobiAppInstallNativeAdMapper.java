@@ -28,22 +28,34 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+
 /**
  * A {@link NativeAppInstallAdMapper} used to map an InMobi Native ad to Google Native App install
  * ad.
  */
 class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
+    /**
+     * InMobi native ad instance.
+     */
     private final InMobiNative mInMobiNative;
-    private final Boolean mIsOnlyURL;
+    /**
+     * Flag to check whether urls are returned for image assets.
+     */
+    private final boolean mIsOnlyURL;
+    /**
+     * MediationNativeListener instance.
+     */
     private final MediationNativeListener mMediationNativeListener;
+    /**
+     * InMobi adapter instance.
+     */
     private final InMobiAdapter mInMobiAdapter;
-    private final HashMap<String, String> mLandingUrlMap = new HashMap<>();
-    private static final String LOG_TAG = InMobiAppInstallNativeAdMapper.class.getSimpleName();
 
-    InMobiAppInstallNativeAdMapper(InMobiAdapter inMobiAdapter,
-                                   InMobiNative inMobiNative,
-                                   Boolean isOnlyURL,
-                                   MediationNativeListener mediationNativeListener) {
+    public InMobiAppInstallNativeAdMapper(InMobiAdapter inMobiAdapter,
+                                          InMobiNative inMobiNative,
+                                          Boolean isOnlyURL,
+                                          MediationNativeListener mediationNativeListener) {
         this.mInMobiAdapter = inMobiAdapter;
         this.mInMobiNative = inMobiNative;
         this.mIsOnlyURL = isOnlyURL;
@@ -79,7 +91,6 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             Bundle paramMap = new Bundle();
             paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
             setExtras(paramMap);
-            mLandingUrlMap.put(InMobiNetworkValues.LANDING_URL, landingURL);
             map = new HashMap<>();
 
             // App icon.
@@ -120,7 +131,9 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         }
         //Add primary view as media view
         final RelativeLayout placeHolderView = new RelativeLayout(context);
-        placeHolderView.setLayoutParams( new RelativeLayout.LayoutParams( RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT) );
+        placeHolderView.setLayoutParams(new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT));
         final ViewTreeObserver viewTreeObserver = placeHolderView.getViewTreeObserver();
         if (viewTreeObserver.isAlive()) {
             viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -131,19 +144,21 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
                     } else {
                         placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                     }
-                    final View parent = (View)placeHolderView.getParent();
+                    final View parent = (View) placeHolderView.getParent();
                     int width = parent.getWidth();
-                    Log.d(LOG_TAG, "parent layout width is " + width);
-                    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, width);
-                    if(primaryView != null){
+                    Log.d(TAG, "parent layout width is " + width);
+                    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null,
+                            placeHolderView, width);
+                    if (primaryView != null) {
                         placeHolderView.addView(primaryView);
                     }
                 }
             });
         }
 
-        setMediaView( placeHolderView );
-        setHasVideoContent(true);
+        setMediaView(placeHolderView);
+        boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
+        setHasVideoContent(hasVideo);
         setOverrideClickHandling(false);
 
         // Download drawables.
@@ -183,6 +198,9 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
 
     @Override
     public void recordImpression() {
+        // All impression render events are fired automatically when the primary view is displayed
+        // on the screen.
+        // Reference: https://support.inmobi.com/monetize/android-guidelines/native-ads-for-android
     }
 
     @Override
@@ -199,5 +217,4 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     public void untrackView(View view) {
         mInMobiNative.destroy();
     }
-
 }

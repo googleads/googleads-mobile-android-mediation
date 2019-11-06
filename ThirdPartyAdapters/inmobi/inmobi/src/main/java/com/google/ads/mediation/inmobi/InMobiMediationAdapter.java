@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class InMobiMediationAdapter extends RtbAdapter {
 
-    private static final String TAG = InMobiMediationAdapter.class.getSimpleName();
+    public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
     // Flag to check whether the InMobi SDK has been initialized or not.
     public static AtomicBoolean isSdkInitialized = new AtomicBoolean(false);

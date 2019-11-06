@@ -2,40 +2,58 @@ package com.google.ads.mediation.facebook.rtb;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.ExtraHints;
 import  com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.InterstitialAdExtendedListener;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FacebookRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdListener {
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+
+public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
+        InterstitialAdExtendedListener {
     private MediationInterstitialAdConfiguration adConfiguration;
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
     private InterstitialAd interstitialAd;
     private MediationInterstitialAdCallback mInterstitalAdCallback;
+    private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-                                     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+                                     MediationAdLoadCallback<MediationInterstitialAd,
+                                             MediationInterstitialAdCallback> callback) {
         this.adConfiguration = adConfiguration;
         this.callback = callback;
     }
 
     public void render() {
         Bundle serverParameters = adConfiguration.getServerParameters();
-        String placementId = FacebookMediationAdapter.getPlacementID(serverParameters);
-        if (placementId == null || placementId.isEmpty()) {
-            callback.onFailure("FacebookRtbInterstitialAd received a null or empty placement ID.");
+        String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
+        if (TextUtils.isEmpty(placementID)) {
+            String message = "Failed to request ad, placementID is null or empty.";
+            Log.e(TAG, message);
+            callback.onFailure(message);
             return;
         }
-        interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementId);
-        interstitialAd.setAdListener(this);
-        interstitialAd.loadAdFromBid(adConfiguration.getBidResponse());
+        interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementID);
+        if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+            interstitialAd.setExtraHints(new ExtraHints.Builder()
+                    .mediationData(adConfiguration.getWatermark()).build());
+        }
+        interstitialAd.loadAd(
+                interstitialAd.buildLoadAdConfig()
+                        .withBid(adConfiguration.getBidResponse())
+                        .withAdListener(this)
+                        .build());
     }
 
     @Override
@@ -54,7 +72,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
 
     @Override
     public void onInterstitialDismissed(Ad ad) {
-        if (mInterstitalAdCallback != null) {
+        if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
             mInterstitalAdCallback.onAdClosed();
         }
     }
@@ -84,5 +102,27 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd, Inter
             // TODO: Upon approval, add this callback back in.
             // mInterstitalAdCallback.reportAdImpression();
         }
+    }
+
+    @Override
+    public void onInterstitialActivityDestroyed() {
+        if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
+            mInterstitalAdCallback.onAdClosed();
+        }
+    }
+
+    @Override
+    public void onRewardedAdCompleted() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerSucceeded() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerFailed() {
+        //no-op
     }
 }

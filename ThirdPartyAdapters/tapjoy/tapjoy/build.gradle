@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "12.3.1.1"
+    stringVersion = "12.3.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 12030101
+        targetSdkVersion 28
+        versionCode 12030300
         versionName stringVersion
 
     }
@@ -37,8 +37,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.tapjoy:tapjoy-android-sdk:12.3.1'
-    implementation 'com.google.android.gms:play-services-ads:17.2.1'
+    implementation 'com.tapjoy:tapjoy-android-sdk:12.3.3'
+    implementation 'com.google.android.gms:play-services-ads:18.2.0'
 }
 
 /**

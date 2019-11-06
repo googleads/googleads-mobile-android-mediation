@@ -14,8 +14,15 @@ import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 
 import java.util.ArrayList;
 
+/**
+ * A {@link NativeAppInstallAdMapper} used to map an AppLovin Native ad to Google Native App Install
+ * ad.
+ */
 class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
 
+    /**
+     * AppLovin native ad instance.
+     */
     private AppLovinNativeAd mNativeAd;
 
     AppLovinNativeAdMapper(AppLovinNativeAd nativeAd, Context context) {
@@ -66,35 +73,5 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
     @Override
     public void handleClick(View view) {
         mNativeAd.launchClickTarget(view.getContext());
-    }
-
-    /**
-     * A {@link NativeAd.Image} class used to map AppLovin native image to AdMob native image.
-     */
-    private static class AppLovinNativeAdImage extends NativeAd.Image {
-
-        private final Drawable mDrawable;
-        private final Uri mUri;
-
-        AppLovinNativeAdImage(Uri uri, Drawable drawable) {
-            mDrawable = drawable;
-            mUri = uri;
-        }
-
-        @Override
-        public Drawable getDrawable() {
-            return mDrawable;
-        }
-
-        @Override
-        public Uri getUri() {
-            return mUri;
-        }
-
-        @Override
-        public double getScale() {
-            // AppLovin SDK does not provide scale, return 1 by default.
-            return 1;
-        }
     }
 }

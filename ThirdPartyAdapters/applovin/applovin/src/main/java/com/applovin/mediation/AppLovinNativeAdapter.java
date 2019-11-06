@@ -23,16 +23,17 @@ public class AppLovinNativeAdapter
                                 final Bundle serverParameters,
                                 final NativeMediationAdRequest nativeMediationAdRequest,
                                 final Bundle mediationExtras) {
-        if (nativeMediationAdRequest.isContentAdRequested()
+        if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()
                 && !nativeMediationAdRequest.isAppInstallAdRequested()) {
-            Log.e(TAG, "Failed to request native ad. App install format needs to be requested");
+            Log.e(TAG, "Failed to request native ad. Unified Native Ad or App install Ad should " +
+                    "be requested");
             mediationNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
         final AppLovinSdk sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-        AppLovinNativeAdListener listener =
-                new AppLovinNativeAdListener(this, mediationNativeListener, sdk, context);
+        AppLovinNativeAdListener listener = new AppLovinNativeAdListener(this,
+                mediationNativeListener, sdk, context, nativeMediationAdRequest);
         sdk.getNativeAdService().loadNativeAds(1, listener);
     }
 
