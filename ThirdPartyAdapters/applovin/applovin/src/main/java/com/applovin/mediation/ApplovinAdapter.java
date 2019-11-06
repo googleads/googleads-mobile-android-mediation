@@ -60,7 +60,6 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
     private AppLovinAdView mAdView;
 
     // Controlled fields.
-    private String mPlacement;
     private String mZoneId;
 
     //region MediationInterstitialAdapter implementation.
@@ -76,18 +75,16 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         mNetworkExtras = networkExtras;
         mMediationInterstitialListener = interstitialListener;
 
-        mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
         mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-        log(DEBUG, "Requesting interstitial for zone: " + mZoneId + " and placement: "
-                + mPlacement);
+        log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
 
         // Create Ad Load listener.
         final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener() {
             @Override
             public void adReceived(final AppLovinAd ad) {
                 log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
-                        + mZoneId + " and placement: " + mPlacement);
+                        + mZoneId);
 
                 synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
                     Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get(mZoneId);
@@ -163,16 +160,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             interstitialAd.setAdVideoPlaybackListener(listener);
 
             if (dequeuedAd != null) {
-                log(DEBUG, "Showing interstitial for zone: " + mZoneId + " placement: "
-                        + mPlacement);
-                interstitialAd.showAndRender(dequeuedAd, mPlacement);
+                log(DEBUG, "Showing interstitial for zone: " + mZoneId);
+                interstitialAd.showAndRender(dequeuedAd);
             } else {
                 log(DEBUG, "Attempting to show interstitial before one was loaded");
 
                 // Check if we have a default zone interstitial available.
                 if (TextUtils.isEmpty(mZoneId) && interstitialAd.isAdReadyToDisplay()) {
                     log(DEBUG, "Showing interstitial preloaded by SDK");
-                    interstitialAd.show(mPlacement);
+                    interstitialAd.show();
                 }
                 // TODO: Show ad for zone identifier if exists
                 else {
@@ -195,11 +191,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         // Store parent objects
         mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
 
-        mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
         mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
         log(DEBUG, "Requesting banner of size " + adSize + " for zone: "
-                + mZoneId + " and placement: " + mPlacement);
+                + mZoneId);
 
         // Convert requested size to AppLovin Ad Size.
         final AppLovinAdSize appLovinAdSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);

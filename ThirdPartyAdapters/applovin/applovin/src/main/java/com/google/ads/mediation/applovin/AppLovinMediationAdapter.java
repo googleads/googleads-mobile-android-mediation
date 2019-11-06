@@ -61,7 +61,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
     // Rewarded Video objects.
     private MediationRewardedAdCallback mRewardedAdCallback;
     private AppLovinIncentivizedInterstitial mIncentivizedInterstitial;
-    private String mPlacement;
     private String mZoneId;
     private Bundle mNetworkExtras;
     private MediationRewardedAdConfiguration adConfiguration;
@@ -127,14 +126,12 @@ public class AppLovinMediationAdapter extends RtbAdapter
         if (!isRtbAd) {
             synchronized (INCENTIVIZED_ADS_LOCK) {
                 Bundle serverParameters = adConfiguration.getServerParameters();
-                mPlacement = AppLovinUtils.retrievePlacement(serverParameters);
                 mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
                 mSdk = AppLovinUtils.retrieveSdk(serverParameters, adConfiguration.getContext());
                 mNetworkExtras = adConfiguration.getMediationExtras();
                 mMediationAdLoadCallback = mediationAdLoadCallback;
 
-                String logMessage = String.format("Requesting rewarded video for zone '%s' " +
-                        "and placement '%s'.", mZoneId, mPlacement);
+                String logMessage = String.format("Requesting rewarded video for zone '%s'", mZoneId);
                 log(DEBUG, logMessage);
 
                 // Check if incentivized ad for zone already exists.
@@ -176,8 +173,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
     @Override
     public void showAd(Context context) {
         mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
-        String logMessage = String.format("Showing rewarded video for zone '%s', placement '%s'",
-                mZoneId, mPlacement);
+        String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
         log(DEBUG, logMessage);
         final AppLovinIncentivizedAdListener listener =
                 new AppLovinIncentivizedAdListener(adConfiguration, mRewardedAdCallback);
