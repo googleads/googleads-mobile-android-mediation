@@ -31,9 +31,12 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import com.unity3d.ads.UnityAds;
+import com.unity3d.services.banners.BannerErrorCode;
+import com.unity3d.services.banners.BannerErrorInfo;
+import com.unity3d.services.banners.BannerView;
+import com.unity3d.services.banners.UnityBannerSize;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
@@ -41,7 +44,7 @@ import java.util.ArrayList;
  */
 @Keep
 public class UnityAdapter extends UnityMediationAdapter
-        implements MediationInterstitialAdapter, MediationBannerAdapter {
+        implements MediationInterstitialAdapter, MediationBannerAdapter, BannerView.IListener{
 
     /**
      * Mediation interstitial listener used to forward events from {@link UnitySingleton} to
@@ -62,7 +65,7 @@ public class UnityAdapter extends UnityMediationAdapter
     /**
      * The view for the banner instance.
      */
-    private View bannerView;
+    private BannerView mBannerView;
 
     /**
      * Callback object for Google's Banner Lifecycle.
@@ -138,68 +141,6 @@ public class UnityAdapter extends UnityMediationAdapter
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_NO_FILL);
             }
-
-            if ((placementId.equals(bannerPlacementId)) && bannerListener != null) {
-                Log.e(TAG, "Failed to load Banner ad from Unity Ads: " + unityAdsError.toString());
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_NO_FILL);
-            }
-        }
-    };
-
-    private final UnityAdapterBannerDelegate bannerDelegate = new UnityAdapterBannerDelegate() {
-        @Override
-        public String getPlacementId() {
-            return bannerPlacementId;
-        }
-
-        @Override
-        public void onUnityBannerLoaded(String placementId, View view) {
-            // Unity Ads Banner ad has been loaded and is ready to be shown.
-            bannerView = view;
-            if (bannerListener != null) {
-                bannerListener.onAdLoaded(UnityAdapter.this);
-            }
-        }
-
-        @Override
-        public void onUnityBannerUnloaded(String placementId) {
-            // Unity Ads Banner ad has been unloaded and is to be destroyed.
-            bannerView = null;
-        }
-
-        @Override
-        public void onUnityBannerShow(String placementId) {
-            // Unity Ads Banner ad is visible to the user.
-            if (bannerListener != null) {
-                bannerListener.onAdOpened(UnityAdapter.this);
-            }
-        }
-
-        @Override
-        public void onUnityBannerClick(String placementId) {
-            // Unity Ads Banner ad has been clicked.
-            if (bannerListener != null) {
-                bannerListener.onAdClicked(UnityAdapter.this);
-            }
-        }
-
-        @Override
-        public void onUnityBannerHide(String placementId) {
-            // Unity Ads Banner ad is hidden from the user.
-            if (bannerListener != null) {
-                bannerListener.onAdClosed(UnityAdapter.this);
-            }
-        }
-
-        @Override
-        public void onUnityBannerError(String message) {
-            // Unity Ads SDK encountered an error.
-            Log.w(TAG, "Failed to load Banner ad from Unity Ads: " + message);
-            if (bannerListener != null) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            }
         }
     };
 
@@ -273,7 +214,12 @@ public class UnityAdapter extends UnityMediationAdapter
     }
 
     @Override
-    public void onDestroy() {}
+    public void onDestroy() {
+        if(mBannerView != null) {
+            mBannerView.destroy();
+        }
+        mBannerView = null;
+    }
 
     @Override
     public void onPause() {}
@@ -288,17 +234,10 @@ public class UnityAdapter extends UnityMediationAdapter
                                 AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
-        bannerListener = listener;
 
-        AdSize supportedSize = getSupportedAdSize(context, adSize);
-        if (supportedSize == null) {
-            Log.e(TAG, "Invalid ad size requested: " + adSize);
-            if (bannerListener != null) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_INVALID_REQUEST);
-            }
-            return;
-        }
+        Log.v(TAG, "Requesting Unity Ads Banner");
+
+        bannerListener = listener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
@@ -322,83 +261,50 @@ public class UnityAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
 
         // Even though we are a banner request, we still need to initialize UnityAds.
-        UnitySingleton.getInstance().initializeUnityAds(mUnityAdapterDelegate, activity,
-                gameId, bannerPlacementId, bannerDelegate);
-        UnitySingleton.getInstance().loadBannerAd(activity, bannerDelegate);
+        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
+
+        float density = context.getResources().getDisplayMetrics().density;
+        int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
+        int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
+
+        UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
+
+        if (mBannerView == null){
+            mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
+        }
+
+        mBannerView.setListener(this);
+        mBannerView.load();
     }
 
     @Override
     public View getBannerView() {
-        return bannerView;
+        return mBannerView;
     }
 
-    AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
-
-        ArrayList<AdSize> potentials = new ArrayList<>(2);
-        potentials.add(AdSize.BANNER);
-        potentials.add(AdSize.LEADERBOARD);
-
-        return findClosestSize(context, original, potentials);
+    @Override
+    public void onBannerLoaded(BannerView bannerView) {
+        Log.v(TAG, "Unity Ads Banner finished loading banner for placement: " + mBannerView.getPlacementId());
+        bannerListener.onAdLoaded(UnityAdapter.this);
     }
 
-    // Start of helper code to remove when available in SDK
-    /**
-     * Find the closest supported AdSize from the list of potentials to the provided size.
-     * Returns null if none are within given threshold size range.
-     */
-    public static AdSize findClosestSize(
-            Context context, AdSize original, ArrayList<AdSize> potentials) {
-        if (potentials == null || original == null) {
-            return null;
-        }
-        float density = context.getResources().getDisplayMetrics().density;
-        int actualWidth = Math.round(original.getWidthInPixels(context)/density);
-        int actualHeight = Math.round(original.getHeightInPixels(context)/density);
-        original = new AdSize(actualWidth, actualHeight);
-        AdSize largestPotential = null;
-        for (AdSize potential : potentials) {
-            if (isSizeInRange(original, potential)) {
-                if (largestPotential == null) {
-                    largestPotential = potential;
-                } else {
-                    largestPotential = getLargerByArea(largestPotential, potential);
-                }
-            }
-        }
-        return largestPotential;
+    @Override
+    public void onBannerClick(BannerView bannerView) {
+        bannerListener.onAdClicked(UnityAdapter.this);
     }
 
-    private static boolean isSizeInRange(AdSize original, AdSize potential) {
-        if (potential == null) {
-            return false;
+    @Override
+    public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo bannerErrorInfo) {
+        Log.w(TAG, "Unity Ads Banner encountered an error: " + bannerErrorInfo.errorMessage);
+        if (bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL) {
+            bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+        } else {
+            bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
-
-        double minWidthRatio = 0.5;
-        double minHeightRatio = 0.7;
-
-        int originalWidth = original.getWidth();
-        int potentialWidth = potential.getWidth();
-        int originalHeight = original.getHeight();
-        int potentialHeight = potential.getHeight();
-
-        if (originalWidth * minWidthRatio > potentialWidth ||
-                originalWidth < potentialWidth) {
-            return false;
-        }
-
-        if (originalHeight * minHeightRatio > potentialHeight ||
-                originalHeight < potentialHeight) {
-            return false;
-        }
-
-        return true;
     }
 
-    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-        int area1 = size1.getWidth() * size1.getHeight();
-        int area2 = size2.getWidth() * size2.getHeight();
-        return area1 > area2 ? size1 : size2;
+    @Override
+    public void onBannerLeftApplication(BannerView bannerView) {
+        bannerListener.onAdLeftApplication(UnityAdapter.this);
     }
-    // End code to remove when available in SDK
 }
