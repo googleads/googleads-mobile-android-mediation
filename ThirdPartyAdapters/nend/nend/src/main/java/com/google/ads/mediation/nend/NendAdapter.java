@@ -223,7 +223,7 @@ public class NendAdapter extends NendMediationAdapter
                                             String userId,
                                             MediationAdRequest mediationAdRequest) {
         mNendAdInterstitialVideo = new NendAdInterstitialVideo(context, spotId, apikey);
-        mNendAdInterstitialVideo.setMediationName("AdMob");
+        mNendAdInterstitialVideo.setMediationName(MEDIATION_NAME_ADMOB);
         if (!TextUtils.isEmpty(userId)) {
             mNendAdInterstitialVideo.setUserId(userId);
         }

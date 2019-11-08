@@ -12,9 +12,12 @@ import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdapter;
+import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 
 import net.nend.android.NendAdRewardItem;
@@ -27,8 +30,9 @@ import java.util.List;
 /*
  * The {@link NendMediationAdapter} to load and show Nend rewarded video ads.
  */
-public class NendMediationAdapter extends Adapter
-        implements MediationRewardedAd, NendAdRewardedListener {
+public class NendMediationAdapter extends Adapter implements
+        MediationNativeAdapter,
+        MediationRewardedAd, NendAdRewardedListener {
 
     static final String TAG = NendMediationAdapter.class.getSimpleName();
 
@@ -40,6 +44,14 @@ public class NendMediationAdapter extends Adapter
     static final String KEY_USER_ID = "key_user_id";
     static final String KEY_API_KEY = "apiKey";
     static final String KEY_SPOT_ID = "spotId";
+
+    static final String MEDIATION_NAME_ADMOB = "AdMob";
+
+    public enum FormatType {
+        TYPE_VIDEO,
+        TYPE_NORMAL
+    }
+    private NendNativeAdForwarder nativeAdForwarder;
 
     /**
      * {@link Adapter} implementation
@@ -112,7 +124,7 @@ public class NendMediationAdapter extends Adapter
 
         mRewardedVideo = new NendAdRewardedVideo(context, spotID, apiKey);
         mRewardedVideo.setAdListener(NendMediationAdapter.this);
-        mRewardedVideo.setMediationName("AdMob");
+        mRewardedVideo.setMediationName(MEDIATION_NAME_ADMOB);
         if (networkExtras != null) {
             mRewardedVideo.setUserId(networkExtras.getString(KEY_USER_ID, ""));
         }
@@ -131,6 +143,51 @@ public class NendMediationAdapter extends Adapter
         } else if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onAdFailedToShow("Ad not ready yet.");
         }
+    }
+
+    /**
+     * {@link MediationNativeAdapter} implementation
+     */
+    @Override
+    public void onResume() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onResume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onDestroy();
+            nativeAdForwarder = null;
+        }
+    }
+
+    @Override
+    public void requestNativeAd(
+            Context context,
+            MediationNativeListener mediationNativeListener,
+            Bundle serverParameters,
+            NativeMediationAdRequest nativeMediationAdRequest,
+            Bundle mediationExtras) {
+        if (nativeAdForwarder == null) {
+            nativeAdForwarder = new NendNativeAdForwarder(this);
+        }
+
+        nativeAdForwarder.requestNativeAd(
+                context,
+                mediationNativeListener,
+                serverParameters,
+                nativeMediationAdRequest,
+                mediationExtras
+        );
     }
 
     /**
