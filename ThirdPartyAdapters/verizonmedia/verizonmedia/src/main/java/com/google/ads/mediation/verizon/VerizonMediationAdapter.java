@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,22 +16,33 @@ import android.widget.LinearLayout.LayoutParams;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.MediationNativeAdapter;
+import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.verizon.ads.ActivityStateManager;
 import com.verizon.ads.BuildConfig;
+import com.verizon.ads.Configuration;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
+import com.verizon.ads.nativeplacement.NativeAdFactory;
+import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -38,14 +50,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public class VerizonMediationAdapter extends Adapter implements MediationBannerAdapter,
-        MediationInterstitialAdapter {
 
-    private static final String VERSION = "1.1.1.0";
+public class VerizonMediationAdapter extends Adapter
+    implements MediationBannerAdapter, MediationInterstitialAdapter, MediationNativeAdapter {
+
+    private static final String VERSION = "1.2.0.0";
     private static final String PLACEMENT_KEY = "placement_id";
     private static final String SITE_KEY = "site_id";
     private static final String ORANGE_PLACEMENT_KEY = "position";
     private static final String DCN_KEY = "dcn";
+    /**
+     * The pixel-to-dpi scale for images downloaded Verizon Ads SDK
+     */
+    static final double VAS_IMAGE_SCALE = 1.0;
 
     protected static String TAG = VerizonMediationAdapter.class.getSimpleName();
 
@@ -61,8 +78,13 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
     private InlineAdFactory inlineAdFactory;
     private AdapterInterstitialListener adapterInterstitialListener;
     private MediationInterstitialListener mediationInterstitialListener;
+    private AdapterIncentivizedEventListener adapterIncentivizedEventListener;
     private AdapterInlineListener adapterInlineListener;
     private InterstitialAdFactory interstitialAdFactory;
+    private NativeAdFactory nativeAdFactory;
+    private AdapterNativeListener adapterNativeListener;
+    private String[] adTypes = new String[]{"inline"};
+
 
     @Override
     public VersionInfo getVersionInfo() {
@@ -80,8 +102,13 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
 
     @Override
     public VersionInfo getSDKVersionInfo() {
-        String versionString = VASAds.getSDKInfo().version;
-        String splits[] = versionString.split("\\.");
+        String versionString = Configuration.getString("com.verizon.ads",
+            "editionVersion", null);
+
+        if (TextUtils.isEmpty(versionString)) {
+            versionString = VASAds.getSDKInfo().version;
+        }
+        String[] splits = versionString.split("\\.");
         if (splits.length >= 3) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
@@ -293,6 +320,58 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
 
 
     @Override
+    public void requestNativeAd(final Context context, final MediationNativeListener listener, final Bundle serverParameters,
+        final NativeMediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+
+        String placementId = fetchPlacementId(serverParameters);
+        String siteId = getSiteId(serverParameters, mediationExtras);
+
+        setContext(context);
+
+        if (!initializeSDK(context, siteId)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK");
+
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                }
+            });
+
+            return;
+        }
+
+        setCoppaValue(mediationAdRequest);
+
+        try {
+            VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+            adapterNativeListener = new AdapterNativeListener(context, this, listener);
+            nativeAdFactory = new NativeAdFactory(context, placementId, adTypes, adapterNativeListener);
+            nativeAdFactory.setRequestMetaData(getRequestMetadata(mediationAdRequest));
+
+            NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
+            if ((options == null) || (!options.shouldReturnUrlsForImageAssets())) {
+                nativeAdFactory.load(adapterNativeListener);
+            } else {
+                nativeAdFactory.loadWithoutAssets(adapterNativeListener);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create Native Ad instance", e);
+
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    listener.onAdFailedToLoad(VerizonMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                }
+            });
+        }
+    }
+
+
+    @Override
     public void onDestroy() {
 
         Log.i(TAG, "Aborting.");
@@ -304,6 +383,9 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
             interstitialAdFactory.abortLoad();
         }
 
+        if (nativeAdFactory != null) {
+            nativeAdFactory.abortLoad();
+        }
 
         if (adapterInterstitialListener != null) {
             adapterInterstitialListener.destroy();
@@ -313,6 +395,13 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
             adapterInlineListener.destroy();
         }
 
+        if (adapterNativeListener != null) {
+            adapterNativeListener.destroy();
+        }
+
+        if (adapterIncentivizedEventListener != null) {
+            adapterIncentivizedEventListener.destroy();
+        }
     }
 
 
@@ -343,6 +432,15 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
     }
 
 
+    private RequestMetadata getRequestMetadata() {
+
+        RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder();
+        requestMetadataBuilder.setMediator(MEDIATOR_ID);
+
+        return requestMetadataBuilder.build();
+    }
+
+
     private void setCoppaValue(final MediationAdRequest mediationAdRequest) {
         // COPPA
         if (mediationAdRequest.taggedForChildDirectedTreatment() ==
@@ -350,6 +448,18 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
             VASAds.setCoppa(true);
         } else if (mediationAdRequest.taggedForChildDirectedTreatment() ==
                 MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+            VASAds.setCoppa(false);
+        }
+    }
+
+
+    private void setCoppaValue(final MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
+        // COPPA
+        if (mediationRewardedAdConfiguration.taggedForChildDirectedTreatment() ==
+            MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            VASAds.setCoppa(true);
+        } else if (mediationRewardedAdConfiguration.taggedForChildDirectedTreatment() ==
+            MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
             VASAds.setCoppa(false);
         }
     }
@@ -466,6 +576,55 @@ public class VerizonMediationAdapter extends Adapter implements MediationBannerA
         }
 
         return contextWeakRef.get();
+    }
+
+
+    @Override
+    public void loadRewardedAd(final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+        final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+
+        if (!VASAds.isInitialized()) {
+            mediationAdLoadCallback.onFailure("Verizon Ads SDK not initialized");
+
+            return;
+        }
+
+        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
+        String placementId = fetchPlacementId(serverParameters);
+
+        setContext(mediationRewardedAdConfiguration.getContext());
+
+        if (TextUtils.isEmpty(placementId)) {
+            mediationAdLoadCallback.onFailure(
+                "Verizon Ads SDK placement ID must be set in mediationRewardedAdConfiguration server params");
+
+            return;
+        }
+
+        setCoppaValue(mediationRewardedAdConfiguration);
+
+        VASAds.setLocationEnabled((mediationRewardedAdConfiguration.getLocation() != null));
+
+        adapterIncentivizedEventListener = new AdapterIncentivizedEventListener(mediationAdLoadCallback);
+
+        try {
+            interstitialAdFactory = new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(), placementId,
+                adapterIncentivizedEventListener);
+            interstitialAdFactory.setRequestMetaData(getRequestMetadata());
+            interstitialAdFactory.load(adapterIncentivizedEventListener);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load Verizon Ads SDK Incentivized Video Ad", e);
+
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    if (mediationAdLoadCallback != null) {
+                        mediationAdLoadCallback.onFailure("Failed to load Incentivized Video Ad");
+                    }
+                }
+            });
+        }
     }
 
     // Start of helper code to remove when available in SDK
