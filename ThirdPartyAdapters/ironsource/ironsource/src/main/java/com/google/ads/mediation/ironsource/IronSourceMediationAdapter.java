@@ -79,33 +79,38 @@ public class IronSourceMediationAdapter extends Adapter
      */
     @Override
     public VersionInfo getSDKVersionInfo() {
-        String sdkVersion = IronSourceUtils.getSDKVersion();
-        String splits[] = sdkVersion.split("\\.");
-        int major = 0;
-        int minor = 0;
-        int micro = 0;
-        if (splits.length > 2) {
-            major = Integer.parseInt(splits[0]);
-            minor = Integer.parseInt(splits[1]);
-            micro = Integer.parseInt(splits[2]);
-        } else if (splits.length == 2) {
-            major = Integer.parseInt(splits[0]);
-            minor = Integer.parseInt(splits[1]);
-        } else if (splits.length == 1) {
-            major = Integer.parseInt(splits[0]);
+        String versionString = IronSourceUtils.getSDKVersion();
+        String splits[] = versionString.split("\\.");
+
+        if (splits.length >= 3) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]);
+            return new VersionInfo(major, minor, micro);
         }
-        return new VersionInfo(major, minor, micro);
+
+        String logMessage = String.format("Unexpected SDK version format: %s." +
+                "Returning 0.0.0 for SDK version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override
     public VersionInfo getVersionInfo() {
         String versionString = BuildConfig.VERSION_NAME;
         String splits[] = versionString.split("\\.");
-        int major = Integer.parseInt(splits[0]);
-        int minor = Integer.parseInt(splits[1]);
-        // Adapter versions have 2 patch versions. Multiply the first patch by 100.
-        int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-        return new VersionInfo(major, minor, micro);
+
+        if (splits.length >= 4) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            return new VersionInfo(major, minor, micro);
+        }
+
+        String logMessage = String.format("Unexpected adapter version format: %s." +
+                "Returning 0.0.0 for adapter version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override

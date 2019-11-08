@@ -90,14 +90,18 @@ public class VerizonMediationAdapter extends Adapter
     public VersionInfo getVersionInfo() {
         String versionString = BuildConfig.VERSION_NAME;
         String splits[] = versionString.split("\\.");
+
         if (splits.length >= 4) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
             int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
             return new VersionInfo(major, minor, micro);
         }
-        Log.w(TAG, "Returning null adapter version due to unexpected format: " + versionString);
-        return null;
+
+        String logMessage = String.format("Unexpected adapter version format: %s." +
+                "Returning 0.0.0 for adapter version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override
@@ -115,8 +119,11 @@ public class VerizonMediationAdapter extends Adapter
             int micro = Integer.parseInt(splits[2]);
             return new VersionInfo(major, minor, micro);
         }
-        Log.w(TAG, "Returning null SDK version due to unexpected format: " + versionString);
-        return null;
+
+        String logMessage = String.format("Unexpected SDK version format: %s." +
+                "Returning 0.0.0 for SDK version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override

@@ -47,10 +47,18 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     public VersionInfo getVersionInfo() {
         String versionString = BuildConfig.VERSION_NAME;
         String splits[] = versionString.split("\\.");
-        int major = Integer.parseInt(splits[0]);
-        int minor = Integer.parseInt(splits[1]);
-        int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-        return new VersionInfo(major, minor, micro);
+
+        if (splits.length >= 4) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            return new VersionInfo(major, minor, micro);
+        }
+
+        String logMessage = String.format("Unexpected adapter version format: %s." +
+                "Returning 0.0.0 for adapter version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
     }
 
     @Override
@@ -58,13 +66,16 @@ public class AdColonyMediationAdapter extends RtbAdapter {
         String sdkVersion = AdColony.getSDKVersion();
         String splits[] = sdkVersion.split("\\.");
 
-        if (splits.length == 3) {
+        if (splits.length >= 3) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
             int micro = Integer.parseInt(splits[2]);
             return new VersionInfo(major, minor, micro);
         }
-        Log.w(TAG,"Unexpected SDK version format, Returning 0.0.0 for SDK version");
+
+        String logMessage = String.format("Unexpected SDK version format: %s." +
+                "Returning 0.0.0 for SDK version.", sdkVersion);
+        Log.w(TAG, logMessage);
         return new VersionInfo(0, 0, 0);
     }
 
@@ -139,8 +150,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
             MediationInterstitialAdConfiguration interstitialAdConfiguration,
             MediationAdLoadCallback<MediationInterstitialAd,
                     MediationInterstitialAdCallback> mediationAdLoadCallback) {
-        String requestedZone =
-                interstitialAdConfiguration.getServerParameters().getString(AdColonyAdapterUtils.KEY_ZONE_ID);
+        String requestedZone = interstitialAdConfiguration.getServerParameters()
+                .getString(AdColonyAdapterUtils.KEY_ZONE_ID);
         AdColonyInterstitialRenderer interstitialAd =
                 new AdColonyInterstitialRenderer(requestedZone);
         interstitialAd.requestInterstitial(mediationAdLoadCallback);
