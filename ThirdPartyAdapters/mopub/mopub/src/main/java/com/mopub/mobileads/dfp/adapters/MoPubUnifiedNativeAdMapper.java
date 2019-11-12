@@ -2,6 +2,7 @@ package com.mopub.mobileads.dfp.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -14,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.mopub.common.UrlAction;
 import com.mopub.common.UrlHandler;
 import com.mopub.common.util.Drawables;
@@ -23,12 +24,11 @@ import com.mopub.nativeads.StaticNativeAd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-/**
- * A {@link NativeAppInstallAdMapper} used to map a MoPub static native ad to Google native app
- * install ad.
- */
-public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
+import static com.mopub.mobileads.dfp.adapters.DownloadDrawablesAsync.KEY_IMAGE;
+
+public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     /**
      * MoPub StaticNativeAd instance.
@@ -47,49 +47,56 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
      */
     private int mPrivacyIconSize;
 
-    public MoPubNativeAppInstallAdMapper(@NonNull Context context,
-                                         @NonNull StaticNativeAd ad,
-                                         @Nullable Drawable icon,
-                                         @Nullable Drawable nativeAdMainImage,
-                                         int privacyIconPlacementParam,
-                                         int privacyIconSize) {
+    public MoPubUnifiedNativeAdMapper(@NonNull Context context,
+                                      @NonNull StaticNativeAd ad,
+                                      @Nullable Drawable icon,
+                                      @Nullable Drawable nativeAdMainImage,
+                                      int privacyIconPlacementParam,
+                                      int privacyIconSize) {
         mMoPubNativeAdData = ad;
         setHeadline(mMoPubNativeAdData.getTitle());
+
         setBody(mMoPubNativeAdData.getText());
+
         setCallToAction(mMoPubNativeAdData.getCallToAction());
         privacyIconPlacement = privacyIconPlacementParam;
         mPrivacyIconSize = privacyIconSize;
 
         MoPubNativeMappedImage iconImage = new MoPubNativeMappedImage(icon,
                 mMoPubNativeAdData.getIconImageUrl(), MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
+
         setIcon(iconImage);
+
         MoPubNativeMappedImage mainImage = new MoPubNativeMappedImage(
                 nativeAdMainImage, mMoPubNativeAdData.getMainImageUrl(),
                 MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
+
         List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
         imagesList.add(mainImage);
         setImages(imagesList);
+
+        int height = mainImage.getHeight();
+        int width = mainImage.getWidth();
+        float aspectRatio = 0.0f;
+        if (height > 0) {
+            aspectRatio = (float) (width / height);
+        }
+
+        setMediaContentAspectRatio(aspectRatio);
+
         ImageView mediaView = new ImageView(context);
         mediaView.setImageDrawable(nativeAdMainImage);
         setMediaView(mediaView);
+
         setOverrideClickHandling(true);
+
         setOverrideImpressionRecording(true);
     }
 
     @Override
-    public void untrackView(View view) {
-        super.untrackView(view);
-        mMoPubNativeAdData.clear(view);
-
-        if (privacyInformationIconImageView != null && (ViewGroup)
-                privacyInformationIconImageView.getParent() != null) {
-            ((ViewGroup) privacyInformationIconImageView.getParent())
-                    .removeView(privacyInformationIconImageView);
-        }
-    }
-
-    public void trackView(View view) {
-
+    public void trackViews(View view, Map<String, View> clickableAssets,
+                           Map<String, View> nonClickableAssets) {
+        super.trackViews(view, clickableAssets, nonClickableAssets);
         mMoPubNativeAdData.prepare(view);
 
         if (!(view instanceof ViewGroup)) {
@@ -112,7 +119,8 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
             final String privacyInformationClickthroughUrl = mMoPubNativeAdData
                     .getPrivacyInformationIconClickThroughUrl();
 
-            if (privacyInformationImageUrl == null) {
+            if (privacyInformationImageUrl == null ||
+                    TextUtils.isEmpty(privacyInformationClickthroughUrl)) {
                 privacyInformationIconImageView.setImageDrawable(
                         Drawables.NATIVE_PRIVACY_INFORMATION_ICON.createDrawable(context));
             } else {
@@ -134,6 +142,7 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
                             .build().handleUrl(context, privacyInformationClickthroughUrl);
                 }
             });
+
             privacyInformationIconImageView.setVisibility(View.VISIBLE);
             ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
 
@@ -158,10 +167,23 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
                 default:
                     params.gravity = Gravity.TOP | Gravity.END;
             }
+
             privacyInformationIconImageView.setLayoutParams(params);
             adView.requestLayout();
         } else {
             Log.d(MoPubAdapter.TAG, "Failed to show AdChoices icon.");
+        }
+    }
+
+    @Override
+    public void untrackView(View view) {
+        super.untrackView(view);
+        mMoPubNativeAdData.clear(view);
+
+        if (privacyInformationIconImageView != null && (ViewGroup)
+                privacyInformationIconImageView.getParent() != null) {
+            ((ViewGroup) privacyInformationIconImageView.getParent())
+                    .removeView(privacyInformationIconImageView);
         }
     }
 

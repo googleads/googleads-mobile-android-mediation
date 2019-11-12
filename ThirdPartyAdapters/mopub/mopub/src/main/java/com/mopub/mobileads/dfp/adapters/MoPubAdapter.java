@@ -100,7 +100,7 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     public void requestNativeAd(final Context context,
                                 final MediationNativeListener listener,
                                 Bundle serverParameters,
-                                NativeMediationAdRequest mediationAdRequest,
+                                final NativeMediationAdRequest mediationAdRequest,
                                 Bundle mediationExtras) {
 
         String adUnit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
@@ -109,9 +109,14 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
             listener.onAdFailedToLoad(MoPubAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-
+        if (!mediationAdRequest.isUnifiedNativeAdRequested() &&
+                !mediationAdRequest.isAppInstallAdRequested()) {
+            Log.e(TAG, "Failed to request native ad. Unified Native Ad or App install Ad should " +
+                    "be requested");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
         final NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
-
         if (options != null)
             privacyIconPlacement = options.getAdChoicesPlacement();
         else
@@ -137,70 +142,74 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                     public void onNativeLoad(NativeAd nativeAd) {
                         // Setting a native event listener for MoPub's impression & click events.
                         nativeAd.setMoPubNativeEventListener(mMoPubNativeEventListener);
-
                         BaseNativeAd adData = nativeAd.getBaseNativeAd();
-                        if (adData instanceof StaticNativeAd) {
-                            final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
-
-                            try {
-                                HashMap<String, URL> map = new HashMap<>();
-                                try {
-                                    map.put(DownloadDrawablesAsync.KEY_ICON,
-                                            new URL(staticNativeAd.getIconImageUrl()));
-                                    map.put(KEY_IMAGE,
-                                            new URL(staticNativeAd.getMainImageUrl()));
-                                } catch (MalformedURLException e) {
-                                    Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
-                                            + " are invalid");
-                                    listener.onAdFailedToLoad(MoPubAdapter.this,
-                                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                }
-
-                                new DownloadDrawablesAsync(new DrawableDownloadListener() {
-                                    @Override
-                                    public void onDownloadSuccess(
-                                            HashMap<String, Drawable> drawableMap) {
-
-                                        try {
-                                            final MoPubNativeAppInstallAdMapper
-                                                    moPubNativeAppInstallAdMapper =
-                                                    new MoPubNativeAppInstallAdMapper(
-                                                            staticNativeAd,
-                                                            drawableMap,
-                                                            privacyIconPlacement,
-                                                            mPrivacyIconSize);
-
-                                            // Returning the ImageView containing the main image via
-                                            // AdMob's MediaView.
-                                            ImageView imageView = new ImageView(context);
-                                            imageView.setImageDrawable(drawableMap.get(KEY_IMAGE));
-
-                                            moPubNativeAppInstallAdMapper.setMediaView(imageView);
-
-                                            listener.onAdLoaded(MoPubAdapter.this,
-                                                    moPubNativeAppInstallAdMapper);
-
-                                        } catch (Exception e) {
-                                            Log.d(TAG, "Exception trying to download native ad "
-                                                    + "drawables");
-                                            listener.onAdFailedToLoad(MoPubAdapter.this,
-                                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onDownloadFailure() {
-                                        // Failed to download images, send failure callback.
-                                        listener.onAdFailedToLoad(MoPubAdapter.this,
-                                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                                    }
-                                }).execute(map);
-                            } catch (Exception e) {
-                                Log.d(TAG, "Exception constructing the native ad");
-                                listener.onAdFailedToLoad(
-                                        MoPubAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                            }
+                        if (!(adData instanceof StaticNativeAd)) {
+                            Log.d(TAG, "Loaded native ad is not an instance of StaticNativeAd");
+                            listener.onAdFailedToLoad(MoPubAdapter.this,
+                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                            return;
                         }
+
+                        final StaticNativeAd staticNativeAd = (StaticNativeAd) adData;
+
+                        HashMap<String, URL> map = new HashMap<>();
+                        try {
+                            map.put(DownloadDrawablesAsync.KEY_ICON,
+                                    new URL(staticNativeAd.getIconImageUrl()));
+                            map.put(KEY_IMAGE,
+                                    new URL(staticNativeAd.getMainImageUrl()));
+                        } catch (MalformedURLException e) {
+                            Log.d(TAG, "Invalid ad response received from MoPub. Image URLs"
+                                    + " are malformed");
+                            listener.onAdFailedToLoad(MoPubAdapter.this,
+                                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        }
+
+                        new DownloadDrawablesAsync(new DrawableDownloadListener() {
+                            @Override
+                            public void onDownloadSuccess(
+                                    HashMap<String, Drawable> drawableMap) {
+                                Drawable icon =
+                                        drawableMap.get(DownloadDrawablesAsync.KEY_ICON);
+                                Drawable image =
+                                        drawableMap.get(DownloadDrawablesAsync.KEY_IMAGE);
+                                if (mediationAdRequest.isUnifiedNativeAdRequested()) {
+                                    final MoPubUnifiedNativeAdMapper
+                                            moPubUnifiedNativeAdMapper =
+                                            new MoPubUnifiedNativeAdMapper(
+                                                    context,
+                                                    staticNativeAd,
+                                                    icon,
+                                                    image,
+                                                    privacyIconPlacement,
+                                                    mPrivacyIconSize);
+
+                                    listener.onAdLoaded(MoPubAdapter.this,
+                                            moPubUnifiedNativeAdMapper);
+                                } else if (mediationAdRequest.isAppInstallAdRequested()) {
+                                    final MoPubNativeAppInstallAdMapper
+                                            moPubNativeAppInstallAdMapper =
+                                            new MoPubNativeAppInstallAdMapper(
+                                                    context,
+                                                    staticNativeAd,
+                                                    icon,
+                                                    image,
+                                                    privacyIconPlacement,
+                                                    mPrivacyIconSize);
+
+                                    listener.onAdLoaded(MoPubAdapter.this,
+                                            moPubNativeAppInstallAdMapper);
+                                }
+                            }
+
+                            @Override
+                            public void onDownloadFailure() {
+                                // Failed to download images, send failure callback.
+                                Log.e(TAG, "Failed to download images");
+                                listener.onAdFailedToLoad(MoPubAdapter.this,
+                                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                            }
+                        }).execute(map);
                     }
 
                     @Override
@@ -230,7 +239,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
                     }
                 };
 
-        final MoPubNative moPubNative = new MoPubNative(context, adUnit, moPubNativeNetworkListener);
+        final MoPubNative moPubNative = new MoPubNative(context, adUnit,
+                moPubNativeNetworkListener);
 
         ViewBinder viewbinder = new ViewBinder.Builder(0).build();
         MoPubStaticNativeAdRenderer moPubStaticNativeAdRenderer =
@@ -253,11 +263,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnit).build();
         MoPubSingleton.getInstance().initializeMoPubSDK(context, sdkConfiguration,
                 new SdkInitializationListener() {
-            @Override
-            public void onInitializationFinished() {
-                moPubNative.makeRequest(requestParameters);
-            }
-        });
+                    @Override
+                    public void onInitializationFinished() {
+                        moPubNative.makeRequest(requestParameters);
+                    }
+                });
 
         // Forwarding MoPub's impression and click events to AdMob.
         mMoPubNativeEventListener = new NativeAd.MoPubNativeEventListener() {
