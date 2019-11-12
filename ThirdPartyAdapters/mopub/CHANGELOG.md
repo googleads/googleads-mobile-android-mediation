@@ -1,5 +1,12 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Version 5.9.1.1
+- Native ads now leverage the unified native ads mediation API.
+
+Built and test with:
+- Google Mobile Ads SDK version 18.2.0.
+- MoPub SDK version 5.9.1.
+
 #### Version 5.9.1.0
 - Verified compatibility with MoPub SDK 5.9.1.
 - Updated the minimum required Google Mobile Ads SDK version to 18.2.0.
