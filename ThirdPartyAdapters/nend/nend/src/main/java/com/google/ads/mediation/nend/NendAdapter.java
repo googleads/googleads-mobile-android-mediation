@@ -14,6 +14,8 @@ import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -227,27 +229,27 @@ public class NendAdapter extends NendMediationAdapter
         }
         mNendAdInterstitialVideo.setAdListener(new NendAdVideoListener() {
             @Override
-            public void onLoaded(NendAdVideo nendAdVideo) {
+            public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
                 adLoaded();
             }
 
             @Override
-            public void onFailedToLoad(NendAdVideo nendAdVideo, int errorCode) {
+            public void onFailedToLoad(@NonNull NendAdVideo nendAdVideo, int errorCode) {
                 adFailedToLoad(ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode));
             }
 
             @Override
-            public void onFailedToPlay(NendAdVideo nendAdVideo) {
+            public void onFailedToPlay(@NonNull NendAdVideo nendAdVideo) {
                 Log.w(TAG, "Interstitial video ad failed to play...");
             }
 
             @Override
-            public void onShown(NendAdVideo nendAdVideo) {
+            public void onShown(@NonNull NendAdVideo nendAdVideo) {
                 adOpened();
             }
 
             @Override
-            public void onClosed(NendAdVideo nendAdVideo) {
+            public void onClosed(@NonNull NendAdVideo nendAdVideo) {
                 adClosed();
                 if (mInterstitialVideoStatus == InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
                     adLeftApplication();
@@ -255,24 +257,24 @@ public class NendAdapter extends NendMediationAdapter
             }
 
             @Override
-            public void onStarted(NendAdVideo nendAdVideo) {
+            public void onStarted(@NonNull NendAdVideo nendAdVideo) {
                 mInterstitialVideoStatus = InterstitialVideoStatus.PLAYING;
             }
 
             @Override
-            public void onStopped(NendAdVideo nendAdVideo) {
+            public void onStopped(@NonNull NendAdVideo nendAdVideo) {
                 if (mInterstitialVideoStatus != InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
                     mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
                 }
             }
 
             @Override
-            public void onCompleted(NendAdVideo nendAdVideo) {
+            public void onCompleted(@NonNull NendAdVideo nendAdVideo) {
                 mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
             }
 
             @Override
-            public void onAdClicked(NendAdVideo nendAdVideo) {
+            public void onAdClicked(@NonNull NendAdVideo nendAdVideo) {
                 adClicked();
                 switch (mInterstitialVideoStatus) {
                     case PLAYING:
@@ -286,7 +288,7 @@ public class NendAdapter extends NendMediationAdapter
             }
 
             @Override
-            public void onInformationClicked(NendAdVideo nendAdVideo) {
+            public void onInformationClicked(@NonNull NendAdVideo nendAdVideo) {
                 adLeftApplication();
             }
         });
@@ -587,7 +589,7 @@ public class NendAdapter extends NendMediationAdapter
 
   // region NendAdListener callbacks.
   @Override
-  public void onReceiveAd(NendAdView adView) {
+  public void onReceiveAd(@NonNull NendAdView adView) {
         if (mListener != null && mIsRequestBannerAd) {
             // New request or auto reload from AdMob network.
             mListener.onAdLoaded(this);
@@ -599,7 +601,7 @@ public class NendAdapter extends NendMediationAdapter
     }
 
     @Override
-    public void onFailedToReceiveAd(NendAdView adView) {
+    public void onFailedToReceiveAd(@NonNull NendAdView adView) {
         if (!mIsRequestBannerAd) {
             // This case is not need to call listener function to AdMob network.
             return;
@@ -628,7 +630,7 @@ public class NendAdapter extends NendMediationAdapter
     }
 
     @Override
-    public void onClick(NendAdView adView) {
+    public void onClick(@NonNull NendAdView adView) {
         if (mListener != null) {
             mListener.onAdClicked(this);
             mListener.onAdOpened(this);
@@ -637,14 +639,14 @@ public class NendAdapter extends NendMediationAdapter
     }
 
     @Override
-    public void onDismissScreen(NendAdView adView) {
+    public void onDismissScreen(@NonNull NendAdView adView) {
         if (mListener != null) {
             mListener.onAdClosed(this);
         }
     }
 
     @Override
-    public void onInformationButtonClick(NendAdView adView) {
+    public void onInformationButtonClick(@NonNull NendAdView adView) {
         if (mListener != null) {
             mListener.onAdLeftApplication(this);
         }
