@@ -27,7 +27,6 @@ public class AppLovinUtils {
    */
   private static class ServerParameterKeys {
     private static final String SDK_KEY = "sdkKey";
-    private static final String PLACEMENT = "placement";
     private static final String ZONE_ID = "zone_id";
   }
 
@@ -77,18 +76,6 @@ public class AppLovinUtils {
     }
 
     return null;
-  }
-
-  /**
-   * Retrieves the placement from an appropriate connector object. Will use empty string if none
-   * exists.
-   */
-  public static String retrievePlacement(Bundle serverParameters) {
-    if (serverParameters.containsKey(ServerParameterKeys.PLACEMENT)) {
-      return serverParameters.getString(ServerParameterKeys.PLACEMENT);
-    } else {
-      return null;
-    }
   }
 
   /**
