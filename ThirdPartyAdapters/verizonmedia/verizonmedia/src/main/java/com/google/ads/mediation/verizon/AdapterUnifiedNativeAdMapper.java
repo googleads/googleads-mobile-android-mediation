@@ -27,16 +27,19 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 
+import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
 
-public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
-
-    private static final String TAG = AdapterUnifiedNativeAdMapper.class.getSimpleName();
-
+class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+    /**
+     * Verizon Media native ad.
+     */
     private final NativeAd verizonAd;
+    /**
+     * The Context.
+     */
     private final Context context;
 
-
-    AdapterUnifiedNativeAdMapper(final Context context, @NonNull final NativeAd nativeAd) {
+    public AdapterUnifiedNativeAdMapper(final Context context, @NonNull final NativeAd nativeAd) {
 
         this.context = context;
         verizonAd = nativeAd;
@@ -68,7 +71,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         }
     }
 
-
     private Drawable drawableFromUrl(final String url) {
 
         HttpURLConnection connection = null;
@@ -88,7 +90,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     input.close();
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error closing input stream.", e);
             }
 
             if (connection != null) {
@@ -99,20 +100,15 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         return null;
     }
 
-
     @Override
     public void recordImpression() {
-
         verizonAd.fireImpression();
     }
 
-
     @Override
     public void handleClick(final View view) {
-
         verizonAd.invokeDefaultAction(context);
     }
-
 
     private AdapterNativeMappedImage parseImageComponent(final JSONObject jsonObject) {
 
@@ -122,20 +118,19 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                 Uri url = Uri.parse(dataObject.optString("url"));
                 String assetPath = dataObject.optString("asset");
                 Drawable drawable;
-                if (!TextUtils.isEmpty(assetPath)) {
-                    drawable = Drawable.createFromPath(assetPath);
-                } else {
+                if (TextUtils.isEmpty(assetPath)) {
                     drawable = drawableFromUrl(url.toString());
+                } else {
+                    drawable = Drawable.createFromPath(assetPath);
                 }
-                return new AdapterNativeMappedImage(drawable, url, VerizonMediationAdapter.VAS_IMAGE_SCALE);
+                return new AdapterNativeMappedImage(drawable, url,
+                        VerizonMediationAdapter.VAS_IMAGE_SCALE);
             } catch (Exception e) {
                 Log.e(TAG, "Unable to parse data object.", e);
             }
         }
-
         return null;
     }
-
 
     private String parseTextComponent(final String key, final NativeAd nativeAd) {
 
@@ -152,7 +147,6 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         return value;
     }
 
-
     void loadResources(final LoadListener loadListener) {
 
         ThreadUtils.runOffUiThread(new Runnable() {
@@ -166,7 +160,8 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     // iconImage
                     JSONObject iconImageJSON = verizonAd.getJSON("iconImage");
                     if (iconImageJSON != null) {
-                        AdapterNativeMappedImage adapterNativeMappedImage = parseImageComponent(iconImageJSON);
+                        AdapterNativeMappedImage adapterNativeMappedImage =
+                                parseImageComponent(iconImageJSON);
                         if (adapterNativeMappedImage != null) {
                             setIcon(adapterNativeMappedImage);
                             iconSet = true;
@@ -176,8 +171,10 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     // mainImage
                     JSONObject mainImageJSON = verizonAd.getJSON("mainImage");
                     if (mainImageJSON != null) {
-                        List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList = new ArrayList<>();
-                        AdapterNativeMappedImage adapterNativeMappedImage = parseImageComponent(mainImageJSON);
+                        List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList =
+                                new ArrayList<>();
+                        AdapterNativeMappedImage adapterNativeMappedImage =
+                                parseImageComponent(mainImageJSON);
                         if (adapterNativeMappedImage != null) {
                             imagesList.add(adapterNativeMappedImage);
 
@@ -185,7 +182,8 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                             ImageView imageView = new ImageView(context);
                             imageView.setImageDrawable(adapterNativeMappedImage.getDrawable());
                             ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT);
                             imageView.setLayoutParams(layoutParams);
                             setMediaView(imageView);
                             mediaViewSet = true;
@@ -207,10 +205,9 @@ public class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         });
     }
 
-
     interface LoadListener {
-
         void onLoadComplete();
+
         void onLoadError();
     }
 }
