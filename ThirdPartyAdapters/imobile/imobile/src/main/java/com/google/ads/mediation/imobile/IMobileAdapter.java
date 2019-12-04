@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -30,6 +31,17 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
     /** Tag for log. */
     private static final String TAG = IMobileAdapter.class.getSimpleName();
+
+    // endregion
+
+    // region - Enums for banner ads.
+
+    /** Requested banner type. */
+    private enum BannerType {
+        UNKNOWN,
+        NORMAL_BANNER,
+        SMART_BANNER,
+    }
 
     // endregion
 
@@ -63,21 +75,6 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
             Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
             Bundle mediationExtras) {
 
-        // Validate AdSize.
-        boolean isSupportedSize = false;
-        for (AdSize iMobileSize : supportedSizes) {
-            if (adSize.getWidth() == iMobileSize.getWidth()
-                    && adSize.getHeight() == iMobileSize.getHeight()) {
-                isSupportedSize = true;
-                break;
-            }
-        }
-        if (!isSupportedSize) {
-            Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
         // Validate Context.
         if (!(context instanceof Activity)) {
             Log.w(TAG, "Banner : Context is not Activity.");
@@ -85,6 +82,18 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
             return;
         }
         Activity activity = (Activity) context;
+
+        // Check banner type.
+        BannerType bannerType = BannerType.UNKNOWN;
+        if (isSupportedSize(adSize)) {
+            bannerType = BannerType.NORMAL_BANNER;
+        } else if (canDisplaySmartBanner(activity, adSize)) {
+            bannerType = BannerType.SMART_BANNER;
+        } else {
+            Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
 
         // Initialize fields.
         mediationBannerListener = listener;
@@ -136,13 +145,56 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
         bannerView.setLayoutParams(new FrameLayout.LayoutParams(adSize.getWidthInPixels(activity),
                 adSize.getHeightInPixels(activity)));
 
-        // Start getting ads.
-        ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView);
+        switch (bannerType) {
+            case NORMAL_BANNER:
+                ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView);
+                break;
+            case SMART_BANNER:
+                FrameLayout adView = new FrameLayout(activity);
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                        AdSize.BANNER.getWidthInPixels(activity),
+                        AdSize.BANNER.getHeightInPixels(activity));
+                layoutParams.gravity = Gravity.CENTER;
+                bannerView.addView(adView, layoutParams);
+                ImobileSdkAd.showAdForAdMobMediation(activity, spotId, adView);
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
     public View getBannerView() {
         return bannerView;
+    }
+
+    private boolean isSupportedSize(AdSize adSize) {
+        for (AdSize iMobileSize : supportedSizes) {
+            if (adSize.getWidth() == iMobileSize.getWidth()
+                    && adSize.getHeight() == iMobileSize.getHeight()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canDisplaySmartBanner(Context context, AdSize adSize) {
+        // Smart banner or not.
+        if (adSize.getWidth() != AdSize.FULL_WIDTH || adSize.getHeight() != AdSize.AUTO_HEIGHT) {
+            return false;
+        }
+
+        // 50dp or not.
+        if (adSize.getHeightInPixels(context) != AdSize.BANNER.getHeightInPixels(context)) {
+            return false;
+        }
+
+        // Over 320dp or not.
+        if (adSize.getWidthInPixels(context) < AdSize.BANNER.getWidthInPixels(context)) {
+            return false;
+        }
+
+        return true;
     }
 
     // endregion

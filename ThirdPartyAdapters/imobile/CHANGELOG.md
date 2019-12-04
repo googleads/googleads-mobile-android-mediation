@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Version 2.0.20.2
+- Added support for Smart Banner (50 dp height).
+
 #### Version 2.0.20.1
 - Adapter now returns a non-zero `mediaContent` aspect ratio.
 
