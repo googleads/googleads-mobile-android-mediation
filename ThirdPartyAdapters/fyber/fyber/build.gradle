@@ -33,11 +33,12 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:18.2.0'
 
-    compileOnly 'com.fyber.vamp:core-sdk:7.3.4'
-    compileOnly 'com.fyber.vamp:mraid-kit:7.3.4'
-    compileOnly 'com.fyber.vamp:video-kit:7.3.4'
+    implementation 'com.fyber.vamp:core-sdk:7.3.4'
+    implementation 'com.fyber.vamp:mraid-kit:7.3.4'
+    implementation 'com.fyber.vamp:video-kit:7.3.4'
 }
 
 /**
