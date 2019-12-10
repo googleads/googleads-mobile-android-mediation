@@ -1,45 +1,87 @@
 package com.google.ads.mediation.verizon;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
+import com.verizon.ads.utils.TextUtils;
 import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
+import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
 
-final class AdapterInterstitialListener implements InterstitialAd.InterstitialAdListener,
+final class VerizonMediaInterstitialRenderer implements InterstitialAd.InterstitialAdListener,
         InterstitialAdFactory.InterstitialAdFactoryListener {
 
     /**
      * The mediation interstitial adapter weak reference.
      */
     private WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
+
     /**
      * The mediation interstitial listener used to report interstitial ad event callbacks.
      */
     private MediationInterstitialListener interstitialListener;
+
     /**
      * Verizon Media interstitial ad.
      */
     private InterstitialAd interstitialAd;
 
-    public AdapterInterstitialListener(final MediationInterstitialAdapter adapter,
-            final MediationInterstitialListener listener) {
-
+    public VerizonMediaInterstitialRenderer(final MediationInterstitialAdapter adapter) {
         interstitialAdapterWeakRef = new WeakReference<>(adapter);
+    }
+
+    public void render(@NonNull Context context, MediationInterstitialListener listener,
+            MediationAdRequest mediationAdRequest, Bundle serverParameters, Bundle mediationExtras)
+    {
         interstitialListener = listener;
+        String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+        MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
+        if (TextUtils.isEmpty(siteId)) {
+            Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+            if (interstitialListener != null && adapter != null) {
+                interstitialListener.onAdFailedToLoad(adapter,
+                        AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        if (!initializeSDK(context, siteId)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+            if (interstitialListener != null && adapter != null) {
+                interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+            return;
+        }
+
+        String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+        if (TextUtils.isEmpty(placementId)) {
+            Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+            interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
+        VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+        InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, placementId
+                , this);
+        interstitialAdFactory.setRequestMetaData(VerizonMediaAdapterUtils
+                .getRequestMetadata(mediationAdRequest));
+        interstitialAdFactory.load(this);
     }
 
     @Override
@@ -176,11 +218,12 @@ final class AdapterInterstitialListener implements InterstitialAd.InterstitialAd
         });
     }
 
-    void show(@NonNull Context context) {
+    void showInterstitial(@NonNull Context context) {
         if (interstitialAd == null) {
             Log.e(TAG, "Failed to show: No ads to show.");
             return;
         }
+
         interstitialAd.show(context);
     }
 

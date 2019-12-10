@@ -1,15 +1,20 @@
 package com.google.ads.mediation.verizon;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.verizon.ads.ErrorInfo;
+import com.verizon.ads.VASAds;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 import com.verizon.ads.utils.ThreadUtils;
@@ -18,55 +23,93 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
+import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
 
-class AdapterIncentivizedEventListener implements InterstitialAd.InterstitialAdListener,
+class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListener,
         InterstitialAdFactory.InterstitialAdFactoryListener, MediationRewardedAd {
 
     private static final String VIDEO_COMPLETE_EVENT_ID = "onVideoComplete";
+
     /**
      * The mediation ad load callback.
      */
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
             mediationAdLoadCallback;
+
     /**
      * Verizon Media rewarded ad.
      */
     private InterstitialAd rewardedAd;
+
     /**
      * Flag to check 'onEvent()' completion.
      */
     private AtomicBoolean completionEventCalled = new AtomicBoolean();
+
     /**
      * The mediation rewarded ad callback used to report ad event callbacks.
      */
     private MediationRewardedAdCallback mediationRewardedAdCallback;
 
-    public AdapterIncentivizedEventListener(@NonNull MediationAdLoadCallback<MediationRewardedAd,
-            MediationRewardedAdCallback> mediationAdLoadCallback) {
+    /**
+     * The mediation rewarded ad configuration.
+     */
+    private MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
+
+    public VerizonMediaRewardedRenderer(@NonNull MediationAdLoadCallback<MediationRewardedAd,
+            MediationRewardedAdCallback> mediationAdLoadCallback, MediationRewardedAdConfiguration
+            mediationRewardedAdConfiguration ) {
         this.mediationAdLoadCallback = mediationAdLoadCallback;
+        this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
+    }
+
+    public void render() {
+        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
+        String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters,
+                mediationRewardedAdConfiguration);
+        Context context = mediationRewardedAdConfiguration.getContext();
+        if (!initializeSDK(context, siteId)) {
+            final String message = "Unable to initialize Verizon Ads SDK.";
+            Log.e(TAG, message);
+            mediationAdLoadCallback.onFailure(message);
+            return;
+        }
+
+        String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+        if (TextUtils.isEmpty(placementId)) {
+            mediationAdLoadCallback.onFailure(
+                    "Verizon Ads SDK placement ID must be set in mediationRewardedAdConfiguration" +
+                            " server params.");
+            return;
+        }
+
+        VerizonMediaAdapterUtils.setCoppaValue(mediationRewardedAdConfiguration);
+        VASAds.setLocationEnabled((mediationRewardedAdConfiguration.getLocation() != null));
+        InterstitialAdFactory interstitialAdFactory =
+                new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(),
+                        placementId, this);
+        interstitialAdFactory.setRequestMetaData(VerizonMediaAdapterUtils
+                .getRequestMetaData(mediationRewardedAdConfiguration));
+        interstitialAdFactory.load(this);
     }
 
     @Override
     public void onLoaded(final InterstitialAdFactory interstitialAdFactory,
            final InterstitialAd interstitialAd) {
 
+        Log.i(TAG, "Verizon Ads SDK incentivized video interstitial loaded.");
         this.rewardedAd = interstitialAd;
-
         // Reset the completion event with each new interstitial ad load.
         completionEventCalled.set(false);
-
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 if (mediationAdLoadCallback != null) {
                     mediationRewardedAdCallback =
-                            mediationAdLoadCallback.onSuccess(AdapterIncentivizedEventListener.this);
+                            mediationAdLoadCallback.onSuccess(VerizonMediaRewardedRenderer.this);
                 }
             }
         });
-
-        Log.i(TAG, "Verizon Ads SDK incentivized video interstitial loaded.");
     }
 
     @Override
@@ -130,7 +173,7 @@ class AdapterIncentivizedEventListener implements InterstitialAd.InterstitialAdL
 
     @Override
     public void onClosed(final InterstitialAd interstitialAd) {
-        Log.i(TAG, "Verizon Ads SDK ad closed");
+        Log.i(TAG, "Verizon Ads SDK ad closed.");
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -156,7 +199,6 @@ class AdapterIncentivizedEventListener implements InterstitialAd.InterstitialAdL
 
     @Override
     public void onAdLeftApplication(final InterstitialAd interstitialAd) {
-
         Log.i(TAG, "Verizon Ads SDK incentivized video interstitial left application.");
     }
 

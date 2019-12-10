@@ -102,6 +102,37 @@ class VerizonMediaAdapterUtils {
     }
 
     /**
+     * Gets the Verizon Media site ID.
+     */
+    public static String getSiteId(final Bundle serverParams,
+            final MediationAdConfiguration mediationAdConfiguration) {
+        String siteId = null;
+        if (mediationAdConfiguration != null &&
+                mediationAdConfiguration.getMediationExtras().containsKey(SITE_KEY)) {
+            siteId = mediationAdConfiguration.getMediationExtras().getString(SITE_KEY);
+        }
+        // If we get site ID from the serverParams (not yet implemented), overwrite
+        // everything!
+        if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
+            siteId = serverParams.getString(SITE_KEY);
+        }
+
+        // Support for legacy Nexage and MM mediation
+        if (TextUtils.isEmpty(siteId)) {
+            if (mediationAdConfiguration != null &&
+                    mediationAdConfiguration.getMediationExtras().containsKey(DCN_KEY)) {
+                siteId = mediationAdConfiguration.getMediationExtras().getString(DCN_KEY);
+            }
+            // If we get site ID from the serverParams (not yet implemented), overwrite
+            // everything!
+            if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
+                siteId = serverParams.getString(DCN_KEY);
+            }
+        }
+        return siteId;
+    }
+
+    /**
      * Gets the Verizon Media placement ID.
      */
     public static String getPlacementId(final Bundle serverParams) {

@@ -1,48 +1,124 @@
 package com.google.ads.mediation.verizon;
 
+import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.inlineplacement.InlineAdView;
+import com.verizon.ads.utils.TextUtils;
 import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
+import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
 
-final class AdapterInlineListener implements InlineAdView.InlineAdListener,
+final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
         InlineAdFactory.InlineAdFactoryListener {
 
     /**
      * The ad view's container.
      */
-    private final LinearLayout adContainer;
+    private LinearLayout adContainer;
+
     /**
      * The mediation banner adapter weak reference.
      */
     private WeakReference<MediationBannerAdapter> bannerAdapterWeakRef;
+
     /**
      * The mediation banner listener used to report banner ad event callbacks.
      */
     private MediationBannerListener bannerListener;
+
     /**
      * Verizon Media ad view.
      */
     private InlineAdView inlineAdView;
 
-    public AdapterInlineListener(final MediationBannerAdapter adapter,
-            final MediationBannerListener listener, final LinearLayout internalView) {
-
+    public VerizonMediaBannerRenderer(MediationBannerAdapter adapter) {
         bannerAdapterWeakRef = new WeakReference<>(adapter);
+    }
+
+    public void render(@NonNull Context context, MediationBannerListener listener,
+           Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
+           Bundle mediationExtras) {
         bannerListener = listener;
-        adContainer = internalView;
+        String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+        MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
+        if (TextUtils.isEmpty(siteId)) {
+            Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+            if (bannerListener != null && adapter != null) {
+                bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+        if (!initializeSDK(context, siteId)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+            if (bannerListener != null && adapter != null) {
+                bannerListener.onAdFailedToLoad(adapter,
+                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+            return;
+        }
+
+        String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+        if (TextUtils.isEmpty(placementId)) {
+            Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+            if (bannerListener != null && adapter != null) {
+                bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        if (adSize == null) {
+            Log.w(TAG, "Fail to request banner ad, adSize is null.");
+            if (bannerListener != null && adapter != null) {
+                bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        AdSize normalizedSize = VerizonMediaAdapterUtils.normalizeSize(context, adSize);
+        if (normalizedSize == null) {
+            Log.w(TAG,
+                    "The input ad size " + adSize.toString() + " is not currently supported.");
+            if (bannerListener != null && adapter != null) {
+                bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+        adContainer = new LinearLayout(context);
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER_HORIZONTAL;
+        adContainer.setLayoutParams(lp);
+        com.verizon.ads.inlineplacement.AdSize verizonAdSize =
+                new com.verizon.ads.inlineplacement.AdSize(normalizedSize.getWidth(),
+                        normalizedSize.getHeight());
+        VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+        VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
+        InlineAdFactory inlineAdFactory = new InlineAdFactory(context, placementId,
+                Collections.singletonList(verizonAdSize), this);
+        inlineAdFactory.setRequestMetaData(
+                VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
+        inlineAdFactory.load(this);
     }
 
     @Override
@@ -52,7 +128,7 @@ final class AdapterInlineListener implements InlineAdView.InlineAdListener,
 
     @Override
     public void onResized(final InlineAdView inlineAdView) {
-        Log.d(TAG, "Verizon Ads SDK on resized");
+        Log.d(TAG, "Verizon Ads SDK on resized.");
     }
 
     @Override
@@ -174,6 +250,10 @@ final class AdapterInlineListener implements InlineAdView.InlineAdListener,
                 }
             }
         });
+    }
+
+    View getBannerView() {
+        return adContainer;
     }
 
     void destroy() {

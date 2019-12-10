@@ -1,47 +1,102 @@
 package com.google.ads.mediation.verizon;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.verizon.ads.Component;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.nativeplacement.NativeAd;
 import com.verizon.ads.nativeplacement.NativeAdFactory;
+import com.verizon.ads.utils.TextUtils;
 import com.verizon.ads.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
+import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
 
-final class AdapterNativeListener implements NativeAd.NativeAdListener,
+final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
         NativeAdFactory.NativeAdFactoryListener {
+
     /**
      * The mediation native adapter weak reference.
      */
     private final WeakReference<MediationNativeAdapter> nativeAdapterWeakRef;
+
     /**
      * The mediation native listener used to report native ad event callbacks.
      */
-    private final MediationNativeListener nativeListener;
+    private  MediationNativeListener nativeListener;
+
     /**
      * The Context.
      */
-    private final Context context;
+    private  Context context;
     /**
      * Verizon Media native ad.
      */
     private NativeAd nativeAd;
 
-    public AdapterNativeListener(final Context context, final MediationNativeAdapter adapter,
-            final MediationNativeListener listener) {
+    public VerizonMediaNativeRenderer(MediationNativeAdapter adapter) {
         this.nativeAdapterWeakRef = new WeakReference<>(adapter);
-        this.nativeListener = listener;
+    }
+
+    public void render(@NonNull Context context, MediationNativeListener listener,
+            Bundle serverParameters, NativeMediationAdRequest mediationAdRequest,
+            Bundle mediationExtras) {
+        nativeListener = listener;
         this.context = context;
+        String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+        MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
+
+        if (TextUtils.isEmpty(siteId)) {
+            Log.e(TAG, "Failed to request ad: siteID is null.");
+            if (nativeListener != null && adapter != null) {
+                nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
+        }
+
+        if (!initializeSDK(context, siteId)) {
+            Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+            if (nativeListener != null && adapter != null) {
+                nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            }
+            return;
+        }
+
+        String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+        if (TextUtils.isEmpty(placementId)) {
+            Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+            if (nativeListener != null && adapter != null) {
+                nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            }
+            return;
+        }
+
+        VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
+        VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+        String[] adTypes = new String[] {"inline"};
+        NativeAdFactory nativeAdFactory = new NativeAdFactory(context, placementId, adTypes, this);
+        nativeAdFactory.setRequestMetaData(
+                VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
+        NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
+
+        if ((options == null) || (!options.shouldReturnUrlsForImageAssets())) {
+            nativeAdFactory.load(this);
+        } else {
+            nativeAdFactory.loadWithoutAssets(this);
+        }
     }
 
     @Override

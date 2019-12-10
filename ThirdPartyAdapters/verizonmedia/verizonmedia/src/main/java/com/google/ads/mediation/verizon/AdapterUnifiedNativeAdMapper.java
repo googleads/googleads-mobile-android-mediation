@@ -30,10 +30,12 @@ import androidx.annotation.NonNull;
 import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
 
 class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+
     /**
      * Verizon Media native ad.
      */
     private final NativeAd verizonAd;
+
     /**
      * The Context.
      */
