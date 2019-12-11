@@ -5,6 +5,10 @@
 - Support for Native ads added.
 - Support for Rewarded Video added.
 
+Built and tested with:
+- Google Mobile Ads SDK version 18.2.0.
+- Verizon Media SDK 1.2.1.
+
 #### Version 1.1.1.0
 - Adapter has been rebranded to "Verizon Media".
 - Compatible with Verizon Media SDK 1.1.1.
