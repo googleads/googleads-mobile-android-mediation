@@ -15,10 +15,9 @@
 package com.google.ads.mediation.unity;
 
 import android.app.Activity;
-import androidx.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.android.gms.ads.MobileAds;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -115,8 +114,8 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.set("adapter_version", "3.3.0");
+        mediationMetaData.setVersion(MobileAds.getVersionString());
+        mediationMetaData.set("adapter_version", BuildConfig.VERSION_NAME);
         mediationMetaData.commit();
 
         UnitySingletonListener listener =
