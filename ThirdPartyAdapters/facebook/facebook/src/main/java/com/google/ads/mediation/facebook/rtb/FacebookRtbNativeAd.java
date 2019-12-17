@@ -47,8 +47,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     private MediaView mMediaView;
 
     public FacebookRtbNativeAd(MediationNativeAdConfiguration adConfiguration,
-                               MediationAdLoadCallback<UnifiedNativeAdMapper,
-                                       MediationNativeAdCallback> callback) {
+            MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
         this.callback = callback;
         this.adConfiguration = adConfiguration;
     }
@@ -63,6 +62,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
             callback.onFailure(message);
             return;
         }
+        setMixedAudience(adConfiguration);
         mMediaView = new MediaView(adConfiguration.getContext());
         mNativeAd = new NativeAd(adConfiguration.getContext(), placementID);
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {

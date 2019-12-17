@@ -8,11 +8,14 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -85,8 +88,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     @Override
     public void initialize(final Context context,
-                           final InitializationCompleteCallback initializationCompleteCallback,
-                           List<MediationConfiguration> mediationConfigurations) {
+            final InitializationCompleteCallback initializationCompleteCallback,
+            List<MediationConfiguration> mediationConfigurations) {
 
         if (context == null) {
             initializationCompleteCallback.onInitializationFailed(
@@ -134,41 +137,61 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     @Override
     public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-                               MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-        rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+                    mediationAdLoadCallback) {
+        rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration,
+                mediationAdLoadCallback);
         rewardedAd.render();
     }
 
     @Override
     public void loadBannerAd(MediationBannerAdConfiguration adConfiguration,
-                             MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+            MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+                    mediationAdLoadCallback) {
         banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
         banner.render();
     }
 
     @Override
     public void loadInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-                                   MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+            MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+                    mediationAdLoadCallback) {
         interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
         interstitial.render();
     }
 
     @Override
     public void loadNativeAd(MediationNativeAdConfiguration mediationNativeAdConfiguration,
-                             MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+            MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+                    mediationAdLoadCallback) {
         nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
         nativeAd.render();
     }
 
-
+    /**
+     * Gets the Facebook placement ID.
+     */
     public static @Nullable String getPlacementID(@NonNull Bundle serverParameters) {
-        // Open bidding uses a different key for Placement ID than non-open bidding. Try the open bidding
-        // key first.
+        // Open bidding uses a different key for Placement ID than non-open bidding. Try the open
+        // bidding key first.
         String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);
         if (placementId == null) {
             // Fall back to checking the non-open bidding key.
             placementId = serverParameters.getString(PLACEMENT_PARAMETER);
         }
         return placementId;
+    }
+
+    /**
+     * Sets the Facebook mixed audience settings.
+     */
+    public static void setMixedAudience(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+        if (mediationAdConfiguration.taggedForChildDirectedTreatment() ==
+                RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            AdSettings.setMixedAudience(true);
+        } else if (mediationAdConfiguration.taggedForChildDirectedTreatment() ==
+                RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+            AdSettings.setMixedAudience(false);
+        }
     }
 }

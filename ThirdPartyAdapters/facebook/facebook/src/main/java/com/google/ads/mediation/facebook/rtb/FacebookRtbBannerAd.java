@@ -19,6 +19,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
@@ -28,8 +29,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     private MediationBannerAdCallback mBannerAdCallback;
 
     public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
-                               MediationAdLoadCallback<MediationBannerAd,
-                                       MediationBannerAdCallback> callback) {
+            MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
         this.adConfiguration = adConfiguration;
         this.callback = callback;
     }
@@ -43,6 +43,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
             callback.onFailure(message);
             return;
         }
+        setMixedAudience(adConfiguration);
         try {
             adView = new AdView(adConfiguration.getContext(), placementID,
                     adConfiguration.getBidResponse());

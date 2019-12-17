@@ -19,6 +19,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
         InterstitialAdExtendedListener {
@@ -29,8 +30,8 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-                                     MediationAdLoadCallback<MediationInterstitialAd,
-                                             MediationInterstitialAdCallback> callback) {
+           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+                   callback) {
         this.adConfiguration = adConfiguration;
         this.callback = callback;
     }
@@ -44,6 +45,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
             callback.onFailure(message);
             return;
         }
+        setMixedAudience(adConfiguration);
         interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementID);
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
             interstitialAd.setExtraHints(new ExtraHints.Builder()

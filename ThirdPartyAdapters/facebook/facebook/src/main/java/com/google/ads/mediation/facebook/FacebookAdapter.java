@@ -154,13 +154,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         final String placementID = getPlacementID(serverParameters);
 
         if (TextUtils.isEmpty(placementID)) {
-            Log.e(TAG, "Failed to request ad, placementID is null or empty");
+            Log.e(TAG, "Failed to request ad: placementID is null or empty");
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
 
         if (adSize == null) {
-            Log.w(TAG, "Fail to request banner ad, adSize is null");
+            Log.w(TAG, "Fail to request banner ad: adSize is null");
             mBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
@@ -225,7 +225,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 Log.w(TAG, "Failed to load ad from Facebook: " + message);
                 if (mInterstitialListener != null) {
                     mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                                          AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
                 }
             }
         });
@@ -315,8 +315,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
     private void buildAdRequest(MediationAdRequest adRequest) {
         if (adRequest != null) {
-            AdSettings.setIsChildDirected((adRequest.taggedForChildDirectedTreatment()
-                    == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE));
+            if (adRequest.taggedForChildDirectedTreatment() ==
+                    MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+                AdSettings.setMixedAudience(true);
+            } else if (adRequest.taggedForChildDirectedTreatment() ==
+                    MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+                AdSettings.setMixedAudience(false);
+            }
         }
     }
     //endregion

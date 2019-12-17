@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdExtendedListener {
 
@@ -41,8 +42,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
     public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-                              MediationAdLoadCallback<MediationRewardedAd,
-                                      MediationRewardedAdCallback> callback) {
+            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
         this.adConfiguration = adConfiguration;
         this.mMediationAdLoadCallback = callback;
     }
@@ -63,6 +63,8 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
         if (!TextUtils.isEmpty(decodedBid)) {
             isRtbAd = true;
         }
+
+        setMixedAudience(adConfiguration);
 
         if (isRtbAd) {
             rewardedAd = new RewardedVideoAd(context, placementID);
