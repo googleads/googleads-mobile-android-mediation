@@ -174,14 +174,6 @@ public class InMobiRewardedAd implements MediationRewardedAd {
         Context context = adConfiguration.getContext();
         mMediationAdLoadCallback = callback;
 
-        if (!(context instanceof Activity)) {
-            String logMessage = "Failed to load ad from InMobi: "
-                    + "InMobi SDK requires an Activity context to load ads.";
-            Log.w(TAG, logMessage);
-            callback.onFailure(logMessage);
-            return;
-        }
-
         Bundle serverParameters = adConfiguration.getServerParameters();
         Bundle extras = adConfiguration.getMediationExtras();
 

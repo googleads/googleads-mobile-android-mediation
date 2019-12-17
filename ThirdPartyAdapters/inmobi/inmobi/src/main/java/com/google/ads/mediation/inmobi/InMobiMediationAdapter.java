@@ -93,12 +93,6 @@ public class InMobiMediationAdapter extends RtbAdapter {
                            InitializationCompleteCallback initializationCompleteCallback,
                            List<MediationConfiguration> mediationConfigurations) {
 
-        if (!(context instanceof Activity)) {
-            initializationCompleteCallback.onInitializationFailed(
-                    "InMobi SDK requires an Activity context to initialize");
-            return;
-        }
-
         HashSet<String> accountIDs = new HashSet<>();
         for (MediationConfiguration configuration : mediationConfigurations) {
             String serverAccountID = configuration.getServerParameters()
