@@ -30,7 +30,7 @@ class VerizonMediaAdapterUtils {
     public static RequestMetadata getRequestMetadata(final MediationAdRequest mediationAdRequest) {
         RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder();
         if (mediationAdRequest.getKeywords() != null) {
-            requestMetadataBuilder.setKeywords(new ArrayList<>(mediationAdRequest.getKeywords()));
+            requestMetadataBuilder.putExtra("keywords", new ArrayList<>(mediationAdRequest.getKeywords()));
         }
         requestMetadataBuilder.setMediator(MEDIATOR_ID);
 

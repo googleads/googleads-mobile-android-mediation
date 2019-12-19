@@ -148,10 +148,6 @@ public class VerizonMediationAdapter extends Adapter
             Log.w(TAG, message);
         }
         if (initializeSDK(context, siteID)) {
-            if (VerizonConsent.getInstance().getConsentMap() != null) {
-                VASAds.setConsentData(VerizonConsent.getInstance().getConsentMap(),
-                        VerizonConsent.getInstance().isRestricted());
-            }
             initializationCompleteCallback.onInitializationSucceeded();
         } else {
             initializationCompleteCallback.onInitializationFailed(
@@ -283,8 +279,7 @@ public class VerizonMediationAdapter extends Adapter
 
         VASAds.getActivityStateManager().setState((Activity) context,
                 ActivityStateManager.ActivityState.RESUMED);
-        VASAds.setConsentData(VerizonConsent.getInstance().getConsentMap(),
-                VerizonConsent.getInstance().isRestricted());
+        VASAds.setPrivacyData(VerizonPrivacy.getInstance().getPrivacyData());
 
         return success;
     }
