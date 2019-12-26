@@ -178,21 +178,23 @@ public class FyberMediationAdapter extends Adapter
     private void waitForInitializationStatusAndReport(
             final @NonNull InitializationCompleteCallback completionCallback) {
 
-        // If the Fyber SDK has already initialized, this method should return immediately and
-        // completionCallback will be invoked.
-        IAConfigManager.addListener(new IAConfigManager.OnConfigurationReadyAndValidListener() {
-            @Override
-            public void onConfigurationReadyAndValid(IAConfigManager iaConfigManager,
-                                                     boolean success, Exception e) {
-                if (success) {
-                    completionCallback.onInitializationSucceeded();
-                } else {
-                    completionCallback.onInitializationFailed("Fyber SDK initialization failed.");
-                }
+        if (completionCallback != null) {
+            // If the Fyber SDK has already initialized, this method should return immediately and
+            // completionCallback will be invoked.
+            IAConfigManager.addListener(new IAConfigManager.OnConfigurationReadyAndValidListener() {
+                @Override
+                public void onConfigurationReadyAndValid(IAConfigManager iaConfigManager,
+                                                         boolean success, Exception e) {
+                    if (success) {
+                        completionCallback.onInitializationSucceeded();
+                    } else {
+                        completionCallback.onInitializationFailed("Fyber SDK initialization failed.");
+                    }
 
-                IAConfigManager.removeListener(this);
-            }
-        });
+                    IAConfigManager.removeListener(this);
+                }
+            });
+        }
     }
 
     public VersionInfo getVersionInfo() {
