@@ -1,5 +1,6 @@
 package com.google.ads.mediation.imobile;
 
+import java.util.ArrayList;
 import jp.co.imobile.sdkads.android.AdMobMediationSupportAdSize;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
 import jp.co.imobile.sdkads.android.ImobileSdkAd;
@@ -42,15 +43,14 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
     private ViewGroup bannerView;
 
     /** Supported ad sizes. */
-    private static final AdSize[] supportedSizes;
+    private static final ArrayList<AdSize> supportedSizes;
 
     static {
         // Initialize static fields.
         AdMobMediationSupportAdSize[] iMobileAdSizes = AdMobMediationSupportAdSize.values();
-        supportedSizes = new AdSize[iMobileAdSizes.length];
-        for (int i = 0; i < iMobileAdSizes.length; i++) {
-            supportedSizes[i] = new AdSize(iMobileAdSizes[i].getWidth(),
-                    iMobileAdSizes[i].getHeight());
+        supportedSizes = new ArrayList<>();
+        for (AdMobMediationSupportAdSize adSize: iMobileAdSizes) {
+            supportedSizes.add(new AdSize(adSize.getWidth(), adSize.getHeight()));
         }
     }
 
@@ -63,28 +63,21 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
             Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
             Bundle mediationExtras) {
 
-        // Validate AdSize.
-        boolean isSupportedSize = false;
-        for (AdSize iMobileSize : supportedSizes) {
-            if (adSize.getWidth() == iMobileSize.getWidth()
-                    && adSize.getHeight() == iMobileSize.getHeight()) {
-                isSupportedSize = true;
-                break;
-            }
-        }
-        if (!isSupportedSize) {
-            Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
-            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            return;
-        }
-
         // Validate Context.
         if (!(context instanceof Activity)) {
             Log.w(TAG, "Banner : Context is not Activity.");
             listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
-        Activity activity = (Activity) context;
+
+        // Validate AdSize.
+        Log.d(TAG, "Banner : Potential ad sizes : " + supportedSizes.toString());
+        AdSize supportedAdSize = AdapterHelper.findClosestSize(context, adSize, supportedSizes);
+        if (supportedAdSize == null) {
+            Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
+            listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
 
         // Initialize fields.
         mediationBannerListener = listener;
@@ -93,6 +86,8 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
         String publisherId = serverParameters.getString(Constants.KEY_PUBLISHER_ID);
         String mediaId = serverParameters.getString(Constants.KEY_MEDIA_ID);
         String spotId = serverParameters.getString(Constants.KEY_SPOT_ID);
+
+        Activity activity = (Activity) context;
 
         // Call i-mobile SDK.
         ImobileSdkAd.registerSpotInline(activity, publisherId, mediaId, spotId);
@@ -133,8 +128,9 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
         // Create view to display banner ads.
         bannerView = new FrameLayout(activity);
-        bannerView.setLayoutParams(new FrameLayout.LayoutParams(adSize.getWidthInPixels(activity),
-                adSize.getHeightInPixels(activity)));
+        bannerView.setLayoutParams(
+            new FrameLayout.LayoutParams(supportedAdSize.getWidthInPixels(activity),
+                supportedAdSize.getHeightInPixels(activity)));
 
         // Start getting ads.
         ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView);

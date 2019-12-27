@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for flexible banner ad sizes.
+
 #### Version 2.0.20.1
 - Adapter now returns a non-zero `mediaContent` aspect ratio.
 
