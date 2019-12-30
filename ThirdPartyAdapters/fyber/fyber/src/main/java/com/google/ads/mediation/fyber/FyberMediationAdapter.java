@@ -40,7 +40,9 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 
@@ -134,7 +136,7 @@ public class FyberMediationAdapter extends Adapter
             return;
         }
 
-        List<String> configuredAppIds = new ArrayList<>();
+        Set<String> configuredAppIds = new HashSet<>();
         for (MediationConfiguration configuration : mediationConfigurations) {
             Bundle serverParameters = configuration.getServerParameters();
             if (serverParameters == null) {
@@ -158,12 +160,11 @@ public class FyberMediationAdapter extends Adapter
         }
 
         // We can only use one app id.
-        String appIdForInitialization = configuredAppIds.get(0);
-
+        String appIdForInitialization = configuredAppIds.iterator().next();
         if (configuredAppIds.size() > 1) {
             String message = String.format("Multiple '%s' entries found: %s. " +
                             "Using '%s' to initialize the Fyber Marketplace SDK.",
-                    KEY_APP_ID, appIdForInitialization, appIdForInitialization);
+                    KEY_APP_ID, configuredAppIds, appIdForInitialization);
             Log.w(TAG, message);
         }
 
