@@ -351,6 +351,9 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             }
             ImageData image = banner.getImage();
             setHasVideoContent(true);
+            if (mediaAdView.getMediaAspectRatio() > 0) {
+                setMediaContentAspectRatio(mediaAdView.getMediaAspectRatio());
+            }
             setMediaView(mediaAdView);
             if (image != null && !TextUtils.isEmpty(image.getUrl())) {
                 ArrayList<Image> imageArrayList = new ArrayList<>();
