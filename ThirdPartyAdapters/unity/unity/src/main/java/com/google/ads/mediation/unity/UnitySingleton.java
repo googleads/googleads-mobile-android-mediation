@@ -15,52 +15,21 @@
 package com.google.ads.mediation.unity;
 
 import android.app.Activity;
-import androidx.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
 
 /**
  * The {@link UnitySingleton} class is used to load {@link UnityAds}, handle multiple
  * {@link UnityAdapter} instances and mediate their callbacks.
  */
 public final class UnitySingleton {
-
-    /**
-     * A list of adapter listeners with their respective placement IDs to prevent duplicate
-     * requests.
-     */
-    private HashMap<String, WeakReference<UnityAdapterDelegate>> mPlacementsInUse;
-
-    /**
-     * A weak reference to the {@link UnityAdapterDelegate} of the {@link UnityAdapter} that is
-     * currently displaying an ad.
-     */
-    private WeakReference<UnityAdapterDelegate> mAdShowingAdapterDelegate;
-
-    /**
-     * The only instance of
-     * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
-     */
-    //private UnitySingletonListener unitySingletonListenerInstance;
-
     /**
      * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
      */
     private static UnitySingleton unitySingletonInstance;
-
-    /**
-     * Used by Unity Ads to track failures in the mediation lifecycle
-     */
-    private int impressionOrdinal;
-    private int missedImpressionOrdinal;
 
     /**
      * This method will return a
@@ -76,21 +45,7 @@ public final class UnitySingleton {
     }
 
     private UnitySingleton() {
-        mPlacementsInUse = new HashMap<>();
     }
-
-    /**
-     * This method will return the
-     * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} instance.
-     *
-     * @return the {@link #unitySingletonListenerInstance}.
-     */
-//    private UnitySingletonListener getUnitySingletonListenerInstance() {
-//        if (unitySingletonListenerInstance == null) {
-//            unitySingletonListenerInstance = new UnitySingletonListener();
-//        }
-//        return unitySingletonListenerInstance;
-//    }
 
     /**
      * This method will initialize {@link UnityAds}.
@@ -119,93 +74,8 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", "3.3.0");
         mediationMetaData.commit();
 
-//        UnitySingletonListener listener =
-//                unitySingletonInstance.getUnitySingletonListenerInstance();
         UnityAds.initialize(activity, gameId, false, true);
 
         return true;
     }
-
-
-
-    /**
-     * The {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} is used
-     * to forward events from Unity Ads SDK to {@link UnityAdapter} based on the delegates added
-     * to {@link #mPlacementsInUse} and which adapter is currently showing an ad.
-     */
-//    private final class UnitySingletonListener
-//            implements IUnityAdsExtendedListener {
-//
-//        /**
-//         * {@link IUnityAdsExtendedListener} implementation
-//         */
-//        @Override
-//        public void onUnityAdsReady(String placementId) {
-//            // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
-//            // appropriate delegate.
-//            if (mPlacementsInUse.containsKey(placementId) &&
-//                    mPlacementsInUse.get(placementId).get() != null) {
-//                mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
-//            }
-//        }
-//
-//        @Override
-//        public void onUnityAdsStart(String placementId) {
-//            // Unity Ads video ad started. Send video started event to currently showing
-//            // adapter's delegate.
-//
-//            //todo: placementID?
-//            if (mAdShowingAdapterDelegate != null) {
-//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-//                if (delegate != null) {
-//                    delegate.onUnityAdsStart(placementId);
-//                }
-//            }
-//
-//        }
-//
-//        @Override
-//        public void onUnityAdsClick(String placementId) {
-//            // An Unity Ads ad has been clicked. Send ad clicked event to currently showing
-//            // adapter's delegate.
-//            if (mAdShowingAdapterDelegate != null) {
-//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-//                if (delegate != null) {
-//                    delegate.onUnityAdsClick(placementId);
-//                }
-//            }
-//        }
-//
-//        @Override
-//        public void onUnityAdsPlacementStateChanged(String placementId,
-//                                                    UnityAds.PlacementState oldState,
-//                                                    UnityAds.PlacementState newState) {
-//            // An Unity Ads placement state has been changed
-//            if (mPlacementsInUse.containsKey(placementId) && mPlacementsInUse.get(placementId).get() != null) {
-//                mPlacementsInUse.get(placementId).get().onUnityAdsPlacementStateChanged(placementId, oldState, newState);
-//            }
-//        }
-//
-//        @Override
-//        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-//            // An Unity Ads ad has been closed. Forward the finish event to the currently showing
-//            // adapter's delegate.
-//            if (mAdShowingAdapterDelegate != null) {
-//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-//                if (delegate != null) {
-//                    delegate.onUnityAdsFinish(placementId, finishState);
-//                    mPlacementsInUse.remove(placementId);
-//                }
-//            }
-//        }
-//
-//        @Override
-//        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-//            // An error occurred with Unity Ads. Send error event to the appropriate delegate.
-//            if (mPlacementsInUse.containsKey(placementId) && mPlacementsInUse.get(placementId).get() != null) {
-//                mPlacementsInUse.get(placementId).get().onUnityAdsError(unityAdsError, placementId);
-//                mPlacementsInUse.remove(placementId);
-//            }
-//        }
-//    }
 }
