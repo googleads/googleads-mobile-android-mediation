@@ -71,7 +71,7 @@ public class UnityAdapter extends UnityMediationAdapter
     /**
      * Callback object for Google's Banner Lifecycle.
      */
-    private MediationBannerListener bannerListener;
+    private MediationBannerListener mMediationBannerListener;
 
     /**
      * An Android {@link Activity} weak reference used to show ads.
@@ -79,16 +79,10 @@ public class UnityAdapter extends UnityMediationAdapter
     private WeakReference<Activity> mActivityWeakReference;
 
     /**
-     * Used by Unity Ads to track failures in the mediation lifecycle
-     */
-    private int impressionOrdinal;
-    private int missedImpressionOrdinal;
-
-    /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
-    private final UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
+    private UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
 
         @Override
         public String getPlacementId() {
@@ -160,31 +154,40 @@ public class UnityAdapter extends UnityMediationAdapter
         }
     };
 
-    private final BannerView.IListener mBannerListener = new BannerView.Listener() {
+    private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
         @Override
         public void onBannerLoaded(BannerView bannerAdView) {
-            Log.v(TAG, "Unity Ads Banner finished loading banner for placement: " + mBannerView.getPlacementId());
-            bannerListener.onAdLoaded(UnityAdapter.this);
+            if (mMediationBannerListener != null) {
+                Log.v(TAG, "Unity Ads Banner finished loading banner for placement: " + mBannerView.getPlacementId());
+                mMediationBannerListener.onAdLoaded(UnityAdapter.this);
+            }
         }
 
         @Override
         public void onBannerFailedToLoad(BannerView bannerAdView, BannerErrorInfo errorInfo) {
-            Log.w(TAG, "Unity Ads Banner encountered an error: " + errorInfo.errorMessage);
-            if (errorInfo.errorCode == BannerErrorCode.NO_FILL) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
-            } else {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            if (mMediationBannerListener != null) {
+                Log.w(TAG, "Unity Ads Banner encountered an error: " + errorInfo.errorMessage);
+
+                if (errorInfo.errorCode == BannerErrorCode.NO_FILL) {
+                    mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                } else {
+                    mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                }
             }
         }
 
         @Override
         public void onBannerClick(BannerView bannerAdView) {
-            bannerListener.onAdClicked(UnityAdapter.this);
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdClicked(UnityAdapter.this);
+            }
         }
 
         @Override
         public void onBannerLeftApplication(BannerView bannerAdView) {
-            bannerListener.onAdLeftApplication(UnityAdapter.this);
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdLeftApplication(UnityAdapter.this);
+            }
         }
     };
     /**
@@ -205,6 +208,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         return true;
     }
+
     //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
@@ -236,7 +240,6 @@ public class UnityAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
-        UnityAds.removeListener(mUnityAdapterDelegate);
         UnityAds.addListener(mUnityAdapterDelegate);
         UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
         UnityAds.load(mPlacementId);
@@ -244,21 +247,16 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void showInterstitial() {
-        // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
-        // ad.
-      //  mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
-
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-            // Request UnitySingleton to show interstitial ads.
-           show(mActivityWeakReference.get());
+           UnityAds.show(mActivityWeakReference.get(), mPlacementId);
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-            //mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
         }
     }
     //endregion
 
+    //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
         if(mBannerView != null) {
@@ -266,6 +264,10 @@ public class UnityAdapter extends UnityMediationAdapter
         }
         mBannerView = null;
         UnityAds.removeListener(mUnityAdapterDelegate);
+        mUnityAdapterDelegate = null;
+        mUnityBannerListener = null;
+        mMediationInterstitialListener = null;
+        mMediationBannerListener = null;
     }
 
     @Override
@@ -273,6 +275,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void onResume() {}
+    //endregion
 
     //region MediationBannerAdapter implementation.
     @Override
@@ -285,13 +288,13 @@ public class UnityAdapter extends UnityMediationAdapter
 
         Log.v(TAG, "Requesting Unity Ads Banner");
 
-        bannerListener = listener;
+        mMediationBannerListener = listener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
         if (!isValidIds(gameId, bannerPlacementId)) {
-            if (bannerListener != null) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
@@ -300,8 +303,8 @@ public class UnityAdapter extends UnityMediationAdapter
         if (context == null || !(context instanceof Activity)) {
             Log.e(TAG, "Context is not an Activity. Unity Ads requires an Activity context to load "
                     + "ads.");
-            if (bannerListener != null) {
-                bannerListener.onAdFailedToLoad(UnityAdapter.this,
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
             }
             return;
@@ -321,7 +324,7 @@ public class UnityAdapter extends UnityMediationAdapter
             mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
         }
 
-        mBannerView.setListener(mBannerListener);
+        mBannerView.setListener(mUnityBannerListener);
         mBannerView.load();
     }
 
@@ -329,23 +332,5 @@ public class UnityAdapter extends UnityMediationAdapter
     public View getBannerView() {
         return null;
     }
-
-
     //endregion
-
-    private void show(Activity activity) {
-        if(UnityAds.isReady(mPlacementId)) {
-            // Notify UnityAds that the adapter made a successful show request
-            MediationMetaData metadata = new MediationMetaData(activity);
-            metadata.setOrdinal(++impressionOrdinal);
-            metadata.commit();
-
-            UnityAds.show(activity, mPlacementId);
-        } else {
-            // Notify UnityAds that the adapter failed to show
-            MediationMetaData metadata = new MediationMetaData(activity);
-            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
-            metadata.commit();
-        }
-    }
 }
