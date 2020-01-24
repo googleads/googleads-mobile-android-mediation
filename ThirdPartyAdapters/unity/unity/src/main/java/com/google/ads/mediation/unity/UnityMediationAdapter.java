@@ -137,8 +137,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            if (placementId.equals(getPlacementId()) && mMediationAdLoadCallback != null) {
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            if (mMediationAdLoadCallback != null) {
                 String logMessage =
                         "Failed to load Rewarded ad from Unity Ads: " + unityAdsError.toString();
                 Log.w(TAG, logMessage);

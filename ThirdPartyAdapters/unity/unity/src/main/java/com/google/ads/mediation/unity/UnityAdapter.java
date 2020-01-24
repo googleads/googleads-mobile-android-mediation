@@ -125,8 +125,6 @@ public class UnityAdapter extends UnityMediationAdapter
             // This callback is not forwarded to the adapter by the UnitySingleton and the
             // adapter should use the onUnityAdsReady and onUnityAdsError callbacks to forward
             // Unity Ads SDK state to Google Mobile Ads SDK.
-
-            //todo: no fill
             if (placementId.equals(getPlacementId()) && newState.equals(UnityAds.PlacementState.NO_FILL)) {
                 Log.e(TAG, "UnityAds no fill: " + placementId);
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
@@ -143,8 +141,8 @@ public class UnityAdapter extends UnityMediationAdapter
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            if (placementId.equals(getPlacementId()) && mMediationInterstitialListener != null) {
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            if (mMediationInterstitialListener != null) {
                 Log.e(TAG, "Failed to load Interstitial ad from Unity Ads: " +
                         unityAdsError.toString());
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
@@ -330,7 +328,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public View getBannerView() {
-        return null;
+        return mBannerView;
     }
     //endregion
 }
