@@ -1,8 +1,7 @@
 package com.google.ads.mediation.nend;
 
+import android.content.Context;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,16 +20,18 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     private NendAdNativeMediaView mediaView;
     private NendAdNativeVideo nativeVideo;
     private NendNativeAdForwarder forwarder;
-    private Handler handler = new Handler(Looper.getMainLooper());
 
     private static final int VERTICAL = 1;
     private static final float RATIO_9_TO_16 = 9.0f / 16.0f;
     private static final float RATIO_16_TO_9 = 16.0f / 9.0f;
 
-    NendUnifiedNativeVideoAdMapper(NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
+    NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
         super(new NendNativeMappedImage(
-                forwarder.contextWeakReference.get(), ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
+                context, ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
         this.forwarder = forwarder;
+
+        // Note: NendAdNativeMediaView handles Click Event for changing action by VideoClickOption.
+        // -> https://github.com/fan-ADN/nendSDK-Android/wiki/Implementation-for-native-video-ads#information-necessary-for-instance-generation
         setOverrideClickHandling(true);
 
         setAdvertiser(ad.getAdvertiserName());
@@ -47,7 +48,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
                 : RATIO_16_TO_9
         );
         setHasVideoContent(true);
-        mediaView = new NendAdNativeMediaView(forwarder.contextWeakReference.get());
+        mediaView = new NendAdNativeMediaView(context);
         mediaView.setMediaStateListener(this);
         setMediaView(mediaView);
         mediaView.setMedia(ad);
@@ -65,33 +66,27 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
 
         if (mediaView.getWidth() == 0 && params.width == ViewGroup.LayoutParams.MATCH_PARENT
                 && mediaView.getHeight() == 0 && params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+            // Note : Below codes are fitting into the "containerView" as NendAdNativeMediaView's aspect ratio.
+            //        Because NendAdNativeMediaView needs parent`s frame for measuring own texture frame size.
             if (containerViewWidth == containerViewHeight) {
                 mediaView.setMinimumWidth(containerViewWidth);
                 mediaView.setMinimumHeight(containerViewHeight);
             } else {
-                int width = (
-                        isContainerViewLandscape
-                                ? containerViewWidth
-                                : (
-                                nativeVideo.getVideoOrientation() == VERTICAL
-                                        ? (int)(containerViewHeight * RATIO_9_TO_16)
-                                        : (int)(containerViewHeight / RATIO_16_TO_9)
-                        )
-                );
-                int height = (
-                        !isContainerViewLandscape
-                                ? containerViewHeight
-                                : (
-                                nativeVideo.getVideoOrientation() == VERTICAL
-                                        ? (int)(containerViewWidth * RATIO_9_TO_16)
-                                        : (int)(containerViewWidth / RATIO_16_TO_9)
-                        )
-                );
+                int width = getOffsetSide(containerViewHeight, containerViewWidth, isContainerViewLandscape);
+                int height = getOffsetSide(containerViewWidth, containerViewHeight, !isContainerViewLandscape);
                 mediaView.setMinimumWidth(width);
                 mediaView.setMinimumHeight(height);
             }
 
             mediaView.invalidate();
+        }
+    }
+
+    private int getOffsetSide(int base, int otherSide, boolean isOffsetSide) {
+        if (!isOffsetSide) {
+            return otherSide;
+        } else {
+            return (int)(base / RATIO_16_TO_9);
         }
     }
 
@@ -128,14 +123,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     @Override
     public void onClickAd(@NonNull NendAdNativeVideo nendAdNativeVideo) {
         forwarder.adClicked();
-
-        //Note : Why can't App listen multiple event without delay seconder event...
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                forwarder.leftApplication();
-            }
-        }, 1000);
+        forwarder.leftApplication();
     }
 
     @Override

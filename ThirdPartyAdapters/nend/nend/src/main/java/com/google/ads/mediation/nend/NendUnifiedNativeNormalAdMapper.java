@@ -15,6 +15,7 @@ import com.google.android.gms.ads.formats.NativeAd;
 import net.nend.android.NendAdNative;
 import net.nend.android.NendAdNativeListener;
 import net.nend.android.internal.connectors.NendNativeAdConnector;
+import net.nend.android.internal.connectors.NendNativeAdConnectorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,26 +37,28 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
         super(logoImage);
         this.forwarder = forwarder;
         nendAd = ad;
-        connector = NativeAdLoader.createNativeAdConnector(ad);
+        connector = NendNativeAdConnectorFactory.createNativeAdConnector(ad);
 
         setAdvertiser(ad.getPromotionName());
         setHeadline(ad.getTitleText());
         setBody(ad.getContentText());
         setCallToAction(ad.getActionText());
 
-        if (adImage != null) {
+        ImageView imageView = new ImageView(context);
+        if (adImage == null) {
+            Log.w(TAG, "Missing Image of nend's native ad, so MediaView will be unavailable...");
+        } else {
             List<NativeAd.Image> imagesList = new ArrayList<>();
             imagesList.add(adImage);
             setImages(imagesList);
 
             Drawable drawable = adImage.getDrawable();
             if (drawable != null) {
-                ImageView imageView = new ImageView(context);
                 imageView.setAdjustViewBounds(true);
                 imageView.setImageDrawable(drawable);
-                setMediaView(imageView);
             }
         }
+        setMediaView(imageView);
         adChoicesMappingView = new TextView(context);
         adChoicesMappingView.setText(NendAdNative.AdvertisingExplicitly.PR.getText());
         setAdChoicesContent(adChoicesMappingView);
@@ -74,7 +77,7 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
     @Override
     public void handleClick(View view) {
         super.handleClick(view);
-        Context context = forwarder.contextWeakReference.get();
+        Context context = forwarder.getContextFromWeakReference();
         if (context instanceof Activity) {
             connector.performAdClick((Activity) context);
             forwarder.leftApplication();

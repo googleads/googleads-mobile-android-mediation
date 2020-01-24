@@ -10,8 +10,6 @@ import com.google.android.gms.ads.formats.NativeAdOptions;
 
 import net.nend.android.NendAdNative;
 import net.nend.android.NendAdNativeClient;
-import net.nend.android.internal.connectors.NendNativeAdConnector;
-import net.nend.android.internal.connectors.NendNativeAdConnectorFactory;
 
 import static com.google.ads.mediation.nend.NendMediationAdapter.TAG;
 
@@ -24,7 +22,14 @@ class NativeAdLoader {
     private NendAdNativeClient.Callback normalAdLoaderCallback = new NendAdNativeClient.Callback() {
         @Override
         public void onSuccess(NendAdNative nendAdNative) {
-            if (!NendUnifiedNativeAdMapper.canDownloadImage(forwarder.contextWeakReference.get(), nendAdNative.getAdImageUrl())) {
+            Context context = forwarder.getContextFromWeakReference();
+            if (context == null) {
+                Log.e(TAG, "Your context may be released...");
+                forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                return;
+            }
+
+            if (!NendUnifiedNativeAdMapper.canDownloadImage(context, nendAdNative.getAdImageUrl())) {
                 mappingUnifiedNativeNormalAd(nendAdNative, false,null, null);
             } else {
                 if (nativeAdOptions != null && nativeAdOptions.shouldReturnUrlsForImageAssets()) {
@@ -57,35 +62,40 @@ class NativeAdLoader {
     }
 
     private void mappingUnifiedNativeNormalAd(NendAdNative ad, boolean shouldReturnUrlsForImageAssets, Bitmap adImageBitmap, Bitmap logoImageBitmap) {
-        Context context = forwarder.contextWeakReference.get();
+        Context context = forwarder.getContextFromWeakReference();
         if (context == null) {
             Log.e(TAG, "Your context may be released...");
             forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-        } else {
-            forwarder.unifiedNativeAdMapper = new NendUnifiedNativeNormalAdMapper(
-                    context,
-                    forwarder,
-                    ad,
-                    (shouldReturnUrlsForImageAssets || adImageBitmap != null
-                            ? new NendNativeMappedImage(
-                            forwarder.contextWeakReference.get(), adImageBitmap, Uri.parse(ad.getAdImageUrl()))
-                            : null
-                    ),
-                    (shouldReturnUrlsForImageAssets || logoImageBitmap != null
-                            ? new NendNativeMappedImage(
-                            forwarder.contextWeakReference.get(), logoImageBitmap, Uri.parse(ad.getLogoImageUrl()))
-                            : null
-                    )
-            );
-            forwarder.adLoaded();
+            return;
         }
+
+        NendNativeMappedImage adImage = null;
+        if (shouldReturnUrlsForImageAssets || adImageBitmap != null) {
+            adImage =  new NendNativeMappedImage(context, adImageBitmap, Uri.parse(ad.getAdImageUrl()));
+        }
+
+        NendNativeMappedImage logoImage = null;
+        if (shouldReturnUrlsForImageAssets || logoImageBitmap != null) {
+            logoImage = new NendNativeMappedImage(context, logoImageBitmap, Uri.parse(ad.getLogoImageUrl()));
+        }
+
+        forwarder.unifiedNativeAdMapper =
+                new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);
+        forwarder.adLoaded();
     }
 
     private void downloadImageThenMappingUnifiedNativeNormalAd(final NendAdNative nendAdNative) {
         nendAdNative.downloadAdImage(new NendAdNative.Callback() {
             @Override
             public void onSuccess(final Bitmap adImageBitmap) {
-                if (!NendUnifiedNativeAdMapper.canDownloadImage(forwarder.contextWeakReference.get(), nendAdNative.getLogoImageUrl())) {
+                Context context = forwarder.getContextFromWeakReference();
+                if (context == null) {
+                    Log.e(TAG, "Your context may be released...");
+                    forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+                    return;
+                }
+
+                if (!NendUnifiedNativeAdMapper.canDownloadImage(context, nendAdNative.getLogoImageUrl())) {
                     mappingUnifiedNativeNormalAd(nendAdNative, adImageBitmap);
                 } else {
                     nendAdNative.downloadLogoImage(new NendAdNative.Callback() {
@@ -120,9 +130,5 @@ class NativeAdLoader {
 
     void loadAd() {
         client.loadAd(normalAdLoaderCallback);
-    }
-
-    static NendNativeAdConnector createNativeAdConnector(NendAdNative ad) {
-        return NendNativeAdConnectorFactory.createNativeAdConnector(ad);
     }
 }

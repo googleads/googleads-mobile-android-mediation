@@ -21,12 +21,19 @@ class NativeVideoAdLoader {
     private NendAdNativeVideoLoader.Callback videoLoaderCallback = new NendAdNativeVideoLoader.Callback() {
         @Override
         public void onSuccess(NendAdNativeVideo nendAdNativeVideo) {
-            forwarder.unifiedNativeAdMapper = new NendUnifiedNativeVideoAdMapper(forwarder, nendAdNativeVideo);
-            forwarder.adLoaded();
+            Context context = forwarder.getContextFromWeakReference();
+            if (context == null) {
+                Log.e(TAG, "Your context may be released...");
+                forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+            } else {
+                forwarder.unifiedNativeAdMapper = new NendUnifiedNativeVideoAdMapper(context, forwarder, nendAdNativeVideo);
+                forwarder.adLoaded();
+            }
         }
 
         @Override
         public void onFailure(int nendErrorCode) {
+            forwarder.unifiedNativeAdMapper = null;
             forwarder.failedToLoad(nendErrorCode);
         }
     };
@@ -36,27 +43,24 @@ class NativeVideoAdLoader {
             AdUnitMapper mapper,
             NativeMediationAdRequest nativeMediationAdRequest,
             Bundle mediationExtras) {
-        Context context = forwarder.contextWeakReference.get();
+        Context context = forwarder.getContextFromWeakReference();
         if (context == null) {
             Log.e(TAG, "Your context may be released...");
             forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
             return;
         }
         this.forwarder = forwarder;
-        VideoOptions nativeVideoOptions = nativeMediationAdRequest.getNativeAdOptions().getVideoOptions();
 
-        if (nativeVideoOptions == null) {
-            videoAdLoader = new NendAdNativeVideoLoader(context, mapper.spotId, mapper.apiKey,
-                    NendAdNativeVideo.VideoClickOption.LP);
-        } else {
-            videoAdLoader = new NendAdNativeVideoLoader(context, mapper.spotId, mapper.apiKey,
-                    (nativeVideoOptions.getClickToExpandRequested()
-                            ? NendAdNativeVideo.VideoClickOption.FullScreen
-                            : NendAdNativeVideo.VideoClickOption.LP)
-            );
+        NendAdNativeVideo.VideoClickOption clickOption = NendAdNativeVideo.VideoClickOption.LP;
+        VideoOptions nativeVideoOptions = nativeMediationAdRequest.getNativeAdOptions().getVideoOptions();
+        if (nativeVideoOptions != null && nativeVideoOptions.getClickToExpandRequested()) {
+            clickOption = NendAdNativeVideo.VideoClickOption.FullScreen;
         }
+        videoAdLoader = new NendAdNativeVideoLoader(context, mapper.spotId, mapper.apiKey, clickOption);
         videoAdLoader.setMediationName(MEDIATION_NAME_ADMOB);
-        videoAdLoader.setUserId(mediationExtras.getString(NendMediationAdapter.KEY_USER_ID, ""));
+        if (mediationExtras != null) {
+            videoAdLoader.setUserId(mediationExtras.getString(NendMediationAdapter.KEY_USER_ID, ""));
+        }
     }
 
     void loadAd() {
