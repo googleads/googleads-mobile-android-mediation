@@ -90,7 +90,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         public void onUnityAdsStart(String placementId) {
             // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
             // video adapter.
-            //todo: multipale placements?
             if (placementId.equals(getPlacementId()) && mMediationRewardedAdCallback != null) {
                 mMediationRewardedAdCallback.onAdOpened();
                 mMediationRewardedAdCallback.onVideoStart();
@@ -121,15 +120,18 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         @Override
         public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
             // Unity Ads ad closed.
-            if (placementId.equals(getPlacementId()) && mMediationRewardedAdCallback != null) {
+            if (placementId.equals(getPlacementId())) {
+                if (mMediationRewardedAdCallback != null) {
                 // Reward is provided only if the ad is watched completely.
-                if (finishState == UnityAds.FinishState.COMPLETED) {
-                    mMediationRewardedAdCallback.onVideoComplete();
-                    // Unity Ads doesn't provide a reward value. The publisher is expected to
-                    // override the reward in AdMob console.
-                    mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
+                    if (finishState == UnityAds.FinishState.COMPLETED) {
+                        mMediationRewardedAdCallback.onVideoComplete();
+                        // Unity Ads doesn't provide a reward value. The publisher is expected to
+                        // override the reward in AdMob console.
+                        mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
+                    }
+                    mMediationRewardedAdCallback.onAdClosed();
                 }
-                mMediationRewardedAdCallback.onAdClosed();
+                UnityAds.removeListener(mUnityAdapterRewardedAdDelegate);
             }
         }
 
