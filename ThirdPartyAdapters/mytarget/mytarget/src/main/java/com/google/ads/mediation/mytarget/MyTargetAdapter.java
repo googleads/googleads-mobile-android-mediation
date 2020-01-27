@@ -102,8 +102,6 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     }
 
     AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
-
         /*
             Supported Sizes:
             MyTargetView.AdSize.BANNER_300x250;
@@ -117,7 +115,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
         potentials.add(AdSize.LEADERBOARD);
 
         Log.i(TAG, "Potential ad sizes: " + potentials.toString());
-        return MyTargetTools.findClosestSize(context, original, potentials);
+        return MyTargetTools.findClosestSize(context, adSize, potentials);
     }
 
     @Override

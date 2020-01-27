@@ -9,10 +9,14 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 
+import com.google.android.gms.ads.mediation.VersionInfo;
 import java.util.List;
 
 import jp.co.imobile.sdkads.android.FailNotificationReason;
@@ -23,7 +27,7 @@ import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 /**
  * i-mobile mediation adapter for AdMob native ads.
  */
-public final class IMobileMediationAdapter implements MediationNativeAdapter {
+public final class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
 
     // region - Fields for log.
 
@@ -31,6 +35,43 @@ public final class IMobileMediationAdapter implements MediationNativeAdapter {
     private static final String TAG = IMobileMediationAdapter.class.getSimpleName();
 
     // endregion
+
+    // region - Adapter interface
+
+    @Override
+    public VersionInfo getSDKVersionInfo() {
+        // i-mobile does not have any API to retrieve their SDK version.
+        return new VersionInfo(0, 0, 0);
+    }
+
+    @Override
+    public VersionInfo getVersionInfo() {
+        String versionString = BuildConfig.VERSION_NAME;
+        String[] splits = versionString.split("\\.");
+
+        if (splits.length >= 4) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            return new VersionInfo(major, minor, micro);
+        }
+
+        String logMessage = String.format("Unexpected adapter version format: %s." +
+            "Returning 0.0.0 for adapter version.", versionString);
+        Log.w(TAG, logMessage);
+        return new VersionInfo(0, 0, 0);
+    }
+
+    @Override
+    public void initialize(Context context,
+            InitializationCompleteCallback initializationCompleteCallback,
+            List<MediationConfiguration> list) {
+
+        // i-mobile does not have any API for initialization.
+        initializationCompleteCallback.onInitializationSucceeded();
+    }
+
+    // end region
 
     // region - Fields for native ads.
 

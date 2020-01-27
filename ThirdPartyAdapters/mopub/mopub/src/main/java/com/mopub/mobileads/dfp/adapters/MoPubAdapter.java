@@ -339,16 +339,13 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     private AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        AdSize original = new AdSize(adSize.getWidth(),
-                adSize.getHeight());
-
         ArrayList<AdSize> potentials = new ArrayList<>(2);
         potentials.add(AdSize.BANNER);
         potentials.add(AdSize.MEDIUM_RECTANGLE);
         potentials.add(AdSize.LEADERBOARD);
         potentials.add(AdSize.WIDE_SKYSCRAPER);
         Log.i(TAG, potentials.toString());
-        return findClosestSize(context, original, potentials);
+        return findClosestSize(context, adSize, potentials);
     }
 
     // Start of helper code to remove when available in SDK

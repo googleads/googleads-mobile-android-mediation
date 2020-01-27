@@ -254,14 +254,13 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         300x250,
         728x90.
          */
-        AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
 
         ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
         potentials.add(new AdSize(320,50));
         potentials.add(new AdSize(300,250));
         potentials.add(new AdSize(728,90));
         Log.i(TAG, potentials.toString());
-        return InMobiAdapterUtils.findClosestSize(context, original, potentials);
+        return InMobiAdapterUtils.findClosestSize(context, adSize, potentials);
     }
 
     @Override

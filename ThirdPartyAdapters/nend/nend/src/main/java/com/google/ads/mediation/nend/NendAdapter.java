@@ -511,8 +511,6 @@ public class NendAdapter extends NendMediationAdapter
     }
 
   AdSize getSupportedAdSize(Context context, AdSize adSize) {
-    AdSize original = new AdSize(adSize.getWidth(), adSize.getHeight());
-
     /*
        Supported Sizes:
        320 × 50
@@ -528,7 +526,7 @@ public class NendAdapter extends NendMediationAdapter
     potentials.add(AdSize.MEDIUM_RECTANGLE);
     potentials.add(AdSize.LEADERBOARD);
 
-    return findClosestSize(context, original, potentials);
+    return findClosestSize(context, adSize, potentials);
   }
 
   // Start of helper code to remove when available in SDK
