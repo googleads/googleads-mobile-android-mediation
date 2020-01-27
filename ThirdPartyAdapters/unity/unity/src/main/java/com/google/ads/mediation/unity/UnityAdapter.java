@@ -126,6 +126,7 @@ public class UnityAdapter extends UnityMediationAdapter
             if (mMediationInterstitialListener != null && placementId.equals(getPlacementId()) && newState.equals(UnityAds.PlacementState.NO_FILL)) {
                 Log.e(TAG, "UnityAds no fill: " + placementId);
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                UnityAds.removeListener(mUnityAdapterDelegate);
             }
         }
 

@@ -113,6 +113,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             if (placementId.equals(getPlacementId()) && newState.equals(UnityAds.PlacementState.NO_FILL)) {
                 if (mMediationAdLoadCallback != null) {
                     mMediationAdLoadCallback.onFailure("Failed to UnityAds rewarded video: No Fill");
+                    UnityAds.removeListener(mUnityAdapterRewardedAdDelegate);
                 }
             }
         }
