@@ -18,7 +18,10 @@ import android.app.Activity;
 import android.util.Log;
 
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
+
+import java.util.ArrayList;
 
 /**
  * The {@link UnitySingleton} class is used to load {@link UnityAds}, handle multiple
@@ -27,9 +30,17 @@ import com.unity3d.ads.metadata.MediationMetaData;
 public final class UnitySingleton {
     /**
      * The only instance of
+     * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
+     */
+    private UnitySingletonListener unitySingletonListenerInstance;
+
+    /**
+     * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
      */
     private static UnitySingleton unitySingletonInstance;
+    private ArrayList<Listener> mListeners;
+
 
     /**
      * This method will return a
@@ -45,25 +56,41 @@ public final class UnitySingleton {
     }
 
     private UnitySingleton() {
+        mListeners = new ArrayList<>();
+    }
+
+    /**
+     * This method will return the
+     * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} instance.
+     *
+     * @return the {@link #unitySingletonListenerInstance}.
+     */
+    private UnitySingletonListener getUnitySingletonListenerInstance() {
+        if (unitySingletonListenerInstance == null) {
+            unitySingletonListenerInstance = new UnitySingletonListener();
+        }
+        return unitySingletonListenerInstance;
     }
 
     /**
      * This method will initialize {@link UnityAds}.
      *
-     * @param activity    The Activity context.
-     * @param gameId      Unity Ads Game ID.
+     * @param activity The Activity context.
+     * @param gameId   Unity Ads Game ID.
      * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
      * otherwise.
      */
-    public boolean initializeUnityAds(Activity activity, String gameId) {
+    public boolean initializeUnityAds(Activity activity, String gameId, Listener listener) {
         // Check if the current device is supported by Unity Ads before initializing.
         if (!UnityAds.isSupported()) {
             Log.w(UnityAdapter.TAG, "The current device is not supported by Unity Ads.");
+            listener.onInitializeError("The current device is not supported by Unity Ads.");
             return false;
         }
 
         if (UnityAds.isInitialized()) {
             // Unity Ads is already initialized.
+            listener.onInitializeSuccess();
             return true;
         }
 
@@ -74,8 +101,74 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", "3.3.0");
         mediationMetaData.commit();
 
-        UnityAds.initialize(activity, gameId, false, true);
+        getInstance().mListeners.add(listener);
+
+        UnitySingletonListener unitySingletonListener = unitySingletonInstance.getUnitySingletonListenerInstance();
+        UnityAds.addListener(unitySingletonListener);
+        UnityAds.initialize(activity, gameId,false, true);
 
         return true;
+    }
+
+    /**
+     * The {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} is used
+     * to handle onUnityAdsError and onUnityFinish without placementId.
+     */
+    private final class UnitySingletonListener
+            implements IUnityAdsExtendedListener {
+
+        /**
+         * {@link IUnityAdsExtendedListener} implementation
+         */
+        @Override
+        public void onUnityAdsReady(String placementId) {
+            //
+        }
+
+        @Override
+        public void onUnityAdsStart(String placementId) {
+            //do nothing
+        }
+
+        @Override
+        public void onUnityAdsClick(String placementId) {
+            //do nothing
+        }
+
+        @Override
+        public void onUnityAdsPlacementStateChanged(String placementId,
+                                                    UnityAds.PlacementState oldState,
+                                                    UnityAds.PlacementState newState) {
+           if (newState == UnityAds.PlacementState.WAITING) {
+               for (Listener listener : mListeners) {
+                   listener.onInitializeSuccess();
+               }
+               mListeners.clear();
+               UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
+           }
+        }
+
+        @Override
+        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
+            //do nothing
+        }
+
+        @Override
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            // An error occurred with Unity Ads.
+            if (unityAdsError == UnityAds.UnityAdsError.NOT_INITIALIZED || unityAdsError == UnityAds.UnityAdsError.INITIALIZE_FAILED
+                    || unityAdsError == UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL || unityAdsError == UnityAds.UnityAdsError.INVALID_ARGUMENT) {
+                for (Listener listener : mListeners) {
+                    listener.onInitializeError(message);
+                }
+                mListeners.clear();
+                UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
+            }
+        }
+    }
+
+    interface Listener {
+        void onInitializeSuccess();
+        void onInitializeError(String message);
     }
 }

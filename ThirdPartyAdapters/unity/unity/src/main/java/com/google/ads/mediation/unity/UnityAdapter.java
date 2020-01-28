@@ -143,12 +143,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            if (mMediationInterstitialListener != null) {
-                Log.e(TAG, "Failed to load Interstitial ad from Unity Ads: " +
-                        unityAdsError.toString());
-                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            }
+            //do nothing
         }
     };
 
@@ -210,7 +205,7 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
-                                      MediationInterstitialListener mediationInterstitialListener,
+                                      final MediationInterstitialListener mediationInterstitialListener,
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
@@ -239,8 +234,18 @@ public class UnityAdapter extends UnityMediationAdapter
         mActivityWeakReference = new WeakReference<>(activity);
 
         UnityAds.addListener(mUnityAdapterDelegate);
-        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
-        UnityAds.load(mPlacementId);
+        UnitySingleton.getInstance().initializeUnityAds(activity, gameId,
+                new UnitySingleton.Listener() {
+                    @Override
+                    public void onInitializeSuccess() {
+                        UnityAds.load(mPlacementId);
+                    }
+
+                    @Override
+                    public void onInitializeError(String message) {
+                        mediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    }
+                });
     }
 
     @Override
@@ -278,7 +283,7 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationBannerAdapter implementation.
     @Override
     public void requestBannerAd(Context context,
-                                MediationBannerListener listener,
+                                final MediationBannerListener listener,
                                 Bundle serverParameters,
                                 AdSize adSize,
                                 MediationAdRequest adRequest,
@@ -309,21 +314,30 @@ public class UnityAdapter extends UnityMediationAdapter
         }
         Activity activity = (Activity) context;
 
-        // Even though we are a banner request, we still need to initialize UnityAds.
-        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
 
         float density = context.getResources().getDisplayMetrics().density;
         int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
         int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
 
         UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
-
         if (mBannerView == null){
             mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
         }
 
         mBannerView.setListener(mUnityBannerListener);
-        mBannerView.load();
+
+        UnitySingleton.getInstance().initializeUnityAds(activity, gameId,
+                new UnitySingleton.Listener() {
+                    @Override
+                    public void onInitializeSuccess() {
+                        mBannerView.load();
+                    }
+
+                    @Override
+                    public void onInitializeError(String message) {
+                        mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    }
+                });
     }
 
     @Override

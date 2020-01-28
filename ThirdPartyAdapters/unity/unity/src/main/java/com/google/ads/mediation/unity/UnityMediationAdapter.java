@@ -129,8 +129,12 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                         // Unity Ads doesn't provide a reward value. The publisher is expected to
                         // override the reward in AdMob console.
                         mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
+                        mMediationRewardedAdCallback.onAdClosed();
+                    } else if (finishState == UnityAds.FinishState.ERROR) {
+                        mMediationRewardedAdCallback.onAdFailedToShow("UnityAds Show Error" + placementId);
+                    } else if (finishState == UnityAds.FinishState.SKIPPED) {
+                        mMediationRewardedAdCallback.onAdClosed();
                     }
-                    mMediationRewardedAdCallback.onAdClosed();
                 }
                 UnityAds.removeListener(mUnityAdapterRewardedAdDelegate);
             }
@@ -138,12 +142,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            if (mMediationAdLoadCallback != null) {
-                String logMessage =
-                        "Failed to load Rewarded ad from Unity Ads: " + unityAdsError.toString();
-                Log.w(TAG, logMessage);
-                mMediationAdLoadCallback.onFailure(logMessage);
-            }
+            //Unity on error
         }
     };
 
@@ -189,7 +188,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     @Override
     public void initialize(Context context,
-                           InitializationCompleteCallback initializationCompleteCallback,
+                           final InitializationCompleteCallback initializationCompleteCallback,
                            List<MediationConfiguration> mediationConfigurations) {
         if (!(context instanceof Activity)){
             initializationCompleteCallback.onInitializationFailed("UnityAds SDK requires an " +
@@ -226,15 +225,26 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
-        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
-        initializationCompleteCallback.onInitializationSucceeded();
+        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID,
+                new UnitySingleton.Listener() {
+                    @Override
+                    public void onInitializeSuccess() {
+                        initializationCompleteCallback.onInitializationSucceeded();
+                    }
+
+                    @Override
+                    public void onInitializeError(String message) {
+                        initializationCompleteCallback.onInitializationFailed("Initialization failed: " + message);
+                    }
+                });
+
     }
     //endregion
 
     //region MediationRewardedAd implementation.
     @Override
     public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-                               MediationAdLoadCallback<MediationRewardedAd,
+                               final MediationAdLoadCallback<MediationRewardedAd,
                                        MediationRewardedAdCallback> mediationAdLoadCallback) {
         Context context = mediationRewardedAdConfiguration.getContext();
         if (!(context instanceof Activity)) {
@@ -254,10 +264,20 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         }
 
         mMediationAdLoadCallback = mediationAdLoadCallback;
-
         UnityAds.addListener(mUnityAdapterRewardedAdDelegate);
-        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
-        UnityAds.load(mPlacementId);
+
+        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID,
+                new UnitySingleton.Listener() {
+                    @Override
+                    public void onInitializeSuccess() {
+                        UnityAds.load(mPlacementId);
+                    }
+
+                    @Override
+                    public void onInitializeError(String message) {
+                        mediationAdLoadCallback.onFailure(message);
+                    }
+                });
     }
 
     @Override
