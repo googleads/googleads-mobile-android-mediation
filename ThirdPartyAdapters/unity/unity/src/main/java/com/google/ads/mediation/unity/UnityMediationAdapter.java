@@ -112,7 +112,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             // Unity Ads SDK NO_FILL state to Google Mobile Ads SDK.
             if (placementId.equals(getPlacementId()) && newState.equals(UnityAds.PlacementState.NO_FILL)) {
                 if (mMediationAdLoadCallback != null) {
-                    mMediationAdLoadCallback.onFailure("Failed to UnityAds rewarded video: No Fill");
+                    mMediationAdLoadCallback.onFailure("UnityAds no fill: " + placementId);
                 }
             }
         }
@@ -130,8 +130,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                         mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
                         mMediationRewardedAdCallback.onAdClosed();
                     } else if (finishState == UnityAds.FinishState.ERROR) {
-                        mMediationRewardedAdCallback.onAdFailedToShow("UnityAds Show Error" + placementId);
-                    } else if (finishState == UnityAds.FinishState.SKIPPED) {
+                        mMediationRewardedAdCallback.onAdFailedToShow("UnityAds Show Error: " + placementId);
+                    } else {
                         mMediationRewardedAdCallback.onAdClosed();
                     }
                 }
@@ -141,7 +141,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            //do nothing
         }
     };
 

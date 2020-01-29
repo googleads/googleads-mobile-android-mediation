@@ -122,35 +122,31 @@ public final class UnitySingleton {
          */
         @Override
         public void onUnityAdsReady(String placementId) {
-            //
         }
 
         @Override
         public void onUnityAdsStart(String placementId) {
-            //do nothing
         }
 
         @Override
         public void onUnityAdsClick(String placementId) {
-            //do nothing
+        }
+
+        @Override
+        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
         }
 
         @Override
         public void onUnityAdsPlacementStateChanged(String placementId,
                                                     UnityAds.PlacementState oldState,
                                                     UnityAds.PlacementState newState) {
-           if (newState == UnityAds.PlacementState.WAITING) {
+           if (newState == UnityAds.PlacementState.WAITING || newState == UnityAds.PlacementState.READY) {
                for (Listener listener : mListeners) {
                    listener.onInitializeSuccess();
                }
                mListeners.clear();
                UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
            }
-        }
-
-        @Override
-        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-            //do nothing
         }
 
         @Override

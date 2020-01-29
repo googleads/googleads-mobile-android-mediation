@@ -134,7 +134,11 @@ public class UnityAdapter extends UnityMediationAdapter
             // Unity Ads ad closed.
             if (placementId.equals(getPlacementId())) {
                 if (mMediationInterstitialListener != null) {
-                    mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+                    if (finishState == UnityAds.FinishState.ERROR) {
+                        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    } else {
+                        mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+                    }
                 }
                 UnityAds.removeListener(mUnityAdapterDelegate);
             }
@@ -142,7 +146,6 @@ public class UnityAdapter extends UnityMediationAdapter
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            //do nothing
         }
     };
 
