@@ -27,7 +27,9 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import com.inmobi.ads.exceptions.SdkNotInitializedException;
 import com.inmobi.sdk.InMobiSdk;
+import com.inmobi.unification.sdk.InitializationStatus;
 
 import java.util.HashSet;
 import java.util.List;
@@ -120,9 +122,13 @@ public class InMobiMediationAdapter extends RtbAdapter {
                 Log.w(TAG, message);
             }
 
-            InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-            isSdkInitialized.set(true);
-            initializationCompleteCallback.onInitializationSucceeded();
+            @InitializationStatus String status = InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
+            isSdkInitialized.set(status.equals(InitializationStatus.SUCCESS));
+            if (isSdkInitialized.get()) {
+                initializationCompleteCallback.onInitializationSucceeded();
+            } else {
+                initializationCompleteCallback.onInitializationFailed(status);
+            }
         } else {
             String logMessage = "Initialization failed: Missing or invalid Account ID.";
             Log.d(TAG, logMessage);
@@ -137,43 +143,51 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
         String accountId = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
         final Context context = rtbSignalData.getContext();
-        InMobiSdk.init(context, accountId);
+        @InitializationStatus String status = InMobiSdk.init(context, accountId);
+        if (!status.equals(InitializationStatus.SUCCESS)) {
+            signalCallbacks.onFailure(status);
+            return;
+        }
         InMobiSdk.setLogLevel(InMobiSdk.LogLevel.DEBUG);
         final long placementId =
                 Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
         Handler mainHandler = new Handler(context.getMainLooper());
 
-        switch (mediationConfiguration.getFormat()) {
-            case BANNER:
-                final AdSize adSize = rtbSignalData.getAdSize();
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mInMobiBanner = new InMobiBannerAd(context, placementId, adSize);
-                        mInMobiBanner.collectSignals(signalCallbacks);
-                    }
-                });
-                break;
-            case INTERSTITIAL:
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mInMobiInterstitial = new InMobiInterstitialAd(context, placementId);
-                        mInMobiInterstitial.collectSignals(signalCallbacks);
-                    }
-                });
-                break;
-            case REWARDED:
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mInMobiRewarded = new InMobiRewardedAd(context, placementId);
-                        mInMobiRewarded.collectSignals(signalCallbacks);
-                    }
-                });
-                break;
+        try {
+            switch (mediationConfiguration.getFormat()) {
+                case BANNER:
+                    final AdSize adSize = rtbSignalData.getAdSize();
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mInMobiBanner = new InMobiBannerAd(context, placementId, adSize);
+                            mInMobiBanner.collectSignals(signalCallbacks);
+                        }
+                    });
+                    break;
+                case INTERSTITIAL:
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mInMobiInterstitial = new InMobiInterstitialAd(context, placementId);
+                            mInMobiInterstitial.collectSignals(signalCallbacks);
+                        }
+                    });
+                    break;
+                case REWARDED:
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mInMobiRewarded = new InMobiRewardedAd(context, placementId);
+                            mInMobiRewarded.collectSignals(signalCallbacks);
+                        }
+                    });
+                    break;
+            }
+        } catch (SdkNotInitializedException e) {
+            signalCallbacks.onFailure(e.getMessage());
+            return;
         }
-
     }
 
     @Override
@@ -183,21 +197,31 @@ public class InMobiMediationAdapter extends RtbAdapter {
         Bundle serverParameters = adConfiguration.getServerParameters();
         final long placementId =
                 Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
-        mInMobiBanner = new InMobiBannerAd(adConfiguration.getContext(), placementId,
-                adConfiguration.getAdSize());
-        mInMobiBanner.load(adConfiguration, callback);
+        try {
+            mInMobiBanner = new InMobiBannerAd(adConfiguration.getContext(), placementId,
+                    adConfiguration.getAdSize());
+            mInMobiBanner.load(adConfiguration, callback);
+        } catch (SdkNotInitializedException e) {
+            callback.onFailure(e.getMessage());
+            return;
+        }
     }
 
     @Override
     public void loadInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
                                    MediationAdLoadCallback<MediationInterstitialAd,
                                            MediationInterstitialAdCallback> mediationAdLoadCallback) {
-            Bundle serverParameters = adConfiguration.getServerParameters();
-            final long placementId =
-                    Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
+        Bundle serverParameters = adConfiguration.getServerParameters();
+        final long placementId =
+                Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
+        try {
             mInMobiInterstitial = new InMobiInterstitialAd(adConfiguration.getContext(),
                     placementId);
             mInMobiInterstitial.load(adConfiguration, mediationAdLoadCallback);
+        } catch (SdkNotInitializedException e) {
+            mediationAdLoadCallback.onFailure(e.getMessage());
+            return;
+        }
     }
 
     @Override
@@ -208,9 +232,14 @@ public class InMobiMediationAdapter extends RtbAdapter {
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
         final long placementId =
                 Long.parseLong(serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID));
-        mInMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration.getContext(),
-                placementId);
-        mInMobiRewarded.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        try {
+            mInMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration.getContext(),
+                    placementId);
+            mInMobiRewarded.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        } catch (SdkNotInitializedException e) {
+            mediationAdLoadCallback.onFailure(e.getMessage());
+            return;
+        }
     }
 
 }

@@ -16,6 +16,7 @@ import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.sdk.InMobiSdk;
+import com.inmobi.unification.sdk.InitializationStatus;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -195,8 +196,12 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                 return;
             }
 
-            InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-            isSdkInitialized.set(true);
+            @InitializationStatus String status = InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
+            isSdkInitialized.set(status.equals(InitializationStatus.SUCCESS));
+            if (!isSdkInitialized.get()) {
+                mMediationAdLoadCallback.onFailure(status);
+                return;
+            }
         }
 
         String placementString =
