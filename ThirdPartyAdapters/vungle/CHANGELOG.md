@@ -1,5 +1,9 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.5.1.0
+- Verified compatibility with Vungle SDK 6.5.1
+- Add support for the newly-introduced Vungle's Banner format
+
 #### Version 6.4.11.1
 - Fixed an issue where banner ads failed to refresh.
 
