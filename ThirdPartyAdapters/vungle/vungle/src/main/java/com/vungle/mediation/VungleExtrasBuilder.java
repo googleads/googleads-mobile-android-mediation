@@ -1,10 +1,11 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.Size;
 
 import com.vungle.warren.AdConfig;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
@@ -77,6 +78,6 @@ public final class VungleExtrasBuilder {
     }
 
     static boolean isStartMutedNotConfigured(Bundle networkExtras) {
-        return !networkExtras.containsKey(EXTRA_START_MUTED);
+        return (networkExtras != null && !networkExtras.containsKey(EXTRA_START_MUTED));
     }
 }
