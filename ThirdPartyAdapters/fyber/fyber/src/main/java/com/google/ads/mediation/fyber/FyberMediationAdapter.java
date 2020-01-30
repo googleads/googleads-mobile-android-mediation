@@ -174,20 +174,31 @@ public class FyberMediationAdapter extends Adapter
     /**
      * A helper for checking out Fyber's initialization status.
      * @param completionCallback AdMob's initialization callback.
+     *
      */
     private void waitForInitializationStatusAndReport(
-            final @NonNull InitializationCompleteCallback completionCallback) {
+            final InitializationCompleteCallback completionCallback) {
 
         // If the Fyber SDK has already initialized, this method should return immediately and
         // completionCallback will be invoked.
+        /** Note: Banners and interstitial are still implemented using the {@link MediationBannerAdapter} and {@link MediationInterstitialAdapter} interfaces
+         * When these ads units are implemeted, the new {@link InitializationCompleteCallback} will not be available
+         */
         IAConfigManager.addListener(new IAConfigManager.OnConfigurationReadyAndValidListener() {
             @Override
             public void onConfigurationReadyAndValid(IAConfigManager iaConfigManager,
                                                      boolean success, Exception e) {
                 if (success) {
-                    completionCallback.onInitializationSucceeded();
+                    if (completionCallback != null) {
+                        completionCallback.onInitializationSucceeded();
+                    }
                 } else {
-                    completionCallback.onInitializationFailed("Fyber SDK initialization failed.");
+                    String message = "Fyber SDK initialization failed.";
+                    Log.w(TAG, message);
+
+                    if (completionCallback != null) {
+                        completionCallback.onInitializationFailed(message);
+                    }
                 }
 
                 IAConfigManager.removeListener(this);
@@ -509,6 +520,8 @@ public class FyberMediationAdapter extends Adapter
         List<MediationConfiguration> configs = new ArrayList<>();
 
         configs.add(new MediationConfiguration(adFormat, bundle));
+
+        /** Initializes the Fyber SDK, without an {@link InitializationCompleteCallback} */
         initialize(context, null, configs);
     }
 
