@@ -134,10 +134,9 @@ public class UnityAdapter extends UnityMediationAdapter
             if (placementId.equals(getPlacementId())) {
                 if (mMediationInterstitialListener != null) {
                     if (finishState == UnityAds.FinishState.ERROR) {
-                        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                    } else {
-                        mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+                        //mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
                     }
+                    mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
                 }
                 UnityAds.removeListener(mUnityAdapterDelegate);
             }
@@ -255,7 +254,8 @@ public class UnityAdapter extends UnityMediationAdapter
            UnityAds.show(mActivityWeakReference.get(), mPlacementId);
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
-            mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            //mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
         }
     }
     //endregion

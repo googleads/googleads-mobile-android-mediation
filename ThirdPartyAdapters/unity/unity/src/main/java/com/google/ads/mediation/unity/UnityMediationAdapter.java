@@ -58,12 +58,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     private String mPlacementId;
 
     /**
-     * Used by Unity Ads to track failures in the mediation lifecycle
-     */
-    private int impressionOrdinal;
-    private int missedImpressionOrdinal;
-
-    /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
