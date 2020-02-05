@@ -31,12 +31,14 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
 
 import java.lang.ref.WeakReference;
+import java.util.UUID;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
@@ -230,7 +232,7 @@ public class UnityAdapter extends UnityMediationAdapter
             }
             return;
         }
-        Activity activity = (Activity) context;
+        final Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
         UnityAds.addListener(mUnityAdapterDelegate);
@@ -238,6 +240,12 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
+                        String uuid = UUID.randomUUID().toString();
+                        MediationMetaData metadata = new MediationMetaData(activity);
+                        metadata.setCategory("load-interstitial");
+                        metadata.set(uuid, this.getClass());
+                        metadata.commit();
+
                         UnityAds.load(mPlacementId);
                     }
 
@@ -251,7 +259,13 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public void showInterstitial() {
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-           UnityAds.show(mActivityWeakReference.get(), mPlacementId);
+            String uuid = UUID.randomUUID().toString();
+            MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
+            metadata.setCategory("show-interstitial");
+            metadata.set(uuid, this.getClass());
+            metadata.commit();
+
+            UnityAds.show(mActivityWeakReference.get(), mPlacementId);
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             //mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -263,6 +277,12 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
+        String uuid = UUID.randomUUID().toString();
+        MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
+        metadata.setCategory("destroy");
+        metadata.set(uuid, this.getClass());
+        metadata.commit();
+
         if(mBannerView != null) {
             mBannerView.destroy();
         }
@@ -313,7 +333,7 @@ public class UnityAdapter extends UnityMediationAdapter
             }
             return;
         }
-        Activity activity = (Activity) context;
+        final Activity activity = (Activity) context;
 
 
         float density = context.getResources().getDisplayMetrics().density;
@@ -331,6 +351,12 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
+                        String uuid = UUID.randomUUID().toString();
+                        MediationMetaData metadata = new MediationMetaData(activity);
+                        metadata.setCategory("load banner");
+                        metadata.set(uuid, this.getClass());
+                        metadata.commit();
+
                         mBannerView.load();
                     }
 

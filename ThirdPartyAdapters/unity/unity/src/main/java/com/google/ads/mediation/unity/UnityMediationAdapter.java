@@ -15,9 +15,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded
@@ -215,6 +217,13 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
+
+        String uuid = UUID.randomUUID().toString();
+        MediationMetaData metadata = new MediationMetaData((Activity) context);
+        metadata.setCategory("create");
+        metadata.set(uuid, this.getClass());
+        metadata.commit();
+
         UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID,
                 new UnitySingleton.Listener() {
                     @Override
@@ -233,10 +242,10 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     //region MediationRewardedAd implementation.
     @Override
-    public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+    public void loadRewardedAd(final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
                                final MediationAdLoadCallback<MediationRewardedAd,
                                        MediationRewardedAdCallback> mediationAdLoadCallback) {
-        Context context = mediationRewardedAdConfiguration.getContext();
+        final Context context = mediationRewardedAdConfiguration.getContext();
         if (!(context instanceof Activity)) {
             mediationAdLoadCallback.onFailure("Context is not an Activity." +
                     " Unity Ads requires an Activity context to show ads.");
@@ -260,6 +269,12 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
+                        String uuid = UUID.randomUUID().toString();
+                        MediationMetaData metadata = new MediationMetaData((Activity) context);
+                        metadata.setCategory("load-rewarded");
+                        metadata.set(uuid, this.getClass());
+                        metadata.commit();
+
                         UnityAds.load(mPlacementId);
                     }
 
@@ -281,6 +296,12 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
         Activity activity = (Activity) context;
+
+        String uuid = UUID.randomUUID().toString();
+        MediationMetaData metadata = new MediationMetaData((Activity) context);
+        metadata.setCategory("show-rewarded");
+        metadata.set(uuid, this.getClass());
+        metadata.commit();
 
         UnityAds.show(activity, mPlacementId);
     }
