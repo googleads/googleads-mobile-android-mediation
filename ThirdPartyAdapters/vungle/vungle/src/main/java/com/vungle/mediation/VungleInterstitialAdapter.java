@@ -19,13 +19,13 @@ import com.vungle.warren.AdConfig;
 import com.vungle.warren.VungleBanner;
 import com.vungle.warren.VungleNativeAd;
 
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.annotation.Keep;
 
 import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
-import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
 import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
 /**
@@ -235,7 +235,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         if (VungleExtrasBuilder.isStartMutedNotConfigured(mediationExtras)) {
             mAdConfig.setMuted(true); // start muted by default
         }
-        if (!hasBannerSizeAd(adSize)) {
+        if (!hasBannerSizeAd(context, adSize)) {
             String message = "Failed to load ad from Vungle: Invalid banner size.";
             Log.w(TAG, message);
             mMediationBannerListener
@@ -381,16 +381,34 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         return adLayout;
     }
 
-    private boolean hasBannerSizeAd(AdSize adSize) {
+    private boolean hasBannerSizeAd(Context context, AdSize adSize) {
         AdConfig.AdSize adSizeType = null;
 
-        if (VUNGLE_MREC.getWidth() == adSize.getWidth() && VUNGLE_MREC.getHeight() == adSize.getHeight()) {
+        int width = adSize.getWidth();
+        if (width < 0) {
+            float density = context.getResources().getDisplayMetrics().density;
+            width = Math.round(adSize.getWidthInPixels(context) / density);
+        }
+
+        ArrayList<AdSize> potentials = new ArrayList<>(3);
+        potentials.add(0, new AdSize(width, 50));
+        potentials.add(1, new AdSize(width, 90));
+        potentials.add(2, new AdSize(width, 250));
+        Log.i(TAG, "Potential ad sizes: " + potentials.toString());
+        AdSize closestSize = findClosestSize(context, adSize, potentials);
+        if (closestSize == null) {
+            Log.i(TAG, "Not found closest ad size: " + adSize);
+            return false;
+        }
+        Log.i(TAG, "Found closest ad size: " + closestSize.toString());
+
+        int adHeight = closestSize.getHeight();
+
+        if (adHeight == VUNGLE_MREC.getHeight()) {
             adSizeType = VUNGLE_MREC;
-        } else if (BANNER_SHORT.getWidth() == adSize.getWidth() && BANNER_SHORT.getHeight() == adSize.getHeight()) {
-            adSizeType = BANNER_SHORT;
-        } else if (BANNER.getWidth() == adSize.getWidth() && BANNER.getHeight() == adSize.getHeight()) {
+        } else if (adHeight == BANNER.getHeight()) {
             adSizeType = BANNER;
-        } else if (BANNER_LEADERBOARD.getWidth() == adSize.getWidth() && BANNER_LEADERBOARD.getHeight() == adSize.getHeight()) {
+        } else if (adHeight == BANNER_LEADERBOARD.getHeight()) {
             adSizeType = BANNER_LEADERBOARD;
         }
 
@@ -398,5 +416,62 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
         return adSizeType != null;
     }
+
+    // Start of helper code to remove when available in SDK
+    /**
+     * Find the closest supported AdSize from the list of potentials to the provided size. Returns
+     * null if none are within given threshold size range.
+     */
+    public static AdSize findClosestSize(
+            Context context, AdSize original, ArrayList<AdSize> potentials) {
+        if (potentials == null || original == null) {
+            return null;
+        }
+        float density = context.getResources().getDisplayMetrics().density;
+        int actualWidth = Math.round(original.getWidthInPixels(context) / density);
+        int actualHeight = Math.round(original.getHeightInPixels(context) / density);
+        original = new AdSize(actualWidth, actualHeight);
+
+        AdSize largestPotential = null;
+        for (AdSize potential : potentials) {
+            if (isSizeInRange(original, potential)) {
+                if (largestPotential == null) {
+                    largestPotential = potential;
+                } else {
+                    largestPotential = getLargerByArea(largestPotential, potential);
+                }
+            }
+        }
+        return largestPotential;
+    }
+
+    private static boolean isSizeInRange(AdSize original, AdSize potential) {
+        if (potential == null) {
+            return false;
+        }
+        double minWidthRatio = 0.5;
+        double minHeightRatio = 0.7;
+
+        int originalWidth = original.getWidth();
+        int potentialWidth = potential.getWidth();
+        int originalHeight = original.getHeight();
+        int potentialHeight = potential.getHeight();
+
+        if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
+            return false;
+        }
+
+        if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
+            return false;
+        }
+        return true;
+    }
+
+    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+        int area1 = size1.getWidth() * size1.getHeight();
+        int area2 = size2.getWidth() * size2.getHeight();
+        return area1 > area2 ? size1 : size2;
+    }
+    // End code to remove when available in SDK
 
 }
