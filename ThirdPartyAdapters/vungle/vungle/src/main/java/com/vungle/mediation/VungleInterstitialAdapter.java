@@ -26,6 +26,7 @@ import androidx.annotation.Keep;
 
 import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
+import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
 import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
 /**
@@ -411,11 +412,16 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         Log.i(TAG, "Found closest ad size: " + closestSize.toString());
 
         int adHeight = closestSize.getHeight();
+        int adWidth = closestSize.getWidth();
 
         if (adHeight == VUNGLE_MREC.getHeight()) {
             adSizeType = VUNGLE_MREC;
         } else if (adHeight == BANNER.getHeight()) {
-            adSizeType = BANNER;
+            if (adWidth < BANNER.getWidth()) {
+                adSizeType = BANNER_SHORT;
+            } else {
+                adSizeType = BANNER;
+            }
         } else if (adHeight == BANNER_LEADERBOARD.getHeight()) {
             adSizeType = BANNER_LEADERBOARD;
         }
