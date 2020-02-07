@@ -246,11 +246,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         }
 
         adLayout = new RelativeLayout(context);
-        // Make adLayout wrapper match the requested ad size, as Vungle's ad uses MATCH_PARENT for
-        // its dimensions.
-        RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
-                adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
-        adLayout.setLayoutParams(adViewLayoutParams);
         VungleInitializer.getInstance().initialize(config.getAppId(),
                 context.getApplicationContext(),
                 new VungleInitializer.VungleInitializationListener() {
@@ -333,19 +328,10 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             return;
 
         mVungleManager.cleanUpBanner(mPlacementForPlay);
-
         if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
             vungleBannerAd = mVungleManager.getVungleBanner(mPlacementForPlay, mAdConfig.getAdSize(), mVunglePlayListener);
             if (vungleBannerAd != null) {
                 updateVisibility();
-                RelativeLayout.LayoutParams adViewParams = (RelativeLayout.LayoutParams) vungleBannerAd.getLayoutParams();
-                if (adViewParams == null) {
-                    adViewParams = new RelativeLayout.LayoutParams(
-                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                }
-                adViewParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-                adViewParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-                vungleBannerAd.setLayoutParams(adViewParams);
                 adLayout.addView(vungleBannerAd);
                 if (mMediationBannerListener != null) {
                     mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
