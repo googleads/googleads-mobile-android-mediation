@@ -116,8 +116,16 @@ public class FyberMediationAdapter extends Adapter
                                MediationAdLoadCallback<MediationRewardedAd,
                                        MediationRewardedAdCallback> callback) {
         // Sometimes loadRewardedAd is called before initialize is called.
-        initializeFromBundle(configuration.getContext(), AdFormat.REWARDED,
-                configuration.getServerParameters());
+
+        String keyAppID = configuration.getServerParameters().getString(KEY_APP_ID);
+        if (TextUtils.isEmpty(keyAppID)) {
+            String logMessage = "Failed to initialize: " +
+                    "SDK requires server parameters.";
+            callback.onFailure(logMessage);
+            return;
+        }
+        InneractiveAdManager.initialize(configuration.getContext(), keyAppID);
+
 
         FyberRewardedVideoRenderer rewardedVideoRenderer =
                 new FyberRewardedVideoRenderer(configuration, callback);
@@ -166,7 +174,6 @@ public class FyberMediationAdapter extends Adapter
                     KEY_APP_ID, appIdForInitialization, appIdForInitialization);
             Log.w(TAG, message);
         }
-
         InneractiveAdManager.initialize(context, appIdForInitialization);
         waitForInitializationStatusAndReport(completionCallback);
     }
@@ -237,8 +244,17 @@ public class FyberMediationAdapter extends Adapter
                                 final MediationBannerListener mediationBannerListener,
                                 Bundle serverParameters, AdSize adSize,
                                 MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
-        initializeFromBundle(context, AdFormat.BANNER, serverParameters);
+
         mMediationBannerListener = mediationBannerListener;
+
+        String keyAppId = serverParameters.getString(KEY_APP_ID);
+        if (TextUtils.isEmpty(keyAppId)) {
+            mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this,
+                    AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        InneractiveAdManager.initialize(context, keyAppId);
 
         // Check that we got a valid Spot ID from the server.
         String spotId = serverParameters.getString(FyberMediationAdapter.KEY_SPOT_ID);
@@ -383,8 +399,17 @@ public class FyberMediationAdapter extends Adapter
                 Bundle serverParameters,
                 MediationAdRequest mediationAdRequest,
                 Bundle mediationExtras) {
-        initializeFromBundle(context, AdFormat.INTERSTITIAL, serverParameters);
+
         mMediationInterstitialListener = mediationInterstitialListener;
+
+        String keyAppId = serverParameters.getString(KEY_APP_ID);
+        if (TextUtils.isEmpty(keyAppId)) {
+            mMediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this,
+                    AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        InneractiveAdManager.initialize(context, keyAppId);
 
         // Check that we got a valid spot id from the server.
         String spotId = serverParameters.getString(FyberMediationAdapter.KEY_SPOT_ID);
@@ -500,16 +525,6 @@ public class FyberMediationAdapter extends Adapter
         };
     }
 
-    /**
-     * Helper method for calling the initialization method, if it wasn't called by AdMob.
-     */
-    private void initializeFromBundle(@NonNull Context context,
-                                      @NonNull AdFormat adFormat,
-                                      @NonNull Bundle bundle) {
-        List<MediationConfiguration> configs = new ArrayList<>();
 
-        configs.add(new MediationConfiguration(adFormat, bundle));
-        initialize(context, null, configs);
-    }
 
 }
