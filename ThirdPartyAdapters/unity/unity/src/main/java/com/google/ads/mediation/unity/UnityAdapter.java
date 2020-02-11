@@ -38,7 +38,6 @@ import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
 
 import java.lang.ref.WeakReference;
-import java.util.UUID;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
@@ -240,10 +239,9 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
-                        String uuid = UUID.randomUUID().toString();
                         MediationMetaData metadata = new MediationMetaData(activity);
                         metadata.setCategory("load-interstitial");
-                        metadata.set(uuid, this.getClass());
+                        metadata.set(uuid, mPlacementId);
                         metadata.commit();
 
                         UnityAds.load(mPlacementId);
@@ -259,10 +257,9 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public void showInterstitial() {
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-            String uuid = UUID.randomUUID().toString();
             MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
             metadata.setCategory("show-interstitial");
-            metadata.set(uuid, this.getClass());
+            metadata.set(uuid, mPlacementId);
             metadata.commit();
 
             UnityAds.show(mActivityWeakReference.get(), mPlacementId);
@@ -277,10 +274,9 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
-        String uuid = UUID.randomUUID().toString();
         MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
         metadata.setCategory("destroy");
-        metadata.set(uuid, this.getClass());
+        metadata.set(uuid, null);
         metadata.commit();
 
         if(mBannerView != null) {
@@ -351,10 +347,9 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
-                        String uuid = UUID.randomUUID().toString();
                         MediationMetaData metadata = new MediationMetaData(activity);
-                        metadata.setCategory("load banner");
-                        metadata.set(uuid, this.getClass());
+                        metadata.setCategory("load-banner");
+                        metadata.set(uuid, bannerPlacementId);
                         metadata.commit();
 
                         mBannerView.load();
