@@ -1,3 +1,17 @@
+// Copyright 2014 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.vungle.mediation;
 
 import android.content.Context;
@@ -416,6 +430,10 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
         return adSizeType != null;
     }
+
+    // Copied some code from FB adapter:
+    // https://github.com/googleads/googleads-mobile-android-mediation/blob/ebce3b3ccf1c7a0cd8ecb31819c0037b8885d584/
+    // ThirdPartyAdapters/facebook/facebook/src/main/java/com/google/ads/mediation/facebook/FacebookAdapter.java#L760
 
     // Start of helper code to remove when available in SDK
     /**
