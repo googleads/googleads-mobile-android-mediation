@@ -21,7 +21,9 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * The {@link UnitySingleton} class is used to load {@link UnityAds}, handle multiple
@@ -39,8 +41,10 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
      */
     private static UnitySingleton unitySingletonInstance;
-    private ArrayList<Listener> mListeners;
 
+    private ArrayList<WeakReference<Listener>> mListenersWeakReference;
+
+    HashSet<String> mPlacementsInUse;
 
     /**
      * This method will return a
@@ -56,7 +60,8 @@ public final class UnitySingleton {
     }
 
     private UnitySingleton() {
-        mListeners = new ArrayList<>();
+        mListenersWeakReference = new ArrayList<>();
+        mPlacementsInUse = new HashSet<>();
     }
 
     /**
@@ -101,7 +106,7 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", "3.3.0");
         mediationMetaData.commit();
 
-        getInstance().mListeners.add(listener);
+        getInstance().mListenersWeakReference.add(new WeakReference<Listener>(listener));
 
         UnitySingletonListener unitySingletonListener = unitySingletonInstance.getUnitySingletonListenerInstance();
         UnityAds.addListener(unitySingletonListener);
@@ -141,10 +146,12 @@ public final class UnitySingleton {
                                                     UnityAds.PlacementState oldState,
                                                     UnityAds.PlacementState newState) {
            if (newState == UnityAds.PlacementState.WAITING || newState == UnityAds.PlacementState.READY) {
-               for (Listener listener : mListeners) {
-                   listener.onInitializeSuccess();
+               for (WeakReference<Listener> listenerWeakReference : getInstance().mListenersWeakReference) {
+                   if (listenerWeakReference.get() != null) {
+                       listenerWeakReference.get().onInitializeSuccess();
+                   }
                }
-               mListeners.clear();
+               mListenersWeakReference.clear();
                UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
            }
         }
@@ -154,10 +161,12 @@ public final class UnitySingleton {
             // An error occurred with Unity Ads.
             if (unityAdsError == UnityAds.UnityAdsError.NOT_INITIALIZED || unityAdsError == UnityAds.UnityAdsError.INITIALIZE_FAILED
                     || unityAdsError == UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL || unityAdsError == UnityAds.UnityAdsError.INVALID_ARGUMENT) {
-                for (Listener listener : mListeners) {
-                    listener.onInitializeError(message);
+                for (WeakReference<Listener> listenerWeakReference : getInstance().mListenersWeakReference) {
+                    if (listenerWeakReference.get() != null) {
+                        listenerWeakReference.get().onInitializeSuccess();
+                    }
                 }
-                mListeners.clear();
+                mListenersWeakReference.clear();
                 UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
             }
         }
