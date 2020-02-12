@@ -231,9 +231,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         }
 
         metadata = new MediationMetaData((Activity) context);
-        metadata.setCategory("init");
-        metadata.set(uuid, null);
-        metadata.commit();
 
         UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID,
                 new UnitySingleton.Listener() {

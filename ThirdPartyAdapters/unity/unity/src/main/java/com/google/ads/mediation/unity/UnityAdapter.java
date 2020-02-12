@@ -347,11 +347,6 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
-                        MediationMetaData metadata = new MediationMetaData(activity);
-                        metadata.setCategory("load-banner");
-                        metadata.set(uuid, bannerPlacementId);
-                        metadata.commit();
-
                         mBannerView.load();
                     }
 
