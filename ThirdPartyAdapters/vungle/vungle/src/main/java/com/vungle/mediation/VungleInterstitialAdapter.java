@@ -260,6 +260,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         }
 
         adLayout = new RelativeLayout(context);
+        // Make adLayout wrapper match the requested ad size, as Vungle's ad uses MATCH_PARENT for
+        // its dimensions.
+        RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
+                adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
+        adLayout.setLayoutParams(adViewLayoutParams);
         VungleInitializer.getInstance().initialize(config.getAppId(),
                 context.getApplicationContext(),
                 new VungleInitializer.VungleInitializationListener() {
@@ -342,10 +347,14 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             return;
 
         mVungleManager.cleanUpBanner(mPlacementForPlay);
+        RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        adParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
             vungleBannerAd = mVungleManager.getVungleBanner(mPlacementForPlay, mAdConfig.getAdSize(), mVunglePlayListener);
             if (vungleBannerAd != null) {
                 updateVisibility();
+                vungleBannerAd.setLayoutParams(adParams);
                 adLayout.addView(vungleBannerAd);
                 if (mMediationBannerListener != null) {
                     mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
@@ -362,6 +371,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             View adView = vungleNativeAd != null ? vungleNativeAd.renderNativeView() : null;
             if (adView != null) {
                 updateVisibility();
+                adView.setLayoutParams(adParams);
                 adLayout.addView(adView);
                 if (mMediationBannerListener != null) {
                     mMediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
