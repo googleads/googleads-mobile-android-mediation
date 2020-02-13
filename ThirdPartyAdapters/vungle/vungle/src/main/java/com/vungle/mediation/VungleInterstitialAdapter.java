@@ -349,7 +349,8 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         mVungleManager.cleanUpBanner(mPlacementForPlay);
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        adParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+        adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
         if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
             vungleBannerAd = mVungleManager.getVungleBanner(mPlacementForPlay, mAdConfig.getAdSize(), mVunglePlayListener);
             if (vungleBannerAd != null) {
@@ -401,37 +402,22 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
     }
 
     private boolean hasBannerSizeAd(Context context, AdSize adSize) {
-        AdConfig.AdSize adSizeType = null;
-
-        ArrayList<AdSize> potentials = new ArrayList<>(4);
-        potentials.add(0, new AdSize(300, 50));
-        potentials.add(1, new AdSize(320, 50));
-        potentials.add(2, new AdSize(728, 90));
-        potentials.add(3, new AdSize(300, 250));
+        ArrayList<AdConfig.AdSize> potentials = new ArrayList<>(4);
+        potentials.add(0, BANNER_SHORT);
+        potentials.add(1, BANNER);
+        potentials.add(2, BANNER_LEADERBOARD);
+        potentials.add(3, VUNGLE_MREC);
         Log.i(TAG, "Potential ad sizes: " + potentials.toString());
-        AdSize closestSize = findClosestSize(context, adSize, potentials);
+        AdConfig.AdSize closestSize = findClosestSize(context, adSize, potentials);
         if (closestSize == null) {
             Log.i(TAG, "Not found closest ad size: " + adSize);
             return false;
         }
-        Log.i(TAG, "Found closest ad size: " + closestSize.toString());
+        Log.i(TAG, "Found closest ad size: " + closestSize.toString() + " for request ad size:" + adSize);
 
-        int adHeight = closestSize.getHeight();
-        int adWidth = closestSize.getWidth();
+        mAdConfig.setAdSize(closestSize);
 
-        if (adHeight == VUNGLE_MREC.getHeight() && adWidth == VUNGLE_MREC.getWidth()) {
-            adSizeType = VUNGLE_MREC;
-        } else if (adHeight == BANNER.getHeight() && adWidth == BANNER.getWidth()) {
-            adSizeType = BANNER;
-        } else if (adHeight == BANNER_LEADERBOARD.getHeight() && adWidth == BANNER_LEADERBOARD.getWidth()) {
-            adSizeType = BANNER_LEADERBOARD;
-        } else if (adHeight == BANNER_SHORT.getHeight() && adWidth == BANNER_SHORT.getWidth()) {
-            adSizeType = BANNER_SHORT;
-        }
-
-        mAdConfig.setAdSize(adSizeType);
-
-        return adSizeType != null;
+        return true;
     }
 
     // Copied some code from FB adapter:
@@ -443,8 +429,8 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
      * Find the closest supported AdSize from the list of potentials to the provided size. Returns
      * null if none are within given threshold size range.
      */
-    public static AdSize findClosestSize(
-            Context context, AdSize original, ArrayList<AdSize> potentials) {
+    private AdConfig.AdSize findClosestSize(
+            Context context, AdSize original, ArrayList<AdConfig.AdSize> potentials) {
         if (potentials == null || original == null) {
             return null;
         }
@@ -453,8 +439,8 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         int actualHeight = Math.round(original.getHeightInPixels(context) / density);
         original = new AdSize(actualWidth, actualHeight);
 
-        AdSize largestPotential = null;
-        for (AdSize potential : potentials) {
+        AdConfig.AdSize largestPotential = null;
+        for (AdConfig.AdSize potential : potentials) {
             if (isSizeInRange(original, potential)) {
                 if (largestPotential == null) {
                     largestPotential = potential;
@@ -466,7 +452,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         return largestPotential;
     }
 
-    private static boolean isSizeInRange(AdSize original, AdSize potential) {
+    private static boolean isSizeInRange(AdSize original, AdConfig.AdSize potential) {
         if (potential == null) {
             return false;
         }
@@ -488,7 +474,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         return true;
     }
 
-    private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
+    private static AdConfig.AdSize getLargerByArea(AdConfig.AdSize size1, AdConfig.AdSize size2) {
         int area1 = size1.getWidth() * size1.getHeight();
         int area2 = size2.getWidth() * size2.getHeight();
         return area1 > area2 ? size1 : size2;
