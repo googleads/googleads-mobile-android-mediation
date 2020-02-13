@@ -403,16 +403,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
     private boolean hasBannerSizeAd(Context context, AdSize adSize) {
         AdConfig.AdSize adSizeType = null;
 
-        int width = adSize.getWidth();
-        if (width < 0) {
-            float density = context.getResources().getDisplayMetrics().density;
-            width = Math.round(adSize.getWidthInPixels(context) / density);
-        }
-
-        ArrayList<AdSize> potentials = new ArrayList<>(3);
-        potentials.add(0, new AdSize(width, 50));
-        potentials.add(1, new AdSize(width, 90));
-        potentials.add(2, new AdSize(width, 250));
+        ArrayList<AdSize> potentials = new ArrayList<>(4);
+        potentials.add(0, new AdSize(300, 50));
+        potentials.add(1, new AdSize(320, 50));
+        potentials.add(2, new AdSize(728, 90));
+        potentials.add(3, new AdSize(300, 250));
         Log.i(TAG, "Potential ad sizes: " + potentials.toString());
         AdSize closestSize = findClosestSize(context, adSize, potentials);
         if (closestSize == null) {
@@ -424,16 +419,14 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         int adHeight = closestSize.getHeight();
         int adWidth = closestSize.getWidth();
 
-        if (adHeight == VUNGLE_MREC.getHeight()) {
+        if (adHeight == VUNGLE_MREC.getHeight() && adWidth == VUNGLE_MREC.getWidth()) {
             adSizeType = VUNGLE_MREC;
-        } else if (adHeight == BANNER.getHeight()) {
-            if (adWidth < BANNER.getWidth()) {
-                adSizeType = BANNER_SHORT;
-            } else {
-                adSizeType = BANNER;
-            }
-        } else if (adHeight == BANNER_LEADERBOARD.getHeight()) {
+        } else if (adHeight == BANNER.getHeight() && adWidth == BANNER.getWidth()) {
+            adSizeType = BANNER;
+        } else if (adHeight == BANNER_LEADERBOARD.getHeight() && adWidth == BANNER_LEADERBOARD.getWidth()) {
             adSizeType = BANNER_LEADERBOARD;
+        } else if (adHeight == BANNER_SHORT.getHeight() && adWidth == BANNER_SHORT.getWidth()) {
+            adSizeType = BANNER_SHORT;
         }
 
         mAdConfig.setAdSize(adSizeType);
