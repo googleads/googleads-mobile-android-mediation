@@ -109,7 +109,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
 
     @Override
     public void untrackView(View view) {
-        deactivate();
+        if (nativeVideo != null) {
+            nativeVideo.unregisterInteractionViews();
+        }
         super.untrackView(view);
     }
 
