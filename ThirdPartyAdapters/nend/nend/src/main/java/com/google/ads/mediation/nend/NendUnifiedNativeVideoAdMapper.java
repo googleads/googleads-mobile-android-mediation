@@ -92,6 +92,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
 
     void deactivate() {
         if (nativeVideo != null) {
+            nativeVideo.unregisterInteractionViews();
             nativeVideo.deactivate();
             nativeVideo = null;
         }
