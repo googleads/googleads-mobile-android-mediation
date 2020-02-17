@@ -85,7 +85,12 @@ public class IronSourceMediationAdapter extends Adapter
         if (splits.length >= 3) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
+
             int micro = Integer.parseInt(splits[2]);
+            if (splits.length >= 4) {
+                micro = micro * 100 + Integer.parseInt(splits[3]);
+            }
+
             return new VersionInfo(major, minor, micro);
         }
 
@@ -103,7 +108,12 @@ public class IronSourceMediationAdapter extends Adapter
         if (splits.length >= 4) {
             int major = Integer.parseInt(splits[0]);
             int minor = Integer.parseInt(splits[1]);
+
             int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            if (splits.length >= 5) {
+                micro = micro * 100 + Integer.parseInt(splits[4]);
+            }
+
             return new VersionInfo(major, minor, micro);
         }
 

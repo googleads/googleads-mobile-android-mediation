@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.8.1"
+    id "com.jfrog.bintray" version "1.8.4"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,19 +9,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "4.1.0.0"
+    stringVersion = "4.1.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '26.0.3'
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 4010000
+        versionCode 4010300
         versionName stringVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -39,9 +39,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.adcolony:sdk:4.1.0'
+    implementation 'com.adcolony:sdk:4.1.3'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:18.2.0'
+    implementation 'com.google.android.gms:play-services-ads:18.3.0'
 }
 
 /**

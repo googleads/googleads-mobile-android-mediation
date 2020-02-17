@@ -2,6 +2,11 @@
 
 #### 5.6.1.0
 - Verified compatibility with Facebook SDK v5.6.1.
+- Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.6.1.
 
 #### 5.6.0.0
 - Verified compatibility with Facebook SDK v5.6.0.

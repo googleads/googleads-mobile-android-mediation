@@ -214,7 +214,7 @@ public final class ChartboostSingleton {
                     BuildConfig.VERSION_NAME);
             Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
             Chartboost.setDelegate(getInstance());
-            Chartboost.setAutoCacheAds(true);
+            Chartboost.setAutoCacheAds(false);
 
             // Chartboost depends on Activity's lifecycle events to initialize its SDK. Chartboost
             // requires onCreate, onStart and onResume callbacks to initialize its SDK.  By the time
