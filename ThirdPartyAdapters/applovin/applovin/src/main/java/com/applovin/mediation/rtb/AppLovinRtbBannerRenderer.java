@@ -1,6 +1,5 @@
 package com.applovin.mediation.rtb;
 
-import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
