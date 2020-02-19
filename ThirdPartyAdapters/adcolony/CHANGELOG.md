@@ -1,5 +1,8 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where the `onRewardedAdLoaded()` callback is not being forwarded by the adapter.
+
 #### Version 4.1.3.0
 - Verified compatibility with AdColony SDK version 4.1.3.
 
