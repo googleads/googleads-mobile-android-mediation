@@ -16,6 +16,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 
 import java.util.HashSet;
 import java.util.List;
@@ -154,8 +155,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         uuid = UUID.randomUUID().toString();
 
         if (metadata != null) {
-            metadata.setCategory("create-adapter");
-            metadata.set(uuid, null);
+            metadata.setCategory("mediation_adapter");
+            metadata.set(uuid, "create-adapter");
             metadata.commit();
         }
     }
@@ -281,8 +282,9 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
-                        MediationMetaData metadata = new MediationMetaData((Activity) context);
-                        metadata.setCategory("load-rewarded");
+                        MetaData metadata = new MetaData((Activity) context);
+                        metadata.setCategory("mediation_adapter");
+                        metadata.set(uuid, "load-rewarded");
                         metadata.set(uuid, mPlacementId);
                         metadata.commit();
 
@@ -310,7 +312,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         Activity activity = (Activity) context;
 
         MediationMetaData metadata = new MediationMetaData((Activity) context);
-        metadata.setCategory("show-rewarded");
+        metadata.setCategory("mediation_adapter");
+        metadata.set(uuid, "show-rewarded");
         metadata.set(uuid, mPlacementId);
         metadata.commit();
 

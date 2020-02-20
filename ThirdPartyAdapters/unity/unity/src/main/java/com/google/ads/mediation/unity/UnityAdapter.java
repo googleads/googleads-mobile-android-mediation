@@ -32,6 +32,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
@@ -249,8 +250,9 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
-                        MediationMetaData metadata = new MediationMetaData(activity);
-                        metadata.setCategory("load-interstitial");
+                        MetaData metadata = new MetaData(activity);
+                        metadata.setCategory("mediation_adapter");
+                        metadata.set(uuid, "load-interstitial");
                         metadata.set(uuid, mPlacementId);
                         metadata.commit();
 
@@ -268,8 +270,9 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public void showInterstitial() {
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-            MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
-            metadata.setCategory("show-interstitial");
+            MetaData metadata = new MetaData((mActivityWeakReference.get()));
+            metadata.setCategory("mediation_adapter");
+            metadata.set(uuid,"show-interstitial");
             metadata.set(uuid, mPlacementId);
             metadata.commit();
 
@@ -286,8 +289,9 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
-        MediationMetaData metadata = new MediationMetaData((mActivityWeakReference.get()));
-        metadata.setCategory("destroy");
+        MetaData metadata = new MetaData((mActivityWeakReference.get()));
+        metadata.setCategory("mediation_adapter");
+        metadata.set(uuid, "destory");
         metadata.set(uuid, null);
         metadata.commit();
 
