@@ -31,6 +31,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
@@ -122,9 +124,14 @@ public class UnityAdapter extends UnityMediationAdapter
                                                     UnityAds.PlacementState oldState,
                                                     UnityAds.PlacementState newState) {
             // Unity Ads SDK NO_FILL state to Google Mobile Ads SDK.
-            if (mMediationInterstitialListener != null && placementId.equals(getPlacementId()) && newState.equals(UnityAds.PlacementState.NO_FILL)) {
-                Log.e(TAG, "UnityAds no fill: " + placementId);
-                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+            if (placementId.equals(getPlacementId())) {
+                if (newState.equals(UnityAds.PlacementState.NO_FILL) || newState.equals(UnityAds.PlacementState.DISABLED)) {
+                    Log.w(TAG, "UnityAds failed to load: " + placementId);
+                    if (mMediationInterstitialListener != null) {
+                        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                    }
+                    UnitySingleton.getInstance().mPlacementsInUse.remove(placementId);
+                }
             }
         }
 
@@ -134,10 +141,11 @@ public class UnityAdapter extends UnityMediationAdapter
             if (placementId.equals(getPlacementId())) {
                 if (mMediationInterstitialListener != null) {
                     if (finishState == UnityAds.FinishState.ERROR) {
-                        //mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        Log.w(TAG, "UnityAds finishedd with an error");
                     }
                     mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
                 }
+                UnitySingleton.getInstance().mPlacementsInUse.remove(placementId);
                 UnityAds.removeListener(mUnityAdapterDelegate);
             }
         }
@@ -198,6 +206,10 @@ public class UnityAdapter extends UnityMediationAdapter
 
             return false;
         }
+        if (UnitySingleton.getInstance().mPlacementsInUse.contains(placementId)) {
+            Log.w(TAG, "An ad is already loading for placement ID : " + placementId);
+            return false;
+        }
 
         return true;
     }
@@ -230,7 +242,7 @@ public class UnityAdapter extends UnityMediationAdapter
             }
             return;
         }
-        Activity activity = (Activity) context;
+        final Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
         UnityAds.addListener(mUnityAdapterDelegate);
@@ -238,6 +250,13 @@ public class UnityAdapter extends UnityMediationAdapter
                 new UnitySingleton.Listener() {
                     @Override
                     public void onInitializeSuccess() {
+                        MetaData metadata = new MetaData(activity);
+                        metadata.setCategory("mediation_adapter");
+                        metadata.set(uuid, "load-interstitial");
+                        metadata.set(uuid, mPlacementId);
+                        metadata.commit();
+
+                        UnitySingleton.getInstance().mPlacementsInUse.add(mPlacementId);
                         UnityAds.load(mPlacementId);
                     }
 
@@ -251,10 +270,17 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public void showInterstitial() {
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-           UnityAds.show(mActivityWeakReference.get(), mPlacementId);
+            MetaData metadata = new MetaData((mActivityWeakReference.get()));
+            metadata.setCategory("mediation_adapter");
+            metadata.set(uuid,"show-interstitial");
+            metadata.set(uuid, mPlacementId);
+            metadata.commit();
+
+            UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
+            UnityAds.show(mActivityWeakReference.get(), mPlacementId);
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
-            //mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+            mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
         }
     }
@@ -263,6 +289,12 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationAdapter implementation.
     @Override
     public void onDestroy() {
+        MetaData metadata = new MetaData((mActivityWeakReference.get()));
+        metadata.setCategory("mediation_adapter");
+        metadata.set(uuid, "destory");
+        metadata.set(uuid, null);
+        metadata.commit();
+
         if(mBannerView != null) {
             mBannerView.destroy();
         }
@@ -313,7 +345,7 @@ public class UnityAdapter extends UnityMediationAdapter
             }
             return;
         }
-        Activity activity = (Activity) context;
+        final Activity activity = (Activity) context;
 
 
         float density = context.getResources().getDisplayMetrics().density;
