@@ -245,6 +245,7 @@ public class UnityAdapter extends UnityMediationAdapter
         final Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
+        UnitySingleton.getInstance().mPlacementsInUse.add(mPlacementId);
         UnityAds.addListener(mUnityAdapterDelegate);
         UnitySingleton.getInstance().initializeUnityAds(activity, gameId,
                 new UnitySingleton.Listener() {
@@ -256,13 +257,13 @@ public class UnityAdapter extends UnityMediationAdapter
                         metadata.set(uuid, mPlacementId);
                         metadata.commit();
 
-                        UnitySingleton.getInstance().mPlacementsInUse.add(mPlacementId);
                         UnityAds.load(mPlacementId);
                     }
 
                     @Override
                     public void onInitializeError(String message) {
                         mediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                        UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
                     }
                 });
     }
@@ -282,6 +283,7 @@ public class UnityAdapter extends UnityMediationAdapter
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+            UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
         }
     }
     //endregion
@@ -300,6 +302,7 @@ public class UnityAdapter extends UnityMediationAdapter
         }
         mBannerView = null;
         UnityAds.removeListener(mUnityAdapterDelegate);
+        UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
         mUnityAdapterDelegate = null;
         mUnityBannerListener = null;
         mMediationInterstitialListener = null;

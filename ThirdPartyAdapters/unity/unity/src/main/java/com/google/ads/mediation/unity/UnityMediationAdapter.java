@@ -275,6 +275,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
+        UnitySingleton.getInstance().mPlacementsInUse.add(mPlacementId);
         mMediationAdLoadCallback = mediationAdLoadCallback;
         UnityAds.addListener(mUnityAdapterRewardedAdDelegate);
 
@@ -288,13 +289,13 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                         metadata.set(uuid, mPlacementId);
                         metadata.commit();
 
-                        UnitySingleton.getInstance().mPlacementsInUse.add(mPlacementId);
                         UnityAds.load(mPlacementId);
                     }
 
                     @Override
                     public void onInitializeError(String message) {
                         mediationAdLoadCallback.onFailure(message);
+                        UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
                     }
                 });
     }
@@ -307,6 +308,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             if (mMediationRewardedAdCallback != null) {
                 mMediationRewardedAdCallback.onAdFailedToShow(message);
             }
+            UnitySingleton.getInstance().mPlacementsInUse.remove(mPlacementId);
             return;
         }
         Activity activity = (Activity) context;
