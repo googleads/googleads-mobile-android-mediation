@@ -176,7 +176,6 @@ public class AdColonyMediationAdapter extends RtbAdapter {
         return appOptions;
     }
 
-
     @Override
     public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
         String zone, signals = "";
