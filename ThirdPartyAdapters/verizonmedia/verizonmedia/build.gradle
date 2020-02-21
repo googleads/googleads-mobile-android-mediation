@@ -130,3 +130,4 @@ bintray {
 bintrayUpload.dependsOn(clean, build)
 bintrayUpload.mustRunAfter build
 build.mustRunAfter clean
+
