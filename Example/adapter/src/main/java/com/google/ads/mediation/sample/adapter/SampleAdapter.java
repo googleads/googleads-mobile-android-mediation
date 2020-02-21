@@ -53,7 +53,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
-//import com.google.common.base.Splitter;
 import java.util.List;
 
 /**
@@ -416,14 +415,6 @@ public class SampleAdapter extends Adapter
           int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
           return new VersionInfo(major, minor, micro);
         }
-        //List<String> splits = Splitter.on('.').splitToList(versionString);
-        //
-        //if (splits.size() >= 4) {
-        //    int major = Integer.parseInt(splits.get(0));
-        //    int minor = Integer.parseInt(splits.get(1));
-        //    int micro = Integer.parseInt(splits.get(2)) * 100 + Integer.parseInt(splits.get(3));
-        //    return new VersionInfo(major, minor, micro);
-        //}
 
         return new VersionInfo(0, 0, 0);
     }
@@ -439,14 +430,6 @@ public class SampleAdapter extends Adapter
             int micro = Integer.parseInt(splits[2]);
             return new VersionInfo(major, minor, micro);
         }
-        //List<String> splits = Splitter.on('.').splitToList(versionString);
-        //
-        //if (splits.size() >= 4) {
-        //    int major = Integer.parseInt(splits.get(0));
-        //    int minor = Integer.parseInt(splits.get(1));
-        //    int micro = Integer.parseInt(splits.get(2));
-        //    return new VersionInfo(major, minor, micro);
-        //}
 
         return new VersionInfo(0, 0, 0);
     }
