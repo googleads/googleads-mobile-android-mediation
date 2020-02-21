@@ -3,6 +3,7 @@
 #### Next Version
 - Verified compatibility with InMobi SDK version 9.0.2.
 - Removed open bidding capability for banner, interstitial, and rewarded formats.
+- Fixed a bug that causes a crash when trying to render a native ad.
 
 #### Version 7.3.0.1
 - Native ads now leverage the unified native ads mediation API.
