@@ -1,46 +1,93 @@
 package com.google.ads.mediation.inmobi;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.isSdkInitialized;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
+import com.inmobi.ads.exceptions.SdkNotInitializedException;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.sdk.InMobiSdk;
-
-import java.lang.ref.WeakReference;
+import com.inmobi.unification.sdk.InitializationStatus;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.isSdkInitialized;
-
 public class InMobiRewardedAd implements MediationRewardedAd {
+
     private InMobiInterstitial mInMobiRewardedAd;
-    private SignalCallbacks mSignalCallbacks;
+
+    private MediationRewardedAdConfiguration mRewardedAdConfiguration;
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
             mMediationAdLoadCallback;
     private MediationRewardedAdCallback mRewardedAdCallback;
-    private static HashMap<Long, WeakReference<InMobiRewardedAd>>
-            mPlacementsInUse = new HashMap<>();
 
-    public InMobiRewardedAd(Context context, final long placementId) {
-        mInMobiRewardedAd = new InMobiInterstitial(context, placementId,
+    public InMobiRewardedAd(
+        @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+        @NonNull MediationAdLoadCallback<MediationRewardedAd,
+            MediationRewardedAdCallback> mediationAdLoadCallback) {
+        mRewardedAdConfiguration = mediationRewardedAdConfiguration;
+        mMediationAdLoadCallback = mediationAdLoadCallback;
+    }
+
+    public void load() {
+        Context context = mRewardedAdConfiguration.getContext();
+        if (!(context instanceof Activity)) {
+            String logMessage = "Failed to load ad from InMobi: "
+                + "InMobi SDK requires an Activity context to load ads.";
+            Log.w(TAG, logMessage);
+            mMediationAdLoadCallback.onFailure(logMessage);
+            return;
+        }
+
+        Bundle serverParameters = mRewardedAdConfiguration.getServerParameters();
+
+        if (!isSdkInitialized.get()) {
+            String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+            if (TextUtils.isEmpty(accountID)) {
+                String logMessage =
+                    "Failed to initialize InMobi SDK: Missing or invalid Account ID.";
+                Log.w(TAG, logMessage);
+                mMediationAdLoadCallback.onFailure(logMessage);
+                return;
+            }
+
+            @InitializationStatus String status =
+                InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
+            if (!status.equals(InitializationStatus.SUCCESS)) {
+                Log.e(TAG, "Failed to initialize InMobi SDK: " + status);
+                mMediationAdLoadCallback.onFailure(status);
+                return;
+            }
+
+            isSdkInitialized.set(true);
+        }
+
+        final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
+        if (placementId <= 0L) {
+            String logMessage = "Failed to request InMobi rewarded ad.";
+            Log.e(TAG, logMessage);
+            mMediationAdLoadCallback.onFailure(logMessage);
+            return;
+        }
+
+        try {
+            mInMobiRewardedAd = new InMobiInterstitial(context, placementId,
                 new InterstitialAdEventListener() {
-
                     @Override
                     public void onRewardsUnlocked(InMobiInterstitial inMobiInterstitial,
-                                                  Map<Object, Object> rewards) {
-                        Log.d(TAG, "InMobi RewardedVideo onRewardsUnlocked.");
+                        Map<Object, Object> rewards) {
+                        Log.d(TAG, "InMobi Rewarded Video onRewardsUnlocked.");
                         String rewardKey = "";
                         String rewardStringValue = "";
                         int rewardValue = 0;
@@ -50,7 +97,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                                 rewardKey = reward.toString();
                                 rewardStringValue = rewards.get(rewardKey).toString();
                                 if (!TextUtils.isEmpty(rewardKey) &&
-                                        !TextUtils.isEmpty(rewardStringValue)) {
+                                    !TextUtils.isEmpty(rewardStringValue)) {
                                     break;
                                 }
                             }
@@ -61,7 +108,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                                 rewardValue = Integer.parseInt(rewardStringValue);
                             } catch (NumberFormatException e) {
                                 Log.w(TAG, "Expected an integer reward value. Got "  +
-                                        rewardStringValue  + " instead. Using reward value of 1.");
+                                    rewardStringValue  + " instead. Using reward value of 1.");
                                 rewardValue = 1;
                             }
                         }
@@ -69,8 +116,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                         if (mRewardedAdCallback != null) {
                             mRewardedAdCallback.onVideoComplete();
                             mRewardedAdCallback.onUserEarnedReward(
-                                    new com.google.ads.mediation.inmobi.InMobiReward(rewardKey,
-                                            rewardValue));
+                                new com.google.ads.mediation.inmobi.InMobiReward(rewardKey,
+                                    rewardValue));
                         }
                     }
 
@@ -80,7 +127,6 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                         if (mRewardedAdCallback != null) {
                             mRewardedAdCallback.onAdFailedToShow("Internal Error.");
                         }
-                        mPlacementsInUse.remove(placementId);
                     }
 
                     @Override
@@ -104,12 +150,11 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                         if (mRewardedAdCallback != null) {
                             mRewardedAdCallback.onAdClosed();
                         }
-                        mPlacementsInUse.remove(placementId);
                     }
 
                     @Override
                     public void onAdClicked(InMobiInterstitial inMobiInterstitial,
-                                            Map<Object, Object> map) {
+                        Map<Object, Object> map) {
                         Log.d(TAG, "onAdClicked");
                         if (mRewardedAdCallback != null) {
                             mRewardedAdCallback.reportAdClicked();
@@ -119,18 +164,21 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                     @Override
                     public void onAdLoadSucceeded(InMobiInterstitial inMobiInterstitial) {
                         Log.d(TAG, "onAdLoadSucceeded");
-                        mRewardedAdCallback =
+                        if (mMediationAdLoadCallback != null) {
+                            mRewardedAdCallback =
                                 mMediationAdLoadCallback.onSuccess(InMobiRewardedAd.this);
+                        }
                     }
 
                     @Override
                     public void onAdLoadFailed(InMobiInterstitial inMobiInterstitial,
-                                               InMobiAdRequestStatus inMobiAdRequestStatus) {
+                        InMobiAdRequestStatus inMobiAdRequestStatus) {
                         String logMessage = "Failed to load ad from InMobi: "
-                                + inMobiAdRequestStatus.getMessage();
-                        Log.w(TAG, logMessage);
-                        mMediationAdLoadCallback.onFailure(logMessage);
-                        mPlacementsInUse.remove(placementId);
+                            + inMobiAdRequestStatus.getMessage();
+                        Log.e(TAG, logMessage);
+                        if (mMediationAdLoadCallback != null) {
+                            mMediationAdLoadCallback.onFailure(logMessage);
+                        }
                     }
 
                     @Override
@@ -144,101 +192,31 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                     }
 
                     @Override
-                    public void onRequestPayloadCreated(byte[] bytes) {
-                        String payload = new String(bytes);
-                        Log.d(TAG, "onRequestPayloadCreated: " + payload);
-                        if (mSignalCallbacks != null) {
-                            mSignalCallbacks.onSuccess(payload);
-                        }
+                    public void onRequestPayloadCreated(byte[] payload) {
+                        // No op.
                     }
 
                     @Override
                     public void onRequestPayloadCreationFailed(InMobiAdRequestStatus status) {
-                        String logMessage = status.getMessage();
-                        Log.d(TAG, "onRequestPayloadCreationFailed: " + logMessage);
-                        if (mSignalCallbacks != null) {
-                            mSignalCallbacks.onFailure(logMessage);
-                        }
+                        // No op.
                     }
                 });
-    }
-
-    public void collectSignals(SignalCallbacks signalCallbacks) {
-        mSignalCallbacks = signalCallbacks;
-        mInMobiRewardedAd.getSignals();
-    }
-
-    public void load(MediationRewardedAdConfiguration adConfiguration,
-                     MediationAdLoadCallback<MediationRewardedAd,
-                             MediationRewardedAdCallback> callback) {
-        Context context = adConfiguration.getContext();
-        mMediationAdLoadCallback = callback;
-
-        if (!(context instanceof Activity)) {
-            String logMessage = "Failed to load ad from InMobi: "
-                    + "InMobi SDK requires an Activity context to load ads.";
-            Log.w(TAG, logMessage);
-            callback.onFailure(logMessage);
-            return;
-        }
-
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        Bundle extras = adConfiguration.getMediationExtras();
-
-        if (!isSdkInitialized.get()) {
-            String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-            if (TextUtils.isEmpty(accountID)) {
-                String logMessage =
-                        "Failed to load ad from InMobi: Missing or Invalid Account ID.";
-                Log.w(TAG, logMessage);
-                mMediationAdLoadCallback.onFailure(logMessage);
-                return;
-            }
-
-            InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-            isSdkInitialized.set(true);
-        }
-
-        String placementString =
-                serverParameters.getString(InMobiAdapterUtils.KEY_PLACEMENT_ID);
-        if (TextUtils.isEmpty(placementString)) {
-            String logMessage = "Failed to load ad from InMobi: Missing or Invalid Placement ID.";
-            Log.e(TAG, logMessage);
+        } catch (SdkNotInitializedException exception) {
+            String logMessage = "Failed to request InMobi rewarded ad.";
+            Log.e(TAG, logMessage, exception);
             mMediationAdLoadCallback.onFailure(logMessage);
             return;
         }
 
-        final long placementID;
-        try {
-            placementID = Long.parseLong(placementString.trim());
-        } catch (NumberFormatException ex) {
-            String logMessage = "Failed to load ad from InMobi: Invalid Placement ID.";
-            Log.w(TAG, logMessage, ex);
-            mMediationAdLoadCallback.onFailure(logMessage);
-            return;
-        }
-
-        if (mPlacementsInUse.containsKey(placementID)
-                && mPlacementsInUse.get(placementID).get() != null) {
-            String logMessage = "Failed to load ad from InMobi: "
-                    + "An ad has already been requested for placement ID: " + placementID;
-            Log.w(TAG, logMessage);
-            mMediationAdLoadCallback.onFailure(logMessage);
-            return;
-        }
+        Bundle extras = mRewardedAdConfiguration.getMediationExtras();
         HashMap<String, String> paramMap =
-                InMobiAdapterUtils.createInMobiParameterMap(adConfiguration);
+                InMobiAdapterUtils.createInMobiParameterMap(mRewardedAdConfiguration);
         mInMobiRewardedAd.setExtras(paramMap);
-        InMobiAdapterUtils.setGlobalTargeting(adConfiguration, extras);
-        String bidResponse = adConfiguration.getBidResponse();
-        if (TextUtils.isEmpty(bidResponse)) {
-            mInMobiRewardedAd.load();
-        } else {
-            mInMobiRewardedAd.load(bidResponse.getBytes());
-        }
+        InMobiAdapterUtils.setGlobalTargeting(mRewardedAdConfiguration, extras);
+        mInMobiRewardedAd.load();
     }
 
-    //MediationRewardedAd implementation
+    // MediationRewardedAd implementation
     @Override
     public void showAd(Context context) {
         if (mInMobiRewardedAd.isReady()) {
