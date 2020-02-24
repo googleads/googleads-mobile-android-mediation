@@ -40,6 +40,12 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
     private static HashMap<String, String> bidResponseDetailsHashMap = new HashMap<>();
 
+    // Keeps a strong reference to the interstitial ad renderer, which loads ads asynchronously.
+    private AdColonyInterstitialRenderer adColonyInterstitialRenderer;
+
+    // Keeps a strong reference to the rewarded ad renderer, which loads ads asynchronously.
+    private AdColonyRewardedRenderer adColonyRewardedRenderer;
+
     /**
      * {@link Adapter} implementation
      */
@@ -152,9 +158,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
                     MediationInterstitialAdCallback> mediationAdLoadCallback) {
         String requestedZone = interstitialAdConfiguration.getServerParameters()
                 .getString(AdColonyAdapterUtils.KEY_ZONE_ID);
-        AdColonyInterstitialRenderer interstitialAd =
-                new AdColonyInterstitialRenderer(requestedZone);
-        interstitialAd.requestInterstitial(mediationAdLoadCallback);
+        adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(requestedZone);
+        adColonyInterstitialRenderer.requestInterstitial(mediationAdLoadCallback);
     }
 
     @Override
@@ -162,15 +167,14 @@ public class AdColonyMediationAdapter extends RtbAdapter {
             MediationRewardedAdConfiguration rewardedAdConfiguration,
             MediationAdLoadCallback<MediationRewardedAd,
                     MediationRewardedAdCallback> mediationAdLoadCallback) {
-        AdColonyRewardedRenderer rewardedAd =
-                new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
-        rewardedAd.render();
+        adColonyRewardedRenderer =
+            new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
+        adColonyRewardedRenderer.render();
     }
 
     public static AdColonyAppOptions getAppOptions() {
         return appOptions;
     }
-
 
     @Override
     public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
@@ -178,7 +182,6 @@ public class AdColonyMediationAdapter extends RtbAdapter {
         AdColony.addCustomMessageListener(new AdColonyCustomMessageListener() {
             @Override
             public void onAdColonyCustomMessage(AdColonyCustomMessage adColonyCustomMessage) {
-
                 try {
                     JSONObject jsonObject = new JSONObject(adColonyCustomMessage.getMessage());
                     String zoneID = jsonObject.getString("zone");

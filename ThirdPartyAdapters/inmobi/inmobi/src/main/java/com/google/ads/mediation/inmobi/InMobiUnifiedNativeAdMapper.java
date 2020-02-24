@@ -7,28 +7,22 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
      /**
@@ -125,7 +119,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Add primary view as media view
+
+        // Add primary view as media view
         final RelativeLayout placeHolderView = new RelativeLayout(context);
         placeHolderView.setLayoutParams(new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -140,19 +135,25 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                     } else {
                         placeHolderView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                     }
+
                     final View parent = (View) placeHolderView.getParent();
+                    if (parent == null) {
+                        return;
+                    }
+
                     int width = parent.getWidth();
-                    Log.d(TAG, "parent layout width is " + width);
-                    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null,
-                            placeHolderView, width);
+                    final View primaryView = mInMobiNative
+                        .getPrimaryViewOfWidth(context, null, placeHolderView, width);
+                    if (primaryView == null) {
+                        return;
+                    }
+
                     primaryView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                    if (primaryView != null) {
-                        placeHolderView.addView(primaryView);
-                        int viewHeight = primaryView.getMeasuredHeight();
-                        if (viewHeight > 0) {
-                            setMediaContentAspectRatio(
-                                    (float) (primaryView.getMeasuredWidth() / viewHeight));
-                        }
+                    placeHolderView.addView(primaryView);
+                    int viewHeight = primaryView.getMeasuredHeight();
+                    if (viewHeight > 0) {
+                        setMediaContentAspectRatio(
+                                (float) (primaryView.getMeasuredWidth() / viewHeight));
                     }
                 }
             });

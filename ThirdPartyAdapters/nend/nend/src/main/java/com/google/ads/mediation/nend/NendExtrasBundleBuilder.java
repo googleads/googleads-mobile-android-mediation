@@ -19,6 +19,11 @@ public class NendExtrasBundleBuilder {
      */
     private NendAdapter.InterstitialType interstitialType;
 
+    /*
+     * Type of native ad to be loaded.
+     */
+    private NendMediationAdapter.FormatType nativeAdsType;
+
     public NendExtrasBundleBuilder setUserId(String userId) {
         this.userId = userId;
         return this;
@@ -30,10 +35,17 @@ public class NendExtrasBundleBuilder {
        return this;
     }
 
+    public NendExtrasBundleBuilder setNativeAdsType(
+            NendMediationAdapter.FormatType nativeAdsType) {
+        this.nativeAdsType = nativeAdsType;
+        return this;
+    }
+
     public Bundle build() {
         Bundle bundle = new Bundle();
         bundle.putString(NendAdapter.KEY_USER_ID, userId);
         bundle.putSerializable(NendAdapter.KEY_INTERSTITIAL_TYPE, interstitialType);
+        bundle.putSerializable(NendNativeAdForwarder.KEY_NATIVE_ADS_FORMAT_TYPE, nativeAdsType);
         return bundle;
     }
 }

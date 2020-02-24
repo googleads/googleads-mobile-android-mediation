@@ -53,4 +53,8 @@ public class SampleAdRequest {
     public void setIncome(int income) {
         // Normally we'd save this value but since this is a sample network, we'll do nothing.
     }
+
+    public static String getSDKVersion() {
+        return BuildConfig.VERSION_NAME;
+    }
 }

@@ -18,8 +18,8 @@ package com.google.ads.mediation.sample.sdk;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.v7.widget.AppCompatTextView;
 import android.view.Gravity;
-import androidx.appcompat.widget.AppCompatTextView;
 
 /**
  * SampleMediaView is a mocked media view returned by the Sample SDK. Normally, a media view would
