@@ -6,10 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.facebook.ads.Ad;
@@ -20,9 +17,9 @@ import com.facebook.ads.ExtraHints;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdLayout;
+import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
-import com.google.ads.mediation.facebook.FacebookAdapter;
+import com.facebook.ads.NativeBannerAd;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -35,19 +32,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.ads.mediation.facebook.FacebookAdapter.*;
+import static com.google.ads.mediation.facebook.FacebookAdapter.KEY_ID;
+import static com.google.ads.mediation.facebook.FacebookAdapter.KEY_SOCIAL_CONTEXT_ASSET;
 import static com.google.ads.mediation.facebook.FacebookAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookAdapter.setMixedAudience;
 
 public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
     private MediationNativeAdConfiguration adConfiguration;
     private MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
-    private NativeAd mNativeAd;
+    private NativeAdBase mNativeAdBase;
     private MediationNativeAdCallback mNativeAdCallback;
     private MediaView mMediaView;
 
     public FacebookRtbNativeAd(MediationNativeAdConfiguration adConfiguration,
-            MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+                               MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
         this.callback = callback;
         this.adConfiguration = adConfiguration;
     }
@@ -64,15 +63,26 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         }
         setMixedAudience(adConfiguration);
         mMediaView = new MediaView(adConfiguration.getContext());
-        mNativeAd = new NativeAd(adConfiguration.getContext(), placementID);
+
+        try {
+            mNativeAdBase =  NativeAdBase.fromBidPayload(adConfiguration.getContext(), placementID, adConfiguration.getBidResponse());
+        } catch (Exception ex) {
+            Log.w(TAG, "Failed to create native ad from bid payload", ex);
+            FacebookRtbNativeAd.this.callback.onFailure("Failed to create native ad from bid payload");
+            return;
+        }
         if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
-            mNativeAd.setExtraHints(new ExtraHints.Builder()
+            mNativeAdBase.setExtraHints(new ExtraHints.Builder()
                     .mediationData(adConfiguration.getWatermark()).build());
         }
-        mNativeAd.loadAd(
-                mNativeAd.buildLoadAdConfig()
-                        .withAdListener(new NativeListener(adConfiguration.getContext(), mNativeAd))
+        mNativeAdBase.loadAd(
+                mNativeAdBase.buildLoadAdConfig()
+                        .withAdListener(new NativeListener(adConfiguration.getContext(), mNativeAdBase))
                         .withBid(adConfiguration.getBidResponse())
+                        .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+                        .withPreloadedIconView(
+                                NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+                                NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE)
                         .build());
     }
 
@@ -84,9 +94,9 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         /**
          * Facebook native ad instance.
          */
-        private NativeAd mNativeAd;
+        private NativeAdBase mNativeAd;
 
-        NativeListener(Context mContext, NativeAd mNativeAd) {
+        NativeListener(Context mContext, NativeAdBase mNativeAd) {
             this.mNativeAd = mNativeAd;
             this.mContext  = new WeakReference<>(mContext);
         }
@@ -95,8 +105,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         public void onAdClicked(Ad ad) {
             // TODO: Upon approval, add this callback back in.
             // mNativeAdCallback.reportAdClicked();
-             mNativeAdCallback.onAdOpened();
-             mNativeAdCallback.onAdLeftApplication();
+            mNativeAdCallback.onAdOpened();
+            mNativeAdCallback.onAdLeftApplication();
         }
 
         @Override
@@ -148,14 +158,14 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     /**
-     * This method will map the Facebook {@link #mNativeAd} to this mapper and send a success
+     * This method will map the Facebook {@link #mNativeAdBase} to this mapper and send a success
      * callback if the mapping was successful or a failure callback if the mapping was
      * unsuccessful.
      *
      * @param mapperListener used to send success/failure callbacks when mapping is done.
      */
     public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
-        if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
+        if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
             Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
                     + " format.");
             mapperListener.onMappingFailed();
@@ -164,14 +174,24 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
         // Map all required assets (headline, one image, body, icon and call to
         // action).
-        setHeadline(mNativeAd.getAdHeadline());
+        setHeadline(mNativeAdBase.getAdHeadline());
         List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-        images.add(new FacebookAdapterNativeAdImage(null));
+        images.add(new FacebookAdapterNativeAdImage());
         setImages(images);
-        setBody(mNativeAd.getAdBodyText());
-        setIcon(new FacebookAdapterNativeAdImage(null));
-        setCallToAction(mNativeAd.getAdCallToAction());
-        setAdvertiser(mNativeAd.getAdvertiserName());
+        setBody(mNativeAdBase.getAdBodyText());
+        if (mNativeAdBase.getPreloadedIconViewDrawable() == null) {
+            if (mNativeAdBase.getAdIcon() == null) {
+                setIcon(new FacebookAdapterNativeAdImage());
+            } else {
+                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAdBase.getAdIcon().getUrl())));
+            }
+        } else {
+            Drawable iconDrawable = mNativeAdBase.getPreloadedIconViewDrawable();
+            FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
+            setIcon(iconImage);
+        }
+        setCallToAction(mNativeAdBase.getAdCallToAction());
+        setAdvertiser(mNativeAdBase.getAdvertiserName());
 
         mMediaView.setListener(new MediaViewListener() {
             @Override
@@ -228,15 +248,13 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
         // Pass all the assets not supported by Google as extras.
         Bundle extras = new Bundle();
-        extras.putCharSequence(KEY_ID, mNativeAd.getId());
-        extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, FacebookRtbNativeAd.this.mNativeAd.getAdSocialContext());
+        extras.putCharSequence(KEY_ID, mNativeAdBase.getId());
+        extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, FacebookRtbNativeAd.this.mNativeAdBase.getAdSocialContext());
         setExtras(extras);
 
-        NativeAdLayout nativeAdLayout = new NativeAdLayout(context);
-        AdOptionsView adOptionsView = new AdOptionsView(context, mNativeAd, nativeAdLayout);
+        AdOptionsView adOptionsView = new AdOptionsView(context, mNativeAdBase, null);
         setAdChoicesContent(adOptionsView);
         mapperListener.onMappingSuccess();
-
     }
 
     /**
@@ -247,10 +265,14 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
      * @return {@code true} if the given ad contains all the necessary fields, {@link false}
      * otherwise.
      */
-    private boolean containsRequiredFieldsForUnifiedNativeAd(NativeAd nativeAd) {
-        return ((nativeAd.getAdHeadline() != null) && (nativeAd.getAdCoverImage() != null)
+    private boolean containsRequiredFieldsForUnifiedNativeAd(NativeAdBase nativeAd) {
+        boolean hasNativeBannerAdAssets = (nativeAd.getAdHeadline() != null)
                 && (nativeAd.getAdBodyText() != null) && (nativeAd.getAdIcon() != null)
-                && (nativeAd.getAdCallToAction() != null) && (mMediaView != null));
+                && (nativeAd.getAdCallToAction() != null);
+        if (nativeAd instanceof NativeBannerAd) {
+            return hasNativeBannerAdAssets;
+        }
+        return hasNativeBannerAdAssets && (nativeAd.getAdCoverImage() != null) && (mMediaView != null);
     }
 
     @Override
@@ -260,24 +282,23 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
         // Facebook does its own click handling.
         setOverrideClickHandling(true);
-        ImageView iconview = null;
 
-        ArrayList<View> assetViews = new ArrayList<>();
-        for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
-            assetViews.add(clickableAssets.getValue());
+        ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
+        ImageView iconView = (ImageView) clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
 
-            if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-                iconview = (ImageView) clickableAssets.getValue();
-            }
-
+        if (mNativeAdBase instanceof NativeAd) {
+            ((NativeAd) mNativeAdBase).registerViewForInteraction(view, mMediaView, iconView, assetViews);
+        } else if (mNativeAdBase instanceof NativeBannerAd) {
+            ((NativeBannerAd) mNativeAdBase).registerViewForInteraction(view, iconView, assetViews);
         }
-
-        mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
     }
 
 
     @Override
     public void untrackView(View view) {
+        if (mNativeAdBase != null) {
+            mNativeAdBase.unregisterView();
+        }
         super.untrackView(view);
     }
 
@@ -295,12 +316,26 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         private Uri mUri;
 
         /**
-         * Default constructor for {@link FacebookAdapter.FacebookAdapterNativeAdImage}, requires an {@link Uri}.
+         * Default constructor for {@link FacebookAdapterNativeAdImage}.
+         */
+        public FacebookAdapterNativeAdImage() {}
+
+        /**
+         * Default constructor for {@link FacebookAdapterNativeAdImage}, requires an {@link Uri}.
          *
          * @param uri required to initialize.
          */
         public FacebookAdapterNativeAdImage(Uri uri) {
             this.mUri = uri;
+        }
+
+        /**
+         * Default constructor for {@link FacebookAdapterNativeAdImage}, requires an {@link Drawable}.
+         *
+         * @param drawable required to initialize.
+         */
+        public FacebookAdapterNativeAdImage(Drawable drawable) {
+            this.mDrawable = drawable;
         }
 
         /**
