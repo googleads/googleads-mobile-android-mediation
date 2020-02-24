@@ -4,26 +4,24 @@ import android.content.Context;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
-
+import java.util.ArrayList;
+import java.util.Map;
 import net.nend.android.NendAdNativeMediaStateListener;
 import net.nend.android.NendAdNativeMediaView;
 import net.nend.android.NendAdNativeVideo;
 import net.nend.android.NendAdNativeVideoListener;
 
-import java.util.ArrayList;
-import java.util.Map;
-
 public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
         implements NendAdNativeVideoListener, NendAdNativeMediaStateListener {
-    private NendAdNativeMediaView mediaView;
-    private NendAdNativeVideo nativeVideo;
-    private NendNativeAdForwarder forwarder;
 
     private static final int VERTICAL = 1;
     private static final float RATIO_9_TO_16 = 9.0f / 16.0f;
     private static final float RATIO_16_TO_9 = 16.0f / 9.0f;
+
+    private NendAdNativeMediaView mediaView;
+    private NendAdNativeVideo nativeVideo;
+    private NendNativeAdForwarder forwarder;
 
     NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
         super(new NendNativeMappedImage(
@@ -31,7 +29,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
         this.forwarder = forwarder;
 
         // Note: NendAdNativeMediaView handles Click Event for changing action by VideoClickOption.
-        // -> https://github.com/fan-ADN/nendSDK-Android/wiki/Implementation-for-native-video-ads#information-necessary-for-instance-generation
+        // https://github.com/fan-ADN/nendSDK-Android/wiki/Implementation-for-native-video-ads#information-necessary-for-instance-generation
         setOverrideClickHandling(true);
 
         setAdvertiser(ad.getAdvertiserName());
@@ -44,8 +42,8 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
         nativeVideo.setListener(this);
 
         setMediaContentAspectRatio(ad.getVideoOrientation() == VERTICAL
-                ? RATIO_9_TO_16
-                : RATIO_16_TO_9
+            ? RATIO_9_TO_16
+            : RATIO_16_TO_9
         );
         setHasVideoContent(true);
         mediaView = new NendAdNativeMediaView(context);
@@ -54,7 +52,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
         mediaView.setMedia(ad);
     }
 
-    private void invalidateMediaViewIfNeed(View containerView) {
+    private void layoutMediaView(View containerView) {
         int containerViewWidth = containerView.getWidth();
         int containerViewHeight = containerView.getHeight();
         if (containerViewWidth <= 0 || containerViewHeight <= 0) {
@@ -66,8 +64,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
 
         if (mediaView.getWidth() == 0 && params.width == ViewGroup.LayoutParams.MATCH_PARENT
                 && mediaView.getHeight() == 0 && params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
-            // Note : Below codes are fitting into the "containerView" as NendAdNativeMediaView's aspect ratio.
-            //        Because NendAdNativeMediaView needs parent`s frame for measuring own texture frame size.
+            // Note: Below codes are fitting into the "containerView" as NendAdNativeMediaView's
+            // aspect ratio. Because NendAdNativeMediaView needs parent`s frame for measuring own
+            // texture frame size.
             if (containerViewWidth == containerViewHeight) {
                 mediaView.setMinimumWidth(containerViewWidth);
                 mediaView.setMinimumHeight(containerViewHeight);
@@ -85,9 +84,8 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     private int getOffsetSide(int base, int otherSide, boolean isOffsetSide) {
         if (!isOffsetSide) {
             return otherSide;
-        } else {
-            return (int)(base / RATIO_16_TO_9);
         }
+        return (int)(base / RATIO_16_TO_9);
     }
 
     void deactivate() {
@@ -104,7 +102,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
                            Map<String, View> nonClickableAssetViews) {
         super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
         nativeVideo.registerInteractionViews(new ArrayList<>(clickableAssetViews.values()));
-        invalidateMediaViewIfNeed(containerView);
+        layoutMediaView(containerView);
     }
 
     @Override
@@ -131,7 +129,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
 
     @Override
     public void onClickInformation(@NonNull NendAdNativeVideo nendAdNativeVideo) {
-        forwarder.informationClicked();
+        forwarder.leftApplication();
     }
 
     /**

@@ -40,7 +40,7 @@ import net.nend.android.NendAdView.NendError;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-/*
+/**
  * The {@link NendAdapter} class is used to load and show Nend interstitial and banner ads.
  */
 @SuppressWarnings("unused")

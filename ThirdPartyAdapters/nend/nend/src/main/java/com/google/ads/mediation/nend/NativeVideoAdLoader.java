@@ -26,14 +26,16 @@ class NativeVideoAdLoader {
                 Log.e(TAG, "Your context may be released...");
                 forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
             } else {
-                forwarder.unifiedNativeAdMapper = new NendUnifiedNativeVideoAdMapper(context, forwarder, nendAdNativeVideo);
+                NendUnifiedNativeVideoAdMapper videoAdMapper =
+                    new NendUnifiedNativeVideoAdMapper(context, forwarder, nendAdNativeVideo);
+                forwarder.setUnifiedNativeAdMapper(videoAdMapper);
                 forwarder.adLoaded();
             }
         }
 
         @Override
         public void onFailure(int nendErrorCode) {
-            forwarder.unifiedNativeAdMapper = null;
+            forwarder.setUnifiedNativeAdMapper(null);
             forwarder.failedToLoad(nendErrorCode);
         }
     };

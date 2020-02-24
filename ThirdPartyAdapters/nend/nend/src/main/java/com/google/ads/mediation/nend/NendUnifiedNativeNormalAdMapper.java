@@ -101,6 +101,6 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
 
     @Override
     public void onClickInformation(@NonNull NendAdNative nendAdNative) {
-        forwarder.informationClicked();
+        forwarder.leftApplication();
     }
 }

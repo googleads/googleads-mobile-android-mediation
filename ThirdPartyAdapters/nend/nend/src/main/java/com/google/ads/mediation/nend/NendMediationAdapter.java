@@ -27,7 +27,7 @@ import net.nend.android.NendAdVideo;
 
 import java.util.List;
 
-/*
+/**
  * The {@link NendMediationAdapter} to load and show Nend rewarded video ads.
  */
 public class NendMediationAdapter extends Adapter implements
@@ -36,21 +36,22 @@ public class NendMediationAdapter extends Adapter implements
 
     static final String TAG = NendMediationAdapter.class.getSimpleName();
 
-    private NendAdRewardedVideo mRewardedVideo;
-    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-            mAdLoadCallback;
-    private MediationRewardedAdCallback mRewardedAdCallback;
-
     static final String KEY_USER_ID = "key_user_id";
     static final String KEY_API_KEY = "apiKey";
     static final String KEY_SPOT_ID = "spotId";
 
     static final String MEDIATION_NAME_ADMOB = "AdMob";
 
+    private NendAdRewardedVideo mRewardedVideo;
+    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+            mAdLoadCallback;
+    private MediationRewardedAdCallback mRewardedAdCallback;
+
     public enum FormatType {
         TYPE_VIDEO,
         TYPE_NORMAL
     }
+
     private NendNativeAdForwarder nativeAdForwarder;
 
     /**
@@ -193,10 +194,7 @@ public class NendMediationAdapter extends Adapter implements
             Bundle serverParameters,
             NativeMediationAdRequest nativeMediationAdRequest,
             Bundle mediationExtras) {
-        if (nativeAdForwarder == null) {
-            nativeAdForwarder = new NendNativeAdForwarder(this);
-        }
-
+        nativeAdForwarder = new NendNativeAdForwarder(NendMediationAdapter.this);
         nativeAdForwarder.requestNativeAd(
                 context,
                 mediationNativeListener,
