@@ -163,7 +163,7 @@ public final class UnitySingleton {
                     || unityAdsError == UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL || unityAdsError == UnityAds.UnityAdsError.INVALID_ARGUMENT) {
                 for (WeakReference<Listener> listenerWeakReference : getInstance().mListenersWeakReference) {
                     if (listenerWeakReference.get() != null) {
-                        listenerWeakReference.get().onInitializeSuccess();
+                        listenerWeakReference.get().onInitializeError(message);
                     }
                 }
                 mListenersWeakReference.clear();
