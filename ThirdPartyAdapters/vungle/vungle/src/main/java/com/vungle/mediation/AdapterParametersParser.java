@@ -10,11 +10,17 @@ class AdapterParametersParser {
     private static final String TAG = VungleManager.class.getSimpleName();
 
     static class Config {
-        String getAppId() {
+        private String appId;
+        private String requestUniqueId;
+
+        public String getAppId() {
             return appId;
         }
 
-        private String appId;
+        public String getRequestUniqueId() {
+            return requestUniqueId;
+        }
+
     }
 
     public static Config parse(Bundle networkExtras, Bundle serverParameters) throws IllegalArgumentException {
@@ -23,9 +29,11 @@ class AdapterParametersParser {
             Log.e(TAG, "Vungle app ID should be specified!");
             throw new IllegalArgumentException();
         }
+        String uuid = networkExtras.getString(VungleExtrasBuilder.UUID_KEY);
 
         Config ret = new Config();
         ret.appId = appId;
+        ret.requestUniqueId = uuid;
         return ret;
     }
 }

@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import com.vungle.warren.AdConfig;
 
+import java.util.UUID;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
@@ -20,11 +22,13 @@ public final class VungleExtrasBuilder {
     private static final String EXTRA_ORIENTATION = "adOrientation";
     static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
     static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
+    static final String UUID_KEY = "uniqueVungleRequestKey";
 
     private final Bundle mBundle = new Bundle();
 
     public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
         mBundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
+        mBundle.putString(UUID_KEY, UUID.randomUUID().toString());
     }
 
     public VungleExtrasBuilder setPlayingPlacement(String placement) {

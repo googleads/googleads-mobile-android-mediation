@@ -1,10 +1,6 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import android.util.Log;
 
 import com.vungle.warren.AdConfig;
@@ -19,6 +15,9 @@ import com.vungle.warren.error.VungleException;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * A helper class to load and show Vungle ads and keep track of multiple
  * {@link VungleInterstitialAdapter} instances.
@@ -30,7 +29,33 @@ public class VungleManager {
 
     private static VungleManager sInstance;
 
-    private ConcurrentHashMap<String, VungleBanner> activeBannerAds;
+    protected static class BannerRequest {
+        private String placementId;
+        private String uniquePubRequestId;
+
+        public BannerRequest(String placementId, String uniquePubRequestId) {
+            this.placementId = placementId;
+            this.uniquePubRequestId = uniquePubRequestId;
+        }
+
+        public String getPlacementId() {
+            return placementId;
+        }
+
+        public void setPlacementId(String placementId) {
+            this.placementId = placementId;
+        }
+
+        public String getUniquePubRequestId() {
+            return uniquePubRequestId;
+        }
+
+        public void setUniquePubRequestId(String uniquePubRequestId) {
+            this.uniquePubRequestId = uniquePubRequestId;
+        }
+    }
+
+    private ConcurrentHashMap<BannerRequest, VungleBanner> activeBannerAds;
     private ConcurrentHashMap<String, VungleNativeAd> activeNativeAds;
 
     public static synchronized VungleManager getInstance() {
@@ -159,11 +184,20 @@ public class VungleManager {
                 Vungle.getValidPlacements().contains(placementId);
     }
 
-    VungleBanner getVungleBanner(String placement, AdConfig.AdSize adSize, VungleListener vungleListener) {
+    BannerRequest activeBannerRequest(String placementId) {
+        for (BannerRequest bannerRequest : activeBannerAds.keySet()) {
+            if(placementId.equals(bannerRequest.getPlacementId())) {
+                return bannerRequest;
+            }
+        }
+        return null;
+    }
+
+    VungleBanner getVungleBanner(BannerRequest bannerRequest, AdConfig.AdSize adSize, VungleListener vungleListener) {
         Log.d(TAG, "getVungleBanner");
-        VungleBanner bannerAd = Banners.getBanner(placement, adSize, playAdCallback(vungleListener));
+        VungleBanner bannerAd = Banners.getBanner(bannerRequest.getPlacementId(), adSize, playAdCallback(vungleListener));
         if (bannerAd != null) {
-            activeBannerAds.put(placement, bannerAd);
+            activeBannerAds.put(bannerRequest, bannerAd);
         }
 
         return bannerAd;
@@ -194,12 +228,13 @@ public class VungleManager {
         }
     }
 
-    void cleanUpBanner(@NonNull String placementId, VungleBanner bannerAd) {
-        VungleBanner activeBannerAd = activeBannerAds.get(placementId);
-        if (activeBannerAd == bannerAd) {
+    void cleanUpBanner(BannerRequest bannerRequest) {
+
+        VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);
+        if (activeBannerAd != null) {
             Log.d(TAG, "cleanUpBanner # destroyAd");
-            bannerAd.destroyAd();
-            activeBannerAds.remove(placementId);
+            activeBannerAd.destroyAd();
+            activeBannerAds.remove(bannerRequest);
         }
     }
 
@@ -210,9 +245,9 @@ public class VungleManager {
      */
     void cleanUpBanner(@NonNull String placementId) {
         Log.d(TAG, "cleanUpBanner");
-        VungleBanner vungleBanner = activeBannerAds.get(placementId);
-        if (vungleBanner != null) {
-            cleanUpBanner(placementId, vungleBanner);
+        BannerRequest bannerRequest = activeBannerRequest(placementId);
+        if (bannerRequest != null) {
+            cleanUpBanner(bannerRequest);
         } else {
             VungleNativeAd vungleNativeAd = activeNativeAds.get(placementId);
             if (vungleNativeAd != null) {
