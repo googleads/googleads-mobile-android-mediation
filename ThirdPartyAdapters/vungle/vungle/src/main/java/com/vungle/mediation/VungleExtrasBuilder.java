@@ -72,6 +72,7 @@ public final class VungleExtrasBuilder {
 
     public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
         AdConfig adConfig = new AdConfig();
+        adConfig.setMuted(true); // start muted by default.
         if (networkExtras != null) {
             adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, false));
             adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
@@ -79,9 +80,5 @@ public final class VungleExtrasBuilder {
             adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
         }
         return adConfig;
-    }
-
-    static boolean isStartMutedNotConfigured(Bundle networkExtras) {
-        return (networkExtras != null && !networkExtras.containsKey(EXTRA_START_MUTED));
     }
 }

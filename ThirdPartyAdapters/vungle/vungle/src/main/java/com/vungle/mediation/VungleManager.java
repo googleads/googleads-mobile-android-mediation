@@ -29,34 +29,26 @@ public class VungleManager {
 
     private static VungleManager sInstance;
 
-    protected static class BannerRequest {
+    static class BannerRequest {
         private String placementId;
         private String uniquePubRequestId;
 
-        public BannerRequest(String placementId, String uniquePubRequestId) {
+        BannerRequest(String placementId, String uniquePubRequestId) {
             this.placementId = placementId;
             this.uniquePubRequestId = uniquePubRequestId;
         }
 
-        public String getPlacementId() {
+        String getPlacementId() {
             return placementId;
         }
 
-        public void setPlacementId(String placementId) {
-            this.placementId = placementId;
-        }
-
-        public String getUniquePubRequestId() {
+        String getUniquePubRequestId() {
             return uniquePubRequestId;
-        }
-
-        public void setUniquePubRequestId(String uniquePubRequestId) {
-            this.uniquePubRequestId = uniquePubRequestId;
         }
     }
 
     private ConcurrentHashMap<BannerRequest, VungleBanner> activeBannerAds;
-    private ConcurrentHashMap<String, VungleNativeAd> activeNativeAds;
+    private ConcurrentHashMap<BannerRequest, VungleNativeAd> activeNativeAds;
 
     public static synchronized VungleManager getInstance() {
         if (sInstance == null) {
@@ -193,57 +185,48 @@ public class VungleManager {
         return null;
     }
 
+    BannerRequest activeMRECRequest(String placementId) {
+        for (BannerRequest bannerRequest : activeNativeAds.keySet()) {
+            if(placementId.equals(bannerRequest.getPlacementId())) {
+                return bannerRequest;
+            }
+        }
+        return null;
+    }
+
     VungleBanner getVungleBanner(BannerRequest bannerRequest, AdConfig.AdSize adSize, VungleListener vungleListener) {
         Log.d(TAG, "getVungleBanner");
         VungleBanner bannerAd = Banners.getBanner(bannerRequest.getPlacementId(), adSize, playAdCallback(vungleListener));
         if (bannerAd != null) {
             activeBannerAds.put(bannerRequest, bannerAd);
         }
-
         return bannerAd;
     }
 
-    VungleNativeAd getVungleNativeAd(String placement, AdConfig adConfig,
+    VungleNativeAd getVungleNativeAd(BannerRequest bannerRequest, AdConfig adConfig,
                                      VungleListener vungleListener) {
         Log.d(TAG, "getVungleNativeAd");
-
-        //Fetch new ad
-        VungleNativeAd bannerAd = Vungle.getNativeAd(placement, adConfig,
+        VungleNativeAd bannerAd = Vungle.getNativeAd(bannerRequest.getPlacementId(), adConfig,
                 playAdCallback(vungleListener));
         if (bannerAd != null) {
-            activeNativeAds.put(placement, bannerAd);
+            activeNativeAds.put(bannerRequest, bannerAd);
         }
 
         return bannerAd;
     }
 
-    void cleanUpBanner(@NonNull String placementId, VungleNativeAd bannerAd) {
-        VungleNativeAd activeBannerAd = activeNativeAds.get(placementId);
-        if (activeBannerAd == bannerAd) {
-            //Remove ad
-            //We should do Report ad
+    void cleanUpBanner(@Nullable BannerRequest bannerRequest, @Nullable VungleNativeAd bannerAd) {
+        VungleNativeAd activeBannerAd = activeNativeAds.get(bannerRequest);
+        if (activeBannerAd != null && activeBannerAd == bannerAd) {
             Log.d(TAG, "cleanUpBanner # finishDisplayingAd");
-            bannerAd.finishDisplayingAd();
-            activeNativeAds.remove(placementId);
+            activeBannerAd.finishDisplayingAd();
+            activeNativeAds.remove(bannerRequest);
         }
     }
 
-    void cleanUpBanner(@NonNull String placementId, VungleBanner bannerAd) {
-        BannerRequest bannerRequest = activeBannerRequest(placementId);
+    void cleanUpBanner(@Nullable BannerRequest bannerRequest, @Nullable VungleBanner bannerAd) {
         VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);
         if (activeBannerAd != null && activeBannerAd == bannerAd) {
-            //Remove ad
-            //We should do Report ad
-            Log.d(TAG, "cleanUpBanner # destroyAd");
-            activeBannerAd.destroyAd();
-            activeBannerAds.remove(bannerRequest);
-        }
-    }
-
-    void cleanUpBanner(BannerRequest bannerRequest) {
-
-        VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);
-        if (activeBannerAd != null) {
             Log.d(TAG, "cleanUpBanner # destroyAd");
             activeBannerAd.destroyAd();
             activeBannerAds.remove(bannerRequest);
@@ -253,17 +236,17 @@ public class VungleManager {
     /**
      * called from adapters to clean, and remove
      *
-     * @param placementId
+     * @param bannerRequest
      */
-    void cleanUpBanner(@NonNull String placementId) {
+    void cleanUpBanner(@NonNull BannerRequest bannerRequest) {
         Log.d(TAG, "cleanUpBanner");
-        BannerRequest bannerRequest = activeBannerRequest(placementId);
-        if (bannerRequest != null) {
-            cleanUpBanner(bannerRequest);
+        VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);
+        if (activeBannerAd != null) {
+            cleanUpBanner(bannerRequest, activeBannerAd);
         } else {
-            VungleNativeAd vungleNativeAd = activeNativeAds.get(placementId);
+            VungleNativeAd vungleNativeAd = activeNativeAds.get(bannerRequest);
             if (vungleNativeAd != null) {
-                cleanUpBanner(placementId, vungleNativeAd);
+                cleanUpBanner(bannerRequest, vungleNativeAd);
             }
         }
     }

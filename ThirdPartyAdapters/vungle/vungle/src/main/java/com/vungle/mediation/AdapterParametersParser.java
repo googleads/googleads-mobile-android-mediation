@@ -29,7 +29,11 @@ class AdapterParametersParser {
             Log.e(TAG, "Vungle app ID should be specified!");
             throw new IllegalArgumentException();
         }
-        String uuid = networkExtras.getString(VungleExtrasBuilder.UUID_KEY);
+
+        String uuid = null;
+        if (networkExtras != null && networkExtras.containsKey(VungleExtrasBuilder.UUID_KEY)) {
+            uuid = networkExtras.getString(VungleExtrasBuilder.UUID_KEY);
+        }
 
         Config ret = new Config();
         ret.appId = appId;
