@@ -34,8 +34,6 @@ import com.vungle.warren.VungleBanner;
 import com.vungle.warren.VungleNativeAd;
 
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.annotation.Keep;
@@ -60,7 +58,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
     private String mPlacementForPlay;
 
     //banner/MREC
-    private static Set<String> sActivePlacements = new CopyOnWriteArraySet<>();
     private volatile RelativeLayout adLayout;
     private VungleBanner vungleBannerAd;
     private VungleNativeAd vungleNativeAd;
@@ -187,9 +184,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         Log.d(TAG, "onDestroy");
         paused = true;
         pendingRequestBanner.set(false);
-        if (mBannerRequest != null) {
-            sActivePlacements.remove(mBannerRequest.getPlacementId());
-        }
         if (vungleBannerAd != null) {
             vungleBannerAd.destroyAd();
             mVungleManager.cleanUpBanner(mBannerRequest, vungleBannerAd);
@@ -261,7 +255,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         }
         if (activeBannerRequest == null) {
             //multiple banners with same placementId requesting ad at the same time.
-            if (sActivePlacements.contains(placementForPlay)) {
+            if (VungleManager.getInstance().isPlacementInProgressAndSet(placementForPlay)) {
                 Log.d(TAG, " There's already one banner request for placement: " + placementForPlay);
                 mMediationBannerListener
                         .onAdFailedToLoad(VungleInterstitialAdapter.this,
@@ -270,7 +264,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             }
             // one new placement banner request.
             Log.d(TAG, " new request for placement: " + placementForPlay + " ### RequestId: " + config.getRequestUniqueId());
-            sActivePlacements.add(placementForPlay);
             mBannerRequest = new VungleManager.BannerRequest(placementForPlay, config.getRequestUniqueId());
         } else {
             mBannerRequest = activeBannerRequest;
@@ -315,6 +308,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         if (!hasBannerSizeAd(context, adSize)) {
             String message = "Failed to load ad from Vungle: Invalid banner size.";
             Log.w(TAG, message);
+            VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
             mMediationBannerListener
                     .onAdFailedToLoad(VungleInterstitialAdapter.this,
                             AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -338,6 +332,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
                     @Override
                     public void onInitializeError(String errorMessage) {
                         Log.w(TAG, "Failed to load ad from Vungle: " + errorMessage);
+                        VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
                         if (mMediationBannerListener != null) {
                             mMediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
                                     AdRequest.ERROR_CODE_INTERNAL_ERROR);
@@ -358,6 +353,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
                 @Override
                 void onAdFailedToLoad() {
+                    VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
                     if (pendingRequestBanner.get() && mMediationBannerListener != null) {
                         mMediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
                                 AdRequest.ERROR_CODE_NO_FILL);
@@ -366,6 +362,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             });
         } else { // passed Placement Id is not what Vungle's SDK gets back after init/config
             Log.w(TAG, "Invalid Placement: " + mBannerRequest.getPlacementId());
+            VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
             if (mMediationBannerListener != null) {
                 mMediationBannerListener
                         .onAdFailedToLoad(VungleInterstitialAdapter.this,
@@ -405,9 +402,12 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
     };
 
     private void createBanner() {
-        if (mVungleManager == null || !pendingRequestBanner.get())
+        if (mVungleManager == null || !pendingRequestBanner.get()) {
+            VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
             return;
+        }
 
+        VungleManager.getInstance().removeInProgressPlacement(mBannerRequest.getPlacementId());
         mVungleManager.cleanUpBanner(mBannerRequest);
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);

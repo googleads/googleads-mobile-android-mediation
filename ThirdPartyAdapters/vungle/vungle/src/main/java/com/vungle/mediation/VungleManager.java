@@ -13,7 +13,9 @@ import com.vungle.warren.VungleBanner;
 import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.error.VungleException;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,6 +51,7 @@ public class VungleManager {
 
     private ConcurrentHashMap<BannerRequest, VungleBanner> activeBannerAds;
     private ConcurrentHashMap<BannerRequest, VungleNativeAd> activeNativeAds;
+    private Set<String> mProgressPlacements;
 
     public static synchronized VungleManager getInstance() {
         if (sInstance == null) {
@@ -60,6 +63,20 @@ public class VungleManager {
     private VungleManager() {
         activeBannerAds = new ConcurrentHashMap<>();
         activeNativeAds = new ConcurrentHashMap<>();
+        mProgressPlacements = new CopyOnWriteArraySet<>();
+    }
+
+    void removeInProgressPlacement(String placementId) {
+        mProgressPlacements.remove(placementId);
+    }
+
+    synchronized boolean isPlacementInProgressAndSet(String placementId) {
+        if (mProgressPlacements.contains(placementId)) {
+            return true;
+        } else {
+            mProgressPlacements.add(placementId);
+            return false;
+        }
     }
 
     @Nullable
