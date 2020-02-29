@@ -228,6 +228,18 @@ public class VungleManager {
         }
     }
 
+    void cleanUpBanner(@NonNull String placementId, VungleBanner bannerAd) {
+        BannerRequest bannerRequest = activeBannerRequest(placementId);
+        VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);
+        if (activeBannerAd != null && activeBannerAd == bannerAd) {
+            //Remove ad
+            //We should do Report ad
+            Log.d(TAG, "cleanUpBanner # destroyAd");
+            activeBannerAd.destroyAd();
+            activeBannerAds.remove(bannerRequest);
+        }
+    }
+
     void cleanUpBanner(BannerRequest bannerRequest) {
 
         VungleBanner activeBannerAd = activeBannerAds.get(bannerRequest);

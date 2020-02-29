@@ -186,7 +186,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         pendingRequestBanner.set(false);
         if (vungleBannerAd != null) {
             vungleBannerAd.destroyAd();
-            mVungleManager.cleanUpBanner(mPlacementForPlay);
+            mVungleManager.cleanUpBanner(mPlacementForPlay, vungleBannerAd);
             vungleBannerAd = null;
         } else if (vungleNativeAd != null) {
             vungleNativeAd.finishDisplayingAd();
