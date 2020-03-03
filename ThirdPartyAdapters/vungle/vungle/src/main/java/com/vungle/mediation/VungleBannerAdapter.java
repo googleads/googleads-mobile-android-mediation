@@ -35,8 +35,8 @@ class VungleBannerAdapter {
     @NonNull
     private AdConfig mAdConfig;
 
-    private AtomicBoolean mPendingRequestBanner = new AtomicBoolean(false);
-    private AtomicBoolean mIsLoading = new AtomicBoolean(true);;
+    private AtomicBoolean mIsLoading = new AtomicBoolean(true);
+    private boolean mPendingRequestBanner = false;
     private boolean mVisibility = true;
     @Nullable
     private VungleBanner mVungleBannerAd;
@@ -80,7 +80,7 @@ class VungleBannerAdapter {
 
     void requestBannerAd(@NonNull Context context, @NonNull String appId) {
         mIsLoading.set(true);
-        mPendingRequestBanner.set(true);
+        mPendingRequestBanner = true;
         VungleInitializer.getInstance().initialize(appId, context.getApplicationContext(),
                 new VungleInitializer.VungleInitializationListener() {
                     @Override
@@ -106,7 +106,7 @@ class VungleBannerAdapter {
             Log.d(TAG, "Vungle banner adapter destroy:" + this);
             mIsLoading.set(false);
             mVisibility = false;
-            mPendingRequestBanner.set(false);
+            mPendingRequestBanner = false;
             mVungleManager.removeActiveBannerAd(mPlacementId);
             if (mVungleBannerAd != null) {
                 mVungleBannerAd.destroyAd();
@@ -147,7 +147,7 @@ class VungleBannerAdapter {
             Log.d(TAG, "Ad load failed:" + VungleBannerAdapter.this);
             mIsLoading.set(false);
             mVungleManager.removeActiveBannerAd(mPlacementId);
-            if (mPendingRequestBanner.get() && mVungleListener != null) {
+            if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
             }
         }
@@ -156,14 +156,14 @@ class VungleBannerAdapter {
     private PlayAdCallback mAdPlayCallback = new PlayAdCallback() {
         @Override
         public void onAdStart(String placementId) {
-            if (mPendingRequestBanner.get() && mVungleListener != null) {
+            if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdStart(placementId);
             }
         }
 
         @Override
         public void onAdEnd(String placementId, boolean completed, boolean isCTAClicked) {
-            if (mPendingRequestBanner.get() && mVungleListener != null) {
+            if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdEnd(placementId, completed, isCTAClicked);
             }
         }
@@ -173,7 +173,7 @@ class VungleBannerAdapter {
             Log.d(TAG, "Ad play failed:" + VungleBannerAdapter.this);
             mIsLoading.set(false);
             mVungleManager.removeActiveBannerAd(mPlacementId);
-            if (mPendingRequestBanner.get() && mVungleListener != null) {
+            if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdFail(placementId);
             }
         }
@@ -198,7 +198,7 @@ class VungleBannerAdapter {
     }
 
     private void createBanner() {
-        if (!mPendingRequestBanner.get()) {
+        if (!mPendingRequestBanner) {
             mIsLoading.set(false);
             mVungleManager.removeActiveBannerAd(mPlacementId);
             return;
