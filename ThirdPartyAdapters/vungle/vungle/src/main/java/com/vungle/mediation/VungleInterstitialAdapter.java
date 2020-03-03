@@ -300,10 +300,11 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         @Override
         void onAdFail(String placement) {
             Log.w(TAG, "Ad playback error Placement: " + placement + ";" + mBannerRequest);
-            if (mMediationBannerListener != null) {
-                mMediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
-                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            }
+            // might be too late to fire onAdFailedToLoad here.
+//            if (mMediationBannerListener != null) {
+//                mMediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this,
+//                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
+//            }
         }
 
         @Override

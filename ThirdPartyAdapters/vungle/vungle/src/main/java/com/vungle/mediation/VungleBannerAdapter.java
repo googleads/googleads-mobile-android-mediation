@@ -119,6 +119,20 @@ class VungleBannerAdapter {
         }
     }
 
+    void cleanUp() {
+        Log.d(TAG, "Vungle banner adapter try to cleanUp.");
+        if (mVungleBannerAd != null) {
+            Log.d(TAG, "Vungle banner adapter cleanUp: destroyAd");
+            mVungleBannerAd.destroyAd();
+            mVungleBannerAd = null;
+        }
+        if (mVungleNativeAd != null) {
+            Log.d(TAG, "Vungle banner adapter cleanUp: finishDisplayingAd");
+            mVungleNativeAd.finishDisplayingAd();
+            mVungleNativeAd = null;
+        }
+    }
+
     void preCache() {
         if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
             Banners.loadBanner(mPlacementId, mAdConfig.getAdSize(), null);
@@ -203,16 +217,7 @@ class VungleBannerAdapter {
             mVungleManager.removeActiveBannerAd(mPlacementId);
             return;
         }
-        if (mVungleBannerAd != null) {
-            Log.d(TAG, "createBanner ### destroyAd");
-            mVungleBannerAd.destroyAd();
-            mVungleBannerAd = null;
-        }
-        if (mVungleNativeAd != null) {
-            Log.d(TAG, "createBanner ### finishDisplayingAd");
-            mVungleNativeAd.finishDisplayingAd();
-            mVungleNativeAd = null;
-        }
+        cleanUp();
         mIsLoading.set(false);
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);

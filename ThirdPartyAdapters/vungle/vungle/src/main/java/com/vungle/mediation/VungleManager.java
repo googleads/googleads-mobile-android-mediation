@@ -167,7 +167,11 @@ public class VungleManager {
     }
 
     void removeActiveBannerAd(String placementId) {
-        mVungleBanners.remove(placementId);
-        Log.d(TAG, "removeActiveBannerAd:" + placementId + "; size=" + mVungleBanners.size());
+        Log.d(TAG, "try to removeActiveBannerAd:" + placementId);
+        VungleBannerAdapter activeBannerAd = mVungleBanners.remove(placementId);
+        Log.d(TAG, "removeActiveBannerAd:" + activeBannerAd + "; size=" + mVungleBanners.size());
+        if (activeBannerAd != null) {
+            activeBannerAd.cleanUp();
+        }
     }
 }
