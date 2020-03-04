@@ -48,7 +48,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
         MediationBannerAdapter {
 
-    static final String TAG = VungleInterstitialAdapter.class.getSimpleName();
+    private static final String TAG = VungleInterstitialAdapter.class.getSimpleName();
     private MediationInterstitialListener mMediationInterstitialListener;
     private VungleManager mVungleManager;
     private AdConfig mAdConfig;
@@ -174,7 +174,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
+        Log.d(TAG, "onDestroy: "+ hashCode());
         if (mBannerRequest != null) {
             mBannerRequest.destroy(adLayout);
             mBannerRequest = null;
@@ -317,7 +317,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
     @Override
     public View getBannerView() {
-        Log.d(TAG, "getBannerView");
+        Log.d(TAG, "getBannerView # instance: "+hashCode());
         return adLayout;
     }
 

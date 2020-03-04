@@ -174,4 +174,11 @@ public class VungleManager {
             activeBannerAd.cleanUp();
         }
     }
+
+    void restoreActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance) {
+        if (!mVungleBanners.containsKey(placementId)) {
+            Log.d(TAG, "restoreActiveBannerAd:" + placementId + " # " + instance);
+            mVungleBanners.put(placementId, instance);
+        }
+    }
 }
