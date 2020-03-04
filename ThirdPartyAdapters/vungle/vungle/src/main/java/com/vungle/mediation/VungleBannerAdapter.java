@@ -206,8 +206,6 @@ class VungleBannerAdapter {
 
     private void createBanner() {
         if (!mPendingRequestBanner) {
-            mIsLoading.set(false);
-            mVungleManager.removeActiveBannerAd(mPlacementId);
             return;
         }
         cleanUp();
