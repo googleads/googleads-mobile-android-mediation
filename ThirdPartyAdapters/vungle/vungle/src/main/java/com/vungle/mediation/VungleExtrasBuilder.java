@@ -1,6 +1,7 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import com.vungle.warren.AdConfig;
 
@@ -28,7 +29,6 @@ public final class VungleExtrasBuilder {
 
     public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
         mBundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
-        mBundle.putString(UUID_KEY, UUID.randomUUID().toString());
     }
 
     public VungleExtrasBuilder setPlayingPlacement(String placement) {
@@ -66,7 +66,15 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
+    public VungleExtrasBuilder setBannerUniqueRequestID(String uniqueID) {
+        mBundle.putString(UUID_KEY, uniqueID);
+        return this;
+    }
+
     public Bundle build() {
+        if (TextUtils.isEmpty(mBundle.getString(UUID_KEY, null))) {
+            mBundle.putString(UUID_KEY, UUID.randomUUID().toString());
+        }
         return mBundle;
     }
 
@@ -74,7 +82,7 @@ public final class VungleExtrasBuilder {
         AdConfig adConfig = new AdConfig();
         adConfig.setMuted(true); // start muted by default.
         if (networkExtras != null) {
-            adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, false));
+            adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, true));
             adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
             adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
             adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
