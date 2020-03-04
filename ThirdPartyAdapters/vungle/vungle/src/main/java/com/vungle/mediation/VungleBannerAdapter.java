@@ -108,14 +108,7 @@ class VungleBannerAdapter {
             mVisibility = false;
             mPendingRequestBanner = false;
             mVungleManager.removeActiveBannerAd(mPlacementId);
-            if (mVungleBannerAd != null) {
-                mVungleBannerAd.destroyAd();
-                mVungleBannerAd = null;
-            }
-            if (mVungleNativeAd != null) {
-                mVungleNativeAd.finishDisplayingAd();
-                mVungleNativeAd = null;
-            }
+            cleanUp();
         }
     }
 

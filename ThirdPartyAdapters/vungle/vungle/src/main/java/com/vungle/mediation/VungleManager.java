@@ -134,6 +134,11 @@ public class VungleManager {
         VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
         if (bannerRequest != null) {
             String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
+            if (bannerRequest.isLoading()) {
+                //Same placement: current banner is loading and new request is coming.
+                Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
+                return null;
+            }
             if (activeUniqueRequestId != null && requestUniqueId != null) {
                 if (activeUniqueRequestId.equals(requestUniqueId)) {
                     Log.d(TAG, "Seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
@@ -150,12 +155,7 @@ public class VungleManager {
                 Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: null ###  RequestId: " + requestUniqueId);
                 return null;
             } else {
-                if (bannerRequest.isLoading()) {
-                    Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: null ###  RequestId: null");
-                    return null;
-                } else {
-                    Log.d(TAG, "Seems like Refresh: activeUniqueId: null ###  RequestId: null");
-                }
+                Log.d(TAG, "Seems like Refresh: activeUniqueId: null ###  RequestId: null");
             }
         } else {
             bannerRequest = new VungleBannerAdapter(placementId, requestUniqueId);
