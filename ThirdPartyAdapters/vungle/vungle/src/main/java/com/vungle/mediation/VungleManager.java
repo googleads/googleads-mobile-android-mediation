@@ -3,18 +3,16 @@ package com.vungle.mediation;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.vungle.warren.AdConfig;
-import com.vungle.warren.AdConfig.AdSize;
-import com.vungle.warren.Banners;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.error.VungleException;
 
 import java.util.concurrent.ConcurrentHashMap;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * A helper class to load and show Vungle ads and keep track of multiple
@@ -111,14 +109,6 @@ public class VungleManager {
         return (placement != null && !placement.isEmpty()) && Vungle.canPlayAd(placement);
     }
 
-    boolean isAdPlayable(@NonNull String placement, @NonNull AdSize adSize) {
-        if (AdSize.isBannerAdSize(adSize)) {
-            return Banners.canPlayAd(placement, adSize);
-        } else {
-            return isAdPlayable(placement);
-        }
-    }
-
     /**
      * Checks and returns if the passed Placement ID is a valid placement for App ID
      *
@@ -130,35 +120,18 @@ public class VungleManager {
     }
 
     @Nullable
-    synchronized VungleBannerAdapter getBannerRequest(@NonNull String placementId, @Nullable String requestUniqueId) {
+    VungleBannerAdapter getBannerRequest(@NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
         VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
         if (bannerRequest != null) {
             String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
-            if (bannerRequest.isLoading()) {
-                //Same placement: current banner is loading and new request is coming.
+            if (activeUniqueRequestId != null && activeUniqueRequestId.equals(requestUniqueId) || activeUniqueRequestId == null && requestUniqueId == null) {
+                Log.d(TAG, "Seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
+            } else {
                 Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
                 return null;
             }
-            if (activeUniqueRequestId != null && requestUniqueId != null) {
-                if (activeUniqueRequestId.equals(requestUniqueId)) {
-                    Log.d(TAG, "Seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
-                } else {
-                    Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
-                    return null;
-                }
-            } else if (activeUniqueRequestId != null) {
-                //Same placement: One banner is displaying with mediationExtras, but this banner request try to load without mediationExtras.
-                Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: null");
-                return null;
-            } else if (requestUniqueId != null) {
-                //Same placement: One banner is displaying without mediationExtras, but this banner request try to load with mediationExtras.
-                Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: null ###  RequestId: " + requestUniqueId);
-                return null;
-            } else {
-                Log.d(TAG, "Seems like Refresh: activeUniqueId: null ###  RequestId: null");
-            }
         } else {
-            bannerRequest = new VungleBannerAdapter(placementId, requestUniqueId);
+            bannerRequest = new VungleBannerAdapter(placementId, requestUniqueId, adConfig);
             mVungleBanners.put(placementId, bannerRequest);
         }
 
@@ -175,10 +148,10 @@ public class VungleManager {
         }
     }
 
-    void restoreActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance) {
+    void storeActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance) {
         if (!mVungleBanners.containsKey(placementId)) {
-            Log.d(TAG, "restoreActiveBannerAd:" + placementId + " # " + instance);
             mVungleBanners.put(placementId, instance);
+            Log.d(TAG, "restoreActiveBannerAd:" + instance + "; size=" + mVungleBanners.size());
         }
     }
 }

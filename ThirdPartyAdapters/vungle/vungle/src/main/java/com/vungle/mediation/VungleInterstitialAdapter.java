@@ -253,7 +253,7 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
                 adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
         adLayout.setLayoutParams(adViewLayoutParams);
 
-        mBannerRequest = mVungleManager.getBannerRequest(placementForPlay, config.getRequestUniqueId());
+        mBannerRequest = mVungleManager.getBannerRequest(placementForPlay, config.getRequestUniqueId(), adConfig);
         if (mBannerRequest == null) {
             //Adapter does not support multiple Banner instances playing for same placement except for Refresh
             mMediationBannerListener
@@ -262,7 +262,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
             return;
         }
 
-        mBannerRequest.setAdConfig(adConfig);
         mBannerRequest.setAdLayout(adLayout);
         mBannerRequest.setVungleListener(mVungleBannerListener);
         mBannerRequest.requestBannerAd(context, config.getAppId());
