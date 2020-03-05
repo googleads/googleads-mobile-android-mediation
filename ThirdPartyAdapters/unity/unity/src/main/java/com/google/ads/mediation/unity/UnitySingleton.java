@@ -42,7 +42,7 @@ public final class UnitySingleton {
      */
     private static UnitySingleton unitySingletonInstance;
 
-    private ArrayList<WeakReference<Listener>> mListenersWeakReference;
+    private ArrayList<Listener> mListeners;
 
     HashSet<String> mPlacementsInUse;
 
@@ -60,7 +60,7 @@ public final class UnitySingleton {
     }
 
     private UnitySingleton() {
-        mListenersWeakReference = new ArrayList<>();
+        mListeners = new ArrayList<>();
         mPlacementsInUse = new HashSet<>();
     }
 
@@ -106,7 +106,7 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", "3.3.0");
         mediationMetaData.commit();
 
-        getInstance().mListenersWeakReference.add(new WeakReference<Listener>(listener));
+        getInstance().mListeners.add(listener);
 
         UnitySingletonListener unitySingletonListener = unitySingletonInstance.getUnitySingletonListenerInstance();
         UnityAds.addListener(unitySingletonListener);
@@ -146,12 +146,12 @@ public final class UnitySingleton {
                                                     UnityAds.PlacementState oldState,
                                                     UnityAds.PlacementState newState) {
            if (newState == UnityAds.PlacementState.WAITING || newState == UnityAds.PlacementState.READY) {
-               for (WeakReference<Listener> listenerWeakReference : getInstance().mListenersWeakReference) {
-                   if (listenerWeakReference.get() != null) {
-                       listenerWeakReference.get().onInitializeSuccess();
+               for (Listener listener : getInstance().mListeners) {
+                   if (listener != null) {
+                       listener.onInitializeSuccess();
                    }
                }
-               mListenersWeakReference.clear();
+               mListeners.clear();
                UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
            }
         }
@@ -161,12 +161,12 @@ public final class UnitySingleton {
             // An error occurred with Unity Ads.
             if (unityAdsError == UnityAds.UnityAdsError.NOT_INITIALIZED || unityAdsError == UnityAds.UnityAdsError.INITIALIZE_FAILED
                     || unityAdsError == UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL || unityAdsError == UnityAds.UnityAdsError.INVALID_ARGUMENT) {
-                for (WeakReference<Listener> listenerWeakReference : getInstance().mListenersWeakReference) {
-                    if (listenerWeakReference.get() != null) {
-                        listenerWeakReference.get().onInitializeError(message);
+                for (Listener listener : getInstance().mListeners) {
+                    if (listener != null) {
+                        listener.onInitializeError(message);
                     }
                 }
-                mListenersWeakReference.clear();
+                mListeners.clear();
                 UnityAds.removeListener(getInstance().getUnitySingletonListenerInstance());
             }
         }

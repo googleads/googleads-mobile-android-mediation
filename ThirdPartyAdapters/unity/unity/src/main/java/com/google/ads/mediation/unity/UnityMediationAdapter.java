@@ -62,7 +62,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     protected String uuid;
 
-    static MediationMetaData metadata;
+    static MetaData metadata;
 
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
@@ -235,7 +235,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
-        metadata = new MediationMetaData((Activity) context);
+        metadata = new MetaData((Activity) context);
 
         UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID,
                 new UnitySingleton.Listener() {
