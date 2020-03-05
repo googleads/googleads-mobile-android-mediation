@@ -109,11 +109,20 @@ class VungleBannerAdapter {
         if (mVungleBannerAd != null) {
             Log.d(TAG, "Vungle banner adapter cleanUp: destroyAd # " + mVungleBannerAd.hashCode());
             mVungleBannerAd.destroyAd();
+            if (mVungleBannerAd.getParent() != null) {
+                Log.d(TAG, "Vungle banner adapter cleanUp: removeView");
+                ((RelativeLayout) mVungleBannerAd.getParent()).removeView(mVungleBannerAd);
+            }
             mVungleBannerAd = null;
         }
         if (mVungleNativeAd != null) {
             Log.d(TAG, "Vungle banner adapter cleanUp: finishDisplayingAd # " + mVungleNativeAd.hashCode());
             mVungleNativeAd.finishDisplayingAd();
+            View adView = mVungleNativeAd.renderNativeView();
+            if (adView != null && adView.getParent() != null) {
+                Log.d(TAG, "Vungle banner adapter cleanUp: removeView");
+                ((RelativeLayout) adView.getParent()).removeView(adView);
+            }
             mVungleNativeAd = null;
         }
     }

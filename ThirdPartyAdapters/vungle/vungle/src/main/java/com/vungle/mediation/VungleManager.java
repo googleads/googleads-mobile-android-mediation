@@ -120,7 +120,7 @@ public class VungleManager {
     }
 
     @Nullable
-    VungleBannerAdapter getBannerRequest(@NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
+    synchronized VungleBannerAdapter getBannerRequest(@NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
         VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
         if (bannerRequest != null) {
             String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
