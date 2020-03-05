@@ -20,35 +20,59 @@ package com.google.ads.mediation.sample.sdk;
  * The {@link SampleRewardedAdListener} class listens for rewarded video ad events. These ad events
  * more or less represent the events that a typical ad network would provide.
  */
-public interface SampleRewardedAdListener {
+public abstract class SampleRewardedAdListener {
 
-  /** Called when the rewarded ad is loaded. */
-  public void onRewardedAdLoaded();
+  /**
+   * Called when the rewarded ad is loaded.
+   */
+  public void onRewardedAdLoaded() {
+    // Default is do nothing.
+  }
 
   /**
    * Called when the rewarded ad fails to load.
    *
    * @param error reason for failure.
    */
-  public void onRewardedAdFailedToLoad(SampleErrorCode error);
+  public void onRewardedAdFailedToLoad(SampleErrorCode error) {
+    // Default is do nothing.
+  }
 
   /**
    * Called when the user is eligible for a reward.
    *
-   * @param rewardType the reward type to be sent.
-   * @param amount the reward amount to be rewarded.
+   * @param rewardType  the reward type.
+   * @param amount     the reward amount to be rewarded.
    */
-  public void onAdRewarded(String rewardType, int amount);
+  public void onAdRewarded(final String rewardType, int amount) {
+    // Default is do nothing.
+  }
 
-  /** Called when the ad is clicked. */
-  public void onAdClicked();
+  /**
+   * Called when the ad is clicked.
+   */
+  public void onAdClicked() {
+    // Default is do nothing.
+  }
 
-  /** Called when an ad goes full screen. */
-  public void onAdFullScreen();
+  /**
+   * Called when an ad goes full screen.
+   */
+  public void onAdFullScreen() {
+    // Default is do nothing.
+  }
 
-  /** Called when an ad is closed. */
-  public void onAdClosed();
+  /**
+   * Called when an ad is closed.
+   */
+  public void onAdClosed() {
+    // Default is do nothing.
+  }
 
-  /** Called when an ad is finished. */
-  public void onAdCompleted();
+  /**
+   * Called when an ad is finished.
+   */
+  public void onAdCompleted() {
+    // Default is do nothing.
+  }
 }
