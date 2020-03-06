@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -35,6 +36,8 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +52,39 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     public static final String PLACEMENT_PARAMETER = "pubid";
     public static final String RTB_PLACEMENT_PARAMETER = "placement_id";
+
+    /**
+     * Facebook Audience Network adapter errors.
+     *
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(value={
+            ERROR_INVALID_REQUEST,
+            ERROR_BANNER_SIZE_MISMATCH,
+            ERROR_REQUIRES_ACTIVITY_CONTEXT,
+            ERROR_FACEBOOK_INITIALIZATION,
+            ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+            ERROR_WRONG_NATIVE_TYPE,
+            ERROR_NULL_CONTEXT,
+            ERROR_MAPPING_NATIVE_ASSETS
+    })
+
+    public @interface Error {}
+    public static final int ERROR_INVALID_REQUEST = 101;
+    public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+    public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+    public static final int ERROR_FACEBOOK_INITIALIZATION = 104;
+    public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 105;
+    public static final int ERROR_WRONG_NATIVE_TYPE = 106;
+    public static final int ERROR_NULL_CONTEXT = 107;
+    public static final int ERROR_MAPPING_NATIVE_ASSETS = 108;
+
+    /**
+     * Creates a formatted adapter error string given a code and description.
+     */
+    public static String createAdapterError(@FacebookMediationAdapter.Error int code, String description) {
+        return String.format("%d: %s", code, description);
+    }
 
     @Override
     public VersionInfo getVersionInfo() {
@@ -109,7 +145,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
         if (placements.isEmpty()) {
             initializationCompleteCallback.onInitializationFailed(
-                    "Initialization failed: No placement IDs found");
+                    "Initialization failed: No placement IDs found.");
             return;
         }
 

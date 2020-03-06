@@ -18,7 +18,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_REQUEST;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
@@ -38,9 +40,10 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
         Bundle serverParameters = adConfiguration.getServerParameters();
         String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
         if (TextUtils.isEmpty(placementID)) {
-            String message = "Failed to request ad, placementID is null or empty.";
-            Log.e(TAG, message);
-            callback.onFailure(message);
+            String errorMessage = createAdapterError(ERROR_INVALID_REQUEST,
+                    "Failed to request ad, placementID is null or empty.");
+            Log.e(TAG, errorMessage);
+            callback.onFailure(errorMessage);
             return;
         }
         setMixedAudience(adConfiguration);
