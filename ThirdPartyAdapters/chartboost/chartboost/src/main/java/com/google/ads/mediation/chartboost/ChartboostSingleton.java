@@ -14,7 +14,7 @@
 
 package com.google.ads.mediation.chartboost;
 
-import android.app.Activity;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,8 +24,11 @@ import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Libraries.CBLogging;
 import com.chartboost.sdk.Model.CBError;
 
+import com.google.android.gms.ads.MobileAds;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+
+import static com.google.android.gms.ads.MobileAds.getVersionString;
 
 /**
  * The {@link ChartboostSingleton} class is used to load Chartboost ads and manage multiple
@@ -154,7 +157,7 @@ public final class ChartboostSingleton {
         // Add this adapter delegate to mAdapterDelegates so that the events from
         // Chartboost SDK can be forwarded.
         addInterstitialDelegate(location, adapterDelegate);
-        startChartboost((Activity) context, adapterDelegate.getChartboostParams(), adapterDelegate);
+        startChartboost(context, adapterDelegate.getChartboostParams(), adapterDelegate);
     }
 
     /**
@@ -183,19 +186,19 @@ public final class ChartboostSingleton {
         // Add this adapter delegate to mAdapterDelegates so that the events from
         // Chartboost SDK can be forwarded.
         addRewardedDelegate(location, adapterDelegate);
-        startChartboost((Activity) context, adapterDelegate.getChartboostParams(), adapterDelegate);
+        startChartboost(context, adapterDelegate.getChartboostParams(), adapterDelegate);
     }
 
     /**
      * This method will initialize the Chartboost SDK if it is not already initialized and set its
      * delegate.
      *
-     * @param activity        required to initialize {@link Chartboost}.
+     * @param context         required to initialize {@link Chartboost}.
      * @param params          The Chartboost params containing server parameters and network extras
      *                        to be used to start {@link Chartboost}.
      * @param adapterDelegate The adapter delegate to which to forward initialization callbacks.
      */
-    private static void startChartboost(Activity activity, ChartboostParams params,
+    private static void startChartboost(Context context, ChartboostParams params,
                                         AbstractChartboostAdapterDelegate adapterDelegate) {
         if (mIsChartboostInitializing) {
             return;
@@ -208,22 +211,14 @@ public final class ChartboostSingleton {
 
         if (!mIsChartboostInitialized) {
             mIsChartboostInitializing = true;
-            Chartboost.startWithAppId(activity, params.getAppId(), params.getAppSignature());
-
+            Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
             Chartboost.setMediation(Chartboost.CBMediation.CBMediationAdMob,
-                    BuildConfig.VERSION_NAME);
+                MobileAds.getVersionString(), BuildConfig.VERSION_NAME);
             Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
             Chartboost.setDelegate(getInstance());
             Chartboost.setAutoCacheAds(false);
 
-            // Chartboost depends on Activity's lifecycle events to initialize its SDK. Chartboost
-            // requires onCreate, onStart and onResume callbacks to initialize its SDK.  By the time
-            // AdMob SDK requests this adapter to initialize the SDK, all three callbacks might have
-            // already been called. So, we call Chartboost's onCreate, onStart and onResume methods
-            // so that the Chartboost SDK will be initialized.
-            Chartboost.onCreate(activity);
-            Chartboost.onStart(activity);
-            Chartboost.onResume(activity);
+
         } else {
             adapterDelegate.didInitialize();
         }

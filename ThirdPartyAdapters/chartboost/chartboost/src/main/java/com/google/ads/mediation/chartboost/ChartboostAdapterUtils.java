@@ -116,13 +116,6 @@ class ChartboostAdapterUtils {
             Log.w(ChartboostAdapter.TAG, "Context cannot be null");
             return false;
         }
-
-        if (!(context instanceof Activity)) {
-            Log.w(ChartboostAdapter.TAG,
-                    "Context is not an Activity. " +
-                            "Chartboost requires an Activity context to load ads.");
-            return false;
-        }
         return true;
     }
 

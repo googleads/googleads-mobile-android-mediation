@@ -1,6 +1,6 @@
 package com.google.ads.mediation.chartboost;
 
-import android.app.Activity;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -82,12 +82,6 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
     public void initialize(Context context,
                            InitializationCompleteCallback initializationCompleteCallback,
                            List<MediationConfiguration> mediationConfigurations) {
-        if (!(context instanceof Activity)) {
-            initializationCompleteCallback.onInitializationFailed(
-                    "Chartboost SDK requires an Activity context to initialize");
-            return;
-        }
-
         HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
         for (MediationConfiguration configuration : mediationConfigurations) {
             Bundle params = configuration.getServerParameters();
@@ -142,13 +136,6 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
         final Bundle extras = mediationRewardedAdConfiguration.getMediationExtras();
 
         Context context = mediationRewardedAdConfiguration.getContext();
-        if (!(context instanceof Activity)) {
-            String logMessage = "Failed to request ad from Chartboost: "
-                    + "Chartboost SDK requires an Activity context to initialize.";
-            Log.w(TAG, logMessage);
-            mediationAdLoadCallback.onFailure(logMessage);
-            return;
-        }
 
         mChartboostParams = ChartboostAdapterUtils
                 .createChartboostParams(serverParameters, extras);
