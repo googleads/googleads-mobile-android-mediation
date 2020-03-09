@@ -9,9 +9,9 @@ import java.util.HashMap;
  */
 public interface DrawableDownloadListener {
 
-    // A success callback.
-    void onDownloadSuccess(HashMap<String, Drawable> drawableMap);
+  // A success callback.
+  void onDownloadSuccess(HashMap<String, Drawable> drawableMap);
 
-    // A failure callback.
-    void onDownloadFailure();
+  // A failure callback.
+  void onDownloadFailure();
 }
