@@ -6,13 +6,18 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdapter;
+import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 
 import net.nend.android.NendAdRewardItem;
@@ -22,22 +27,32 @@ import net.nend.android.NendAdVideo;
 
 import java.util.List;
 
-/*
+/**
  * The {@link NendMediationAdapter} to load and show Nend rewarded video ads.
  */
-public class NendMediationAdapter extends Adapter
-        implements MediationRewardedAd, NendAdRewardedListener {
+public class NendMediationAdapter extends Adapter implements
+        MediationNativeAdapter,
+        MediationRewardedAd, NendAdRewardedListener {
 
     static final String TAG = NendMediationAdapter.class.getSimpleName();
+
+    static final String KEY_USER_ID = "key_user_id";
+    static final String KEY_API_KEY = "apiKey";
+    static final String KEY_SPOT_ID = "spotId";
+
+    static final String MEDIATION_NAME_ADMOB = "AdMob";
 
     private NendAdRewardedVideo mRewardedVideo;
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
             mAdLoadCallback;
     private MediationRewardedAdCallback mRewardedAdCallback;
 
-    static final String KEY_USER_ID = "key_user_id";
-    static final String KEY_API_KEY = "apiKey";
-    static final String KEY_SPOT_ID = "spotId";
+    public enum FormatType {
+        TYPE_VIDEO,
+        TYPE_NORMAL
+    }
+
+    private NendNativeAdForwarder nativeAdForwarder;
 
     /**
      * {@link Adapter} implementation
@@ -126,7 +141,7 @@ public class NendMediationAdapter extends Adapter
 
         mRewardedVideo = new NendAdRewardedVideo(context, spotID, apiKey);
         mRewardedVideo.setAdListener(NendMediationAdapter.this);
-        mRewardedVideo.setMediationName("AdMob");
+        mRewardedVideo.setMediationName(MEDIATION_NAME_ADMOB);
         if (networkExtras != null) {
             mRewardedVideo.setUserId(networkExtras.getString(KEY_USER_ID, ""));
         }
@@ -148,17 +163,59 @@ public class NendMediationAdapter extends Adapter
     }
 
     /**
+     * {@link MediationNativeAdapter} implementation
+     */
+    @Override
+    public void onResume() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onResume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (nativeAdForwarder != null) {
+            nativeAdForwarder.onDestroy();
+            nativeAdForwarder = null;
+        }
+    }
+
+    @Override
+    public void requestNativeAd(
+            Context context,
+            MediationNativeListener mediationNativeListener,
+            Bundle serverParameters,
+            NativeMediationAdRequest nativeMediationAdRequest,
+            Bundle mediationExtras) {
+        nativeAdForwarder = new NendNativeAdForwarder(NendMediationAdapter.this);
+        nativeAdForwarder.requestNativeAd(
+                context,
+                mediationNativeListener,
+                serverParameters,
+                nativeMediationAdRequest,
+                mediationExtras
+        );
+    }
+
+    /**
      * {@link NendAdRewardedListener} implementation
      */
     @Override
-    public void onLoaded(NendAdVideo nendAdVideo) {
+    public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
         if (mAdLoadCallback != null) {
             mRewardedAdCallback = mAdLoadCallback.onSuccess(NendMediationAdapter.this);
         }
     }
 
     @Override
-    public void onFailedToLoad(NendAdVideo nendAdVideo, int errorCode) {
+    public void onFailedToLoad(@NonNull NendAdVideo nendAdVideo, int errorCode) {
         String logMessage = "Failed to request ad from Nend, Error Code: "
                         + ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode);
         Log.w(TAG, logMessage);
@@ -169,21 +226,21 @@ public class NendMediationAdapter extends Adapter
     }
 
     @Override
-    public void onRewarded(NendAdVideo nendAdVideo, NendAdRewardItem nendAdRewardItem) {
+    public void onRewarded(@NonNull NendAdVideo nendAdVideo, @NonNull NendAdRewardItem nendAdRewardItem) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onUserEarnedReward(new NendMediationRewardItem(nendAdRewardItem));
         }
     }
 
     @Override
-    public void onFailedToPlay(NendAdVideo nendAdVideo) {
+    public void onFailedToPlay(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onAdFailedToShow("Internal Error.");
         }
     }
 
     @Override
-    public void onShown(NendAdVideo nendAdVideo) {
+    public void onShown(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onAdOpened();
             mRewardedAdCallback.reportAdImpression();
@@ -191,7 +248,7 @@ public class NendMediationAdapter extends Adapter
     }
 
     @Override
-    public void onClosed(NendAdVideo nendAdVideo) {
+    public void onClosed(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onAdClosed();
         }
@@ -199,33 +256,33 @@ public class NendMediationAdapter extends Adapter
     }
 
     @Override
-    public void onStarted(NendAdVideo nendAdVideo) {
+    public void onStarted(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onVideoStart();
         }
     }
 
     @Override
-    public void onStopped(NendAdVideo nendAdVideo) {
+    public void onStopped(@NonNull NendAdVideo nendAdVideo) {
         // No relevant event to forward to the Google Mobile Ads SDK.
     }
 
     @Override
-    public void onCompleted(NendAdVideo nendAdVideo) {
+    public void onCompleted(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.onVideoComplete();
         }
     }
 
     @Override
-    public void onAdClicked(NendAdVideo nendAdVideo) {
+    public void onAdClicked(@NonNull NendAdVideo nendAdVideo) {
         if (mRewardedAdCallback != null) {
             mRewardedAdCallback.reportAdClicked();
         }
     }
 
     @Override
-    public void onInformationClicked(NendAdVideo nendAdVideo) {
+    public void onInformationClicked(@NonNull NendAdVideo nendAdVideo) {
         // No relevant event to forward to the Google Mobile Ads SDK.
     }
 

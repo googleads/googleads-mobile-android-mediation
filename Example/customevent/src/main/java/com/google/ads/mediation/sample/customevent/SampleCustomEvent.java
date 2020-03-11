@@ -19,10 +19,9 @@ package com.google.ads.mediation.sample.customevent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 import android.util.DisplayMetrics;
 import android.util.Log;
-
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;

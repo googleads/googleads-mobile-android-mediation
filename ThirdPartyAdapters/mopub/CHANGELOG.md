@@ -1,5 +1,14 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Version 5.11.0.0
+- Updated minimum Android SDK version to API 19.
+- Verified compatibility with MoPub SDK 5.11.0.
+- Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
+
+Built and test with:
+- Google Mobile Ads SDK version 18.3.0.
+- MoPub SDK version 5.11.0.
+
 #### Version 5.10.0.0
 - Verified compatibility with MoPub SDK 5.10.0.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.

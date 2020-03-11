@@ -19,27 +19,23 @@ package com.google.ads.mediation.sample.sdk.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.ads.mediation.sample.sdk.R;
-import com.google.ads.mediation.sample.sdk.SampleRewardedVideo;
-import com.google.ads.mediation.sample.sdk.SampleRewardedVideoAd;
-import com.google.ads.mediation.sample.sdk.SampleRewardedVideoAdListener;
-
+import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
+import com.google.ads.mediation.sample.sdk.SampleRewardedAdListener;
 import java.util.Locale;
 
-/**
- * The {@link SampleSDKAdsActivity} is used to show sample rewarded video ads by the Sample SDK.
- */
+/** The {@link SampleSDKAdsActivity} is used to show sample rewarded ad by the Sample SDK. */
 public class SampleSDKAdsActivity extends AppCompatActivity {
 
-    /**
-     * Displays the amount of time remaining for the ad to complete.
-     */
-    private TextView countdownTimerView;
+  /** Key to set and get rewarded ad as an extra for an intent. */
+  public static final String KEY_REWARDED_VIDEO_AD_EXTRA = "rewarded_video_ad_extra";
+
+  /** Displays the amount of time remaining for the ad to complete. */
+  private TextView countdownTimerView;
 
     /**
      * Closes the ad/activity.
@@ -63,38 +59,31 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
      */
     private CountDownTimer countDownTimer;
 
-    /**
-     * The Sample SDK's rewarded video ad object that needs to be shown to the user.
-     */
-    private SampleRewardedVideoAd sampleRewardedVideoAd;
+  /** The Sample SDK's rewarded ad object that needs to be shown to the user. */
+  private SampleRewardedAd sampleRewardedAd;
 
-    /**
-     * Forwards rewarded video ad events.
-     */
-    private SampleRewardedVideoAdListener rewardedVideoAdListener;
+  /** Forwards rewarded ad events. */
+  private SampleRewardedAdListener rewardedVideoAdListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_sdk_ads);
 
-        // Get the Sample SDK rewarded video ad, which was added to the intent as extra.
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra(SampleRewardedVideo.KEY_REWARDED_VIDEO_AD_EXTRA)) {
-            sampleRewardedVideoAd =
-                    intent.getParcelableExtra(SampleRewardedVideo.KEY_REWARDED_VIDEO_AD_EXTRA);
+    // Get the Sample SDK rewarded ad, which was added to the intent as extra.
+    Intent intent = getIntent();
+    if (intent != null && intent.hasExtra(KEY_REWARDED_VIDEO_AD_EXTRA)) {
+      sampleRewardedAd = intent.getParcelableExtra(KEY_REWARDED_VIDEO_AD_EXTRA);
         } else {
-            // Rewarded video ad not available, close ad.
-            finish();
+      // Rewarded ad not available, close ad.
+      finish();
         }
 
-        rewardedVideoAdListener = SampleRewardedVideo.getListener();
+    rewardedVideoAdListener = sampleRewardedAd.getListener();
         if (rewardedVideoAdListener != null) {
             rewardedVideoAdListener.onAdFullScreen();
         }
-        SampleRewardedVideo.setCurrentActivity(SampleSDKAdsActivity.this);
 
-        ((TextView) findViewById(R.id.title_textView)).setText(sampleRewardedVideoAd.getAdName());
         findViewById(R.id.main_view).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,43 +93,49 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
             }
         });
         closeAdButton = (ImageButton) findViewById(R.id.close_button);
-        closeAdButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (countDownTimer != null) {
-                    countDownTimer.cancel();
-                    countDownTimer = null;
-                }
-                finish();
+    closeAdButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            if (countDownTimer != null) {
+              if (rewardedVideoAdListener != null) {
+                rewardedVideoAdListener.onAdClosed();
+              }
+              countDownTimer.cancel();
+              countDownTimer = null;
             }
+            finish();
+          }
         });
         countdownTimerView = (TextView) findViewById(R.id.countdown_timer_textView);
 
-        // Countdown timer for 10 seconds.
-        countDownTimer = new CountDownTimer(10000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (millisUntilFinished > 6000) {
-                    isSkippable = false;
-                    closeAdButton.setVisibility(View.GONE);
-                } else {
-                    // The ad is skippable after 5 seconds.
-                    isSkippable = true;
-                    closeAdButton.setVisibility(View.VISIBLE);
-                }
-                countdownTimerView.setText(String.format("%d", (millisUntilFinished / 1000)));
+    // Countdown timer for 10 seconds.
+    countDownTimer =
+        new CountDownTimer(10000, 1000) {
+          @Override
+          public void onTick(long millisUntilFinished) {
+            if (millisUntilFinished > 6000) {
+              isSkippable = false;
+              closeAdButton.setVisibility(View.GONE);
+            } else {
+              // The ad is skippable after 5 seconds.
+              isSkippable = true;
+              closeAdButton.setVisibility(View.VISIBLE);
             }
+            countdownTimerView.setText(String.format("%d", (millisUntilFinished / 1000)));
+          }
 
-            @Override
-            public void onFinish() {
-                int rewardAmount = sampleRewardedVideoAd.getRewardAmount();
-                if (rewardedVideoAdListener != null) {
-                    rewardedVideoAdListener.onAdRewarded("Reward", rewardAmount);
-                }
-                countdownTimerView.setText(String.format(
-                        Locale.getDefault(), "Rewarded with reward amount %d", rewardAmount));
-                isClickable = true;
+          @Override
+          public void onFinish() {
+            int rewardAmount = sampleRewardedAd.getReward();
+            if (rewardedVideoAdListener != null) {
+              rewardedVideoAdListener.onAdRewarded("", rewardAmount);
+              rewardedVideoAdListener.onAdCompleted();
             }
+            countdownTimerView.setText(
+                String.format(Locale.getDefault(), "Rewarded with reward amount %d", rewardAmount));
+            isClickable = true;
+          }
         }.start();
     }
 
@@ -155,9 +150,6 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
-        }
-        if (rewardedVideoAdListener != null) {
-            rewardedVideoAdListener.onAdClosed();
         }
     }
 

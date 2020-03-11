@@ -14,20 +14,18 @@
 
 package com.google.ads.mediation.facebook;
 
+import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Keep;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
+import androidx.annotation.Keep;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -39,6 +37,7 @@ import com.facebook.ads.InterstitialAdExtendedListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
@@ -57,14 +56,11 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.google.ads.mediation.facebook.FacebookExtras.NATIVE_BANNER;
 
 /**
  * Mediation adapter for Facebook Audience Network.
@@ -86,6 +82,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private RelativeLayout mWrappedAdView;
     private InterstitialAd mInterstitialAd;
     private boolean isNativeBanner;
+
     private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
     /**
@@ -173,22 +170,25 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        FacebookInitializer.getInstance().initialize(context, placementID,
-                new FacebookInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                createAndLoadBannerAd(context, placementID, adSize, adRequest);
-            }
+        FacebookInitializer.getInstance()
+                .initialize(
+                        context,
+                        placementID,
+                        new FacebookInitializer.Listener() {
+                            @Override
+                            public void onInitializeSuccess() {
+                                createAndLoadBannerAd(context, placementID, adSize, adRequest);
+                            }
 
-            @Override
-            public void onInitializeError(String message) {
-                Log.w(TAG, "Failed to load ad from Facebook: " + message);
-                if (mBannerListener != null) {
-                    mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }
-            }
-        });
+                            @Override
+                            public void onInitializeError(String message) {
+                                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                                if (mBannerListener != null) {
+                                    mBannerListener.onAdFailedToLoad(
+                                            FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                }
+                            }
+                        });
     }
 
     @Override
@@ -213,22 +213,25 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        FacebookInitializer.getInstance().initialize(context, placementID,
-                new FacebookInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                createAndLoadInterstitial(context, placementID, adRequest);
-            }
+        FacebookInitializer.getInstance()
+                .initialize(
+                        context,
+                        placementID,
+                        new FacebookInitializer.Listener() {
+                            @Override
+                            public void onInitializeSuccess() {
+                                createAndLoadInterstitial(context, placementID, adRequest);
+                            }
 
-            @Override
-            public void onInitializeError(String message) {
-                Log.w(TAG, "Failed to load ad from Facebook: " + message);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }
-            }
-        });
+                            @Override
+                            public void onInitializeError(String message) {
+                                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                                if (mInterstitialListener != null) {
+                                    mInterstitialListener.onAdFailedToLoad(
+                                            FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                }
+                            }
+                        });
     }
 
     @Override
@@ -268,22 +271,25 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             return;
         }
 
-        FacebookInitializer.getInstance().initialize(context, placementID,
-                new FacebookInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                createAndLoadNativeAd(context, placementID, mediationAdRequest, mediationExtras);
-            }
+        FacebookInitializer.getInstance()
+                .initialize(
+                        context,
+                        placementID,
+                        new FacebookInitializer.Listener() {
+                            @Override
+                            public void onInitializeSuccess() {
+                                createAndLoadNativeAd(context, placementID, mediationAdRequest, mediationExtras);
+                            }
 
-            @Override
-            public void onInitializeError(String message) {
-                Log.w(TAG, "Failed to load ad from Facebook: " + message);
-                if (mNativeListener != null) {
-                    mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }
-            }
-        });
+                            @Override
+                            public void onInitializeError(String message) {
+                                Log.w(TAG, "Failed to load ad from Facebook: " + message);
+                                if (mNativeListener != null) {
+                                    mNativeListener.onAdFailedToLoad(
+                                            FacebookAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                                }
+                            }
+                        });
     }
     //endregion
 
@@ -477,17 +483,26 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             mNativeBannerAd = new NativeBannerAd(context, placementID);
             buildAdRequest(adRequest);
             mNativeBannerAd.loadAd(
-                    mNativeBannerAd.buildLoadAdConfig()
-                            .withAdListener(new NativeBannerListener(context, mNativeBannerAd,
-                                    adRequest))
+                    mNativeBannerAd
+                            .buildLoadAdConfig()
+                            .withAdListener(new NativeBannerListener(context, mNativeBannerAd, adRequest))
+                            .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+                            .withPreloadedIconView(
+                                    NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+                                    NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE)
                             .build());
         } else {
             mMediaView = new MediaView(context);
             mNativeAd = new NativeAd(context, placementID);
             buildAdRequest(adRequest);
             mNativeAd.loadAd(
-                    mNativeAd.buildLoadAdConfig()
+                    mNativeAd
+                            .buildLoadAdConfig()
                             .withAdListener(new NativeListener(context, mNativeAd, adRequest))
+                            .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+                            .withPreloadedIconView(
+                                    NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+                                    NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE)
                             .build());
         }
     }
@@ -877,7 +892,17 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
                 setHeadline(mNativeBannerAd.getAdHeadline());
                 setBody(mNativeBannerAd.getAdBodyText());
-                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().toString())));
+                if (mNativeBannerAd.getPreloadedIconViewDrawable() == null) {
+                    if (mNativeBannerAd.getAdIcon() == null) {
+                        setIcon(new FacebookAdapterNativeAdImage());
+                    } else {
+                        setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+                    }
+                } else {
+                    Drawable iconDrawable = mNativeAd.getPreloadedIconViewDrawable();
+                    FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
+                    setIcon(iconImage);
+                }
                 setCallToAction(mNativeBannerAd.getAdCallToAction());
                 Bundle extras = new Bundle();
                 extras.putCharSequence(KEY_ID, mNativeBannerAd.getId());
@@ -886,8 +911,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 setExtras(extras);
             } else {
                 if (!containsRequiredFieldsForNativeAppInstallAd(mNativeAd)) {
-                    Log.w(TAG, "Ad from Facebook doesn't have all assets required for the app install"
-                            + " format.");
+                    Log.w(
+                            TAG,
+                            "Ad from Facebook doesn't have all assets required for the app install" + " format.");
                     mapperListener.onMappingFailed();
                     return;
                 }
@@ -900,7 +926,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         Uri.parse(mNativeAd.getAdCoverImage().toString())));
                 setImages(images);
                 setBody(mNativeAd.getAdBodyText());
-                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
+                if (mNativeBannerAd.getAdIcon() == null) {
+                    setIcon(new FacebookAdapterNativeAdImage());
+                } else {
+                    setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+                }
                 setCallToAction(mNativeAd.getAdCallToAction());
 
                 mMediaView.setListener(new MediaViewListener() {
@@ -1015,21 +1045,17 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
             // Facebook does its own click handling.
             setOverrideClickHandling(true);
-            ImageView iconview = null;
 
-            ArrayList<View> assetViews = new ArrayList<>();
-            for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
-                assetViews.add(clickableAssets.getValue());
-
-                if (clickableAssets.getKey().equals(NativeAppInstallAd.ASSET_ICON) ||
-                        clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-                    iconview = (ImageView) clickableAssets.getValue();
-                }
+            ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
+            ImageView iconView =
+                    (ImageView) clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
+            if (iconView == null) {
+                iconView = (ImageView) clickableAssetViews.get(NativeAppInstallAd.ASSET_ICON);
             }
             if (isNativeBanner) {
-                mNativeBannerAd.registerViewForInteraction(view, iconview);
+                mNativeBannerAd.registerViewForInteraction(view, iconView);
             } else {
-                mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+                mNativeAd.registerViewForInteraction(view, mMediaView, iconView, assetViews);
             }
         }
 
@@ -1113,7 +1139,17 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
                 setHeadline(mNativeBannerAd.getAdHeadline());
                 setBody(mNativeBannerAd.getAdBodyText());
-                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().toString())));
+                if (mNativeBannerAd.getPreloadedIconViewDrawable() == null) {
+                    if (mNativeBannerAd.getAdIcon() == null) {
+                        setIcon(new FacebookAdapterNativeAdImage());
+                    } else {
+                        setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+                    }
+                } else {
+                    Drawable iconDrawable = mNativeBannerAd.getPreloadedIconViewDrawable();
+                    FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
+                    setIcon(iconImage);
+                }
                 setCallToAction(mNativeBannerAd.getAdCallToAction());
                 setAdvertiser(mNativeBannerAd.getAdvertiserName());
 
@@ -1137,7 +1173,17 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                         Uri.parse(mNativeAd.getAdCoverImage().toString())));
                 setImages(images);
                 setBody(mNativeAd.getAdBodyText());
-                setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().toString())));
+                if (mNativeAd.getPreloadedIconViewDrawable() == null) {
+                    if (mNativeBannerAd.getAdIcon() == null) {
+                        setIcon(new FacebookAdapterNativeAdImage());
+                    } else {
+                        setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+                    }
+                } else {
+                    Drawable iconDrawable = mNativeAd.getPreloadedIconViewDrawable();
+                    FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
+                    setIcon(iconImage);
+                }
                 setCallToAction(mNativeAd.getAdCallToAction());
                 setAdvertiser(mNativeAd.getAdvertiserName());
 
@@ -1252,7 +1298,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
             // Facebook does its own click handling.
             setOverrideClickHandling(true);
-            ImageView iconview = null;
+            ImageView iconView = null;
 
             ArrayList<View> assetViews = new ArrayList<>();
             for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
@@ -1260,19 +1306,25 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
                 if (clickableAssets.getKey().equals(NativeAppInstallAd.ASSET_ICON) ||
                         clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-                    iconview = (ImageView) clickableAssets.getValue();
+                    iconView = (ImageView) clickableAssets.getValue();
                 }
             }
+
             if (isNativeBanner) {
-                mNativeBannerAd.registerViewForInteraction(view, iconview);
+                mNativeBannerAd.registerViewForInteraction(view, iconView);
             } else {
-                mNativeAd.registerViewForInteraction(view, mMediaView, iconview, assetViews);
+                mNativeAd.registerViewForInteraction(view, mMediaView, iconView, assetViews);
             }
         }
 
 
         @Override
         public void untrackView(View view) {
+            if (isNativeBanner && mNativeBannerAd != null) {
+                mNativeBannerAd.unregisterView();
+            } else if (mNativeAd != null) {
+                mNativeAd.unregisterView();
+            }
             super.untrackView(view);
         }
 
@@ -1306,7 +1358,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         private Uri mUri;
 
         /**
-         * Default constructor for {@link FacebookAdapterNativeAdImage}, requires an {@link Uri}.
+         * Constructor for {@link FacebookAdapterNativeAdImage}.
+         */
+        public FacebookAdapterNativeAdImage() {
+        }
+
+        /**
+         * Constructor for {@link FacebookAdapterNativeAdImage}, requires an {@link Uri}.
          *
          * @param uri required to initialize.
          */
@@ -1315,8 +1373,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
 
         /**
-         * @param drawable set to {@link #mDrawable}.
+         * Constructor for {@link FacebookAdapterNativeAdImage}, requires an {@link Drawable}.
+         *
+         * @param drawable required to initialize.
          */
+        public FacebookAdapterNativeAdImage(Drawable drawable) {
+            this.mDrawable = drawable;
+        }
+
+        /** @param drawable set to {@link #mDrawable}. */
         protected void setDrawable(Drawable drawable) {
             this.mDrawable = drawable;
         }
@@ -1354,5 +1419,5 @@ public final class FacebookAdapter extends FacebookMediationAdapter
          */
         void onMappingFailed();
     }
-    //endregion
+    // endregion
 }

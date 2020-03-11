@@ -1,5 +1,15 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 9.0.2.0
+- Verified compatibility with InMobi SDK version 9.0.2.
+- Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
+- Removed open bidding capability for banner, interstitial, and rewarded formats.
+- Fixed a bug that causes a crash when trying to render a native ad.
+
+Built and tested with
+- Google Mobile Ads SDK version 18.3.0.
+- InMobi SDK version 9.0.2.
+
 #### Version 7.3.0.1
 - Native ads now leverage the unified native ads mediation API.
 

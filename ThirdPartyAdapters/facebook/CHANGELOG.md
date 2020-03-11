@@ -1,5 +1,22 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 5.7.1.0
+- Verified compatibility with Facebook SDK v5.7.1.
+- Added support for Facebook Native Banner ads when using open bidding.
+- Native ads now use 'Drawable' for the icon asset.
+- Added support for waterfall mediation.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.7.1.
+
+#### 5.7.0.0
+- Verified compatibility with Facebook SDK v5.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.7.0.
+
 #### 5.6.1.0
 - Verified compatibility with Facebook SDK v5.6.1.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
@@ -24,7 +41,7 @@ Built and tested with:
 
 #### 5.4.1.0
 - Verified compatibility with Facebook SDK v5.4.1.
-- Added support for Facebook Native Banner Ads.
+- Added support for Facebook Native Banner Ads for waterfall mediation.
   * Use `setNativeBanner()` from the `FacebookExtras` class to request for Native Banner Ads.
 - Fixed an issue that caused Smart Banner Ad requests to fail.
 - Fixed an issue where Rewarded Video Ads were not forwarding the `onAdClosed()` event in some cases where the app was backgrounded while the video was in progress.

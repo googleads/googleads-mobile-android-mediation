@@ -3,6 +3,8 @@ package com.google.ads.mediation.inmobi;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
@@ -29,6 +31,22 @@ class InMobiAdapterUtils {
 
     static final String KEY_ACCOUNT_ID = "accountid";
     static final String KEY_PLACEMENT_ID = "placementid";
+
+    static long getPlacementId(@NonNull Bundle serverParameters) {
+        String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
+        if (TextUtils.isEmpty(placementId)) {
+            Log.w(InMobiMediationAdapter.TAG, "Missing or Invalid Placement ID.");
+            return 0L;
+        }
+
+        long placement = 0L;
+        try {
+            placement = Long.parseLong(placementId);
+        } catch (NumberFormatException exception) {
+            Log.w(InMobiMediationAdapter.TAG, "Invalid Placement ID.", exception);
+        }
+        return placement;
+    }
 
     static void setGlobalTargeting(MediationAdRequest mediationAdRequest, Bundle extras) {
         configureGlobalTargeting(extras);
@@ -69,7 +87,7 @@ class InMobiAdapterUtils {
 
     private static void configureGlobalTargeting(Bundle extras) {
         if (extras == null) {
-            Log.d("InMobiAdapter", "Bundle extras are null");
+            Log.d(InMobiMediationAdapter.TAG, "Bundle extras are null");
             extras = new Bundle();
         }
 
@@ -89,7 +107,7 @@ class InMobiAdapterUtils {
                         InMobiSdk.setAge(Integer.parseInt(value));
                     }
                 } catch (NumberFormatException nfe) {
-                    Log.d("Please Set age properly", nfe.getMessage());
+                    Log.d(InMobiMediationAdapter.TAG, "Please Set age properly", nfe);
                 }
             } else if (key.equals(InMobiNetworkKeys.POSTAL_CODE)) {
                 if (!"".equals(value)) {

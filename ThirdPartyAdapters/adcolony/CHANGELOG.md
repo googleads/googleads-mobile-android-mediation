@@ -1,5 +1,26 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.1.4.0
+- Verified compatibility with AdColony SDK version 4.1.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AdColony SDK version 4.1.4.
+
+#### Version 4.1.3.1
+- Fixed an issue where the `onRewardedAdLoaded()` callback is not being forwarded by the adapter.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AdColony SDK version 4.1.3.
+
+#### Version 4.1.3.0
+- Verified compatibility with AdColony SDK version 4.1.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AdColony SDK version 4.1.3.
+
 #### Version 4.1.2.0
 - Verified compatibility with AdColony SDK version 4.1.2.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.

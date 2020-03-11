@@ -22,11 +22,6 @@ import com.vungle.warren.error.VungleException;
 class VungleBannerAdapter {
     private static final String TAG = VungleBannerAdapter.class.getSimpleName();
 
-    private static final int STATE_IDLE = 0;
-    private static final int STATE_FAILED = 1;
-    private static final int STATE_LOADING = 2;
-    private static final int STATE_LOADED = 3;
-
     @NonNull
     private String mPlacementId;
     @Nullable
@@ -38,8 +33,6 @@ class VungleBannerAdapter {
     @NonNull
     private AdConfig mAdConfig;
 
-    private int mOldState = STATE_IDLE;
-    private int mState = STATE_IDLE;
     private boolean mPendingRequestBanner = false;
     private boolean mVisibility = true;
     @Nullable
@@ -72,9 +65,7 @@ class VungleBannerAdapter {
 
     void requestBannerAd(@NonNull Context context, @NonNull String appId) {
         Log.d(TAG, "requestBannerAd: " + this);
-        mOldState = mState;
         mPendingRequestBanner = true;
-        mState = STATE_LOADING;
         VungleInitializer.getInstance().initialize(appId, context.getApplicationContext(),
                 new VungleInitializer.VungleInitializationListener() {
                     @Override
@@ -85,10 +76,7 @@ class VungleBannerAdapter {
                     @Override
                     public void onInitializeError(String errorMessage) {
                         Log.d(TAG, "SDK init failed:" + VungleBannerAdapter.this);
-                        if (mState == STATE_LOADING && (mOldState != STATE_LOADING && mOldState != STATE_LOADED)) {
-                            mVungleManager.removeActiveBannerAd(mPlacementId);
-                        }
-                        mState = STATE_FAILED;
+                        mVungleManager.removeActiveBannerAd(mPlacementId);
                         if (mPendingRequestBanner && mVungleListener != null) {
                             mVungleListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
                         }
@@ -100,7 +88,6 @@ class VungleBannerAdapter {
         Log.d(TAG, "Vungle banner adapter try to destroy:" + this);
         if (adView == mAdLayout) {
             Log.d(TAG, "Vungle banner adapter destroy:" + this);
-            mState = 0;
             mVisibility = false;
             mPendingRequestBanner = false;
             mVungleManager.removeActiveBannerAd(mPlacementId);
@@ -113,8 +100,7 @@ class VungleBannerAdapter {
         if (mVungleBannerAd != null) {
             Log.d(TAG, "Vungle banner adapter cleanUp: destroyAd # " + mVungleBannerAd.hashCode());
             mVungleBannerAd.destroyAd();
-            if (mVungleBannerAd.getParent() != null) {
-                Log.d(TAG, "Vungle banner adapter cleanUp: removeView");
+            if (mVungleBannerAd != null && mVungleBannerAd.getParent() != null) {
                 ((RelativeLayout) mVungleBannerAd.getParent()).removeView(mVungleBannerAd);
             }
             mVungleBannerAd = null;
@@ -122,10 +108,11 @@ class VungleBannerAdapter {
         if (mVungleNativeAd != null) {
             Log.d(TAG, "Vungle banner adapter cleanUp: finishDisplayingAd # " + mVungleNativeAd.hashCode());
             mVungleNativeAd.finishDisplayingAd();
-            View adView = mVungleNativeAd.renderNativeView();
-            if (adView != null && adView.getParent() != null) {
-                Log.d(TAG, "Vungle banner adapter cleanUp: removeView");
-                ((RelativeLayout) adView.getParent()).removeView(adView);
+            if (mVungleNativeAd != null) {
+                View adView = mVungleNativeAd.renderNativeView();
+                if (adView != null && adView.getParent() != null) {
+                    ((RelativeLayout) adView.getParent()).removeView(adView);
+                }
             }
             mVungleNativeAd = null;
         }
@@ -157,10 +144,7 @@ class VungleBannerAdapter {
         @Override
         public void onError(String id, VungleException exception) {
             Log.d(TAG, "Ad load failed:" + VungleBannerAdapter.this);
-            if (mState == STATE_LOADING && (mOldState != STATE_LOADING && mOldState != STATE_LOADED)) {
-                mVungleManager.removeActiveBannerAd(mPlacementId);
-            }
-            mState = STATE_FAILED;
+            mVungleManager.removeActiveBannerAd(mPlacementId);
             if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
             }
@@ -185,10 +169,7 @@ class VungleBannerAdapter {
         @Override
         public void onError(String placementId, VungleException exception) {
             Log.d(TAG, "Ad play failed:" + VungleBannerAdapter.this);
-            if (mState == STATE_LOADING && (mOldState != STATE_LOADING && mOldState != STATE_LOADED)) {
-                mVungleManager.removeActiveBannerAd(mPlacementId);
-            }
-            mState = STATE_FAILED;
+            mVungleManager.removeActiveBannerAd(mPlacementId);
             if (mPendingRequestBanner && mVungleListener != null) {
                 mVungleListener.onAdFail(placementId);
             }
@@ -207,7 +188,6 @@ class VungleBannerAdapter {
     private void createBanner() {
         Log.d(TAG, "create banner:" + this);
         if (!mPendingRequestBanner) {
-            mState = STATE_FAILED;
             return;
         }
         cleanUp();
@@ -218,7 +198,6 @@ class VungleBannerAdapter {
         if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
             mVungleBannerAd = Banners.getBanner(mPlacementId, mAdConfig.getAdSize(), mAdPlayCallback);
             if (mVungleBannerAd != null) {
-                mState = STATE_LOADED;
                 Log.d(TAG, "display banner:" + mVungleBannerAd.hashCode() + this);
                 mVungleManager.storeActiveBannerAd(mPlacementId, this);
                 updateVisibility(mVisibility);
@@ -241,7 +220,6 @@ class VungleBannerAdapter {
                 mVungleManager.storeActiveBannerAd(mPlacementId, this);
             }
             if (adView != null) {
-                mState = STATE_LOADED;
                 Log.d(TAG, "display MREC:" + mVungleNativeAd.hashCode() + this);
                 updateVisibility(mVisibility);
                 adView.setLayoutParams(adParams);
