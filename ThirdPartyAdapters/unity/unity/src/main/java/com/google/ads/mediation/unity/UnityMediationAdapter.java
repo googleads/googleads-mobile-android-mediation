@@ -144,6 +144,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            //doing nothing as onUnityAdsError does not include placementId for a specific adapter
         }
     };
 
@@ -269,7 +270,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         String gameID = serverParameters.getString(KEY_GAME_ID);
         mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
-        if (!isValidIds(gameID, mPlacementId)) {
+        if (!isRequestValid(gameID, mPlacementId)) {
             mediationAdLoadCallback.onFailure("Failed to load ad from UnityAds: " +
                     "Missing or invalid game ID and placement ID.");
             return;
@@ -331,7 +332,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * @param placementId Unity Ads Placement ID to be verified.
      * @return {@code true} if all the IDs provided are valid.
      */
-    private static boolean isValidIds(String gameId, String placementId) {
+    private static boolean isRequestValid(String gameId, String placementId) {
         if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
             String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
                     ? "Game ID and Placement ID" : "Game ID" : "Placement ID";

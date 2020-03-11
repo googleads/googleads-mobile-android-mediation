@@ -152,6 +152,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            //do nothing as onUnityAdsError does not include placementID.
         }
     };
 
@@ -198,7 +199,7 @@ public class UnityAdapter extends UnityMediationAdapter
      * @param placementId Unity Ads Placement ID to be verified.
      * @return {@code true} if all the IDs provided are valid.
      */
-    private static boolean isValidIds(String gameId, String placementId) {
+    private static boolean isRequestValid(String gameId, String placementId) {
         if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
             String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
                     ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
@@ -225,7 +226,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, mPlacementId)) {
+        if (!isRequestValid(gameId, mPlacementId)) {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -331,7 +332,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, bannerPlacementId)) {
+        if (!isRequestValid(gameId, bannerPlacementId)) {
             if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
