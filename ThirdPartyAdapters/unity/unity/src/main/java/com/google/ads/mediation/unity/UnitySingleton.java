@@ -109,7 +109,6 @@ public final class UnitySingleton {
         // Set mediation meta data before initializing.
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
         mediationMetaData.setVersion(MobileAds.getVersionString());
         mediationMetaData.set("adapter_version", BuildConfig.VERSION_NAME);
         mediationMetaData.commit();
