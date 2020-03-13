@@ -218,7 +218,7 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationInterstitialAdapter implementation.
     @Override
     public void requestInterstitialAd(Context context,
-                                      final MediationInterstitialListener mediationInterstitialListener,
+                                      MediationInterstitialListener mediationInterstitialListener,
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
@@ -304,7 +304,7 @@ public class UnityAdapter extends UnityMediationAdapter
     //region MediationBannerAdapter implementation.
     @Override
     public void requestBannerAd(Context context,
-                                final MediationBannerListener listener,
+                                MediationBannerListener listener,
                                 Bundle serverParameters,
                                 AdSize adSize,
                                 MediationAdRequest adRequest,
