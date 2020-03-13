@@ -241,7 +241,6 @@ public final class UnitySingleton {
                 UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
                 if (delegate != null) {
                     delegate.onUnityAdsError(unityAdsError, delegate.getPlacementId());
-                    mPlacementsInUse.remove(delegate.getPlacementId());
                 }
             }
         }
