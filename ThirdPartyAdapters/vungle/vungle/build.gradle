@@ -10,7 +10,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "6.5.2.0"
+    stringVersion = "6.5.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -23,9 +23,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 6050200
+        versionCode 6050300
         versionName stringVersion
-
     }
     buildTypes {
         release {
@@ -36,7 +35,8 @@ android {
 }
 
 dependencies {
-    implementation ('com.vungle:publisher-sdk-android:6.5.2') {
+//    implementation ('com.vungle:publisher-sdk-android:6.5.2') {
+    implementation ('com.github.vungle:vungle-android-sdk:6.5.3-RC1') {
         transitive=true
     }
     implementation 'androidx.annotation:annotation:1.1.0'
