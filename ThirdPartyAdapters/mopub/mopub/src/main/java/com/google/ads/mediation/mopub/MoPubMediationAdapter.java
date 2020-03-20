@@ -3,10 +3,10 @@ package com.google.ads.mediation.mopub;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -25,7 +25,10 @@ import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.dfp.adapters.BuildConfig;
-
+import com.mopub.mobileads.dfp.adapters.MoPubAdapterRewardedListener;
+import com.mopub.nativeads.NativeErrorCode;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +37,7 @@ import java.util.Set;
  * from MoPub.
  */
 public class MoPubMediationAdapter extends Adapter
-    implements MediationRewardedAd, MoPubRewardedVideoListener {
+    implements MediationRewardedAd, MoPubAdapterRewardedListener {
 
   static final String TAG = MoPubMediationAdapter.class.getSimpleName();
   private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
@@ -49,10 +52,66 @@ public class MoPubMediationAdapter extends Adapter
       mAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
 
+  /**
+   * MoPub Network adapter errors.
+   */
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(value = {
+      ERROR_INVALID_SERVER_PARAMETERS,
+      ERROR_BANNER_SIZE_MISMATCH,
+      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+      ERROR_MOPUB_INITIALIZATION,
+      ERROR_WRONG_NATIVE_TYPE,
+      ERROR_FAILED_PLAYBACK,
+      ERROR_AD_ALREADY_LOADED,
+      ERROR_AD_EXPIRED,
+      ERROR_HAS_REWARDED_AD,
+      ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+      ERROR_DOWNLOADING_NATIVE_ASSETS,
+      ERROR_AD_NOT_READY
+  })
+
+  public @interface Error {
+
+  }
+
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+  public static final int ERROR_MOPUB_INITIALIZATION = 104;
+  public static final int ERROR_WRONG_NATIVE_TYPE = 105;
+  public static final int ERROR_FAILED_PLAYBACK = 106;
+  public static final int ERROR_AD_ALREADY_LOADED = 107;
+  public static final int ERROR_AD_EXPIRED = 108;
+  public static final int ERROR_HAS_REWARDED_AD = 109;
+  public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 110;
+  public static final int ERROR_DOWNLOADING_NATIVE_ASSETS = 111;
+  public static final int ERROR_AD_NOT_READY = 112;
+
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   */
+  public static String createAdapterError(@NonNull @MoPubMediationAdapter.Error int code,
+      String description) {
+    return String.format("%d: %s", code, description);
+  }
+
+  public static final String createSDKError(@NonNull MoPubErrorCode error) {
+    return String.format("%d: %s", error.ordinal(), error.toString());
+  }
+
+  public static final String createSDKError(@NonNull NativeErrorCode error) {
+    return String.format("%d: %s", getMediationErrorCode(error), error.toString());
+  }
+
+  public static final int getMediationErrorCode(@NonNull NativeErrorCode error) {
+    return error.ordinal() + 1000;
+  }
+
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
@@ -70,7 +129,7 @@ public class MoPubMediationAdapter extends Adapter
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = MoPub.SDK_VERSION;
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
@@ -91,8 +150,9 @@ public class MoPubMediationAdapter extends Adapter
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed("MoPub SDK requires an " +
-          "Activity context to initialize.");
+      String errorMessage = createAdapterError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "MoPub SDK requires an Activity context to initialize.");
+      initializationCompleteCallback.onInitializationFailed(errorMessage);
       return;
     }
 
@@ -107,13 +167,14 @@ public class MoPubMediationAdapter extends Adapter
     }
 
     if (TextUtils.isEmpty(adUnitID)) {
-      initializationCompleteCallback.onInitializationFailed("Initialization failed: " +
-          "Missing or Invalid MoPub Ad Unit ID.");
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Initialization failed: Missing or Invalid MoPub Ad Unit ID.");
+      initializationCompleteCallback.onInitializationFailed(errorMessage);
       return;
     }
 
     SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitID).build();
-    MoPubSingleton.getInstance().initializeMoPubSDK((Activity) context, sdkConfiguration,
+    MoPubSingleton.getInstance().initializeMoPubSDK(context, sdkConfiguration,
         new SdkInitializationListener() {
           @Override
           public void onInitializationFinished() {
@@ -133,10 +194,11 @@ public class MoPubMediationAdapter extends Adapter
     adUnitID = serverParameters.getString(MOPUB_AD_UNIT_KEY);
 
     if (TextUtils.isEmpty(adUnitID)) {
-      String logMessage = "Failed to request ad from MoPub: "
-          + "Missing or Invalid MoPub Ad Unit ID.";
-      Log.w(TAG, logMessage);
-      mediationAdLoadCallback.onFailure(logMessage);
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad from MoPub: "
+              + "Missing or Invalid MoPub Ad Unit ID.");
+      Log.w(TAG, errorMessage);
+      mediationAdLoadCallback.onFailure(errorMessage);
       return;
     }
 
@@ -154,13 +216,17 @@ public class MoPubMediationAdapter extends Adapter
   @Override
   public void showAd(Context context) {
     if (adExpired && mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow("Failed to show a MoPub rewarded video. " +
-          "The MoPub Ad has expired. Please make a new Ad Request.");
+      String errorMessage = createAdapterError(ERROR_AD_EXPIRED,
+          "Failed to show a MoPub rewarded video. " +
+              "The MoPub Ad has expired. Please make a new Ad Request.");
+      mRewardedAdCallback.onAdFailedToShow(errorMessage);
     } else if (!adExpired) {
       boolean didShow = MoPubSingleton.getInstance().showRewardedAd(adUnitID);
       if (!didShow && mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow("Failed to show a MoPub rewarded video. " +
-            "Either the video is not ready or the ad unit ID is empty.");
+        String errorMessage = createAdapterError(ERROR_AD_NOT_READY,
+            "MoPub does not have a rewarded ad ready to show for ad unit ID: " + adUnitID);
+        Log.e(TAG, errorMessage);
+        mRewardedAdCallback.onAdFailedToShow(errorMessage);
       }
     }
   }
@@ -168,6 +234,14 @@ public class MoPubMediationAdapter extends Adapter
   /**
    * {@link MoPubRewardedVideoListener} implementation
    */
+
+  @Override
+  public void onAdFailedToLoad(int errorCode, String message) {
+    String errorMessage = createAdapterError(errorCode, message);
+    Log.e(TAG, errorMessage);
+    mAdLoadCallback.onFailure(errorMessage);
+  }
+
   @Override
   public void onRewardedVideoLoadSuccess(@NonNull String adUnitId) {
     if (mAdLoadCallback != null) {
@@ -179,29 +253,9 @@ public class MoPubMediationAdapter extends Adapter
   public void onRewardedVideoLoadFailure(@NonNull String adUnitId,
       @NonNull MoPubErrorCode errorCode) {
     if (mAdLoadCallback != null) {
-      String logMessage = "Failed to load MoPub rewarded video: ";
-      switch (errorCode) {
-        case NO_FILL:
-          logMessage += "No Fill.";
-          break;
-        case NETWORK_TIMEOUT:
-          logMessage += "Network error.";
-          break;
-        case SERVER_ERROR:
-          logMessage += "Invalid Request.";
-          break;
-        case EXPIRED:
-          // MoPub Rewarded video ads expire after 4 hours.
-          MoPubSingleton.getInstance().adExpired(adUnitId, MoPubMediationAdapter.this);
-          adExpired = true;
-          logMessage += "The MoPub Ad has expired. Please make a new Ad Request.";
-          break;
-        default:
-          logMessage += "Internal Error.";
-          break;
-      }
-      Log.i(TAG, logMessage);
-      mAdLoadCallback.onFailure(logMessage);
+      String errorSDKMessage = createSDKError(errorCode);
+      Log.w(TAG, errorSDKMessage);
+      mAdLoadCallback.onFailure(errorSDKMessage);
     }
   }
 
@@ -217,8 +271,9 @@ public class MoPubMediationAdapter extends Adapter
   public void onRewardedVideoPlaybackError(@NonNull String adUnitId,
       @NonNull MoPubErrorCode errorCode) {
     if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow("Failed to playback MoPub rewarded video: " +
-          errorCode.toString());
+      String errorSDKMessage = createSDKError(errorCode);
+      Log.i(TAG, "Failed to playback MoPub rewarded video: " + errorSDKMessage);
+      mRewardedAdCallback.onAdFailedToShow(errorSDKMessage);
     }
   }
 

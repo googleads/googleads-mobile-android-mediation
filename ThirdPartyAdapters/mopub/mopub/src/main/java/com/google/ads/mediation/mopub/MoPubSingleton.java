@@ -1,10 +1,11 @@
 package com.google.ads.mediation.mopub;
 
+import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_AD_ALREADY_LOADED;
+
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -16,7 +17,7 @@ import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.MoPubRewardedVideos;
 import com.mopub.mobileads.dfp.adapters.MoPubAdapter;
-
+import com.mopub.mobileads.dfp.adapters.MoPubAdapterRewardedListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   private static boolean isInitializing;
 
   private ArrayList<SdkInitializationListener> mInitListeners = new ArrayList<>();
-  private static HashMap<String, WeakReference<MoPubRewardedVideoListener>> mListeners =
+  private static HashMap<String, WeakReference<MoPubAdapterRewardedListener>> mListeners =
       new HashMap<>();
 
   public static MoPubSingleton getInstance() {
@@ -62,8 +63,6 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
       MoPubRewardedVideos.showRewardedVideo(adUnitID);
       return true;
     } else {
-      Log.e(MoPubMediationAdapter.TAG, "Failed to show a MoPub rewarded video. " +
-          "Either the video is not ready or the ad unit ID is empty.");
       mListeners.remove(adUnitID);
       return false;
     }
@@ -101,15 +100,15 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   public void loadRewardedAd(Context context,
       final String adUnitID,
       final MoPubRewardedVideoManager.RequestParameters requestParameters,
-      final MoPubRewardedVideoListener listener) {
+      final MoPubAdapterRewardedListener adapterRewardedListener) {
     if (hasListener(adUnitID)) {
-      Log.w(MoPubMediationAdapter.TAG, "An ad has already been requested "
-          + "for the MoPub Ad Unit ID: " + adUnitID);
-      listener.onRewardedVideoLoadFailure(adUnitID, MoPubErrorCode.CANCELLED);
+      String errorMessage =
+          "An ad has already been requested for the MoPub Ad Unit ID: " + adUnitID;
+      adapterRewardedListener.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
       return;
     }
 
-    mListeners.put(adUnitID, new WeakReference<>(listener));
+    mListeners.put(adUnitID, new WeakReference<>(adapterRewardedListener));
 
     SdkConfiguration configuration = new SdkConfiguration.Builder(adUnitID).build();
     initializeMoPubSDK(context, configuration, new SdkInitializationListener() {

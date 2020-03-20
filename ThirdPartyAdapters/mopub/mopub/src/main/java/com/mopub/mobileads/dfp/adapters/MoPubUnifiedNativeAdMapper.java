@@ -9,10 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
@@ -21,12 +19,9 @@ import com.mopub.common.UrlHandler;
 import com.mopub.common.util.Drawables;
 import com.mopub.nativeads.NativeImageHelper;
 import com.mopub.nativeads.StaticNativeAd;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static com.mopub.mobileads.dfp.adapters.DownloadDrawablesAsync.KEY_IMAGE;
 
 public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
@@ -180,8 +175,7 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     super.untrackView(view);
     mMoPubNativeAdData.clear(view);
 
-    if (privacyInformationIconImageView != null && (ViewGroup)
-        privacyInformationIconImageView.getParent() != null) {
+    if (privacyInformationIconImageView != null && privacyInformationIconImageView.getParent() != null) {
       ((ViewGroup) privacyInformationIconImageView.getParent())
           .removeView(privacyInformationIconImageView);
     }

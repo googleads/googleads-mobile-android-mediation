@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
 import android.util.Log;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;

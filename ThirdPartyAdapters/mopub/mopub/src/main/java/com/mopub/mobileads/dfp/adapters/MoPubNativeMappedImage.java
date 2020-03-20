@@ -2,7 +2,6 @@ package com.mopub.mobileads.dfp.adapters;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-
 import com.google.android.gms.ads.formats.NativeAd;
 
 /**
