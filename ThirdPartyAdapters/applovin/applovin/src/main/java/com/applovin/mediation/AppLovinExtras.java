@@ -7,35 +7,38 @@ import android.os.Bundle;
  * adapter.
  */
 public class AppLovinExtras {
+
+  /**
+   * Class containing keys for the AppLovin extras {@link Bundle}.
+   */
+  static class Keys {
+
+    static final String MUTE_AUDIO = "mute_audio";
+  }
+
+  /**
+   * Convenience class used to build the AppLovin network extras {@link Bundle}.
+   */
+  public static class Builder {
+
+    private boolean mMuteAudio;
+
     /**
-     * Class containing keys for the AppLovin extras {@link Bundle}.
+     * Use this to mute audio for video ads. Must be set on each ad request.
      */
-    static class Keys {
-        static final String MUTE_AUDIO = "mute_audio";
+    public Builder setMuteAudio(boolean muteAudio) {
+      mMuteAudio = muteAudio;
+      return this;
     }
 
     /**
-     * Convenience class used to build the AppLovin network extras {@link Bundle}.
+     * Builds a {@link Bundle} object with the given inputs.
      */
-    public static class Builder {
-        private boolean mMuteAudio;
+    public Bundle build() {
+      final Bundle extras = new Bundle(1);
+      extras.putBoolean(Keys.MUTE_AUDIO, mMuteAudio);
 
-        /**
-         * Use this to mute audio for video ads. Must be set on each ad request.
-         */
-        public Builder setMuteAudio(boolean muteAudio) {
-            mMuteAudio = muteAudio;
-            return this;
-        }
-
-        /**
-         * Builds a {@link Bundle} object with the given inputs.
-         */
-        public Bundle build() {
-            final Bundle extras = new Bundle(1);
-            extras.putBoolean(Keys.MUTE_AUDIO, mMuteAudio);
-
-            return extras;
-        }
+      return extras;
     }
+  }
 }
