@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.ads.mediation.tapjoy.rtb.TapjoyRtbInterstitialRenderer;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -21,141 +20,143 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import com.tapjoy.BuildConfig;
 import com.tapjoy.Tapjoy;
-
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
 public class TapjoyMediationAdapter extends RtbAdapter {
 
-    static final String TAG = TapjoyMediationAdapter.class.getSimpleName();
+  static final String TAG = TapjoyMediationAdapter.class.getSimpleName();
 
-    static final String SDK_KEY_SERVER_PARAMETER_KEY = "sdkKey";
-    static final String PLACEMENT_NAME_SERVER_PARAMETER_KEY = "placementName";
-    static final String MEDIATION_AGENT = "admob";
-    static final String TAPJOY_INTERNAL_ADAPTER_VERSION =
-            "1.0.0"; // only used internally for Tapjoy SDK
+  static final String SDK_KEY_SERVER_PARAMETER_KEY = "sdkKey";
+  static final String PLACEMENT_NAME_SERVER_PARAMETER_KEY = "placementName";
+  static final String MEDIATION_AGENT = "admob";
+  // only used internally for Tapjoy SDK
+  static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0";
+  /**
+   * {@link Adapter} implementation
+   */
+  @Override
+  public VersionInfo getVersionInfo() {
+    String versionString = BuildConfig.VERSION_NAME;
+    String splits[] = versionString.split("\\.");
 
-    /**
-     * {@link Adapter} implementation
-     */
-    @Override
-    public VersionInfo getVersionInfo() {
-        String versionString = BuildConfig.VERSION_NAME;
-        String splits[] = versionString.split("\\.");
-
-        if (splits.length >= 4) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-            return new VersionInfo(major, minor, micro);
-        }
-
-        String logMessage = String.format("Unexpected adapter version format: %s." +
-                "Returning 0.0.0 for adapter version.", versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 4) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @Override
-    public VersionInfo getSDKVersionInfo() {
-        String versionString = Tapjoy.getVersion();
-        String splits[] = versionString.split("\\.");
+    String logMessage = String.format("Unexpected adapter version format: %s." +
+        "Returning 0.0.0 for adapter version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-        if (splits.length >= 3) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]);
-            return new VersionInfo(major, minor, micro);
-        }
+  @Override
+  public VersionInfo getSDKVersionInfo() {
+    String versionString = Tapjoy.getVersion();
+    String splits[] = versionString.split("\\.");
 
-        String logMessage = String.format("Unexpected SDK version format: %s." +
-                "Returning 0.0.0 for SDK version.", versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 3) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @Override
-    public void initialize(Context context,
-                           final InitializationCompleteCallback initializationCompleteCallback,
-                           List<MediationConfiguration> mediationConfigurations) {
+    String logMessage = String.format("Unexpected SDK version format: %s." +
+        "Returning 0.0.0 for SDK version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-        if (!(context instanceof Activity)) {
-            initializationCompleteCallback.onInitializationFailed("Initialization Failed: "
-                    + "Tapjoy SDK requires an Activity context to initialize");
-            return;
-        }
+  @Override
+  public void initialize(Context context,
+      final InitializationCompleteCallback initializationCompleteCallback,
+      List<MediationConfiguration> mediationConfigurations) {
 
-        HashSet<String> sdkKeys = new HashSet<>();
-        for (MediationConfiguration configuration : mediationConfigurations) {
-            Bundle serverParameters = configuration.getServerParameters();
-            String sdkKeyFromServer = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
+    if (!(context instanceof Activity)) {
+      initializationCompleteCallback.onInitializationFailed("Initialization Failed: "
+          + "Tapjoy SDK requires an Activity context to initialize");
+      return;
+    }
 
-            if (!TextUtils.isEmpty(sdkKeyFromServer)) {
-                sdkKeys.add(sdkKeyFromServer);
-            }
-        }
+    HashSet<String> sdkKeys = new HashSet<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      Bundle serverParameters = configuration.getServerParameters();
+      String sdkKeyFromServer = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
 
-        String sdkKey;
-        int count = sdkKeys.size();
-        if (count > 0) {
-            sdkKey = sdkKeys.iterator().next();
+      if (!TextUtils.isEmpty(sdkKeyFromServer)) {
+        sdkKeys.add(sdkKeyFromServer);
+      }
+    }
 
-            if (count > 1) {
-                String message = String.format("Multiple '%s' entries found: %s. " +
-                                "Using '%s' to initialize the IronSource SDK.",
-                        SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
-                Log.w(TAG, message);
-            }
-        } else {
-            initializationCompleteCallback.onInitializationFailed(
-                    "Initialization failed: Missing or Invalid SDK key.");
-            return;
-        }
+    String sdkKey;
+    int count = sdkKeys.size();
+    if (count > 0) {
+      sdkKey = sdkKeys.iterator().next();
 
-        Tapjoy.setActivity((Activity) context);
+      if (count > 1) {
+        String message = String.format("Multiple '%s' entries found: %s. " +
+                "Using '%s' to initialize the IronSource SDK.",
+            SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
+        Log.w(TAG, message);
+      }
+    } else {
+      initializationCompleteCallback.onInitializationFailed(
+          "Initialization failed: Missing or Invalid SDK key.");
+      return;
+    }
 
-        Hashtable<String, Object> connectFlags = new Hashtable<>();
-        // TODO: Get Debug flag from publisher at init time. Currently not possible.
-        // connectFlags.put("TJC_OPTION_ENABLE_LOGGING", true);
+    Tapjoy.setActivity((Activity) context);
 
-        TapjoyInitializer.getInstance().initialize((Activity) context, sdkKey, connectFlags,
-                new TapjoyInitializer.Listener() {
-            @Override
-            public void onInitializeSucceeded() {
-                initializationCompleteCallback.onInitializationSucceeded();
-            }
+    Hashtable<String, Object> connectFlags = new Hashtable<>();
+    // TODO: Get Debug flag from publisher at init time. Currently not possible.
+    // connectFlags.put("TJC_OPTION_ENABLE_LOGGING", true);
 
-            @Override
-            public void onInitializeFailed(String message) {
-                initializationCompleteCallback.onInitializationFailed("Initialization failed: "
-                                + message);
-            }
+    TapjoyInitializer.getInstance().initialize((Activity) context, sdkKey, connectFlags,
+        new TapjoyInitializer.Listener() {
+          @Override
+          public void onInitializeSucceeded() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
+
+          @Override
+          public void onInitializeFailed(String message) {
+            initializationCompleteCallback.onInitializationFailed("Initialization failed: "
+                + message);
+          }
         });
-    }
+  }
 
-    @Override
-    public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
-        signalCallbacks.onSuccess(Tapjoy.getUserToken());
-    }
+  @Override
+  public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
+    signalCallbacks.onSuccess(Tapjoy.getUserToken());
+  }
 
-    @Override
-    public void loadInterstitialAd(
-            MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-            MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-            TapjoyRtbInterstitialRenderer interstitialRenderer =
-                    new TapjoyRtbInterstitialRenderer(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-            interstitialRenderer.render();
-    }
+  @Override
+  public void loadInterstitialAd(
+      MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      MediationAdLoadCallback<MediationInterstitialAd,
+          MediationInterstitialAdCallback> mediationAdLoadCallback) {
+    TapjoyRtbInterstitialRenderer interstitialRenderer =
+        new TapjoyRtbInterstitialRenderer(mediationInterstitialAdConfiguration,
+            mediationAdLoadCallback);
+    interstitialRenderer.render();
+  }
 
-    @Override
-    public void loadRewardedAd(
-            MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-            TapjoyRewardedRenderer rewardedRenderer =
-                    new TapjoyRewardedRenderer(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-            rewardedRenderer.render();
-    }
+  @Override
+  public void loadRewardedAd(
+      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd,
+          MediationRewardedAdCallback> mediationAdLoadCallback) {
+    TapjoyRewardedRenderer rewardedRenderer =
+        new TapjoyRewardedRenderer(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedRenderer.render();
+  }
 
 }
