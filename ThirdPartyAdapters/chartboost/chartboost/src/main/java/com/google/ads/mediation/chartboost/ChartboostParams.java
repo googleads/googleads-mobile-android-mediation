@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.chartboost;
 
+import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost.CBFramework;
 
@@ -49,6 +50,10 @@ public class ChartboostParams {
      */
     private String cbFrameworkVersion;
 
+    /**
+     * Size of the Chartboost banner required to create a banner
+     */
+    private BannerSize cbBannerSize;
     /**
      * Default constructor, sets a default value for {@link #cbLocation}.
      */
@@ -124,5 +129,19 @@ public class ChartboostParams {
      */
     public void setFrameworkVersion(String version) {
         this.cbFrameworkVersion = version;
+    }
+
+    /**
+     * @return {@link #cbBannerSize}.
+     */
+    public BannerSize getBannerSize() {
+        return cbBannerSize;
+    }
+
+    /**
+     * @param bannerSize {@link #cbBannerSize}.
+     */
+    public void setBannerSize(BannerSize bannerSize) {
+        this.cbBannerSize = bannerSize;
     }
 }

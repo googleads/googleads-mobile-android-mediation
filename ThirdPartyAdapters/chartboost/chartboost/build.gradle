@@ -1,6 +1,7 @@
 plugins {
     id "com.jfrog.bintray" version "1.8.4"
 }
+
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
@@ -9,7 +10,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.5.0.1"
+    stringVersion = "8.0.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -17,7 +18,7 @@ ext {
 android {
     compileSdkVersion 28
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 28
         versionCode 7050001
         versionName stringVersion
@@ -28,14 +29,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    // Adding Chartboost SDK as a compileOnly dependency makes sure that the jar is not included in the
-    // AAR.
-    compileOnly files('libs/chartboost.jar')
+    implementation 'com.chartboost:chartboost-sdk:8.0.1'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'com.google.android.gms:play-services-ads:19.0.0'
     implementation 'com.google.android.gms:play-services-base:17.1.0'
     implementation 'com.google.android.gms:play-services-ads-identifier:17.0.0'
 }

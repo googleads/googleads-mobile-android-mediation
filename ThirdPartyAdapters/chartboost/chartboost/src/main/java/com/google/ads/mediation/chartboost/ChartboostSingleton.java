@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.chartboost;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +22,7 @@ import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Libraries.CBLogging;
 import com.chartboost.sdk.Model.CBError;
+import com.google.android.gms.ads.AdRequest;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -41,7 +41,8 @@ public final class ChartboostSingleton {
             mInterstitialDelegates = new HashMap<>();
     private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
             mRewardedDelegates = new HashMap<>();
-
+    private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
+            mBannerDelegates = new HashMap<>();
     /**
      * Flag to keep track of whether or not {@link Chartboost} has initialized.
      */
@@ -98,6 +99,13 @@ public final class ChartboostSingleton {
         }
     }
 
+    private static void addBannerDelegate(String location,
+                                            AbstractChartboostAdapterDelegate delegate) {
+        if (!TextUtils.isEmpty(location) && delegate != null) {
+            mBannerDelegates.put(location, new WeakReference<>(delegate));
+        }
+    }
+
     /**
      * Gets the weak reference of the {@link AbstractChartboostAdapterDelegate} linked to a given
      * Chartboost location
@@ -129,32 +137,44 @@ public final class ChartboostSingleton {
     }
 
     /**
+     * Gets the weak reference of the {@link AbstractChartboostAdapterDelegate} linked to a given
+     * Chartboost location
+     * @param location location the Chartboost location
+     * @return the weak reference of the Banner delegate for the location
+     */
+    private static WeakReference<AbstractChartboostAdapterDelegate> getBannerDelegate(
+            String location) {
+        if (!TextUtils.isEmpty(location) && mBannerDelegates.containsKey(location)) {
+            return mBannerDelegates.get(location);
+        }
+        return null;
+    }
+
+    /**
      * This method will initialize Chartboost SDK for interstitial ads and return whether or not
      * it successfully initialized.
      *
      * @param context         Required to initialize Chartboost SDK.
      * @param adapterDelegate The adapter delegate to which to forward Chartboost callbacks.
      */
-    public static void startChartboostInterstitial(
-            Context context, AbstractChartboostAdapterDelegate adapterDelegate) {
+    public static void startChartboostInterstitial(Context context,
+                                                   AbstractChartboostAdapterDelegate adapterDelegate) {
         String location = adapterDelegate.getChartboostParams().getLocation();
-
         // Checks if an ad has already been sent for caching for the requested location, and fail
         // the ad request if it is.
-        WeakReference<AbstractChartboostAdapterDelegate> delegate =
-                getInterstitialDelegate(location);
+        WeakReference<AbstractChartboostAdapterDelegate> delegate = getInterstitialDelegate(location);
         if (delegate != null && delegate.get() != null) {
-            Log.w(ChartboostMediationAdapter.TAG,
-                    "An ad has already been requested for the location: " + location);
-            adapterDelegate.didFailToLoadInterstitial(location,
-                    CBError.CBImpressionError.NO_AD_FOUND);
+            Log.w(ChartboostMediationAdapter.TAG, "An ad has already been requested for the location: " + location);
+            adapterDelegate.didFailToLoadInterstitial(location, CBError.CBImpressionError.NO_AD_FOUND);
             return;
         }
 
         // Add this adapter delegate to mAdapterDelegates so that the events from
         // Chartboost SDK can be forwarded.
         addInterstitialDelegate(location, adapterDelegate);
-        startChartboost((Activity) context, adapterDelegate.getChartboostParams(), adapterDelegate);
+        startChartboost(context,
+                adapterDelegate.getChartboostParams(),
+                adapterDelegate);
     }
 
     /**
@@ -164,8 +184,8 @@ public final class ChartboostSingleton {
      * @param context         Required to initialize Chartboost SDK.
      * @param adapterDelegate The adapter delegate to which to forward Chartboost callbacks.
      */
-    public static void startChartboostRewardedVideo(
-            Context context, AbstractChartboostAdapterDelegate adapterDelegate) {
+    public static void startChartboostRewardedVideo(Context context,
+                                                    AbstractChartboostAdapterDelegate adapterDelegate) {
         String location = adapterDelegate.getChartboostParams().getLocation();
 
         // Checks if an ad has already been sent for caching for the requested location, and fail
@@ -183,19 +203,48 @@ public final class ChartboostSingleton {
         // Add this adapter delegate to mAdapterDelegates so that the events from
         // Chartboost SDK can be forwarded.
         addRewardedDelegate(location, adapterDelegate);
-        startChartboost((Activity) context, adapterDelegate.getChartboostParams(), adapterDelegate);
+        startChartboost(context,
+                adapterDelegate.getChartboostParams(),
+                adapterDelegate);
+    }
+
+    /**
+     *  This method will initialize Chartboost SDK for banner ads and return whether or not
+     *  it successfully initialized.
+     * @param context
+     * @param adapterDelegate
+     */
+    public static void startChartboostBanner(Context context,
+                                             AbstractChartboostAdapterDelegate adapterDelegate,
+                                             ChartboostBannerErrorListener bannerErrorListener) {
+        String location = adapterDelegate.getChartboostParams().getLocation();
+        // Checks if an ad has already been sent for caching for the requested location, and fail
+        // the ad request if it is.
+        WeakReference<AbstractChartboostAdapterDelegate> delegate =
+                getBannerDelegate(location);
+        if (delegate != null && delegate.get() != null) {
+            Log.w(ChartboostMediationAdapter.TAG,
+                    "An ad has already been requested for the location: " + location);
+            bannerErrorListener.notifyBannerInitializationError(AdRequest.ERROR_CODE_INVALID_REQUEST);
+            return;
+        }
+
+        addBannerDelegate(adapterDelegate.getChartboostParams().getLocation(), adapterDelegate);
+        startChartboost(context,
+                adapterDelegate.getChartboostParams(),
+                adapterDelegate);
     }
 
     /**
      * This method will initialize the Chartboost SDK if it is not already initialized and set its
      * delegate.
      *
-     * @param activity        required to initialize {@link Chartboost}.
+     * @param context        required to initialize {@link Chartboost}.
      * @param params          The Chartboost params containing server parameters and network extras
      *                        to be used to start {@link Chartboost}.
      * @param adapterDelegate The adapter delegate to which to forward initialization callbacks.
      */
-    private static void startChartboost(Activity activity, ChartboostParams params,
+    private static void startChartboost(Context context, ChartboostParams params,
                                         AbstractChartboostAdapterDelegate adapterDelegate) {
         if (mIsChartboostInitializing) {
             return;
@@ -208,25 +257,26 @@ public final class ChartboostSingleton {
 
         if (!mIsChartboostInitialized) {
             mIsChartboostInitializing = true;
-            Chartboost.startWithAppId(activity, params.getAppId(), params.getAppSignature());
-
-            Chartboost.setMediation(Chartboost.CBMediation.CBMediationAdMob,
-                    BuildConfig.VERSION_NAME);
-            Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
-            Chartboost.setDelegate(getInstance());
-            Chartboost.setAutoCacheAds(false);
-
-            // Chartboost depends on Activity's lifecycle events to initialize its SDK. Chartboost
-            // requires onCreate, onStart and onResume callbacks to initialize its SDK.  By the time
-            // AdMob SDK requests this adapter to initialize the SDK, all three callbacks might have
-            // already been called. So, we call Chartboost's onCreate, onStart and onResume methods
-            // so that the Chartboost SDK will be initialized.
-            Chartboost.onCreate(activity);
-            Chartboost.onStart(activity);
-            Chartboost.onResume(activity);
+            initChartboostSdk(context, params);
         } else {
             adapterDelegate.didInitialize();
         }
+    }
+
+    /**
+     * Only Chartboost sdk specific init
+     * @param context
+     * @param params
+     */
+    private static void initChartboostSdk(Context context, ChartboostParams params) {
+        Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
+        Chartboost.setMediation(
+                Chartboost.CBMediation.CBMediationAdMob,
+                Chartboost.getSDKVersion(),
+                com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
+        Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
+        Chartboost.setDelegate(getInstance());
+        Chartboost.setAutoCacheAds(false);
     }
 
     /**
@@ -318,6 +368,13 @@ public final class ChartboostSingleton {
 
             for (WeakReference<AbstractChartboostAdapterDelegate> reference :
                     mRewardedDelegates.values()) {
+                if (reference.get() != null) {
+                    reference.get().didInitialize();
+                }
+            }
+
+            for (WeakReference<AbstractChartboostAdapterDelegate> reference :
+                    mBannerDelegates.values()) {
                 if (reference.get() != null) {
                     reference.get().didInitialize();
                 }

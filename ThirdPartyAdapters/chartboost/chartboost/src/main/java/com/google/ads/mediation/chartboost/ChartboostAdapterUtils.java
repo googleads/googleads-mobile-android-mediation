@@ -5,10 +5,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 
 /**
  * Utility methods for the Chartboost Adapter.
@@ -42,15 +44,18 @@ class ChartboostAdapterUtils {
      * bundles provided.
      */
     static ChartboostParams createChartboostParams(Bundle serverParameters, Bundle networkExtras) {
+        String adLocation = "";
         ChartboostParams params = new ChartboostParams();
-        String appId = serverParameters.getString(KEY_APP_ID);
-        String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
-        if (appId != null && appSignature != null) {
-            params.setAppId(appId.trim());
-            params.setAppSignature(appSignature.trim());
+        if(serverParameters != null) {
+            String appId = serverParameters.getString(KEY_APP_ID);
+            String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
+            if (appId != null && appSignature != null) {
+                params.setAppId(appId.trim());
+                params.setAppSignature(appSignature.trim());
+            }
+            adLocation = serverParameters.getString(KEY_AD_LOCATION);
         }
 
-        String adLocation = serverParameters.getString(KEY_AD_LOCATION);
         if (!isValidParam(adLocation)) {
             // Ad Location is empty, log a warning and use the default location.
             String logMessage = String.format("Chartboost ad location is empty, defaulting to %s. "
@@ -173,5 +178,49 @@ class ChartboostAdapterUtils {
             default:
                 return AdRequest.ERROR_CODE_NO_FILL;
         }
+    }
+
+    /**
+     * Parse and report Chartboost banner error code to AdMob error
+     * @param code
+     */
+    static int parseChartboostErrorCodeToAdMobErrorCode(int code) {
+        switch (code) {
+            case 1:
+            case 5:
+            case 7:
+                return AdRequest.ERROR_CODE_NETWORK_ERROR;
+            case 6:
+                return AdRequest.ERROR_CODE_NO_FILL;
+            case 16:
+                return AdRequest.ERROR_CODE_INVALID_REQUEST;
+            default:
+                return AdRequest.ERROR_CODE_INTERNAL_ERROR;
+        }
+    }
+
+    /**
+     * Calculate possible Chartboost banner size format based on the provided AdSize
+     * @param adSize
+     * @return
+     */
+    static BannerSize chartboostAdSizeFromLocalExtras(AdSize adSize) {
+        if (adSize != null) {
+            int adHeight = adSize.getHeight();
+            int adWidth = adSize.getWidth();
+            int LEADERBOARD_HEIGHT = BannerSize.getHeight(BannerSize.LEADERBOARD);
+            int LEADERBOARD_WIDTH = BannerSize.getWidth(BannerSize.LEADERBOARD);
+            int MEDIUM_HEIGHT = BannerSize.getHeight(BannerSize.MEDIUM);
+            int MEDIUM_WIDTH = BannerSize.getWidth(BannerSize.MEDIUM);
+
+            if (adHeight >= LEADERBOARD_HEIGHT && adWidth >= LEADERBOARD_WIDTH) {
+                return BannerSize.LEADERBOARD;
+            } else if (adHeight >= MEDIUM_HEIGHT && adWidth >= MEDIUM_WIDTH) {
+                return BannerSize.MEDIUM;
+            } else {
+                return BannerSize.STANDARD;
+            }
+        }
+        return BannerSize.STANDARD;
     }
 }
