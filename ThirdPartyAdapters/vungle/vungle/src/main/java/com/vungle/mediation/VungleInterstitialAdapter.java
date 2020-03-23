@@ -225,7 +225,6 @@ public class VungleInterstitialAdapter implements MediationInterstitialAdapter,
 
         String placementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);
         Log.d(TAG, "requestBannerAd for Placement: " + placementForPlay + " ###  Adapter instance: " + this.hashCode());
-        Log.d(TAG, "requestBannerAd for Placement: " + placementForPlay + " ###  MediationAdRequest: " + mediationAdRequest.hashCode());
 
         if (TextUtils.isEmpty(placementForPlay)) {
             String message = "Failed to load ad from Vungle: Missing or Invalid Placement ID.";

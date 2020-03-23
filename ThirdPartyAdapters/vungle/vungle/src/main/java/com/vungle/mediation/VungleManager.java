@@ -124,10 +124,14 @@ public class VungleManager {
         VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
         if (bannerRequest != null) {
             String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
-            if (activeUniqueRequestId != null && activeUniqueRequestId.equals(requestUniqueId) || activeUniqueRequestId == null && requestUniqueId == null) {
-                Log.d(TAG, "Seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
-            } else {
-                Log.d(TAG, "Does NOT seems like Refresh: activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
+            Log.d(TAG, "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
+            if (activeUniqueRequestId == null) {
+                Log.w(TAG, "Ad already loaded for placement ID: " + placementId + ", and cannot determine if this " +
+                        "is a refresh. Set Vungle extras when making an ad request to support refresh on Vungle banner ads.");
+                return null;
+            }
+            if (!activeUniqueRequestId.equals(requestUniqueId)) {
+                Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
                 return null;
             }
         } else {
