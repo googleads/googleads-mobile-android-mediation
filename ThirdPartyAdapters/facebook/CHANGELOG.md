@@ -1,5 +1,8 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 5.8.0.0
+- Verified compatibility with Facebook SDK v5.8.0.
+
 #### 5.7.1.1
 - Added support for Facebook Audience Network adapter errors.
 - Added descriptive error codes and reasons for adapter load/show failures.
