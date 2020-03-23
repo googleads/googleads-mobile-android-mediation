@@ -22,10 +22,10 @@ import com.chartboost.sdk.ChartboostDelegate;
  */
 public abstract class AbstractChartboostAdapterDelegate extends ChartboostDelegate {
 
-    /**
-     * This method should return the {@link ChartboostParams} used by the adapter.
-     *
-     * @return Chartboost params containing ad request parameters.
-     */
-    public abstract ChartboostParams getChartboostParams();
+  /**
+   * This method should return the {@link ChartboostParams} used by the adapter.
+   *
+   * @return Chartboost params containing ad request parameters.
+   */
+  public abstract ChartboostParams getChartboostParams();
 }

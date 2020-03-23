@@ -1,5 +1,0 @@
-The jar file for the Chartboost Android SDK should be placed in this directory.
-For details on where to get the latest release, see the Integrating Chartboost
-with Mediation page:
-
-https://developers.google.com/admob/android/mediation/chartboost#step_3_import_the_chartboost_sdk_and_adapter

@@ -88,7 +88,7 @@ public class SampleRewardedAd implements Parcelable {
     }
 
   /** Loads a rewarded ad. */
-  public void loadAd() {
+  public void loadAd(SampleAdRequest request) {
         Random random = new Random();
         int nextInt = random.nextInt(100);
         SampleErrorCode errorCode = null;

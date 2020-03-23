@@ -16,7 +16,6 @@
 
 package com.google.ads.mediation.sample.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -27,12 +26,9 @@ import android.view.View;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
-import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleInterstitial;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdLoader;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdRequest;
-import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
-import com.google.ads.mediation.sample.sdk.SampleRewardedAdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -52,7 +48,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import java.util.List;
 
 /**
@@ -71,9 +66,7 @@ import java.util.List;
 public class SampleAdapter extends Adapter
         implements MediationBannerAdapter,
         MediationInterstitialAdapter,
-        MediationNativeAdapter,
-        MediationRewardedAd,
-        SampleRewardedAdListener {
+        MediationNativeAdapter {
     protected static final String TAG = SampleAdapter.class.getSimpleName();
 
     /**
@@ -114,21 +107,6 @@ public class SampleAdapter extends Adapter
      */
     private SampleInterstitial sampleInterstitial;
 
-    ///** Represents a {@link MediationRewardedAdConfiguration}. */
-    //private MediationRewardedAdConfiguration adConfiguration;
-
-    /**
-     * A {@link MediationAdLoadCallback} that handles any callback when a Sample rewarded ad finishes
-     * loading.
-     */
-    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallBack;
-
-    /** Represents a {@link SampleRewardedAd}. */
-    private SampleRewardedAd sampleRewardedAd;
-
-    /** Used to forward rewarded video ad events to AdMob. */
-    private MediationRewardedAdCallback rewardedAdCallback;
-
     /**
      * The adapter is being destroyed. Perform any necessary cleanup here.
      */
@@ -137,7 +115,6 @@ public class SampleAdapter extends Adapter
         if (sampleAdView != null) {
             sampleAdView.destroy();
         }
-        rewardedAdCallback = null;
     }
 
     /**
@@ -439,79 +416,10 @@ public class SampleAdapter extends Adapter
             MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
             MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
                     mediationAdLoadCallback) {
-        adLoadCallBack = mediationAdLoadCallback;
-        MediationRewardedAdConfiguration adConfiguration = mediationRewardedAdConfiguration;
-
-        String adUnitId = adConfiguration.getServerParameters().getString(SAMPLE_AD_UNIT_KEY);
-
-        sampleRewardedAd = new SampleRewardedAd(adUnitId);
-        sampleRewardedAd.setListener(this);
-        sampleRewardedAd.loadAd();
-    }
-
-    @Override
-    public void showAd(Context context) {
-        if (!(context instanceof Activity)) {
-            rewardedAdCallback.onAdFailedToShow(
-                    "An activity context is required to show Sample rewarded ad.");
-            return;
-        }
-        Activity activity = (Activity) context;
-
-        if (!sampleRewardedAd.isAdAvailable()) {
-            rewardedAdCallback.onAdFailedToShow("No ads to show.");
-            return;
-        }
-        sampleRewardedAd.showAd(activity);
-    }
-
-    @Override
-    public void onRewardedAdLoaded() {
-        adLoadCallBack.onSuccess(this);
-    }
-
-    @Override
-    public void onRewardedAdFailedToLoad(SampleErrorCode error) {
-        adLoadCallBack.onFailure(error.toString());
-    }
-
-    @Override
-    public void onAdRewarded(final String rewardType, final int amount) {
-        RewardItem rewardItem =
-                new RewardItem() {
-                    @Override
-                    public String getType() {
-                        return rewardType;
-                    }
-
-                    @Override
-                    public int getAmount() {
-                        return amount;
-                    }
-                };
-        rewardedAdCallback.onUserEarnedReward(rewardItem);
-    }
-
-    @Override
-    public void onAdClicked() {
-        rewardedAdCallback.reportAdClicked();
-    }
-
-    @Override
-    public void onAdFullScreen() {
-        rewardedAdCallback.onAdOpened();
-        rewardedAdCallback.onVideoStart();
-        rewardedAdCallback.reportAdImpression();
-    }
-
-    @Override
-    public void onAdClosed() {
-        rewardedAdCallback.onAdClosed();
-    }
-
-    @Override
-    public void onAdCompleted() {
-        rewardedAdCallback.onVideoComplete();
+        SampleMediationRewardedAdEventLoader forwarder = new
+                SampleMediationRewardedAdEventLoader(
+                        mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        forwarder.load();
     }
 
     /**

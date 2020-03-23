@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
+    id "com.jfrog.bintray" version "1.8.4"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -33,7 +33,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.0.0'
 
     // nendSDK
     implementation 'net.nend.android:nend-sdk:5.4.2'
