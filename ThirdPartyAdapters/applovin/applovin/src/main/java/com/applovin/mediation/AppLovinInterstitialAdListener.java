@@ -1,60 +1,60 @@
 package com.applovin.mediation;
 
+import static android.util.Log.DEBUG;
+
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
-import static android.util.Log.DEBUG;
-
 /*
  * The {@link AppLovinInterstitialAdListener} class is used to forward Interstitial ad events from
  * the AppLovin SDK to the Google Mobile Ads SDK.
  */
 class AppLovinInterstitialAdListener
-        implements AppLovinAdDisplayListener, AppLovinAdClickListener,
-        AppLovinAdVideoPlaybackListener {
-    private final ApplovinAdapter mAdapter;
-    private final MediationInterstitialListener mMediationInterstitialListener;
+    implements AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
-    AppLovinInterstitialAdListener(ApplovinAdapter adapter,
-                                   MediationInterstitialListener mediationInterstitialListener) {
-        mAdapter = adapter;
-        mMediationInterstitialListener = mediationInterstitialListener;
-    }
+  private final ApplovinAdapter mAdapter;
+  private final MediationInterstitialListener mMediationInterstitialListener;
 
-    // Ad Display Listener.
-    @Override
-    public void adDisplayed(AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, "Interstitial displayed");
-        mMediationInterstitialListener.onAdOpened(mAdapter);
-    }
+  AppLovinInterstitialAdListener(ApplovinAdapter adapter,
+      MediationInterstitialListener mediationInterstitialListener) {
+    mAdapter = adapter;
+    mMediationInterstitialListener = mediationInterstitialListener;
+  }
 
-    @Override
-    public void adHidden(AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, "Interstitial dismissed");
-        mMediationInterstitialListener.onAdClosed(mAdapter);
-    }
+  // Ad Display Listener.
+  @Override
+  public void adDisplayed(AppLovinAd ad) {
+    ApplovinAdapter.log(DEBUG, "Interstitial displayed");
+    mMediationInterstitialListener.onAdOpened(mAdapter);
+  }
 
-    // Ad Click Listener.
-    @Override
-    public void adClicked(AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, "Interstitial clicked");
+  @Override
+  public void adHidden(AppLovinAd ad) {
+    ApplovinAdapter.log(DEBUG, "Interstitial dismissed");
+    mMediationInterstitialListener.onAdClosed(mAdapter);
+  }
 
-        mMediationInterstitialListener.onAdClicked(mAdapter);
-        mMediationInterstitialListener.onAdLeftApplication(mAdapter);
-    }
+  // Ad Click Listener.
+  @Override
+  public void adClicked(AppLovinAd ad) {
+    ApplovinAdapter.log(DEBUG, "Interstitial clicked");
 
-    // Ad Video Playback Listener.
-    @Override
-    public void videoPlaybackBegan(AppLovinAd ad) {
-        ApplovinAdapter.log(DEBUG, "Interstitial video playback began");
-    }
+    mMediationInterstitialListener.onAdClicked(mAdapter);
+    mMediationInterstitialListener.onAdLeftApplication(mAdapter);
+  }
 
-    @Override
-    public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
-        ApplovinAdapter.log(DEBUG, "Interstitial video playback ended at playback percent: "
-                + percentViewed + "%");
-    }
+  // Ad Video Playback Listener.
+  @Override
+  public void videoPlaybackBegan(AppLovinAd ad) {
+    ApplovinAdapter.log(DEBUG, "Interstitial video playback began");
+  }
+
+  @Override
+  public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
+    ApplovinAdapter.log(DEBUG, "Interstitial video playback ended at playback percent: "
+        + percentViewed + "%");
+  }
 }

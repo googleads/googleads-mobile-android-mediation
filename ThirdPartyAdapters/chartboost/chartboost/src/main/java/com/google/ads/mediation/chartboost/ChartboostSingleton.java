@@ -100,7 +100,7 @@ public final class ChartboostSingleton {
     }
 
     private static void addBannerDelegate(String location,
-                                            AbstractChartboostAdapterDelegate delegate) {
+                                          AbstractChartboostAdapterDelegate delegate) {
         if (!TextUtils.isEmpty(location) && delegate != null) {
             mBannerDelegates.put(location, new WeakReference<>(delegate));
         }
