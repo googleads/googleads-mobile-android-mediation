@@ -282,7 +282,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter implements
     private ChartboostBannerListener mChartboostBannerListener = new ChartboostBannerListener() {
         @Override
         public void onAdCached(ChartboostCacheEvent chartboostCacheEvent,
-                ChartboostCacheError chartboostCacheError) {
+                               ChartboostCacheError chartboostCacheError) {
             if(mMediationBannerListener!=null) {
                 if(chartboostCacheError == null) {
                     mMediationBannerListener.onAdLoaded(
@@ -297,7 +297,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter implements
 
         @Override
         public void onAdShown(ChartboostShowEvent chartboostShowEvent,
-                ChartboostShowError chartboostShowError) {
+                              ChartboostShowError chartboostShowError) {
             if(mMediationBannerListener!=null) {
                 if (chartboostShowError == null) {
                     mMediationBannerListener.onAdOpened(
@@ -312,7 +312,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter implements
 
         @Override
         public void onAdClicked(ChartboostClickEvent chartboostClickEvent,
-                ChartboostClickError chartboostClickError) {
+                                ChartboostClickError chartboostClickError) {
             if (mMediationBannerListener != null) {
                 if (chartboostClickError == null) {
                     mMediationBannerListener.onAdClicked(

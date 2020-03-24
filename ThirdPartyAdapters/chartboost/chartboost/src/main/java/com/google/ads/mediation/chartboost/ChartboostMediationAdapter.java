@@ -120,7 +120,7 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
                     "Initialization Failed: Invalid server parameters.");
             return;
         }
-        
+
         ChartboostSingleton.startChartboostRewardedVideo(
                 context, mChartboostRewardedVideoDelegate);
     }
