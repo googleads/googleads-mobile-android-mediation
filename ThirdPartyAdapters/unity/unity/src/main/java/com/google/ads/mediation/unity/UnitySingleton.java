@@ -22,6 +22,7 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
@@ -61,6 +62,12 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton} instance.
      *
      * @return the {@link #unitySingletonInstance}.
+     */
+    private boolean isInitializing;
+
+    /**
+     * This flag indicates weather Unity
+     * @return
      */
     public static UnitySingleton getInstance() {
         if (unitySingletonInstance == null) {
@@ -113,10 +120,11 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", BuildConfig.VERSION_NAME);
         mediationMetaData.commit();
 
+
+
         UnitySingletonListener listener =
                 unitySingletonInstance.getUnitySingletonListenerInstance();
-        UnityAds.addListener(listener);
-        UnityAds.initialize(activity, gameId, false, true);
+        UnityAds.initialize(activity, gameId, listener, true, true);
 
         return true;
     }
@@ -171,6 +179,7 @@ public final class UnitySingleton {
         public void onUnityAdsReady(String placementId) {
             // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
             // appropriate delegate.
+            Log.d("alice", "onUnityAdsReady: " + placementId);
             if (mPlacementsInUse.containsKey(placementId) &&
                     mPlacementsInUse.get(placementId).get() != null) {
                 mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
@@ -225,7 +234,7 @@ public final class UnitySingleton {
 
         @Override
         public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            Log.w(TAG, "UnityAs error message: " + message);
+            Log.w(TAG, "UnityAds error message: " + message);
             // An initialization error occurred with Unity Ads. Send error event to all delegates.
             if (unityAdsError.equals(UnityAds.UnityAdsError.NOT_INITIALIZED) || unityAdsError.equals(UnityAds.UnityAdsError.INITIALIZE_FAILED) ||
                     unityAdsError.equals(UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL) || unityAdsError.equals(UnityAds.UnityAdsError.INVALID_ARGUMENT) ||

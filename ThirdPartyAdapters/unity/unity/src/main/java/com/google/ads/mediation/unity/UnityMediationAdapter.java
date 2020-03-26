@@ -40,6 +40,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * compatibility the key is not changed.
      */
     static final String KEY_PLACEMENT_ID = "zoneId";
+    static private  UnityMediationAdapter unityadapter;
 
     /**
      * Mediation rewarded video ad listener used to forward ad load status
@@ -67,7 +68,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
-    private UnityAdapterDelegate mUnityAdapterRewardedAdDelegate = new UnityAdapterDelegate() {
+    protected UnityAdapterDelegate mUnityAdapterRewardedAdDelegate = new UnityAdapterDelegate() {
 
         @Override
         public String getPlacementId() {
@@ -78,6 +79,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         public void onUnityAdsReady(String placementId) {
             // Unity Ads is ready to show ads for the given placementId. Send Ad Loaded event if the
             // adapter is currently loading ads.
+            Log.d("alice", "onUnityAdsReady: " +placementId);
             if (placementId.equals(getPlacementId()) && mMediationAdLoadCallback != null) {
                 mMediationRewardedAdCallback = mMediationAdLoadCallback
                         .onSuccess(UnityMediationAdapter.this);
@@ -89,9 +91,9 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
             // video adapter.
             if (placementId.equals(getPlacementId()) && mMediationRewardedAdCallback != null) {
-                mMediationRewardedAdCallback.onAdOpened();
                 mMediationRewardedAdCallback.onVideoStart();
-                mMediationRewardedAdCallback.reportAdImpression();
+                mMediationRewardedAdCallback.onAdOpened();
+               // mMediationRewardedAdCallback.reportAdImpression();
             }
         }
 
@@ -119,6 +121,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         @Override
         public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
+            Log.d("alice", "onUnityAdsFinish: " + placementId);
             // Unity Ads ad closed.
             if (placementId.equals(getPlacementId())) {
                 if (mMediationRewardedAdCallback != null) {
@@ -135,7 +138,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                         mMediationRewardedAdCallback.onAdClosed();
                     }
                 }
-                UnityAds.removeListener(mUnityAdapterRewardedAdDelegate);
+                //UnityAds.removeListener(mUnityAdapterRewardedAdDelegate);
             }
         }
 
@@ -160,6 +163,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * {@link Adapter} implementation
      */
     public UnityMediationAdapter() {
+        //unityadapter = this;
         uuid = UUID.randomUUID().toString();
 
         if (metadata != null) {
