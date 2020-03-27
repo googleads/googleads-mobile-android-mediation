@@ -21,23 +21,23 @@ import com.google.android.gms.ads.rewarded.RewardItem;
  */
 public class ChartboostReward implements RewardItem {
 
-    /**
-     * Reward item amount to be rewarded.
-     */
-    private final int mAmount;
+  /**
+   * Reward item amount to be rewarded.
+   */
+  private final int mAmount;
 
-    public ChartboostReward(int amount) {
-        this.mAmount = amount;
-    }
+  public ChartboostReward(int amount) {
+    this.mAmount = amount;
+  }
 
-    @Override
-    public String getType() {
-        // Charboost doesn't provide reward type.
-        return "";
-    }
+  @Override
+  public String getType() {
+    // Charboost doesn't provide reward type.
+    return "";
+  }
 
-    @Override
-    public int getAmount() {
-        return mAmount;
-    }
+  @Override
+  public int getAmount() {
+    return mAmount;
+  }
 }
