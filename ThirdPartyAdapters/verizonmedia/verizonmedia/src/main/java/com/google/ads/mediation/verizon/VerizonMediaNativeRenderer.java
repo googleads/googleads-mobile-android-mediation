@@ -83,7 +83,7 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
 
     VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
     VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
-    String[] adTypes = new String[]{"inline"};
+    String[] adTypes = new String[] {"100", "simpleImage"};
     NativeAdFactory nativeAdFactory = new NativeAdFactory(context, placementId, adTypes, this);
     nativeAdFactory.setRequestMetaData(
         VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
