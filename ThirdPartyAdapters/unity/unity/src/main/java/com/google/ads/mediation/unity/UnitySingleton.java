@@ -22,7 +22,6 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
@@ -62,12 +61,6 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton} instance.
      *
      * @return the {@link #unitySingletonInstance}.
-     */
-    private boolean isInitializing;
-
-    /**
-     * This flag indicates weather Unity
-     * @return
      */
     public static UnitySingleton getInstance() {
         if (unitySingletonInstance == null) {
@@ -120,11 +113,9 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", BuildConfig.VERSION_NAME);
         mediationMetaData.commit();
 
-
-
         UnitySingletonListener listener =
                 unitySingletonInstance.getUnitySingletonListenerInstance();
-        UnityAds.initialize(activity, gameId, listener, true, true);
+        UnityAds.initialize(activity, gameId, listener, false, true);
 
         return true;
     }
