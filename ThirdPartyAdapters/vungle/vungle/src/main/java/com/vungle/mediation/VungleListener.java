@@ -13,5 +13,5 @@ abstract class VungleListener {
 
     void onAdAvailable() {}
 
-    void onAdFailedToLoad() {}
+    void onAdFailedToLoad(int errorCode) {}
 }

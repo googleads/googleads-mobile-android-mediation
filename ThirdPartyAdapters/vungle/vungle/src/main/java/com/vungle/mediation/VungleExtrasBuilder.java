@@ -1,10 +1,14 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.Size;
+import android.text.TextUtils;
 
 import com.vungle.warren.AdConfig;
+
+import java.util.UUID;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
@@ -13,12 +17,13 @@ import com.vungle.warren.AdConfig;
 public final class VungleExtrasBuilder {
 
     public static final String EXTRA_USER_ID = "userId";
-    private static final String EXTRA_SOUND_ENABLED = "soundEnabled";
+    private static final String EXTRA_START_MUTED = "startMuted";
     private static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
     private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
-    private static final String EXTRA_AUTO_ROTATE_ENABLED = "autoRotateEnabled";
+    private static final String EXTRA_ORIENTATION = "adOrientation";
     static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
     static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
+    static final String UUID_KEY = "uniqueVungleRequestKey";
 
     private final Bundle mBundle = new Bundle();
 
@@ -31,8 +36,13 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
+    @Deprecated
     public VungleExtrasBuilder setSoundEnabled(boolean enabled) {
-        mBundle.putBoolean(EXTRA_SOUND_ENABLED, enabled);
+        return setStartMuted(!enabled);
+    }
+
+    public VungleExtrasBuilder setStartMuted(boolean muted) {
+        mBundle.putBoolean(EXTRA_START_MUTED, muted);
         return this;
     }
 
@@ -51,22 +61,31 @@ public final class VungleExtrasBuilder {
         return this;
     }
 
-    public VungleExtrasBuilder setAutoRotateEnabled(boolean enabled) {
-        mBundle.putBoolean(EXTRA_AUTO_ROTATE_ENABLED, enabled);
+    public VungleExtrasBuilder setAdOrientation(int adOrientation) {
+        mBundle.putInt(EXTRA_ORIENTATION, adOrientation);
+        return this;
+    }
+
+    public VungleExtrasBuilder setBannerUniqueRequestID(String uniqueID) {
+        mBundle.putString(UUID_KEY, uniqueID);
         return this;
     }
 
     public Bundle build() {
+        if (TextUtils.isEmpty(mBundle.getString(UUID_KEY, null))) {
+            mBundle.putString(UUID_KEY, UUID.randomUUID().toString());
+        }
         return mBundle;
     }
 
     public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
         AdConfig adConfig = new AdConfig();
+        adConfig.setMuted(true); // start muted by default.
         if (networkExtras != null) {
-            adConfig.setMuted(!networkExtras.getBoolean(EXTRA_SOUND_ENABLED, true));
+            adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, true));
             adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
             adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
-            adConfig.setAutoRotate(networkExtras.getBoolean(EXTRA_AUTO_ROTATE_ENABLED, false));
+            adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
         }
         return adConfig;
     }
