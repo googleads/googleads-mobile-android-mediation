@@ -11,31 +11,28 @@ import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
 import com.vungle.warren.VungleSettings;
+import com.vungle.warren.error.VungleException;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VungleInitializer implements InitCallback {
 
-    private static VungleInitializer instance;
-    private boolean mIsInitializing = false;
+    private static final VungleInitializer instance = new VungleInitializer();
+    private AtomicBoolean mIsInitializing = new AtomicBoolean(false);
 
     private ArrayList<VungleInitializationListener> mInitListeners;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
     public static VungleInitializer getInstance() {
-        if (instance == null) {
-            instance = new VungleInitializer();
-        }
         return instance;
     }
 
     private VungleInitializer() {
         mInitListeners = new ArrayList<>();
-    }
-
-    boolean isInitializing() {
-        return mIsInitializing;
+        Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
+                com.vungle.mediation.BuildConfig.VERSION_NAME.replace('.', '_'));
     }
 
     public boolean isInitialized() {
@@ -44,20 +41,16 @@ public class VungleInitializer implements InitCallback {
 
     public void initialize(final String appId, final Context context,
                            VungleInitializationListener listener) {
-        if (isInitializing()) {
-            mInitListeners.add(listener);
-            return;
-        }
 
         if (isInitialized()) {
             listener.onInitializeSuccess();
             return;
         }
 
-        mIsInitializing = true;
-
-        Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
-                com.vungle.warren.BuildConfig.VERSION_NAME.replace('.', '_'));
+        if (mIsInitializing.getAndSet(true)) {
+            mInitListeners.add(listener);
+            return;
+        }
 
         //Keep monitoring VungleSettings in case of any changes we need to re-init SDK to apply
         // updated settings.
@@ -100,11 +93,11 @@ public class VungleInitializer implements InitCallback {
                 mInitListeners.clear();
             }
         });
-        mIsInitializing = false;
+        mIsInitializing.set(false);
     }
 
     @Override
-    public void onError(final Throwable throwable) {
+    public void onError(final VungleException throwable) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -114,7 +107,7 @@ public class VungleInitializer implements InitCallback {
                 mInitListeners.clear();
             }
         });
-        mIsInitializing = false;
+        mIsInitializing.set(false);
     }
 
     @Override
