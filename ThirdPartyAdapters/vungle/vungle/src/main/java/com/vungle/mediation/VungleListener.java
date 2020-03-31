@@ -6,7 +6,15 @@ package com.vungle.mediation;
  */
 abstract class VungleListener {
 
-  void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {}
+  void onAdClick(String placementId) {}
+
+  void onAdEnd(String placementId) {}
+
+  void onAdRewarded(String placementId) {}
+
+  void onAdLeftApplication(String placementId) {}
+
+  void onAdClosed(String placementId) {}
 
   void onAdStart(String placement) {}
 

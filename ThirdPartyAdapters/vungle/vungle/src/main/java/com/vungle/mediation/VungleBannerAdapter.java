@@ -194,10 +194,39 @@ class VungleBannerAdapter {
         }
 
         @Override
+        @Deprecated
         public void onAdEnd(String placementId, boolean completed, boolean isCTAClicked) {
+        }
+
+        @Override
+        public void onAdEnd(String placementId) {
           VungleListener listener = getVungleListener();
           if (mPendingRequestBanner && listener != null) {
-            listener.onAdEnd(placementId, completed, isCTAClicked);
+            listener.onAdEnd(placementId);
+          }
+        }
+
+        @Override
+        public void onAdClick(String placementId) {
+          VungleListener listener = getVungleListener();
+          if (mPendingRequestBanner && listener != null) {
+            listener.onAdClick(placementId);
+          }
+        }
+
+        @Override
+        public void onAdRewarded(String placementId) {
+          VungleListener listener = getVungleListener();
+          if (mPendingRequestBanner && listener != null) {
+            listener.onAdRewarded(placementId);
+          }
+        }
+
+        @Override
+        public void onAdLeftApplication(String placementId) {
+          VungleListener listener = getVungleListener();
+          if (mPendingRequestBanner && listener != null) {
+            listener.onAdLeftApplication(placementId);
           }
         }
 
