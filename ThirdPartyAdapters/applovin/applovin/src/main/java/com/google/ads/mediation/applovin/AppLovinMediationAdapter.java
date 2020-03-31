@@ -47,6 +47,12 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private static final String DEFAULT_ZONE = "";
   private static boolean isRtbAd = true;
 
+  // AppLovin open-bidding banner ad renderer.
+  private AppLovinRtbBannerRenderer mRtbBannerRenderer;
+
+  // AppLovin open-bidding interstitial ad renderer.
+  private AppLovinRtbInterstitialRenderer mRtbInterstitialRenderer;
+
   // Rewarded video globals.
   public static final HashMap<String, AppLovinIncentivizedInterstitial> INCENTIVIZED_ADS =
       new HashMap<>();
@@ -238,9 +244,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
       MediationAdLoadCallback<MediationBannerAd,
           MediationBannerAdCallback> mediationAdLoadCallback) {
 
-    AppLovinRtbBannerRenderer bannerRenderer =
-        new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
-    bannerRenderer.loadAd();
+    mRtbBannerRenderer = new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    mRtbBannerRenderer.loadAd();
   }
 
   @Override
@@ -249,9 +255,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
       MediationAdLoadCallback<MediationInterstitialAd,
           MediationInterstitialAdCallback> callback) {
 
-    AppLovinRtbInterstitialRenderer interstitialRenderer =
-        new AppLovinRtbInterstitialRenderer(mediationInterstitialAdConfiguration, callback);
-    interstitialRenderer.loadAd();
+    mRtbInterstitialRenderer = new AppLovinRtbInterstitialRenderer(
+        mediationInterstitialAdConfiguration, callback);
+    mRtbInterstitialRenderer.loadAd();
   }
 
   @Override
