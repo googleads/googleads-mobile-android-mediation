@@ -17,7 +17,6 @@ import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -103,13 +102,13 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
       @Override
       public void failedToReceiveAd(final int code) {
-        log(ERROR, "Interstitial failed to load with error: " + code);
-
+        String errorMessage = createSDKError(code);
+        log(ERROR, errorMessage);
         AppLovinSdkUtils.runOnUiThread(new Runnable() {
           @Override
           public void run() {
             mMediationInterstitialListener.onAdFailedToLoad(
-                ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode(code));
+                ApplovinAdapter.this, code);
           }
         });
       }
@@ -209,13 +208,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         mSdk.getAdService().loadNextAd(appLovinAdSize, listener);
       }
     } else {
-      log(ERROR, "Failed to request banner with unsupported size");
+      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size");
+      log(ERROR, errorMessage);
       if (mediationBannerListener != null) {
         AppLovinSdkUtils.runOnUiThread(new Runnable() {
           @Override
           public void run() {
             mediationBannerListener.onAdFailedToLoad(
-                ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
           }
         });
       }
