@@ -2,6 +2,11 @@
 
 #### Version 1.5.0.0
 - Support for Verizon Media SDK v1.5.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- Verizon Media SDK 1.5.0.
 
 #### Version 1.4.0.0
 - Support for Verizon Media SDK v1.4.0.
