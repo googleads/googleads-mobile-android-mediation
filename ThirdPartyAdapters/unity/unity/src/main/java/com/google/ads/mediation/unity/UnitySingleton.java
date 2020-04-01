@@ -170,7 +170,6 @@ public final class UnitySingleton {
         public void onUnityAdsReady(String placementId) {
             // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
             // appropriate delegate.
-            Log.d("alice", "onUnityAdsReady: " + placementId);
             if (mPlacementsInUse.containsKey(placementId) &&
                     mPlacementsInUse.get(placementId).get() != null) {
                 mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
