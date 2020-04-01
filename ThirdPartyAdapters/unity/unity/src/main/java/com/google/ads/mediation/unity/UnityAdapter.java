@@ -129,6 +129,7 @@ public class UnityAdapter extends UnityMediationAdapter
                     if (mMediationInterstitialListener != null) {
                         mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
                     }
+                    UnitySingleton.getInstance().stopTrackingPlacement(placementId);
                 }
             }
         }
@@ -259,13 +260,26 @@ public class UnityAdapter extends UnityMediationAdapter
     @Override
     public void showInterstitial() {
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-            MetaData metadata = new MetaData((mActivityWeakReference.get()));
-            metadata.setCategory("mediation_adapter");
-            metadata.set(uuid, "show-interstitial");
-            metadata.set(uuid, mPlacementId);
-            metadata.commit();
-            // Request UnitySingleton to show interstitial ads.
-            UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+
+            // Add isReady check to prevent ready to no fill case
+            if (UnityAds.isReady(mPlacementId)) {
+                MetaData metadata = new MetaData((mActivityWeakReference.get()));
+                metadata.setCategory("mediation_adapter");
+                metadata.set(uuid, "show-interstitial");
+                metadata.set(uuid, mPlacementId);
+                metadata.commit();
+
+                // Request UnitySingleton to show interstitial ads.
+                UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+            } else {
+                Log.w(TAG, "Failed to show Unity Ads Interstitial.");
+                mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+                MetaData metadata = new MetaData((mActivityWeakReference.get()));
+                metadata.setCategory("mediation_adapter");
+                metadata.set(uuid, "fail-to-show-interstitial");
+                metadata.set(uuid, mPlacementId);
+                metadata.commit();
+            }
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdOpened(UnityAdapter.this);

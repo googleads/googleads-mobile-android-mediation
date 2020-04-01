@@ -244,4 +244,8 @@ public final class UnitySingleton {
             }
         }
     }
+
+    public void stopTrackingPlacement(String placementId){
+        mPlacementsInUse.remove(placementId);
+    }
 }

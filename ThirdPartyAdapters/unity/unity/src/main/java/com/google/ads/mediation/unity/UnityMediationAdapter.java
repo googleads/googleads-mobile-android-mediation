@@ -113,6 +113,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
                     if (mMediationAdLoadCallback != null) {
                         mMediationAdLoadCallback.onFailure("UnityAds failed to load: " + placementId);
                     }
+                    UnitySingleton.getInstance().stopTrackingPlacement(placementId);
                 }
             }
         }
@@ -292,6 +293,17 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             }
             return;
         }
+        // Add isReady check to prevent ready to no fill case
+        if (!UnityAds.isReady(mPlacementId) && mMediationRewardedAdCallback != null) {
+            mMediationRewardedAdCallback.onAdFailedToShow("Failed to show Unity Ads rewarded video.");
+            MetaData metadata = new MetaData((Activity) context);
+            metadata.setCategory("mediation_adapter");
+            metadata.set(uuid, "fail-to-show-rewarded");
+            metadata.set(uuid, mPlacementId);
+            metadata.commit();
+            return;
+        }
+
         Activity activity = (Activity) context;
 
         MetaData metadata = new MetaData((Activity) context);
