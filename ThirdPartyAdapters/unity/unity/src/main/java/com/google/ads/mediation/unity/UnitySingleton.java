@@ -30,6 +30,7 @@ import java.util.HashMap;
  * {@link UnityAdapter} instances and mediate their callbacks.
  */
 public final class UnitySingleton {
+    static final String TAG = UnitySingleton.class.getSimpleName();
 
     /**
      * A list of adapter listeners with their respective placement IDs to prevent duplicate
@@ -54,12 +55,6 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
      */
     private static UnitySingleton unitySingletonInstance;
-
-    /**
-     * Used by Unity Ads to track failures in the mediation lifecycle
-     */
-    private int impressionOrdinal;
-    private int missedImpressionOrdinal;
 
     /**
      * This method will return a
@@ -94,8 +89,8 @@ public final class UnitySingleton {
     /**
      * This method will initialize {@link UnityAds}.
      *
-     * @param activity    The Activity context.
-     * @param gameId      Unity Ads Game ID.
+     * @param activity The Activity context.
+     * @param gameId   Unity Ads Game ID.
      * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
      * otherwise.
      */
@@ -132,29 +127,18 @@ public final class UnitySingleton {
      * @param delegate Used to forward Unity Ads events to the adapter.
      */
     protected void loadAd(UnityAdapterDelegate delegate) {
-
-        // Calling load before UnityAds.initialize() will cause the placement to load on init
-        UnityAds.load(delegate.getPlacementId());
-
-        if (UnityAds.isInitialized()) {
-            //If ads are currently being loaded, wait for the callbacks from
-            // unitySingletonListenerInstance.
-            // Check if an AdMob Ad request has already loaded or is in progress of requesting
-            // an Ad from Unity Ads for a single placement, and fail if there's any.
-            if (mPlacementsInUse.containsKey(delegate.getPlacementId()) &&
-                    mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
-                Log.e(UnityMediationAdapter.TAG,
-                        "An ad is already loading for placement ID: " + delegate.getPlacementId());
-                delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR,
-                        delegate.getPlacementId());
-                return;
-            }
-
-            mPlacementsInUse.put(delegate.getPlacementId(), new WeakReference<>(delegate));
-            if (UnityAds.isReady(delegate.getPlacementId())) {
-                delegate.onUnityAdsReady(delegate.getPlacementId());
-            }
+        if (mPlacementsInUse.containsKey(delegate.getPlacementId()) &&
+                mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
+            Log.e(UnityMediationAdapter.TAG,
+                    "An ad is already loading for placement ID: " + delegate.getPlacementId());
+            delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR,
+                    delegate.getPlacementId());
+            return;
         }
+
+        mPlacementsInUse.put(delegate.getPlacementId(), new WeakReference<>(delegate));
+
+        UnityAds.load(delegate.getPlacementId());
     }
 
     /**
@@ -168,20 +152,7 @@ public final class UnitySingleton {
 
         // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
         // Unity Ads fails to shown an ad).
-
-        if(UnityAds.isReady(delegate.getPlacementId())) {
-            // Notify UnityAds that the adapter made a successful show request
-            MediationMetaData metadata = new MediationMetaData(activity);
-            metadata.setOrdinal(++impressionOrdinal);
-            metadata.commit();
-
-            UnityAds.show(activity, delegate.getPlacementId());
-        } else {
-            // Notify UnityAds that the adapter failed to show
-            MediationMetaData metadata = new MediationMetaData(activity);
-            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
-            metadata.commit();
-        }
+        UnityAds.show(activity, delegate.getPlacementId());
     }
 
     /**
@@ -233,8 +204,9 @@ public final class UnitySingleton {
         public void onUnityAdsPlacementStateChanged(String placementId,
                                                     UnityAds.PlacementState oldState,
                                                     UnityAds.PlacementState newState) {
-            // The onUnityAdsReady and onUnityAdsError callback methods are used to forward Unity
-            // Ads SDK states to the adapters. No need to forward this callback to the adapters.
+            if (mPlacementsInUse.containsKey(placementId) && mPlacementsInUse.get(placementId).get() != null) {
+                mPlacementsInUse.get(placementId).get().onUnityAdsPlacementStateChanged(placementId, oldState, newState);
+            }
         }
 
         @Override
@@ -251,14 +223,29 @@ public final class UnitySingleton {
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            // An error occurred with Unity Ads. Send error event to the appropriate delegate.
-            if (mPlacementsInUse.containsKey(placementId) &&
-                    mPlacementsInUse.get(placementId).get() != null) {
-                mPlacementsInUse.get(placementId).get()
-                        .onUnityAdsError(unityAdsError, placementId);
-                mPlacementsInUse.remove(placementId);
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+            Log.w(TAG, "UnityAds error message: " + message);
+            // An initialization error occurred with Unity Ads. Send error event to all delegates.
+            if (unityAdsError.equals(UnityAds.UnityAdsError.NOT_INITIALIZED) || unityAdsError.equals(UnityAds.UnityAdsError.INITIALIZE_FAILED) ||
+                    unityAdsError.equals(UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL) || unityAdsError.equals(UnityAds.UnityAdsError.INVALID_ARGUMENT) ||
+                    unityAdsError.equals(UnityAds.UnityAdsError.AD_BLOCKER_DETECTED)) {
+                for (HashMap.Entry<String, WeakReference<UnityAdapterDelegate>> entry : mPlacementsInUse.entrySet()) {
+                    if (entry.getValue().get() != null) {
+                        entry.getValue().get().onUnityAdsError(UnityAds.UnityAdsError.NOT_INITIALIZED, entry.getValue().get().getPlacementId());
+                    }
+                    mPlacementsInUse.remove(entry.getKey());
+                }
+            } else if (mAdShowingAdapterDelegate != null) {
+                //handle show time error
+                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+                if (delegate != null) {
+                    delegate.onUnityAdsError(unityAdsError, delegate.getPlacementId());
+                }
             }
         }
+    }
+
+    public void stopTrackingPlacement(String placementId){
+        mPlacementsInUse.remove(placementId);
     }
 }
