@@ -130,7 +130,7 @@ public class SampleRewardedAd implements Parcelable {
         }
 
     Intent intent = new Intent(activity, SampleSDKAdsActivity.class);
-    intent.putExtra(SampleSDKAdsActivity.KEY_REWARDED_VIDEO_AD_EXTRA, this);
+    intent.putExtra(SampleSDKAdsActivity.KEY_REWARDED_AD_EXTRA, this);
     activity.startActivity(intent);
     }
 

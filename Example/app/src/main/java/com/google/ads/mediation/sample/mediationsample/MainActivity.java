@@ -17,7 +17,10 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -31,13 +34,13 @@ import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.RewardedVideoAd;
-import com.google.android.gms.ads.reward.RewardedVideoAdListener;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdCallback;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 /**
  * A simple {@link android.app.Activity} that displays adds using the sample adapter and sample
@@ -47,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
 
     private InterstitialAd customEventInterstitial;
     private InterstitialAd adapterInterstitial;
-    private RewardedVideoAd rewardedVideoAd;
+    private RewardedAd rewardedAd;
     private Button customEventButton;
     private Button adapterButton;
-    private Button adapterVideoButton;
+    private Button adapterRewardedButton;
     private AdLoader adapterNativeLoader;
     private AdLoader customEventNativeLoader;
 
@@ -252,74 +255,70 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Sample adapter rewarded video button.
-        adapterVideoButton = (Button) findViewById(R.id.adapter_rewarded_button);
-        adapterVideoButton.setOnClickListener(new View.OnClickListener() {
+        //Sample adapter rewarded ad button.
+        adapterRewardedButton = (Button) findViewById(R.id.adapter_rewarded_button);
+        adapterRewardedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (rewardedVideoAd.isLoaded()) {
-                    rewardedVideoAd.show();
-                } else {
-                    loadRewardedVideoAd();
+                if (!rewardedAd.isLoaded()) {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                    return;
                 }
+                RewardedAdCallback adCallback = new RewardedAdCallback() {
+                    @Override
+                    public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                        Toast.makeText(MainActivity.this,
+                                String.format("User earned reward. Type: %s, amount: %d",
+                                        rewardItem.getType(), rewardItem.getAmount()),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onRewardedAdOpened() {
+                        Toast.makeText(MainActivity.this,
+                                "Rewarded ad opened",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onRewardedAdClosed() {
+                        Toast.makeText(MainActivity.this,
+                                "Rewarded ad closed",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onRewardedAdFailedToShow(int i) {
+                        Toast.makeText(MainActivity.this,
+                                "Rewarded ad failed to show",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                };
+                rewardedAd.show(MainActivity.this, adCallback);
             }
         });
 
         /**
-         * Sample adapter rewarded video ad.
+         * Sample adapter rewarded ad.
          */
-        rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
-        rewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
+        rewardedAd = new RewardedAd(this, getString(R.string.adapter_rewarded_ad_unit_id));
+        RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
             @Override
-            public void onRewardedVideoAdLoaded() {
-                adapterVideoButton.setEnabled(true);
-                adapterVideoButton.setText("Show SampleAdapter Rewarded Video");
+            public void onRewardedAdLoaded() {
+                adapterRewardedButton.setEnabled(true);
+                adapterRewardedButton.setText("Show SampleAdapter Rewarded Ad");
             }
 
             @Override
-            public void onRewardedVideoAdOpened() {}
-
-            @Override
-            public void onRewardedVideoStarted() {}
-
-            @Override
-            public void onRewardedVideoAdClosed() {
-                loadRewardedVideoAd();
-            }
-
-            @Override
-            public void onRewarded(RewardItem rewardItem) {}
-
-            @Override
-            public void onRewardedVideoAdLeftApplication() {}
-
-            @Override
-            public void onRewardedVideoAdFailedToLoad(int errorCode) {
+            public void onRewardedAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
-                        "Sample adapter rewarded video ad failed with code: " + errorCode,
-                        Toast.LENGTH_SHORT).show();
-                adapterVideoButton.setEnabled(true);
-                adapterVideoButton.setText("Load SampleAdapter Rewarded Video");
+                        String.format("Sample adapter rewarded ad failed with code %d", errorCode),
+                        Toast.LENGTH_LONG).show();
+                adapterRewardedButton.setEnabled(true);
+                adapterRewardedButton.setText("Load SampleAdapter Rewarded Ad");
             }
-
-            @Override
-            public void onRewardedVideoCompleted() {}
-        });
-
-        loadRewardedVideoAd();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Activity resumed, update the current activity in Sample SDK's sample rewarded video.
-        rewardedVideoAd.resume(MainActivity.this);
-    }
-
-    private void loadRewardedVideoAd() {
-        adapterVideoButton.setEnabled(false);
-        rewardedVideoAd.loadAd(getString(R.string.adapter_rewarded_video_ad_unit_id),
-                new AdRequest.Builder().build());
+        };
+        rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
     }
 
     private void loadAdapterNativeAd(Bundle extras) {
