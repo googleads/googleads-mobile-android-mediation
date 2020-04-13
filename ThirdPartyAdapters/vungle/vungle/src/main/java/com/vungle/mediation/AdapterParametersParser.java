@@ -12,6 +12,7 @@ class AdapterParametersParser {
   private static final String TAG = VungleManager.class.getSimpleName();
 
   static class Config {
+
     private String appId;
     private String requestUniqueId;
 

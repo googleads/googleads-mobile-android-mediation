@@ -22,26 +22,63 @@ class VungleBannerAdapter {
 
   private static final String TAG = VungleBannerAdapter.class.getSimpleName();
 
+  /**
+   * Vungle banner placement ID.
+   */
   @NonNull
   private String mPlacementId;
+
+  /**
+   * Unique Vungle banner request ID.
+   */
   @Nullable
   private String mUniquePubRequestId;
+
+  /**
+   * Vungle listener class to forward to the adapter.
+   */
   @Nullable
   private VungleListener mVungleListener;
+
+  /**
+   * Container for Vungle's banner ad view.
+   */
   @NonNull
   private RelativeLayout mAdLayout;
+
+  /**
+   * Vungle ad configuration settings.
+   */
   @NonNull
   private AdConfig mAdConfig;
 
-  private boolean mPendingRequestBanner = false;
-  private boolean mVisibility = true;
+  /**
+   * Vungle ad object for non-MREC banner ads.
+   */
   @Nullable
   private VungleBanner mVungleBannerAd;
+
+  /**
+   * Vungle ad object for MREC banner ads.
+   */
   @Nullable
   private VungleNativeAd mVungleNativeAd;
 
+  /**
+   * Manager to handle Vungle banner ad requests.
+   */
   @NonNull
   private VungleManager mVungleManager;
+
+  /**
+   * Indicates whether a Vungle banner ad request is in progress.
+   */
+  private boolean mPendingRequestBanner = false;
+
+  /**
+   * Indicates the Vungle banner ad's visibility.
+   */
+  private boolean mVisibility = true;
 
   VungleBannerAdapter(@NonNull String placementId, @Nullable String uniquePubRequestId,
       @NonNull AdConfig adConfig) {
@@ -76,7 +113,7 @@ class VungleBannerAdapter {
 
           @Override
           public void onInitializeError(String errorMessage) {
-            Log.d(TAG, "SDK init failed:" + VungleBannerAdapter.this);
+            Log.d(TAG, "SDK init failed: " + VungleBannerAdapter.this);
             mVungleManager.removeActiveBannerAd(mPlacementId);
             if (mPendingRequestBanner && mVungleListener != null) {
               mVungleListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
@@ -134,7 +171,8 @@ class VungleBannerAdapter {
     this.mVisibility = visible;
     if (mVungleBannerAd != null) {
       mVungleBannerAd.setAdVisibility(visible);
-    } else if (mVungleNativeAd != null) {
+    }
+    if (mVungleNativeAd != null) {
       mVungleNativeAd.setAdVisibility(visible);
     }
   }

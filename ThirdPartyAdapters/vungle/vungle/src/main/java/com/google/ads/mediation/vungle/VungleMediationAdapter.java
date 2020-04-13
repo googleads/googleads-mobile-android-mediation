@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Mediation network adapter for Vungle.
+ */
 public class VungleMediationAdapter extends Adapter
     implements MediationRewardedAd, VungleInitializer.VungleInitializationListener,
     LoadAdCallback, PlayAdCallback {
@@ -91,14 +94,14 @@ public class VungleMediationAdapter extends Adapter
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
 
-    if (VungleInitializer.getInstance().isInitialized()) {
+    if (Vungle.isInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
 
     if (!(context instanceof Activity)) {
       initializationCompleteCallback
-          .onInitializationFailed("Vungle SDK requires an Activity context to initialize");
+          .onInitializationFailed("Vungle SDK requires an Activity context to initialize.");
       return;
     }
 
@@ -141,7 +144,7 @@ public class VungleMediationAdapter extends Adapter
 
     Context context = mediationRewardedAdConfiguration.getContext();
     if (!(context instanceof Activity)) {
-      mediationAdLoadCallback.onFailure("Vungle SDK requires an Activity context to initialize");
+      mediationAdLoadCallback.onFailure("Vungle SDK requires an Activity context to initialize.");
       return;
     }
 
@@ -170,7 +173,7 @@ public class VungleMediationAdapter extends Adapter
 
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
-    if (!VungleInitializer.getInstance().isInitialized()) {
+    if (!Vungle.isInitialized()) {
       String appID = serverParameters.getString(KEY_APP_ID);
       if (TextUtils.isEmpty(appID)) {
         String logMessage = "Failed to load ad from Vungle: Missing or Invalid App ID.";
@@ -307,8 +310,7 @@ public class VungleMediationAdapter extends Adapter
   // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
   // ad request to Vungle fails, and when an ad fails to play.
   @Override
-  public void onError(final String placementID,
-      final VungleException throwable) {
+  public void onError(final String placementID, final VungleException throwable) {
     mHandler.post(new Runnable() {
       @Override
       public void run() {

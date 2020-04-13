@@ -67,7 +67,7 @@ public class VungleManager {
       @Override
       public void onError(String placement, VungleException cause) {
         if (listener != null) {
-          listener.onAdFailedToLoad(0);
+          listener.onAdFailedToLoad(cause.getExceptionCode());
         }
       }
     });

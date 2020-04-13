@@ -33,14 +33,10 @@ public class VungleInitializer implements InitCallback {
         com.vungle.mediation.BuildConfig.VERSION_NAME.replace('.', '_'));
   }
 
-  public boolean isInitialized() {
-    return Vungle.isInitialized();
-  }
-
   public void initialize(final String appId, final Context context,
       VungleInitializationListener listener) {
 
-    if (isInitialized()) {
+    if (Vungle.isInitialized()) {
       listener.onInitializeSuccess();
       return;
     }
