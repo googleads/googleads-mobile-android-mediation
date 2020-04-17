@@ -150,7 +150,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
     Context applicationContext = context.getApplicationContext();
     applicationContextRef = new WeakReference<>(applicationContext);
-
     if (AppLovinUtils.androidManifestHasValidSdkKey(applicationContext)) {
       AppLovinSdk.getInstance(applicationContext).initializeSdk();
     }
@@ -160,7 +159,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
           .retrieveSdk(mediationConfig.getServerParameters(), applicationContextRef.get());
       sdk.initializeSdk();
     }
-
     initializationCompleteCallback.onInitializationSucceeded();
   }
 
