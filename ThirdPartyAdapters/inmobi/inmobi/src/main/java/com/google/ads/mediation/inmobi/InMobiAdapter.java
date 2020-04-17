@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -29,8 +30,6 @@ import com.inmobi.ads.listeners.BannerAdEventListener;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.ads.listeners.NativeAdEventListener;
 import com.inmobi.ads.listeners.VideoEventListener;
-import com.inmobi.sdk.InMobiSdk;
-import com.inmobi.unification.sdk.InitializationStatus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -105,42 +104,169 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
   //region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(Context context,
-      @NonNull MediationBannerListener listener,
+  public void requestBannerAd(final Context context,
+      final MediationBannerListener listener,
       Bundle serverParameters,
       AdSize mediationAdSize,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    mediationAdSize = getSupportedAdSize(context, mediationAdSize);
-    if (mediationAdSize == null) {
+      final MediationAdRequest mediationAdRequest,
+      final Bundle mediationExtras) {
+
+    final AdSize inMobiMediationAdSize = getSupportedAdSize(context, mediationAdSize);
+    final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
+    mBannerListener = listener;
+
+    if (inMobiMediationAdSize == null) {
       Log.w(TAG, "Failed to request ad, AdSize is null.");
       listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
 
-    if (!isSdkInitialized.get()) {
-      String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-      if (TextUtils.isEmpty(accountID)) {
-        Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      @InitializationStatus String status =
-          InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-      if (!status.equals(InitializationStatus.SUCCESS)) {
-        Log.e(TAG, "Failed to initialize InMobi SDK: " + status);
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      isSdkInitialized.set(true);
+    String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    if (TextUtils.isEmpty(accountID)) {
+      Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
+      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      return;
     }
 
-    long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
+    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+      @Override
+      public void onInitializeSuccess() {
+        createAndLoadBannerAd(context, placement, inMobiMediationAdSize, mediationAdRequest,
+            mediationExtras);
+      }
+
+      @Override
+      public void onInitializeError(Error error) {
+        Log.w(TAG, error.getMessage());
+        if (mBannerListener != null) {
+          mBannerListener.onAdFailedToLoad(InMobiAdapter.this,
+              AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
+      }
+
+    });
+  }
+
+  private AdSize getSupportedAdSize(Context context, AdSize adSize) {
+        /*
+            Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
+            320x50,
+            300x250,
+            728x90.
+         */
+
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(new AdSize(320, 50));
+    potentials.add(new AdSize(300, 250));
+    potentials.add(new AdSize(728, 90));
+    return InMobiAdapterUtils.findClosestSize(context, adSize, potentials);
+  }
+
+  @Override
+  public View getBannerView() {
+    return mWrappedAdView;
+  }
+  //endregion
+
+  //region MediationInterstitialAdapter implementation.
+  @Override
+  public void requestInterstitialAd(final Context context,
+      final MediationInterstitialListener listener,
+      Bundle serverParameters,
+      final MediationAdRequest mediationAdRequest,
+      final Bundle mediationExtras) {
+    final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
+    mInterstitialListener = listener;
+    final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    if (TextUtils.isEmpty(accountID)) {
+      Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
+      mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      return;
+    }
+
+    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+      @Override
+      public void onInitializeSuccess() {
+        createAndLoadInterstitialAd(context, placement, mediationAdRequest, mediationExtras);
+      }
+
+      @Override
+      public void onInitializeError(Error error) {
+        Log.w(TAG, error.getMessage());
+        if (mInterstitialListener != null) {
+          mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this,
+              AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
+      }
+    });
+  }
+
+  @Override
+  public void showInterstitial() {
+    if (mAdInterstitial.isReady()) {
+      Log.d(TAG, "Ad is ready to show");
+      mAdInterstitial.show();
+    }
+  }
+  //endregion
+
+  //region MediationNativeAdapter implementation.
+  @Override
+  public void requestNativeAd(final Context context,
+      final MediationNativeListener listener,
+      Bundle serverParameters,
+      final NativeMediationAdRequest mediationAdRequest,
+      final Bundle mediationExtras) {
+    mNativeMedAdReq = mediationAdRequest;
+    final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
+    mNativeListener = listener;
+
+    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()
+        && !mNativeMedAdReq.isAppInstallAdRequested()) {
+      Log.e(TAG, "Failed to request InMobi native ad: "
+          + "Unified Native Ad or App install Ad should be requested.");
+      mNativeListener.onAdFailedToLoad(this,
+          AdRequest.ERROR_CODE_INVALID_REQUEST);
+      return;
+    }
+
+    String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    if (TextUtils.isEmpty(accountID)) {
+      Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
+      listener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      return;
+    }
+
+    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+      @Override
+      public void onInitializeSuccess() {
+
+        createAndLoadNativeAd(context, placement, mNativeMedAdReq, mediationExtras);
+      }
+
+      @Override
+      public void onInitializeError(Error error) {
+        Log.w(TAG, error.getMessage());
+        if (mNativeListener != null) {
+          mNativeListener.onAdFailedToLoad(InMobiAdapter.this,
+              AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
+      }
+
+    });
+  }
+
+  //endregion
+
+  //region Banner adapter utility classes.
+  private void createAndLoadBannerAd(Context context, long placement, AdSize mediationAdSize,
+      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
     if (placement <= 0L) {
       Log.e(TAG, "Failed to request InMobi banner ad.");
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mBannerListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
     }
 
@@ -151,7 +277,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       adView = new InMobiBanner(context, placement);
     } catch (SdkNotInitializedException exception) {
       Log.e(TAG, "Failed to request InMobi banner ad.", exception);
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mBannerListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
     }
 
@@ -173,7 +300,6 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       mediationExtras = new Bundle();
     }
 
-    mBannerListener = listener;
     adView.setListener(new BannerAdEventListener() {
       @Override
       public void onUserLeftApplication(InMobiBanner inMobiBanner) {
@@ -252,63 +378,19 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     adView.load();
   }
 
-  private AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        /*
-            Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
-            320x50,
-            300x250,
-            728x90.
-         */
+  //region Interstitial adapter utility classes.
+  private void createAndLoadInterstitialAd(Context context, long placement,
+      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
-    ArrayList<AdSize> potentials = new ArrayList<>();
-    potentials.add(new AdSize(320, 50));
-    potentials.add(new AdSize(300, 250));
-    potentials.add(new AdSize(728, 90));
-    return InMobiAdapterUtils.findClosestSize(context, adSize, potentials);
-  }
-
-  @Override
-  public View getBannerView() {
-    return mWrappedAdView;
-  }
-  //endregion
-
-  //region MediationInterstitialAdapter implementation.
-  @Override
-  public void requestInterstitialAd(Context context,
-      MediationInterstitialListener listener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-
-    if (!isSdkInitialized.get()) {
-      String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-      if (TextUtils.isEmpty(accountID)) {
-        Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      @InitializationStatus String status =
-          InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-      if (!status.equals(InitializationStatus.SUCCESS)) {
-        Log.e(TAG, "Failed to initialize InMobi SDK: " + status);
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      isSdkInitialized.set(true);
-    }
-
-    long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     if (placement <= 0L) {
       Log.e(TAG, "Failed to request InMobi interstitial ad.");
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
-    }
 
-    this.mInterstitialListener = listener;
+    }
     try {
+
       mAdInterstitial = new InMobiInterstitial(context, placement,
           new InterstitialAdEventListener() {
 
@@ -386,7 +468,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
           });
     } catch (SdkNotInitializedException exception) {
       Log.e(TAG, "Failed to request InMobi interstitial ad.", exception);
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
     }
 
@@ -407,61 +490,19 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     mAdInterstitial.load();
   }
 
-  @Override
-  public void showInterstitial() {
-    if (mAdInterstitial.isReady()) {
-      Log.d(TAG, "Ad is ready to show");
-      mAdInterstitial.show();
-    }
-  }
-  //endregion
+  //region Native adapter utility classes.
+  private void createAndLoadNativeAd(final Context context, long placement,
+      final NativeMediationAdRequest mNativeMedAdReq, Bundle mediationExtras) {
 
-  //region MediationNativeAdapter implementation.
-  @Override
-  public void requestNativeAd(final Context context,
-      MediationNativeListener listener,
-      Bundle serverParameters,
-      final NativeMediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    this.mNativeMedAdReq = mediationAdRequest;
-
-    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()
-        && !mNativeMedAdReq.isAppInstallAdRequested()) {
-      Log.e(TAG, "Failed to request InMobi native ad: "
-          + "Unified Native Ad or App install Ad should be requested.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      return;
-    }
-
-    if (!isSdkInitialized.get()) {
-      String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-      if (TextUtils.isEmpty(accountID)) {
-        Log.w(TAG, "Failed to initialize InMobi SDK: Missing or invalid Account ID.");
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      @InitializationStatus String status =
-          InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-      if (!status.equals(InitializationStatus.SUCCESS)) {
-        Log.e(TAG, "Failed to initialize InMobi SDK: " + status);
-        listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        return;
-      }
-
-      isSdkInitialized.set(true);
-    }
-
-    long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    if (placementId <= 0L) {
+    if (placement <= 0L) {
       Log.e(TAG, "Failed to request InMobi native ad.");
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mNativeListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
     }
 
-    this.mNativeListener = listener;
     try {
-      mAdNative = new InMobiNative(context, placementId, new NativeAdEventListener() {
+      mAdNative = new InMobiNative(context, placement, new NativeAdEventListener() {
         @Override
         public void onAdLoadSucceeded(final InMobiNative imNativeAd) {
           Log.d(TAG, "InMobi Native Ad onAdLoadSucceeded");
@@ -479,14 +520,14 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
           }
 
-          if (mediationAdRequest.isUnifiedNativeAdRequested()) {
+          if (InMobiAdapter.this.mNativeMedAdReq.isUnifiedNativeAdRequested()) {
             InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
                 new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
                     imNativeAd,
                     mIsOnlyUrl,
                     mNativeListener);
             inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
-          } else if (mediationAdRequest.isAppInstallAdRequested()) {
+          } else if (InMobiAdapter.this.mNativeMedAdReq.isAppInstallAdRequested()) {
             InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
                 new InMobiAppInstallNativeAdMapper(
                     InMobiAdapter.this,
@@ -546,7 +587,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       });
     } catch (SdkNotInitializedException exception) {
       Log.e(TAG, "Failed to request InMobi native ad.", exception);
-      listener.onAdFailedToLoad(InMobiAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      mNativeListener.onAdFailedToLoad(InMobiAdapter.this,
+          AdRequest.ERROR_CODE_INTERNAL_ERROR);
       return;
     }
 
@@ -567,7 +609,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     });
 
     // Setting mediation key words to native ad object
-    Set<String> mediationKeyWords = mediationAdRequest.getKeywords();
+    Set<String> mediationKeyWords = mNativeMedAdReq.getKeywords();
     if (null != mediationKeyWords) {
       mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
     }
@@ -578,12 +620,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
      *  #2. Landing url
      */
     HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(mediationAdRequest);
+        InMobiAdapterUtils.createInMobiParameterMap(mNativeMedAdReq);
     mAdNative.setExtras(paramMap);
 
-    InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
+    InMobiAdapterUtils.setGlobalTargeting(mNativeMedAdReq, mediationExtras);
     mAdNative.load();
   }
-  //endregion
-
 }

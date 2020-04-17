@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -13,7 +14,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.inmobi.sdk.InMobiSdk;
-import com.inmobi.unification.sdk.InitializationStatus;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,7 +38,7 @@ public class InMobiMediationAdapter extends Adapter {
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
@@ -56,7 +56,7 @@ public class InMobiMediationAdapter extends Adapter {
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = InMobiSdk.getVersion();
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
@@ -73,7 +73,7 @@ public class InMobiMediationAdapter extends Adapter {
 
   @Override
   public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
+      final InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
     if (isSdkInitialized.get()) {
       initializationCompleteCallback.onInitializationSucceeded();
@@ -107,15 +107,17 @@ public class InMobiMediationAdapter extends Adapter {
       Log.w(TAG, message);
     }
 
-    @InitializationStatus String status =
-        InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj());
-    if (!status.equals(InitializationStatus.SUCCESS)) {
-      initializationCompleteCallback.onInitializationFailed(status);
-      return;
-    }
+    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+      @Override
+      public void onInitializeSuccess() {
+        initializationCompleteCallback.onInitializationSucceeded();
+      }
 
-    isSdkInitialized.set(true);
-    initializationCompleteCallback.onInitializationSucceeded();
+      @Override
+      public void onInitializeError(Error error) {
+        initializationCompleteCallback.onInitializationFailed(error.getMessage());
+      }
+    });
   }
 
   @Override
