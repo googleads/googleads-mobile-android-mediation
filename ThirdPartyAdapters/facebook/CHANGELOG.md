@@ -1,7 +1,12 @@
 ## Facebook Android Mediation Adapter Changelog
 
-#### Next Version
+#### 5.8.0.1
 - Added additional descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.8.0.
 
 #### 5.8.0.0
 - Verified compatibility with Facebook SDK v5.8.0.
