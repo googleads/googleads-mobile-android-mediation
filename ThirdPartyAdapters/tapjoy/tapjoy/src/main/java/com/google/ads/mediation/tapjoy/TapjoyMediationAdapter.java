@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.tapjoy.rtb.TapjoyRtbInterstitialRenderer;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -21,7 +23,10 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.tapjoy.BuildConfig;
+import com.tapjoy.TJError;
 import com.tapjoy.Tapjoy;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -35,13 +40,80 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   static final String MEDIATION_AGENT = "admob";
   // only used internally for Tapjoy SDK
   static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0";
+
+  /**
+   * TapJoy adapter errors.
+   */
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(value = {
+      ERROR_INVALID_SERVER_PARAMETERS,
+      ERROR_BANNER_SIZE_MISMATCH,
+      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+      ERROR_TAPJOY_INITIALIZATION,
+      ERROR_PRESENTATION_VIDEO_PLAYBACK,
+      ERROR_AD_ALREADY_REQUESTED,
+      ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+      ERROR_NO_CONTENT_AVAILABLE
+  })
+
+  public @interface Error {
+
+  }
+
+  /**
+   * Invalid server parameters.
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+  /**
+   * Banner size mismatch.
+   */
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+  /**
+   * Adapter requires an activity context to load ads.
+   */
+  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+  /**
+   * Tapjoy failed to initialize.
+   */
+  public static final int ERROR_TAPJOY_INITIALIZATION = 104;
+  /**
+   * Presentation error occurred during video playback.
+   */
+  public static final int ERROR_PRESENTATION_VIDEO_PLAYBACK = 105;
+  /**
+   * Tapjoy SDK can't load two ads for the same placement ID at once.
+   */
+  public static final int ERROR_AD_ALREADY_REQUESTED = 106;
+  /**
+   * App did not request unified native ads.
+   */
+  public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 107;
+  /**
+   * Tapjoy SDK has no content available.
+   */
+  public static final int ERROR_NO_CONTENT_AVAILABLE = 108;
+
+
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   */
+  public static String createAdapterError(@NonNull @TapjoyMediationAdapter.Error int code,
+      String description) {
+    return String.format("%d: %s", code, description);
+  }
+
+  public static String createSDKError(@NonNull TJError error) {
+    return String.format("%d: %s", error.code, error.message);
+  }
+
+
   /**
    * {@link Adapter} implementation
    */
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
@@ -59,7 +131,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = Tapjoy.getVersion();
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
@@ -80,8 +152,10 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed("Initialization Failed: "
-          + "Tapjoy SDK requires an Activity context to initialize");
+      String errorMessage = createAdapterError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Initialization Failed: "
+              + "Tapjoy SDK requires an Activity context to initialize");
+      initializationCompleteCallback.onInitializationFailed(errorMessage);
       return;
     }
 
@@ -107,8 +181,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
         Log.w(TAG, message);
       }
     } else {
-      initializationCompleteCallback.onInitializationFailed(
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Initialization failed: Missing or Invalid SDK key.");
+      initializationCompleteCallback.onInitializationFailed(errorMessage);
       return;
     }
 
@@ -127,8 +202,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
           @Override
           public void onInitializeFailed(String message) {
-            initializationCompleteCallback.onInitializationFailed("Initialization failed: "
-                + message);
+            String errorMessage = createAdapterError(ERROR_TAPJOY_INITIALIZATION,
+                "Initialization failed: " + message);
+            initializationCompleteCallback.onInitializationFailed(errorMessage);
           }
         });
   }

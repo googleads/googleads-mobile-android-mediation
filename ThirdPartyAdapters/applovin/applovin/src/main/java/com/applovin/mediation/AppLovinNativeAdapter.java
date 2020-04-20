@@ -1,10 +1,13 @@
 package com.applovin.mediation;
 
+import static
+    com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_REQUIRES_UNIFIED_NATIVE_ADS;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import com.applovin.sdk.AppLovinSdk;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
@@ -24,9 +27,12 @@ public class AppLovinNativeAdapter implements MediationNativeAdapter {
       final Bundle mediationExtras) {
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()
         && !nativeMediationAdRequest.isAppInstallAdRequested()) {
-      Log.e(TAG, "Failed to request native ad. Unified Native Ad or App install Ad should " +
-          "be requested");
-      mediationNativeListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          "Failed to request native ad. Unified Native Ad or App install Ad should " +
+              "be requested");
+      Log.e(TAG, errorMessage);
+      mediationNativeListener.onAdFailedToLoad(this,
+          ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
       return;
     }
 
