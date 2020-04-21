@@ -25,6 +25,7 @@ import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.google.android.gms.ads.mediation.NativeContentAdMapper;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.my.target.common.CachePolicy;
 import com.my.target.common.CustomParams;
 import com.my.target.common.NavigationType;
 import com.my.target.common.models.ImageData;
@@ -109,12 +110,14 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     NativeAd nativeAd = new NativeAd(slotId, context);
 
-    boolean autoLoadImages = true;
+    int cachePolicy = CachePolicy.IMAGE;
     if (options != null) {
-      autoLoadImages = !options.shouldReturnUrlsForImageAssets();
-      Log.d(TAG, "Set autoload images to " + autoLoadImages);
+      if (options.shouldReturnUrlsForImageAssets()) {
+        cachePolicy = CachePolicy.NONE;
+      }
+      Log.d(TAG, "Set cache policy to " + cachePolicy);
     }
-    nativeAd.setAutoLoadImages(autoLoadImages);
+    nativeAd.setCachePolicy(cachePolicy);
 
     CustomParams params = nativeAd.getCustomParams();
     Log.d(TAG, "Set gender to " + gender);
@@ -554,7 +557,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
   }
 
   /**
-   * A {@link MyTargetAdapter.MyTargetInterstitialListener} used to forward myTarget interstitial
+   * A {@link MyTargetNativeAdListener} used to forward myTarget native ads
    * events to Google.
    */
   private class MyTargetNativeAdListener implements NativeAd.NativeAdListener {
