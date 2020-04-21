@@ -416,8 +416,8 @@ public class SampleAdapter extends Adapter
             MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
             MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
                     mediationAdLoadCallback) {
-        SampleMediationRewardedAdEventLoader forwarder = new
-                SampleMediationRewardedAdEventLoader(
+        SampleMediationRewardedAdEventForwarder forwarder = new
+                SampleMediationRewardedAdEventForwarder(
                         mediationRewardedAdConfiguration, mediationAdLoadCallback);
         forwarder.load();
     }
