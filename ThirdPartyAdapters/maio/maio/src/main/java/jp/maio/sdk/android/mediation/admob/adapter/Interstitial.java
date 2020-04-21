@@ -14,40 +14,34 @@ import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.MaioAdsListenerInterface;
 
-/**
- * maio mediation adapter for AdMob Interstitial videos.
- */
+/** maio mediation adapter for AdMob Interstitial videos. */
 public class Interstitial extends MaioMediationAdapter
     implements MediationInterstitialAdapter, MaioAdsListenerInterface {
 
   private MediationInterstitialListener mMediationInterstitialListener;
 
-  //region MediationInterstitialAdapter implementation
+  // region MediationInterstitialAdapter implementation
   @Override
-  public void onDestroy() {
-
-  }
+  public void onDestroy() {}
 
   @Override
-  public void onPause() {
-
-  }
+  public void onPause() {}
 
   @Override
-  public void onResume() {
-
-  }
+  public void onResume() {}
 
   @Override
-  public void requestInterstitialAd(Context context,
+  public void requestInterstitialAd(
+      Context context,
       MediationInterstitialListener listener,
       Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
     if (!(context instanceof Activity)) {
-      Log.w(TAG, "Failed to request ad from Maio: " +
-          "Maio SDK requires an Activity context to load ads.");
+      Log.w(
+          TAG,
+          "Failed to request ad from Maio: Maio SDK requires an Activity context to load ads.");
       listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
@@ -68,13 +62,15 @@ public class Interstitial extends MaioMediationAdapter
 
     this.mMediationInterstitialListener = listener;
     MaioAds.setAdTestMode(mediationAdRequest.isTesting());
-    MaioAdsManager.getManager(mMediaID).initialize((Activity) context,
-        new MaioAdsManager.InitializationListener() {
-          @Override
-          public void onMaioInitialized() {
-            MaioAdsManager.getManager(mMediaID).loadAd(mZoneID, Interstitial.this);
-          }
-        });
+    MaioAdsManager.getManager(mMediaID)
+        .initialize(
+            (Activity) context,
+            new MaioAdsManager.InitializationListener() {
+              @Override
+              public void onMaioInitialized() {
+                MaioAdsManager.getManager(mMediaID).loadAd(mZoneID, Interstitial.this);
+              }
+            });
   }
 
   @Override
@@ -85,9 +81,9 @@ public class Interstitial extends MaioMediationAdapter
       this.mMediationInterstitialListener.onAdClosed(Interstitial.this);
     }
   }
-  //endregion
+  // endregion
 
-  //region MaioAdsListenerInterface implementation
+  // region MaioAdsListenerInterface implementation
   @Override
   public void onInitialized() {
     // Not called.
@@ -105,8 +101,8 @@ public class Interstitial extends MaioMediationAdapter
   public void onFailed(FailNotificationReason reason, String zoneId) {
     Log.w(TAG, "Failed to request ad from Maio: " + reason.toString());
     if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this,
-          AdRequest.ERROR_CODE_NO_FILL);
+      this.mMediationInterstitialListener.onAdFailedToLoad(
+          Interstitial.this, AdRequest.ERROR_CODE_NO_FILL);
     }
   }
 
@@ -141,6 +137,6 @@ public class Interstitial extends MaioMediationAdapter
       this.mMediationInterstitialListener.onAdClosed(Interstitial.this);
     }
   }
-  //endregion
+  // endregion
 
 }
