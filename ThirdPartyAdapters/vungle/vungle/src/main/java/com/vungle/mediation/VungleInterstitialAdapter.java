@@ -259,7 +259,24 @@ public class VungleInterstitialAdapter
 
     // Create the adLayout wrapper with the requested ad size, as Vungle's ad uses MATCH_PARENT for
     // its dimensions.
-    adLayout = new RelativeLayout(context);
+    adLayout = new RelativeLayout(context) {
+      @Override
+      protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (mBannerRequest != null) {
+          mBannerRequest.attach();
+        }
+      }
+
+      @Override
+      protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mBannerRequest != null) {
+          mBannerRequest.detach();
+        }
+      }
+    };
+
     int adLayoutHeight = adSize.getHeightInPixels(context);
     // If the height is 0 (e.g. for inline adaptive banner requests), use the closest supported size
     // as the height of the adLayout wrapper.

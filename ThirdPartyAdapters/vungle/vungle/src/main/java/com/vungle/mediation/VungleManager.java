@@ -9,6 +9,7 @@ import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.error.VungleException;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -119,9 +120,26 @@ public class VungleManager {
     return Vungle.isInitialized() && Vungle.getValidPlacements().contains(placementId);
   }
 
+  /**
+   * Workaround to finish and clean {@link VungleBannerAdapter} if {@link
+   * VungleInterstitialAdapter#onDestroy()} is not called and adapter was garbage collected.
+   */
+  private void cleanLeakedBannerAdapters() {
+    for (String id : new HashSet<>(mVungleBanners.keySet())) {
+      VungleBannerAdapter banner = mVungleBanners.get(id);
+      if (banner != null && !banner.hasAdapter()) {
+        banner = mVungleBanners.remove(id);
+        if (banner != null) {
+          banner.destroy();
+        }
+      }
+    }
+  }
+
   @Nullable
   synchronized VungleBannerAdapter getBannerRequest(
       @NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
+    cleanLeakedBannerAdapters();
     VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
     if (bannerRequest != null) {
       String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
