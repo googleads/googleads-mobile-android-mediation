@@ -28,7 +28,6 @@ Built and tested with:
 - Verified compatibility with Facebook SDK v5.7.1.
 - Added support for Facebook Native Banner ads when using open bidding.
 - Native ads now use 'Drawable' for the icon asset.
-- Added support for waterfall mediation.
 
 Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.
