@@ -230,8 +230,8 @@ public final class UnitySingleton {
             entry.getValue().get().onUnityAdsError(UnityAds.UnityAdsError.NOT_INITIALIZED,
                 entry.getValue().get().getPlacementId());
           }
-          mPlacementsInUse.remove(entry.getKey());
         }
+        mPlacementsInUse.clear();
       } else if (mAdShowingAdapterDelegate != null) {
         //handle show time error
         UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
