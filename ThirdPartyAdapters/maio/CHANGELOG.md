@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next Version
+- To limit timouts, ad requests will now immediately fail if maio does not have an ad ready to be shown.
+
 #### Version 1.1.11.0
 - Verified compatibility with maio SDK version 1.1.11.
 

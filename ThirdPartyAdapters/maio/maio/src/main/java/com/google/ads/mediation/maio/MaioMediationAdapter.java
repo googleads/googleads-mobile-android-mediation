@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -14,16 +16,17 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
-import jp.maio.sdk.android.MaioAdsListenerInterface;
 import jp.maio.sdk.android.mediation.admob.adapter.BuildConfig;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 
 public class MaioMediationAdapter extends Adapter
-    implements MediationRewardedAd, MaioAdsListenerInterface {
+    implements MediationRewardedAd, MaioAdsManagerListener {
 
   public static final String TAG = MaioMediationAdapter.class.getSimpleName();
 
@@ -32,6 +35,19 @@ public class MaioMediationAdapter extends Adapter
 
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
+
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(value = {ERROR_AD_NOT_AVAILABLE})
+  public @interface AdapterError {}
+
+  /** Maio does not yet have an ad available. */
+  public static final int ERROR_AD_NOT_AVAILABLE = 101;
+
+  /** Creates a formatted adapter error string given a code and description. */
+  @NonNull
+  public static String createAdapterError(@AdapterError int code, String description) {
+    return String.format("%d: %s", code, description);
+  }
 
   /** {@link Adapter} implementation */
   @Override
@@ -177,7 +193,7 @@ public class MaioMediationAdapter extends Adapter
     }
   }
 
-  // region MaioAdsListenerInterface implementation
+  // region MaioAdsManagerListener implementation
   @Override
   public void onInitialized() {
     // Not called.
@@ -196,6 +212,16 @@ public class MaioMediationAdapter extends Adapter
     if (mAdLoadCallback != null) {
       String logMessage = "Failed to request ad from Maio: " + reason.toString();
       Log.w(TAG, logMessage);
+      mAdLoadCallback.onFailure(logMessage);
+    }
+  }
+
+  @Override
+  public void onAdFailedToLoad(@AdapterError int code, @NonNull String errorMessage) {
+    String adapterError = createAdapterError(code, errorMessage);
+    String logMessage = "Failed to request ad from Maio: " + adapterError;
+    Log.w(TAG, logMessage);
+    if (mAdLoadCallback != null) {
       mAdLoadCallback.onFailure(logMessage);
     }
   }

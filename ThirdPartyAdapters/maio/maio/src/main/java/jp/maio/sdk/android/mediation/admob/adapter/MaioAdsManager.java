@@ -1,10 +1,13 @@
 package jp.maio.sdk.android.mediation.admob.adapter;
 
+import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_AD_NOT_AVAILABLE;
+import static com.google.ads.mediation.maio.MaioMediationAdapter.TAG;
+
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.google.ads.mediation.maio.MaioMediationAdapter;
+import com.google.ads.mediation.maio.MaioAdsManagerListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +36,7 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
   private InitializationStatus mInitState;
 
-  private HashMap<String, WeakReference<MaioAdsListenerInterface>> mListeners;
+  private HashMap<String, WeakReference<MaioAdsManagerListener>> mListeners;
 
   public static final String KEY_MEDIA_ID = "mediaId";
   public static final String KEY_ZONE_ID = "zoneId";
@@ -78,19 +81,22 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
         && this.mMaioInstance.canShow(zoneID);
   }
 
-  public void loadAd(String zoneID, MaioAdsListenerInterface listener) {
+  public void loadAd(String zoneID, MaioAdsManagerListener listener) {
     if (hasListener(zoneID)) {
-      Log.e(MaioMediationAdapter.TAG, "An ad has already been requested for zone ID: " + zoneID);
+      Log.e(TAG, "An ad has already been requested for zone ID: " + zoneID);
       listener.onFailed(FailNotificationReason.AD_STOCK_OUT, zoneID);
       return;
     }
 
-    Log.d(MaioMediationAdapter.TAG, "Requesting ad from zone ID: " + zoneID);
-    mListeners.put(zoneID, new WeakReference<>(listener));
-
-    if (canShowAd(zoneID)) {
-      listener.onChangedCanShow(zoneID, true);
+    Log.d(TAG, "Requesting ad from zone ID: " + zoneID);
+    // If maio does not have an ad ready to be shown, then we fail the ad request to avoid timeouts.
+    if (!canShowAd(zoneID)) {
+      listener.onAdFailedToLoad(ERROR_AD_NOT_AVAILABLE, "No ad available.");
+      return;
     }
+
+    mListeners.put(zoneID, new WeakReference<>(listener));
+    listener.onChangedCanShow(zoneID, true);
   }
 
   public boolean showAd(String zoneID) {
@@ -98,7 +104,7 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
       this.mMaioInstance.show(zoneID);
       return true;
     } else {
-      Log.e(MaioMediationAdapter.TAG, "Failed to show ad: Ad not ready for zone ID: " + zoneID);
+      Log.e(TAG, "Failed to show ad: Ad not ready for zone ID: " + zoneID);
       this.mListeners.remove(zoneID);
       return false;
     }
@@ -169,6 +175,7 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
   public interface InitializationListener {
 
+    /** Called when Maio SDK successfully initializes. */
     void onMaioInitialized();
   }
 }
