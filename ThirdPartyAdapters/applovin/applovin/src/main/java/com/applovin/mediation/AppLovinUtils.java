@@ -5,7 +5,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
@@ -13,19 +12,20 @@ import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-
 import java.util.ArrayList;
 
 /*
  * A helper class used by {@link AppLovinAdapter}.
  */
 public class AppLovinUtils {
+
   private static final String DEFAULT_ZONE = "";
 
   /**
    * Keys for retrieving values from the server parameters.
    */
   private static class ServerParameterKeys {
+
     private static final String SDK_KEY = "sdkKey";
     private static final String ZONE_ID = "zone_id";
   }
@@ -37,7 +37,6 @@ public class AppLovinUtils {
   public static AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
     final String sdkKey = (serverParameters != null) ?
         serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
-
     final AppLovinSdk sdk;
 
     if (!TextUtils.isEmpty(sdkKey)) {
@@ -48,7 +47,6 @@ public class AppLovinUtils {
 
     sdk.setPluginVersion(BuildConfig.VERSION_NAME);
     sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
-
     return sdk;
   }
 
@@ -140,11 +138,11 @@ public class AppLovinUtils {
   }
 
   /**
-   * Find the closest supported AdSize from the list of potentials to the provided size.
-   * Returns null if none are within given threshold size range.
+   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
+   * null if none are within given threshold size range.
    */
   public static AdSize findClosestSize(Context context,
-                                       AdSize original, ArrayList<AdSize> potentials) {
+      AdSize original, ArrayList<AdSize> potentials) {
     if (potentials == null || original == null) {
       return null;
     }
@@ -182,16 +180,13 @@ public class AppLovinUtils {
       return false;
     }
 
-    if (originalHeight * minHeightRatio > potentialHeight ||
-        originalHeight < potentialHeight) {
-      return false;
-    }
-    return true;
+    return !(originalHeight * minHeightRatio > potentialHeight) &&
+        originalHeight >= potentialHeight;
   }
 
   private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-      int area1 = size1.getWidth() * size1.getHeight();
-      int area2 = size2.getWidth() * size2.getHeight();
-      return area1 > area2 ? size1 : size2;
+    int area1 = size1.getWidth() * size1.getHeight();
+    int area2 = size2.getWidth() * size2.getHeight();
+    return area1 > area2 ? size1 : size2;
   }
 }

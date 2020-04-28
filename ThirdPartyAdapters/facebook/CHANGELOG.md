@@ -1,5 +1,25 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### Next version
+- Fixed incorrect variable reference which caused a crash in certain scenarios
+when loading native ads.
+
+#### 5.8.0.1
+- Added additional descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.8.0.
+
+#### 5.8.0.0
+- Verified compatibility with Facebook SDK v5.8.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- Facebook SDK version 5.8.0.
+
 #### 5.7.1.1
 - Added support for Facebook Audience Network adapter errors.
 - Added descriptive error codes and reasons for adapter load/show failures.
@@ -12,7 +32,6 @@ Built and tested with:
 - Verified compatibility with Facebook SDK v5.7.1.
 - Added support for Facebook Native Banner ads when using open bidding.
 - Native ads now use 'Drawable' for the icon asset.
-- Added support for waterfall mediation.
 
 Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.

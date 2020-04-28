@@ -1,8 +1,13 @@
 package com.applovin.mediation.rtb;
 
-import androidx.annotation.NonNull;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
+
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinAdViewDisplayErrorCode;
 import com.applovin.adview.AppLovinAdViewEventListener;
@@ -22,120 +27,116 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
  * Created by Thomas So on July 17 2018
  */
 public final class AppLovinRtbBannerRenderer
-        implements MediationBannerAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
-        AppLovinAdClickListener, AppLovinAdViewEventListener {
+    implements MediationBannerAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
+    AppLovinAdClickListener, AppLovinAdViewEventListener {
 
-    private static final String TAG = AppLovinRtbBannerRenderer.class.getSimpleName();
+  private static final String TAG = AppLovinRtbBannerRenderer.class.getSimpleName();
 
-    /**
-     * Data used to render an RTB banner ad.
-     */
-    private final MediationBannerAdConfiguration adConfiguration;
+  /**
+   * Data used to render an RTB banner ad.
+   */
+  private final MediationBannerAdConfiguration adConfiguration;
 
-    /**
-     * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
-     */
-    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
+  /**
+   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
+   */
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
 
-    /**
-     * Listener object to notify the Google Mobile Ads SDK of banner presentation events.
-     */
-    private MediationBannerAdCallback mBannerAdCallback;
-
-    private final AppLovinSdk sdk;
-    private final AppLovinAdSize adSize;
-    private AppLovinAdView adView;
+  /**
+   * Listener object to notify the Google Mobile Ads SDK of banner presentation events.
+   */
+  private MediationBannerAdCallback mBannerAdCallback;
+  private AppLovinAdView adView;
 
   public AppLovinRtbBannerRenderer(MediationBannerAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        this.adConfiguration = adConfiguration;
-        this.callback = callback;
+    this.adConfiguration = adConfiguration;
+    this.callback = callback;
 
-    // Convert requested size to AppLovin Ad Size.
-    this.adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(
-        adConfiguration.getContext(), adConfiguration.getAdSize());
-        this.sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
-                adConfiguration.getContext());
+  }
+
+  public void loadAd() {
+
+    Context context = adConfiguration.getContext();
+
+    AppLovinAdSize adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(
+        context, adConfiguration.getAdSize());
+
+    if (adSize == null) {
+      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size");
+      callback.onFailure(errorMessage);
+      return;
     }
 
-    public void loadAd() {
-        if (adSize != null) {
-            // Create adview object
-            adView = new AppLovinAdView(sdk, adSize, adConfiguration.getContext());
-            adView.setAdDisplayListener(this);
-            adView.setAdClickListener(this);
-            adView.setAdViewEventListener(this);
+    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
+        context);
+    adView = new AppLovinAdView(sdk, adSize, context);
+  }
 
-            // Load ad!
-            sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
-        } else {
-            callback.onFailure("Failed to request banner with unsupported size");
-        }
-    }
+  @NonNull
+  @Override
+  public View getView() {
+    return adView;
+  }
 
-    @NonNull
-    @Override
-    public View getView() {
-        return adView;
-    }
+  //region AppLovin Listeners
+  @Override
+  public void adReceived(AppLovinAd ad) {
+    Log.d(TAG, "Banner did load ad: " + ad.getAdIdNumber());
 
-    //region AppLovin Listeners
-    @Override
-    public void adReceived(AppLovinAd ad) {
-        Log.d(TAG, "Banner did load ad: " + ad.getAdIdNumber());
+    mBannerAdCallback = callback.onSuccess(AppLovinRtbBannerRenderer.this);
+    adView.renderAd(ad);
+  }
 
-        mBannerAdCallback = callback.onSuccess(AppLovinRtbBannerRenderer.this);
-        adView.renderAd(ad);
-    }
+  @Override
+  public void failedToReceiveAd(int code) {
+    Log.e(TAG, "Failed to load banner ad with error: " + code);
+    String errorMessage = createSDKError(code);
+    callback.onFailure(errorMessage);
+  }
 
-    @Override
-    public void failedToReceiveAd(int code) {
-        Log.e(TAG, "Failed to load banner ad with error: " + code);
+  @Override
+  public void adDisplayed(AppLovinAd ad) {
+    Log.d(TAG, "Banner displayed");
+    mBannerAdCallback.reportAdImpression();
+    mBannerAdCallback.onAdOpened();
+  }
 
-        int admobErrorCode = AppLovinUtils.toAdMobErrorCode(code);
-        callback.onFailure(Integer.toString(admobErrorCode));
-    }
+  @Override
+  public void adHidden(AppLovinAd ad) {
+    Log.d(TAG, "Banner hidden");
+  }
 
-    @Override
-    public void adDisplayed(AppLovinAd ad) {
-        Log.d(TAG, "Banner displayed");
-        mBannerAdCallback.reportAdImpression();
-        mBannerAdCallback.onAdOpened();
-    }
+  @Override
+  public void adClicked(AppLovinAd ad) {
+    Log.d(TAG, "Banner clicked");
+    mBannerAdCallback.reportAdClicked();
+  }
 
-    @Override
-    public void adHidden(AppLovinAd ad) {
-        Log.d(TAG, "Banner hidden");
-    }
+  @Override
+  public void adOpenedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
+    Log.d(TAG, "Banner opened fullscreen");
+    mBannerAdCallback.onAdOpened();
+  }
 
-    @Override
-    public void adClicked(AppLovinAd ad) {
-        Log.d(TAG, "Banner clicked");
-        mBannerAdCallback.reportAdClicked();
-    }
+  @Override
+  public void adClosedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
+    Log.d(TAG, "Banner closed fullscreen");
+    mBannerAdCallback.onAdClosed();
+  }
 
-    @Override
-    public void adOpenedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
-        Log.d(TAG, "Banner opened fullscreen");
-        mBannerAdCallback.onAdOpened();
-    }
+  @Override
+  public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView) {
+    Log.d(TAG, "Banner left application");
+    mBannerAdCallback.onAdLeftApplication();
+  }
 
-    @Override
-    public void adClosedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
-        Log.d(TAG, "Banner closed fullscreen");
-        mBannerAdCallback.onAdClosed();
-    }
-
-    @Override
-    public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView) {
-        Log.d(TAG, "Banner left application");
-        mBannerAdCallback.onAdLeftApplication();
-    }
-
-    @Override
-    public void adFailedToDisplay(AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code) {
-        Log.e(TAG, "Banner failed to display: " + code);
-    }
-    //endregion
+  @Override
+  public void adFailedToDisplay(AppLovinAd ad, AppLovinAdView adView,
+      AppLovinAdViewDisplayErrorCode code) {
+    Log.e(TAG, "Banner failed to display: " + code);
+  }
+  //endregion
 
 }

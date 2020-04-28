@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "6.15.0.0"
+    stringVersion = "6.16.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,9 +18,9 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 28
-        versionCode 6150000
+        versionCode 6160000
         versionName stringVersion
     }
 
@@ -33,15 +33,15 @@ android {
 }
 
 dependencies {
-    implementation 'com.ironsource.sdk:mediationsdk:6.15.0@jar'
+    implementation 'com.ironsource.sdk:mediationsdk:6.16.0'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.0.0'
+    implementation 'com.google.android.gms:play-services-ads:19.0.1'
 }
 
 /**
  * Jar task to make a sources jar.
  */
-task sourcesJar (type: Jar) {
+task sourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
