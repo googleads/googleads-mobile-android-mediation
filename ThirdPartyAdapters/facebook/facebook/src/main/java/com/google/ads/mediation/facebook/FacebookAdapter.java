@@ -888,7 +888,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
                 new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
           }
         } else {
-          Drawable iconDrawable = mNativeAd.getPreloadedIconViewDrawable();
+          Drawable iconDrawable = mNativeBannerAd.getPreloadedIconViewDrawable();
           FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
           setIcon(iconImage);
         }
@@ -914,11 +914,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().toString())));
         setImages(images);
         setBody(mNativeAd.getAdBodyText());
-        if (mNativeBannerAd.getAdIcon() == null) {
+        if (mNativeAd.getAdIcon() == null) {
           setIcon(new FacebookAdapterNativeAdImage());
         } else {
           setIcon(
-              new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+              new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().getUrl())));
         }
         setCallToAction(mNativeAd.getAdCallToAction());
 
@@ -1165,11 +1165,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         setImages(images);
         setBody(mNativeAd.getAdBodyText());
         if (mNativeAd.getPreloadedIconViewDrawable() == null) {
-          if (mNativeBannerAd.getAdIcon() == null) {
+          if (mNativeAd.getAdIcon() == null) {
             setIcon(new FacebookAdapterNativeAdImage());
           } else {
             setIcon(
-                new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
+                new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().getUrl())));
           }
         } else {
           Drawable iconDrawable = mNativeAd.getPreloadedIconViewDrawable();

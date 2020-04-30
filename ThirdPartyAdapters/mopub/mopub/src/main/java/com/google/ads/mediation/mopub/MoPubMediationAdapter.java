@@ -45,7 +45,7 @@ public class MoPubMediationAdapter extends Adapter
   private String adUnitID = "";
 
   // TODO: Remove `adExpired` parameter once MoPub fixes MoPubRewardedVideos.hasRewardedVideo()
-  // to return false for expired ads.
+  //  to return false for expired ads.
   private boolean adExpired;
 
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
@@ -68,7 +68,8 @@ public class MoPubMediationAdapter extends Adapter
       ERROR_HAS_REWARDED_AD,
       ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
       ERROR_DOWNLOADING_NATIVE_ASSETS,
-      ERROR_AD_NOT_READY
+      ERROR_AD_NOT_READY,
+      ERROR_MINIMUM_BANNER_SIZE
   })
 
   public @interface Error {
@@ -87,6 +88,7 @@ public class MoPubMediationAdapter extends Adapter
   public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 110;
   public static final int ERROR_DOWNLOADING_NATIVE_ASSETS = 111;
   public static final int ERROR_AD_NOT_READY = 112;
+  public static final int ERROR_MINIMUM_BANNER_SIZE = 113;
 
   /**
    * Creates a formatted adapter error string given a code and description.
