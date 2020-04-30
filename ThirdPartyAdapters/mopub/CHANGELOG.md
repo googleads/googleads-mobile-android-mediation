@@ -1,5 +1,12 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+- Adjusted support for flexible banner ad sizes.
+- Added new extras to the `MoPubAdapter.BundleBuilder` class:
+  * `setMinimumBannerWidth()` - minimum ad width allowed for MoPub banner ads.
+  * `setMinimumBannerHeight()` - minimum ad height allowed for MoPub banner ads.
+
 #### Version 5.11.1.1
 - Added descriptive error codes and reasons for adapter load/show failures.
 
