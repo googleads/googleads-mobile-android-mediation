@@ -92,18 +92,24 @@
             ads:adUnitId="@string/adapter_banner_ad_unit_id" />
 
         <Button
-            android:id="@+id/customevent_button"
+            android:id="@+id/customeventinterstitial_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Show SampleCustomEvent Interstitial" />
+            android:text="Show Sample Custom Event Interstitial Ad" />
 
         <Button
             android:id="@+id/adapter_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Show SampleAdapter Interstitial" />
+            android:text="Show Sample Adapter Interstitial" />
+
+        <Button
+            android:id="@+id/customeventrewarded_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Sample Custom Event Rewarded Ad" />
 
         <Button
             android:id="@+id/adapter_rewarded_button"
@@ -111,7 +117,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:enabled="false"
-            android:text="Show SampleAdapter Rewarded Video" />
+            android:text="Show Sample Adapter Rewarded Ad" />
 
     </LinearLayout>
 </ScrollView>

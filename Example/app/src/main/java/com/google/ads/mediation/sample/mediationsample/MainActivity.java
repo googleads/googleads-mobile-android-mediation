@@ -17,6 +17,7 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
+
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 
@@ -28,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.ads.mediation.sample.adapter.SampleAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -51,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private InterstitialAd customEventInterstitial;
     private InterstitialAd adapterInterstitial;
     private RewardedAd rewardedAd;
-    private Button customEventButton;
+    private RewardedAd customEventRewardedAd;
+    private Button customEventInterstitialButton;
+    private Button customEventRewardedButton;
     private Button adapterButton;
     private Button adapterRewardedButton;
     private AdLoader adapterNativeLoader;
@@ -73,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
         mCustomEventAdView.loadAd(new AdRequest.Builder().build());
 
         // Sample custom event interstitial button.
-        customEventButton = (Button) findViewById(R.id.customevent_button);
-        customEventButton.setOnClickListener(new View.OnClickListener() {
+        customEventInterstitialButton = (Button) findViewById(R.id.customeventinterstitial_button);
+        customEventInterstitialButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (customEventInterstitial.isLoaded()) {
@@ -93,17 +97,17 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,
                         "Error loading custom event interstitial, code " + errorCode,
                         Toast.LENGTH_SHORT).show();
-                customEventButton.setEnabled(true);
+                customEventInterstitialButton.setEnabled(true);
             }
 
             @Override
             public void onAdLoaded() {
-                customEventButton.setEnabled(true);
+                customEventInterstitialButton.setEnabled(true);
             }
 
             @Override
             public void onAdOpened() {
-                customEventButton.setEnabled(false);
+                customEventInterstitialButton.setEnabled(false);
             }
 
             @Override
@@ -135,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 .addNetworkExtrasBundle(SampleAdapter.class, extras)
                 .build();
         mAdapterAdView.loadAd(bannerAdRequest);
-        
+
         // Sample adapter interstitial button.
         adapterButton = (Button) findViewById(R.id.adapter_button);
         adapterButton.setOnClickListener(new View.OnClickListener() {
@@ -244,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 }).build();
 
         loadAdapterNativeAd(extras);
-        Button refreshAdapterNative = (Button) findViewById(R.id.adapternative_button);
+        final Button refreshAdapterNative = (Button) findViewById(R.id.adapternative_button);
         refreshAdapterNative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View unusedView) {
@@ -255,8 +259,55 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Sample adapter rewarded ad button.
+        // Sample Custom Event Rewarded Ad Button.
+        customEventRewardedButton = (Button) findViewById(R.id.customeventrewarded_button);
+        requestCustomEventRewardedAd();
+        customEventRewardedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!customEventRewardedAd.isLoaded()) {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                    return;
+                }
+                RewardedAdCallback adCallback = new RewardedAdCallback() {
+                    @Override
+                    public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                        Toast.makeText(MainActivity.this,
+                                String.format("User earned reward. Type: %s, amount: %d",
+                                        rewardItem.getType(), rewardItem.getAmount()),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onRewardedAdOpened() {
+                        Toast.makeText(MainActivity.this,
+                                "Rewarded ad opened",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onRewardedAdClosed() {
+                        Toast.makeText(MainActivity.this,
+                                "Rewarded ad closed",
+                                Toast.LENGTH_SHORT).show();
+                        requestCustomEventRewardedAd();
+                    }
+
+                    @Override
+                    public void onRewardedAdFailedToShow(int errorCode) {
+                        Toast.makeText(MainActivity.this,
+                                String.format("Rewarded ad failed to show with error code %d",
+                                        errorCode),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                };
+                customEventRewardedAd.show(MainActivity.this, adCallback);
+            }
+        });
+
+        //Sample Adapter Rewarded Ad Button.
         adapterRewardedButton = (Button) findViewById(R.id.adapter_rewarded_button);
+        requestAdapterRewardedAd();
         adapterRewardedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -285,40 +336,59 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this,
                                 "Rewarded ad closed",
                                 Toast.LENGTH_SHORT).show();
+                        requestAdapterRewardedAd();
                     }
 
                     @Override
-                    public void onRewardedAdFailedToShow(int i) {
+                    public void onRewardedAdFailedToShow(int errorCode) {
                         Toast.makeText(MainActivity.this,
-                                "Rewarded ad failed to show",
+                                String.format("Rewarded ad failed to show with error code %d",
+                                        errorCode),
                                 Toast.LENGTH_SHORT).show();
                     }
                 };
                 rewardedAd.show(MainActivity.this, adCallback);
             }
         });
+    }
 
-        /**
-         * Sample adapter rewarded ad.
-         */
-        rewardedAd = new RewardedAd(this, getString(R.string.adapter_rewarded_ad_unit_id));
+    private void requestAdapterRewardedAd() {
         RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
             @Override
             public void onRewardedAdLoaded() {
                 adapterRewardedButton.setEnabled(true);
-                adapterRewardedButton.setText("Show SampleAdapter Rewarded Ad");
             }
 
             @Override
             public void onRewardedAdFailedToLoad(int errorCode) {
                 Toast.makeText(MainActivity.this,
-                        String.format("Sample adapter rewarded ad failed with code %d", errorCode),
+                        String.format("Rewarded ad failed to load with code %d", errorCode),
                         Toast.LENGTH_LONG).show();
                 adapterRewardedButton.setEnabled(true);
-                adapterRewardedButton.setText("Load SampleAdapter Rewarded Ad");
             }
         };
+        rewardedAd = new RewardedAd(this, getString(R.string.adapter_rewarded_ad_unit_id));
         rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
+    }
+
+    private void requestCustomEventRewardedAd() {
+        RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
+            @Override
+            public void onRewardedAdLoaded() {
+                customEventRewardedButton.setEnabled(true);
+            }
+
+            @Override
+            public void onRewardedAdFailedToLoad(int errorCode) {
+                Toast.makeText(MainActivity.this,
+                        String.format("Rewarded ad failed to load with code %d", errorCode),
+                        Toast.LENGTH_LONG).show();
+                customEventRewardedButton.setEnabled(true);
+            }
+        };
+        customEventRewardedAd = new RewardedAd(this,
+                getString(R.string.customevent_rewarded_ad_unit_id));
+        customEventRewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
     }
 
     private void loadAdapterNativeAd(Bundle extras) {
@@ -333,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
      * {@link UnifiedNativeAd}.
      *
      * @param nativeAd the object containing the ad's assets
-     * @param adView          the view to be populated
+     * @param adView   the view to be populated
      */
     private void populateUnifiedNativeAdView(UnifiedNativeAd nativeAd, UnifiedNativeAdView adView) {
         // Set the media view. Media content will be automatically populated in the media view once
