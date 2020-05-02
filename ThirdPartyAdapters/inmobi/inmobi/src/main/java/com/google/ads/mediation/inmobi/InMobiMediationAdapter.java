@@ -1,12 +1,9 @@
 package com.google.ads.mediation.inmobi;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
