@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.util.DisplayMetrics;
 import android.util.Log;
+
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
@@ -31,8 +32,16 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdRequest;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitial;
@@ -40,16 +49,19 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialL
 import com.google.android.gms.ads.mediation.customevent.CustomEventNative;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
 
+import java.util.List;
+
 /**
  * A custom event for the Sample ad network. Custom events allow publishers to write their own
  * mediation adapter.
- *
+ * <p>
  * Since the custom event is not directly referenced by the Google Mobile Ads SDK and is instead
  * instantiated with reflection, it's possible that ProGuard might remove it. Use the {@link Keep}}
  * annotation to make sure that the adapter is not removed when minifying the project.
  */
 @Keep
-public class SampleCustomEvent implements CustomEventBanner, CustomEventInterstitial,
+public class SampleCustomEvent extends Adapter implements CustomEventBanner,
+        CustomEventInterstitial,
         CustomEventNative {
     protected static final String TAG = SampleCustomEvent.class.getSimpleName();
 
@@ -105,11 +117,11 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     @Override
     public void requestBannerAd(Context context,
-                                CustomEventBannerListener listener,
-                                String serverParameter,
-                                AdSize size,
-                                MediationAdRequest mediationAdRequest,
-                                Bundle customEventExtras) {
+            CustomEventBannerListener listener,
+            String serverParameter,
+            AdSize size,
+            MediationAdRequest mediationAdRequest,
+            Bundle customEventExtras) {
         /*
          * In this method, you should:
          *
@@ -167,10 +179,10 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     @Override
     public void requestInterstitialAd(Context context,
-                                      CustomEventInterstitialListener listener,
-                                      String serverParameter,
-                                      MediationAdRequest mediationAdRequest,
-                                      Bundle customEventExtras) {
+            CustomEventInterstitialListener listener,
+            String serverParameter,
+            MediationAdRequest mediationAdRequest,
+            Bundle customEventExtras) {
         /*
          * In this method, you should:
          *
@@ -207,10 +219,10 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
     @Override
     public void requestNativeAd(Context context,
-                                CustomEventNativeListener customEventNativeListener,
-                                String serverParameter,
-                                NativeMediationAdRequest nativeMediationAdRequest,
-                                Bundle extras) {
+            CustomEventNativeListener customEventNativeListener,
+            String serverParameter,
+            NativeMediationAdRequest nativeMediationAdRequest,
+            Bundle extras) {
         // Create one of the Sample SDK's ad loaders from which to request ads.
         SampleNativeAdLoader loader = new SampleNativeAdLoader(context);
         loader.setAdUnit(serverParameter);
@@ -254,5 +266,55 @@ public class SampleCustomEvent implements CustomEventBanner, CustomEventIntersti
 
         // Begin a request.
         loader.fetchAd(request);
+    }
+
+    // This method won't be called for custom events.
+    @Override
+    public void initialize(Context context,
+            InitializationCompleteCallback initializationCompleteCallback,
+            List<MediationConfiguration> list) {
+
+        return;
+    }
+
+    @Override
+    public VersionInfo getVersionInfo() {
+        String versionString = BuildConfig.VERSION_NAME;
+        String[] splits = versionString.split("\\.");
+
+        if (splits.length >= 4) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+            return new VersionInfo(major, minor, micro);
+        }
+
+        return new VersionInfo(0, 0, 0);
+    }
+
+    @Override
+    public VersionInfo getSDKVersionInfo() {
+        String versionString = SampleAdRequest.getSDKVersion();
+        String[] splits = versionString.split("\\.");
+
+        if (splits.length >= 3) {
+            int major = Integer.parseInt(splits[0]);
+            int minor = Integer.parseInt(splits[1]);
+            int micro = Integer.parseInt(splits[2]);
+            return new VersionInfo(major, minor, micro);
+        }
+
+        return new VersionInfo(0, 0, 0);
+    }
+
+    @Override
+    public void loadRewardedAd(
+            MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+                    mediationAdLoadCallback) {
+        SampleCustomEventRewardedAdLoader forwarder = new
+                SampleCustomEventRewardedAdLoader(
+                mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        forwarder.load();
     }
 }
