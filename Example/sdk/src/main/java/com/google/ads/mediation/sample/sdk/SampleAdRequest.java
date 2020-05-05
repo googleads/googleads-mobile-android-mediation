@@ -24,37 +24,39 @@ import java.util.Set;
  */
 public class SampleAdRequest {
 
-    /**
-     * Creates a new {@link SampleAdRequest}.
-     */
-    public SampleAdRequest() {
-    }
+  /**
+   * Creates a new {@link SampleAdRequest}.
+   */
+  public SampleAdRequest() {
+  }
 
-    /**
-     * Sets keywords for targeting purposes.
-     * @param keywords A set of keywords.
-     */
-    public void setKeywords(Set<String> keywords) {
-        // Normally we'd save the keywords. But since this is a sample network, we'll do nothing.
-    }
+  /**
+   * Sets keywords for targeting purposes.
+   *
+   * @param keywords A set of keywords.
+   */
+  public void setKeywords(Set<String> keywords) {
+    // Normally we'd save the keywords. But since this is a sample network, we'll do nothing.
+  }
 
-    /**
-     * Designates a request for test mode.
-     * @param useTesting {@code true} to enable test mode.
-     */
-    public void setTestMode(boolean useTesting) {
-        // Normally we'd save this flag. But since this is a sample network, we'll do nothing.
-    }
+  /**
+   * Designates a request for test mode.
+   *
+   * @param useTesting {@code true} to enable test mode.
+   */
+  public void setTestMode(boolean useTesting) {
+    // Normally we'd save this flag. But since this is a sample network, we'll do nothing.
+  }
 
-    public void setShouldAddAwesomeSauce(boolean shouldAddAwesomeSauce) {
-        // Normally we'd save this flag but since this is a sample network, we'll do nothing.
-    }
+  public void setShouldAddAwesomeSauce(boolean shouldAddAwesomeSauce) {
+    // Normally we'd save this flag but since this is a sample network, we'll do nothing.
+  }
 
-    public void setIncome(int income) {
-        // Normally we'd save this value but since this is a sample network, we'll do nothing.
-    }
+  public void setIncome(int income) {
+    // Normally we'd save this value but since this is a sample network, we'll do nothing.
+  }
 
-    public static String getSDKVersion() {
-        return BuildConfig.VERSION_NAME;
-    }
+  public static String getSDKVersion() {
+    return BuildConfig.VERSION_NAME;
+  }
 }
