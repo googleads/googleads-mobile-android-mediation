@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now requires an `Activity` context to initialize and load ads from AppLovin.
+
 #### Version 9.12.3.0
 - Verified compatibility with AppLovin SDK 9.12.3.
 

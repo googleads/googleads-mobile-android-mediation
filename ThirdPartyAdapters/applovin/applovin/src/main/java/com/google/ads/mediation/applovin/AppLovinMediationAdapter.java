@@ -4,6 +4,7 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinIncentivizedAdListener;
 import com.applovin.mediation.AppLovinUtils;
+import com.applovin.mediation.ApplovinAdapter;
 import com.applovin.mediation.BuildConfig;
 import com.applovin.mediation.rtb.AppLovinRtbBannerRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
@@ -39,7 +41,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,7 +48,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
     implements MediationRewardedAd, AppLovinAdLoadListener {
 
   private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
-  private static WeakReference<Context> applicationContextRef;
   private static final String DEFAULT_ZONE = "";
   private static boolean isRtbAd = true;
 
@@ -88,7 +88,8 @@ public class AppLovinMediationAdapter extends RtbAdapter
       ERROR_AD_ALREADY_REQUESTED,
       ERROR_PRESENTATON_AD_NOT_READY,
       ERROR_MAPPING_NATIVE_ASSETS,
-      ERROR_AD_FORMAT_UNSUPPORTED
+      ERROR_AD_FORMAT_UNSUPPORTED,
+      ERROR_CONTEXT_NOT_ACTIVITY
   })
 
   public @interface Error {
@@ -127,7 +128,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
    * Adapter does not support the ad format being requested.
    */
   public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
-
+  /**
+   * Context is not an Activity instance.
+   */
+  public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
   /**
    * Creates a formatted adapter error string given a code and description.
@@ -138,7 +142,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   public static String createSDKError(@NonNull int code) {
-    String message = "AppLovin SDK returned a failure callback";
+    String message = "AppLovin SDK returned a failure callback.";
     return String.format("%d: %s", code, message);
   }
 
@@ -146,17 +150,21 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public void initialize(Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
-    log(DEBUG, "Attempting to initialize SDK");
+    log(DEBUG, "Attempting to initialize SDK.");
 
-    Context applicationContext = context.getApplicationContext();
-    applicationContextRef = new WeakReference<>(applicationContext);
-    if (AppLovinUtils.androidManifestHasValidSdkKey(applicationContext)) {
-      AppLovinSdk.getInstance(applicationContext).initializeSdk();
+    if (!(context instanceof Activity)) {
+      initializationCompleteCallback.onInitializationFailed(
+          "AppLovin requires an Activity context to initialize.");
+      return;
+    }
+    Activity activity = (Activity) context;
+
+    if (AppLovinUtils.androidManifestHasValidSdkKey(activity)) {
+      AppLovinSdk.getInstance(activity).initializeSdk();
     }
 
     for (MediationConfiguration mediationConfig : mediationConfigurations) {
-      AppLovinSdk sdk = AppLovinUtils
-          .retrieveSdk(mediationConfig.getServerParameters(), applicationContextRef.get());
+      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), activity);
       sdk.initializeSdk();
     }
     initializationCompleteCallback.onInitializationSucceeded();
@@ -205,6 +213,16 @@ public class AppLovinMediationAdapter extends RtbAdapter
           MediationRewardedAdCallback> mediationAdLoadCallback) {
 
     adConfiguration = mediationRewardedAdConfiguration;
+    Context context = adConfiguration.getContext();
+
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      log(ERROR, "Failed to load rewarded ad from AppLovin: " + adapterError);
+      mediationAdLoadCallback.onFailure(adapterError);
+      return;
+    }
 
     if (mediationRewardedAdConfiguration.getBidResponse().equals("")) {
       isRtbAd = false;
@@ -214,7 +232,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
       synchronized (INCENTIVIZED_ADS_LOCK) {
         Bundle serverParameters = adConfiguration.getServerParameters();
         mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-        mSdk = AppLovinUtils.retrieveSdk(serverParameters, adConfiguration.getContext());
+        mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
         mNetworkExtras = adConfiguration.getMediationExtras();
         mMediationAdLoadCallback = mediationAdLoadCallback;
 
@@ -247,8 +265,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
     } else {
       mMediationAdLoadCallback = mediationAdLoadCallback;
       mNetworkExtras = adConfiguration.getMediationExtras();
-      mSdk = AppLovinUtils
-          .retrieveSdk(adConfiguration.getServerParameters(), adConfiguration.getContext());
+      mSdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
 
       // Create rewarded video object
       mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
