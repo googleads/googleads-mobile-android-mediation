@@ -17,8 +17,9 @@
 package com.google.ads.mediation.sample.sdk;
 
 /**
- *  A sample listener to listen for MediaView events.
+ * A sample listener to listen for MediaView events.
  */
 public interface SampleMediaViewListener {
-    void onVideoEnd();
+
+  void onVideoEnd();
 }

@@ -20,19 +20,20 @@ package com.google.ads.mediation.sample.sdk;
  * The size of an ad request to the sample ad network.
  */
 public class SampleAdSize {
-    private final int width;
-    private final int height;
 
-    public SampleAdSize(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
+  private final int width;
+  private final int height;
 
-    public int getWidth() {
-        return width;
-    }
+  public SampleAdSize(int width, int height) {
+    this.width = width;
+    this.height = height;
+  }
 
-    public int getHeight() {
-        return height;
-    }
+  public int getWidth() {
+    return width;
+  }
+
+  public int getHeight() {
+    return height;
+  }
 }

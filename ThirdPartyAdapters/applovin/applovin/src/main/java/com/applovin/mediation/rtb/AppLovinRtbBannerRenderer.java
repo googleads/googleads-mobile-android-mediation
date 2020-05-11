@@ -1,9 +1,11 @@
 package com.applovin.mediation.rtb;
 
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
@@ -56,11 +58,18 @@ public final class AppLovinRtbBannerRenderer
   }
 
   public void loadAd() {
-
     Context context = adConfiguration.getContext();
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load banner ad from AppLovin: " + adapterError);
+      callback.onFailure(adapterError);
+      return;
+    }
 
-    AppLovinAdSize adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(
-        context, adConfiguration.getAdSize());
+    AppLovinAdSize adSize =
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adConfiguration.getAdSize());
 
     if (adSize == null) {
       String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
@@ -69,8 +78,7 @@ public final class AppLovinRtbBannerRenderer
       return;
     }
 
-    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
-        context);
+    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
     adView = new AppLovinAdView(sdk, adSize, context);
   }
 

@@ -13,7 +13,9 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-public class SampleCustomEventRewardedAdLoader extends SampleRewardedAdListener implements MediationRewardedAd {
+public class SampleCustomEventRewardedAdLoader extends SampleRewardedAdListener implements
+    MediationRewardedAd {
+
   /**
    * Represents a {@link SampleRewardedAd}.
    */

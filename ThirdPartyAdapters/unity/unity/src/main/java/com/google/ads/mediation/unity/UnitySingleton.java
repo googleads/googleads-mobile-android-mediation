@@ -43,13 +43,12 @@ public final class UnitySingleton {
   private WeakReference<UnityAdapterDelegate> mAdShowingAdapterDelegate;
 
   /**
-   * The only instance of {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
+   * The only instance of {@link
+   * com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
    */
   private UnitySingletonListener unitySingletonListenerInstance;
 
-  /**
-   * The only instance of {@link com.google.ads.mediation.unity.UnitySingleton}.
-   */
+  /** The only instance of {@link com.google.ads.mediation.unity.UnitySingleton}. */
   private static UnitySingleton unitySingletonInstance;
 
   /**
@@ -69,8 +68,8 @@ public final class UnitySingleton {
   }
 
   /**
-   * This method will return the {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}
-   * instance.
+   * This method will return the {@link
+   * com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} instance.
    *
    * @return the {@link #unitySingletonListenerInstance}.
    */
@@ -87,7 +86,7 @@ public final class UnitySingleton {
    * @param activity The Activity context.
    * @param gameId Unity Ads Game ID.
    * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
-   * otherwise.
+   *     otherwise.
    */
   public boolean initializeUnityAds(Activity activity, String gameId) {
     // Check if the current device is supported by Unity Ads before initializing.
@@ -123,7 +122,8 @@ public final class UnitySingleton {
   protected void loadAd(UnityAdapterDelegate delegate) {
     if (mPlacementsInUse.containsKey(delegate.getPlacementId())
         && mPlacementsInUse.get(delegate.getPlacementId()).get() != null) {
-      Log.e(UnityMediationAdapter.TAG,
+      Log.e(
+          UnityMediationAdapter.TAG,
           "An ad is already loading for placement ID: " + delegate.getPlacementId());
       delegate.onUnityAdsError(UnityAds.UnityAdsError.INTERNAL_ERROR, delegate.getPlacementId());
       return;
@@ -154,9 +154,7 @@ public final class UnitySingleton {
    */
   private final class UnitySingletonListener implements IUnityAdsExtendedListener {
 
-    /**
-     * {@link IUnityAdsExtendedListener} implementation
-     */
+    /** {@link IUnityAdsExtendedListener} implementation */
     @Override
     public void onUnityAdsReady(String placementId) {
       // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
@@ -192,12 +190,13 @@ public final class UnitySingleton {
     }
 
     @Override
-    public void onUnityAdsPlacementStateChanged(String placementId,
-        UnityAds.PlacementState oldState,
-        UnityAds.PlacementState newState) {
+    public void onUnityAdsPlacementStateChanged(
+        String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
       if (mPlacementsInUse.containsKey(placementId)
           && mPlacementsInUse.get(placementId).get() != null) {
-        mPlacementsInUse.get(placementId).get()
+        mPlacementsInUse
+            .get(placementId)
+            .get()
             .onUnityAdsPlacementStateChanged(placementId, oldState, newState);
       }
     }
@@ -224,16 +223,20 @@ public final class UnitySingleton {
           || unityAdsError.equals(UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL)
           || unityAdsError.equals(UnityAds.UnityAdsError.INVALID_ARGUMENT)
           || unityAdsError.equals(UnityAds.UnityAdsError.AD_BLOCKER_DETECTED)) {
-        for (HashMap.Entry<String, WeakReference<UnityAdapterDelegate>> entry : mPlacementsInUse
-            .entrySet()) {
+        for (HashMap.Entry<String, WeakReference<UnityAdapterDelegate>> entry :
+            mPlacementsInUse.entrySet()) {
           if (entry.getValue().get() != null) {
-            entry.getValue().get().onUnityAdsError(UnityAds.UnityAdsError.NOT_INITIALIZED,
-                entry.getValue().get().getPlacementId());
+            entry
+                .getValue()
+                .get()
+                .onUnityAdsError(
+                    UnityAds.UnityAdsError.NOT_INITIALIZED,
+                    entry.getValue().get().getPlacementId());
           }
         }
         mPlacementsInUse.clear();
       } else if (mAdShowingAdapterDelegate != null) {
-        //handle show time error
+        // handle show time error
         UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
         if (delegate != null) {
           delegate.onUnityAdsError(unityAdsError, delegate.getPlacementId());

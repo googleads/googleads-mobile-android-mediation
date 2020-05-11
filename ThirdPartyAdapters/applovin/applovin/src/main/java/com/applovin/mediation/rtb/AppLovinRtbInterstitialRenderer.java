@@ -1,5 +1,9 @@
 package com.applovin.mediation.rtb;
 
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
+
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import com.applovin.adview.AppLovinInterstitialAd;
@@ -58,8 +62,18 @@ public final class AppLovinRtbInterstitialRenderer
   }
 
   public void loadAd() {
+    Context context = adConfiguration.getContext();
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load interstitial ad from AppLovin: " + adapterError);
+      callback.onFailure(adapterError);
+      return;
+    }
+
     // Create interstitial object
-    interstitialAd = AppLovinInterstitialAd.create(sdk, adConfiguration.getContext());
+    interstitialAd = AppLovinInterstitialAd.create(sdk, context);
     interstitialAd.setAdDisplayListener(this);
     interstitialAd.setAdClickListener(this);
     interstitialAd.setAdVideoPlaybackListener(this);

@@ -21,18 +21,20 @@ package com.google.ads.mediation.sample.sdk;
  * events that a typical ad network would provide.
  */
 public abstract class SampleNativeAdListener {
-    /**
-     * Called when a native ad is successfully fetched.
-     */
-    public void onNativeAdFetched(SampleNativeAd ad) {
-        // Default is to do nothing.
-    }
 
-    /**
-     * Called when an ad fetch fails.
-     * @param code The reason the fetch failed.
-     */
-    public void onAdFetchFailed(SampleErrorCode code) {
-        // Default is to do nothing.
-    }
+  /**
+   * Called when a native ad is successfully fetched.
+   */
+  public void onNativeAdFetched(SampleNativeAd ad) {
+    // Default is to do nothing.
+  }
+
+  /**
+   * Called when an ad fetch fails.
+   *
+   * @param code The reason the fetch failed.
+   */
+  public void onAdFetchFailed(SampleErrorCode code) {
+    // Default is to do nothing.
+  }
 }
