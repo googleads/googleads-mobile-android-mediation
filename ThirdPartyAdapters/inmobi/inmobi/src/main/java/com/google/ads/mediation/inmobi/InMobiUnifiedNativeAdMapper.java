@@ -133,7 +133,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     placeHolderView.addView(primaryView);
     int viewHeight = primaryView.getLayoutParams().height;
     if (viewHeight > 0) {
-      setMediaContentAspectRatio((float) (primaryView.getLayoutParams().width / viewHeight));
+      setMediaContentAspectRatio((float) primaryView.getLayoutParams().width / viewHeight);
     }
 
     setMediaView(placeHolderView);
