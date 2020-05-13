@@ -5,10 +5,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
@@ -17,6 +15,9 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -24,9 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
@@ -125,16 +123,21 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
-    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, 0);
-    if (primaryView == null) {
-      return;
-    }
+    placeHolderView.post(new Runnable() {
+      @Override
+      public void run() {
+        final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, placeHolderView.getMeasuredWidth());
+        if (primaryView == null) {
+          return;
+        }
 
-    placeHolderView.addView(primaryView);
-    int viewHeight = primaryView.getLayoutParams().height;
-    if (viewHeight > 0) {
-      setMediaContentAspectRatio((float) (primaryView.getLayoutParams().width / viewHeight));
-    }
+        placeHolderView.addView(primaryView);
+        int viewHeight = primaryView.getLayoutParams().height;
+        if (viewHeight > 0) {
+          setMediaContentAspectRatio((float)primaryView.getLayoutParams().width / viewHeight);
+        }
+      }
+    });
 
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();

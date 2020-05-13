@@ -129,12 +129,18 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
-    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, 0);
-    if (primaryView == null) {
-      return;
-    }
+    placeHolderView.post(new Runnable() {
+      @Override
+      public void run() {
+        final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, placeHolderView.getMeasuredWidth());
+        if (primaryView == null) {
+          return;
+        }
 
-    placeHolderView.addView(primaryView);
+        placeHolderView.addView(primaryView);
+      }
+    });
+
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
     setHasVideoContent(hasVideo);
