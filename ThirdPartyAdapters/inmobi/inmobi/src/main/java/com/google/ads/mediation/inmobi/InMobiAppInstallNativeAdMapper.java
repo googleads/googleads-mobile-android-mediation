@@ -130,7 +130,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
     placeHolderView.post(
-        new Runznable() {
+        new Runnable() {
           @Override
           public void run() {
             final View primaryView =
