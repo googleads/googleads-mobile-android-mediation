@@ -283,10 +283,8 @@ class InMobiAdapterUtils {
       return false;
     }
 
-    if (originalHeight * minHeightRatio > potentialHeight || originalHeight < potentialHeight) {
-      return false;
-    }
-    return true;
+    return !(originalHeight * minHeightRatio > potentialHeight)
+        && originalHeight >= potentialHeight;
   }
 
   private static AdSize getLargerByArea(AdSize size1, AdSize size2) {

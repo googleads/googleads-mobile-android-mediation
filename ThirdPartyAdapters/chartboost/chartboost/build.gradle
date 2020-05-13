@@ -30,12 +30,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-}
-
 dependencies {
     implementation 'com.chartboost:chartboost-sdk:8.0.2'
     implementation 'androidx.annotation:annotation:1.1.0'

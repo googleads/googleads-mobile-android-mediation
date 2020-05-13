@@ -1,6 +1,14 @@
 package com.google.ads.mediation.adcolony;
 
+import static
+    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
+import static
+    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
+import static
+    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -33,10 +41,10 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   public void render() {
+
     if (!adConfiguration.getBidResponse().equals("")) {
       isRtb = true;
     }
-
     boolean showPrePopup = false;
     boolean showPostPopup = false;
     Bundle serverParameters = adConfiguration.getServerParameters();
@@ -64,8 +72,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
       if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)) {
         String logMessage = "Failed to load ad from AdColony: " +
             "Only a maximum of one ad can be loaded per Zone ID.";
-        Log.e(TAG, logMessage);
-        mAdLoadCallback.onFailure(logMessage);
+        String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
+        Log.e(TAG, errorMessage);
+        mAdLoadCallback.onFailure(errorMessage);
         return;
       }
 
@@ -75,6 +84,7 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
       // Check if we have a valid zone and request the ad.
       if (adColonyConfigured && !TextUtils.isEmpty(requestedZone)) {
+
         AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
             AdColonyRewardedRenderer.this);
 
@@ -85,9 +95,10 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
         adColonyConfigured = false;
       }
       if (!adColonyConfigured) {
-        String logMessage = "Failed to request ad from AdColony: Internal Error";
-        Log.w(TAG, logMessage);
-        mAdLoadCallback.onFailure(logMessage);
+        String logMessage = "Failed to request ad from AdColony: Not configured";
+        String errorMessage = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED, logMessage);
+        Log.w(TAG, errorMessage);
+        mAdLoadCallback.onFailure(errorMessage);
       }
     }
   }
@@ -103,7 +114,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
   void onRequestNotFilled(AdColonyZone zone) {
     if (mAdLoadCallback != null) {
-      mAdLoadCallback.onFailure("Failed to load ad from AdColony.");
+      String errorMessage = createSdkError();
+      Log.w(TAG, errorMessage);
+      mAdLoadCallback.onFailure(errorMessage);
     }
   }
 
@@ -158,7 +171,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
     if (mAdColonyInterstitial != null) {
       mAdColonyInterstitial.show();
     } else {
-      mRewardedAdCallback.onAdFailedToShow("No ad to show.");
+      String errorMessage = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
+      Log.w(TAG, errorMessage);
+      mRewardedAdCallback.onAdFailedToShow(errorMessage);
     }
   }
 }

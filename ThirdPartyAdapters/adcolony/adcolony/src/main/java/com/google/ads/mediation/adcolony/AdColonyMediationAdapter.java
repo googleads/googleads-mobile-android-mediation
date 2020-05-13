@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyCustomMessage;
@@ -25,10 +27,13 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.jirbo.adcolony.AdColonyManager;
 import com.jirbo.adcolony.BuildConfig;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,8 +50,61 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   private AdColonyRewardedRenderer adColonyRewardedRenderer;
 
   /**
+   * AdColony adapter errors.
+   */
+  @IntDef(value = {
+      ERROR_ADCOLONY_SDK,
+      ERROR_REQUEST_INVALID,
+      ERROR_AD_ALREADY_REQUESTED,
+      ERROR_ADCOLONY_NOT_INITIALIZED,
+      ERROR_BANNER_SIZE_MISMATCH,
+      ERROR_PRESENTATION_AD_NOT_LOADED
+
+  })
+
+  @Retention(RetentionPolicy.SOURCE)
+  public @interface Error {
+
+  }
+
+  /**
+   * The AdColony SDK returned a failure callback.
+   */
+  public static final int ERROR_ADCOLONY_SDK = 100;
+  /**
+   * Missing server parameters.
+   */
+  public static final int ERROR_REQUEST_INVALID = 101;
+  /**
+   * The ad already was requested.
+   */
+  public static final int ERROR_AD_ALREADY_REQUESTED = 102;
+  /**
+   * The AdColony SDK returned an initialization error.
+   */
+  public static final int ERROR_ADCOLONY_NOT_INITIALIZED = 103;
+  /**
+   * The requested banner size does not map to a valid AdColony ad size.
+   */
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 104;
+  /**
+   * Presentation error due to ad not loaded.
+   */
+  public static final int ERROR_PRESENTATION_AD_NOT_LOADED = 105;
+
+  public static String createAdapterError(@NonNull @Error int error, String errorMessage) {
+    return String.format(Locale.US, "%d: %s", error, errorMessage);
+  }
+
+  public static String createSdkError() {
+    return String.format(Locale.US, "%d: %s", ERROR_ADCOLONY_SDK,
+        "AdColony SDK returned a failure callback");
+  }
+
+  /**
    * {@link Adapter} implementation
    */
+
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
@@ -106,7 +164,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
       // We need to include zone IDs from non-rewarded ads to configure the
       // AdColony SDK and avoid issues with Interstitial Ads.
-      ArrayList<String> zoneIDs = AdColonyManager.getInstance().parseZoneList(serverParameters);
+      ArrayList<String> zoneIDs = AdColonyManager.getInstance()
+          .parseZoneList(serverParameters);
       if (zoneIDs != null && zoneIDs.size() > 0) {
         zoneList.addAll(zoneIDs);
       }

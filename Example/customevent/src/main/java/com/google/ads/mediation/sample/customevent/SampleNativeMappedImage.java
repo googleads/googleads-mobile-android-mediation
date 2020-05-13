@@ -26,29 +26,29 @@ import com.google.android.gms.ads.formats.NativeAd;
  */
 public class SampleNativeMappedImage extends NativeAd.Image {
 
-    private final Drawable drawable;
-    private final Uri imageUri;
-    private final double scale;
+  private final Drawable drawable;
+  private final Uri imageUri;
+  private final double scale;
 
-    public SampleNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
-        this.drawable = drawable;
-        this.imageUri = imageUri;
-        this.scale = scale;
-    }
+  public SampleNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
+    this.drawable = drawable;
+    this.imageUri = imageUri;
+    this.scale = scale;
+  }
 
-    @Override
-    public Drawable getDrawable() {
-        return drawable;
-    }
+  @Override
+  public Drawable getDrawable() {
+    return drawable;
+  }
 
-    @Override
-    public Uri getUri() {
-        return imageUri;
-    }
+  @Override
+  public Uri getUri() {
+    return imageUri;
+  }
 
-    @Override
-    public double getScale() {
-        return scale;
-    }
+  @Override
+  public double getScale() {
+    return scale;
+  }
 
 }

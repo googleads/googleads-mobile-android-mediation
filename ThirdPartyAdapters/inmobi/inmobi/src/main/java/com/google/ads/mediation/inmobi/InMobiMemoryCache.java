@@ -15,8 +15,9 @@ import java.util.Map;
 class InMobiMemoryCache {
 
   private static final String TAG = "MemoryCache";
+  // Last argument true for LRU
   private final Map<String, Drawable> mCache = Collections.synchronizedMap(
-      new LinkedHashMap<String, Drawable>(10, 1.5f, true)); // Last argument true for LRU
+      new LinkedHashMap<String, Drawable>(10, 1.5f, true));
   // ordering.
   private long mSize = 0; // Current allocated size.
   private long mLimit = 1000000; // Max memory in bytes.

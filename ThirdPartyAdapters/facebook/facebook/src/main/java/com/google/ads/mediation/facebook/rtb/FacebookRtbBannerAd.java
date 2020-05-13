@@ -1,8 +1,9 @@
 package com.google.ads.mediation.facebook.rtb;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_REQUEST;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      String errorMessage = createAdapterError(ERROR_INVALID_REQUEST,
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad, placementID is null or empty.");
       Log.e(TAG, errorMessage);
       callback.onFailure(errorMessage);
@@ -73,7 +74,8 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
   @Override
   public void onError(Ad ad, AdError adError) {
-    callback.onFailure(adError.getErrorMessage());
+    String errorMessage = createSdkError(adError);
+    callback.onFailure(errorMessage);
   }
 
   @Override

@@ -41,8 +41,8 @@ public abstract class SampleRewardedAdListener {
   /**
    * Called when the user is eligible for a reward.
    *
-   * @param rewardType  the reward type.
-   * @param amount     the reward amount to be rewarded.
+   * @param rewardType the reward type.
+   * @param amount the reward amount to be rewarded.
    */
   public void onAdRewarded(final String rewardType, int amount) {
     // Default is do nothing.

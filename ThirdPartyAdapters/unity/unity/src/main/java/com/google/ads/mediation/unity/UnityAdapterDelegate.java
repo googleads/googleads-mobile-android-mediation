@@ -17,14 +17,13 @@ package com.google.ads.mediation.unity;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 
 /**
- * An {@link IUnityAdsExtendedListener} used to mediate callbacks and data between
- * {@link UnitySingleton} and {@link UnityAdapter}.
+ * An {@link IUnityAdsExtendedListener} used to mediate callbacks and data between {@link
+ * UnitySingleton} and {@link UnityAdapter}.
  */
 public interface UnityAdapterDelegate extends IUnityAdsExtendedListener {
 
-    /**
-     * @return the Unity Ads Placement ID associated with the adapter that implements this
-     * interface.
-     */
-    String getPlacementId();
+  /**
+   * @return the Unity Ads Placement ID associated with the adapter that implements this interface.
+   */
+  String getPlacementId();
 }
