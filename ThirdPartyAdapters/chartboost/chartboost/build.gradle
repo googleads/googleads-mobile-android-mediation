@@ -1,7 +1,6 @@
 plugins {
     id "com.jfrog.bintray" version "1.8.4"
 }
-
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
@@ -28,11 +27,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

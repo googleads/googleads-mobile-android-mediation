@@ -1,5 +1,12 @@
 package com.applovin.mediation.rtb;
 
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
+
+import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -41,9 +48,6 @@ public final class AppLovinRtbBannerRenderer
    * Listener object to notify the Google Mobile Ads SDK of banner presentation events.
    */
   private MediationBannerAdCallback mBannerAdCallback;
-
-  private final AppLovinSdk sdk;
-  private final AppLovinAdSize adSize;
   private AppLovinAdView adView;
 
   public AppLovinRtbBannerRenderer(MediationBannerAdConfiguration adConfiguration,
@@ -51,26 +55,31 @@ public final class AppLovinRtbBannerRenderer
     this.adConfiguration = adConfiguration;
     this.callback = callback;
 
-    // Convert requested size to AppLovin Ad Size.
-    this.adSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(
-        adConfiguration.getContext(), adConfiguration.getAdSize());
-    this.sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
-        adConfiguration.getContext());
   }
 
   public void loadAd() {
-    if (adSize != null) {
-      // Create adview object
-      adView = new AppLovinAdView(sdk, adSize, adConfiguration.getContext());
-      adView.setAdDisplayListener(this);
-      adView.setAdClickListener(this);
-      adView.setAdViewEventListener(this);
-
-      // Load ad!
-      sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
-    } else {
-      callback.onFailure("Failed to request banner with unsupported size");
+    Context context = adConfiguration.getContext();
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load banner ad from AppLovin: " + adapterError);
+      callback.onFailure(adapterError);
+      return;
     }
+
+    AppLovinAdSize adSize =
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adConfiguration.getAdSize());
+
+    if (adSize == null) {
+      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size");
+      callback.onFailure(errorMessage);
+      return;
+    }
+
+    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
+    adView = new AppLovinAdView(sdk, adSize, context);
   }
 
   @NonNull
@@ -91,9 +100,8 @@ public final class AppLovinRtbBannerRenderer
   @Override
   public void failedToReceiveAd(int code) {
     Log.e(TAG, "Failed to load banner ad with error: " + code);
-
-    int admobErrorCode = AppLovinUtils.toAdMobErrorCode(code);
-    callback.onFailure(Integer.toString(admobErrorCode));
+    String errorMessage = createSDKError(code);
+    callback.onFailure(errorMessage);
   }
 
   @Override

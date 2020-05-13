@@ -3,6 +3,7 @@ package com.mopub.mobileads.dfp.adapters;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_DOWNLOADING_NATIVE_ASSETS;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_MINIMUM_BANNER_SIZE;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_REQUIRES_UNIFIED_NATIVE_ADS;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_WRONG_NATIVE_TYPE;
@@ -24,6 +25,7 @@ import android.view.View;
 import com.google.ads.mediation.mopub.MoPubSingleton;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -65,7 +67,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
   public static final String TAG = MoPubAdapter.class.getSimpleName();
 
+  private Bundle mExtras;
   private MoPubView mMoPubView;
+  private Context mContext;
   private AdSize mAdSize;
 
   private MoPubInterstitial mMoPubInterstitial;
@@ -286,12 +290,12 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
   }
 
   @Override
-  public void requestBannerAd(Context context,
+  public void requestBannerAd(final Context context,
       MediationBannerListener mediationBannerListener,
       Bundle bundle,
-      AdSize adSize,
+      final AdSize adSize,
       MediationAdRequest mediationAdRequest,
-      Bundle bundle1) {
+      final Bundle mediationExtras) {
 
     String adUnit = bundle.getString(MOPUB_AD_UNIT_KEY);
     if (TextUtils.isEmpty(adUnit)) {
@@ -300,16 +304,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
       Log.w(TAG, errorMessage);
       mediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
           ERROR_INVALID_SERVER_PARAMETERS);
-      return;
-    }
-
-    mAdSize = getSupportedAdSize(context, adSize);
-    if (mAdSize == null) {
-      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "No supported MoPub ad size for size: " + mAdSize.toString());
-      Log.w(TAG, errorMessage);
-      mediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-          ERROR_BANNER_SIZE_MISMATCH);
       return;
     }
 
@@ -335,76 +329,13 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         new SdkInitializationListener() {
           @Override
           public void onInitializationFinished() {
+            mContext = context;
+            mAdSize = adSize;
+            mExtras = mediationExtras;
             mMoPubView.loadAd();
           }
         });
   }
-
-  private AdSize getSupportedAdSize(Context context, AdSize adSize) {
-    ArrayList<AdSize> potentials = new ArrayList<>(2);
-    potentials.add(AdSize.BANNER);
-    potentials.add(AdSize.MEDIUM_RECTANGLE);
-    potentials.add(AdSize.LEADERBOARD);
-    potentials.add(AdSize.WIDE_SKYSCRAPER);
-    Log.i(TAG, potentials.toString());
-    return findClosestSize(context, adSize, potentials);
-  }
-
-  // Start of helper code to remove when available in SDK
-
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(
-      Context context, AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
-        }
-      }
-    }
-    return largestPotential;
-  }
-
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth ||
-        originalWidth < potentialWidth) {
-      return false;
-    }
-
-    return !(originalHeight * minHeightRatio > potentialHeight) &&
-        originalHeight >= potentialHeight;
-  }
-
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
-  }
-  // End code to remove when available in SDK
 
   @Override
   public View getBannerView() {
@@ -517,18 +448,51 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
 
     @Override
     public void onBannerLoaded(MoPubView moPubView) {
-      if (!(mAdSize.getWidth() == moPubView.getAdWidth()
-          && mAdSize.getHeight() == moPubView.getAdHeight())) {
-        String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-            "The banner ad size loaded does not match the request size. Update the"
-                + " ad size on your MoPub UI to match the request size.");
-        Log.e(TAG, errorMessage);
+      // If the publisher provides a minimum ad size to be loaded, then that size will be verified
+      // against the ad size returned by MoPub.
+      if (mExtras != null) {
+        int minimumWidth = mExtras.getInt(BundleBuilder.ARG_MINIMUM_BANNER_WIDTH, 0);
+        int minimumHeight = mExtras.getInt(BundleBuilder.ARG_MINIMUM_BANNER_HEIGHT, 0);
+
+        if (minimumWidth > 0 && minimumHeight > 0
+            && (moPubView.getAdWidth() < minimumWidth || moPubView.getAdHeight() < minimumHeight)) {
+          String errorMessage = String.format(
+              "The loaded ad was smaller than the minimum required banner size. "
+                  + "Loaded size: %dx%d, minimum size: %dx%d", moPubView.getAdWidth(),
+              moPubView.getAdHeight(), minimumWidth, minimumHeight);
+          String logMessage = createAdapterError(ERROR_MINIMUM_BANNER_SIZE, errorMessage);
+          Log.e(TAG, logMessage);
+          mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, ERROR_MINIMUM_BANNER_SIZE);
+          return;
+        }
+      }
+
+      ArrayList<AdSize> potentials = new ArrayList<>();
+      potentials.add(new AdSize(moPubView.getAdWidth(), moPubView.getAdHeight()));
+      AdSize supportedAdSize = MediationUtils.findClosestSize(mContext, mAdSize, potentials);
+      if (supportedAdSize == null) {
+        // AdSize.SMART_BANNER returns -1 and -2 for getWidth() and getHeight().
+        // Use getWidthInPixels() and getHeightInPixels() and divide by density instead.
+        float density = mContext.getResources().getDisplayMetrics().density;
+        int requestedAdWidth = Math.round(mAdSize.getWidthInPixels(mContext) / density);
+        int requestedAdHeight = Math.round(mAdSize.getHeightInPixels(mContext) / density);
+
+        String errorMessage = String.format("The loaded ad is not large enough to match the "
+                + "requested banner size. Too allow smaller banner sizes too fill this request, "
+                + "call MoPubAdapter.BundleBuilder.setMinimumBannerWidth() and "
+                + "MoPubAdapter.BundleBuilder.setMinimumBannerHeight(), and pass MoPub extras "
+                + "into an ad request by calling AdRequest.Builder().addNetworkExtrasBundle("
+                + "MoPubAdapter.class, MoPubAdapter.BundleBuilder.build()).build(). "
+                + "Loaded ad size: %dx%d, requested size: %dx%d", moPubView.getAdWidth(),
+            moPubView.getAdHeight(), requestedAdWidth, requestedAdHeight);
+        String logMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH, errorMessage);
+        Log.w(TAG, logMessage);
         mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
             ERROR_BANNER_SIZE_MISMATCH);
         return;
       }
-      mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
 
+      mMediationBannerListener.onAdLoaded(MoPubAdapter.this);
     }
   }
 
@@ -670,15 +634,51 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     private static final String ARG_PRIVACY_ICON_SIZE_DP = "privacy_icon_size_dp";
 
     /**
+     * Key to add and obtain {@link #mMinimumBannerWidth}.
+     */
+    private static final String ARG_MINIMUM_BANNER_WIDTH = "minimum_banner_width";
+
+    /**
+     * Key to add and obtain {@link #mMinimumBannerHeight}.
+     */
+    private static final String ARG_MINIMUM_BANNER_HEIGHT = "minimum_banner_height";
+
+    /**
      * MoPub's privacy icon size in dp.
      */
     private int mPrivacyIconSizeDp;
+
+    /**
+     * Minimum allowable MoPub banner width.
+     */
+    private int mMinimumBannerWidth;
+
+    /**
+     * Minimum allowable MoPub banner height.
+     */
+    private int mMinimumBannerHeight;
 
     /**
      * Sets the privacy icon size in dp.
      */
     public BundleBuilder setPrivacyIconSize(int iconSizeDp) {
       mPrivacyIconSizeDp = iconSizeDp;
+      return BundleBuilder.this;
+    }
+
+    /**
+     * Sets the minimum allowable MoPub banner width.
+     */
+    public BundleBuilder setMinimumBannerWidth(int width) {
+      mMinimumBannerWidth = width;
+      return BundleBuilder.this;
+    }
+
+    /**
+     * Sets the minimum allowable MoPub banner height.
+     */
+    public BundleBuilder setMinimumBannerHeight(int height) {
+      mMinimumBannerHeight = height;
       return BundleBuilder.this;
     }
 
@@ -690,6 +690,8 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     public Bundle build() {
       Bundle bundle = new Bundle();
       bundle.putInt(ARG_PRIVACY_ICON_SIZE_DP, mPrivacyIconSizeDp);
+      bundle.putInt(ARG_MINIMUM_BANNER_WIDTH, mMinimumBannerWidth);
+      bundle.putInt(ARG_MINIMUM_BANNER_HEIGHT, mMinimumBannerHeight);
       return bundle;
     }
   }

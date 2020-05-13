@@ -3,6 +3,7 @@ package com.applovin.mediation;
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -17,7 +18,6 @@ import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -66,6 +66,16 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
       Bundle networkExtras) {
+
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      log(ERROR, "Failed to load interstitial ad from AppLovin: " + adapterError);
+      interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
+      return;
+    }
+
     // Store parent objects.
     mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
     mContext = context;
@@ -103,13 +113,13 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
       @Override
       public void failedToReceiveAd(final int code) {
-        log(ERROR, "Interstitial failed to load with error: " + code);
-
+        String errorMessage = createSDKError(code);
+        log(ERROR, errorMessage);
         AppLovinSdkUtils.runOnUiThread(new Runnable() {
           @Override
           public void run() {
             mMediationInterstitialListener.onAdFailedToLoad(
-                ApplovinAdapter.this, AppLovinUtils.toAdMobErrorCode(code));
+                ApplovinAdapter.this, code);
           }
         });
       }
@@ -185,6 +195,16 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       AdSize adSize,
       MediationAdRequest mediationAdRequest,
       Bundle networkExtras) {
+
+    if (!(context instanceof Activity)) {
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
+      log(ERROR, "Failed to load banner ad from AppLovin: " + adapterError);
+      mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
+      return;
+    }
+
     // Store parent objects
     mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
     mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
@@ -209,13 +229,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         mSdk.getAdService().loadNextAd(appLovinAdSize, listener);
       }
     } else {
-      log(ERROR, "Failed to request banner with unsupported size");
+      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size");
+      log(ERROR, errorMessage);
       if (mediationBannerListener != null) {
         AppLovinSdkUtils.runOnUiThread(new Runnable() {
           @Override
           public void run() {
             mediationBannerListener.onAdFailedToLoad(
-                ApplovinAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+                ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
           }
         });
       }

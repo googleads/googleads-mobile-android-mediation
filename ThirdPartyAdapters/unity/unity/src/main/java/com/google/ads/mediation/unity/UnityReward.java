@@ -16,20 +16,18 @@ package com.google.ads.mediation.unity;
 
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-/**
- * The {@link UnityReward} class is used to create rewards for users.
- */
+/** The {@link UnityReward} class is used to create rewards for users. */
 public class UnityReward implements RewardItem {
 
-    @Override
-    public String getType() {
-        // Unity Ads doesn't provide a reward type.
-        return "";
-    }
+  @Override
+  public String getType() {
+    // Unity Ads doesn't provide a reward type.
+    return "";
+  }
 
-    @Override
-    public int getAmount() {
-        // Unity Ads doesn't provide a reward amount.
-        return 1;
-    }
+  @Override
+  public int getAmount() {
+    // Unity Ads doesn't provide a reward amount.
+    return 1;
+  }
 }
