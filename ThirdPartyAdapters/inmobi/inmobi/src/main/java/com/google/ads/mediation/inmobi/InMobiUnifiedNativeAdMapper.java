@@ -123,21 +123,24 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
-    placeHolderView.post(new Runnable() {
-      @Override
-      public void run() {
-        final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, placeHolderView.getMeasuredWidth());
-        if (primaryView == null) {
-          return;
-        }
+    placeHolderView.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            final View primaryView =
+                mInMobiNative.getPrimaryViewOfWidth(
+                    context, null, placeHolderView, placeHolderView.getMeasuredWidth());
+            if (primaryView == null) {
+              return;
+            }
 
-        placeHolderView.addView(primaryView);
-        int viewHeight = primaryView.getLayoutParams().height;
-        if (viewHeight > 0) {
-          setMediaContentAspectRatio((float)primaryView.getLayoutParams().width / viewHeight);
-        }
-      }
-    });
+            placeHolderView.addView(primaryView);
+            int viewHeight = primaryView.getLayoutParams().height;
+            if (viewHeight > 0) {
+              setMediaContentAspectRatio((float) primaryView.getLayoutParams().width / viewHeight);
+            }
+          }
+        });
 
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
