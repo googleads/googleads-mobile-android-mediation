@@ -29,72 +29,73 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to
- * the Mobile Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
+ * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
+ * Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
  */
 public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-    private final SampleNativeAd sampleAd;
+  private final SampleNativeAd sampleAd;
 
-    public SampleUnifiedNativeAdMapper(SampleNativeAd ad) {
-        sampleAd = ad;
-        setHeadline(sampleAd.getHeadline());
-        setBody(sampleAd.getBody());
-        setCallToAction(sampleAd.getCallToAction());
-        setStarRating(sampleAd.getStarRating());
-        setStore(sampleAd.getStoreName());
-        setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
-        setAdvertiser(ad.getAdvertiser());
+  public SampleUnifiedNativeAdMapper(SampleNativeAd ad) {
+    sampleAd = ad;
+    setHeadline(sampleAd.getHeadline());
+    setBody(sampleAd.getBody());
+    setCallToAction(sampleAd.getCallToAction());
+    setStarRating(sampleAd.getStarRating());
+    setStore(sampleAd.getStoreName());
+    setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
+        SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+    setAdvertiser(ad.getAdvertiser());
 
-        List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
-        imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
-                SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
-        setImages(imagesList);
+    List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
+    imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
+        SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+    setImages(imagesList);
 
-        if (sampleAd.getPrice() != null) {
-            NumberFormat formatter = NumberFormat.getCurrencyInstance();
-            String priceString = formatter.format(sampleAd.getPrice());
-            setPrice(priceString);
-        }
-
-        Bundle extras = new Bundle();
-        extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
-        this.setExtras(extras);
-
-        setOverrideClickHandling(false);
-        setOverrideImpressionRecording(false);
-
-        setAdChoicesContent(sampleAd.getInformationIcon());
+    if (sampleAd.getPrice() != null) {
+      NumberFormat formatter = NumberFormat.getCurrencyInstance();
+      String priceString = formatter.format(sampleAd.getPrice());
+      setPrice(priceString);
     }
 
-    @Override
-    public void recordImpression() {
-        sampleAd.recordImpression();
-    }
+    Bundle extras = new Bundle();
+    extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
+    this.setExtras(extras);
 
-    @Override
-    public void handleClick(View view) {
-        sampleAd.handleClick(view);
-    }
+    setOverrideClickHandling(false);
+    setOverrideImpressionRecording(false);
 
-    // The Sample SDK doesn't do its own impression/click tracking, instead relies on its
-    // publishers calling the recordImpression and handleClick methods on its native ad object. So
-    // there's no need to pass it a reference to the View being used to display the native ad. If
-    // your mediated network does need a reference to the view, the following method can be used
-    // to provide one.
+    setAdChoicesContent(sampleAd.getInformationIcon());
+  }
+
+  @Override
+  public void recordImpression() {
+    sampleAd.recordImpression();
+  }
+
+  @Override
+  public void handleClick(View view) {
+    sampleAd.handleClick(view);
+  }
+
+  // The Sample SDK doesn't do its own impression/click tracking, instead relies on its
+  // publishers calling the recordImpression and handleClick methods on its native ad object. So
+  // there's no need to pass it a reference to the View being used to display the native ad. If
+  // your mediated network does need a reference to the view, the following method can be used
+  // to provide one.
 
 
-    @Override
-    public void trackViews(View containerView, Map<String, View> clickableAssetViews, Map<String, View> nonClickableAssetViews) {
-        super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
-        // If your ad network SDK does its own impression tracking, here is where you can track the
-        // top level native ad view and its individual asset views.
-    }
+  @Override
+  public void trackViews(View containerView, Map<String, View> clickableAssetViews,
+      Map<String, View> nonClickableAssetViews) {
+    super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
+    // If your ad network SDK does its own impression tracking, here is where you can track the
+    // top level native ad view and its individual asset views.
+  }
 
-    @Override
-    public void untrackView(View view) {
-        super.untrackView(view);
-        // Here you would remove any trackers from the View added in trackView.
-    }
+  @Override
+  public void untrackView(View view) {
+    super.untrackView(view);
+    // Here you would remove any trackers from the View added in trackView.
+  }
 }

@@ -22,6 +22,16 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+## Best Practices
+
+There are several coding practices that are applied to all adapters, for code readability, code consistency, and bug avoidance purposes.
+Please keep these in mind when making adapter modifications:
+
+1. All adapters should be formatted using [Google Style](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml).
+   Download the `intellij-java-google-style.xml` file and import it to Android Studio by going to **Settings > Editor > Code Style** and select **Scheme > Import Scheme**.
+   Once this is imported, you can reformat your code by going to **Code > Show Reformat File Dialog** and click **Run**.
+   Make sure that **Rearrange code** is not selected to avoid large diffs.
+
 # If you can't become a contributor
 
 If you can't become a contributor, but wish to share some code that illustrates

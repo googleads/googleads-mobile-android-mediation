@@ -1,8 +1,8 @@
-package com.google.ads.mediation.sample.adapter;
+package com.google.ads.mediation.sample.customevent;
 
 import android.app.Activity;
 import android.content.Context;
-
+import android.text.TextUtils;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
@@ -13,8 +13,8 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-public class SampleMediationRewardedAdEventForwarder extends SampleRewardedAdListener
-    implements MediationRewardedAd {
+public class SampleCustomEventRewardedAdLoader extends SampleRewardedAdListener implements
+    MediationRewardedAd {
 
   /**
    * Represents a {@link SampleRewardedAd}.
@@ -22,7 +22,7 @@ public class SampleMediationRewardedAdEventForwarder extends SampleRewardedAdLis
   private SampleRewardedAd sampleRewardedAd;
 
   /*
-   * Configurations used to load SampleRewardedAd.
+   * Configuration used to load SampleRewardedAd.
    */
   private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
@@ -33,13 +33,11 @@ public class SampleMediationRewardedAdEventForwarder extends SampleRewardedAdLis
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallBack;
 
   /**
-   * Used to forward rewarded video ad events to AdMob.
+   * Used to forward rewarded video ad events to the Google Mobile Ads SDK.
    */
   private MediationRewardedAdCallback rewardedAdCallback;
 
-
-  public SampleMediationRewardedAdEventForwarder(
-      MediationRewardedAdConfiguration adConfiguration,
+  public SampleCustomEventRewardedAdLoader(MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           adLoadCallback
   ) {
@@ -48,15 +46,25 @@ public class SampleMediationRewardedAdEventForwarder extends SampleRewardedAdLis
   }
 
   public void load() {
-    String adUnitID = mediationRewardedAdConfiguration.getServerParameters().getString("ad_unit");
+    String adUnitId = mediationRewardedAdConfiguration.getServerParameters().getString(
+        "ad_unit");
+    if (TextUtils.isEmpty(adUnitId)) {
+      mediationAdLoadCallBack.onFailure("Ad Unit ID is empty.");
+      return;
+    }
     SampleAdRequest request = new SampleAdRequest();
-    sampleRewardedAd = new SampleRewardedAd(adUnitID);
+    sampleRewardedAd = new SampleRewardedAd(adUnitId);
     sampleRewardedAd.loadAd(request);
   }
 
   @Override
   public void onRewardedAdLoaded() {
     rewardedAdCallback = mediationAdLoadCallBack.onSuccess(this);
+  }
+
+  @Override
+  public void onRewardedAdFailedToLoad(SampleErrorCode error) {
+    mediationAdLoadCallBack.onFailure(error.toString());
   }
 
   @Override
@@ -73,11 +81,6 @@ public class SampleMediationRewardedAdEventForwarder extends SampleRewardedAdLis
       return;
     }
     sampleRewardedAd.showAd(activity);
-  }
-
-  @Override
-  public void onRewardedAdFailedToLoad(SampleErrorCode error) {
-    mediationAdLoadCallBack.onFailure(error.toString());
   }
 
   @Override

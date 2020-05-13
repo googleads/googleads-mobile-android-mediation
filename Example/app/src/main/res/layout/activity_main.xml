@@ -7,111 +7,117 @@
     android:layout_marginTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
-    <LinearLayout
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="@dimen/activity_vertical_margin"
+      android:layout_marginLeft="@dimen/activity_vertical_margin"
+      android:layout_marginRight="@dimen/activity_vertical_margin"
+      android:layout_marginStart="@dimen/activity_vertical_margin"
+      android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/customeventnative_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SampleCustomEvent Native Ad"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
+
+    <FrameLayout
+        android:id="@+id/customeventnative_framelayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/activity_vertical_margin"
-        android:layout_marginLeft="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/activity_vertical_margin"
-        android:layout_marginStart="@dimen/activity_vertical_margin"
-        android:orientation="vertical">
+        android:layout_marginTop="@dimen/activity_vertical_margin" />
 
-        <TextView
-            android:id="@+id/customeventnative_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SampleCustomEvent Native Ad"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+    <Button
+        android:id="@+id/customeventnative_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Refresh" />
 
-        <FrameLayout
-            android:id="@+id/customeventnative_framelayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+    <TextView
+        android:id="@+id/adapternative_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="SampleAdapter Native Ad"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
 
-        <Button
-            android:id="@+id/customeventnative_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Refresh" />
+    <FrameLayout
+        android:id="@+id/adapternative_framelayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin" />
 
-        <TextView
-            android:id="@+id/adapternative_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:text="SampleAdapter Native Ad"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+    <Button
+        android:id="@+id/adapternative_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Refresh" />
 
-        <FrameLayout
-            android:id="@+id/adapternative_framelayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+    <TextView
+        android:id="@+id/customeventbanner_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="SampleCustomEvent Banner"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
 
-        <Button
-            android:id="@+id/adapternative_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Refresh" />
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/customevent_adview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/customevent_banner_ad_unit_id" />
 
-        <TextView
-            android:id="@+id/customeventbanner_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:text="SampleCustomEvent Banner"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+    <TextView
+        android:id="@+id/adapter_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="SampleAdapter Banner"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
 
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/customevent_adview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            ads:adSize="BANNER"
-            ads:adUnitId="@string/customevent_banner_ad_unit_id" />
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adapter_adview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/adapter_banner_ad_unit_id" />
 
-        <TextView
-            android:id="@+id/adapter_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:text="SampleAdapter Banner"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+    <Button
+        android:id="@+id/customeventinterstitial_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Show Sample Custom Event Interstitial Ad" />
 
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adapter_adview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            ads:adSize="BANNER"
-            ads:adUnitId="@string/adapter_banner_ad_unit_id" />
+    <Button
+        android:id="@+id/adapter_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Show Sample Adapter Interstitial" />
 
-        <Button
-            android:id="@+id/customevent_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Show SampleCustomEvent Interstitial" />
+    <Button
+        android:id="@+id/customeventrewarded_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show Sample Custom Event Rewarded Ad" />
 
-        <Button
-            android:id="@+id/adapter_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Show SampleAdapter Interstitial" />
+    <Button
+        android:id="@+id/adapter_rewarded_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:text="Show Sample Adapter Rewarded Ad" />
 
-        <Button
-            android:id="@+id/adapter_rewarded_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:enabled="false"
-            android:text="Show SampleAdapter Rewarded Video" />
-
-    </LinearLayout>
+  </LinearLayout>
 </ScrollView>
