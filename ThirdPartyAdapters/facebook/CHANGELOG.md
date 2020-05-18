@@ -1,5 +1,8 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now forwards an error if the FAN SDK encounters an error while presenting an interstitial/rewarded ad.
+
 #### 5.9.0.0
 - Verified compatibility with Facebook SDK v5.9.0.
 
