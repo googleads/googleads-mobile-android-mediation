@@ -33,7 +33,8 @@ android {
 dependencies {
     implementation 'com.unity3d.ads:unity-ads:3.4.2'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.0.1'
+
+    implementation 'com.google.android.gms:play-services-ads:19.1.0'
 }
 
 /**
