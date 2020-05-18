@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -122,6 +123,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     placeHolderView.setLayoutParams(
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+    placeHolderView.setGravity(Gravity.CENTER);
 
     placeHolderView.post(
         new Runnable() {
