@@ -1,5 +1,16 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 9.0.6.0
+- Verified compatibility with InMobi SDK version 9.0.6.
+- Fixed a bug that causes the primaryView of InMobi to disappear while scrolling 
+  in native feed integration
+- Fixed a bug that causes the primaryView of InMobi Native not being positioned 
+  center inside mediaView
+
+Built and test with:
+- Google Mobile Ads SDK version 19.1.0.
+- InMobi SDK version 9.0.6.
+
 #### Version 9.0.4.0
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
 

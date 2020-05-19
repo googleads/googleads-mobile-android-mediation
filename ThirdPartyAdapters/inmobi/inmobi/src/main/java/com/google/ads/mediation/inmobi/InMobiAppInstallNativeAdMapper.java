@@ -208,7 +208,10 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
   }
 
   @Override
-  public void trackViews(View view, Map<String, View> map, Map<String, View> map1) {
+  public void trackViews(
+      View containerView,
+      Map<String, View> clickableAssetViews,
+      Map<String, View> nonclickableAssetViews) {
     mInMobiNative.resume();
   }
 }
