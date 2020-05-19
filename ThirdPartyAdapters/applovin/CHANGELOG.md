@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed bug introduced in 9.11.4.1 where open bidding banner ads timeout.
+
 #### Version 9.12.6.0
 - Verified compatibility with AppLovin SDK 9.12.6.
 
