@@ -11,6 +11,13 @@ Built and test with:
 - Google Mobile Ads SDK version 19.1.0.
 - InMobi SDK version 9.0.6.
 
+#### Version 9.0.5.0
+- Verified compatibility with InMobi SDK version 9.0.5.
+
+Built and test with:
+- Google Mobile Ads SDK version 19.1.0.
+- InMobi SDK version 9.0.5.
+
 #### Version 9.0.4.0
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
 
