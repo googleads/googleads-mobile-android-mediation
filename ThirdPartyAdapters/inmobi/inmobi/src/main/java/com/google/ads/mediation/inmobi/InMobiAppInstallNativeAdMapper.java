@@ -5,11 +5,9 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.ads.AdRequest;
@@ -18,6 +16,9 @@ import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
 import com.inmobi.ads.InMobiNative;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -25,9 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * A {@link NativeAppInstallAdMapper} used to map an InMobi Native ad to Google Native App install
@@ -137,7 +135,7 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
           public void run() {
             final View primaryView =
                 mInMobiNative.getPrimaryViewOfWidth(
-                    context, null, placeHolderView, placeHolderView.getMeasuredWidth());
+                    context, null, placeHolderView, placeHolderView.getWidth());
             if (primaryView == null) {
               return;
             }
@@ -198,9 +196,6 @@ class InMobiAppInstallNativeAdMapper extends NativeAppInstallAdMapper {
     // Handle click.
     mInMobiNative.reportAdClickAndOpenLandingPage();
   }
-
-  @Override
-  public void trackView(View view) {}
 
   @Override
   public void untrackView(View view) {
