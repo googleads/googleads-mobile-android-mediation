@@ -131,7 +131,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           public void run() {
             final View primaryView =
                 mInMobiNative.getPrimaryViewOfWidth(
-                    context, null, placeHolderView, placeHolderView.getMeasuredWidth());
+                    context, null, placeHolderView, placeHolderView.getWidth());
             if (primaryView == null) {
               return;
             }
