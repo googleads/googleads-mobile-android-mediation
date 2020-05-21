@@ -296,6 +296,9 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
       final AdSize adSize,
       MediationAdRequest mediationAdRequest,
       final Bundle mediationExtras) {
+    mContext = context;
+    mAdSize = adSize;
+    mExtras = mediationExtras;
 
     String adUnit = bundle.getString(MOPUB_AD_UNIT_KEY);
     if (TextUtils.isEmpty(adUnit)) {
@@ -329,9 +332,6 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
         new SdkInitializationListener() {
           @Override
           public void onInitializationFinished() {
-            mContext = context;
-            mAdSize = adSize;
-            mExtras = mediationExtras;
             mMoPubView.loadAd();
           }
         });
