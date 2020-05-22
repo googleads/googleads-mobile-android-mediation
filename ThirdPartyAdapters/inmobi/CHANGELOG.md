@@ -2,10 +2,10 @@
 
 #### Version 9.0.6.0
 - Verified compatibility with InMobi SDK version 9.0.6.
-- Fixed a bug that causes the primaryView of InMobi to disappear while scrolling 
-  in native feed integration
-- Fixed a bug that causes the primaryView of InMobi Native not being positioned 
-  center inside mediaView
+- Native ads: Fixed a bug that causes the `primaryView` of InMobi to disappear
+while scrolling in native feed integration.
+- Native ads: Fixed a bug that causes the `primaryView` of InMobi not being
+positioned center inside the `mediaView`.
 
 Built and test with:
 - Google Mobile Ads SDK version 19.1.0.
