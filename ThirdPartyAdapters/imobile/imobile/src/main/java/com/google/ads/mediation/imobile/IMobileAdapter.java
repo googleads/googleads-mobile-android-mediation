@@ -132,10 +132,11 @@ public final class IMobileAdapter
     bannerView = new FrameLayout(activity);
     if (canScale(adSize, supportedAdSize)) {
       // Display scaling banner.
+      float scaleRatio = calcScaleRatio(adSize, supportedAdSize);
       bannerView.setLayoutParams(
-          new FrameLayout.LayoutParams(adSize.getWidthInPixels(activity),
-              adSize.getHeightInPixels(activity)));
-      ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView, calcRatio(adSize, supportedAdSize));
+          new FrameLayout.LayoutParams((int) (supportedAdSize.getWidthInPixels(activity) * scaleRatio),
+              (int) (supportedAdSize.getHeightInPixels(activity) * scaleRatio)));
+      ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView, scaleRatio);
     } else {
       // Display banner.
       bannerView.setLayoutParams(
@@ -145,14 +146,14 @@ public final class IMobileAdapter
     }
   }
 
-  private boolean canScale(AdSize baseAdSize, AdSize supportedAdSize) {
-    return supportedAdSize.getWidth() == 320 && supportedAdSize.getHeight() == 50
-        && (baseAdSize.getWidth() != 320 || baseAdSize.getHeight() != 50);
+  private boolean canScale(AdSize requestedAdSize, AdSize iMobileAdSize) {
+    return iMobileAdSize.getWidth() == 320 && iMobileAdSize.getHeight() == 50
+        && (requestedAdSize.getWidth() != 320 || requestedAdSize.getHeight() != 50);
   }
 
-  private float calcRatio(AdSize baseAdSize, AdSize supportedAdSize) {
-    return Math.min(((float) baseAdSize.getWidth() / supportedAdSize.getWidth()),
-        ((float) baseAdSize.getWidth() / supportedAdSize.getWidth()));
+  private float calcScaleRatio(AdSize requestedAdSize, AdSize iMobileAdSize) {
+    return Math.min(((float) requestedAdSize.getWidth() / iMobileAdSize.getWidth()),
+        ((float) requestedAdSize.getWidth() / iMobileAdSize.getWidth()));
   }
 
   @Override
