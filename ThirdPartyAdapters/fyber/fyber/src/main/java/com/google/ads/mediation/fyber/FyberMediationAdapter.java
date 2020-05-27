@@ -441,8 +441,14 @@ public class FyberMediationAdapter extends Adapter
       Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
 
       if (context != null) {
-        ((InneractiveFullscreenUnitController) mInterstitialSpot
-            .getSelectedUnitController()).show(context);
+        if (mInterstitialSpot.isReady()) {
+          ((InneractiveFullscreenUnitController) mInterstitialSpot
+                  .getSelectedUnitController()).show(context);
+        } else {
+          Log.w(TAG, "showInterstitial called, but Ad has expired.");
+          mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NETWORK_ERROR);
+
+        }
       } else {
         Log.w(TAG, "showInterstitial called, but context reference was lost.");
         mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
