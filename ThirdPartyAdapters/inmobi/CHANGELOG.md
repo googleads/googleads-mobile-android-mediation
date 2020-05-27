@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now includes proguard configuration as suggested by [InMobi's guidelines](https://support.inmobi.com/monetize/android-guidelines).
+
 #### Version 9.0.6.0
 - Verified compatibility with InMobi SDK version 9.0.6.
 - Native ads: Fixed a bug that causes the `primaryView` of InMobi to disappear
