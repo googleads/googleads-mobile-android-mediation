@@ -153,7 +153,7 @@ public final class IMobileAdapter
 
   private float calcScaleRatio(AdSize requestedAdSize, AdSize iMobileAdSize) {
     return Math.min(((float) requestedAdSize.getWidth() / iMobileAdSize.getWidth()),
-        ((float) requestedAdSize.getWidth() / iMobileAdSize.getWidth()));
+        ((float) requestedAdSize.getHeight() / iMobileAdSize.getHeight()));
   }
 
   @Override
