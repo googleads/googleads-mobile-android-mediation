@@ -23,7 +23,6 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import com.google.ads.mediation.mopub.MoPubSingleton;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -421,29 +420,11 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     }
 
     @Override
-    public void onBannerFailed(MoPubView moPubView,
-        MoPubErrorCode moPubErrorCode) {
-      try {
-        switch (moPubErrorCode) {
-          case NO_FILL:
-            mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_NO_FILL);
-            break;
-          case NETWORK_TIMEOUT:
-            mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_NETWORK_ERROR);
-            break;
-          case SERVER_ERROR:
-            mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_INVALID_REQUEST);
-            break;
-          default:
-            mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            break;
-        }
-      } catch (NoClassDefFoundError e) {
-      }
+    public void onBannerFailed(MoPubView moPubView, MoPubErrorCode moPubErrorCode) {
+      String errorSDKMessage = createSDKError(moPubErrorCode);
+      Log.w(TAG, errorSDKMessage);
+      mMediationBannerListener
+          .onAdFailedToLoad(MoPubAdapter.this, getMediationErrorCode(moPubErrorCode));
     }
 
     @Override
@@ -582,33 +563,10 @@ public class MoPubAdapter implements MediationNativeAdapter, MediationBannerAdap
     @Override
     public void onInterstitialFailed(MoPubInterstitial moPubInterstitial,
         MoPubErrorCode moPubErrorCode) {
-      try {
-        switch (moPubErrorCode) {
-          case NO_FILL:
-            mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_NO_FILL);
-            break;
-          case NETWORK_TIMEOUT:
-            mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_NETWORK_ERROR);
-            break;
-          case SERVER_ERROR:
-            mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_INVALID_REQUEST);
-            break;
-          case EXPIRED:
-            // MoPub Rewarded video ads expire after 4 hours.
-            Log.i(TAG, "The MoPub Ad has expired. Please make a new Ad Request.");
-            mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_NO_FILL);
-            break;
-          default:
-            mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this,
-                AdRequest.ERROR_CODE_INTERNAL_ERROR);
-            break;
-        }
-      } catch (NoClassDefFoundError e) {
-      }
+      String errorSDKMessage = createSDKError(moPubErrorCode);
+      Log.w(TAG, errorSDKMessage);
+      mMediationInterstitialListener
+          .onAdFailedToLoad(MoPubAdapter.this, getMediationErrorCode(moPubErrorCode));
     }
 
     @Override

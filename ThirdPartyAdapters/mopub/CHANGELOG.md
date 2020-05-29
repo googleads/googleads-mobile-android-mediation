@@ -1,5 +1,8 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Next Version
+- Further added descriptive error codes and reasons for adapter load failures.
+
 #### Version 5.12.0.0
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
 - Adjusted support for flexible banner ad sizes.
