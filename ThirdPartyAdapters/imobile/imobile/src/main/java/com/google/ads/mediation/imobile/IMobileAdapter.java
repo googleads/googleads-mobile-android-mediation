@@ -130,30 +130,21 @@ public final class IMobileAdapter
 
     // Create view to display banner ads.
     bannerView = new FrameLayout(activity);
-    if (canScale(adSize, supportedAdSize)) {
-      // Display scaling banner.
-      float scaleRatio = calcScaleRatio(adSize, supportedAdSize);
-      bannerView.setLayoutParams(
-          new FrameLayout.LayoutParams((int) (supportedAdSize.getWidthInPixels(activity) * scaleRatio),
-              (int) (supportedAdSize.getHeightInPixels(activity) * scaleRatio)));
-      ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView, scaleRatio);
-    } else {
-      // Display banner.
-      bannerView.setLayoutParams(
-          new FrameLayout.LayoutParams(supportedAdSize.getWidthInPixels(activity),
-              supportedAdSize.getHeightInPixels(activity)));
-      ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView);
-    }
+    float scaleRatio = canScale(adSize, supportedAdSize) ? calcScaleRatio(activity, adSize, supportedAdSize) : 1.0f;
+    bannerView.setLayoutParams(
+        new FrameLayout.LayoutParams((int) (supportedAdSize.getWidthInPixels(activity) * scaleRatio),
+            (int) (supportedAdSize.getHeightInPixels(activity) * scaleRatio)));
+    ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView, scaleRatio);
   }
 
   private boolean canScale(AdSize requestedAdSize, AdSize iMobileAdSize) {
-    return iMobileAdSize.getWidth() == 320 && iMobileAdSize.getHeight() == 50
-        && (requestedAdSize.getWidth() != 320 || requestedAdSize.getHeight() != 50);
+    return iMobileAdSize.getWidth() == 320 && (iMobileAdSize.getHeight() == 50 || iMobileAdSize.getHeight() == 100)
+        && (requestedAdSize.getWidth() != iMobileAdSize.getWidth() || requestedAdSize.getHeight() != iMobileAdSize.getHeight());
   }
 
-  private float calcScaleRatio(AdSize requestedAdSize, AdSize iMobileAdSize) {
-    return Math.min(((float) requestedAdSize.getWidth() / iMobileAdSize.getWidth()),
-        ((float) requestedAdSize.getHeight() / iMobileAdSize.getHeight()));
+  private float calcScaleRatio(Context context, AdSize requestedAdSize, AdSize iMobileAdSize) {
+    return Math.min(((float) requestedAdSize.getWidthInPixels(context) / iMobileAdSize.getWidthInPixels(context)),
+        ((float) requestedAdSize.getHeightInPixels(context) / iMobileAdSize.getHeightInPixels(context)));
   }
 
   @Override
