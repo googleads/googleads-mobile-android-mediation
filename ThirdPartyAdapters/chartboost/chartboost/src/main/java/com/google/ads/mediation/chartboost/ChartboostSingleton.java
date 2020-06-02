@@ -17,7 +17,6 @@ package com.google.ads.mediation.chartboost;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Libraries.CBLogging;
