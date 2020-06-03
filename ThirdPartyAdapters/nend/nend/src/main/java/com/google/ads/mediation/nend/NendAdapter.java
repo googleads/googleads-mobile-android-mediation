@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -22,8 +24,7 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+
 import net.nend.android.NendAdInformationListener;
 import net.nend.android.NendAdInterstitial;
 import net.nend.android.NendAdInterstitial.NendAdInterstitialClickType;
@@ -35,6 +36,9 @@ import net.nend.android.NendAdVideo;
 import net.nend.android.NendAdVideoListener;
 import net.nend.android.NendAdView;
 import net.nend.android.NendAdView.NendError;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 /**
  * The {@link NendAdapter} class is used to load and show Nend interstitial and banner ads.
@@ -159,16 +163,9 @@ public class NendAdapter extends NendMediationAdapter
       return;
     }
 
-    String apiKey = serverParameters.getString(KEY_API_KEY);
-    if (TextUtils.isEmpty(apiKey)) {
-      Log.w(TAG, "Failed to request ad from Nend: Missing or invalid API Key.");
-      adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-      return;
-    }
-
-    int spotId = Integer.parseInt(serverParameters.getString(KEY_SPOT_ID, "0"));
-    if (spotId <= 0) {
-      Log.w(TAG, "Failed to request ad from Nend: Missing or invalid Spot ID.");
+    AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
+    if (mapper == null) {
+      Log.w(TAG, "Failed to request ad from Nend: Your request has not valid Spot ID or API Key.");
       adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
@@ -179,14 +176,14 @@ public class NendAdapter extends NendMediationAdapter
       final InterstitialType type =
           (InterstitialType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
       if (type == InterstitialType.TYPE_VIDEO) {
-        requestNendInterstialVideo(context, apiKey, spotId,
+        requestNendInterstialVideo(context, mapper.apiKey, mapper.spotId,
             mediationExtras.getString(KEY_USER_ID, ""),
             mediationAdRequest);
         return;
       }
     }
 
-    requestNendInterstitial(context, apiKey, spotId);
+    requestNendInterstitial(context, mapper.apiKey, mapper.spotId);
   }
 
   private void requestNendInterstitial(Context context, String apikey, int spotId) {
@@ -466,43 +463,45 @@ public class NendAdapter extends NendMediationAdapter
 
     // Available ad sizes are listed below.
     // https://github.com/fan-ADN/nendSDK-Android/wiki/About-Ad-Sizes#available-ad-sizes-are-listed-below.
-    if ((adSizeWidth == 320 && adSizeHeight == 50) ||
-        (adSizeWidth == 320 && adSizeHeight == 100) ||
-        (adSizeWidth == 300 && adSizeHeight == 250) ||
-        (adSizeWidth == 728 && adSizeHeight == 90) ||
-        availableAtSmartBanner) {
-      String apiKey = serverParameters.getString(KEY_API_KEY);
-      String spotId = serverParameters.getString(KEY_SPOT_ID);
-      if (!TextUtils.isEmpty(apiKey) && !TextUtils.isEmpty(spotId)) {
-        int intSpotId = Integer.parseInt(spotId);
-        mNendAdView = new NendAdView(context, intSpotId, apiKey);
-
-        if (availableAtSmartBanner) {
-          prepareContainerAndLayout(context, adSize);
-        }
-
-        // NOTE: Use the reload function of AdMob mediation instead of NendAdView.
-        // So, reload function of NendAdView should be stopped.
-        mNendAdView.pause();
-
-        mNendAdView.setListener(this);
-        mNendAdView.addOnAttachStateChangeListener(mAttachStateChangeListener);
-        mNendAdView.loadAd();
-
-        mIsRequestBannerAd = true;
-      } else {
-        Log.w(TAG, "Failed to load ad from Nend:" +
-            "Missing or Invalid API Key and/or Spot ID.");
-        if (mListener != null) {
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        }
-      }
-    } else {
+    if (!isValidBannerSize(adSizeWidth, adSizeHeight) &&
+        !availableAtSmartBanner) {
       Log.w(TAG, "Invalid Ad type");
       if (mListener != null) {
         mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       }
+    } else {
+      AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
+      if (mapper == null) {
+        Log.w(TAG, "Failed to request ad from Nend: Your request has not valid Spot ID or API Key.");
+        if (mListener != null) {
+          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
+        return;
+      }
+
+      mNendAdView = new NendAdView(context, mapper.spotId, mapper.apiKey);
+
+      if (availableAtSmartBanner) {
+        prepareContainerAndLayout(context, adSize);
+      }
+
+      // NOTE: Use the reload function of AdMob mediation instead of NendAdView.
+      // So, reload function of NendAdView should be stopped.
+      mNendAdView.pause();
+
+      mNendAdView.setListener(this);
+      mNendAdView.addOnAttachStateChangeListener(mAttachStateChangeListener);
+      mNendAdView.loadAd();
+
+      mIsRequestBannerAd = true;
     }
+  }
+
+  private boolean isValidBannerSize(int adSizeWidth, int adSizeHeight) {
+    return (adSizeWidth == 320 && adSizeHeight == 50)
+            || (adSizeWidth == 320 && adSizeHeight == 100)
+            || (adSizeWidth == 300 && adSizeHeight == 250)
+            || (adSizeWidth == 728 && adSizeHeight == 90);
   }
 
   AdSize getSupportedAdSize(Context context, AdSize adSize) {
