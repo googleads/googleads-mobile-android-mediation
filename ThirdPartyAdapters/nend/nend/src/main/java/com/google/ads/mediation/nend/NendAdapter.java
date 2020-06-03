@@ -108,10 +108,12 @@ public class NendAdapter extends NendMediationAdapter
 
   @Override
   public void onDestroy() {
-    if (smartBannerAdjustContainer != null) {
-      removeOnGlobalLayoutListener(
-          smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
-      smartBannerAdjustContainer = null;
+    synchronized (this) {
+      if (smartBannerAdjustContainer != null) {
+        removeOnGlobalLayoutListener(
+                smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
+        smartBannerAdjustContainer = null;
+      }
     }
     globalLayoutListener = null;
     mNendAdView = null;
@@ -381,31 +383,41 @@ public class NendAdapter extends NendMediationAdapter
     return false;
   }
 
+  private void applyParamsToContainer(boolean isAdjust) {
+    synchronized(this) {
+      if (smartBannerAdjustContainer == null) {
+        Log.i(TAG, "Container of smart banner has been destroyed..");
+        return;
+      }
+      FrameLayout.LayoutParams containerViewParams = new FrameLayout.LayoutParams(
+              ViewGroup.LayoutParams.MATCH_PARENT,
+              ViewGroup.LayoutParams.MATCH_PARENT);
+
+      if (isAdjust) {
+        removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(),
+                globalLayoutListener);
+        containerViewParams = new FrameLayout.LayoutParams(
+                smartBannerWidthPixel,
+                smartBannerHeightPixel);
+      }
+      smartBannerAdjustContainer.setLayoutParams(containerViewParams);
+    }
+  }
+
   private void prepareContainerAndLayout(Context context, AdSize adSize) {
     // Need this for adjust the container size of nend banner.
     globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
       @Override
       public void onGlobalLayout() {
-        FrameLayout.LayoutParams containerViewParams = new FrameLayout.LayoutParams(
-            smartBannerWidthPixel,
-            smartBannerHeightPixel);
-        smartBannerAdjustContainer.setLayoutParams(containerViewParams);
-
-        removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(),
-            globalLayoutListener);
+        applyParamsToContainer(true);
       }
     };
 
     smartBannerWidthPixel = adSize.getWidthInPixels(context);
     smartBannerHeightPixel = adSize.getHeightInPixels(context);
 
-    FrameLayout.LayoutParams containerViewParams = new FrameLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT);
-
     smartBannerAdjustContainer = new FrameLayout(context);
-    smartBannerAdjustContainer.setLayoutParams(containerViewParams);
-
+    applyParamsToContainer(false);
     smartBannerAdjustContainer.getViewTreeObserver()
         .addOnGlobalLayoutListener(globalLayoutListener);
 
