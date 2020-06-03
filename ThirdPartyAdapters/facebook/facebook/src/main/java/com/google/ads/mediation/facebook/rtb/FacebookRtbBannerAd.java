@@ -1,5 +1,6 @@
 package com.google.ads.mediation.facebook.rtb;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
@@ -54,8 +55,11 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     try {
       adView = new AdView(adConfiguration.getContext(), placementID,
           adConfiguration.getBidResponse());
-    } catch (Exception e) {
-      callback.onFailure("FacebookRtbBannerAd failed to load: " + e.getMessage());
+    } catch (Exception exception) {
+      String errorMessage = createAdapterError(ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
+          "Failed to create banner ad: " + exception.getMessage());
+      Log.e(TAG, errorMessage);
+      callback.onFailure(errorMessage);
       return;
     }
 
@@ -87,6 +91,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @Override
   public void onError(Ad ad, AdError adError) {
     String errorMessage = createSdkError(adError);
+    Log.w(TAG, errorMessage);
     callback.onFailure(errorMessage);
   }
 
