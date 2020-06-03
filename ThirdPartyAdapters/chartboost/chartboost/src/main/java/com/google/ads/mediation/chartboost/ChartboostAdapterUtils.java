@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
+import com.chartboost.sdk.Events.ChartboostCacheError;
+import com.chartboost.sdk.Events.ChartboostShowError;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -195,12 +197,13 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Parse and report Chartboost banner cache error code to AdMob error
+   * Parse and report Chartboost banner cache error to AdMob error
    *
-   * @param code
+   * @param error {@link ChartboostCacheError}
+   * @return AdRequest error code
    */
-  static int parseBannerCacheErrorCodeToAdMobErrorCode(int code) {
-    switch (code) {
+  static int parseBannerCacheErrorCodeToAdMobErrorCode(ChartboostCacheError error) {
+    switch (error.code) {
       case INTERNET_UNAVAILABLE:
       case NETWORK_FAILURE:
       case ASSET_DOWNLOAD_FAILURE:
@@ -217,13 +220,13 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Parse and report Chartboost banner show error code to AdMob error
+   * Parse and report Chartboost banner show error to AdMob error
    *
-   * @param code
-   * @return
+   * @param error {@link ChartboostShowError}
+   * @return AdRequest error code
    */
-  static int parseBannerShowErrorCodeToAdMobErrorCode(int code) {
-    switch (code) {
+  static int parseBannerShowErrorCodeToAdMobErrorCode(ChartboostShowError error) {
+    switch (error.code) {
       case INTERNET_UNAVAILABLE_SHOW:
         return AdRequest.ERROR_CODE_NETWORK_ERROR;
       case PRESENTATION_FAILURE:
