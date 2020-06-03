@@ -33,20 +33,20 @@ class ChartboostAdapterUtils {
     static final String KEY_AD_LOCATION = "adLocation";
 
     /**
-     * Creates and return a new {@link ChartboostParams} object populated with the parameters
-     * obtained from the server parameters and network extras bundles.
+     * Creates and return a new {@link ChartboostParams} object populated with the parameters obtained
+     * from the server parameters and network extras bundles.
      *
      * @param serverParameters a {@link Bundle} containing server parameters used to initialize
      *                         Chartboost.
      * @param networkExtras    a {@link Bundle} containing optional information to be used by the
      *                         adapter.
-     * @return a {@link ChartboostParams} object populated with the params obtained from the
-     * bundles provided.
+     * @return a {@link ChartboostParams} object populated with the params obtained from the bundles
+     * provided.
      */
     static ChartboostParams createChartboostParams(Bundle serverParameters, Bundle networkExtras) {
         String adLocation = "";
         ChartboostParams params = new ChartboostParams();
-        if(serverParameters != null) {
+        if (serverParameters != null) {
             String appId = serverParameters.getString(KEY_APP_ID);
             String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
             if (appId != null && appSignature != null) {
@@ -59,21 +59,22 @@ class ChartboostAdapterUtils {
         if (!isValidParam(adLocation)) {
             // Ad Location is empty, log a warning and use the default location.
             String logMessage = String.format("Chartboost ad location is empty, defaulting to %s. "
-                            + "Please set the Ad Location parameter in the AdMob UI.",
-                    CBLocation.LOCATION_DEFAULT);
+                    + "Please set the Ad Location parameter in the AdMob UI.",
+                CBLocation.LOCATION_DEFAULT);
             Log.w(ChartboostMediationAdapter.TAG, logMessage);
             adLocation = CBLocation.LOCATION_DEFAULT;
         }
         params.setLocation(adLocation.trim());
 
         if (networkExtras != null) {
-            if (networkExtras.containsKey(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK)
-                    && networkExtras.containsKey(
-                    ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
+            if (networkExtras
+                .containsKey(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK)
+                && networkExtras.containsKey(
+                ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
                 params.setFramework((Chartboost.CBFramework) networkExtras.getSerializable(
-                        ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK));
+                    ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK));
                 params.setFrameworkVersion(networkExtras.getString(
-                        ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION));
+                    ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION));
             }
         }
         return params;
@@ -83,15 +84,15 @@ class ChartboostAdapterUtils {
      * Checks whether or not the provided {@link ChartboostParams} is valid.
      *
      * @param params Chartboost params to be examined.
-     * @return {@code true} if the given ChartboostParams' appId and appSignature are valid,
-     * false otherwise.
+     * @return {@code true} if the given ChartboostParams' appId and appSignature are valid, false
+     * otherwise.
      */
     static boolean isValidChartboostParams(ChartboostParams params) {
         String appId = params.getAppId();
         String appSignature = params.getAppSignature();
         if (!isValidParam(appId) || !isValidParam(appSignature)) {
             String log = !isValidParam(appId) ? (!isValidParam(appSignature)
-                    ? "App ID and App Signature" : "App ID") : "App Signature";
+                ? "App ID and App Signature" : "App ID") : "App Signature";
             Log.w(ChartboostMediationAdapter.TAG, log + " cannot be empty.");
             return false;
         }
@@ -102,16 +103,16 @@ class ChartboostAdapterUtils {
      * Checks whether or not the Chartboost parameter string provided is valid.
      *
      * @param string the string to be examined.
-     * @return {@code true} if the param string is not null and length when trimmed is not
-     * zero, {@code false} otherwise.
+     * @return {@code true} if the param string is not null and length when trimmed is not zero,
+     * {@code false} otherwise.
      */
     static boolean isValidParam(String string) {
         return !(string == null || string.trim().length() == 0);
     }
 
     /**
-     * Chartboost requires an Activity context to Initialize. This method will return false if
-     * the context provided is either null or is not an Activity context.
+     * Chartboost requires an Activity context to Initialize. This method will return false if the
+     * context provided is either null or is not an Activity context.
      *
      * @param context to be checked if it is valid.
      * @return {@code true} if the context provided is valid, {@code false} otherwise.
@@ -124,8 +125,8 @@ class ChartboostAdapterUtils {
 
         if (!(context instanceof Activity)) {
             Log.w(ChartboostAdapter.TAG,
-                    "Context is not an Activity. " +
-                            "Chartboost requires an Activity context to load ads.");
+                "Context is not an Activity. " +
+                    "Chartboost requires an Activity context to load ads.");
             return false;
         }
         return true;
@@ -134,8 +135,8 @@ class ChartboostAdapterUtils {
     /**
      * Converts a Chartboost SDK error code to a Google Mobile Ads SDK error code.
      *
-     * @param error CBImpressionError type to be translated to Google Mobile Ads SDK readable
-     *              error code.
+     * @param error CBImpressionError type to be translated to Google Mobile Ads SDK readable error
+     *              code.
      * @return Ad request error code.
      */
     static int getAdRequestErrorType(CBError.CBImpressionError error) {
@@ -182,6 +183,7 @@ class ChartboostAdapterUtils {
 
     /**
      * Parse and report Chartboost banner error code to AdMob error
+     *
      * @param code
      */
     static int parseChartboostErrorCodeToAdMobErrorCode(int code) {
@@ -201,6 +203,7 @@ class ChartboostAdapterUtils {
 
     /**
      * Calculate possible Chartboost banner size format based on the provided AdSize
+     *
      * @param adSize
      * @return
      */

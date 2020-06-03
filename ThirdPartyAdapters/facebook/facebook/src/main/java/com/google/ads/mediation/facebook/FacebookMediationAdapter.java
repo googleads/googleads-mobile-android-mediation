@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
@@ -55,28 +56,57 @@ public class FacebookMediationAdapter extends RtbAdapter {
    */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
-      ERROR_INVALID_REQUEST,
+      ERROR_INVALID_SERVER_PARAMETERS,
       ERROR_BANNER_SIZE_MISMATCH,
       ERROR_REQUIRES_ACTIVITY_CONTEXT,
       ERROR_FACEBOOK_INITIALIZATION,
       ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
       ERROR_WRONG_NATIVE_TYPE,
       ERROR_NULL_CONTEXT,
-      ERROR_MAPPING_NATIVE_ASSETS
+      ERROR_MAPPING_NATIVE_ASSETS,
+      ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD
   })
 
   public @interface Error {
 
   }
 
-  public static final int ERROR_INVALID_REQUEST = 101;
+  /**
+   * Server parameters (e.g. placement ID) are nil.
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+  /**
+   * The requested ad size does not match a Facebook supported banner size.
+   */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+  /**
+   * The publisher must request ads with an activity context.
+   */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+  /**
+   * The Facebook SDK failed to initialize.
+   */
   public static final int ERROR_FACEBOOK_INITIALIZATION = 104;
+  /**
+   * The publisher did not request Unified native ads.
+   */
   public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 105;
+  /**
+   * The native ad loaded is a different object than the one expected.
+   */
   public static final int ERROR_WRONG_NATIVE_TYPE = 106;
+  /**
+   * The context is null (unexpected, would be GMA SDK or adapter bug).
+   */
   public static final int ERROR_NULL_CONTEXT = 107;
+  /**
+   * The loaded ad is missing the required native ad assets.
+   */
   public static final int ERROR_MAPPING_NATIVE_ASSETS = 108;
+  /**
+   * Failed to create native ad from bid payload.
+   */
+  public static final int ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD = 109;
 
   /**
    * Creates a formatted adapter error string given a code and description.
@@ -84,6 +114,11 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public static String createAdapterError(@FacebookMediationAdapter.Error int code,
       String description) {
     return String.format("%d: %s", code, description);
+  }
+
+  @NonNull
+  public static String createSdkError(@NonNull AdError error) {
+    return String.format("%d: %s", error.getErrorCode(), error.getErrorMessage());
   }
 
   @Override

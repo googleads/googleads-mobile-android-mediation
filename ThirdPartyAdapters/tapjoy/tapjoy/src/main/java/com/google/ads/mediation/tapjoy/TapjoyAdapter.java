@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -45,7 +44,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
     if (!checkParams(context, serverParameters)) {
       this.mediationInterstitialListener
-          .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+          .onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
       return;
     }
 
@@ -69,9 +68,11 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
           @Override
           public void onInitializeFailed(String message) {
-            Log.w(TAG, "Failed to load ad from Tapjoy: " + message);
+            String errorMessage = createAdapterError(ERROR_TAPJOY_INITIALIZATION,
+                "Failed to load ad from Tapjoy: " + message);
+            Log.w(TAG, errorMessage);
             mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this,
-                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                ERROR_TAPJOY_INITIALIZATION);
           }
         });
   }
@@ -114,7 +115,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
               public void run() {
                 if (!interstitialPlacement.isContentAvailable()) {
                   mediationInterstitialListener.onAdFailedToLoad(
-                      TapjoyAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                      TapjoyAdapter.this, ERROR_REQUIRES_ACTIVITY_CONTEXT);
                 }
               }
             });
@@ -125,9 +126,9 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
             mainHandler.post(new Runnable() {
               @Override
               public void run() {
-                Log.w(TAG, "Failed to request ad from Tapjoy: " + tjError.message);
-                mediationInterstitialListener.onAdFailedToLoad(
-                    TapjoyAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                String errorMessage = createSDKError(tjError);
+                Log.w(TAG, errorMessage);
+                mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, tjError.code);
               }
             });
           }

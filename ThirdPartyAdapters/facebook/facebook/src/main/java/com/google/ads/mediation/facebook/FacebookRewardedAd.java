@@ -1,8 +1,10 @@
 package com.google.ads.mediation.facebook;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_REQUEST;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
@@ -53,7 +55,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      String message = createAdapterError(ERROR_INVALID_REQUEST,
+      String message = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad, placementID is null or empty.");
       Log.e(TAG, message);
       mMediationAdLoadCallback.onFailure(message);
@@ -90,9 +92,10 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
             @Override
             public void onInitializeError(String message) {
               String logMessage = "Failed to load ad from Facebook: " + message;
-              Log.w(TAG, logMessage);
+              String errorMessage = createAdapterError(ERROR_FACEBOOK_INITIALIZATION, logMessage);
+              Log.w(TAG, errorMessage);
               if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(logMessage);
+                mMediationAdLoadCallback.onFailure(errorMessage);
               }
             }
           });
@@ -131,10 +134,8 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   @Override
   public void onError(Ad ad, AdError adError) {
-    String errorMessage = adError.getErrorMessage();
-    if (!TextUtils.isEmpty(errorMessage)) {
-      Log.w(TAG, "Failed to load ad from Facebook: " + errorMessage);
-    }
+    String errorMessage = createSdkError(adError);
+    Log.w(TAG, "Failed to load ad from Facebook: " + errorMessage);
     if (mMediationAdLoadCallback != null) {
       mMediationAdLoadCallback.onFailure(errorMessage);
     }

@@ -11,7 +11,6 @@ import com.adcolony.sdk.AdColonyAdView;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -73,13 +72,16 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
-    ArrayList<String> zoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
+    ArrayList<String> zoneList =
+        AdColonyManager.getInstance().parseZoneList(serverParams);
     String requestedZone =
         AdColonyManager.getInstance().getZoneFromRequest(zoneList, mediationExtras);
     if (TextUtils.isEmpty(requestedZone)) {
-      Log.e(TAG, "Failed to request ad: zone ID is null or empty");
+      String errorMessage = createAdapterError(ERROR_REQUEST_INVALID,
+          "Failed to request ad: zone ID is null or empty.");
+      Log.e(TAG, errorMessage);
       mediationInterstitialListener.onAdFailedToLoad(this,
-          AdRequest.ERROR_CODE_INVALID_REQUEST);
+          ERROR_REQUEST_INVALID);
       return;
     }
     adColonyInterstitialListener = new AdColonyAdListener(this, mediationInterstitialListener);
@@ -89,9 +91,11 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         .configureAdColony(context, serverParams, mediationAdRequest, mediationExtras);
 
     if (!success) {
-      Log.w(TAG, "Failed to configure AdColony SDK");
+      String errorMessage = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED,
+          "Failed to configure AdColony SDK.");
+      Log.w(TAG, errorMessage);
       mediationInterstitialListener
-          .onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+          .onAdFailedToLoad(this, ERROR_ADCOLONY_NOT_INITIALIZED);
       return;
     }
 
@@ -123,8 +127,10 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
       MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
     if (adSize == null) {
-      Log.e(TAG, "Fail to request banner ad: adSize is null");
-      mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = createAdapterError(ERROR_REQUEST_INVALID,
+          "Fail to request banner ad: adSize is null.");
+      Log.e(TAG, errorMessage);
+      mediationBannerListener.onAdFailedToLoad(this, ERROR_REQUEST_INVALID);
       return;
     }
 
@@ -132,18 +138,23 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         AdColonyAdapterUtils.adColonyAdSizeFromAdMobAdSize(context, adSize);
 
     if (adColonyAdSize == null) {
-      Log.e(TAG, "Failed to request banner with unsupported size: " + adSize.toString());
-      mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size: " + adSize.toString());
+      Log.e(TAG, errorMessage);
+      mediationBannerListener.onAdFailedToLoad(this, ERROR_BANNER_SIZE_MISMATCH);
       return;
     }
 
-    ArrayList<String> zoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
+    ArrayList<String> zoneList =
+        AdColonyManager.getInstance().parseZoneList(serverParams);
     String requestedZone =
         AdColonyManager.getInstance().getZoneFromRequest(zoneList, mediationExtras);
 
     if (TextUtils.isEmpty(requestedZone)) {
-      Log.e(TAG, "Failed to request ad: zone ID is null or empty");
-      mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = createAdapterError(ERROR_REQUEST_INVALID,
+          "Failed to request ad: zone ID is null or empty");
+      Log.e(TAG, errorMessage);
+      mediationBannerListener.onAdFailedToLoad(this, ERROR_REQUEST_INVALID);
       return;
     }
 
@@ -154,8 +165,11 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         .configureAdColony(context, serverParams, mediationAdRequest, mediationExtras);
 
     if (!success) {
-      Log.w(TAG, "Failed to configure AdColony SDK");
-      mediationBannerListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED,
+          "Failed to configure AdColony SDK");
+      Log.w(TAG, errorMessage);
+      mediationBannerListener
+          .onAdFailedToLoad(this, ERROR_ADCOLONY_NOT_INITIALIZED);
       return;
     }
 

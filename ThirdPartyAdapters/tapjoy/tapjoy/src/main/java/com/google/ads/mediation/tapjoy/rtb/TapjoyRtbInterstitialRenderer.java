@@ -1,5 +1,10 @@
 package com.google.ads.mediation.tapjoy.rtb;
 
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_NO_CONTENT_AVAILABLE;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.createAdapterError;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,7 +35,8 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
   /**
    * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
    */
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
+  private final MediationAdLoadCallback<MediationInterstitialAd,
+      MediationInterstitialAdCallback> callback;
 
   private String interstitialPlacementName = null;
 
@@ -68,15 +74,18 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
           placementsInUse.get(interstitialPlacementName).get() != null) {
         String logMessage =
             "An ad has already been requested for placement: " + interstitialPlacementName;
-        Log.w(TAG, logMessage);
-        callback.onFailure(logMessage);
+        String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
+        Log.w(TAG, errorMessage);
+        callback.onFailure(errorMessage);
         return;
       }
       placementsInUse.put(interstitialPlacementName,
           new WeakReference<>(TapjoyRtbInterstitialRenderer.this));
       createInterstitialPlacementAndRequestContent();
     } else {
-      callback.onFailure("Invalid server parameters specified in the UI");
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Invalid server parameters specified in the UI");
+      callback.onFailure(errorMessage);
     }
   }
 
@@ -113,8 +122,10 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               public void run() {
                 if (!interstitialPlacement.isContentAvailable()) {
                   placementsInUse.remove(interstitialPlacementName);
-                  callback.onFailure("NO_FILL");
-                  Log.d(TAG, "Interstitial Content isn't available");
+                  String errorMessage = createAdapterError(ERROR_NO_CONTENT_AVAILABLE,
+                      "Interstitial Content isn't available");
+                  Log.d(TAG, errorMessage);
+                  callback.onFailure(errorMessage);
                 }
               }
             });

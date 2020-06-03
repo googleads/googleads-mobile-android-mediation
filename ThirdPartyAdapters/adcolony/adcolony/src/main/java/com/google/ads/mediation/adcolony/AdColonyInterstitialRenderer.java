@@ -1,6 +1,10 @@
 package com.google.ads.mediation.adcolony;
 
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
+
 import android.content.Context;
+import android.util.Log;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
@@ -9,8 +13,8 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 
-public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener
-    implements MediationInterstitialAd {
+public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener implements
+    MediationInterstitialAd {
 
   private String zoneID;
   private MediationInterstitialAdCallback mInterstitialAdCallback;
@@ -42,7 +46,9 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
-    mAdLoadCallback.onFailure("Failed to load ad.");
+    String errorMessage = createSdkError();
+    Log.w(TAG, errorMessage);
+    mAdLoadCallback.onFailure(errorMessage);
   }
 
   @Override
