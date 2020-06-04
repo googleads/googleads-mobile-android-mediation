@@ -80,9 +80,21 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   private MediationNativeListener mNativeListener;
   private AdView mAdView;
   private RelativeLayout mWrappedAdView;
-  private InterstitialAd mInterstitialAd;
   private boolean isNativeBanner;
 
+  /**
+   * Facebook interstitial ad instance.
+   */
+  private InterstitialAd mInterstitialAd;
+
+  /**
+   * Flag to determine whether the interstitial ad has been presented.
+   */
+  private AtomicBoolean showInterstitialCalled = new AtomicBoolean();
+
+  /**
+   * Flag to determine whether the interstitial ad has been closed.
+   */
   private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   /**
@@ -232,8 +244,16 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   @Override
   public void showInterstitial() {
-    if (mInterstitialAd.isAdLoaded()) {
-      mInterstitialAd.show();
+    showInterstitialCalled.set(true);
+    if (!mInterstitialAd.show()) {
+      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.");
+      Log.w(TAG, errorMessage);
+
+      if (mInterstitialListener != null) {
+        mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        mInterstitialListener.onAdClosed(FacebookAdapter.this);
+      }
     }
   }
   //endregion
@@ -398,9 +418,14 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onError(Ad ad, AdError adError) {
       String errorMessage = createSdkError(adError);
-      if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
+      Log.w(TAG, errorMessage);
+
+      if (showInterstitialCalled.get()) {
+        FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+        return;
       }
+
       FacebookAdapter.this.mInterstitialListener.onAdFailedToLoad(
           FacebookAdapter.this, adError.getErrorCode());
     }

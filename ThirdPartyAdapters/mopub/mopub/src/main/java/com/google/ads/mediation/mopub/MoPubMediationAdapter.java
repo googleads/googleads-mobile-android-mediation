@@ -72,7 +72,7 @@ public class MoPubMediationAdapter extends Adapter
       ERROR_MINIMUM_BANNER_SIZE
   })
 
-  public @interface Error {
+  public @interface AdapterError {
 
   }
 
@@ -93,21 +93,116 @@ public class MoPubMediationAdapter extends Adapter
   /**
    * Creates a formatted adapter error string given a code and description.
    */
-  public static String createAdapterError(@NonNull @MoPubMediationAdapter.Error int code,
-      String description) {
+  public static String createAdapterError(@AdapterError int code, String description) {
     return String.format("%d: %s", code, description);
   }
 
-  public static final String createSDKError(@NonNull MoPubErrorCode error) {
-    return String.format("%d: %s", error.ordinal(), error.toString());
-  }
-
-  public static final String createSDKError(@NonNull NativeErrorCode error) {
+  public static String createSDKError(@NonNull MoPubErrorCode error) {
     return String.format("%d: %s", getMediationErrorCode(error), error.toString());
   }
 
-  public static final int getMediationErrorCode(@NonNull NativeErrorCode error) {
-    return error.ordinal() + 1000;
+  public static String createSDKError(@NonNull NativeErrorCode error) {
+    return String.format("%d: %s", getMediationErrorCode(error), error.toString());
+  }
+
+  public static int getMediationErrorCode(@NonNull MoPubErrorCode moPubErrorCode) {
+    switch (moPubErrorCode) {
+      case AD_SUCCESS:
+        return 0;
+      case DO_NOT_TRACK:
+        return 1;
+      case UNSPECIFIED:
+        return 2;
+      case NO_FILL:
+        return 3;
+      case WARMUP:
+        return 4;
+      case SERVER_ERROR:
+        return 5;
+      case INTERNAL_ERROR:
+        return 6;
+      case RENDER_PROCESS_GONE_WITH_CRASH:
+        return 7;
+      case RENDER_PROCESS_GONE_UNSPECIFIED:
+        return 8;
+      case CANCELLED:
+        return 9;
+      case MISSING_AD_UNIT_ID:
+        return 10;
+      case NO_CONNECTION:
+        return 11;
+      case ADAPTER_NOT_FOUND:
+        return 12;
+      case ADAPTER_CONFIGURATION_ERROR:
+        return 13;
+      case ADAPTER_INITIALIZATION_SUCCESS:
+        return 14;
+      case EXPIRED:
+        return 15;
+      case NETWORK_TIMEOUT:
+        return 16;
+      case NETWORK_NO_FILL:
+        return 17;
+      case NETWORK_INVALID_STATE:
+        return 18;
+      case MRAID_LOAD_ERROR:
+        return 19;
+      case VIDEO_CACHE_ERROR:
+        return 20;
+      case VIDEO_DOWNLOAD_ERROR:
+        return 21;
+      case GDPR_DOES_NOT_APPLY:
+        return 22;
+      case REWARDED_CURRENCIES_PARSING_ERROR:
+        return 23;
+      case REWARD_NOT_SELECTED:
+        return 24;
+      case VIDEO_NOT_AVAILABLE:
+        return 25;
+      case VIDEO_PLAYBACK_ERROR:
+        return 26;
+    }
+    // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
+    return 99;
+  }
+
+  public static int getMediationErrorCode(@NonNull NativeErrorCode nativeErrorCode) {
+    switch (nativeErrorCode) {
+      case AD_SUCCESS:
+        return 1000;
+      case EMPTY_AD_RESPONSE:
+        return 1001;
+      case INVALID_RESPONSE:
+        return 1002;
+      case IMAGE_DOWNLOAD_FAILURE:
+        return 1003;
+      case INVALID_REQUEST_URL:
+        return 1004;
+      case UNEXPECTED_RESPONSE_CODE:
+        return 1005;
+      case SERVER_ERROR_RESPONSE_CODE:
+        return 1006;
+      case CONNECTION_ERROR:
+        return 1007;
+      case UNSPECIFIED:
+        return 1008;
+      case NETWORK_INVALID_REQUEST:
+        return 1009;
+      case NETWORK_TIMEOUT:
+        return 1010;
+      case NETWORK_NO_FILL:
+        return 1011;
+      case NETWORK_INVALID_STATE:
+        return 1012;
+      case NATIVE_RENDERER_CONFIGURATION_ERROR:
+        return 1013;
+      case NATIVE_ADAPTER_CONFIGURATION_ERROR:
+        return 1014;
+      case NATIVE_ADAPTER_NOT_FOUND:
+        return 1015;
+    }
+    // Error '1099' to indicate that the error is new and has not been supported by the adapter yet.
+    return 1099;
   }
 
   @Override
@@ -122,7 +217,7 @@ public class MoPubMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
+    String logMessage = String.format("Unexpected adapter version format: %s. " +
         "Returning 0.0.0 for adapter version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
@@ -140,7 +235,7 @@ public class MoPubMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
+    String logMessage = String.format("Unexpected SDK version format: %s. " +
         "Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
@@ -241,7 +336,10 @@ public class MoPubMediationAdapter extends Adapter
   public void onAdFailedToLoad(int errorCode, String message) {
     String errorMessage = createAdapterError(errorCode, message);
     Log.e(TAG, errorMessage);
-    mAdLoadCallback.onFailure(errorMessage);
+
+    if (mAdLoadCallback != null) {
+      mAdLoadCallback.onFailure(errorMessage);
+    }
   }
 
   @Override
@@ -254,9 +352,16 @@ public class MoPubMediationAdapter extends Adapter
   @Override
   public void onRewardedVideoLoadFailure(@NonNull String adUnitId,
       @NonNull MoPubErrorCode errorCode) {
+    String errorSDKMessage = createSDKError(errorCode);
+    Log.w(TAG, errorSDKMessage);
+
+    // MoPub Rewarded video ads expire after 4 hours.
+    if (errorCode == MoPubErrorCode.EXPIRED) {
+      MoPubSingleton.getInstance().adExpired(adUnitId, MoPubMediationAdapter.this);
+      adExpired = true;
+    }
+
     if (mAdLoadCallback != null) {
-      String errorSDKMessage = createSDKError(errorCode);
-      Log.w(TAG, errorSDKMessage);
       mAdLoadCallback.onFailure(errorSDKMessage);
     }
   }
@@ -272,9 +377,10 @@ public class MoPubMediationAdapter extends Adapter
   @Override
   public void onRewardedVideoPlaybackError(@NonNull String adUnitId,
       @NonNull MoPubErrorCode errorCode) {
+    String errorSDKMessage = createSDKError(errorCode);
+    Log.i(TAG, "Failed to playback MoPub rewarded video: " + errorSDKMessage);
+
     if (mRewardedAdCallback != null) {
-      String errorSDKMessage = createSDKError(errorCode);
-      Log.i(TAG, "Failed to playback MoPub rewarded video: " + errorSDKMessage);
       mRewardedAdCallback.onAdFailedToShow(errorSDKMessage);
     }
   }

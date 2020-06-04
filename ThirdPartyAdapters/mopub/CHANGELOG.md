@@ -1,5 +1,13 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Version 5.12.0.1
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+- Further added descriptive error codes and reasons for adapter load failures.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MoPub SDK version 5.12.0.
+
 #### Version 5.12.0.0
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
 - Adjusted support for flexible banner ad sizes.
@@ -7,21 +15,21 @@
   * `setMinimumBannerWidth()` - minimum ad width allowed for MoPub banner ads.
   * `setMinimumBannerHeight()` - minimum ad height allowed for MoPub banner ads.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.0.1.
 - MoPub SDK version 5.12.0.
 
 #### Version 5.11.1.1
 - Added descriptive error codes and reasons for adapter load/show failures.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.
 - MoPub SDK version 5.11.1.
 
 #### Version 5.11.1.0
 - Verified compatibility with MoPub SDK 5.11.1.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.
 - MoPub SDK version 5.11.1.
 
@@ -29,7 +37,7 @@ Built and test with:
 - Updated minimum Android SDK version to API 19.
 - Verified compatibility with MoPub SDK 5.11.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.
 - MoPub SDK version 5.11.0.
 
@@ -37,14 +45,14 @@ Built and test with:
 - Verified compatibility with MoPub SDK 5.10.0.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 18.3.0.
 - MoPub SDK version 5.10.0.
 
 #### Version 5.9.1.1
 - Native ads now leverage the unified native ads mediation API.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 18.2.0.
 - MoPub SDK version 5.9.1.
 

@@ -1,5 +1,6 @@
 package com.google.ads.mediation.facebook.rtb;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
@@ -30,6 +31,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
       callback;
   private InterstitialAd interstitialAd;
   private MediationInterstitialAdCallback mInterstitalAdCallback;
+  private AtomicBoolean showAdCalled = new AtomicBoolean();
   private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
@@ -66,8 +68,17 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
 
   @Override
   public void showAd(Context context) {
-    if (interstitialAd.isAdLoaded()) {
-      interstitialAd.show();
+    showAdCalled.set(true);
+    if (!interstitialAd.show()) {
+      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.");
+      Log.w(TAG, errorMessage);
+
+      // TODO: Call onAdFailedToShow() once API becomes available.
+      if (mInterstitalAdCallback != null) {
+        mInterstitalAdCallback.onAdOpened();
+        mInterstitalAdCallback.onAdClosed();
+      }
     }
   }
 
@@ -88,6 +99,16 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onError(Ad ad, AdError adError) {
     String errorMessage = createSdkError(adError);
+    Log.w(TAG, errorMessage);
+
+    if (showAdCalled.get()) {
+      if (mInterstitalAdCallback != null) {
+        mInterstitalAdCallback.onAdOpened();
+        mInterstitalAdCallback.onAdClosed();
+      }
+      return;
+    }
+
     callback.onFailure(errorMessage);
   }
 

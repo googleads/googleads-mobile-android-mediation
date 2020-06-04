@@ -6,10 +6,13 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createA
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -27,6 +30,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   private MediationBannerAdConfiguration adConfiguration;
   private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
   private AdView adView;
+  private FrameLayout mWrappedAdView;
   private MediationBannerAdCallback mBannerAdCallback;
 
   public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
@@ -50,26 +54,34 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     try {
       adView = new AdView(adConfiguration.getContext(), placementID,
           adConfiguration.getBidResponse());
-      if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
-        adView.setExtraHints(
-            new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
-      }
-
-      adView.loadAd(
-          adView.buildLoadAdConfig()
-              .withAdListener(this)
-              .withBid(adConfiguration.getBidResponse())
-              .build()
-      );
     } catch (Exception e) {
-      callback.onFailure("FacebookRtbBannerAd Failed to load: " + e.getMessage());
+      callback.onFailure("FacebookRtbBannerAd failed to load: " + e.getMessage());
+      return;
     }
+
+    if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+      adView.setExtraHints(
+          new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
+    }
+
+    Context context = adConfiguration.getContext();
+    FrameLayout.LayoutParams adViewLayoutParams = new FrameLayout.LayoutParams(
+        adConfiguration.getAdSize().getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
+    mWrappedAdView = new FrameLayout(context);
+    adView.setLayoutParams(adViewLayoutParams);
+    mWrappedAdView.addView(adView);
+    adView.loadAd(
+        adView.buildLoadAdConfig()
+            .withAdListener(this)
+            .withBid(adConfiguration.getBidResponse())
+            .build()
+    );
   }
 
   @NonNull
   @Override
   public View getView() {
-    return adView;
+    return mWrappedAdView;
   }
 
   @Override

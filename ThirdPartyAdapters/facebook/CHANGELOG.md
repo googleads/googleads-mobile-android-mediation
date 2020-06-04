@@ -1,5 +1,15 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where open-bidding banner ads always render full-width.
+
+#### 5.9.0.1
+- Adapter now forwards an error if the FAN SDK encounters an error while presenting an interstitial/rewarded ad.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.9.0.
+
 #### 5.9.0.0
 - Verified compatibility with Facebook SDK v5.9.0.
 
