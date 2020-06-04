@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Version 2.0.21.0
+- Added support for scaling adaptive banner.
+
 #### Version 2.0.20.2
 - Added support for flexible banner ad sizes.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
