@@ -326,10 +326,9 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
         ChartboostCacheError chartboostCacheError) {
       if (mMediationBannerListener != null) {
         if (chartboostCacheError == null) {
-          if(!isAdLoaded.get()) {
+          if(!isAdLoaded.getAndSet(true)) {
             mMediationBannerListener.onAdLoaded(
                 ChartboostAdapter.this);
-            isAdLoaded.set(true);
           }
         } else {
           mMediationBannerListener.onAdFailedToLoad(
