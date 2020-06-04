@@ -21,6 +21,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.Chartboost.CBFramework;
 import com.chartboost.sdk.ChartboostBanner;
@@ -42,8 +43,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.chartboostAdSizeFromLocalExtras;
-import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.parseBannerCacheErrorCodeToAdMobErrorCode;
-import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.parseBannerShowErrorCodeToAdMobErrorCode;
 
 /**
  * The {@link ChartboostAdapter} class is used to load Chartboost rewarded-based video &
@@ -105,7 +104,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
   /**
    * Boolean which keeps track if banner is loaded to avoid forwarding more than once.
    */
-  private AtomicBoolean isAdLoaded = new AtomicBoolean();
+  private AtomicBoolean isAdLoaded = new AtomicBoolean(false);
 
   private AbstractChartboostAdapterDelegate mChartboostInterstitialDelegate =
       new AbstractChartboostAdapterDelegate() {
@@ -270,7 +269,6 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
       return;
     }
 
-    isAdLoaded.set(false);
     mChartboostParams.setBannerSize(supportedAdSize);
     ChartboostSingleton.startChartboostBanner(
         context,
@@ -290,7 +288,8 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
    * @param params
    * @param bannerListener
    */
-  private void initBanner(Context context,
+  @NonNull
+  private ChartboostBanner initBanner(Context context,
       ChartboostParams params,
       ChartboostBannerListener bannerListener) {
     String location = params.getLocation();
@@ -307,6 +306,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
         bannerListener);
     mChartboostBanner.setAutomaticallyRefreshesContent(false);
     mBannerContainer.addView(mChartboostBanner, paramsLayout);
+    return mChartboostBanner;
   }
 
   /**
@@ -333,7 +333,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
         } else {
           mMediationBannerListener.onAdFailedToLoad(
               ChartboostAdapter.this,
-              parseBannerCacheErrorCodeToAdMobErrorCode(chartboostCacheError));
+              chartboostCacheError.code);
           removeBannerDelegate();
         }
       }
@@ -349,7 +349,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
         } else {
           mMediationBannerListener.onAdFailedToLoad(
               ChartboostAdapter.this,
-              parseBannerShowErrorCodeToAdMobErrorCode(chartboostShowError));
+              chartboostShowError.code);
           removeBannerDelegate();
         }
       }
@@ -376,10 +376,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
     @Override
     public void didInitialize() {
       super.didInitialize();
-      if (mChartboostBanner == null) {
-        initBanner(mContext, mChartboostParams, mChartboostBannerListener);
-      }
-      mChartboostBanner.show();
+      initBanner(mContext, mChartboostParams, mChartboostBannerListener).show();
     }
   };
 

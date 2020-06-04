@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,8 +31,6 @@ import java.util.HashMap;
  * ChartboostAdapter} instances.
  */
 public final class ChartboostSingleton {
-
-  static final String TAG = ChartboostSingleton.class.getSimpleName();
 
   /**
    * Synchronized HashMaps of {@link AbstractChartboostAdapterDelegate} weak references keyed by
@@ -267,27 +266,17 @@ public final class ChartboostSingleton {
 
     if (!mIsChartboostInitialized) {
       mIsChartboostInitializing = true;
-      initChartboostSdk(context, params);
+      Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
+      Chartboost.setMediation(
+          Chartboost.CBMediation.CBMediationAdMob,
+          Chartboost.getSDKVersion(),
+          com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
+      Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
+      Chartboost.setDelegate(getInstance());
+      Chartboost.setAutoCacheAds(false);
     } else {
       adapterDelegate.didInitialize();
     }
-  }
-
-  /**
-   * Only Chartboost sdk specific init
-   *
-   * @param context
-   * @param params
-   */
-  private static void initChartboostSdk(Context context, ChartboostParams params) {
-    Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
-    Chartboost.setMediation(
-        Chartboost.CBMediation.CBMediationAdMob,
-        Chartboost.getSDKVersion(),
-        com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
-    Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
-    Chartboost.setDelegate(getInstance());
-    Chartboost.setAutoCacheAds(false);
   }
 
   /**

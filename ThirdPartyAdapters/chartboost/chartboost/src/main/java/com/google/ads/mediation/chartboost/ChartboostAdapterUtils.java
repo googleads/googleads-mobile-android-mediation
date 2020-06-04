@@ -7,8 +7,6 @@ import androidx.annotation.Nullable;
 import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.Events.ChartboostCacheError;
-import com.chartboost.sdk.Events.ChartboostShowError;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -19,29 +17,6 @@ import java.util.ArrayList;
  * Utility methods for the Chartboost Adapter.
  */
 class ChartboostAdapterUtils {
-
-  /**
-   * Common banner errors for show and cache
-   */
-  private static final int SESSION_NOT_STARTED = 7;
-  private static final int BANNER_DISABLED = 36;
-  private static final int BANNER_VIEW_IS_DETACHED = 37;
-
-  /**
-   * Banner cache errors
-   */
-  private static final int INTERNET_UNAVAILABLE = 1;
-  private static final int NETWORK_FAILURE = 5;
-  private static final int NO_AD_FOUND = 6;
-  private static final int ASSET_DOWNLOAD_FAILURE = 16;
-
-  /**
-   * Banner show errors
-   */
-  private static final int AD_ALREADY_VISIBLE = 8;
-  private static final int INTERNET_UNAVAILABLE_SHOW = 25;
-  private static final int PRESENTATION_FAILURE = 33;
-  private static final int NO_CACHED_AD = 34;
 
   /**
    * Key to obtain App ID, required for initializing Chartboost SDK.
@@ -193,52 +168,6 @@ class ChartboostAdapterUtils {
       case VIDEO_UNAVAILABLE_FOR_CURRENT_ORIENTATION:
       default:
         return AdRequest.ERROR_CODE_NO_FILL;
-    }
-  }
-
-  /**
-   * Parse and report Chartboost banner cache error to AdMob error
-   *
-   * @param error {@link ChartboostCacheError}
-   * @return AdRequest error code
-   */
-  static int parseBannerCacheErrorCodeToAdMobErrorCode(ChartboostCacheError error) {
-    switch (error.code) {
-      case INTERNET_UNAVAILABLE:
-      case NETWORK_FAILURE:
-      case ASSET_DOWNLOAD_FAILURE:
-        return AdRequest.ERROR_CODE_NETWORK_ERROR;
-      case NO_AD_FOUND:
-        return AdRequest.ERROR_CODE_NO_FILL;
-      case SESSION_NOT_STARTED:
-      case BANNER_DISABLED:
-      case BANNER_VIEW_IS_DETACHED:
-        return AdRequest.ERROR_CODE_INVALID_REQUEST;
-      default:
-        return AdRequest.ERROR_CODE_INTERNAL_ERROR;
-    }
-  }
-
-  /**
-   * Parse and report Chartboost banner show error to AdMob error
-   *
-   * @param error {@link ChartboostShowError}
-   * @return AdRequest error code
-   */
-  static int parseBannerShowErrorCodeToAdMobErrorCode(ChartboostShowError error) {
-    switch (error.code) {
-      case INTERNET_UNAVAILABLE_SHOW:
-        return AdRequest.ERROR_CODE_NETWORK_ERROR;
-      case PRESENTATION_FAILURE:
-      case NO_CACHED_AD:
-        return AdRequest.ERROR_CODE_NO_FILL;
-      case AD_ALREADY_VISIBLE:
-      case SESSION_NOT_STARTED:
-      case BANNER_DISABLED:
-      case BANNER_VIEW_IS_DETACHED:
-        return AdRequest.ERROR_CODE_INVALID_REQUEST;
-      default:
-        return AdRequest.ERROR_CODE_INTERNAL_ERROR;
     }
   }
 
