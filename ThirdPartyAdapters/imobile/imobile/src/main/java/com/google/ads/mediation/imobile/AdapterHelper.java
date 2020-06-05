@@ -6,9 +6,7 @@ import com.google.android.gms.ads.AdSize;
 import java.util.ArrayList;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
 
-/**
- * Helper of mediation adapter.
- */
+/** Helper of mediation adapter. */
 public final class AdapterHelper {
 
   /**
@@ -83,13 +81,12 @@ public final class AdapterHelper {
     int originalHeight = original.getHeight();
     int potentialHeight = potential.getHeight();
 
-    if (originalWidth * minWidthRatio > potentialWidth ||
-        originalWidth < potentialWidth) {
+    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
       return false;
     }
 
-    return !(originalHeight * minHeightRatio > potentialHeight) &&
-        originalHeight >= potentialHeight;
+    return !(originalHeight * minHeightRatio > potentialHeight)
+        && originalHeight >= potentialHeight;
   }
 
   private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
