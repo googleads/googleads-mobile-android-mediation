@@ -1,6 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
 #### Next Version
+- Verified compatibility with Unity Ads SDK 3.4.6.
 - Adapter now forwards the `onAdOpened()` callback when a banner ad is clicked.
 
 #### Version 3.4.2.3
