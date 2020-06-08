@@ -38,13 +38,15 @@ import com.unity3d.services.banners.UnityBannerSize;
 
 import java.lang.ref.WeakReference;
 
+// took away implements MediationBannerAdapter, BannerView.IListener
+
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
 public class UnityAdapter extends UnityMediationAdapter
-        implements MediationInterstitialAdapter, MediationBannerAdapter, BannerView.IListener{
+        implements MediationInterstitialAdapter {
 
     /**
      * Mediation interstitial listener used to forward events from {@link UnitySingleton} to
@@ -57,20 +59,25 @@ public class UnityAdapter extends UnityMediationAdapter
      */
     private String mPlacementId;
 
+    private UnitySingleton unitySingleton = new UnitySingleton();
+
     /**
      * Placement ID for banner if requested.
-     */
+     *
     private String bannerPlacementId;
 
     /**
      * The view for the banner instance.
-     */
+     *
     private BannerView mBannerView;
 
     /**
      * Callback object for Google's Banner Lifecycle.
-     */
+     *
     private MediationBannerListener bannerListener;
+
+    */
+
 
     /**
      * An Android {@link Activity} weak reference used to show ads.
@@ -169,6 +176,7 @@ public class UnityAdapter extends UnityMediationAdapter
                                       Bundle serverParameters,
                                       MediationAdRequest mediationAdRequest,
                                       Bundle mediationExtras) {
+        Log.v(TAG, "requesting interstitial ad");
         mMediationInterstitialListener = mediationInterstitialListener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
@@ -193,26 +201,57 @@ public class UnityAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
-        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
-        UnitySingleton.getInstance().loadAd(mUnityAdapterDelegate);
+        // old method
+        // UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
+        // UnitySingleton.getInstance().loadAd(mUnityAdapterDelegate);
+
+        // new method
+        unitySingleton.initializeUnityAds(activity, gameId);
+        unitySingleton.loadAd(mUnityAdapterDelegate);
+
+
 
     }
 
     @Override
     public void showInterstitial() {
+        Log.v(TAG, "showing interstitial ad");
+
         // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
         // ad.
         mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
 
         if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
             // Request UnitySingleton to show interstitial ads.
-            UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+
+            // old method
+            //UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+
+            // new method
+            unitySingleton.showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
         }
     }
 
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public void onPause() {
+
+    }
+
+    @Override
+    public void onResume() {
+
+    }
+
+    /*
     @Override
     public void onDestroy() {
         if(mBannerView != null) {
@@ -261,7 +300,12 @@ public class UnityAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
 
         // Even though we are a banner request, we still need to initialize UnityAds.
-        UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
+        // old method
+        // UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
+
+        // new method
+        UnitySingleton unitySingleton = new UnitySingleton();
+        unitySingleton.initializeUnityAds(activity, gameId);
 
         float density = context.getResources().getDisplayMetrics().density;
         int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
@@ -307,4 +351,6 @@ public class UnityAdapter extends UnityMediationAdapter
     public void onBannerLeftApplication(BannerView bannerView) {
         bannerListener.onAdLeftApplication(UnityAdapter.this);
     }
+
+     */
 }

@@ -14,6 +14,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
+import com.unity3d.ads.BuildConfig;
 import com.unity3d.ads.UnityAds;
 
 import java.util.HashSet;
@@ -56,6 +57,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * Placement ID used to determine what type of ad to load.
      */
     private String mPlacementId;
+
+    private UnitySingleton unitySingleton = new UnitySingleton();
 
     /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
@@ -209,7 +212,12 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
-        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+        // old method
+        // UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+
+        // new method
+        unitySingleton.initializeUnityAds((Activity) context, gameID);
+
         initializationCompleteCallback.onInitializationSucceeded();
     }
 
@@ -236,8 +244,13 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         mMediationAdLoadCallback = mediationAdLoadCallback;
 
-        UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
-        UnitySingleton.getInstance().loadAd(mUnityAdapterRewardedAdDelegate);
+        // old method
+        // UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+        // UnitySingleton.getInstance().loadAd(mUnityAdapterRewardedAdDelegate);
+
+        // new method
+        unitySingleton.initializeUnityAds((Activity) context, gameID);
+        unitySingleton.loadAd(mUnityAdapterRewardedAdDelegate);
     }
 
     @Override
@@ -254,7 +267,11 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         // Request UnitySingleton to show video ads.
         if (UnityAds.isReady(mPlacementId)) {
-            UnitySingleton.getInstance().showAd(mUnityAdapterRewardedAdDelegate, activity);
+            // old method
+            // UnitySingleton.getInstance().showAd(mUnityAdapterRewardedAdDelegate, activity);
+
+            // new method
+            unitySingleton.showAd(mUnityAdapterRewardedAdDelegate, activity);
 
             // Unity Ads does not have an ad opened callback.
             if (mMediationRewardedAdCallback != null) {

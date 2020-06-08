@@ -19,6 +19,9 @@ import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.unity3d.ads.BuildConfig;
+import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -43,7 +46,7 @@ public final class UnitySingleton {
      * currently displaying an ad.
      */
     private WeakReference<UnityAdapterDelegate> mAdShowingAdapterDelegate;
-
+    private WeakReference<UnityAdapterDelegate> mAdLoadingAdapterDelegate;
     /**
      * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
@@ -53,9 +56,9 @@ public final class UnitySingleton {
     /**
      * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
-     */
+     *
     private static UnitySingleton unitySingletonInstance;
-
+    */
     /**
      * Used by Unity Ads to track failures in the mediation lifecycle
      */
@@ -67,15 +70,16 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton} instance.
      *
      * @return the {@link #unitySingletonInstance}.
-     */
+     *
     public static UnitySingleton getInstance() {
         if (unitySingletonInstance == null) {
             unitySingletonInstance = new UnitySingleton();
         }
         return unitySingletonInstance;
     }
+    */
 
-    private UnitySingleton() {
+    public UnitySingleton() {
         mPlacementsInUse = new HashMap<>();
     }
 
@@ -84,13 +88,14 @@ public final class UnitySingleton {
      * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} instance.
      *
      * @return the {@link #unitySingletonListenerInstance}.
-     */
+     *
     private UnitySingletonListener getUnitySingletonListenerInstance() {
         if (unitySingletonListenerInstance == null) {
             unitySingletonListenerInstance = new UnitySingletonListener();
         }
         return unitySingletonListenerInstance;
     }
+    */
 
     /**
      * This method will initialize {@link UnityAds}.
@@ -119,9 +124,24 @@ public final class UnitySingleton {
         mediationMetaData.set("adapter_version", "3.3.0");
         mediationMetaData.commit();
 
-        UnitySingletonListener listener =
-                unitySingletonInstance.getUnitySingletonListenerInstance();
-        UnityAds.initialize(activity, gameId, listener, false, true);
+        // old method
+        // UnitySingletonListener listener = unitySingletonInstance.getUnitySingletonListenerInstance();
+        //UnityAds.initialize(activity, gameId, listener, false, true);
+
+        // new method
+        UnityAds.initialize(activity, gameId, false, true, new IUnityAdsInitializationListener() {
+
+                    @Override
+                    public void onInitializationComplete() {
+                        Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                    }
+
+                    @Override
+                    public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                        Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
+                    }
+                });
+
 
         return true;
     }
@@ -135,8 +155,28 @@ public final class UnitySingleton {
     protected void loadAd(UnityAdapterDelegate delegate) {
 
         // Calling load before UnityAds.initialize() will cause the placement to load on init
-        UnityAds.load(delegate.getPlacementId());
 
+        // old method
+        // UnityAds.load(delegate.getPlacementId());
+
+        mAdLoadingAdapterDelegate = new WeakReference<>(delegate);
+        Log.d(UnityAdapter.TAG, "Trying to load ad");
+
+        // new method
+        UnityAds.load(delegate.getPlacementId(), new IUnityAdsLoadListener() {
+            @Override
+            public void onUnityAdsAdLoaded(String s) {
+
+                Log.d(UnityAdapter.TAG, "Ad successfully loaded " + s);
+            }
+
+            @Override
+            public void onUnityAdsFailedToLoad(String s) {
+                Log.e(UnityAdapter.TAG, "Ad load failure " +s);
+            }
+        });
+
+        // TODO
         if (UnityAds.isInitialized()) {
             //If ads are currently being loaded, wait for the callbacks from
             // unitySingletonListenerInstance.
@@ -167,6 +207,7 @@ public final class UnitySingleton {
     protected void showAd(UnityAdapterDelegate delegate, Activity activity) {
         mAdShowingAdapterDelegate = new WeakReference<>(delegate);
 
+        Log.d(UnityMediationAdapter.TAG, "trying to show ad");
         // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
         // Unity Ads fails to shown an ad).
 
@@ -176,6 +217,7 @@ public final class UnitySingleton {
             metadata.setOrdinal(++impressionOrdinal);
             metadata.commit();
 
+            Log.d(UnityMediationAdapter.TAG, "calling show ad");
             UnityAds.show(activity, delegate.getPlacementId());
         } else {
             // Notify UnityAds that the adapter failed to show
@@ -204,6 +246,14 @@ public final class UnitySingleton {
                     mPlacementsInUse.get(placementId).get() != null) {
                 mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
             }
+
+//            if (mAdLoadingAdapterDelegate != null)
+//            {
+//                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
+//                if (delegate != null) {
+//                    delegate.onUnityAdsStart(placementId);
+//                }
+//            }
         }
 
         @Override
@@ -260,6 +310,22 @@ public final class UnitySingleton {
                         .onUnityAdsError(unityAdsError, placementId);
                 mPlacementsInUse.remove(placementId);
             }
+
+            // TODO
+//            if (mAdLoadingAdapterDelegate.get().getPlacementId() == placementId)
+//            {
+//                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
+//                if (delegate != null) {
+//                    delegate.onUnityAdsError(unityAdsError, placementId);
+//                }
+//            }
+//            if (mAdShowingAdapterDelegate.get().getPlacementId() == placementId)
+//            {
+//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+//                if (delegate != null) {
+//                    delegate.onUnityAdsError(unityAdsError, placementId);
+//                }
+//            }
         }
     }
 }
