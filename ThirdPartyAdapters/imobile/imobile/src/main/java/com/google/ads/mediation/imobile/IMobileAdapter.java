@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -66,8 +67,7 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
     }
 
     // Validate AdSize.
-    Log.d(TAG, "Banner : Potential ad sizes : " + supportedSizes.toString());
-    AdSize supportedAdSize = AdapterHelper.findClosestSize(context, adSize, supportedSizes);
+    AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
     if (supportedAdSize == null) {
       Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
       listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -85,6 +85,7 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
     Activity activity = (Activity) context;
 
     // Call i-mobile SDK.
+    Log.d(TAG, "Banner : Requesting banner with ad size: " + adSize.toString());
     ImobileSdkAd.registerSpotInline(activity, publisherId, mediaId, spotId);
     ImobileSdkAd.start(spotId);
     ImobileSdkAd.setImobileSdkAdListener(

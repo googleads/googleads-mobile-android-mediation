@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+
 #### Version 2.0.21.0
 - Verified compatibility with i-mobile SDK v2.0.21.
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.

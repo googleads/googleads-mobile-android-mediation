@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+
 #### Version 9.12.8.0
 - Verified compatibility with AppLovin SDK 9.12.8.
 

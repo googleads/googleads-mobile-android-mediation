@@ -1,5 +1,8 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+
 #### Version 5.8.1.0
 - Verified compatibility with myTarget SDK version 5.8.1.
 

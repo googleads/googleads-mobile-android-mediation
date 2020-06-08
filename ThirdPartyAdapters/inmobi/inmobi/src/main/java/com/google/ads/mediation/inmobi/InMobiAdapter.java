@@ -8,9 +8,11 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -148,19 +150,20 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     });
   }
 
-  private AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        /*
-            Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
-            320x50,
-            300x250,
-            728x90.
-         */
+  @Nullable
+  private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
+    /*
+        Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
+        320x50,
+        300x250,
+        728x90.
+     */
 
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(new AdSize(320, 50));
     potentials.add(new AdSize(300, 250));
     potentials.add(new AdSize(728, 90));
-    return InMobiAdapterUtils.findClosestSize(context, adSize, potentials);
+    return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
   @Override
@@ -366,6 +369,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mediationAdSize.getHeightInPixels(context)));
     mWrappedAdView.addView(adView);
     InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
+
+    Log.d(TAG, "Requesting banner with ad size: " + mediationAdSize.toString());
     adView.load();
   }
 

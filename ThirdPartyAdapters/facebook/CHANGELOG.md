@@ -1,6 +1,7 @@
 ## Facebook Android Mediation Adapter Changelog
 
 #### Next Version
+- Updated the adapter to support inline adaptive banner requests.
 - Fixed an issue where open-bidding banner ads always render full-width.
 
 #### 5.9.0.1
