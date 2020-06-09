@@ -28,7 +28,10 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
+import com.unity3d.ads.BuildConfig;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
@@ -65,7 +68,8 @@ public class UnityBannerAdapter extends UnityMediationAdapter
     private WeakReference<Activity> mActivityWeakReference;
 
 
-    private UnitySingleton unitySingleton = new UnitySingleton();
+    // private UnitySingleton unitySingleton = new UnitySingleton();
+
     /**
      * Checks whether or not the provided Unity Ads IDs are valid.
      *
@@ -137,7 +141,7 @@ public class UnityBannerAdapter extends UnityMediationAdapter
         // UnitySingleton.getInstance().initializeUnityAds(activity, gameId);
 
         // new method
-        unitySingleton.initializeUnityAds(activity, gameId);
+        initializeUnityAds(activity, gameId);
 
         float density = context.getResources().getDisplayMetrics().density;
         int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
@@ -151,6 +155,55 @@ public class UnityBannerAdapter extends UnityMediationAdapter
 
         mBannerView.setListener(this);
         mBannerView.load();
+    }
+
+    /**
+     * This method will initialize {@link UnityAds}.
+     *
+     * @param activity    The Activity context.
+     * @param gameId      Unity Ads Game ID.
+     * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
+     * otherwise.
+     */
+    public boolean initializeUnityAds(Activity activity, String gameId) {
+        // Check if the current device is supported by Unity Ads before initializing.
+        if (!UnityAds.isSupported()) {
+            Log.w(UnityAdapter.TAG, "The current device is not supported by Unity Ads.");
+            return false;
+        }
+
+        if (UnityAds.isInitialized()) {
+            // Unity Ads is already initialized.
+            return true;
+        }
+
+        // Set mediation meta data before initializing.
+        MediationMetaData mediationMetaData = new MediationMetaData(activity);
+        mediationMetaData.setName("AdMob");
+        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
+        mediationMetaData.set("adapter_version", "3.3.0");
+        mediationMetaData.commit();
+
+        // old method
+        // UnitySingletonListener listener = unitySingletonInstance.getUnitySingletonListenerInstance();
+        //UnityAds.initialize(activity, gameId, listener, false, true);
+
+        // new method
+        UnityAds.initialize(activity, gameId, false, true, new IUnityAdsInitializationListener() {
+
+            @Override
+            public void onInitializationComplete() {
+                Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+            }
+
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
+            }
+        });
+
+
+        return true;
     }
 
     @Override

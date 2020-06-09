@@ -50,9 +50,9 @@ public final class UnitySingleton {
     /**
      * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener}.
-     */
+     *
     private UnitySingletonListener unitySingletonListenerInstance;
-
+    */
     /**
      * The only instance of
      * {@link com.google.ads.mediation.unity.UnitySingleton}.
@@ -231,101 +231,102 @@ public final class UnitySingleton {
      * The {@link com.google.ads.mediation.unity.UnitySingleton.UnitySingletonListener} is used
      * to forward events from Unity Ads SDK to {@link UnityAdapter} based on the delegates added
      * to {@link #mPlacementsInUse} and which adapter is currently showing an ad.
-     */
+     *
     private final class UnitySingletonListener
             implements IUnityAdsExtendedListener {
 
         /**
          * {@link IUnityAdsExtendedListener} implementation
          */
-        @Override
-        public void onUnityAdsReady(String placementId) {
-            // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
-            // appropriate delegate.
-            if (mPlacementsInUse.containsKey(placementId) &&
-                    mPlacementsInUse.get(placementId).get() != null) {
-                mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
-            }
-
-//            if (mAdLoadingAdapterDelegate != null)
-//            {
-//                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
+//        @Override
+//        public void onUnityAdsReady(String placementId) {
+//            // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
+//            // appropriate delegate.
+//            if (mPlacementsInUse.containsKey(placementId) &&
+//                    mPlacementsInUse.get(placementId).get() != null) {
+//                mPlacementsInUse.get(placementId).get().onUnityAdsReady(placementId);
+//            }
+//
+////            if (mAdLoadingAdapterDelegate != null)
+////            {
+////                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
+////                if (delegate != null) {
+////                    delegate.onUnityAdsStart(placementId);
+////                }
+////            }
+//        }
+//
+//        @Override
+//        public void onUnityAdsStart(String placementId) {
+//            // Unity Ads video ad started. Send video started event to currently showing
+//            // adapter's delegate.
+//            if (mAdShowingAdapterDelegate != null) {
+//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
 //                if (delegate != null) {
 //                    delegate.onUnityAdsStart(placementId);
 //                }
 //            }
-        }
-
-        @Override
-        public void onUnityAdsStart(String placementId) {
-            // Unity Ads video ad started. Send video started event to currently showing
-            // adapter's delegate.
-            if (mAdShowingAdapterDelegate != null) {
-                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-                if (delegate != null) {
-                    delegate.onUnityAdsStart(placementId);
-                }
-            }
-        }
-
-        @Override
-        public void onUnityAdsClick(String placementId) {
-            // An Unity Ads ad has been clicked. Send ad clicked event to currently showing
-            // adapter's delegate.
-            if (mAdShowingAdapterDelegate != null) {
-                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-                if (delegate != null) {
-                    delegate.onUnityAdsClick(placementId);
-                }
-            }
-        }
-
-        @Override
-        public void onUnityAdsPlacementStateChanged(String placementId,
-                                                    UnityAds.PlacementState oldState,
-                                                    UnityAds.PlacementState newState) {
-            // The onUnityAdsReady and onUnityAdsError callback methods are used to forward Unity
-            // Ads SDK states to the adapters. No need to forward this callback to the adapters.
-        }
-
-        @Override
-        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-            // An Unity Ads ad has been closed. Forward the finish event to the currently showing
-            // adapter's delegate.
-            if (mAdShowingAdapterDelegate != null) {
-                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
-                if (delegate != null) {
-                    delegate.onUnityAdsFinish(placementId, finishState);
-                    mPlacementsInUse.remove(placementId);
-                }
-            }
-        }
-
-        @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-            // An error occurred with Unity Ads. Send error event to the appropriate delegate.
-            if (mPlacementsInUse.containsKey(placementId) &&
-                    mPlacementsInUse.get(placementId).get() != null) {
-                mPlacementsInUse.get(placementId).get()
-                        .onUnityAdsError(unityAdsError, placementId);
-                mPlacementsInUse.remove(placementId);
-            }
-
-            // TODO
-//            if (mAdLoadingAdapterDelegate.get().getPlacementId() == placementId)
-//            {
-//                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
-//                if (delegate != null) {
-//                    delegate.onUnityAdsError(unityAdsError, placementId);
-//                }
-//            }
-//            if (mAdShowingAdapterDelegate.get().getPlacementId() == placementId)
-//            {
+//        }
+//
+//        @Override
+//        public void onUnityAdsClick(String placementId) {
+//            // An Unity Ads ad has been clicked. Send ad clicked event to currently showing
+//            // adapter's delegate.
+//            if (mAdShowingAdapterDelegate != null) {
 //                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
 //                if (delegate != null) {
-//                    delegate.onUnityAdsError(unityAdsError, placementId);
+//                    delegate.onUnityAdsClick(placementId);
 //                }
 //            }
-        }
-    }
+//        }
+//
+//        @Override
+//        public void onUnityAdsPlacementStateChanged(String placementId,
+//                                                    UnityAds.PlacementState oldState,
+//                                                    UnityAds.PlacementState newState) {
+//            // The onUnityAdsReady and onUnityAdsError callback methods are used to forward Unity
+//            // Ads SDK states to the adapters. No need to forward this callback to the adapters.
+//        }
+//
+//        @Override
+//        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
+//            // An Unity Ads ad has been closed. Forward the finish event to the currently showing
+//            // adapter's delegate.
+//            if (mAdShowingAdapterDelegate != null) {
+//                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+//                if (delegate != null) {
+//                    delegate.onUnityAdsFinish(placementId, finishState);
+//                    mPlacementsInUse.remove(placementId);
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
+//            // An error occurred with Unity Ads. Send error event to the appropriate delegate.
+//            if (mPlacementsInUse.containsKey(placementId) &&
+//                    mPlacementsInUse.get(placementId).get() != null) {
+//                mPlacementsInUse.get(placementId).get()
+//                        .onUnityAdsError(unityAdsError, placementId);
+//                mPlacementsInUse.remove(placementId);
+//            }
+//
+//            // TODO
+////            if (mAdLoadingAdapterDelegate.get().getPlacementId() == placementId)
+////            {
+////                UnityAdapterDelegate delegate = mAdLoadingAdapterDelegate.get();
+////                if (delegate != null) {
+////                    delegate.onUnityAdsError(unityAdsError, placementId);
+////                }
+////            }
+////            if (mAdShowingAdapterDelegate.get().getPlacementId() == placementId)
+////            {
+////                UnityAdapterDelegate delegate = mAdShowingAdapterDelegate.get();
+////                if (delegate != null) {
+////                    delegate.onUnityAdsError(unityAdsError, placementId);
+////                }
+////            }
+//        }
+//    }
+
 }

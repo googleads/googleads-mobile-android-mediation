@@ -30,7 +30,11 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
+import com.unity3d.ads.BuildConfig;
+import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
@@ -53,6 +57,7 @@ public class UnityAdapter extends UnityMediationAdapter
      * Google Mobile Ads SDK.
      */
     private MediationInterstitialListener mMediationInterstitialListener;
+
 
     /**
      * Placement ID used to determine what type of ad to load.
@@ -85,11 +90,17 @@ public class UnityAdapter extends UnityMediationAdapter
     private WeakReference<Activity> mActivityWeakReference;
 
     /**
+     * Used by Unity Ads to track failures in the mediation lifecycle
+     */
+    private int impressionOrdinal;
+    private int missedImpressionOrdinal;
+
+
+    /**
      * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
      * Ads SDK.
      */
     private final UnityAdapterDelegate mUnityAdapterDelegate = new UnityAdapterDelegate() {
-
         @Override
         public String getPlacementId() {
             return mPlacementId;
@@ -206,11 +217,87 @@ public class UnityAdapter extends UnityMediationAdapter
         // UnitySingleton.getInstance().loadAd(mUnityAdapterDelegate);
 
         // new method
-        unitySingleton.initializeUnityAds(activity, gameId);
-        unitySingleton.loadAd(mUnityAdapterDelegate);
+        initializeUnityAds(activity, gameId);
+        loadInterstitialAd(mPlacementId);
+
+    }
+
+    /**
+     * This method will initialize {@link UnityAds}.
+     *
+     * @param activity    The Activity context.
+     * @param gameId      Unity Ads Game ID.
+     * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
+     * otherwise.
+     */
+    public boolean initializeUnityAds(Activity activity, String gameId) {
+        // Check if the current device is supported by Unity Ads before initializing.
+        if (!UnityAds.isSupported()) {
+            Log.w(UnityAdapter.TAG, "The current device is not supported by Unity Ads.");
+            return false;
+        }
+
+        if (UnityAds.isInitialized()) {
+            // Unity Ads is already initialized.
+            return true;
+        }
+
+        // Set mediation meta data before initializing.
+        MediationMetaData mediationMetaData = new MediationMetaData(activity);
+        mediationMetaData.setName("AdMob");
+        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
+        mediationMetaData.set("adapter_version", "3.3.0");
+        mediationMetaData.commit();
 
 
+        UnityAds.initialize(activity, gameId, false, true, new IUnityAdsInitializationListener() {
 
+            @Override
+            public void onInitializationComplete() {
+                Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+            }
+
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
+            }
+        });
+
+
+        return true;
+    }
+
+    /**
+     * This method will load Unity ads for a given Placement ID and send the ad loaded event if the
+     * ads have already loaded.
+     *
+     * @param placementId Used to forward Unity Ads events to the adapter.
+     */
+    protected void loadInterstitialAd(String placementId) {
+
+        // Calling load before UnityAds.initialize() will cause the placement to load on init
+        Log.d(UnityAdapter.TAG, "Trying to load ad");
+
+        // new method
+        UnityAds.load(placementId, new IUnityAdsLoadListener() {
+            @Override
+            public void onUnityAdsAdLoaded(String s) {
+                Log.d(UnityAdapter.TAG, "Ad successfully loaded " + s);
+            }
+
+            @Override
+            public void onUnityAdsFailedToLoad(String s) {
+                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
+                        AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                Log.e(UnityAdapter.TAG, "Ad load failure " +s);
+            }
+        });
+
+        if (UnityAds.isInitialized()) {
+            if (UnityAds.isReady(placementId)) {
+                mUnityAdapterDelegate.onUnityAdsReady(placementId);
+            }
+        }
     }
 
     @Override
@@ -228,11 +315,40 @@ public class UnityAdapter extends UnityMediationAdapter
             //UnitySingleton.getInstance().showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
 
             // new method
-            unitySingleton.showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
+            showAd(mUnityAdapterDelegate, mActivityWeakReference.get());
 
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+        }
+    }
+
+    /**
+     * This method will show an Unity Ad.
+     *
+     * @param delegate Used to forward Unity Ads events to the adapter.
+     * @param activity An Android {@link Activity} required to show an ad.
+     */
+    protected void showAd(UnityAdapterDelegate delegate, Activity activity) {
+
+        Log.d(UnityMediationAdapter.TAG, "trying to show ad");
+        // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
+        // Unity Ads fails to shown an ad).
+
+        if(UnityAds.isReady(delegate.getPlacementId())) {
+
+            // Notify UnityAds that the adapter made a successful show request
+            MediationMetaData metadata = new MediationMetaData(activity);
+            metadata.setOrdinal(++impressionOrdinal);
+            metadata.commit();
+
+            Log.d(UnityMediationAdapter.TAG, "calling show ad");
+            UnityAds.show(activity, delegate.getPlacementId());
+        } else {
+            // Notify UnityAds that the adapter failed to show
+            MediationMetaData metadata = new MediationMetaData(activity);
+            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
+            metadata.commit();
         }
     }
 
