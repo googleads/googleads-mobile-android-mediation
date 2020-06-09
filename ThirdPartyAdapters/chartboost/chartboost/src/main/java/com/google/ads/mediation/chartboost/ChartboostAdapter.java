@@ -324,11 +324,12 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
     @Override
     public void onAdCached(ChartboostCacheEvent chartboostCacheEvent,
         ChartboostCacheError chartboostCacheError) {
-      if (mMediationBannerListener != null) {
+      if (mMediationBannerListener != null && mChartboostBanner != null) {
         if (chartboostCacheError == null) {
           if(!isAdLoaded.getAndSet(true)) {
             mMediationBannerListener.onAdLoaded(
                 ChartboostAdapter.this);
+            mChartboostBanner.show();
           }
         } else {
           mMediationBannerListener.onAdFailedToLoad(
@@ -347,10 +348,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
           mMediationBannerListener.onAdOpened(
               ChartboostAdapter.this);
         } else {
-          mMediationBannerListener.onAdFailedToLoad(
-              ChartboostAdapter.this,
-              chartboostShowError.code);
-          removeBannerDelegate();
+          Log.w(TAG, "Chartboost show error: "+chartboostShowError.code);
         }
       }
     }
@@ -376,7 +374,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
     @Override
     public void didInitialize() {
       super.didInitialize();
-      initBanner(mContext, mChartboostParams, mChartboostBannerListener).show();
+      initBanner(mContext, mChartboostParams, mChartboostBannerListener).cache();
     }
   };
 

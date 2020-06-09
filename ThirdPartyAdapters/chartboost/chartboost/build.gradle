@@ -28,6 +28,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
 
 dependencies {
     implementation 'com.chartboost:chartboost-sdk:8.0.3'
