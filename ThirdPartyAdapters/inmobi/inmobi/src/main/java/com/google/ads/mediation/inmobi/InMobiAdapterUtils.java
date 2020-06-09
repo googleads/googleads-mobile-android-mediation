@@ -1,6 +1,5 @@
 package com.google.ads.mediation.inmobi;
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -8,7 +7,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -17,7 +15,6 @@ import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.Gender;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
@@ -237,60 +234,4 @@ class InMobiAdapterUtils {
     }
     return x;
   }
-
-  // Start of helper code to remove when available in SDK
-
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(
-      Context context, AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
-
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
-        }
-      }
-    }
-    return largestPotential;
-  }
-
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
-      return false;
-    }
-
-    return !(originalHeight * minHeightRatio > potentialHeight)
-        && originalHeight >= potentialHeight;
-  }
-
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
-  }
-  // End code to remove when available in SDK
 }

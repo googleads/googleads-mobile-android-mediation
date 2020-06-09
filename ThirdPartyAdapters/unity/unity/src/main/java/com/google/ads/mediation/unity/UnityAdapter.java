@@ -230,6 +230,7 @@ public class UnityAdapter extends UnityMediationAdapter
         public void onBannerClick(BannerView bannerAdView) {
           if (mMediationBannerListener != null) {
             mMediationBannerListener.onAdClicked(UnityAdapter.this);
+            mMediationBannerListener.onAdOpened(UnityAdapter.this);
           }
         }
 

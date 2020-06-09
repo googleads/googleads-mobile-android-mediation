@@ -15,9 +15,10 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
-
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -473,10 +474,7 @@ public class NendAdapter extends NendMediationAdapter
 
     mListener = listener;
 
-    // Available ad sizes are listed below.
-    // https://github.com/fan-ADN/nendSDK-Android/wiki/About-Ad-Sizes#available-ad-sizes-are-listed-below.
-    if (!isValidBannerSize(adSizeWidth, adSizeHeight) &&
-        !availableAtSmartBanner) {
+    if (!isValidBannerSize(adSizeWidth, adSizeHeight) && !availableAtSmartBanner) {
       Log.w(TAG, "Invalid Ad type");
       if (mListener != null) {
         mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -490,7 +488,6 @@ public class NendAdapter extends NendMediationAdapter
         }
         return;
       }
-
       mNendAdView = new NendAdView(context, mapper.spotId, mapper.apiKey);
 
       if (availableAtSmartBanner) {
@@ -509,6 +506,8 @@ public class NendAdapter extends NendMediationAdapter
     }
   }
 
+  // Available ad sizes are listed below.
+  // https://github.com/fan-ADN/nendSDK-Android/wiki/About-Ad-Sizes#available-ad-sizes-are-listed-below.
   private boolean isValidBannerSize(int adSizeWidth, int adSizeHeight) {
     return (adSizeWidth == 320 && adSizeHeight == 50)
             || (adSizeWidth == 320 && adSizeHeight == 100)
@@ -516,7 +515,8 @@ public class NendAdapter extends NendMediationAdapter
             || (adSizeWidth == 728 && adSizeHeight == 90);
   }
 
-  AdSize getSupportedAdSize(Context context, AdSize adSize) {
+  @Nullable
+  private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
     /*
        Supported Sizes:
        320 × 50
@@ -525,71 +525,14 @@ public class NendAdapter extends NendMediationAdapter
        300 × 250
        728 × 90
     */
-    ArrayList<AdSize> potentials = new ArrayList<AdSize>(5);
+    ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LARGE_BANNER);
     potentials.add(new AdSize(300, 100));
     potentials.add(AdSize.MEDIUM_RECTANGLE);
     potentials.add(AdSize.LEADERBOARD);
-
-    return findClosestSize(context, adSize, potentials);
+    return MediationUtils.findClosestSize(context, adSize, potentials);
   }
-
-  // Start of helper code to remove when available in SDK
-
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(
-      Context context, AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
-
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
-        }
-      }
-    }
-    return largestPotential;
-  }
-
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
-      return false;
-    }
-
-    return !(originalHeight * minHeightRatio > potentialHeight)
-        && originalHeight >= potentialHeight;
-  }
-
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
-  }
-  // End code to remove when available in SDK
 
   // region NendAdListener callbacks.
   @Override

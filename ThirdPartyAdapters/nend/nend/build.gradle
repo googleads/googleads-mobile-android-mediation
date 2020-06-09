@@ -34,7 +34,7 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.0.0'
+    implementation 'com.google.android.gms:play-services-ads:19.1.0'
 
     // nendSDK
     implementation 'net.nend.android:nend-sdk:5.4.2'

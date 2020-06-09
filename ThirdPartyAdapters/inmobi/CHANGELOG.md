@@ -1,6 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
 #### Next Version
+- Updated the adapter to support inline adaptive banner requests.
 - Adapter now includes proguard configuration as suggested by [InMobi's guidelines](https://support.inmobi.com/monetize/android-guidelines).
 
 #### Version 9.0.6.0

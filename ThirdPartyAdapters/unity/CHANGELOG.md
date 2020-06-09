@@ -1,5 +1,13 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 3.4.6.0
+- Verified compatibility with Unity Ads SDK 3.4.6.
+- Adapter now forwards the `onAdOpened()` callback when a banner ad is clicked.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Unity Ads SDK version 3.4.6.
+
 #### Version 3.4.2.3
 - Added descriptive error codes and reasons for adapter load/show failures.
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
