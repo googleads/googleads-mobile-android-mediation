@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,7 +22,7 @@ import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Libraries.CBLogging;
 import com.chartboost.sdk.Model.CBError;
-import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.AdRequest;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
@@ -39,7 +40,8 @@ public final class ChartboostSingleton {
       mInterstitialDelegates = new HashMap<>();
   private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
       mRewardedDelegates = new HashMap<>();
-
+  private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
+      mBannerDelegates = new HashMap<>();
   /**
    * Flag to keep track of whether or not {@link Chartboost} has initialized.
    */
@@ -93,6 +95,13 @@ public final class ChartboostSingleton {
     }
   }
 
+  private static void addBannerDelegate(String location,
+      AbstractChartboostAdapterDelegate delegate) {
+    if (!TextUtils.isEmpty(location) && delegate != null) {
+      mBannerDelegates.put(location, new WeakReference<>(delegate));
+    }
+  }
+
   /**
    * Gets the weak reference of the {@link AbstractChartboostAdapterDelegate} linked to a given
    * Chartboost location
@@ -124,10 +133,40 @@ public final class ChartboostSingleton {
   }
 
   /**
+   * Gets the weak reference of the {@link AbstractChartboostAdapterDelegate} linked to a given
+   * Chartboost location
+   *
+   * @param location location the Chartboost location
+   * @return the weak reference of the Banner delegate for the location
+   */
+  private static WeakReference<AbstractChartboostAdapterDelegate> getBannerDelegate(
+      String location) {
+    if (!TextUtils.isEmpty(location) && mBannerDelegates.containsKey(location)) {
+      return mBannerDelegates.get(location);
+    }
+    return null;
+  }
+
+  /**
+   * Removes the weak reference of the {@link AbstractChartboostAdapterDelegate} linked to a given
+   * Chartboost location
+   *
+   * @param location location the Chartboost location
+   * @return Removed banner delegate
+   */
+  static WeakReference<AbstractChartboostAdapterDelegate> removeBannerDelegate(
+      String location) {
+    if (!TextUtils.isEmpty(location) && mBannerDelegates.containsKey(location)) {
+      return mBannerDelegates.remove(location);
+    }
+    return null;
+  }
+
+  /**
    * This method will initialize Chartboost SDK for interstitial ads and return whether or not it
    * successfully initialized.
    *
-   * @param context Required to initialize Chartboost SDK.
+   * @param context         Required to initialize Chartboost SDK.
    * @param adapterDelegate The adapter delegate to which to forward Chartboost callbacks.
    */
   public static void startChartboostInterstitial(Context context,
@@ -138,7 +177,7 @@ public final class ChartboostSingleton {
     // the ad request if it is.
     WeakReference<AbstractChartboostAdapterDelegate> delegate = getInterstitialDelegate(location);
     if (delegate != null && delegate.get() != null) {
-      Log.w(ChartboostMediationAdapter.TAG,
+      Log.w(TAG,
           "An ad has already been requested for the location: " + location);
       adapterDelegate.didFailToLoadInterstitial(location, CBError.CBImpressionError.NO_AD_FOUND);
       return;
@@ -154,7 +193,7 @@ public final class ChartboostSingleton {
    * This method will initialize Chartboost SDK for rewarded video ads and return whether or not it
    * successfully initialized.
    *
-   * @param context Required to initialize Chartboost SDK.
+   * @param context         Required to initialize Chartboost SDK.
    * @param adapterDelegate The adapter delegate to which to forward Chartboost callbacks.
    */
   public static void startChartboostRewardedVideo(Context context,
@@ -165,7 +204,7 @@ public final class ChartboostSingleton {
     // the ad request if it is.
     WeakReference<AbstractChartboostAdapterDelegate> delegate = getRewardedDelegate(location);
     if (delegate != null && delegate.get() != null) {
-      Log.w(ChartboostMediationAdapter.TAG,
+      Log.w(TAG,
           "An ad has already been requested for the location: " + location);
       adapterDelegate.didFailToLoadRewardedVideo(location, CBError.CBImpressionError.NO_AD_FOUND);
       return;
@@ -178,12 +217,40 @@ public final class ChartboostSingleton {
   }
 
   /**
+   * This method will initialize Chartboost SDK for banner ads and return whether or not it
+   * successfully initialized.
+   *
+   * @param context
+   * @param adapterDelegate
+   */
+  public static void startChartboostBanner(Context context,
+      AbstractChartboostAdapterDelegate adapterDelegate,
+      ChartboostBannerErrorListener bannerErrorListener) {
+    String location = adapterDelegate.getChartboostParams().getLocation();
+    // Checks if an ad has already been sent for caching for the requested location, and fail
+    // the ad request if it is.
+    WeakReference<AbstractChartboostAdapterDelegate> delegate =
+        getBannerDelegate(location);
+    if (delegate != null && delegate.get() != null) {
+      Log.w(TAG,
+          "An ad has already been requested for the location: " + location);
+      bannerErrorListener.notifyBannerInitializationError(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      return;
+    }
+
+    addBannerDelegate(location, adapterDelegate);
+    startChartboost(context,
+        adapterDelegate.getChartboostParams(),
+        adapterDelegate);
+  }
+
+  /**
    * This method will initialize the Chartboost SDK if it is not already initialized and set its
    * delegate.
    *
-   * @param context required to initialize {@link Chartboost}.
-   * @param params The Chartboost params containing server parameters and network extras to be used
-   * to start {@link Chartboost}.
+   * @param context         required to initialize {@link Chartboost}.
+   * @param params          The Chartboost params containing server parameters and network extras to
+   *                        be used to start {@link Chartboost}.
    * @param adapterDelegate The adapter delegate to which to forward initialization callbacks.
    */
   private static void startChartboost(Context context, ChartboostParams params,
@@ -192,15 +259,18 @@ public final class ChartboostSingleton {
       return;
     }
 
-    if (params.getFramework() != null && !TextUtils.isEmpty(params.getFrameworkVersion())) {
+    if (params.getFramework() != null
+        && !TextUtils.isEmpty(params.getFrameworkVersion())) {
       Chartboost.setFramework(params.getFramework(), params.getFrameworkVersion());
     }
 
     if (!mIsChartboostInitialized) {
       mIsChartboostInitializing = true;
       Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
-      Chartboost.setMediation(Chartboost.CBMediation.CBMediationAdMob,
-          MobileAds.getVersionString(), BuildConfig.VERSION_NAME);
+      Chartboost.setMediation(
+          Chartboost.CBMediation.CBMediationAdMob,
+          Chartboost.getSDKVersion(),
+          com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
       Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
       Chartboost.setDelegate(getInstance());
       Chartboost.setAutoCacheAds(false);
@@ -214,7 +284,7 @@ public final class ChartboostSingleton {
    * callbacks, else requests {@link Chartboost} to cache interstitial ads.
    *
    * @param delegate Required to obtain the location for which to load the ad and to forward the
-   * events.
+   *                 events.
    */
   protected static void loadInterstitialAd(AbstractChartboostAdapterDelegate delegate) {
     // Get the location for which the ads need to be loaded.
@@ -234,7 +304,7 @@ public final class ChartboostSingleton {
    * This method will show an interstitial ad.
    *
    * @param delegate that will be showing the ad, needed to set the current showing adapter's
-   * delegate.
+   *                 delegate.
    */
   protected static void showInterstitialAd(AbstractChartboostAdapterDelegate delegate) {
     // Displays a cached interstitial if available, else loads from server.
@@ -247,7 +317,7 @@ public final class ChartboostSingleton {
    * video ads.
    *
    * @param delegate needed to get the location for which to load Chartboost ads and to forward
-   * necessary events.
+   *                 necessary events.
    */
   protected static void loadRewardedVideoAd(AbstractChartboostAdapterDelegate delegate) {
     // Get the location for which the ads need to be loaded.
@@ -266,7 +336,7 @@ public final class ChartboostSingleton {
    * This method will show rewarded video ad.
    *
    * @param delegate needed to set the currently showing ad and get the location for which to show
-   * ads.
+   *                 ads.
    */
   protected static void showRewardedVideoAd(AbstractChartboostAdapterDelegate delegate) {
     // Displays a cached video if available, else loads from server.
@@ -297,6 +367,13 @@ public final class ChartboostSingleton {
 
       for (WeakReference<AbstractChartboostAdapterDelegate> reference :
           mRewardedDelegates.values()) {
+        if (reference.get() != null) {
+          reference.get().didInitialize();
+        }
+      }
+
+      for (WeakReference<AbstractChartboostAdapterDelegate> reference :
+          mBannerDelegates.values()) {
         if (reference.get() != null) {
           reference.get().didInitialize();
         }

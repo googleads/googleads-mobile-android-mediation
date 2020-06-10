@@ -3,10 +3,15 @@ package com.google.ads.mediation.chartboost;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import androidx.annotation.Nullable;
+import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
+import java.util.ArrayList;
 
 /**
  * Utility methods for the Chartboost Adapter.
@@ -33,9 +38,9 @@ class ChartboostAdapterUtils {
    * from the server parameters and network extras bundles.
    *
    * @param serverParameters a {@link Bundle} containing server parameters used to initialize
-   * Chartboost.
-   * @param networkExtras a {@link Bundle} containing optional information to be used by the
-   * adapter.
+   *                         Chartboost.
+   * @param networkExtras    a {@link Bundle} containing optional information to be used by the
+   *                         adapter.
    * @return a {@link ChartboostParams} object populated with the params obtained from the bundles
    * provided.
    */
@@ -121,7 +126,7 @@ class ChartboostAdapterUtils {
    * Converts a Chartboost SDK error code to a Google Mobile Ads SDK error code.
    *
    * @param error CBImpressionError type to be translated to Google Mobile Ads SDK readable error
-   * code.
+   *              code.
    * @return Ad request error code.
    */
   static int getAdRequestErrorType(CBError.CBImpressionError error) {
@@ -163,6 +168,43 @@ class ChartboostAdapterUtils {
       case VIDEO_UNAVAILABLE_FOR_CURRENT_ORIENTATION:
       default:
         return AdRequest.ERROR_CODE_NO_FILL;
+    }
+  }
+
+  /**
+   * Calculate possible Chartboost banner size format based on the provided AdSize
+   *
+   * @param adSize
+   * @return Chartboost BannerSize object
+   */
+  @Nullable
+  static BannerSize chartboostAdSizeFromLocalExtras(Context context, AdSize adSize) {
+    int LEADERBOARD_HEIGHT = BannerSize.getHeight(BannerSize.LEADERBOARD);
+    int LEADERBOARD_WIDTH = BannerSize.getWidth(BannerSize.LEADERBOARD);
+    int MEDIUM_HEIGHT = BannerSize.getHeight(BannerSize.MEDIUM);
+    int MEDIUM_WIDTH = BannerSize.getWidth(BannerSize.MEDIUM);
+    int STANDARD_HEIGHT = BannerSize.getHeight(BannerSize.STANDARD);
+    int STANDARD_WIDTH = BannerSize.getWidth(BannerSize.STANDARD);
+
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(new AdSize(LEADERBOARD_WIDTH, LEADERBOARD_HEIGHT));
+    potentials.add(new AdSize(MEDIUM_WIDTH, MEDIUM_HEIGHT));
+    potentials.add(new AdSize(STANDARD_WIDTH, STANDARD_HEIGHT));
+
+    AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    if (supportedAdSize == null) {
+      return null;
+    }
+
+    int adHeight = supportedAdSize.getHeight();
+    int adWidth = supportedAdSize.getWidth();
+
+    if (adHeight >= LEADERBOARD_HEIGHT && adWidth >= LEADERBOARD_WIDTH) {
+      return BannerSize.LEADERBOARD;
+    } else if (adHeight >= MEDIUM_HEIGHT && adWidth >= MEDIUM_WIDTH) {
+      return BannerSize.MEDIUM;
+    } else {
+      return BannerSize.STANDARD;
     }
   }
 }

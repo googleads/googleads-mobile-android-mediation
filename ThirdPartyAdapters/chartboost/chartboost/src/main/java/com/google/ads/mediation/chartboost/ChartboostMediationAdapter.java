@@ -1,6 +1,5 @@
 package com.google.ads.mediation.chartboost;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -108,9 +107,7 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           "Initialization failed:Missing or invalid App ID.");
       return;
     }
-
     mInitializationCallback = initializationCompleteCallback;
-
     mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
       // Invalid server parameters, send initialization failed event.
@@ -118,7 +115,6 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           "Initialization Failed: Invalid server parameters.");
       return;
     }
-
     ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
   }
 
