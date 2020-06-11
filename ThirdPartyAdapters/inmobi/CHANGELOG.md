@@ -1,8 +1,13 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.0.7.0
+- Verified compatibility with InMobi SDK version 9.0.7.
 - Updated the adapter to support inline adaptive banner requests.
 - Adapter now includes proguard configuration as suggested by [InMobi's guidelines](https://support.inmobi.com/monetize/android-guidelines).
+
+Built and test with:
+- Google Mobile Ads SDK version 19.1.0.
+- InMobi SDK version 9.0.7.
 
 #### Version 9.0.6.0
 - Verified compatibility with InMobi SDK version 9.0.6.
