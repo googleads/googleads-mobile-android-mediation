@@ -110,6 +110,8 @@ public class NendAdapter extends NendMediationAdapter
   @Override
   public void onDestroy() {
     synchronized (this) {
+      //Note: Synchronized attaching "smartBannerAdjustContainer" because crash rarely
+      //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
       if (smartBannerAdjustContainer != null) {
         removeOnGlobalLayoutListener(
                 smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
@@ -384,8 +386,10 @@ public class NendAdapter extends NendMediationAdapter
     return false;
   }
 
-  private void applyParamsToContainer(boolean isAdjust) {
+  private void applyParamsToContainer(boolean shouldAdjust) {
     synchronized(this) {
+      //Note: Synchronized attaching "smartBannerAdjustContainer" because crash rarely
+      //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
       if (smartBannerAdjustContainer == null) {
         Log.i(TAG, "Container of smart banner has been destroyed..");
         return;
@@ -394,7 +398,7 @@ public class NendAdapter extends NendMediationAdapter
               ViewGroup.LayoutParams.MATCH_PARENT,
               ViewGroup.LayoutParams.MATCH_PARENT);
 
-      if (isAdjust) {
+      if (shouldAdjust) {
         removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(),
                 globalLayoutListener);
         containerViewParams = new FrameLayout.LayoutParams(
