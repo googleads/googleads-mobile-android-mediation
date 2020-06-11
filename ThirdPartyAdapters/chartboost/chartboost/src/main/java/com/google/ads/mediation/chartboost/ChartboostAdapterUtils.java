@@ -13,24 +13,16 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
-/**
- * Utility methods for the Chartboost Adapter.
- */
+/** Utility methods for the Chartboost Adapter. */
 class ChartboostAdapterUtils {
 
-  /**
-   * Key to obtain App ID, required for initializing Chartboost SDK.
-   */
+  /** Key to obtain App ID, required for initializing Chartboost SDK. */
   static final String KEY_APP_ID = "appId";
 
-  /**
-   * Key to obtain App Signature, required for initializing Charboost SDK.
-   */
+  /** Key to obtain App Signature, required for initializing Charboost SDK. */
   static final String KEY_APP_SIGNATURE = "appSignature";
 
-  /**
-   * Key to obtain Ad Location. This is added in adapter version 1.1.0.
-   */
+  /** Key to obtain Ad Location. This is added in adapter version 1.1.0. */
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
@@ -38,11 +30,11 @@ class ChartboostAdapterUtils {
    * from the server parameters and network extras bundles.
    *
    * @param serverParameters a {@link Bundle} containing server parameters used to initialize
-   *                         Chartboost.
-   * @param networkExtras    a {@link Bundle} containing optional information to be used by the
-   *                         adapter.
+   *     Chartboost.
+   * @param networkExtras a {@link Bundle} containing optional information to be used by the
+   *     adapter.
    * @return a {@link ChartboostParams} object populated with the params obtained from the bundles
-   * provided.
+   *     provided.
    */
   static ChartboostParams createChartboostParams(Bundle serverParameters, Bundle networkExtras) {
     ChartboostParams params = new ChartboostParams();
@@ -56,9 +48,11 @@ class ChartboostAdapterUtils {
     String adLocation = serverParameters.getString(KEY_AD_LOCATION);
     if (!isValidParam(adLocation)) {
       // Ad Location is empty, log a warning and use the default location.
-      String logMessage = String.format("Chartboost ad location is empty, defaulting to %s. "
-              + "Please set the Ad Location parameter in the AdMob UI.",
-          CBLocation.LOCATION_DEFAULT);
+      String logMessage =
+          String.format(
+              "Chartboost ad location is empty, defaulting to %s. "
+                  + "Please set the Ad Location parameter in the AdMob UI.",
+              CBLocation.LOCATION_DEFAULT);
       Log.w(ChartboostMediationAdapter.TAG, logMessage);
       adLocation = CBLocation.LOCATION_DEFAULT;
     }
@@ -67,11 +61,14 @@ class ChartboostAdapterUtils {
     if (networkExtras != null) {
       if (networkExtras.containsKey(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK)
           && networkExtras.containsKey(
-          ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
-        params.setFramework((Chartboost.CBFramework) networkExtras
-            .getSerializable(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK));
-        params.setFrameworkVersion(networkExtras
-            .getString(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION));
+              ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
+        params.setFramework(
+            (Chartboost.CBFramework)
+                networkExtras.getSerializable(
+                    ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK));
+        params.setFrameworkVersion(
+            networkExtras.getString(
+                ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION));
       }
     }
     return params;
@@ -82,14 +79,16 @@ class ChartboostAdapterUtils {
    *
    * @param params Chartboost params to be examined.
    * @return {@code true} if the given ChartboostParams' appId and appSignature are valid, false
-   * otherwise.
+   *     otherwise.
    */
   static boolean isValidChartboostParams(ChartboostParams params) {
     String appId = params.getAppId();
     String appSignature = params.getAppSignature();
     if (!isValidParam(appId) || !isValidParam(appSignature)) {
-      String log = !isValidParam(appId) ? (!isValidParam(appSignature)
-          ? "App ID and App Signature" : "App ID") : "App Signature";
+      String log =
+          !isValidParam(appId)
+              ? (!isValidParam(appSignature) ? "App ID and App Signature" : "App ID")
+              : "App Signature";
       Log.w(ChartboostMediationAdapter.TAG, log + " cannot be empty.");
       return false;
     }
@@ -101,7 +100,7 @@ class ChartboostAdapterUtils {
    *
    * @param string the string to be examined.
    * @return {@code true} if the param string is not null and length when trimmed is not zero,
-   * {@code false} otherwise.
+   *     {@code false} otherwise.
    */
   static boolean isValidParam(String string) {
     return !(string == null || string.trim().length() == 0);
@@ -126,7 +125,7 @@ class ChartboostAdapterUtils {
    * Converts a Chartboost SDK error code to a Google Mobile Ads SDK error code.
    *
    * @param error CBImpressionError type to be translated to Google Mobile Ads SDK readable error
-   *              code.
+   *     code.
    * @return Ad request error code.
    */
   static int getAdRequestErrorType(CBError.CBImpressionError error) {
