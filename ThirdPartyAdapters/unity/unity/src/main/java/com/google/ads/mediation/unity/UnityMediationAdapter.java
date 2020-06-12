@@ -19,7 +19,6 @@ import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
@@ -29,7 +28,8 @@ import java.util.List;
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded
  * video ads from Unity ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
  */
-public class UnityMediationAdapter extends Adapter implements MediationRewardedAd, IUnityAdsExtendedListener {
+public class UnityMediationAdapter extends Adapter implements MediationRewardedAd,
+        IUnityAdsExtendedListener, IUnityAdsLoadListener {
 
     static final String TAG = UnityMediationAdapter.class.getSimpleName();
 
@@ -62,12 +62,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      * Placement ID used to determine what type of ad to load.
      */
     private String mPlacementId;
-
-    /**
-     * Used by Unity Ads to track failures in the mediation lifecycle
-     */
-    private int impressionOrdinal;
-    private int missedImpressionOrdinal;
 
     /**
      * Returns the placement ID of the ad being loaded
@@ -156,14 +150,16 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             return;
         }
 
-        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID, new IUnityAdsInitializationListener() {
+        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID,
+                new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
                 initializationCompleteCallback.onInitializationSucceeded();
             }
 
             @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+                                                       unityAdsInitializationError, String s) {
                 initializationCompleteCallback.onInitializationFailed(
                         "Initialization failed: " + s);
             }
@@ -193,18 +189,22 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
         mMediationAdLoadCallback = mediationAdLoadCallback;
 
-        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID, new IUnityAdsInitializationListener() {
+        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID,
+                new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
                 Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
-                loadRewardedAd();
             }
 
             @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
-                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+                                                       unityAdsInitializationError, String s) {
+                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
+                        unityAdsInitializationError + "] " + s);
             }
         });
+
+        loadRewardedAd();
 
     }
 
@@ -214,27 +214,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
      */
     protected void loadRewardedAd() {
 
-        // Calling load before UnityAds.initialize() will cause the placement to load on init
-        Log.d(UnityAdapter.TAG, "Trying to load ad");
+        UnityAds.load(getPlacementId(), UnityMediationAdapter.this);
 
-        // new method
-        UnityAds.load(getPlacementId(), new IUnityAdsLoadListener() {
-            @Override
-            public void onUnityAdsAdLoaded(String s) {
-                Log.d(UnityAdapter.TAG, "Ad successfully loaded " + s);
-            }
-
-            @Override
-            public void onUnityAdsFailedToLoad(String s) {
-                Log.e(UnityAdapter.TAG, "Ad load failure " +s);
-            }
-        });
-
-        if (UnityAds.isInitialized()) {
-            if (UnityAds.isReady(getPlacementId())) {
-                this.onUnityAdsReady(getPlacementId());
-            }
-        }
     }
 
     @Override
@@ -254,22 +235,9 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
             Log.d(UnityMediationAdapter.TAG, "trying to show ad");
             // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
-            // Unity Ads fails to shown an ad).
+            // Unity Ads fails to show an ad).
 
-            if(UnityAds.isReady(getPlacementId())) {
-                // Notify UnityAds that the adapter made a successful show request
-                MediationMetaData metadata = new MediationMetaData(activity);
-                metadata.setOrdinal(++impressionOrdinal);
-                metadata.commit();
-
-                Log.d(UnityMediationAdapter.TAG, "calling show ad");
-                UnityAds.show(activity, getPlacementId());
-            } else {
-                // Notify UnityAds that the adapter failed to show
-                MediationMetaData metadata = new MediationMetaData(activity);
-                metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
-                metadata.commit();
-            }
+            UnityAds.show(activity, getPlacementId());
 
             // Unity Ads does not have an ad opened callback.
             if (mMediationRewardedAdCallback != null) {
@@ -306,10 +274,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     public void onUnityAdsReady(String placementId) {
         // Unity Ads is ready to show ads for the given placementId. Send Ad Loaded event if the
         // adapter is currently loading ads.
-        if (placementId.equals(getPlacementId()) && mMediationAdLoadCallback != null) {
-            mMediationRewardedAdCallback = mMediationAdLoadCallback
-                    .onSuccess(UnityMediationAdapter.this);
-        }
     }
 
     @Override
@@ -356,11 +320,27 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
         // Send Ad Failed to load event only if the adapter is currently loading ads.
-        if (placementId.equals(getPlacementId()) && mMediationAdLoadCallback != null) {
+        if (placementId.equals(getPlacementId())) {
             String logMessage =
-                    "Failed to load Rewarded ad from Unity Ads: " + unityAdsError.toString();
+                    "Failed to show Rewarded ad from Unity Ads: " + unityAdsError.toString();
             Log.w(TAG, logMessage);
-            mMediationAdLoadCallback.onFailure(logMessage);
+            mMediationRewardedAdCallback.onAdFailedToShow(logMessage);
         }
+
+        // check with google
     }
+
+    @Override
+    public void onUnityAdsAdLoaded(String s) {
+        Log.d(UnityAdapter.TAG, "Ad successfully loaded " + s);
+        mMediationRewardedAdCallback = mMediationAdLoadCallback
+                        .onSuccess(UnityMediationAdapter.this);
+    }
+
+    @Override
+    public void onUnityAdsFailedToLoad(String s) {
+        Log.e(UnityAdapter.TAG, "Ad load failure " +s);
+        mMediationAdLoadCallback.onFailure(s);
+    }
+
 }
