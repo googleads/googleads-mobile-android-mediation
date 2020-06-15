@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
@@ -25,7 +24,8 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
-
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import net.nend.android.NendAdInformationListener;
 import net.nend.android.NendAdInterstitial;
 import net.nend.android.NendAdInterstitial.NendAdInterstitialClickType;
@@ -37,9 +37,6 @@ import net.nend.android.NendAdVideo;
 import net.nend.android.NendAdVideoListener;
 import net.nend.android.NendAdView;
 import net.nend.android.NendAdView.NendError;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 /**
  * The {@link NendAdapter} class is used to load and show Nend interstitial and banner ads.
@@ -114,7 +111,7 @@ public class NendAdapter extends NendMediationAdapter
       //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
       if (smartBannerAdjustContainer != null) {
         removeOnGlobalLayoutListener(
-                smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
+            smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
         smartBannerAdjustContainer = null;
       }
     }
@@ -387,7 +384,7 @@ public class NendAdapter extends NendMediationAdapter
   }
 
   private void applyParamsToContainer(boolean shouldAdjust) {
-    synchronized(this) {
+    synchronized (this) {
       //Note: Synchronized attaching "smartBannerAdjustContainer" because crash rarely
       //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
       if (smartBannerAdjustContainer == null) {
@@ -395,15 +392,15 @@ public class NendAdapter extends NendMediationAdapter
         return;
       }
       FrameLayout.LayoutParams containerViewParams = new FrameLayout.LayoutParams(
-              ViewGroup.LayoutParams.MATCH_PARENT,
-              ViewGroup.LayoutParams.MATCH_PARENT);
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.MATCH_PARENT);
 
       if (shouldAdjust) {
         removeOnGlobalLayoutListener(smartBannerAdjustContainer.getViewTreeObserver(),
-                globalLayoutListener);
+            globalLayoutListener);
         containerViewParams = new FrameLayout.LayoutParams(
-                smartBannerWidthPixel,
-                smartBannerHeightPixel);
+            smartBannerWidthPixel,
+            smartBannerHeightPixel);
       }
       smartBannerAdjustContainer.setLayoutParams(containerViewParams);
     }
