@@ -30,12 +30,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * Mediation network adapter for Vungle.
- */
+/** Mediation network adapter for Vungle. */
 public class VungleMediationAdapter extends Adapter
-    implements MediationRewardedAd, VungleInitializer.VungleInitializationListener,
-    LoadAdCallback, PlayAdCallback {
+    implements MediationRewardedAd,
+        VungleInitializer.VungleInitializationListener,
+        LoadAdCallback,
+        PlayAdCallback {
 
   private static final String TAG = VungleMediationAdapter.class.getSimpleName();
   private static final String KEY_APP_ID = "appid";
@@ -65,8 +65,10 @@ public class VungleMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s." + "Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -83,14 +85,17 @@ public class VungleMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s." + "Returning 0.0.0 for SDK version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
-  public void initialize(Context context,
+  public void initialize(
+      Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
 
@@ -100,8 +105,8 @@ public class VungleMediationAdapter extends Adapter
     }
 
     if (!(context instanceof Activity)) {
-      initializationCompleteCallback
-          .onInitializationFailed("Vungle SDK requires an Activity context to initialize.");
+      initializationCompleteCallback.onInitializationFailed(
+          "Vungle SDK requires an Activity context to initialize.");
       return;
     }
 
@@ -120,8 +125,9 @@ public class VungleMediationAdapter extends Adapter
       String appID = appIDs.iterator().next();
 
       if (count > 1) {
-        String logMessage = String
-            .format("Multiple '%s' entries found: %s. Using '%s' to initialize the Vungle SDK.",
+        String logMessage =
+            String.format(
+                "Multiple '%s' entries found: %s. Using '%s' to initialize the Vungle SDK.",
                 KEY_APP_ID, appIDs.toString(), appID);
         Log.w(TAG, logMessage);
       }
@@ -130,16 +136,16 @@ public class VungleMediationAdapter extends Adapter
       VungleInitializer.getInstance()
           .initialize(appID, context.getApplicationContext(), VungleMediationAdapter.this);
     } else {
-      initializationCompleteCallback
-          .onInitializationFailed("Initialization failed: Missing or Invalid App ID.");
+      initializationCompleteCallback.onInitializationFailed(
+          "Initialization failed: Missing or Invalid App ID.");
     }
   }
 
   @Override
   public void loadRewardedAd(
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
     Context context = mediationRewardedAdConfiguration.getContext();
@@ -200,7 +206,8 @@ public class VungleMediationAdapter extends Adapter
   @Override
   public void onInitializeSuccess() {
     if (VungleConsent.getCurrentVungleConsent() != null) {
-      Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
+      Vungle.updateConsentStatus(
+          VungleConsent.getCurrentVungleConsent(),
           VungleConsent.getCurrentVungleConsentMessageVersion());
     }
 
@@ -249,82 +256,83 @@ public class VungleMediationAdapter extends Adapter
     }
   }
 
-  /**
-   * {@link LoadAdCallback} implemenatation from Vungle
-   */
+  /** {@link LoadAdCallback} implemenatation from Vungle */
   @Override
   public void onAdLoad(final String placementID) {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        if (mMediationAdLoadCallback != null) {
-          mMediationRewardedAdCallback =
-              mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
-        }
-        mPlacementsInUse.put(mPlacement, new WeakReference<>(VungleMediationAdapter.this));
-      }
-    });
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationAdLoadCallback != null) {
+              mMediationRewardedAdCallback =
+                  mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
+            }
+            mPlacementsInUse.put(mPlacement, new WeakReference<>(VungleMediationAdapter.this));
+          }
+        });
   }
 
-  /**
-   * {@link PlayAdCallback} implemenatation from Vungle
-   */
+  /** {@link PlayAdCallback} implemenatation from Vungle */
   @Override
   public void onAdStart(final String placementID) {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        if (mMediationRewardedAdCallback != null) {
-          mMediationRewardedAdCallback.onAdOpened();
-          mMediationRewardedAdCallback.onVideoStart();
-          mMediationRewardedAdCallback.reportAdImpression();
-        }
-      }
-    });
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationRewardedAdCallback != null) {
+              mMediationRewardedAdCallback.onAdOpened();
+              mMediationRewardedAdCallback.onVideoStart();
+              mMediationRewardedAdCallback.reportAdImpression();
+            }
+          }
+        });
   }
 
   @Override
-  public void onAdEnd(final String placementID,
+  public void onAdEnd(
+      final String placementID,
       final boolean wasSuccessfulView,
       final boolean wasCallToActionClicked) {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        if (mMediationRewardedAdCallback != null) {
-          if (wasSuccessfulView) {
-            mMediationRewardedAdCallback.onVideoComplete();
-            mMediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationRewardedAdCallback != null) {
+              if (wasSuccessfulView) {
+                mMediationRewardedAdCallback.onVideoComplete();
+                mMediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
+              }
+              if (wasCallToActionClicked) {
+                // Only the call to action button is clickable for Vungle ads. So the
+                // wasCallToActionClicked can be used for tracking clicks.
+                mMediationRewardedAdCallback.reportAdClicked();
+              }
+              mMediationRewardedAdCallback.onAdClosed();
+            }
+            mPlacementsInUse.remove(placementID);
           }
-          if (wasCallToActionClicked) {
-            // Only the call to action button is clickable for Vungle ads. So the
-            // wasCallToActionClicked can be used for tracking clicks.
-            mMediationRewardedAdCallback.reportAdClicked();
-          }
-          mMediationRewardedAdCallback.onAdClosed();
-        }
-        mPlacementsInUse.remove(placementID);
-      }
-    });
+        });
   }
 
   // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
   // ad request to Vungle fails, and when an ad fails to play.
   @Override
   public void onError(final String placementID, final VungleException throwable) {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        if (mMediationAdLoadCallback != null) {
-          Log.w(TAG, "Failed to load ad from Vungle", throwable);
-          mMediationAdLoadCallback.onFailure(throwable.getLocalizedMessage());
-        }
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationAdLoadCallback != null) {
+              Log.w(TAG, "Failed to load ad from Vungle", throwable);
+              mMediationAdLoadCallback.onFailure(throwable.getLocalizedMessage());
+            }
 
-        if (mMediationRewardedAdCallback != null) {
-          mMediationRewardedAdCallback.onAdFailedToShow(throwable.getLocalizedMessage());
-        }
-        mPlacementsInUse.remove(placementID);
-      }
-    });
+            if (mMediationRewardedAdCallback != null) {
+              mMediationRewardedAdCallback.onAdFailedToShow(throwable.getLocalizedMessage());
+            }
+            mPlacementsInUse.remove(placementID);
+          }
+        });
   }
 
   /**

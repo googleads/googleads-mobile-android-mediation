@@ -6,18 +6,13 @@ package com.vungle.mediation;
  */
 abstract class VungleListener {
 
-  void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {
-  }
+  void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {}
 
-  void onAdStart(String placement) {
-  }
+  void onAdStart(String placement) {}
 
-  void onAdFail(String placement) {
-  }
+  void onAdFail(String placement) {}
 
-  void onAdAvailable() {
-  }
+  void onAdAvailable() {}
 
-  void onAdFailedToLoad(int errorCode) {
-  }
+  void onAdFailedToLoad(int errorCode) {}
 }
