@@ -69,7 +69,7 @@ public final class UnitySingleton implements IUnityAdsExtendedListener {
    * @param activity The Activity context.
    * @param gameId   Unity Ads Game ID.
    * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
-   *     otherwise.
+   * otherwise.
    */
   public boolean initializeUnityAds(Activity activity, String gameId) {
     // Check if the current device is supported by Unity Ads before initializing.
