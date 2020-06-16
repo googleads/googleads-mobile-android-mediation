@@ -3,12 +3,13 @@ package com.google.ads.mediation.chartboost;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.Model.CBError;
-import com.google.android.gms.ads.AdRequest;
+import com.chartboost.sdk.Model.CBError.CBImpressionError;
+import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.AdapterError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
@@ -107,103 +108,142 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Chartboost requires an Activity context to Initialize. This method will return false if the
-   * context provided is either null or is not an Activity context.
+   * Convert Chartboost's {@link CBImpressionError} to a mediation specific error code.
    *
-   * @param context to be checked if it is valid.
-   * @return {@code true} if the context provided is valid, {@code false} otherwise.
+   * @param impressionError Chartboost's error.
+   * @return the mediation specific error code.
    */
-  static boolean isValidContext(Context context) {
-    if (context == null) {
-      Log.w(ChartboostAdapter.TAG, "Context cannot be null");
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Converts a Chartboost SDK error code to a Google Mobile Ads SDK error code.
-   *
-   * @param error CBImpressionError type to be translated to Google Mobile Ads SDK readable error
-   *     code.
-   * @return Ad request error code.
-   */
-  static int getAdRequestErrorType(CBError.CBImpressionError error) {
-    switch (error) {
+  public static int getMediationErrorCode(@NonNull CBImpressionError impressionError) {
+    switch (impressionError) {
       case INTERNAL:
-      case INVALID_RESPONSE:
-      case NO_HOST_ACTIVITY:
-      case USER_CANCELLATION:
-      case WRONG_ORIENTATION:
-      case ERROR_PLAYING_VIDEO:
-      case ERROR_CREATING_VIEW:
-      case SESSION_NOT_STARTED:
-      case ERROR_DISPLAYING_VIEW:
-      case ERROR_LOADING_WEB_VIEW:
-      case INCOMPATIBLE_API_VERSION:
-      case ASSET_PREFETCH_IN_PROGRESS:
-      case IMPRESSION_ALREADY_VISIBLE:
-      case ACTIVITY_MISSING_IN_MANIFEST:
-      case WEB_VIEW_CLIENT_RECEIVED_ERROR:
-        return AdRequest.ERROR_CODE_INTERNAL_ERROR;
-      case NETWORK_FAILURE:
-      case END_POINT_DISABLED:
+        return 0;
       case INTERNET_UNAVAILABLE:
+        return 1;
       case TOO_MANY_CONNECTIONS:
-      case ASSETS_DOWNLOAD_FAILURE:
-      case WEB_VIEW_PAGE_LOAD_TIMEOUT:
-        return AdRequest.ERROR_CODE_NETWORK_ERROR;
-      case INVALID_LOCATION:
-      case VIDEO_ID_MISSING:
-      case HARDWARE_ACCELERATION_DISABLED:
+        return 2;
+      case WRONG_ORIENTATION:
+        return 3;
       case FIRST_SESSION_INTERSTITIALS_DISABLED:
-        return AdRequest.ERROR_CODE_INVALID_REQUEST;
-      case INTERNET_UNAVAILABLE_AT_SHOW:
+        return 4;
+      case NETWORK_FAILURE:
+        return 5;
       case NO_AD_FOUND:
-      case ASSET_MISSING:
+        return 6;
+      case SESSION_NOT_STARTED:
+        return 7;
+      case IMPRESSION_ALREADY_VISIBLE:
+        return 8;
+      case NO_HOST_ACTIVITY:
+        return 9;
+      case USER_CANCELLATION:
+        return 10;
+      case INVALID_LOCATION:
+        return 11;
       case VIDEO_UNAVAILABLE:
+        return 12;
+      case VIDEO_ID_MISSING:
+        return 13;
+      case ERROR_PLAYING_VIDEO:
+        return 14;
+      case INVALID_RESPONSE:
+        return 15;
+      case ASSETS_DOWNLOAD_FAILURE:
+        return 16;
+      case ERROR_CREATING_VIEW:
+        return 17;
+      case ERROR_DISPLAYING_VIEW:
+        return 18;
+      case INCOMPATIBLE_API_VERSION:
+        return 19;
+      case ERROR_LOADING_WEB_VIEW:
+        return 20;
+      case ASSET_PREFETCH_IN_PROGRESS:
+        return 21;
+      case ACTIVITY_MISSING_IN_MANIFEST:
+        return 22;
       case EMPTY_LOCAL_VIDEO_LIST:
+        return 23;
+      case END_POINT_DISABLED:
+        return 24;
+      case HARDWARE_ACCELERATION_DISABLED:
+        return 25;
       case PENDING_IMPRESSION_ERROR:
+        return 26;
       case VIDEO_UNAVAILABLE_FOR_CURRENT_ORIENTATION:
-      default:
-        return AdRequest.ERROR_CODE_NO_FILL;
+        return 27;
+      case ASSET_MISSING:
+        return 28;
+      case WEB_VIEW_PAGE_LOAD_TIMEOUT:
+        return 29;
+      case WEB_VIEW_CLIENT_RECEIVED_ERROR:
+        return 30;
+      case INTERNET_UNAVAILABLE_AT_SHOW:
+        return 31;
     }
+    // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
+    return 99;
   }
 
   /**
-   * Calculate possible Chartboost banner size format based on the provided AdSize
+   * Creates a formatted SDK error string given Chartboost's {@link CBImpressionError}.
    *
-   * @param adSize
-   * @return Chartboost BannerSize object
+   * @param impressionError Chartboost's error.
+   * @return the error message.
+   */
+  @NonNull
+  static String createSDKError(CBImpressionError impressionError) {
+    return String.format(
+        "%d: %s", getMediationErrorCode(impressionError), impressionError.toString());
+  }
+
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   *
+   * @param code the error code.
+   * @param description the error message.
+   * @return the error message.
+   */
+  @NonNull
+  static String createAdapterError(@AdapterError int code, String description) {
+    return String.format("%d: %s", code, description);
+  }
+
+  /**
+   * Find the closest possible {@link BannerSize} format based on the provided {@link AdSize}.
+   *
+   * @param context the context of requesting banner ad.
+   * @param adSize the requested banner ad size.
+   * @return Chartboost {@link BannerSize} object.
    */
   @Nullable
-  static BannerSize chartboostAdSizeFromLocalExtras(Context context, AdSize adSize) {
-    int LEADERBOARD_HEIGHT = BannerSize.getHeight(BannerSize.LEADERBOARD);
-    int LEADERBOARD_WIDTH = BannerSize.getWidth(BannerSize.LEADERBOARD);
-    int MEDIUM_HEIGHT = BannerSize.getHeight(BannerSize.MEDIUM);
-    int MEDIUM_WIDTH = BannerSize.getWidth(BannerSize.MEDIUM);
-    int STANDARD_HEIGHT = BannerSize.getHeight(BannerSize.STANDARD);
-    int STANDARD_WIDTH = BannerSize.getWidth(BannerSize.STANDARD);
+  static BannerSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
+    AdSize standardSize =
+        new AdSize(
+            BannerSize.getWidth(BannerSize.STANDARD), BannerSize.getHeight(BannerSize.STANDARD));
+    AdSize mediumSize =
+        new AdSize(BannerSize.getWidth(BannerSize.MEDIUM), BannerSize.getHeight(BannerSize.MEDIUM));
+    AdSize leaderboardSize =
+        new AdSize(
+            BannerSize.getWidth(BannerSize.LEADERBOARD),
+            BannerSize.getHeight(BannerSize.LEADERBOARD));
 
     ArrayList<AdSize> potentials = new ArrayList<>();
-    potentials.add(new AdSize(LEADERBOARD_WIDTH, LEADERBOARD_HEIGHT));
-    potentials.add(new AdSize(MEDIUM_WIDTH, MEDIUM_HEIGHT));
-    potentials.add(new AdSize(STANDARD_WIDTH, STANDARD_HEIGHT));
+    potentials.add(standardSize);
+    potentials.add(mediumSize);
+    potentials.add(leaderboardSize);
 
     AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (supportedAdSize == null) {
       return null;
     }
 
-    int adHeight = supportedAdSize.getHeight();
-    int adWidth = supportedAdSize.getWidth();
-
-    if (adHeight >= LEADERBOARD_HEIGHT && adWidth >= LEADERBOARD_WIDTH) {
-      return BannerSize.LEADERBOARD;
-    } else if (adHeight >= MEDIUM_HEIGHT && adWidth >= MEDIUM_WIDTH) {
-      return BannerSize.MEDIUM;
-    } else {
+    if (supportedAdSize.equals(standardSize)) {
       return BannerSize.STANDARD;
+    } else if (supportedAdSize.equals(mediumSize)) {
+      return BannerSize.MEDIUM;
+    } else if (supportedAdSize.equals(leaderboardSize)) {
+      return BannerSize.LEADERBOARD;
     }
+    return null;
   }
 }
