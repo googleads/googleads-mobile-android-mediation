@@ -26,11 +26,14 @@ import java.util.List;
 
 /**
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded
- * video ads from Unity ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
+ * video ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
  */
 public class UnityMediationAdapter extends Adapter implements MediationRewardedAd,
         IUnityAdsExtendedListener, IUnityAdsLoadListener {
 
+    /**
+     * TAG used for logging messages.
+     */
     static final String TAG = UnityMediationAdapter.class.getSimpleName();
 
     /**
@@ -64,9 +67,9 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     private String mPlacementId;
 
     /**
-     * Returns the placement ID of the ad being loaded
+     * Returns the placement ID of the ad being loaded.
      *
-     * @return mPlacementId
+     * @return mPlacementId.
      */
     public String getPlacementId() {
         return mPlacementId;
@@ -194,6 +197,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             @Override
             public void onInitializationComplete() {
                 Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                loadRewardedAd();
             }
 
             @Override
@@ -204,16 +208,13 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             }
         });
 
-        loadRewardedAd();
-
     }
 
     /**
-     * This method will load Unity ads for a given Placement ID and send the ad loaded event if the
+     * This method will load Unity Ads for a given Placement ID and send the ad loaded event if the
      * ads have already loaded.
      */
     protected void loadRewardedAd() {
-
         UnityAds.load(getPlacementId(), UnityMediationAdapter.this);
 
     }
@@ -233,7 +234,6 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         // Request to show video ads.
         if (UnityAds.isReady(mPlacementId)) {
 
-            Log.d(UnityMediationAdapter.TAG, "trying to show ad");
             // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
             // Unity Ads fails to show an ad).
 
@@ -246,7 +246,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             }
         } else {
             if (mMediationRewardedAdCallback != null) {
-                mMediationRewardedAdCallback.onAdFailedToShow("UnityAds placement '" + mPlacementId + "' is not ready.");
+                mMediationRewardedAdCallback.onAdFailedToShow("UnityAds placement '" +
+                        mPlacementId + "' is not ready.");
             }
         }
 
@@ -272,14 +273,13 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     @Override
     public void onUnityAdsReady(String placementId) {
-        // Unity Ads is ready to show ads for the given placementId. Send Ad Loaded event if the
-        // adapter is currently loading ads.
+        // Unity Ads is ready to show ads for the given placementId.
     }
 
     @Override
     public void onUnityAdsStart(String placementId) {
         // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
-        // video adapter.
+        // video.
         if (mMediationRewardedAdCallback != null) {
             mMediationRewardedAdCallback.onVideoStart();
         }
@@ -297,9 +297,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     public void onUnityAdsPlacementStateChanged(String placementId,
                                                 UnityAds.PlacementState oldState,
                                                 UnityAds.PlacementState newState) {
-        // This callback is not forwarded to the adapter and the
-        // adapter should use the onUnityAdsReady and onUnityAdsError callbacks to forward
-        // Unity Ads SDK state to Google Mobile Ads SDK.
+        // This callback is not forwarded to Google Mobile Ads SDK. onUnityAdsError should be used
+        // to forward Unity Ads SDK state to Google Mobile Ads SDK.
     }
 
     @Override
@@ -319,7 +318,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-        // Send Ad Failed to load event only if the adapter is currently loading ads.
+        // Unity Ads ad failed to show.
         if (placementId.equals(getPlacementId())) {
             String logMessage =
                     "Failed to show Rewarded ad from Unity Ads: " + unityAdsError.toString();
@@ -332,14 +331,14 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     @Override
     public void onUnityAdsAdLoaded(String s) {
-        Log.d(UnityAdapter.TAG, "Ad successfully loaded " + s);
+        Log.d(UnityAdapter.TAG, "Unity Ads ad successfully loaded " + s);
         mMediationRewardedAdCallback = mMediationAdLoadCallback
                         .onSuccess(UnityMediationAdapter.this);
     }
 
     @Override
     public void onUnityAdsFailedToLoad(String s) {
-        Log.e(UnityAdapter.TAG, "Ad load failure " +s);
+        Log.e(UnityAdapter.TAG, "Unity Ads ad load failure " +s);
         mMediationAdLoadCallback.onFailure(s);
     }
 

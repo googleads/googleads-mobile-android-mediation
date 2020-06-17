@@ -92,10 +92,10 @@ public class UnityBannerAdapter extends UnityMediationAdapter
     public void onResume() {}
 
     @Override
-    public void requestBannerAd(Context context,
+    public void requestBannerAd(final Context context,
                                 MediationBannerListener listener,
                                 Bundle serverParameters,
-                                AdSize adSize,
+                                final AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras) {
 
@@ -127,6 +127,18 @@ public class UnityBannerAdapter extends UnityMediationAdapter
             @Override
             public void onInitializationComplete() {
                 Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                float density = context.getResources().getDisplayMetrics().density;
+                int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
+                int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
+
+                UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
+
+                if (mBannerView == null){
+                    mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
+                }
+
+                mBannerView.setListener(UnityBannerAdapter.this);
+                mBannerView.load();
             }
 
             @Override
@@ -139,18 +151,6 @@ public class UnityBannerAdapter extends UnityMediationAdapter
             }
         });
 
-        float density = context.getResources().getDisplayMetrics().density;
-        int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
-        int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
-
-        UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
-
-        if (mBannerView == null){
-            mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
-        }
-
-        mBannerView.setListener(UnityBannerAdapter.this);
-        mBannerView.load();
     }
 
 
