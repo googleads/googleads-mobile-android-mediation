@@ -47,6 +47,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   private FacebookRtbInterstitialAd interstitial;
   private FacebookRtbNativeAd nativeAd;
   private FacebookRewardedAd rewardedAd;
+  private FacebookRewardedInterstitialAd rewardedInterstitialAd;
 
   public static final String PLACEMENT_PARAMETER = "pubid";
   public static final String RTB_PLACEMENT_PARAMETER = "placement_id";
@@ -228,15 +229,6 @@ public class FacebookMediationAdapter extends RtbAdapter {
     signalCallbacks.onSuccess(token);
   }
 
-
-  @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
-    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    rewardedAd.render();
-  }
-
   @Override
   public void loadBannerAd(MediationBannerAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -251,6 +243,24 @@ public class FacebookMediationAdapter extends RtbAdapter {
           mediationAdLoadCallback) {
     interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
     interstitial.render();
+  }
+
+  @Override
+  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd.render();
+  }
+
+  @Override
+  public void loadRewardedInterstitialAd(
+      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    rewardedInterstitialAd.render();
   }
 
   @Override
