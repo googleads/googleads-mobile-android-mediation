@@ -38,8 +38,8 @@ import java.lang.ref.WeakReference;
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
-public class UnityAdapter extends UnityMediationAdapter
-        implements MediationInterstitialAdapter, IUnityAdsExtendedListener, IUnityAdsLoadListener {
+public class UnityAdapter extends UnityMediationAdapter implements MediationInterstitialAdapter,
+        IUnityAdsExtendedListener, IUnityAdsLoadListener {
 
     /**
      * Mediation interstitial listener used to forward events to
@@ -115,23 +115,22 @@ public class UnityAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
+
         UnityInitializer.getInstance().initializeUnityAds(activity, gameId,
-                new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
-                loadInterstitialAd(mPlacementId);
-            }
+                    new IUnityAdsInitializationListener() {
+                @Override
+                public void onInitializationComplete() {
+                    Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                    loadInterstitialAd(mPlacementId);
+                }
 
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-                                                       unityAdsInitializationError, String s) {
-                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
-                        unityAdsInitializationError + "] " + s);
-            }
+                @Override
+                public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+                                                           unityAdsInitializationError, String s) {
+                    Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
+                            unityAdsInitializationError + "] " + s);
+                }
         });
-
-
     }
 
     /**
@@ -145,7 +144,6 @@ public class UnityAdapter extends UnityMediationAdapter
         UnityAds.load(placementId, UnityAdapter.this);
 
     }
-
 
     /**
      * This method will show a Unity Ad.
@@ -237,7 +235,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void onUnityAdsAdLoaded(String s) {
-        Log.d(UnityAdapter.TAG, "Unity Ads ad successfully loaded " + s);
+        Log.d(UnityAdapter.TAG, "Unity Ads interstitial ad successfully loaded " + s);
         if (mMediationInterstitialListener != null) {
             mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
         }
@@ -245,7 +243,7 @@ public class UnityAdapter extends UnityMediationAdapter
 
     @Override
     public void onUnityAdsFailedToLoad(String s) {
-        Log.e(UnityAdapter.TAG, "Unity Ads ad load failure " + s);
+        Log.e(UnityAdapter.TAG, "Unity Ads interstitial ad load failure " + s);
         if (mMediationInterstitialListener != null) {
             mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                     AdRequest.ERROR_CODE_INTERNAL_ERROR);

@@ -123,33 +123,35 @@ public class UnityBannerAdapter extends UnityMediationAdapter
         Activity activity = (Activity) context;
 
         // Even though we are a banner request, we still need to initialize UnityAds.
+
         UnityInitializer.getInstance().initializeUnityAds(activity, gameId, new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
-                float density = context.getResources().getDisplayMetrics().density;
-                int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
-                int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
+                @Override
+                public void onInitializationComplete() {
+                    Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                    float density = context.getResources().getDisplayMetrics().density;
+                    int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
+                    int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
 
-                UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
+                    UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
 
-                if (mBannerView == null){
-                    mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
+                    if (mBannerView == null){
+                        mBannerView = new BannerView((Activity)context, bannerPlacementId, size);
+                    }
+
+                    mBannerView.setListener(UnityBannerAdapter.this);
+                    mBannerView.load();
                 }
 
-                mBannerView.setListener(UnityBannerAdapter.this);
-                mBannerView.load();
-            }
-
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
-                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
-                if (bannerListener != null) {
-                    bannerListener.onAdFailedToLoad(UnityBannerAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                @Override
+                public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                    Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" + unityAdsInitializationError + "] " + s);
+                    if (bannerListener != null) {
+                        bannerListener.onAdFailedToLoad(UnityBannerAdapter.this,
+                                AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    }
                 }
-            }
         });
+
 
     }
 
