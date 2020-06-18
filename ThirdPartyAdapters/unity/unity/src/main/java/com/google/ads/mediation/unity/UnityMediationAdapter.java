@@ -129,18 +129,17 @@ public class UnityMediationAdapter extends Adapter {
 
 
         UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID,
-                    new IUnityAdsInitializationListener() {
-                @Override
-                public void onInitializationComplete() {
-                    initializationCompleteCallback.onInitializationSucceeded();
-                }
+                new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+                initializationCompleteCallback.onInitializationSucceeded();
+            }
 
-                @Override
-                public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
                                                            unityAdsInitializationError, String s) {
-                    initializationCompleteCallback.onInitializationFailed(
-                            "Initialization failed: " + s);
-                }
+                initializationCompleteCallback.onInitializationFailed("Initialization failed: " + s);
+            }
         });
     }
 

@@ -40,6 +40,12 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
      */
     private String mPlacementId;
 
+    /**
+     * Creates a UnityRewardedAd instance.
+     *
+     * @param adConfiguration      Ad configuration for ad rendering.
+     * @param callback  Ad listener used to forward ad load status to the Google Mobile Ads SDK.
+     */
     public UnityRewardedAd(MediationRewardedAdConfiguration adConfiguration,
                            MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
         this.mediationRewardedAdConfiguration = adConfiguration;
@@ -51,8 +57,18 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
      *
      * @return mPlacementId.
      */
-    public String getPlacementId() {
+    private String getPlacementId() {
         return mPlacementId;
+    }
+
+    /**
+     * Sets the placement ID of the ad being loaded.
+     *
+     * @param placementId   Placement ID of ad being loaded.
+     */
+    private void setPlacementId(String placementId)
+    {
+        mPlacementId = placementId;
     }
 
     /**
@@ -69,9 +85,9 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
 
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
         String gameID = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
-        mPlacementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
+        setPlacementId(serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID));
 
-        if (!isValidIds(gameID, mPlacementId)) {
+        if (!isValidIds(gameID, getPlacementId())) {
             mMediationAdLoadCallback.onFailure("Failed to load ad from UnityAds: " +
                     "Missing or invalid game ID and placement ID.");
             return;
@@ -82,7 +98,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
                     @Override
                     public void onInitializationComplete() {
                         Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
-                        loadRewardedAd(mPlacementId);
+                        loadRewardedAd(getPlacementId());
                     }
 
                     @Override
@@ -97,6 +113,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
     /**
      * This method will load Unity Ads for a given Placement ID and send the ad loaded event if the
      * ads have already loaded.
+     * @param placementId   Placement ID of the ad to be loaded
      */
     protected void loadRewardedAd(String placementId) {
 
@@ -118,12 +135,12 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
         Activity activity = (Activity) context;
 
         // Request to show video ads.
-        if (UnityAds.isReady(mPlacementId)) {
+        if (UnityAds.isReady(getPlacementId())) {
 
             // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
             // Unity Ads fails to show an ad).
 
-            UnityAds.show(activity, mPlacementId);
+            UnityAds.show(activity, getPlacementId());
 
             // Unity Ads does not have an ad opened callback.
             if (mMediationRewardedAdCallback != null) {
@@ -133,7 +150,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsLoadListen
         } else {
             if (mMediationRewardedAdCallback != null) {
                 mMediationRewardedAdCallback.onAdFailedToShow("UnityAds placement '" +
-                        mPlacementId + "' is not ready.");
+                        getPlacementId() + "' is not ready.");
             }
         }
 

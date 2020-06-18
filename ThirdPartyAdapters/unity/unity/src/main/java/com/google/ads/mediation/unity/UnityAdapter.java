@@ -62,8 +62,18 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
      *
      * @return mPlacementId.
      */
-    public String getPlacementId() {
+    private String getPlacementId() {
         return mPlacementId;
+    }
+
+    /**
+     * Sets the placement ID of the ad being loaded.
+     *
+     * @param placementId   Placement ID of ad being loaded.
+     */
+    private void setPlacementId(String placementId)
+    {
+        mPlacementId = placementId;
     }
 
     /**
@@ -94,8 +104,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener = mediationInterstitialListener;
 
         String gameId = serverParameters.getString(KEY_GAME_ID);
-        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, mPlacementId)) {
+        setPlacementId(serverParameters.getString(KEY_PLACEMENT_ID));
+
+        if (!isValidIds(gameId, getPlacementId())) {
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -115,21 +126,20 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
-
         UnityInitializer.getInstance().initializeUnityAds(activity, gameId,
-                    new IUnityAdsInitializationListener() {
-                @Override
-                public void onInitializationComplete() {
-                    Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
-                    loadInterstitialAd(mPlacementId);
-                }
+                new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+                Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized");
+                loadInterstitialAd(getPlacementId());
+            }
 
-                @Override
-                public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-                                                           unityAdsInitializationError, String s) {
-                    Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
-                            unityAdsInitializationError + "] " + s);
-                }
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+                                                       unityAdsInitializationError, String s) {
+                Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
+                        unityAdsInitializationError + "] " + s);
+            }
         });
     }
 
@@ -159,7 +169,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
             // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
             // Unity Ads fails to show an ad).
-            UnityAds.show(mActivityWeakReference.get(), mPlacementId);
+            UnityAds.show(mActivityWeakReference.get(), getPlacementId());
 
         } else {
             Log.w(TAG, "Failed to show Unity Ads Interstitial.");
