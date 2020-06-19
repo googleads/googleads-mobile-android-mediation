@@ -9,17 +9,17 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.9.0.1"
+    stringVersion = "5.9.0.2"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 5090001
+        targetSdkVersion 29
+        versionCode 5090002
         versionName stringVersion
     }
     buildTypes {
@@ -31,10 +31,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.1.0'
-
-    implementation 'com.google.android.gms:play-services-ads:19.1.0'
     implementation 'com.facebook.android:audience-network-sdk:5.9.0'
+
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.2.0'
 }
 
 /**
