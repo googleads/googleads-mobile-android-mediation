@@ -257,6 +257,9 @@ public class VungleInterstitialAdapter
     }
 
     AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+    if (VungleExtrasBuilder.isStartMutedNotConfigured(mediationExtras)) {
+      mAdConfig.setMuted(true); // start muted by default
+    }
     if (!hasBannerSizeAd(context, adSize, adConfig)) {
       String message = "Failed to load ad from Vungle: Invalid banner size.";
       Log.w(TAG, message);
