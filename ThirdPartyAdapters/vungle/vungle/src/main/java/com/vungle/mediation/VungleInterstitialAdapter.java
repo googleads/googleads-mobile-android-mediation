@@ -14,18 +14,13 @@
 
 package com.vungle.mediation;
 
-import static com.vungle.warren.AdConfig.AdSize.BANNER;
-import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
-import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
-import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
-import androidx.annotation.Keep;
+
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -36,7 +31,15 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.vungle.warren.AdConfig;
+
 import java.util.ArrayList;
+
+import androidx.annotation.Keep;
+
+import static com.vungle.warren.AdConfig.AdSize.BANNER;
+import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
+import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
+import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
 /**
  * A {@link MediationInterstitialAdapter} used to load and show Vungle interstitial ads using Google
@@ -258,7 +261,7 @@ public class VungleInterstitialAdapter
 
     AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
     if (VungleExtrasBuilder.isStartMutedNotConfigured(mediationExtras)) {
-      mAdConfig.setMuted(true); // start muted by default
+      adConfig.setMuted(true); // start muted by default
     }
     if (!hasBannerSizeAd(context, adSize, adConfig)) {
       String message = "Failed to load ad from Vungle: Invalid banner size.";
