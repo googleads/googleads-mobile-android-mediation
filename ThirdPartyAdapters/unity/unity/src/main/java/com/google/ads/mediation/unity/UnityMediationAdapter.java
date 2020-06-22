@@ -1,10 +1,15 @@
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -14,7 +19,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.UnityAds.FinishState;
+import com.unity3d.ads.UnityAds.PlacementState;
 import com.unity3d.ads.metadata.MetaData;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +35,53 @@ import java.util.UUID;
 public class UnityMediationAdapter extends Adapter implements MediationRewardedAd {
 
   static final String TAG = UnityMediationAdapter.class.getSimpleName();
+
+  // region Error Codes
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+      value = {
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_PLACEMENT_STATE_NO_FILL,
+        ERROR_PLACEMENT_STATE_DISABLED,
+        ERROR_NULL_CONTEXT,
+        ERROR_CONTEXT_NOT_ACTIVITY,
+        ERROR_AD_NOT_READY,
+        ERROR_UNITY_ADS_NOT_SUPPORTED,
+        ERROR_AD_ALREADY_LOADING,
+        ERROR_FINISH
+      })
+  @interface AdapterError {}
+
+  /** Invalid server parameters. */
+  static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
+  /** UnityAds returned a placement with a {@link PlacementState#NO_FILL} state. */
+  static final int ERROR_PLACEMENT_STATE_NO_FILL = 102;
+
+  /** UnityAds returned a placement with a {@link PlacementState#DISABLED} state. */
+  static final int ERROR_PLACEMENT_STATE_DISABLED = 103;
+
+  /** Tried to show an ad with a {@code null} context. */
+  static final int ERROR_NULL_CONTEXT = 104;
+
+  /**
+   * Context used to initialize, load and/or show ads from Unity Ads is not an {@link Activity}
+   * instance.
+   */
+  static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
+
+  /** Tried to show an ad that's not ready to be shown. */
+  static final int ERROR_AD_NOT_READY = 106;
+
+  /** UnityAds is not supported on the device. */
+  static final int ERROR_UNITY_ADS_NOT_SUPPORTED = 107;
+
+  /** UnityAds can only load 1 ad per placement at a time. */
+  static final int ERROR_AD_ALREADY_LOADING = 108;
+
+  /** UnityAds finished with a {@link FinishState#ERROR} state. */
+  static final int ERROR_FINISH = 109;
+  // endregion
 
   /** Key to obtain Game ID, required for loading Unity Ads. */
   static final String KEY_GAME_ID = "gameId";
@@ -63,7 +119,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
    * Unity adapter delegate to to forward the events from {@link UnitySingleton} to Google Mobile
    * Ads SDK.
    */
-  private UnityAdapterDelegate mUnityAdapterRewardedAdDelegate =
+  private final UnityAdapterDelegate mUnityAdapterRewardedAdDelegate =
       new UnityAdapterDelegate() {
 
         @Override
@@ -105,50 +161,95 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
             String placementId,
             UnityAds.PlacementState oldState,
             UnityAds.PlacementState newState) {
-          // Unity Ads SDK NO_FILL state to Google Mobile Ads SDK.
-          if (placementId.equals(getPlacementId())) {
-            if (newState.equals(UnityAds.PlacementState.NO_FILL)
-                || newState.equals(UnityAds.PlacementState.DISABLED)) {
-              if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure("UnityAds failed to load: " + placementId);
-              }
-              UnitySingleton.getInstance().stopTrackingPlacement(placementId);
+          if (!placementId.equals(getPlacementId())) {
+            return;
+          }
+
+          // If new state returns as NO_FILL or DISABLED, then it is treated as a no fill for Unity.
+          if (newState.equals(UnityAds.PlacementState.NO_FILL)) {
+            String errorMessage =
+                createAdapterError(
+                    ERROR_PLACEMENT_STATE_NO_FILL,
+                    "Received onUnityAdsPlacementStateChanged() callback "
+                        + "with state NO_FILL for placement ID: "
+                        + placementId);
+            Log.w(TAG, errorMessage);
+
+            if (mMediationAdLoadCallback != null) {
+              mMediationAdLoadCallback.onFailure(errorMessage);
             }
+            UnitySingleton.getInstance().stopTrackingPlacement(placementId);
+            return;
+          }
+
+          if (newState.equals(UnityAds.PlacementState.DISABLED)) {
+            String errorMessage =
+                createAdapterError(
+                    ERROR_PLACEMENT_STATE_DISABLED,
+                    "Received onUnityAdsPlacementStateChanged() callback "
+                        + "with state DISABLED for placement ID: "
+                        + placementId);
+            Log.w(TAG, errorMessage);
+
+            if (mMediationAdLoadCallback != null) {
+              mMediationAdLoadCallback.onFailure(errorMessage);
+            }
+            UnitySingleton.getInstance().stopTrackingPlacement(placementId);
           }
         }
 
         @Override
         public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-          // Unity Ads ad closed.
-          if (placementId.equals(getPlacementId()) && mMediationRewardedAdCallback != null) {
+          if (!placementId.equals(getPlacementId())) {
+            return;
+          }
+
+          if (mMediationRewardedAdCallback != null) {
             // Reward is provided only if the ad is watched completely.
             if (finishState == UnityAds.FinishState.COMPLETED) {
               mMediationRewardedAdCallback.onVideoComplete();
               // Unity Ads doesn't provide a reward value. The publisher is expected to
               // override the reward in AdMob console.
               mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
-              mMediationRewardedAdCallback.onAdClosed();
             } else if (finishState == UnityAds.FinishState.ERROR) {
-              mMediationRewardedAdCallback.onAdFailedToShow("UnityAds Show Error: " + placementId);
-            } else {
-              mMediationRewardedAdCallback.onAdClosed();
+              String errorMessage =
+                  createAdapterError(
+                      ERROR_FINISH,
+                      "UnityAds SDK called onUnityAdsFinish() with finish state ERROR.");
+              Log.w(TAG, errorMessage);
+              mMediationRewardedAdCallback.onAdFailedToShow(errorMessage);
             }
+            mMediationRewardedAdCallback.onAdClosed();
           }
         }
 
         @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String placementId) {
-          if (placementId.equals(getPlacementId())) {
-            if (mMediationAdLoadCallback != null
-                && unityAdsError.equals(UnityAds.UnityAdsError.NOT_INITIALIZED)) {
-              mMediationAdLoadCallback.onFailure("UnityAds failed to load: " + placementId);
-              return;
-            }
+        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String errorMessage) {
+          String sdkError = createSDKError(unityAdsError, errorMessage);
+          Log.w(TAG, "Unity Ads returned an error: " + sdkError);
 
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdFailedToShow(
-                  "UnityAds failed to show: " + placementId);
+          if (unityAdsError.equals(UnityAds.UnityAdsError.NOT_INITIALIZED)
+              || unityAdsError.equals(UnityAds.UnityAdsError.INITIALIZE_FAILED)
+              || unityAdsError.equals(UnityAds.UnityAdsError.INIT_SANITY_CHECK_FAIL)
+              || unityAdsError.equals(UnityAds.UnityAdsError.INVALID_ARGUMENT)
+              || unityAdsError.equals(UnityAds.UnityAdsError.AD_BLOCKER_DETECTED)) {
+            if (mMediationAdLoadCallback != null) {
+              mMediationAdLoadCallback.onFailure(sdkError);
             }
+            return;
+          }
+
+          if (mMediationRewardedAdCallback != null) {
+            mMediationRewardedAdCallback.onAdFailedToShow(sdkError);
+          }
+        }
+
+        @Override
+        public void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage) {
+          String adapterError = createAdapterError(errorCode, errorMessage);
+          Log.w(TAG, "Failed to load ad: " + adapterError);
+          if (mMediationAdLoadCallback != null) {
+            mMediationAdLoadCallback.onFailure(adapterError);
           }
         }
       };
@@ -178,7 +279,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     String logMessage =
         String.format(
-            "Unexpected adapter version format: %s." + "Returning 0.0.0 for adapter version.",
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
             versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
@@ -198,8 +299,7 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
     String logMessage =
         String.format(
-            "Unexpected SDK version format: %s." + "Returning 0.0.0 for SDK version.",
-            versionString);
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -209,9 +309,16 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
       Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
+    if (UnityAds.isInitialized()) {
+      initializationCompleteCallback.onInitializationSucceeded();
+      return;
+    }
+
     if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "UnityAds SDK requires an " + "Activity context to initialize");
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to initialize.");
+      initializationCompleteCallback.onInitializationFailed(adapterError);
       return;
     }
 
@@ -234,20 +341,28 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         String message =
             String.format(
                 "Multiple '%s' entries found: %s. " + "Using '%s' to initialize the UnityAds SDK",
-                KEY_GAME_ID, gameIDs.toString(), gameID);
+                KEY_GAME_ID, gameIDs, gameID);
         Log.w(TAG, message);
       }
     }
 
     if (TextUtils.isEmpty(gameID)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Initialization failed: Missing or invalid Game ID.");
+      String adapterError =
+          createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Game ID.");
+      initializationCompleteCallback.onInitializationFailed(adapterError);
       return;
     }
 
     metadata = new MetaData(context);
 
-    UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+    boolean success = UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+    if (!success) {
+      String adapterError =
+          createAdapterError(
+              ERROR_UNITY_ADS_NOT_SUPPORTED, "The current device is not supported by Unity Ads.");
+      initializationCompleteCallback.onInitializationFailed(adapterError);
+      return;
+    }
     initializationCompleteCallback.onInitializationSucceeded();
   }
   // endregion
@@ -260,8 +375,11 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
           mediationAdLoadCallback) {
     Context context = mediationRewardedAdConfiguration.getContext();
     if (!(context instanceof Activity)) {
-      mediationAdLoadCallback.onFailure(
-          "Context is not an Activity." + " Unity Ads requires an Activity context to show ads.");
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      mediationAdLoadCallback.onFailure(adapterError);
       return;
     }
 
@@ -270,14 +388,26 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!isValidIds(gameID, mPlacementId)) {
-      mediationAdLoadCallback.onFailure(
-          "Failed to load ad from UnityAds: " + "Missing or invalid game ID and placement ID.");
+      String adapterError =
+          createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      mediationAdLoadCallback.onFailure(adapterError);
+      return;
+    }
+
+    boolean success = UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
+    if (!success) {
+      String adapterError =
+          createAdapterError(
+              ERROR_UNITY_ADS_NOT_SUPPORTED, "The current device is not supported by Unity Ads.");
+      Log.w(TAG, adapterError);
+      mediationAdLoadCallback.onFailure(adapterError);
       return;
     }
 
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
-    UnitySingleton.getInstance().initializeUnityAds((Activity) context, gameID);
     MetaData metadata = new MetaData(context);
     metadata.setCategory("mediation_adapter");
     metadata.set(uuid, "load-rewarded");
@@ -289,17 +419,24 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
   @Override
   public void showAd(Context context) {
     if (!(context instanceof Activity)) {
-      String message = "An activity context is required to show Unity Ads.";
-      Log.w(TAG, message);
+      String adapterError =
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to show ads.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationRewardedAdCallback != null) {
-        mMediationRewardedAdCallback.onAdFailedToShow(message);
+        mMediationRewardedAdCallback.onAdFailedToShow(adapterError);
       }
       return;
     }
 
     // Add isReady check to prevent ready to no fill case
-    if (!UnityAds.isReady(mPlacementId) && mMediationRewardedAdCallback != null) {
-      mMediationRewardedAdCallback.onAdFailedToShow("Failed to show Unity Ads rewarded video.");
+    if (!UnityAds.isReady(mPlacementId)) {
+      String adapterError = createAdapterError(ERROR_AD_NOT_READY, "Ad is not ready to be shown.");
+      Log.w(TAG, "Failed to show Unity Ads Rewarded ad: " + adapterError);
+      if (mMediationRewardedAdCallback != null) {
+        mMediationRewardedAdCallback.onAdFailedToShow(adapterError);
+      }
+
       MetaData metadata = new MetaData(context);
       metadata.setCategory("mediation_adapter");
       metadata.set(uuid, "fail-to-show-rewarded");
@@ -309,13 +446,11 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
     }
 
     Activity activity = (Activity) context;
-
     MetaData metadata = new MetaData(context);
     metadata.setCategory("mediation_adapter");
     metadata.set(uuid, "show-rewarded");
     metadata.set(uuid, mPlacementId);
     metadata.commit();
-
     UnitySingleton.getInstance().showAd(mUnityAdapterRewardedAdDelegate, activity);
   }
   // endregion

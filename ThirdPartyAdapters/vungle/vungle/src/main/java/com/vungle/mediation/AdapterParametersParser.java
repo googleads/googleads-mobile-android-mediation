@@ -4,8 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 /**
- * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific
- * parameters.
+ * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific parameters.
  */
 class AdapterParametersParser {
 

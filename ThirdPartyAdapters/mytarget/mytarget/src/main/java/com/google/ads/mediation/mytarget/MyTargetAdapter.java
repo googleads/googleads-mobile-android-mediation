@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -52,8 +53,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       }
       return;
     }
-    adSize = getSupportedAdSize(context, adSize);
 
+    adSize = getSupportedAdSize(context, adSize);
     if (adSize == null) {
       Log.w(TAG, "Failed to request ad, AdSize is null.");
       if (mediationBannerListener != null) {
@@ -99,7 +100,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
   }
 
-  AdSize getSupportedAdSize(Context context, AdSize adSize) {
+  @Nullable
+  private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
         /*
             Supported Sizes:
             MyTargetView.AdSize.BANNER_300x250;
@@ -107,13 +109,11 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
             MyTargetView.AdSize.BANNER_728x90;
         */
 
-    ArrayList<AdSize> potentials = new ArrayList<AdSize>(3);
+    ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.MEDIUM_RECTANGLE);
     potentials.add(AdSize.LEADERBOARD);
-
-    Log.i(TAG, "Potential ad sizes: " + potentials.toString());
-    return MyTargetTools.findClosestSize(context, adSize, potentials);
+    return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
   @Override

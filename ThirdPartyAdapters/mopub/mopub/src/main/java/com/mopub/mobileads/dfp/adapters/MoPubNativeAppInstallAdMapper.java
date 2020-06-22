@@ -78,7 +78,8 @@ public class MoPubNativeAppInstallAdMapper extends NativeAppInstallAdMapper {
     super.untrackView(view);
     mMoPubNativeAdData.clear(view);
 
-    if (privacyInformationIconImageView != null && privacyInformationIconImageView.getParent() != null) {
+    if (privacyInformationIconImageView != null
+        && privacyInformationIconImageView.getParent() != null) {
       ((ViewGroup) privacyInformationIconImageView.getParent())
           .removeView(privacyInformationIconImageView);
     }

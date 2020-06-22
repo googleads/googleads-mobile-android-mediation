@@ -1,5 +1,9 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
 #### Version 4.1.4.1
 - Added descriptive error codes and reasons for adapter load/show failures.
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.

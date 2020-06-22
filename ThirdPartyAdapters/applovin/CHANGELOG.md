@@ -1,12 +1,50 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+
+#### Version 9.12.8.0
+- Verified compatibility with AppLovin SDK 9.12.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.8.
+
+#### Version 9.12.7.0
+- Verified compatibility with AppLovin SDK 9.12.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.7.
+
+#### Version 9.12.6.1
+- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/master/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where open bidding banner ads timeout.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.6.
+
+#### Version 9.12.6.0
+- Verified compatibility with AppLovin SDK 9.12.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.6.
+
+#### Version 9.12.5.0
+- Verified compatibility with AppLovin SDK 9.12.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.5.
+
 #### Version 9.12.4.0
 - Verified compatibility with AppLovin SDK 9.12.4.
 - Adapter now requires an `Activity` context to initialize and load ads from AppLovin.
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
-- AppLovin SDK version 9.12.3.
+- AppLovin SDK version 9.12.4.
 
 #### Version 9.12.3.0
 - Verified compatibility with AppLovin SDK 9.12.3.

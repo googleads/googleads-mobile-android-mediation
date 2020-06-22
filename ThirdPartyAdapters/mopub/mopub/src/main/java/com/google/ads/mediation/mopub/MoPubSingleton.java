@@ -85,13 +85,13 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
         @Override
         public void onInitializationFinished() {
           MoPubLog.d("MoPub SDK initialized.");
+          isInitializing = false;
 
           MoPubRewardedVideos.setRewardedVideoListener(MoPubSingleton.this);
           for (SdkInitializationListener initListener : mInitListeners) {
             initListener.onInitializationFinished();
           }
           mInitListeners.clear();
-          isInitializing = false;
         }
       });
     }

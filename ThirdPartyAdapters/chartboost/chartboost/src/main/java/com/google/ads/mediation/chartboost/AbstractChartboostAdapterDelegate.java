@@ -14,7 +14,9 @@
 
 package com.google.ads.mediation.chartboost;
 
+import androidx.annotation.NonNull;
 import com.chartboost.sdk.ChartboostDelegate;
+import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.AdapterError;
 
 /**
  * The {@link AbstractChartboostAdapterDelegate} class will be used to mediate callbacks between
@@ -28,4 +30,12 @@ public abstract class AbstractChartboostAdapterDelegate extends ChartboostDelega
    * @return Chartboost params containing ad request parameters.
    */
   public abstract ChartboostParams getChartboostParams();
+
+  /**
+   * Called when the adapter fails to load an ad.
+   *
+   * @param errorCode The error code.
+   * @param errorMessage A message describing the error.
+   */
+  public abstract void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage);
 }

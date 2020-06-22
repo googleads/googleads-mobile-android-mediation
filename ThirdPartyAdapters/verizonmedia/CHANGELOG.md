@@ -1,5 +1,16 @@
 ## Verizon Media Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+
+#### Version 1.6.0.0
+- Support for Verizon Media SDK v1.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Verizon Media SDK 1.6.0.
+
 #### Version 1.5.0.0
 - Support for Verizon Media SDK v1.5.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.

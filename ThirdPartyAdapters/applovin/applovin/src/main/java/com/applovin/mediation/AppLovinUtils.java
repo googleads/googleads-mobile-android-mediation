@@ -5,6 +5,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
@@ -12,6 +14,7 @@ import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
 /*
@@ -114,17 +117,15 @@ public class AppLovinUtils {
   /**
    * Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob.
    */
-  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(Context context, AdSize adSize) {
+  @Nullable
+  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(@NonNull Context context,
+      @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.LEADERBOARD);
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
 
-    ArrayList<AdSize> potentials = new ArrayList<>(3);
-    potentials.add(0, AdSize.BANNER);
-    potentials.add(1, AdSize.LEADERBOARD);
-    potentials.add(2, AdSize.MEDIUM_RECTANGLE);
-
-    AdSize closestSize = AppLovinUtils.findClosestSize(context, adSize, potentials);
-    if (closestSize == null) {
-      return null;
-    }
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
 
     if (AdSize.BANNER.equals(closestSize)) {
       return AppLovinAdSize.BANNER;
@@ -137,56 +138,4 @@ public class AppLovinUtils {
     return null;
   }
 
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(Context context,
-      AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
-        }
-      }
-    }
-    return largestPotential;
-  }
-
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth ||
-        originalWidth < potentialWidth) {
-      return false;
-    }
-
-    return !(originalHeight * minHeightRatio > potentialHeight) &&
-        originalHeight >= potentialHeight;
-  }
-
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
-  }
 }

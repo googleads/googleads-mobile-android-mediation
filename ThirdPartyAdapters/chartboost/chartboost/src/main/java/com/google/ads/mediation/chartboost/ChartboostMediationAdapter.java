@@ -1,10 +1,11 @@
 package com.google.ads.mediation.chartboost;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -15,6 +16,8 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,9 +25,20 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
 
-  /**
-   * A Chartboost extras object used to store optional information used when loading ads.
-   */
+  // region Error codes
+  /** Chartboost adapter errors. */
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(value = {ERROR_BANNER_SIZE_MISMATCH, ERROR_AD_ALREADY_LOADED})
+  public @interface AdapterError {}
+
+  /** The requested ad size does not match a Chartboost supported banner size. */
+  static final int ERROR_BANNER_SIZE_MISMATCH = 100;
+
+  /** Chartboost can only load 1 ad per location at a time. */
+  static final int ERROR_AD_ALREADY_LOADED = 101;
+  // endregion
+
+  /** A Chartboost extras object used to store optional information used when loading ads. */
   private ChartboostParams mChartboostParams = new ChartboostParams();
 
   /**
@@ -33,13 +47,10 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
   private boolean mIsLoading;
 
   private InitializationCompleteCallback mInitializationCallback;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mAdLoadCallback;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
 
-  /**
-   * {@link Adapter} implementation
-   */
+  /** {@link Adapter} implementation */
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
@@ -52,8 +63,10 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -70,14 +83,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
-  public void initialize(Context context,
+  public void initialize(
+      Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
     HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
@@ -98,9 +113,10 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       serverParameters = chartboostConfigs.get(appID);
 
       if (count > 1) {
-        String logMessage = String.format("Multiple '%s' entries found: %s. "
-                + "Using '%s' to initialize the Chartboost SDK",
-            ChartboostAdapterUtils.KEY_APP_ID, chartboostConfigs.keySet(), appID);
+        String logMessage =
+            String.format(
+                "Multiple '%s' entries found: %s. " + "Using '%s' to initialize the Chartboost SDK",
+                ChartboostAdapterUtils.KEY_APP_ID, chartboostConfigs.keySet(), appID);
         Log.w(TAG, logMessage);
       }
     } else {
@@ -108,9 +124,7 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           "Initialization failed:Missing or invalid App ID.");
       return;
     }
-
     mInitializationCallback = initializationCompleteCallback;
-
     mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
       // Invalid server parameters, send initialization failed event.
@@ -118,21 +132,18 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           "Initialization Failed: Invalid server parameters.");
       return;
     }
-
     ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
   }
 
   @Override
   public void loadRewardedAd(
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
 
     mAdLoadCallback = mediationAdLoadCallback;
     final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     final Bundle extras = mediationRewardedAdConfiguration.getMediationExtras();
-
-    Context context = mediationRewardedAdConfiguration.getContext();
 
     mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, extras);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
@@ -143,14 +154,7 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       return;
     }
 
-    if (!ChartboostAdapterUtils.isValidContext(context)) {
-      // Chartboost initialization failed, send initialization failed event.
-      String logMessage = "Failed to request ad from Chartboost: Internal Error.";
-      Log.w(TAG, logMessage);
-      mediationAdLoadCallback.onFailure(logMessage);
-      return;
-    }
-
+    Context context = mediationRewardedAdConfiguration.getContext();
     ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
   }
 
@@ -189,7 +193,8 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
         @Override
         public void didCacheRewardedVideo(String location) {
           super.didCacheRewardedVideo(location);
-          if (mAdLoadCallback != null && mIsLoading
+          if (mAdLoadCallback != null
+              && mIsLoading
               && location.equals(mChartboostParams.getLocation())) {
             mIsLoading = false;
             mRewardedAdCallback = mAdLoadCallback.onSuccess(ChartboostMediationAdapter.this);
@@ -197,18 +202,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
         }
 
         @Override
-        public void didFailToLoadRewardedVideo(String location,
-            CBError.CBImpressionError error) {
+        public void didFailToLoadRewardedVideo(String location, CBError.CBImpressionError error) {
           super.didFailToLoadRewardedVideo(location, error);
-          if (mAdLoadCallback != null &&
-              location.equals(mChartboostParams.getLocation())) {
+          String logMessage = ChartboostAdapterUtils.createSDKError(error);
+          Log.w(TAG, logMessage);
+
+          if (mAdLoadCallback != null && location.equals(mChartboostParams.getLocation())) {
             if (mIsLoading) {
-              String logMessage = "Failed to load ad from Chartboost: " + error.toString();
-              Log.w(TAG, logMessage);
               mAdLoadCallback.onFailure(logMessage);
               mIsLoading = false;
-            } else if (error
-                == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
+            } else if (error == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
               // Chartboost sends the CBErrorInternetUnavailableAtShow error when
               // the Chartboost SDK fails to show an ad because no network connection
               // is available.
@@ -216,6 +219,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
                 mRewardedAdCallback.onAdFailedToShow("No network connection is available.");
               }
             }
+          }
+        }
+
+        @Override
+        public void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage) {
+          String logMessage = ChartboostAdapterUtils.createAdapterError(errorCode, errorMessage);
+          Log.w(TAG, logMessage);
+
+          if (mAdLoadCallback != null) {
+            mAdLoadCallback.onFailure(logMessage);
           }
         }
 

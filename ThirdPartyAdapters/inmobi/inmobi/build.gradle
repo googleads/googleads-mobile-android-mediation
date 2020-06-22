@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.8.1"
+    id "com.jfrog.bintray" version "1.8.4"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,24 +9,23 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "9.0.4.0"
+    stringVersion = "9.0.7.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 28
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 9000400
+        versionCode 9000700
         versionName stringVersion
+        consumerProguardFiles 'proguard-rules.pro'
     }
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -34,12 +33,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
 
     // Mobile Ads SDK
     implementation 'com.google.android.gms:play-services-ads:19.1.0'
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads:9.0.5'
+    implementation 'com.inmobi.monetization:inmobi-ads:9.0.7'
 
     // inMobi required dependencies
     // https://support.inmobi.com/monetize/android-guidelines/

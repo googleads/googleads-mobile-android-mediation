@@ -1,6 +1,7 @@
 package com.google.ads.mediation.facebook;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
@@ -12,8 +13,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdExperienceType;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
@@ -33,6 +36,11 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
    * Facebook rewarded video ad instance.
    */
   private RewardedVideoAd rewardedAd;
+
+  /**
+   * Flag to determine whether the rewarded ad has been presented.
+   */
+  private AtomicBoolean showAdCalled = new AtomicBoolean();
 
   /**
    * Mediation rewarded video ad listener used to forward rewarded video ad events from the Facebook
@@ -79,6 +87,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
           rewardedAd.buildLoadAdConfig()
               .withAdListener(this)
               .withBid(decodedBid)
+              .withAdExperience(getAdExperienceType())
               .build()
       );
     } else {
@@ -104,17 +113,28 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   @Override
   public void showAd(Context context) {
-    if (rewardedAd.isAdLoaded()) {
-      rewardedAd.show();
+    showAdCalled.set(true);
+    if (!rewardedAd.show()) {
+      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present rewarded ad.");
+      Log.w(TAG, errorMessage);
+
       if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onVideoStart();
-        mRewardedAdCallback.onAdOpened();
+        mRewardedAdCallback.onAdFailedToShow(errorMessage);
       }
-    } else {
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow("No ads to show.");
-      }
+      rewardedAd.destroy();
+      return;
     }
+
+    if (mRewardedAdCallback != null) {
+      mRewardedAdCallback.onVideoStart();
+      mRewardedAdCallback.onAdOpened();
+    }
+  }
+
+  @NonNull
+  AdExperienceType getAdExperienceType() {
+    return AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED;
   }
 
   private void createAndLoadRewardedVideo(Context context, String placementID) {
@@ -122,6 +142,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     rewardedAd.loadAd(
         rewardedAd.buildLoadAdConfig()
             .withAdListener(this)
+            .withAdExperience(getAdExperienceType())
             .build()
     );
   }
@@ -135,10 +156,19 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   @Override
   public void onError(Ad ad, AdError adError) {
     String errorMessage = createSdkError(adError);
-    Log.w(TAG, "Failed to load ad from Facebook: " + errorMessage);
-    if (mMediationAdLoadCallback != null) {
-      mMediationAdLoadCallback.onFailure(errorMessage);
+
+    if (showAdCalled.get()) {
+      Log.w(TAG, "Failed to present rewarded ad: " + errorMessage);
+      if (mRewardedAdCallback != null) {
+        mRewardedAdCallback.onAdFailedToShow(errorMessage);
+      }
+    } else {
+      Log.w(TAG, "Failed to load rewarded ad: " + errorMessage);
+      if (mMediationAdLoadCallback != null) {
+        mMediationAdLoadCallback.onFailure(errorMessage);
+      }
     }
+
     rewardedAd.destroy();
   }
 

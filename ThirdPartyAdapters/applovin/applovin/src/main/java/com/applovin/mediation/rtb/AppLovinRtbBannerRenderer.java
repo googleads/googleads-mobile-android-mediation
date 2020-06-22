@@ -80,6 +80,12 @@ public final class AppLovinRtbBannerRenderer
 
     AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
     adView = new AppLovinAdView(sdk, adSize, context);
+    adView.setAdDisplayListener(this);
+    adView.setAdClickListener(this);
+    adView.setAdViewEventListener(this);
+
+    // Load ad!
+    sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
   }
 
   @NonNull

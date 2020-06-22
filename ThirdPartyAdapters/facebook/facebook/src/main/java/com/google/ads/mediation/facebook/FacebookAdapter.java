@@ -23,9 +23,12 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -43,6 +46,7 @@ import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
@@ -79,10 +83,22 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   private MediationNativeListener mNativeListener;
   private AdView mAdView;
-  private RelativeLayout mWrappedAdView;
-  private InterstitialAd mInterstitialAd;
+  private FrameLayout mWrappedAdView;
   private boolean isNativeBanner;
 
+  /**
+   * Facebook interstitial ad instance.
+   */
+  private InterstitialAd mInterstitialAd;
+
+  /**
+   * Flag to determine whether the interstitial ad has been presented.
+   */
+  private AtomicBoolean showInterstitialCalled = new AtomicBoolean();
+
+  /**
+   * Flag to determine whether the interstitial ad has been closed.
+   */
   private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   /**
@@ -148,8 +164,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       final MediationAdRequest adRequest,
       Bundle mediationExtras) {
     mBannerListener = listener;
-    final String placementID = getPlacementID(serverParameters);
 
+    final String placementID = getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
       Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad: placementID is null or empty."));
@@ -157,7 +173,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       return;
     }
 
-    com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
+    final com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
     if (facebookAdSize == null) {
       Log.w(TAG, createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
           "There is no matching Facebook ad size for Google ad size: " + adSize.toString()));
@@ -172,7 +188,19 @@ public final class FacebookAdapter extends FacebookMediationAdapter
             new FacebookInitializer.Listener() {
               @Override
               public void onInitializeSuccess() {
-                createAndLoadBannerAd(context, placementID, adSize, adRequest);
+                mAdView = new AdView(context, placementID, facebookAdSize);
+                buildAdRequest(adRequest);
+
+                FrameLayout.LayoutParams adViewLayoutParams = new FrameLayout.LayoutParams(
+                    adSize.getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
+                mWrappedAdView = new FrameLayout(context);
+                mAdView.setLayoutParams(adViewLayoutParams);
+                mWrappedAdView.addView(mAdView);
+                mAdView.loadAd(
+                    mAdView.buildLoadAdConfig()
+                        .withAdListener(new BannerListener())
+                        .build()
+                );
               }
 
               @Override
@@ -232,8 +260,16 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   @Override
   public void showInterstitial() {
-    if (mInterstitialAd.isAdLoaded()) {
-      mInterstitialAd.show();
+    showInterstitialCalled.set(true);
+    if (!mInterstitialAd.show()) {
+      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.");
+      Log.w(TAG, errorMessage);
+
+      if (mInterstitialListener != null) {
+        mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        mInterstitialListener.onAdClosed(FacebookAdapter.this);
+      }
     }
   }
   //endregion
@@ -304,27 +340,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   //endregion
 
   //region Banner adapter utility classes.
-  private void createAndLoadBannerAd(Context context,
-      String placementID,
-      AdSize adSize,
-      MediationAdRequest adRequest) {
-    com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
-
-    mAdView = new AdView(context, placementID, facebookAdSize);
-    buildAdRequest(adRequest);
-
-    RelativeLayout.LayoutParams adViewLayoutParams = new RelativeLayout.LayoutParams(
-        adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
-    mWrappedAdView = new RelativeLayout(context);
-    mAdView.setLayoutParams(adViewLayoutParams);
-    mWrappedAdView.addView(mAdView);
-    mAdView.loadAd(
-        mAdView.buildLoadAdConfig()
-            .withAdListener(new BannerListener())
-            .build()
-    );
-  }
-
   private class BannerListener implements AdListener {
 
     private BannerListener() {
@@ -352,7 +367,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onError(Ad ad, AdError adError) {
       String errorMessage = createSdkError(adError);
-        Log.w(TAG, errorMessage);
+      Log.w(TAG, errorMessage);
       FacebookAdapter.this.mBannerListener
           .onAdFailedToLoad(FacebookAdapter.this, adError.getErrorCode());
     }
@@ -398,9 +413,14 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onError(Ad ad, AdError adError) {
       String errorMessage = createSdkError(adError);
-      if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
+      Log.w(TAG, errorMessage);
+
+      if (showInterstitialCalled.get()) {
+        FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
+        FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
+        return;
       }
+
       FacebookAdapter.this.mInterstitialListener.onAdFailedToLoad(
           FacebookAdapter.this, adError.getErrorCode());
     }
@@ -724,7 +744,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
   }
 
-  private com.facebook.ads.AdSize getAdSize(Context context, AdSize adSize) {
+  @Nullable
+  private com.facebook.ads.AdSize getAdSize(@NonNull Context context, @NonNull AdSize adSize) {
 
     // Get the actual width of the ad size since Smart Banners and FULL_WIDTH sizes return a
     // width of -1.
@@ -739,7 +760,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     potentials.add(1, new AdSize(width, 90));
     potentials.add(2, new AdSize(width, 250));
     Log.i(TAG, "Potential ad sizes: " + potentials.toString());
-    AdSize closestSize = findClosestSize(context, adSize, potentials);
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize == null) {
       return null;
     }
@@ -759,62 +780,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
     return null;
   }
-
-  // Start of helper code to remove when available in SDK
-
-  /**
-   * Find the closest supported AdSize from the list of potentials to the provided size. Returns
-   * null if none are within given threshold size range.
-   */
-  public static AdSize findClosestSize(
-      Context context, AdSize original, ArrayList<AdSize> potentials) {
-    if (potentials == null || original == null) {
-      return null;
-    }
-    float density = context.getResources().getDisplayMetrics().density;
-    int actualWidth = Math.round(original.getWidthInPixels(context) / density);
-    int actualHeight = Math.round(original.getHeightInPixels(context) / density);
-    original = new AdSize(actualWidth, actualHeight);
-
-    AdSize largestPotential = null;
-    for (AdSize potential : potentials) {
-      if (isSizeInRange(original, potential)) {
-        if (largestPotential == null) {
-          largestPotential = potential;
-        } else {
-          largestPotential = getLargerByArea(largestPotential, potential);
-        }
-      }
-    }
-    return largestPotential;
-  }
-
-  private static boolean isSizeInRange(AdSize original, AdSize potential) {
-    if (potential == null) {
-      return false;
-    }
-    double minWidthRatio = 0.5;
-    double minHeightRatio = 0.7;
-
-    int originalWidth = original.getWidth();
-    int potentialWidth = potential.getWidth();
-    int originalHeight = original.getHeight();
-    int potentialHeight = potential.getHeight();
-
-    if (originalWidth * minWidthRatio > potentialWidth || originalWidth < potentialWidth) {
-      return false;
-    }
-
-    return !(originalHeight * minHeightRatio > potentialHeight)
-        && originalHeight >= potentialHeight;
-  }
-
-  private static AdSize getLargerByArea(AdSize size1, AdSize size2) {
-    int area1 = size1.getWidth() * size1.getHeight();
-    int area2 = size2.getWidth() * size2.getHeight();
-    return area1 > area2 ? size1 : size2;
-  }
-  // End code to remove when available in SDK
 
   /**
    * The {@link AppInstallMapper} class is used to map Facebook native ads to Google Mobile Ads'
@@ -840,9 +805,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * Default constructor for {@link AppInstallMapper}.
      *
-     * @param nativeAd The Facebook native ad to be mapped.
+     * @param nativeAd  The Facebook native ad to be mapped.
      * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     * the native ad.
+     *                  the native ad.
      */
     public AppInstallMapper(NativeAd nativeAd, NativeAdOptions adOptions) {
       AppInstallMapper.this.mNativeAd = nativeAd;
@@ -853,8 +818,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
      * Constructor for {@link AppInstallMapper}.
      *
      * @param nativeBannerAd The Facebook native banner ad to be mapped.
-     * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     * the native ad.
+     * @param adOptions      {@link NativeAdOptions} containing the preferences to be used when
+     *                       mapping the native ad.
      */
     public AppInstallMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions) {
       AppInstallMapper.this.mNativeBannerAd = nativeBannerAd;
@@ -1088,9 +1053,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * Default constructor for {@link UnifiedAdMapper}.
      *
-     * @param nativeAd The Facebook native ad to be mapped.
+     * @param nativeAd  The Facebook native ad to be mapped.
      * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     * the native ad.
+     *                  the native ad.
      */
     public UnifiedAdMapper(NativeAd nativeAd, NativeAdOptions adOptions) {
       UnifiedAdMapper.this.mNativeAd = nativeAd;
@@ -1101,8 +1066,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
      * Constructor for {@link UnifiedAdMapper}.
      *
      * @param nativeBannerAd The Facebook native banner ad to be mapped.
-     * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     * the native ad.
+     * @param adOptions      {@link NativeAdOptions} containing the preferences to be used when
+     *                       mapping the native ad.
      */
     public UnifiedAdMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions) {
       UnifiedAdMapper.this.mNativeBannerAd = nativeBannerAd;

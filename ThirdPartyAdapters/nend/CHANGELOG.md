@@ -1,5 +1,10 @@
 ## nend Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to support inline adaptive banner requests.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+- Fixed an issue : Crash rarely if discarding of Nend-Adapter intersect to updating the smart-banner layout.
+
 #### Version 5.4.2.0
 - Added support for native ads.
 - Verified compatibility with nend SDK 5.4.2.
