@@ -5,7 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.2.0.
-- Facebook SDK version 5.9.0.
+- Facebook SDK version 5.9.1.
 
 #### 5.9.0.2
 - Added support for rewarded interstitial ads.
