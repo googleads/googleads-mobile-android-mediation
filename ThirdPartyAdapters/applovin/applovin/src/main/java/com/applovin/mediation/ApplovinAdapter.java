@@ -35,14 +35,15 @@ import java.util.Queue;
  * video ads and to mediate the callbacks between the AppLovin SDK and the Google Mobile Ads SDK.
  */
 public class ApplovinAdapter extends AppLovinMediationAdapter
-    implements MediationBannerAdapter, MediationInterstitialAdapter,
-    OnContextChangedListener, MediationRewardedAd {
+    implements MediationBannerAdapter,
+        MediationInterstitialAdapter,
+        OnContextChangedListener,
+        MediationRewardedAd {
 
   private static final boolean LOGGING_ENABLED = true;
 
   // Interstitial globals.
-  private static final HashMap<String, Queue<AppLovinAd>> INTERSTITIAL_AD_QUEUES =
-      new HashMap<>();
+  private static final HashMap<String, Queue<AppLovinAd>> INTERSTITIAL_AD_QUEUES = new HashMap<>();
   private static final Object INTERSTITIAL_AD_QUEUES_LOCK = new Object();
 
   // Parent objects.
@@ -59,9 +60,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   // Controlled fields.
   private String mZoneId;
 
-  //region MediationInterstitialAdapter implementation.
+  // region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(Context context,
+  public void requestInterstitialAd(
+      Context context,
       MediationInterstitialListener interstitialListener,
       Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
@@ -87,43 +89,44 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
     log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
 
     // Create Ad Load listener.
-    final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener() {
-      @Override
-      public void adReceived(final AppLovinAd ad) {
-        log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
-            + mZoneId);
-
-        synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
-          Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get(mZoneId);
-          if (preloadedAds == null) {
-            preloadedAds = new LinkedList<>();
-            INTERSTITIAL_AD_QUEUES.put(mZoneId, preloadedAds);
-          }
-
-          preloadedAds.offer(ad);
-
-          AppLovinSdkUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
-            }
-          });
-        }
-      }
-
-      @Override
-      public void failedToReceiveAd(final int code) {
-        String errorMessage = createSDKError(code);
-        log(ERROR, errorMessage);
-        AppLovinSdkUtils.runOnUiThread(new Runnable() {
+    final AppLovinAdLoadListener adLoadListener =
+        new AppLovinAdLoadListener() {
           @Override
-          public void run() {
-            mMediationInterstitialListener.onAdFailedToLoad(
-                ApplovinAdapter.this, code);
+          public void adReceived(final AppLovinAd ad) {
+            log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId);
+
+            synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
+              Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get(mZoneId);
+              if (preloadedAds == null) {
+                preloadedAds = new LinkedList<>();
+                INTERSTITIAL_AD_QUEUES.put(mZoneId, preloadedAds);
+              }
+
+              preloadedAds.offer(ad);
+
+              AppLovinSdkUtils.runOnUiThread(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+                    }
+                  });
+            }
           }
-        });
-      }
-    };
+
+          @Override
+          public void failedToReceiveAd(final int code) {
+            String errorMessage = createSDKError(code);
+            log(ERROR, errorMessage);
+            AppLovinSdkUtils.runOnUiThread(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    mMediationInterstitialListener.onAdFailedToLoad(ApplovinAdapter.this, code);
+                  }
+                });
+          }
+        };
 
     synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
       final Queue<AppLovinAd> queue = INTERSTITIAL_AD_QUEUES.get(mZoneId);
@@ -138,12 +141,13 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       } else {
         log(DEBUG, "Enqueued interstitial found. Finishing load...");
 
-        AppLovinSdkUtils.runOnUiThread(new Runnable() {
-          @Override
-          public void run() {
-            mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
-          }
-        });
+        AppLovinSdkUtils.runOnUiThread(
+            new Runnable() {
+              @Override
+              public void run() {
+                mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+              }
+            });
       }
     }
   }
@@ -170,11 +174,11 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         log(DEBUG, "Showing interstitial for zone: " + mZoneId);
         interstitialAd.showAndRender(dequeuedAd);
       } else {
-        log(DEBUG, "Attempting to show interstitial before one was loaded");
+        log(DEBUG, "Attempting to show interstitial before one was loaded.");
 
         // Check if we have a default zone interstitial available.
         if (TextUtils.isEmpty(mZoneId) && interstitialAd.isAdReadyToDisplay()) {
-          log(DEBUG, "Showing interstitial preloaded by SDK");
+          log(DEBUG, "Showing interstitial preloaded by SDK.");
           interstitialAd.show();
         }
         // TODO: Show ad for zone identifier if exists
@@ -185,11 +189,12 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       }
     }
   }
-  //endregion
+  // endregion
 
-  //region MediationBannerAdapter implementation.
+  // region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(Context context,
+  public void requestBannerAd(
+      Context context,
       final MediationBannerListener mediationBannerListener,
       Bundle serverParameters,
       AdSize adSize,
@@ -210,11 +215,13 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
     mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
     // Convert requested size to AppLovin Ad Size.
-    final AppLovinAdSize appLovinAdSize = AppLovinUtils
-        .appLovinAdSizeFromAdMobAdSize(context, adSize);
+    final AppLovinAdSize appLovinAdSize =
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
     if (appLovinAdSize == null) {
-      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request banner with unsupported size: " + adSize.toString());
+      String errorMessage =
+          createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              "Failed to request banner with unsupported size: " + adSize.toString());
       log(ERROR, errorMessage);
       if (mediationBannerListener != null) {
         mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
@@ -224,8 +231,8 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
     log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + mZoneId);
     mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
 
-    final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(mZoneId, mAdView, this,
-        mediationBannerListener);
+    final AppLovinBannerAdListener listener =
+        new AppLovinBannerAdListener(mZoneId, mAdView, this, mediationBannerListener);
     mAdView.setAdDisplayListener(listener);
     mAdView.setAdClickListener(listener);
     mAdView.setAdViewEventListener(listener);
@@ -241,21 +248,18 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   public View getBannerView() {
     return mAdView;
   }
-  //endregion
+  // endregion
 
-  //region MediationAdapter.
+  // region MediationAdapter.
   @Override
-  public void onPause() {
-  }
-
-  @Override
-  public void onResume() {
-  }
+  public void onPause() {}
 
   @Override
-  public void onDestroy() {
-  }
-  //endregion
+  public void onResume() {}
+
+  @Override
+  public void onDestroy() {}
+  // endregion
 
   // OnContextChangedListener Method.
   @Override

@@ -17,16 +17,12 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
-/*
- * A helper class used by {@link AppLovinAdapter}.
- */
+/** A helper class used by {@link AppLovinAdapter}. */
 public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
-  /**
-   * Keys for retrieving values from the server parameters.
-   */
+  /** Keys for retrieving values from the server parameters. */
   private static class ServerParameterKeys {
 
     private static final String SDK_KEY = "sdkKey";
@@ -38,8 +34,8 @@ public class AppLovinUtils {
    * parameters, or Android Manifest.
    */
   public static AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
-    final String sdkKey = (serverParameters != null) ?
-        serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
+    final String sdkKey =
+        (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
     final AppLovinSdk sdk;
 
     if (!TextUtils.isEmpty(sdkKey)) {
@@ -53,9 +49,7 @@ public class AppLovinUtils {
     return sdk;
   }
 
-  /**
-   * Checks whether or not the Android Manifest has a valid SDK key
-   */
+  /** Checks whether or not the Android Manifest has a valid SDK key */
   public static boolean androidManifestHasValidSdkKey(Context context) {
     final Bundle metaData = retrieveMetadata(context);
     if (metaData != null) {
@@ -69,8 +63,8 @@ public class AppLovinUtils {
   private static Bundle retrieveMetadata(Context context) {
     try {
       final PackageManager pm = context.getPackageManager();
-      final ApplicationInfo ai = pm.getApplicationInfo(context.getPackageName(),
-          PackageManager.GET_META_DATA);
+      final ApplicationInfo ai =
+          pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
 
       return ai.metaData;
     } catch (PackageManager.NameNotFoundException ignored) {
@@ -91,16 +85,12 @@ public class AppLovinUtils {
     }
   }
 
-  /**
-   * Retrieves whether or not to mute the ad that is about to be rendered.
-   */
+  /** Retrieves whether or not to mute the ad that is about to be rendered. */
   public static boolean shouldMuteAudio(Bundle networkExtras) {
     return networkExtras != null && networkExtras.getBoolean(AppLovinExtras.Keys.MUTE_AUDIO);
   }
 
-  /**
-   * Convert the given AppLovin SDK error code into the appropriate AdMob error code.
-   */
+  /** Convert the given AppLovin SDK error code into the appropriate AdMob error code. */
   public static int toAdMobErrorCode(int applovinErrorCode) {
     //
     // TODO: Be more exhaustive
@@ -114,12 +104,10 @@ public class AppLovinUtils {
     }
   }
 
-  /**
-   * Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob.
-   */
+  /** Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob. */
   @Nullable
-  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(@NonNull Context context,
-      @NonNull AdSize adSize) {
+  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(
+      @NonNull Context context, @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
@@ -137,5 +125,4 @@ public class AppLovinUtils {
 
     return null;
   }
-
 }
