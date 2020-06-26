@@ -330,20 +330,15 @@ public class VungleInterstitialAdapter
 
         @Override
         void onAdEnd(String placementId) {
-          //no op
+            if (mMediationBannerListener != null) {
+                mMediationBannerListener.onAdClosed(VungleInterstitialAdapter.this);
+            }
         }
 
         @Override
         void onAdLeftApplication(String placementId) {
           if (mMediationBannerListener != null) {
             mMediationBannerListener.onAdLeftApplication(VungleInterstitialAdapter.this);
-          }
-        }
-
-        @Override
-        void onAdClosed(String placementId) {
-          if (mMediationBannerListener != null) {
-            mMediationBannerListener.onAdClosed(VungleInterstitialAdapter.this);
           }
         }
 

@@ -203,7 +203,6 @@ class VungleBannerAdapter {
           VungleListener listener = getVungleListener();
           if (mPendingRequestBanner && listener != null) {
             listener.onAdEnd(placementId);
-            listener.onAdClosed(placementId);
           }
         }
 

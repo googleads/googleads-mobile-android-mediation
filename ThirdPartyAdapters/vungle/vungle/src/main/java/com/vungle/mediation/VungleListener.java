@@ -14,8 +14,6 @@ abstract class VungleListener {
 
   void onAdLeftApplication(String placementId) {}
 
-  void onAdClosed(String placementId) {}
-
   void onAdStart(String placement) {}
 
   void onAdFail(String placement) {}
