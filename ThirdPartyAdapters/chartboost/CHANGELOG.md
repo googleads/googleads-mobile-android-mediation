@@ -1,5 +1,9 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next Version
+- Added descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
+
 #### Version 8.0.3.1
 - Added support for Chartboost banner ads.
 
