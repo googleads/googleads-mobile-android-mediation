@@ -110,6 +110,7 @@ public class InMobiMediationAdapter extends Adapter {
     InMobiInitializer.getInstance().init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
+        isSdkInitialized.set(true);
         initializationCompleteCallback.onInitializationSucceeded();
       }
 

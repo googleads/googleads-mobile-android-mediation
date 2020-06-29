@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where the adapter did not keep InMobi SDK's initialization state properly.
+
 #### Version 9.0.7.0
 - Verified compatibility with InMobi SDK version 9.0.7.
 - Updated the adapter to support inline adaptive banner requests.
