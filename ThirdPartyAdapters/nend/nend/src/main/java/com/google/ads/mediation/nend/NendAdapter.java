@@ -9,8 +9,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
@@ -52,10 +51,7 @@ public class NendAdapter extends NendMediationAdapter
   private NendAdInterstitialVideo mNendAdInterstitialVideo;
   private MediationInterstitialListener mListenerInterstitial;
 
-  private FrameLayout smartBannerAdjustContainer;
-  private ViewTreeObserver.OnGlobalLayoutListener globalLayoutListener;
-  private int smartBannerWidthPixel;
-  private int smartBannerHeightPixel;
+  private FrameLayout bannerContainerView;
 
   static final String KEY_INTERSTITIAL_TYPE = "key_interstitial_type";
 
@@ -106,16 +102,7 @@ public class NendAdapter extends NendMediationAdapter
 
   @Override
   public void onDestroy() {
-    synchronized (this) {
-      // Note: Synchronized attaching "smartBannerAdjustContainer" because crash rarely
-      //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
-      if (smartBannerAdjustContainer != null) {
-        removeOnGlobalLayoutListener(
-            smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
-        smartBannerAdjustContainer = null;
-      }
-    }
-    globalLayoutListener = null;
+    bannerContainerView = null;
     mNendAdView = null;
     mListener = null;
     mListenerInterstitial = null;
@@ -168,7 +155,7 @@ public class NendAdapter extends NendMediationAdapter
 
     AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
     if (mapper == null) {
-      Log.w(TAG, "Failed to request ad from Nend: Your request has not valid Spot ID or API Key.");
+      Log.w(TAG, "Failed to request ad from Nend: Invalid Spot ID or API Key.");
       adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
@@ -375,165 +362,80 @@ public class NendAdapter extends NendMediationAdapter
     }
   }
 
-  // region Methods to display nend banner even in SmartBanner.
-  private int pxToDp(int pixel) {
-    return Math.round(pixel / Resources.getSystem().getDisplayMetrics().density);
-  }
-
-  private boolean isSmartBanner(AdSize adSize) {
-    return (adSize.getWidth() == AdSize.FULL_WIDTH) && (adSize.getHeight() == AdSize.AUTO_HEIGHT);
-  }
-
-  private boolean canDisplayAtSmartBanner(Context context, AdSize adSize) {
-    if (isSmartBanner(adSize)) {
-      DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
-      final int heightPixel = adSize.getHeightInPixels(context);
-      final int heightDip = Math.round(heightPixel / displayMetrics.density);
-      return heightDip >= 50; // Minimum support height of nend banner.
-    }
-    return false;
-  }
-
-  private void applyParamsToContainer(boolean shouldAdjust) {
-    synchronized (this) {
-      // Note: Synchronized attaching "smartBannerAdjustContainer" because crash rarely
-      //      if discarding of Nend-Adapter intersect to updating the smart-banner layout.
-      if (smartBannerAdjustContainer == null) {
-        Log.i(TAG, "Container of smart banner has been destroyed..");
-        return;
-      }
-      FrameLayout.LayoutParams containerViewParams =
-          new FrameLayout.LayoutParams(
-              ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-      if (shouldAdjust) {
-        removeOnGlobalLayoutListener(
-            smartBannerAdjustContainer.getViewTreeObserver(), globalLayoutListener);
-        containerViewParams =
-            new FrameLayout.LayoutParams(smartBannerWidthPixel, smartBannerHeightPixel);
-      }
-      smartBannerAdjustContainer.setLayoutParams(containerViewParams);
-    }
-  }
-
-  private void prepareContainerAndLayout(Context context, AdSize adSize) {
-    // Need this for adjust the container size of nend banner.
-    globalLayoutListener =
-        new ViewTreeObserver.OnGlobalLayoutListener() {
-          @Override
-          public void onGlobalLayout() {
-            applyParamsToContainer(true);
-          }
-        };
-
-    smartBannerWidthPixel = adSize.getWidthInPixels(context);
-    smartBannerHeightPixel = adSize.getHeightInPixels(context);
-
-    smartBannerAdjustContainer = new FrameLayout(context);
-    applyParamsToContainer(false);
-    smartBannerAdjustContainer
-        .getViewTreeObserver()
-        .addOnGlobalLayoutListener(globalLayoutListener);
-
-    FrameLayout.LayoutParams adViewParams =
-        new FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    adViewParams.gravity = Gravity.CENTER;
-    smartBannerAdjustContainer.addView(mNendAdView, adViewParams);
-  }
-
-  private void removeOnGlobalLayoutListener(
-      ViewTreeObserver observer, ViewTreeObserver.OnGlobalLayoutListener listener) {
-    if (observer == null || listener == null) {
-      return;
-    }
-    observer.removeOnGlobalLayoutListener(listener);
-  }
-  // endregion
-
   @Override
   public View getBannerView() {
-    if (smartBannerAdjustContainer != null) {
-      return smartBannerAdjustContainer;
-    }
-    return mNendAdView;
+    return bannerContainerView;
   }
 
   @Override
   public void requestBannerAd(
-      Context context,
+      final Context context,
       MediationBannerListener listener,
       Bundle serverParameters,
       AdSize adSize,
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
-    boolean availableAtSmartBanner = false;
-
-    if (canDisplayAtSmartBanner(context, adSize)) {
-      availableAtSmartBanner = true;
-    } else {
-      adSize = getSupportedAdSize(context, adSize);
-      if (adSize == null) {
-        Log.w(TAG, "Failed to request ad, AdSize is null.");
-        if (listener != null) {
-          listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-        }
-        return;
-      }
+    final AdSize supportedAdSize = getSupportedAdSize(context, adSize);
+    if (supportedAdSize == null) {
+      Log.w(TAG, "Failed to request ad, Unsupported ad size: " + adSize.toString());
+      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      return;
     }
 
-    int adSizeWidth = adSize.getWidth();
-    int adSizeHeight = adSize.getHeight();
+    AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
+    if (mapper == null) {
+      Log.w(TAG, "Failed to request ad from Nend: Invalid Spot ID or API Key.");
+      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+      return;
+    }
+
+    mNendAdView = new NendAdView(context, mapper.spotId, mapper.apiKey);
+    bannerContainerView = new FrameLayout(context);
+    FrameLayout.LayoutParams containerViewParams =
+        new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+    bannerContainerView.setLayoutParams(containerViewParams);
+
+    int adViewParamHeight = adSize.getHeightInPixels(context);
+    if (adViewParamHeight <= 0) {
+      adViewParamHeight = LayoutParams.WRAP_CONTENT;
+    }
+
+    FrameLayout.LayoutParams adViewParams =
+        new FrameLayout.LayoutParams(adSize.getWidthInPixels(context), adViewParamHeight);
+    adViewParams.gravity = Gravity.CENTER;
+    bannerContainerView.addView(mNendAdView, adViewParams);
 
     mListener = listener;
 
-    if (!isValidBannerSize(adSizeWidth, adSizeHeight) && !availableAtSmartBanner) {
-      Log.w(TAG, "Invalid Ad type");
-      if (mListener != null) {
-        mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
-    } else {
-      AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
-      if (mapper == null) {
-        Log.w(
-            TAG, "Failed to request ad from Nend: Your request has not valid Spot ID or API Key.");
-        if (mListener != null) {
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        }
-        return;
-      }
-      mNendAdView = new NendAdView(context, mapper.spotId, mapper.apiKey);
+    // NOTE: Use the reload function of AdMob mediation instead of NendAdView.
+    // So, reload function of NendAdView should be stopped.
+    mNendAdView.pause();
 
-      if (availableAtSmartBanner) {
-        prepareContainerAndLayout(context, adSize);
-      }
+    mNendAdView.setListener(this);
+    mNendAdView.addOnAttachStateChangeListener(mAttachStateChangeListener);
+    mNendAdView.loadAd();
 
-      // NOTE: Use the reload function of AdMob mediation instead of NendAdView.
-      // So, reload function of NendAdView should be stopped.
-      mNendAdView.pause();
-
-      mNendAdView.setListener(this);
-      mNendAdView.addOnAttachStateChangeListener(mAttachStateChangeListener);
-      mNendAdView.loadAd();
-
-      mIsRequestBannerAd = true;
-    }
+    mIsRequestBannerAd = true;
   }
 
-  // Available ad sizes are listed below.
-  // https://github.com/fan-ADN/nendSDK-Android/wiki/About-Ad-Sizes#available-ad-sizes-are-listed-below.
-  private boolean isValidBannerSize(int adSizeWidth, int adSizeHeight) {
-    return (adSizeWidth == 320 && adSizeHeight == 50)
-        || (adSizeWidth == 320 && adSizeHeight == 100)
-        || (adSizeWidth == 300 && adSizeHeight == 250)
-        || (adSizeWidth == 728 && adSizeHeight == 90);
-  }
-
+  // region Banner ad utility methods.
   @Nullable
   private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
+    // Check if the specified adSize is a Smart banner since nend supports any Smart banner with at
+    // least a height of 50.
+    if (adSize.getWidth() == AdSize.FULL_WIDTH && adSize.getHeight() == AdSize.AUTO_HEIGHT) {
+      DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+      final int heightPixel = adSize.getHeightInPixels(context);
+      final int heightDip = Math.round(heightPixel / displayMetrics.density);
+      if (heightDip >= 50) {
+        return adSize;
+      }
+    }
+
     /*
        Supported Sizes:
+       https://github.com/fan-ADN/nendSDK-Android/wiki/About-Ad-Sizes#available-ad-sizes-are-listed-below.
        320 × 50
        320 × 100
        300 × 100
@@ -548,6 +450,7 @@ public class NendAdapter extends NendMediationAdapter
     potentials.add(AdSize.LEADERBOARD);
     return MediationUtils.findClosestSize(context, adSize, potentials);
   }
+  // endregion
 
   // region NendAdListener callbacks.
   @Override
