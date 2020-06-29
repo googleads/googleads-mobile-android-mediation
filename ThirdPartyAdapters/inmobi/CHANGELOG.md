@@ -1,7 +1,12 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.0.7.1
 - Fixed an issue where the adapter did not keep InMobi SDK's initialization state properly.
+- Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
+
+Built and test with:
+- Google Mobile Ads SDK version 19.2.0.
+- InMobi SDK version 9.0.7.
 
 #### Version 9.0.7.0
 - Verified compatibility with InMobi SDK version 9.0.7.
