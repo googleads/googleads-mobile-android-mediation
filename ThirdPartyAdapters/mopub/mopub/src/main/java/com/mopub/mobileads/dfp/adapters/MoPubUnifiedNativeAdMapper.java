@@ -25,24 +25,17 @@ import java.util.Map;
 
 public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /**
-   * MoPub StaticNativeAd instance.
-   */
+  /** MoPub StaticNativeAd instance. */
   private StaticNativeAd mMoPubNativeAdData;
-  /**
-   * Holds privacy icon placement.
-   */
+  /** Holds privacy icon placement. */
   private int privacyIconPlacement;
-  /**
-   * Holds MoPub privacy information icon.
-   */
+  /** Holds MoPub privacy information icon. */
   private ImageView privacyInformationIconImageView;
-  /**
-   * The size of MoPub's privacy icon.
-   */
+  /** The size of MoPub's privacy icon. */
   private int mPrivacyIconSize;
 
-  public MoPubUnifiedNativeAdMapper(@NonNull Context context,
+  public MoPubUnifiedNativeAdMapper(
+      @NonNull Context context,
       @NonNull StaticNativeAd ad,
       @Nullable Drawable icon,
       @Nullable Drawable nativeAdMainImage,
@@ -57,14 +50,17 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     privacyIconPlacement = privacyIconPlacementParam;
     mPrivacyIconSize = privacyIconSize;
 
-    MoPubNativeMappedImage iconImage = new MoPubNativeMappedImage(icon,
-        mMoPubNativeAdData.getIconImageUrl(), MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
+    MoPubNativeMappedImage iconImage =
+        new MoPubNativeMappedImage(
+            icon, mMoPubNativeAdData.getIconImageUrl(), MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
 
     setIcon(iconImage);
 
-    MoPubNativeMappedImage mainImage = new MoPubNativeMappedImage(
-        nativeAdMainImage, mMoPubNativeAdData.getMainImageUrl(),
-        MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
+    MoPubNativeMappedImage mainImage =
+        new MoPubNativeMappedImage(
+            nativeAdMainImage,
+            mMoPubNativeAdData.getMainImageUrl(),
+            MoPubAdapter.DEFAULT_MOPUB_IMAGE_SCALE);
 
     List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
     imagesList.add(mainImage);
@@ -89,8 +85,8 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(View view, Map<String, View> clickableAssets,
-      Map<String, View> nonClickableAssets) {
+  public void trackViews(
+      View view, Map<String, View> clickableAssets, Map<String, View> nonClickableAssets) {
     super.trackViews(view, clickableAssets, nonClickableAssets);
     mMoPubNativeAdData.prepare(view);
 
@@ -109,42 +105,42 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       }
 
       privacyInformationIconImageView = new ImageView(context);
-      String privacyInformationImageUrl =
-          mMoPubNativeAdData.getPrivacyInformationIconImageUrl();
-      final String privacyInformationClickthroughUrl = mMoPubNativeAdData
-          .getPrivacyInformationIconClickThroughUrl();
+      String privacyInformationImageUrl = mMoPubNativeAdData.getPrivacyInformationIconImageUrl();
+      final String privacyInformationClickthroughUrl =
+          mMoPubNativeAdData.getPrivacyInformationIconClickThroughUrl();
 
-      if (privacyInformationImageUrl == null ||
-          TextUtils.isEmpty(privacyInformationClickthroughUrl)) {
+      if (privacyInformationImageUrl == null
+          || TextUtils.isEmpty(privacyInformationClickthroughUrl)) {
         privacyInformationIconImageView.setImageDrawable(
             Drawables.NATIVE_PRIVACY_INFORMATION_ICON.createDrawable(context));
       } else {
-        NativeImageHelper.loadImageView(privacyInformationImageUrl,
-            privacyInformationIconImageView);
+        NativeImageHelper.loadImageView(
+            privacyInformationImageUrl, privacyInformationIconImageView);
       }
 
-      privacyInformationIconImageView.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(final View view) {
-          new UrlHandler.Builder()
-              .withSupportedUrlActions(
-                  UrlAction.IGNORE_ABOUT_SCHEME,
-                  UrlAction.OPEN_NATIVE_BROWSER,
-                  UrlAction.OPEN_IN_APP_BROWSER,
-                  UrlAction.HANDLE_SHARE_TWEET,
-                  UrlAction.FOLLOW_DEEP_LINK_WITH_FALLBACK,
-                  UrlAction.FOLLOW_DEEP_LINK)
-              .build().handleUrl(context, privacyInformationClickthroughUrl);
-        }
-      });
+      privacyInformationIconImageView.setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+              new UrlHandler.Builder()
+                  .withSupportedUrlActions(
+                      UrlAction.IGNORE_ABOUT_SCHEME,
+                      UrlAction.OPEN_NATIVE_BROWSER,
+                      UrlAction.OPEN_IN_APP_BROWSER,
+                      UrlAction.HANDLE_SHARE_TWEET,
+                      UrlAction.FOLLOW_DEEP_LINK_WITH_FALLBACK,
+                      UrlAction.FOLLOW_DEEP_LINK)
+                  .build()
+                  .handleUrl(context, privacyInformationClickthroughUrl);
+            }
+          });
 
       privacyInformationIconImageView.setVisibility(View.VISIBLE);
       ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
 
       float scale = context.getResources().getDisplayMetrics().density;
       int icon_size_px = (int) (mPrivacyIconSize * scale + 0.5);
-      FrameLayout.LayoutParams params =
-          new FrameLayout.LayoutParams(icon_size_px, icon_size_px);
+      FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(icon_size_px, icon_size_px);
 
       switch (privacyIconPlacement) {
         case NativeAdOptions.ADCHOICES_TOP_LEFT:
@@ -183,10 +179,8 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void recordImpression() {
-  }
+  public void recordImpression() {}
 
   @Override
-  public void handleClick(View view) {
-  }
+  public void handleClick(View view) {}
 }
