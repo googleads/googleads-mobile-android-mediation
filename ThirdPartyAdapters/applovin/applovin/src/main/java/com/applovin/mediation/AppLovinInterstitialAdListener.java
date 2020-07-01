@@ -8,7 +8,7 @@ import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
-/*
+/**
  * The {@link AppLovinInterstitialAdListener} class is used to forward Interstitial ad events from
  * the AppLovin SDK to the Google Mobile Ads SDK.
  */
@@ -18,8 +18,8 @@ class AppLovinInterstitialAdListener
   private final ApplovinAdapter mAdapter;
   private final MediationInterstitialListener mMediationInterstitialListener;
 
-  AppLovinInterstitialAdListener(ApplovinAdapter adapter,
-      MediationInterstitialListener mediationInterstitialListener) {
+  AppLovinInterstitialAdListener(
+      ApplovinAdapter adapter, MediationInterstitialListener mediationInterstitialListener) {
     mAdapter = adapter;
     mMediationInterstitialListener = mediationInterstitialListener;
   }
@@ -27,20 +27,20 @@ class AppLovinInterstitialAdListener
   // Ad Display Listener.
   @Override
   public void adDisplayed(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "Interstitial displayed");
+    ApplovinAdapter.log(DEBUG, "Interstitial displayed.");
     mMediationInterstitialListener.onAdOpened(mAdapter);
   }
 
   @Override
   public void adHidden(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "Interstitial dismissed");
+    ApplovinAdapter.log(DEBUG, "Interstitial dismissed.");
     mMediationInterstitialListener.onAdClosed(mAdapter);
   }
 
   // Ad Click Listener.
   @Override
   public void adClicked(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "Interstitial clicked");
+    ApplovinAdapter.log(DEBUG, "Interstitial clicked.");
 
     mMediationInterstitialListener.onAdClicked(mAdapter);
     mMediationInterstitialListener.onAdLeftApplication(mAdapter);
@@ -49,12 +49,12 @@ class AppLovinInterstitialAdListener
   // Ad Video Playback Listener.
   @Override
   public void videoPlaybackBegan(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "Interstitial video playback began");
+    ApplovinAdapter.log(DEBUG, "Interstitial video playback began.");
   }
 
   @Override
   public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
-    ApplovinAdapter.log(DEBUG, "Interstitial video playback ended at playback percent: "
-        + percentViewed + "%");
+    ApplovinAdapter.log(
+        DEBUG, "Interstitial video playback ended at playback percent: " + percentViewed + "%.");
   }
 }

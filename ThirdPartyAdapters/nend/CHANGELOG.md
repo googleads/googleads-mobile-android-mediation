@@ -2,8 +2,8 @@
 
 #### Next Version
 - Updated the adapter to support inline adaptive banner requests.
+- Fixed a rare race condition crash that may happen when smart banner ads are destroyed.
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
-- Fixed an issue : Crash rarely if discarding of Nend-Adapter intersect to updating the smart-banner layout.
 
 #### Version 5.4.2.0
 - Added support for native ads.
