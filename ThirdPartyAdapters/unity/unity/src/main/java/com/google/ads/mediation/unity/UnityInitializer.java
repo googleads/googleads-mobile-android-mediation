@@ -1,3 +1,17 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.unity;
 
 import android.app.Activity;
@@ -13,6 +27,9 @@ import com.unity3d.ads.metadata.MediationMetaData;
  */
 public class UnityInitializer {
 
+    /**
+     * UnityInitializer instance.
+     */
     private static UnityInitializer unityInitializerInstance;
 
     /**
@@ -41,14 +58,16 @@ public class UnityInitializer {
             initializationListener) {
         // Check if the current device is supported by Unity Ads before initializing.
         if (!UnityAds.isSupported()) {
-            Log.w(UnityAdapter.TAG, "The current device is not supported by Unity Ads.");
+            Log.w(UnityAdapter.TAG, "Unity Ads cannot be initialized: current device is not supported.");
             initializationListener.onInitializationFailed(UnityAds.UnityAdsInitializationError.INTERNAL_ERROR,
                     "The current device is not supported by Unity Ads.");
         }
 
         if (UnityAds.isInitialized()) {
             // Unity Ads is already initialized.
+            Log.d(UnityAdapter.TAG, "Unity Ads is already initialized.");
             initializationListener.onInitializationComplete();
+            return;
         }
 
         // Set mediation meta data before initializing.
@@ -59,6 +78,7 @@ public class UnityInitializer {
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, false, true, initializationListener);
+
     }
 
 }

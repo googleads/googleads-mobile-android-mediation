@@ -93,8 +93,8 @@ public class UnityMediationAdapter extends Adapter {
                            final InitializationCompleteCallback initializationCompleteCallback,
                            List<MediationConfiguration> mediationConfigurations) {
         if (!(context instanceof Activity)){
-            initializationCompleteCallback.onInitializationFailed("UnityAds SDK requires an " +
-                    "Activity context to initialize");
+            initializationCompleteCallback.onInitializationFailed("Unity Ads could not be " +
+                    "initialized: SDK requires an Activity context.");
             return;
         }
 
@@ -123,7 +123,7 @@ public class UnityMediationAdapter extends Adapter {
 
         if (TextUtils.isEmpty(gameID)) {
             initializationCompleteCallback.onInitializationFailed(
-                    "Initialization failed: Missing or invalid Game ID.");
+                    "Unity Ads could not be initialized: Missing or invalid Game ID.");
             return;
         }
 
@@ -132,13 +132,14 @@ public class UnityMediationAdapter extends Adapter {
                 new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
+                Log.d(TAG, "Unity Ads initialized successfully.");
                 initializationCompleteCallback.onInitializationSucceeded();
             }
 
             @Override
             public void onInitializationFailed(UnityAds.UnityAdsInitializationError
                                                            unityAdsInitializationError, String s) {
-                initializationCompleteCallback.onInitializationFailed("Initialization failed: " + s);
+                initializationCompleteCallback.onInitializationFailed("Unity Ads initialization failed: " + s);
             }
         });
     }
@@ -151,5 +152,6 @@ public class UnityMediationAdapter extends Adapter {
                 mediationAdLoadCallback);
         rewardedAd.load();
     }
+
 
 }
