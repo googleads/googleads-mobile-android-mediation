@@ -26,9 +26,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * The {@link ApplovinAdapter} class is used to load AppLovin Banner, interstitial & rewarded-based
@@ -43,8 +42,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   private static final boolean LOGGING_ENABLED = true;
 
   // Interstitial globals.
-  private static final HashMap<String, Queue<AppLovinAd>> INTERSTITIAL_AD_QUEUES = new HashMap<>();
-  private static final Object INTERSTITIAL_AD_QUEUES_LOCK = new Object();
+  private static final HashMap<String, WeakReference<ApplovinAdapter>> appLovinInterstitialAds =
+      new HashMap<>();
+  private AppLovinAd appLovinInterstitialAd;
 
   // Parent objects.
   private AppLovinSdk mSdk;
@@ -78,13 +78,25 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       return;
     }
 
+    mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+    if (appLovinInterstitialAds.containsKey(mZoneId)
+        && appLovinInterstitialAds.get(mZoneId).get() != null) {
+      String errorMessage =
+          createAdapterError(
+              ERROR_AD_ALREADY_REQUESTED,
+              "Cannot load multiple interstitial ads with the same Zone ID. "
+                  + "Display one ad before attempting to load another.");
+      log(ERROR, errorMessage);
+      interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_AD_ALREADY_REQUESTED);
+      return;
+    }
+    appLovinInterstitialAds.put(mZoneId, new WeakReference<>(ApplovinAdapter.this));
+
     // Store parent objects.
     mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
     mContext = context;
     mNetworkExtras = networkExtras;
     mMediationInterstitialListener = interstitialListener;
-
-    mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
     log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
 
@@ -94,30 +106,23 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
           @Override
           public void adReceived(final AppLovinAd ad) {
             log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId);
+            appLovinInterstitialAd = ad;
 
-            synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
-              Queue<AppLovinAd> preloadedAds = INTERSTITIAL_AD_QUEUES.get(mZoneId);
-              if (preloadedAds == null) {
-                preloadedAds = new LinkedList<>();
-                INTERSTITIAL_AD_QUEUES.put(mZoneId, preloadedAds);
-              }
-
-              preloadedAds.offer(ad);
-
-              AppLovinSdkUtils.runOnUiThread(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
-                    }
-                  });
-            }
+            AppLovinSdkUtils.runOnUiThread(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+                  }
+                });
           }
 
           @Override
           public void failedToReceiveAd(final int code) {
             String errorMessage = createSDKError(code);
             log(ERROR, errorMessage);
+
+            ApplovinAdapter.this.unregister();
             AppLovinSdkUtils.runOnUiThread(
                 new Runnable() {
                   @Override
@@ -128,66 +133,45 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
           }
         };
 
-    synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
-      final Queue<AppLovinAd> queue = INTERSTITIAL_AD_QUEUES.get(mZoneId);
-      if (queue == null || (queue != null && queue.isEmpty())) {
-        // If we don't already have enqueued ads, fetch from SDK.
-
-        if (!TextUtils.isEmpty(mZoneId)) {
-          mSdk.getAdService().loadNextAdForZoneId(mZoneId, adLoadListener);
-        } else {
-          mSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
-        }
-      } else {
-        log(DEBUG, "Enqueued interstitial found. Finishing load...");
-
-        AppLovinSdkUtils.runOnUiThread(
-            new Runnable() {
-              @Override
-              public void run() {
-                mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
-              }
-            });
-      }
+    if (!TextUtils.isEmpty(mZoneId)) {
+      mSdk.getAdService().loadNextAdForZoneId(mZoneId, adLoadListener);
+    } else {
+      mSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
     }
   }
 
   @Override
   public void showInterstitial() {
-    synchronized (INTERSTITIAL_AD_QUEUES_LOCK) {
-      // Update mute state.
-      mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
+    // Update mute state.
+    mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
 
-      final Queue<AppLovinAd> queue = INTERSTITIAL_AD_QUEUES.get(mZoneId);
-      final AppLovinAd dequeuedAd = (queue != null) ? queue.poll() : null;
+    final AppLovinInterstitialAdDialog interstitialAdDialog =
+        AppLovinInterstitialAd.create(mSdk, mContext);
 
-      final AppLovinInterstitialAdDialog interstitialAd =
-          AppLovinInterstitialAd.create(mSdk, mContext);
+    final AppLovinInterstitialAdListener listener =
+        new AppLovinInterstitialAdListener(ApplovinAdapter.this, mMediationInterstitialListener);
+    interstitialAdDialog.setAdDisplayListener(listener);
+    interstitialAdDialog.setAdClickListener(listener);
+    interstitialAdDialog.setAdVideoPlaybackListener(listener);
 
-      final AppLovinInterstitialAdListener listener =
-          new AppLovinInterstitialAdListener(this, mMediationInterstitialListener);
-      interstitialAd.setAdDisplayListener(listener);
-      interstitialAd.setAdClickListener(listener);
-      interstitialAd.setAdVideoPlaybackListener(listener);
+    if (appLovinInterstitialAd == null) {
+      log(DEBUG, "Attempting to show interstitial before one was loaded.");
 
-      if (dequeuedAd != null) {
-        log(DEBUG, "Showing interstitial for zone: " + mZoneId);
-        interstitialAd.showAndRender(dequeuedAd);
-      } else {
-        log(DEBUG, "Attempting to show interstitial before one was loaded.");
-
-        // Check if we have a default zone interstitial available.
-        if (TextUtils.isEmpty(mZoneId) && interstitialAd.isAdReadyToDisplay()) {
-          log(DEBUG, "Showing interstitial preloaded by SDK.");
-          interstitialAd.show();
-        }
-        // TODO: Show ad for zone identifier if exists
-        else {
-          mMediationInterstitialListener.onAdOpened(this);
-          mMediationInterstitialListener.onAdClosed(this);
-        }
+      // Check if we have a default zone interstitial available.
+      if (TextUtils.isEmpty(mZoneId) && interstitialAdDialog.isAdReadyToDisplay()) {
+        log(DEBUG, "Showing interstitial preloaded by SDK.");
+        interstitialAdDialog.show();
       }
+      // TODO: Show ad for zone identifier if exists
+      else {
+        mMediationInterstitialListener.onAdOpened(this);
+        mMediationInterstitialListener.onAdClosed(this);
+      }
+      return;
     }
+
+    log(DEBUG, "Showing interstitial for zone: " + mZoneId);
+    interstitialAdDialog.showAndRender(appLovinInterstitialAd);
   }
   // endregion
 
@@ -274,6 +258,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   public static void log(int priority, final String message) {
     if (LOGGING_ENABLED) {
       Log.println(priority, "AppLovinAdapter", message);
+    }
+  }
+
+  // Utilities
+  void unregister() {
+    if (!TextUtils.isEmpty(mZoneId)
+        && appLovinInterstitialAds.containsKey(mZoneId)
+        && ApplovinAdapter.this.equals(appLovinInterstitialAds.get(mZoneId).get())) {
+      appLovinInterstitialAds.remove(mZoneId);
     }
   }
 }

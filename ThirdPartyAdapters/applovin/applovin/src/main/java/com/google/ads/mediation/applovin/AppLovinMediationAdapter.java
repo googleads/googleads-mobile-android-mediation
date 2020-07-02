@@ -89,7 +89,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
         ERROR_AD_FORMAT_UNSUPPORTED,
         ERROR_CONTEXT_NOT_ACTIVITY
       })
-  public @interface Error {}
+  public @interface AdapterError {}
 
   /** Banner size mismatch. */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
@@ -111,12 +111,11 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
   /** Creates a formatted adapter error string given a code and description. */
-  public static String createAdapterError(
-      @NonNull @AppLovinMediationAdapter.Error int code, String description) {
+  public static String createAdapterError(@AdapterError int code, @NonNull String description) {
     return String.format("%d: %s", code, description);
   }
 
-  public static String createSDKError(@NonNull int code) {
+  public static String createSDKError(int code) {
     String message = "AppLovin SDK returned a failure callback.";
     return String.format("%d: %s", code, message);
   }
@@ -224,11 +223,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
           String errorMessage =
               createAdapterError(
                   ERROR_AD_ALREADY_REQUESTED,
-                  "Cannot load multiple ads with the same Zone ID. "
+                  "Cannot load multiple rewarded ads with the same Zone ID. "
                       + "Display one ad before attempting to load another.");
           log(ERROR, errorMessage);
           mMediationAdLoadCallback.onFailure(errorMessage);
-
         } else {
           // If this is a default Zone, create the incentivized ad normally
           if (DEFAULT_ZONE.equals(mZoneId)) {

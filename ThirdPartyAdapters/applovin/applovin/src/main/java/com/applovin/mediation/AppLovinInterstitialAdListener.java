@@ -34,6 +34,7 @@ class AppLovinInterstitialAdListener
   @Override
   public void adHidden(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Interstitial dismissed.");
+    mAdapter.unregister();
     mMediationInterstitialListener.onAdClosed(mAdapter);
   }
 
