@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * A centralized {@link ISDemandOnlyRewardedVideoListener} to forward IronSource ad events to all
  * {@link IronSourceMediationAdapter} instances.
  */
-class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
-    ISDemandOnlyInterstitialListener {
+class IronSourceManager
+    implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener {
 
   private static final IronSourceManager instance = new IronSourceManager();
 
@@ -44,8 +44,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
   void initIronSourceSDK(Activity activity, String appKey, List<IronSource.AD_UNIT> adUnits) {
     IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
     if (adUnits.size() > 0) {
-      IronSource.initISDemandOnly(activity, appKey,
-          adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
+      IronSource.initISDemandOnly(
+          activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
     }
   }
 
@@ -66,14 +66,16 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
       registerISInterstitialAdapter(instanceId, weakAdapter);
       IronSource.loadISDemandOnlyInterstitial(instanceId);
     } else {
-      ironSourceAdapter.onInterstitialAdLoadFailed(instanceId,
-          new IronSourceError(IronSourceError.ERROR_CODE_GENERIC,
+      ironSourceAdapter.onInterstitialAdLoadFailed(
+          instanceId,
+          new IronSourceError(
+              IronSourceError.ERROR_CODE_GENERIC,
               "interstitial instance already exists, couldn't load another one at the same time!"));
     }
   }
 
-  void loadRewardedVideo(String instanceId,
-      @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
+  void loadRewardedVideo(
+      String instanceId, @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
 
     if (instanceId == null || weakAdapter == null) {
       log("loadRewardedVideo - instanceId / weakAdapter is null");
@@ -91,12 +93,13 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
       registerISRewardedVideoAdapter(instanceId, weakAdapter);
       IronSource.loadISDemandOnlyRewardedVideo(instanceId);
     } else {
-      ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(instanceId,
-          new IronSourceError(IronSourceError.ERROR_CODE_GENERIC,
+      ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(
+          instanceId,
+          new IronSourceError(
+              IronSourceError.ERROR_CODE_GENERIC,
               "instance already exists, couldn't load another one in the same time!"));
     }
   }
-
 
   private boolean canLoadInterstitialInstance(String instanceId) {
     if (!isIsInterstitialAdapterRegistered(instanceId)) {
@@ -104,7 +107,6 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     }
 
     return isRegisteredInterstitialAdapterCanLoad(instanceId);
-
   }
 
   private boolean canLoadRewardedVideoInstance(String instanceId) {
@@ -147,8 +149,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     IronSource.showISDemandOnlyInterstitial(instanceId);
   }
 
-  private void registerISInterstitialAdapter(@NonNull String instanceId,
-      @NonNull WeakReference<IronSourceAdapter> weakAdapter) {
+  private void registerISInterstitialAdapter(
+      @NonNull String instanceId, @NonNull WeakReference<IronSourceAdapter> weakAdapter) {
     if (weakAdapter == null) {
       log("registerISInterstitialAdapter - weakAdapter is null");
       return;
@@ -161,8 +163,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     availableInterstitialInstances.put(instanceId, weakAdapter);
   }
 
-  private void registerISRewardedVideoAdapter(@NonNull String instanceId,
-      @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
+  private void registerISRewardedVideoAdapter(
+      @NonNull String instanceId, @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
     if (weakAdapter == null) {
       log("registerISRewardedVideoAdapter - weakAdapter is null");
       return;
@@ -219,15 +221,15 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     if (weakAdapter != null) {
       IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
       if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(ironSourceMediationAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeRewardedInstanceState(
+            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(instanceId, ironSourceError);
       }
     }
   }
 
-  private void changeRewardedInstanceState(IronSourceMediationAdapter ironSourceMediationAdapter,
-      INSTANCE_STATE newState) {
+  private void changeRewardedInstanceState(
+      IronSourceMediationAdapter ironSourceMediationAdapter, INSTANCE_STATE newState) {
 
     if (ironSourceMediationAdapter == null) {
       log("changeRewardedInstanceState - IronSourceMediationAdapter is null");
@@ -236,11 +238,10 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
 
     log(String.format("IronSourceManager change state to %s", newState));
     ironSourceMediationAdapter.setInstanceState(newState);
-
   }
 
-  private void changeInterstitialInstanceState(IronSourceAdapter ironSourceAdapter,
-      INSTANCE_STATE newState) {
+  private void changeInterstitialInstanceState(
+      IronSourceAdapter ironSourceAdapter, INSTANCE_STATE newState) {
     if (ironSourceAdapter == null) {
       log("changeInterstitialInstanceState - IronSourceAdapter is null");
       return;
@@ -277,8 +278,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     if (weakAdapter != null) {
       IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
       if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(ironSourceMediationAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeRewardedInstanceState(
+            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceMediationAdapter.onRewardedVideoAdClosed(instanceId);
       }
     }
@@ -293,8 +294,8 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     if (weakAdapter != null) {
       IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
       if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(ironSourceMediationAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeRewardedInstanceState(
+            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceMediationAdapter.onRewardedVideoAdShowFailed(instanceId, ironSourceError);
       }
     }
@@ -330,8 +331,9 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
 
   @Override
   public void onInterstitialAdReady(String instanceId) {
-    log(String
-        .format("IronSourceManager got interstitial Load success for instance %s", instanceId));
+    log(
+        String.format(
+            "IronSourceManager got interstitial Load success for instance %s", instanceId));
 
     WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
@@ -345,22 +347,20 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
 
   @Override
   public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-    log(String
-        .format("IronSourceManager got interstitial Load failed for instance %s", instanceId));
+    log(
+        String.format(
+            "IronSourceManager got interstitial Load failed for instance %s", instanceId));
 
     WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(ironSourceAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeInterstitialInstanceState(
+            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdLoadFailed(instanceId, ironSourceError);
-
       }
-
     }
-
   }
 
   @Override
@@ -375,7 +375,6 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
         ironSourceAdapter.onInterstitialAdOpened(instanceId);
       }
     }
-
   }
 
   @Override
@@ -387,30 +386,29 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(ironSourceAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeInterstitialInstanceState(
+            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdClosed(instanceId);
       }
     }
-
   }
 
   @Override
   public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-    log(String
-        .format("IronSourceManager got interstitial show failed for instance %s", instanceId));
+    log(
+        String.format(
+            "IronSourceManager got interstitial show failed for instance %s", instanceId));
 
     WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
 
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(ironSourceAdapter,
-            IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
+        changeInterstitialInstanceState(
+            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdShowFailed(instanceId, ironSourceError);
       }
     }
-
   }
 
   @Override
