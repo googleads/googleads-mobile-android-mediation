@@ -124,6 +124,10 @@ class VungleBannerAdapter {
     }
   }
 
+  /**
+   * This method is a workaround for banner leak issue, and most callers should
+   * use {@link VungleBannerAdapter#destroy(View)}.
+   */
   void destroy() {
     destroy(mAdLayout.get());
   }
