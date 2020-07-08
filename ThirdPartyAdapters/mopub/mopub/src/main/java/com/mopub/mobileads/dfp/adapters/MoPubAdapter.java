@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.mopub.MoPubSingleton;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -474,8 +475,8 @@ public class MoPubAdapter
 
         String errorMessage =
             String.format(
-                "The loaded ad is not large enough to match the "
-                    + "requested banner size. Too allow smaller banner sizes too fill this request, "
+                "The loaded ad is not large enough to match the requested banner size. "
+                    + "To allow smaller banner sizes to fill this request, "
                     + "call MoPubAdapter.BundleBuilder.setMinimumBannerWidth() and "
                     + "MoPubAdapter.BundleBuilder.setMinimumBannerHeight(), and pass MoPub extras "
                     + "into an ad request by calling AdRequest.Builder().addNetworkExtrasBundle("
@@ -619,6 +620,9 @@ public class MoPubAdapter
     /** Key to add and obtain {@link #mMinimumBannerHeight}. */
     private static final String ARG_MINIMUM_BANNER_HEIGHT = "minimum_banner_height";
 
+    /** Key to add and obtain {@link #customRewardData}. */
+    public static final String ARG_CUSTOM_REWARD_DATA = "custom_reward_data";
+
     /** MoPub's privacy icon size in dp. */
     private int mPrivacyIconSizeDp;
 
@@ -627,6 +631,9 @@ public class MoPubAdapter
 
     /** Minimum allowable MoPub banner height. */
     private int mMinimumBannerHeight;
+
+    /** Custom reward data for MoPub Rewarded Ads. */
+    private String customRewardData;
 
     /** Sets the privacy icon size in dp. */
     public BundleBuilder setPrivacyIconSize(int iconSizeDp) {
@@ -646,6 +653,12 @@ public class MoPubAdapter
       return BundleBuilder.this;
     }
 
+    /** Sets the custom reward data for MoPub Rewarded Ads. */
+    public BundleBuilder setCustomRewardData(@NonNull String customRewardData) {
+      this.customRewardData = customRewardData;
+      return BundleBuilder.this;
+    }
+
     /**
      * Constructs a Bundle with the specified extras.
      *
@@ -656,6 +669,7 @@ public class MoPubAdapter
       bundle.putInt(ARG_PRIVACY_ICON_SIZE_DP, mPrivacyIconSizeDp);
       bundle.putInt(ARG_MINIMUM_BANNER_WIDTH, mMinimumBannerWidth);
       bundle.putInt(ARG_MINIMUM_BANNER_HEIGHT, mMinimumBannerHeight);
+      bundle.putString(ARG_CUSTOM_REWARD_DATA, customRewardData);
       return bundle;
     }
   }

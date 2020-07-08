@@ -6,6 +6,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -56,10 +57,10 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     }
   }
 
-  boolean showRewardedAd(String adUnitID) {
+  boolean showRewardedAd(@NonNull String adUnitID, @Nullable String customData) {
     if (!TextUtils.isEmpty(adUnitID) && MoPubRewardedVideos.hasRewardedVideo(adUnitID)) {
       Log.d(MoPubMediationAdapter.TAG, "Showing a MoPub rewarded video.");
-      MoPubRewardedVideos.showRewardedVideo(adUnitID);
+      MoPubRewardedVideos.showRewardedVideo(adUnitID, customData);
       return true;
     } else {
       mListeners.remove(adUnitID);

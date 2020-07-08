@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -25,6 +26,7 @@ import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.dfp.adapters.BuildConfig;
+import com.mopub.mobileads.dfp.adapters.MoPubAdapter.BundleBuilder;
 import com.mopub.mobileads.dfp.adapters.MoPubAdapterRewardedListener;
 import com.mopub.nativeads.NativeErrorCode;
 import java.lang.annotation.Retention;
@@ -43,6 +45,8 @@ public class MoPubMediationAdapter extends Adapter
   private static final String MOPUB_AD_UNIT_KEY = "adUnitId";
 
   private String adUnitID = "";
+
+  @Nullable private String customRewardData = null;
 
   // TODO: Remove `adExpired` parameter once MoPub fixes MoPubRewardedVideos.hasRewardedVideo()
   //  to return false for expired ads.
@@ -304,6 +308,11 @@ public class MoPubMediationAdapter extends Adapter
       return;
     }
 
+    Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
+    if (mediationExtras != null) {
+      customRewardData = mediationExtras.getString(BundleBuilder.ARG_CUSTOM_REWARD_DATA);
+    }
+
     mAdLoadCallback = mediationAdLoadCallback;
     MoPubRewardedVideoManager.RequestParameters requestParameters =
         new MoPubRewardedVideoManager.RequestParameters(
@@ -324,7 +333,7 @@ public class MoPubMediationAdapter extends Adapter
                   + "The MoPub Ad has expired. Please make a new Ad Request.");
       mRewardedAdCallback.onAdFailedToShow(errorMessage);
     } else if (!adExpired) {
-      boolean didShow = MoPubSingleton.getInstance().showRewardedAd(adUnitID);
+      boolean didShow = MoPubSingleton.getInstance().showRewardedAd(adUnitID, customRewardData);
       if (!didShow && mRewardedAdCallback != null) {
         String errorMessage =
             createAdapterError(
