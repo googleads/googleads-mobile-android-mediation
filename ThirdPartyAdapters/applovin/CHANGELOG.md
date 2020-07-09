@@ -1,7 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
+### Version 9.13.1.0
+- Verified compatibility with AppLovin SDK 9.13.1.
 - Adapter now throws an error if multiple interstitial ads are requested using the same Zone ID.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- AppLovin SDK version 9.13.1.
 
 #### Version 9.13.0.0
 - Updated the adapter to support inline adaptive banner requests.
