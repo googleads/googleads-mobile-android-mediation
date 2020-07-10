@@ -363,11 +363,16 @@ public class UnityAdapter extends UnityMediationAdapter
   // region MediationAdapter implementation.
   @Override
   public void onDestroy() {
-    MetaData metadata = new MetaData(mActivityWeakReference.get());
-    metadata.setCategory("mediation_adapter");
-    metadata.set(uuid, "destroy");
-    metadata.set(uuid, null);
-    metadata.commit();
+    if (mActivityWeakReference != null) {
+      Activity activity = mActivityWeakReference.get();
+      if (activity != null) {
+        MetaData metadata = new MetaData(activity);
+        metadata.setCategory("mediation_adapter");
+        metadata.set(uuid, "destroy");
+        metadata.set(uuid, null);
+        metadata.commit();
+      }
+    }
 
     if (mBannerView != null) {
       mBannerView.destroy();

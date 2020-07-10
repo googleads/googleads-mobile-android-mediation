@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed a `NullPointerException` error that occurs when a banner ad is destroyed.
+
 #### Version 3.4.6.1
 - Created an adapter build that does not include the Unity Ads SDK bundled in.
 This gives publishers an option to use the Unity Ads Services when mediating on

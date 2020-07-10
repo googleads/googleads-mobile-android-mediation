@@ -42,9 +42,7 @@ public final class UnitySingleton implements IUnityAdsExtendedListener {
    */
   private WeakReference<UnityAdapterDelegate> mAdShowingAdapterDelegate;
 
-  /**
-   * The only instance of {@link com.google.ads.mediation.unity.UnitySingleton}.
-   */
+  /** The only instance of {@link com.google.ads.mediation.unity.UnitySingleton}. */
   private static UnitySingleton unitySingletonInstance;
 
   /**
@@ -67,9 +65,9 @@ public final class UnitySingleton implements IUnityAdsExtendedListener {
    * This method will initialize {@link UnityAds}.
    *
    * @param activity The Activity context.
-   * @param gameId   Unity Ads Game ID.
+   * @param gameId Unity Ads Game ID.
    * @return {@code true} if the {@link UnityAds} has initialized successfully, {@code false}
-   * otherwise.
+   *     otherwise.
    */
   public boolean initializeUnityAds(Activity activity, String gameId) {
     // Check if the current device is supported by Unity Ads before initializing.
@@ -130,10 +128,8 @@ public final class UnitySingleton implements IUnityAdsExtendedListener {
   public void stopTrackingPlacement(String placementId) {
     mPlacementsInUse.remove(placementId);
   }
-  
-  /**
-   * {@link IUnityAdsExtendedListener} implementation
-   */
+
+  /** {@link IUnityAdsExtendedListener} implementation */
   @Override
   public void onUnityAdsReady(String placementId) {
     // Unity Ads is ready to show ads for the given placementId. Send ready callback to the
@@ -216,5 +212,4 @@ public final class UnitySingleton implements IUnityAdsExtendedListener {
       }
     }
   }
-
 }
