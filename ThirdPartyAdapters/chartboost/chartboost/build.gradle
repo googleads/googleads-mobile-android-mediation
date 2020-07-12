@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "8.0.3.2"
+    stringVersion = "8.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,7 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 8000302
+        versionCode 8010000
         versionName stringVersion
     }
     buildTypes {
@@ -30,8 +30,10 @@ android {
     }
 }
 
+
+
 dependencies {
-    implementation 'com.chartboost:chartboost-sdk:8.0.3'
+    implementation 'com.chartboost:chartboost-sdk:8.1.0'
 
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.2.0'
