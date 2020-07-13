@@ -34,6 +34,9 @@ import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
+import com.unity3d.services.banners.BannerErrorCode;
+import com.unity3d.services.banners.BannerErrorInfo;
+import com.unity3d.services.banners.BannerView;
 
 import java.lang.ref.WeakReference;
 
@@ -232,10 +235,10 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void requestBannerAd(Context context,
+    public void requestBannerAd(final Context context,
                                 MediationBannerListener listener,
                                 Bundle serverParameters,
-                                AdSize adSize,
+                                final AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras){
         bannerAd = new UnityBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
@@ -304,20 +307,33 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     @Override
     public void onDestroy() {
         mMediationInterstitialListener = null;
+        if (bannerAd != null)
+        {
+            bannerAd.onDestroy();
+        }
     }
 
     @Override
     public void onPause() {
-
+        if (bannerAd != null)
+        {
+            bannerAd.onPause();
+        }
     }
 
     @Override
     public void onResume() {
-
+        if (bannerAd != null)
+        {
+            bannerAd.onResume();
+        }
     }
 
     @Override
     public View getBannerView() {
+        if (bannerAd != null) {
+            return bannerAd.getBannerView();
+        }
         return null;
     }
 

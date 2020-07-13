@@ -34,13 +34,15 @@ import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
+import com.unity3d.services.banners.UnityBanners;
+import com.unity3d.services.banners.view.BannerPosition;
 
 /**
  * The {@link UnityBannerAd} is used to load Unity Banner ads and mediate the callbacks between Google
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
-public class UnityBannerAd extends UnityMediationAdapter implements MediationBannerAdapter {
+public class UnityBannerAd extends UnityMediationAdapter  implements MediationBannerAdapter {
 
     /**
      * Placement ID for banner if requested.
@@ -80,7 +82,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     /**
      * BannerView.IListener instance.
      */
-    private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
+    public BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
         @Override
         public void onBannerLoaded(BannerView bannerView) {
             Log.v(TAG, "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId() + "'.");
@@ -126,6 +128,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
         gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
+
         if (!isValidIds(gameId, bannerPlacementId)) {
             if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
@@ -174,7 +177,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         }
         mBannerView = null;
         mMediationBannerListener = null;
-        mUnityBannerListener = null;
     }
 
     @Override
