@@ -326,7 +326,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
             String sdkError = ChartboostAdapterUtils.createSDKError(chartboostCacheError);
             Log.w(TAG, "Failed to load banner ad: " + sdkError);
             mMediationBannerListener.onAdFailedToLoad(
-                ChartboostAdapter.this, chartboostCacheError.code);
+                ChartboostAdapter.this, chartboostCacheError.code.getErrorCode());
             ChartboostSingleton.removeBannerDelegate(mChartboostBannerDelegate);
             return;
           }

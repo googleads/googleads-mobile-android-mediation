@@ -209,7 +209,7 @@ class ChartboostAdapterUtils {
   static String createSDKError(@NonNull ChartboostCacheError cacheError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an enum for cache errors.
-    return String.format("%d: %s", cacheError.code, cacheError.toString());
+    return String.format("%d: %s", cacheError.code.getErrorCode(), cacheError.toString());
   }
 
   /**
@@ -222,7 +222,7 @@ class ChartboostAdapterUtils {
   static String createSDKError(@NonNull ChartboostShowError showError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an enum for show errors.
-    return String.format("%d: %s", showError.code, showError.toString());
+    return String.format("%d: %s", showError.code.getErrorCode(), showError.toString());
   }
 
   /**
@@ -235,7 +235,7 @@ class ChartboostAdapterUtils {
   static String createSDKError(@NonNull ChartboostClickError clickError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an enum for click errors.
-    return String.format("%d: %s", clickError.code, clickError.toString());
+    return String.format("%d: %s", clickError.code.getErrorCode(), clickError.toString());
   }
 
   /**
