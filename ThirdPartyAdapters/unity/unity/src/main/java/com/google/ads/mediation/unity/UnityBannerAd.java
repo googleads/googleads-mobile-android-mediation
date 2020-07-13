@@ -40,7 +40,7 @@ import com.unity3d.services.banners.UnityBannerSize;
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
-public class UnityBannerAd extends UnityMediationAdapter  implements MediationBannerAdapter {
+public class UnityBannerAd extends UnityMediationAdapter implements MediationBannerAdapter {
 
     /**
      * Placement ID for banner if requested.
