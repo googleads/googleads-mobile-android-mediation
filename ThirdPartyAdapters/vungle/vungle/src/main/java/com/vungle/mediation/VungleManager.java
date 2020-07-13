@@ -93,8 +93,7 @@ public class VungleManager {
 
       @Override
       @Deprecated
-      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
-      }
+      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {}
 
       @Override
       public void onAdEnd(String id) {
@@ -153,7 +152,7 @@ public class VungleManager {
   private void cleanLeakedBannerAdapters() {
     for (String id : new HashSet<>(mVungleBanners.keySet())) {
       VungleBannerAdapter banner = mVungleBanners.get(id);
-      if (banner != null && !banner.hasAdapter()) {
+      if (banner != null && !banner.isActive()) {
         banner = mVungleBanners.remove(id);
         if (banner != null) {
           banner.destroy();

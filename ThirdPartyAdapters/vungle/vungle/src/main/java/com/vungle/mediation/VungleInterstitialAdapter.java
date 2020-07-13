@@ -14,13 +14,18 @@
 
 package com.vungle.mediation;
 
+import static com.vungle.warren.AdConfig.AdSize.BANNER;
+import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
+import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
+import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
-
+import androidx.annotation.Keep;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -31,15 +36,7 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.vungle.warren.AdConfig;
-
 import java.util.ArrayList;
-
-import androidx.annotation.Keep;
-
-import static com.vungle.warren.AdConfig.AdSize.BANNER;
-import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
-import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
-import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
 /**
  * A {@link MediationInterstitialAdapter} used to load and show Vungle interstitial ads using Google
@@ -91,7 +88,8 @@ public class VungleInterstitialAdapter
       return;
     }
 
-    mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+    // Unmute full-screen ads by default.
+    mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
     VungleInitializer.getInstance()
         .initialize(
             config.getAppId(),
@@ -259,10 +257,7 @@ public class VungleInterstitialAdapter
       return;
     }
 
-    AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
-    if (VungleExtrasBuilder.isStartMutedNotConfigured(mediationExtras)) {
-      adConfig.setMuted(true); // start muted by default
-    }
+    AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, true);
     if (!hasBannerSizeAd(context, adSize, adConfig)) {
       String message = "Failed to load ad from Vungle: Invalid banner size.";
       Log.w(TAG, message);
@@ -273,23 +268,24 @@ public class VungleInterstitialAdapter
 
     // Create the adLayout wrapper with the requested ad size, as Vungle's ad uses MATCH_PARENT for
     // its dimensions.
-    adLayout = new RelativeLayout(context) {
-      @Override
-      protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (mBannerRequest != null) {
-          mBannerRequest.attach();
-        }
-      }
+    adLayout =
+        new RelativeLayout(context) {
+          @Override
+          protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            if (mBannerRequest != null) {
+              mBannerRequest.attach();
+            }
+          }
 
-      @Override
-      protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (mBannerRequest != null) {
-          mBannerRequest.detach();
-        }
-      }
-    };
+          @Override
+          protected void onDetachedFromWindow() {
+            super.onDetachedFromWindow();
+            if (mBannerRequest != null) {
+              mBannerRequest.detach();
+            }
+          }
+        };
     int adLayoutHeight = adSize.getHeightInPixels(context);
     // If the height is 0 (e.g. for inline adaptive banner requests), use the closest supported size
     // as the height of the adLayout wrapper.
@@ -330,9 +326,9 @@ public class VungleInterstitialAdapter
 
         @Override
         void onAdEnd(String placementId) {
-            if (mMediationBannerListener != null) {
-                mMediationBannerListener.onAdClosed(VungleInterstitialAdapter.this);
-            }
+          if (mMediationBannerListener != null) {
+            mMediationBannerListener.onAdClosed(VungleInterstitialAdapter.this);
+          }
         }
 
         @Override

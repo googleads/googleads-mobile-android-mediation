@@ -68,9 +68,10 @@ class VungleBannerAdapter {
     return mUniquePubRequestId;
   }
 
-  //Use weak references to allow VungleInterstitialAdapter to be garbage collected.
-  //Banner view need to be added/removed on adLayout's onAttachedToWindow/onDetachedFromWindow
-  //to break view's parent-child references chain to the leaked VungleBannerAdapter in VungleManager.
+  // Use weak references to allow VungleInterstitialAdapter to be garbage collected.
+  // Banner view need to be added/removed on adLayout's onAttachedToWindow/onDetachedFromWindow
+  // to break view's parent-child references chain to the leaked VungleBannerAdapter in
+  // VungleManager.
   void setAdLayout(@NonNull RelativeLayout adLayout) {
     this.mAdLayout = new WeakReference<>(adLayout);
   }
@@ -84,7 +85,7 @@ class VungleBannerAdapter {
     return mVungleListener.get();
   }
 
-  boolean hasAdapter() {
+  boolean isActive() {
     return mAdLayout.get() != null;
   }
 
@@ -125,8 +126,8 @@ class VungleBannerAdapter {
   }
 
   /**
-   * This method is a workaround for banner leak issue, and most callers should
-   * use {@link VungleBannerAdapter#destroy(View)}.
+   * This method is a workaround for banner leak issue, and most callers should use {@link
+   * VungleBannerAdapter#destroy(View)}.
    */
   void destroy() {
     destroy(mAdLayout.get());
@@ -199,8 +200,7 @@ class VungleBannerAdapter {
 
         @Override
         @Deprecated
-        public void onAdEnd(String placementId, boolean completed, boolean isCTAClicked) {
-        }
+        public void onAdEnd(String placementId, boolean completed, boolean isCTAClicked) {}
 
         @Override
         public void onAdEnd(String placementId) {
@@ -347,5 +347,4 @@ class VungleBannerAdapter {
       }
     }
   }
-
 }

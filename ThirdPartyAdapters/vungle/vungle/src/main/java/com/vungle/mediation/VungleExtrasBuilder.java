@@ -75,20 +75,16 @@ public final class VungleExtrasBuilder {
     return mBundle;
   }
 
-  public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
+  public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras, boolean defaultMuteState) {
     AdConfig adConfig = new AdConfig();
-    adConfig.setMuted(false); // Unmute fullscreen ads by default
+    adConfig.setMuted(defaultMuteState);
+
     if (networkExtras != null) {
-      adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, false));
+      adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, defaultMuteState));
       adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
       adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
       adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
     return adConfig;
   }
-
-  static boolean isStartMutedNotConfigured(Bundle networkExtras) {
-    return networkExtras == null || !networkExtras.containsKey(EXTRA_START_MUTED);
-  }
-
 }

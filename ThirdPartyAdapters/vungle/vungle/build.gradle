@@ -22,7 +22,7 @@ android {
     }
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 6070000
         versionName stringVersion
     }
@@ -40,7 +40,7 @@ dependencies {
     }
 
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.2.0'
 }
 
 /**
