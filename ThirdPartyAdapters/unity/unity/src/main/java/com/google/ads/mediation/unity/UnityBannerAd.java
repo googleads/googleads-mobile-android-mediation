@@ -34,8 +34,6 @@ import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
-import com.unity3d.services.banners.UnityBanners;
-import com.unity3d.services.banners.view.BannerPosition;
 
 /**
  * The {@link UnityBannerAd} is used to load Unity Banner ads and mediate the callbacks between Google
@@ -82,7 +80,7 @@ public class UnityBannerAd extends UnityMediationAdapter  implements MediationBa
     /**
      * BannerView.IListener instance.
      */
-    public BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
+    private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
         @Override
         public void onBannerLoaded(BannerView bannerView) {
             Log.v(TAG, "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId() + "'.");
@@ -177,6 +175,7 @@ public class UnityBannerAd extends UnityMediationAdapter  implements MediationBa
         }
         mBannerView = null;
         mMediationBannerListener = null;
+        mUnityBannerListener = null;
     }
 
     @Override

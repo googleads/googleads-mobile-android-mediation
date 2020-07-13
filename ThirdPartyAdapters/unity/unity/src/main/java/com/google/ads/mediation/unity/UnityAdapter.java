@@ -34,9 +34,6 @@ import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.services.banners.BannerErrorCode;
-import com.unity3d.services.banners.BannerErrorInfo;
-import com.unity3d.services.banners.BannerView;
 
 import java.lang.ref.WeakReference;
 
@@ -235,10 +232,10 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void requestBannerAd(final Context context,
+    public void requestBannerAd(Context context,
                                 MediationBannerListener listener,
                                 Bundle serverParameters,
-                                final AdSize adSize,
+                                AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras){
         bannerAd = new UnityBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
