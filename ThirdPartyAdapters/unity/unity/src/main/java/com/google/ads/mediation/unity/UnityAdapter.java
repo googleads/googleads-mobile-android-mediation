@@ -84,17 +84,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
                     + getPlacementId() + "' " + s);
             if (mMediationInterstitialListener != null) {
-                if (UnityAds.getPlacementState(getPlacementId()) == UnityAds.PlacementState.NO_FILL ||
-                        UnityAds.getPlacementState(getPlacementId()) == UnityAds.PlacementState.DISABLED) {
-                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
+                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                             AdRequest.ERROR_CODE_NO_FILL);
-                }
-                else {
-                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }
             }
-
         }
     };
 
@@ -104,16 +96,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
      * @return mPlacementId.
      */
     private String getPlacementId() { return mPlacementId; }
-
-    /**
-     * Sets the placement ID of the ad being loaded.
-     *
-     * @param placementId   Placement ID of ad being loaded.
-     */
-    private void setPlacementId(String placementId)
-    {
-        mPlacementId = placementId;
-    }
 
     /**
      * Checks whether or not the provided Unity Ads IDs are valid.
@@ -143,7 +125,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener = mediationInterstitialListener;
 
         final String gameId = serverParameters.getString(KEY_GAME_ID);
-        setPlacementId(serverParameters.getString(KEY_PLACEMENT_ID));
+        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
         if (!isValidIds(gameId, getPlacementId())) {
             if (mMediationInterstitialListener != null) {
@@ -320,6 +302,5 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     public View getBannerView() {
         return null;
     }
-
 
 }

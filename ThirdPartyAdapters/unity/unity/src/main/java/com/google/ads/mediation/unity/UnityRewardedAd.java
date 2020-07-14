@@ -86,16 +86,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     }
 
     /**
-     * Sets the placement ID of the ad being loaded.
-     *
-     * @param placementId   Placement ID of ad being loaded.
-     */
-    private void setPlacementId(String placementId)
-    {
-        mPlacementId = placementId;
-    }
-
-    /**
      * Loads a rewarded ad.
      */
     public void load()
@@ -109,7 +99,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
         final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
-        setPlacementId(serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID));
+        mPlacementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
 
         if (!isValidIds(gameId, getPlacementId())) {
             mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from UnityAds: " +
