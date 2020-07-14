@@ -126,7 +126,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
         gameId = serverParameters.getString(KEY_GAME_ID);
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
-        if (!isValidIds(gameId, bannerPlacementId)) {
+        if (!UnityAdapter.isValidIds(gameId, bannerPlacementId)) {
             if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -146,25 +146,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         activity = (Activity) context;
         this.context = context;
         this.adSize = adSize;
-    }
-
-    /**
-     * Checks whether or not the provided Unity Ads IDs are valid.
-     *
-     * @param gameId      Unity Ads Game ID to be verified.
-     * @param placementId Unity Ads Placement ID to be verified.
-     * @return {@code true} if all the IDs provided are valid.
-     */
-    private static boolean isValidIds(String gameId, String placementId) {
-        if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
-            String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
-                    ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
-            Log.w(TAG, "Unity Ads failed to load banner ad. " + ids + " cannot be empty.");
-
-            return false;
-        }
-
-        return true;
     }
 
     @Override
