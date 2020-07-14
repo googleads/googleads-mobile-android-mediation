@@ -2,6 +2,9 @@ package com.google.ads.mediation.ironsource;
 
 import android.os.Handler;
 import android.os.Looper;
+import androidx.annotation.NonNull;
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
+import com.ironsource.mediationsdk.logger.IronSourceError;
 
 /**
  * The {@link IronSourceAdapterUtils} class provides the publisher an ability to pass Activity to
@@ -18,6 +21,7 @@ public class IronSourceAdapterUtils {
   /** Key to obtain the IronSource Instance ID, required to show IronSource ads. */
   static final String KEY_INSTANCE_ID = "instanceId";
 
+  /** Default IronSource instance ID. */
   static final String DEFAULT_INSTANCE_ID = "0";
 
   /** Constant used for IronSource internal reporting. */
@@ -34,5 +38,28 @@ public class IronSourceAdapterUtils {
       uiHandler = new Handler(Looper.getMainLooper());
     }
     uiHandler.post(runnable);
+  }
+
+  /**
+   * Creates a formatted adapter error string from the specified error code and description.
+   *
+   * @param code the error code.
+   * @param description the error message.
+   * @return the formatted error string.
+   */
+  @NonNull
+  public static String createAdapterError(@AdapterError int code, @NonNull String description) {
+    return String.format("%d: %s", code, description);
+  }
+
+  /**
+   * Creates a formatted SDK error string from the specified {@link IronSourceError}.
+   *
+   * @param ironSourceError the IronSource error object.
+   * @return the formatted error string.
+   */
+  public static String createSDKError(IronSourceError ironSourceError) {
+    return String.format(
+        "%d: %s", ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
   }
 }

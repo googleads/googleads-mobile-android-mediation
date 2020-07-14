@@ -1,15 +1,20 @@
 package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT_INSTANCE_ID;
+import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_APP_KEY;
+import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -25,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A {@link MediationInterstitialAdapter} to load and show IronSource interstitial ads using Google
  * Mobile Ads SDK mediation.
  */
-public class IronSourceAdapter implements MediationInterstitialAdapter {
+public class IronSourceAdapter implements MediationInterstitialAdapter, IronSourceAdapterListener {
 
   /**
    * Mediation interstitial ad listener used to forward interstitial events from IronSource SDK to
@@ -41,7 +46,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter {
   private static final List<IronSource.AD_UNIT> mAdUnitsToInit =
       new ArrayList<>(Collections.singletonList(IronSource.AD_UNIT.INTERSTITIAL));
 
-  /** Holds the interstitial instance state */
+  /** Holds the interstitial instance state. */
   private INSTANCE_STATE mState = INSTANCE_STATE.START;
 
   /** This is the id of interstitial instance requested. */
@@ -62,61 +67,46 @@ public class IronSourceAdapter implements MediationInterstitialAdapter {
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
-    mInterstitialListener = listener;
-
     if (!(context instanceof Activity)) {
-      // Context not an Activity context, log the reason for failure and fail the
-      // initialization.
-      Log.e(TAG, "IronSource SDK requires an Activity context to initialize.");
-      onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      // Context not an Activity context, log the reason for failure and fail the initialization.
+      String adapterError =
+          IronSourceAdapterUtils.createAdapterError(
+              ERROR_REQUIRES_ACTIVITY_CONTEXT,
+              "IronSource SDK requires an Activity context to initialize.");
+      Log.e(TAG, adapterError);
+      listener.onAdFailedToLoad(IronSourceAdapter.this, ERROR_REQUIRES_ACTIVITY_CONTEXT);
       return;
     }
+    Activity activity = (Activity) context;
 
-    String appKey = serverParameters.getString(IronSourceAdapterUtils.KEY_APP_KEY);
+    String appKey = serverParameters.getString(KEY_APP_KEY);
     if (TextUtils.isEmpty(appKey)) {
-      Log.e(
-          TAG,
-          String.format(
-              "IronSource initialization failed. Make sure that the '%s' server parameter is added.",
-              IronSourceAdapterUtils.KEY_APP_KEY));
-      onISAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String adapterError =
+          IronSourceAdapterUtils.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.");
+      Log.e(TAG, adapterError);
+      listener.onAdFailedToLoad(IronSourceAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
       return;
     }
 
-    this.mInstanceID =
-        serverParameters.getString(IronSourceAdapterUtils.KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    this.mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     if (!mDidInitInterstitial.getAndSet(true)) {
-
-      try {
-        Log.d(
-            TAG,
-            String.format("Init IronSource interstitial ad for instance: %s", this.mInstanceID));
-        IronSourceManager.getInstance()
-            .initIronSourceSDK((Activity) context, appKey, mAdUnitsToInit);
-        Log.d(
-            TAG,
-            String.format(
-                "IronSource load Interstitial called with instanceId: %s", this.mInstanceID));
-        IronSourceManager.getInstance()
-            .loadInterstitial(this.mInstanceID, new WeakReference<>(IronSourceAdapter.this));
-      } catch (Exception e) {
-        Log.e(
-            TAG, String.format("IronSource initialization failed with Error: %s", e.getMessage()));
-        onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-      }
-    } else {
-      Log.d(
-          TAG,
-          String.format(
-              "IronSource loadInterstitial called with instanceId: %s", this.mInstanceID));
-      IronSourceManager.getInstance()
-          .loadInterstitial(mInstanceID, new WeakReference<>(IronSourceAdapter.this));
+      IronSourceManager.getInstance().initIronSourceSDK(activity, appKey, mAdUnitsToInit);
     }
+
+    mInterstitialListener = listener;
+    Log.d(
+        TAG,
+        String.format("Loading IronSource interstitial ad with instance ID: %s", this.mInstanceID));
+    IronSourceManager.getInstance()
+        .loadInterstitial(this.mInstanceID, new WeakReference<>(IronSourceAdapter.this));
   }
 
   @Override
   public void showInterstitial() {
-    Log.d(TAG, String.format("IronSource showInterstitial for instance: %s", this.mInstanceID));
+    Log.d(
+        TAG,
+        String.format("Showing IronSource interstitial ad for instance ID: %s", this.mInstanceID));
     IronSourceManager.getInstance().showInterstitial(mInstanceID);
   }
   // endregion
@@ -130,111 +120,112 @@ public class IronSourceAdapter implements MediationInterstitialAdapter {
   @Override
   public void onResume() {}
 
-  /** Private IronSource methods */
-  private void onISAdFailedToLoad(final int errorCode) {
-    Log.e(
-        TAG,
-        String.format(
-            "IronSource Interstitial failed to load for instance %s, Error: %d",
-            this.mInstanceID, errorCode));
-
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            public void run() {
-              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
-            }
-          });
-    }
-  }
-
   // region ISDemandOnlyInterstitialListener implementation.
   public void onInterstitialAdReady(String instanceId) {
-    Log.d(
-        TAG,
-        String.format("IronSource Interstitial loaded successfully for instance %s", instanceId));
+    Log.d(TAG, String.format("IronSource Interstitial ad loaded for instance ID: %s", instanceId));
 
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            public void run() {
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
               mInterstitialListener.onAdLoaded(IronSourceAdapter.this);
             }
-          });
-    }
+          }
+        });
   }
 
-  public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-    Log.e(
-        TAG,
-        String.format(
-            "IronSource Interstitial failed to load for instance %s  with Error: %s",
-            instanceId, ironSourceError.getErrorMessage()));
+  public void onInterstitialAdLoadFailed(String instanceId, final IronSourceError ironSourceError) {
+    String sdkError = IronSourceAdapterUtils.createSDKError(ironSourceError);
+    Log.w(TAG, sdkError);
 
-    // We only listen to a registered instance.
-    if (!this.mInstanceID.equals(instanceId)) {
-      return;
-    }
-
-    onISAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
+              mInterstitialListener.onAdFailedToLoad(
+                  IronSourceAdapter.this, ironSourceError.getErrorCode());
+            }
+          }
+        });
   }
 
   public void onInterstitialAdOpened(String instanceId) {
-    Log.d(TAG, String.format("IronSource Interstitial opened ad for instance %s", instanceId));
+    Log.d(TAG, String.format("IronSource Interstitial ad opened for instance ID: %s", instanceId));
 
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            public void run() {
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
               mInterstitialListener.onAdOpened(IronSourceAdapter.this);
             }
-          });
-    }
+          }
+        });
   }
 
   public void onInterstitialAdClosed(String instanceId) {
-    Log.d(TAG, String.format("IronSource Interstitial closed ad for instance %s", instanceId));
+    Log.d(TAG, String.format("IronSource Interstitial ad closed for instance ID: %s", instanceId));
 
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            public void run() {
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
               mInterstitialListener.onAdClosed(IronSourceAdapter.this);
             }
-          });
-    }
+          }
+        });
   }
 
   public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-    Log.e(
-        TAG,
-        String.format(
-            "IronSource Interstitial failed to show " + "for instance %s with Error: %s",
-            instanceId, ironSourceError.getErrorMessage()));
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            @Override
-            public void run() {
+    String sdkError = IronSourceAdapterUtils.createSDKError(ironSourceError);
+    Log.w(TAG, sdkError);
+
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
               mInterstitialListener.onAdOpened(IronSourceAdapter.this);
               mInterstitialListener.onAdClosed(IronSourceAdapter.this);
             }
-          });
-    }
+          }
+        });
   }
 
   public void onInterstitialAdClicked(String instanceId) {
-    Log.d(TAG, String.format("IronSource Interstitial ad clicked for instance %s", instanceId));
+    Log.d(TAG, String.format("IronSource Interstitial ad clicked for instance ID: %s", instanceId));
 
-    if (mInterstitialListener != null) {
-      IronSourceAdapterUtils.sendEventOnUIThread(
-          new Runnable() {
-            public void run() {
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
               mInterstitialListener.onAdClicked(IronSourceAdapter.this);
               mInterstitialListener.onAdLeftApplication(IronSourceAdapter.this);
             }
-          });
-    }
+          }
+        });
+  }
+  // endregion
+
+  // region IronSourceAdapterListener implementation.
+  @Override
+  public void onAdFailedToLoad(@AdapterError final int errorCode, @NonNull String errorMessage) {
+    String adapterError = IronSourceAdapterUtils.createAdapterError(errorCode, errorMessage);
+    Log.w(TAG, adapterError);
+
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mInterstitialListener != null) {
+              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
+            }
+          }
+        });
   }
   // endregion
 }
