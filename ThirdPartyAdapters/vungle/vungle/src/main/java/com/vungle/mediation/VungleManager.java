@@ -1,6 +1,7 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -93,7 +94,8 @@ public class VungleManager {
 
       @Override
       @Deprecated
-      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {}
+      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
+      }
 
       @Override
       public void onAdEnd(String id) {
@@ -161,41 +163,42 @@ public class VungleManager {
     }
   }
 
-  @Nullable
-  synchronized VungleBannerAdapter getBannerRequest(
-      @NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
+  synchronized boolean isBannerAdActive(@NonNull String placementId,
+      @Nullable String adapterRequestUniqueId) {
     cleanLeakedBannerAdapters();
-    VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
-    if (bannerRequest != null) {
-      String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
-      Log.d(
-          TAG, "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
-
-      if (activeUniqueRequestId == null) {
-        Log.w(
-            TAG,
-            "Ad already loaded for placement ID: "
-                + placementId
-                + ", and cannot determine if "
-                + "this is a refresh. Set Vungle extras when making an ad request to support "
-                + "refresh on Vungle banner ads.");
-        return null;
-      }
-
-      if (!activeUniqueRequestId.equals(requestUniqueId)) {
-        Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
-        return null;
-      }
-    } else {
-      bannerRequest = new VungleBannerAdapter(placementId, requestUniqueId, adConfig);
-      mVungleBanners.put(placementId, bannerRequest);
+    if (TextUtils.isEmpty(placementId)) {
+      return false;
     }
 
-    Log.d(TAG, "New banner request:" + bannerRequest + "; size=" + mVungleBanners.size());
-    return bannerRequest;
+    VungleBannerAdapter bannerAdapter = mVungleBanners.get(placementId);
+    if (bannerAdapter == null) {
+      return false;
+    }
+
+    String activeUniqueRequestId = bannerAdapter.getUniquePubRequestId();
+    Log.d(TAG, "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: "
+        + adapterRequestUniqueId);
+
+    if (activeUniqueRequestId == null) {
+      Log.w(TAG, "Ad already loaded for this placement ID and cannot determine if "
+          + "this is a refresh. Set Vungle extras when making an ad request to support "
+          + "refresh on Vungle banner ads. Placement ID: " + placementId);
+      return true;
+    }
+
+    if (!activeUniqueRequestId.equals(adapterRequestUniqueId)) {
+      Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
+      return true;
+    }
+
+    return false;
   }
 
-  void removeActiveBannerAd(String placementId) {
+  void removeActiveBannerAd(@NonNull String placementId) {
+    if (TextUtils.isEmpty(placementId)) {
+      return;
+    }
+
     Log.d(TAG, "try to removeActiveBannerAd:" + placementId);
     VungleBannerAdapter activeBannerAd = mVungleBanners.remove(placementId);
     Log.d(TAG, "removeActiveBannerAd:" + activeBannerAd + "; size=" + mVungleBanners.size());
