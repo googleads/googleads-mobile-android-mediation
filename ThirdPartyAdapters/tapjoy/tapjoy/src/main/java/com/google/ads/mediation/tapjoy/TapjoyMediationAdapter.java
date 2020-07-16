@@ -176,7 +176,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
       if (count > 1) {
         String message = String.format("Multiple '%s' entries found: %s. " +
-                "Using '%s' to initialize the IronSource SDK.",
+                "Using '%s' to initialize the Tapjoy SDK.",
             SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
         Log.w(TAG, message);
       }
