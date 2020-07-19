@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "7.5.4.0"
+    stringVersion = "7.6.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -36,9 +36,9 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.1.0'
 
-    implementation 'com.fyber.vamp:core-sdk:7.5.4'
-    implementation 'com.fyber.vamp:mraid-kit:7.5.4'
-    implementation 'com.fyber.vamp:video-kit:7.5.4'
+    implementation 'com.fyber.vamp:core-sdk:7.6.0'
+    implementation 'com.fyber.vamp:mraid-kit:7.6.0'
+    implementation 'com.fyber.vamp:video-kit:7.6.0'
 }
 
 /**
