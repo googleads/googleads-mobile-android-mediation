@@ -35,7 +35,6 @@ import com.inmobi.ads.listeners.NativeAdEventListener;
 import com.inmobi.ads.listeners.VideoEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -226,10 +225,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     mNativeListener = listener;
 
-    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()
-        && !mNativeMedAdReq.isAppInstallAdRequested()) {
-      Log.e(TAG, "Failed to request InMobi native ad: "
-          + "Unified Native Ad or App install Ad should be requested.");
+    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()) {
+      Log.e(TAG, "Failed to request InMobi native ad: Unified Native Ad should be requested.");
       mNativeListener.onAdFailedToLoad(this,
           AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
@@ -507,22 +504,12 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
           }
 
-          if (InMobiAdapter.this.mNativeMedAdReq.isUnifiedNativeAdRequested()) {
-            InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-                new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
-                    imNativeAd,
-                    mIsOnlyUrl,
-                    mNativeListener);
-            inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
-          } else if (InMobiAdapter.this.mNativeMedAdReq.isAppInstallAdRequested()) {
-            InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
-                new InMobiAppInstallNativeAdMapper(
-                    InMobiAdapter.this,
-                    imNativeAd,
-                    mIsOnlyUrl,
-                    mNativeListener);
-            inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
-          }
+          InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
+              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
+                  imNativeAd,
+                  mIsOnlyUrl,
+                  mNativeListener);
+          inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
         }
 
         @Override

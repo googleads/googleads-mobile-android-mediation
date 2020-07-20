@@ -40,6 +40,7 @@ public class InMobiInitializer {
   public static final int INITIALIZED = 2;
 
   private @InitializationStatus int initializationStatus;
+
   private ArrayList<Listener> mListeners = new ArrayList<>();
 
   private InMobiInitializer() {
