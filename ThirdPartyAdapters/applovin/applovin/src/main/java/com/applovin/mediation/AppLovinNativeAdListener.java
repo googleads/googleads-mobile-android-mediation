@@ -14,7 +14,7 @@ import com.applovin.nativeAds.AppLovinNativeAdLoadListener;
 import com.applovin.nativeAds.AppLovinNativeAdPrecacheListener;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter.AdapterError;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import java.lang.ref.WeakReference;
@@ -115,7 +115,7 @@ class AppLovinNativeAdListener
   }
 
   /** Sends a failure callback to {@link #mNativeListener}. */
-  private void notifyAdFailure(@NonNull @AppLovinMediationAdapter.Error final int errorCode) {
+  private void notifyAdFailure(@NonNull @AdapterError final int errorCode) {
     AppLovinSdkUtils.runOnUiThread(
         new Runnable() {
           @Override

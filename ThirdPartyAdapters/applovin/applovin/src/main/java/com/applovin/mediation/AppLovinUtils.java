@@ -17,7 +17,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
-/** A helper class used by {@link AppLovinAdapter}. */
+/** A helper class used by {@link ApplovinAdapter}. */
 public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
@@ -68,6 +68,7 @@ public class AppLovinUtils {
 
       return ai.metaData;
     } catch (PackageManager.NameNotFoundException ignored) {
+      // Metadata not found. Just continue and return null.
     }
 
     return null;

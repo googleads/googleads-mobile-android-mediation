@@ -193,7 +193,8 @@ public class VungleMediationAdapter extends Adapter
       return;
     }
 
-    mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+    // Unmute full-screen ads by default.
+    mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
     VungleInitializer.getInstance()
         .initialize(
             appID,
@@ -267,29 +268,56 @@ public class VungleMediationAdapter extends Adapter
   }
 
   @Override
+  @Deprecated
   public void onAdEnd(
       final String placementID,
       final boolean wasSuccessfulView,
-      final boolean wasCallToActionClicked) {
+      final boolean wasCallToActionClicked) {}
+
+  @Override
+  public void onAdEnd(final String placementID) {
     mHandler.post(
         new Runnable() {
           @Override
           public void run() {
             if (mMediationRewardedAdCallback != null) {
-              if (wasSuccessfulView) {
-                mMediationRewardedAdCallback.onVideoComplete();
-                mMediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
-              }
-              if (wasCallToActionClicked) {
-                // Only the call to action button is clickable for Vungle ads. So the
-                // wasCallToActionClicked can be used for tracking clicks.
-                mMediationRewardedAdCallback.reportAdClicked();
-              }
               mMediationRewardedAdCallback.onAdClosed();
             }
             mPlacementsInUse.remove(placementID);
           }
         });
+  }
+
+  @Override
+  public void onAdClick(String placementID) {
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationRewardedAdCallback != null) {
+              mMediationRewardedAdCallback.reportAdClicked();
+            }
+          }
+        });
+  }
+
+  @Override
+  public void onAdRewarded(String placementID) {
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationRewardedAdCallback != null) {
+              mMediationRewardedAdCallback.onVideoComplete();
+              mMediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
+            }
+          }
+        });
+  }
+
+  @Override
+  public void onAdLeftApplication(String placementID) {
+    // no op
   }
 
   // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an

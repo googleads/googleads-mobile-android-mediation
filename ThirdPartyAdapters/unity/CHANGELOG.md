@@ -1,5 +1,20 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed a `NullPointerException` error that occurs when a banner ad is destroyed.
+
+#### Version 3.4.6.1
+- Created an adapter build that does not include the Unity Ads SDK bundled in.
+This gives publishers an option to use the Unity Ads Services when mediating on
+Unity to avoid conflicting dependency issues.
+  * Publishers may opt to use this by including the
+  `com.google.ads.mediation:unity-adapter-only:x.y.z.p` dependency on their
+  app-level `build.gradle` file.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Unity Ads SDK version 3.4.6.
+
 #### Version 3.4.6.0
 - Verified compatibility with Unity Ads SDK 3.4.6.
 - Adapter now forwards the `onAdOpened()` callback when a banner ad is clicked.

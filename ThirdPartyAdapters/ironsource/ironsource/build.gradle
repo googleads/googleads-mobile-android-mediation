@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.ironsource.sdk:mediationsdk:6.17.0'
 
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.2.0'
 }
 
 /**

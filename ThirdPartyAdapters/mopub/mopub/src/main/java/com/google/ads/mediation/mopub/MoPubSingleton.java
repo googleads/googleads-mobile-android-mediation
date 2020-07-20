@@ -6,6 +6,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -47,8 +48,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   void adExpired(String adUnitID, MoPubRewardedVideoListener listener) {
-    // Verify if the passed MoPubRewardedVideoListener instance matches the registered
-    // instance for the given MoPub Ad Unit ID before removing from the list of listeners.
+    // Verify if the passed MoPubRewardedVideoListener instance matches the registered instance for
+    // the given MoPub Ad Unit ID before removing from the list of listeners.
     if (hasListener(adUnitID)
         && listener != null
         && listener.equals(mListeners.get(adUnitID).get())) {
@@ -56,11 +57,10 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     }
   }
 
-  boolean showRewardedAd(String adUnitID) {
-    if (!TextUtils.isEmpty(adUnitID)
-        && MoPubRewardedVideos.hasRewardedVideo(adUnitID)) {
+  boolean showRewardedAd(@NonNull String adUnitID, @Nullable String customData) {
+    if (!TextUtils.isEmpty(adUnitID) && MoPubRewardedVideos.hasRewardedVideo(adUnitID)) {
       Log.d(MoPubMediationAdapter.TAG, "Showing a MoPub rewarded video.");
-      MoPubRewardedVideos.showRewardedVideo(adUnitID);
+      MoPubRewardedVideos.showRewardedVideo(adUnitID, customData);
       return true;
     } else {
       mListeners.remove(adUnitID);
@@ -68,9 +68,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     }
   }
 
-  public void initializeMoPubSDK(Context context,
-      SdkConfiguration configuration,
-      SdkInitializationListener listener) {
+  public void initializeMoPubSDK(
+      Context context, SdkConfiguration configuration, SdkInitializationListener listener) {
     if (MoPub.isSdkInitialized()) {
       MoPubRewardedVideos.setRewardedVideoListener(MoPubSingleton.this);
       listener.onInitializationFinished();
@@ -81,23 +80,27 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     if (!isInitializing) {
       isInitializing = true;
 
-      MoPub.initializeSdk(context, configuration, new SdkInitializationListener() {
-        @Override
-        public void onInitializationFinished() {
-          MoPubLog.d("MoPub SDK initialized.");
-          isInitializing = false;
+      MoPub.initializeSdk(
+          context,
+          configuration,
+          new SdkInitializationListener() {
+            @Override
+            public void onInitializationFinished() {
+              MoPubLog.d("MoPub SDK initialized.");
+              isInitializing = false;
 
-          MoPubRewardedVideos.setRewardedVideoListener(MoPubSingleton.this);
-          for (SdkInitializationListener initListener : mInitListeners) {
-            initListener.onInitializationFinished();
-          }
-          mInitListeners.clear();
-        }
-      });
+              MoPubRewardedVideos.setRewardedVideoListener(MoPubSingleton.this);
+              for (SdkInitializationListener initListener : mInitListeners) {
+                initListener.onInitializationFinished();
+              }
+              mInitListeners.clear();
+            }
+          });
     }
   }
 
-  public void loadRewardedAd(Context context,
+  public void loadRewardedAd(
+      Context context,
       final String adUnitID,
       final MoPubRewardedVideoManager.RequestParameters requestParameters,
       final MoPubAdapterRewardedListener adapterRewardedListener) {
@@ -111,26 +114,27 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     mListeners.put(adUnitID, new WeakReference<>(adapterRewardedListener));
 
     SdkConfiguration configuration = new SdkConfiguration.Builder(adUnitID).build();
-    initializeMoPubSDK(context, configuration, new SdkInitializationListener() {
-      @Override
-      public void onInitializationFinished() {
-        MoPubRewardedVideos.loadRewardedVideo(adUnitID, requestParameters);
-      }
-    });
+    initializeMoPubSDK(
+        context,
+        configuration,
+        new SdkInitializationListener() {
+          @Override
+          public void onInitializationFinished() {
+            MoPubRewardedVideos.loadRewardedVideo(adUnitID, requestParameters);
+          }
+        });
   }
 
-  static String getKeywords(MediationAdConfiguration mediationConfiguration,
-      boolean intendedForPII) {
+  static String getKeywords(
+      MediationAdConfiguration mediationConfiguration, boolean intendedForPII) {
     if (intendedForPII) {
       if (MoPub.canCollectPersonalInformation()) {
-        return containsPII(mediationConfiguration) ?
-            MoPubAdapter.MOPUB_NATIVE_CEVENT_VERSION : "";
+        return containsPII(mediationConfiguration) ? MoPubAdapter.MOPUB_NATIVE_CEVENT_VERSION : "";
       } else {
         return "";
       }
     } else {
-      return containsPII(mediationConfiguration) ? "" :
-          MoPubAdapter.MOPUB_NATIVE_CEVENT_VERSION;
+      return containsPII(mediationConfiguration) ? "" : MoPubAdapter.MOPUB_NATIVE_CEVENT_VERSION;
     }
   }
 
@@ -138,9 +142,7 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     return configuration.getLocation() != null;
   }
 
-  /**
-   * {@link MoPubRewardedVideoListener} implementation
-   */
+  /** {@link MoPubRewardedVideoListener} implementation */
   @Override
   public void onRewardedVideoLoadSuccess(@NonNull String adUnitId) {
     if (hasListener(adUnitId)) {
@@ -149,8 +151,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoLoadFailure(@NonNull String adUnitId,
-      @NonNull MoPubErrorCode errorCode) {
+  public void onRewardedVideoLoadFailure(
+      @NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
     if (hasListener(adUnitId)) {
       mListeners.get(adUnitId).get().onRewardedVideoLoadFailure(adUnitId, errorCode);
     }
@@ -165,8 +167,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoPlaybackError(@NonNull String adUnitId,
-      @NonNull MoPubErrorCode errorCode) {
+  public void onRewardedVideoPlaybackError(
+      @NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
     if (hasListener(adUnitId)) {
       mListeners.get(adUnitId).get().onRewardedVideoPlaybackError(adUnitId, errorCode);
     }
@@ -181,8 +183,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoCompleted(@NonNull Set<String> adUnitIds,
-      @NonNull MoPubReward reward) {
+  public void onRewardedVideoCompleted(
+      @NonNull Set<String> adUnitIds, @NonNull MoPubReward reward) {
     for (String adUnitId : adUnitIds) {
       if (hasListener(adUnitId)) {
         HashSet<String> set = new HashSet<>();
