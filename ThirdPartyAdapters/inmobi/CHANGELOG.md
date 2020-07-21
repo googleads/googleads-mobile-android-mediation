@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Removed support for the deprecated NativeAppInstallAd format. Apps should request unified native ads.
+
 #### Version 9.0.7.1
 - Fixed an issue where the adapter did not keep InMobi SDK's initialization state properly.
 - Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
