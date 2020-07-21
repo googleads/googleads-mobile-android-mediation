@@ -2,11 +2,11 @@
 
 #### Version 12.6.1.0
 - Verified compatibility with Tapjoy SDK version 12.6.1.
+- Loading multiple interstitial ads with the same Tapjoy placement name at once now results in a load error for the second request. This behavior now matches existing behavior for rewarded ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.2.0.
 - Tapjoy SDK version 12.6.1.
-
 
 #### Version 12.6.0.0
 - Verified compatibility with Tapjoy SDK version 12.6.0.
