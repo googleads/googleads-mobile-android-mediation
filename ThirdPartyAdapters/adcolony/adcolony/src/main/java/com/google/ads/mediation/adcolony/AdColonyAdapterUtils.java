@@ -14,6 +14,9 @@ public class AdColonyAdapterUtils {
   public static final String KEY_ZONE_ID = "zone_id";
   public static final String KEY_ZONE_IDS = "zone_ids";
 
+  //Google SDK's bid response pass to AdColony using below key
+  public static final String KEY_ADCOLONY_BID_RESPONSE = "adm";
+
   @Nullable
   public static AdColonyAdSize adColonyAdSizeFromAdMobAdSize(@NonNull Context context,
       @NonNull AdSize adSize) {

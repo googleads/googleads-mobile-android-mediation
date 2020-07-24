@@ -8,16 +8,21 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyUserMetadata;
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+
+import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.KEY_ADCOLONY_BID_RESPONSE;
 
 /**
  * A helper class used by the {@link AdColonyAdapter}.
@@ -103,6 +108,15 @@ public class AdColonyManager {
     return configureAdColony(context, appOptions, appId, newZoneList);
   }
 
+  public boolean configureAdColony(MediationInterstitialAdConfiguration adConfiguration) {
+    Context context = adConfiguration.getContext();
+    Bundle serverParams = adConfiguration.getServerParameters();
+    String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
+    ArrayList<String> newZoneList = parseZoneList(serverParams);
+    AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
+    return configureAdColony(context, appOptions, appId, newZoneList);
+  }
+
   /**
    * Places user_id, age, location, and gender into AdColonyAppOptions.
    *
@@ -157,7 +171,7 @@ public class AdColonyManager {
    * @param adConfiguration rewarded ad configuration received from AdMob.
    * @return a valid AppOptions object.
    */
-  private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
+  private AdColonyAppOptions buildAppOptions(MediationAdConfiguration adConfiguration) {
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.
@@ -203,5 +217,35 @@ public class AdColonyManager {
       requestedZone = adRequestParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
     }
     return requestedZone;
+  }
+
+  public AdColonyAdOptions getAdOptionsFromExtras(Bundle networkExtras) {
+    boolean showPrePopup = false;
+    boolean showPostPopup = false;
+    if (networkExtras != null) {
+      showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
+      showPostPopup = networkExtras.getBoolean("show_post_popup", false);
+    }
+    AdColonyAdOptions adOptions = new AdColonyAdOptions()
+            .enableConfirmationDialog(showPrePopup)
+            .enableResultsDialog(showPostPopup);
+    return adOptions;
+  }
+
+  public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
+    AdColonyAdOptions adColonyAdOptions = null;
+
+    if(adConfiguration.getMediationExtras() != null) {
+      adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
+    }
+
+    String bidResponse = adConfiguration.getBidResponse();
+    if (bidResponse != null && !bidResponse.equals("")) {
+      if(adColonyAdOptions == null) {
+        adColonyAdOptions = new AdColonyAdOptions();
+      }
+      adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE,bidResponse);
+    }
+    return adColonyAdOptions;
   }
 }

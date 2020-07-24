@@ -6,31 +6,41 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 import android.content.Context;
 import android.util.Log;
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.jirbo.adcolony.AdColonyManager;
+
+import java.util.ArrayList;
 
 public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener implements
     MediationInterstitialAd {
 
-  private String zoneID;
   private MediationInterstitialAdCallback mInterstitialAdCallback;
   private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mAdLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
+  private MediationInterstitialAdConfiguration adConfiguration;
 
-  AdColonyInterstitialRenderer(String zoneID) {
-    this.zoneID = zoneID;
+  AdColonyInterstitialRenderer(MediationInterstitialAdConfiguration adConfiguration,
+                               MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+    this.mAdLoadCallback = callback;
+    this.adConfiguration = adConfiguration;
   }
 
-  public void requestInterstitial(
-      final MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> callback) {
-    this.mAdLoadCallback = callback;
-    AdColony.requestInterstitial(zoneID, this);
+  public void render() {
+    AdColonyAdOptions adOptions = AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
+    ArrayList<String> listFromServerParams =
+            AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
+    String requestedZone = AdColonyManager
+            .getInstance().getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+    AdColony.requestInterstitial(requestedZone, this,
+            adOptions);
   }
 
   @Override

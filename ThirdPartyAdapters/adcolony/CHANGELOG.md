@@ -1,5 +1,8 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.2.0.1
+- Added support of AdColony collect signal api for open bidding.
+
 #### Version 4.2.0.0
 - Verified compatibility with AdColony SDK version 4.2.0.
 - Updated the adapter to support inline adaptive banner requests.
