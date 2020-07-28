@@ -235,7 +235,7 @@ public class AdColonyManager {
   public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
     AdColonyAdOptions adColonyAdOptions = null;
 
-    if(adConfiguration.getMediationExtras() != null) {
+    if (adConfiguration.getMediationExtras() != null) {
       adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
     }
 
@@ -244,7 +244,7 @@ public class AdColonyManager {
       if(adColonyAdOptions == null) {
         adColonyAdOptions = new AdColonyAdOptions();
       }
-      adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE,bidResponse);
+      adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);
     }
     return adColonyAdOptions;
   }

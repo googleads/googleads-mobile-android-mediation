@@ -39,8 +39,7 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
             AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
     String requestedZone = AdColonyManager
             .getInstance().getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
-    AdColony.requestInterstitial(requestedZone, this,
-            adOptions);
+    AdColony.requestInterstitial(requestedZone, this, adOptions);
   }
 
   @Override
