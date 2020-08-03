@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.4.2.1"
+    stringVersion = "6.0.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,9 +18,9 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 29
-        versionCode 5040201
+        versionCode 6000000
         versionName stringVersion
     }
 
@@ -37,8 +37,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:19.2.0'
 
     // nendSDK
-    implementation 'net.nend.android:nend-sdk:5.4.2'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'net.nend.android:nend-sdk:6.0.0'
 }
 
 /**

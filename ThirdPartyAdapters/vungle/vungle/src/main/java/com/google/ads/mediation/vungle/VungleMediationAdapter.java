@@ -99,12 +99,6 @@ public class VungleMediationAdapter extends Adapter
       return;
     }
 
-    if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Vungle SDK requires an Activity context to initialize.");
-      return;
-    }
-
     HashSet<String> appIDs = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle serverParameters = configuration.getServerParameters();
@@ -155,12 +149,6 @@ public class VungleMediationAdapter extends Adapter
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     mMediationAdLoadCallback = mediationAdLoadCallback;
-
-    Context context = mediationRewardedAdConfiguration.getContext();
-    if (!(context instanceof Activity)) {
-      mediationAdLoadCallback.onFailure("Vungle SDK requires an Activity context to initialize.");
-      return;
-    }
 
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
