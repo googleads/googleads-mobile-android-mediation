@@ -84,17 +84,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
                     + getPlacementId() + "' " + s);
             if (mMediationInterstitialListener != null) {
-                if (UnityAds.getPlacementState(getPlacementId()) == UnityAds.PlacementState.NO_FILL ||
-                        UnityAds.getPlacementState(getPlacementId()) == UnityAds.PlacementState.DISABLED) {
-                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
+                mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                             AdRequest.ERROR_CODE_NO_FILL);
-                }
-                else {
-                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                            AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                }
             }
-
         }
     };
 
@@ -106,23 +98,13 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     private String getPlacementId() { return mPlacementId; }
 
     /**
-     * Sets the placement ID of the ad being loaded.
-     *
-     * @param placementId   Placement ID of ad being loaded.
-     */
-    private void setPlacementId(String placementId)
-    {
-        mPlacementId = placementId;
-    }
-
-    /**
      * Checks whether or not the provided Unity Ads IDs are valid.
      *
      * @param gameId      Unity Ads Game ID to be verified.
      * @param placementId Unity Ads Placement ID to be verified.
      * @return {@code true} if all the IDs provided are valid.
      */
-    private static boolean isValidIds(String gameId, String placementId) {
+    public static boolean isValidIds(String gameId, String placementId) {
         if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
             String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
                     ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
@@ -143,7 +125,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener = mediationInterstitialListener;
 
         final String gameId = serverParameters.getString(KEY_GAME_ID);
-        setPlacementId(serverParameters.getString(KEY_PLACEMENT_ID));
+        mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
         if (!isValidIds(gameId, getPlacementId())) {
             if (mMediationInterstitialListener != null) {
@@ -333,6 +315,5 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         }
         return null;
     }
-
 
 }

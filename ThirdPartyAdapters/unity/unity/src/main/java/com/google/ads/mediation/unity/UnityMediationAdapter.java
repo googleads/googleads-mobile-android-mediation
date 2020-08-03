@@ -92,12 +92,6 @@ public class UnityMediationAdapter extends Adapter {
     public void initialize(Context context,
                            final InitializationCompleteCallback initializationCompleteCallback,
                            List<MediationConfiguration> mediationConfigurations) {
-        if (!(context instanceof Activity)){
-            initializationCompleteCallback.onInitializationFailed("Unity Ads could not be " +
-                    "initialized: SDK requires an Activity context.");
-            return;
-        }
-
         HashSet<String> gameIDs = new HashSet<>();
         for (MediationConfiguration configuration: mediationConfigurations) {
             Bundle serverParameters = configuration.getServerParameters();
@@ -126,7 +120,6 @@ public class UnityMediationAdapter extends Adapter {
                     "Unity Ads could not be initialized: Missing or invalid Game ID.");
             return;
         }
-
 
         UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID,
                 new IUnityAdsInitializationListener() {

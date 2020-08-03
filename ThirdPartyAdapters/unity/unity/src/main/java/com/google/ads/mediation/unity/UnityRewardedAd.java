@@ -86,16 +86,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     }
 
     /**
-     * Sets the placement ID of the ad being loaded.
-     *
-     * @param placementId   Placement ID of ad being loaded.
-     */
-    private void setPlacementId(String placementId)
-    {
-        mPlacementId = placementId;
-    }
-
-    /**
      * Loads a rewarded ad.
      */
     public void load()
@@ -109,9 +99,9 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
         Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
         final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
-        setPlacementId(serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID));
+        mPlacementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
 
-        if (!isValidIds(gameId, getPlacementId())) {
+        if (!UnityAdapter.isValidIds(gameId, getPlacementId())) {
             mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from UnityAds: " +
                     "Missing or invalid game ID and placement ID.");
             return;
@@ -185,24 +175,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
     }
 
-    /**
-     * Checks whether or not the provided Unity Ads IDs are valid.
-     *
-     * @param gameId      Unity Ads Game ID to be verified.
-     * @param placementId Unity Ads Placement ID to be verified.
-     * @return {@code true} if all the IDs provided are valid.
-     */
-    private static boolean isValidIds(String gameId, String placementId) {
-        if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
-            String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
-                    ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
-            Log.w(UnityAdapter.TAG, ids + " cannot be empty.");
-
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public void onUnityAdsReady(String placementId) {
         // Unity Ads is ready to show ads for the given placementId.
@@ -243,18 +215,8 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
                 // Unity Ads doesn't provide a reward value. The publisher is expected to
                 // override the reward in AdMob console.
                 mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
-                mMediationRewardedAdCallback.onAdClosed();
             }
-            else if (finishState == UnityAds.FinishState.ERROR)
-            {
-                String message = "Unity Ads finished in an error state" +
-                        " while trying to show rewarded ad for placement ID '" + placementId + "'.";
-                Log.w(UnityAdapter.TAG, message);
-                mMediationRewardedAdCallback.onAdFailedToShow(message);
-            }
-            else {
-                mMediationRewardedAdCallback.onAdClosed();
-            }
+            mMediationRewardedAdCallback.onAdClosed();
         }
     }
 
