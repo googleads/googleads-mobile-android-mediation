@@ -243,7 +243,7 @@ public class FyberMediationAdapter extends Adapter
   public void requestBannerAd(final Context context,
       final MediationBannerListener mediationBannerListener,
       final Bundle serverParameters, AdSize adSize,
-      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
+      MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
 
     mMediationBannerListener = mediationBannerListener;
 
@@ -287,6 +287,7 @@ public class FyberMediationAdapter extends Adapter
         mBannerSpot.setRequestListener(requestListener);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        FyberAdapterUtils.addExtrasToAdRequest(request, mediationExtras);
         mBannerSpot.requestAd(request);
       }
     });
@@ -413,7 +414,7 @@ public class FyberMediationAdapter extends Adapter
       final MediationInterstitialListener mediationInterstitialListener,
       final Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+      final Bundle mediationExtras) {
 
     mMediationInterstitialListener = mediationInterstitialListener;
 
@@ -458,6 +459,7 @@ public class FyberMediationAdapter extends Adapter
         mInterstitialSpot.setRequestListener(requestListener);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        FyberAdapterUtils.addExtrasToAdRequest(request, mediationExtras);
         mInterstitialSpot.requestAd(request);
       }
     });

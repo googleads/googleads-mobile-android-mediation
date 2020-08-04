@@ -81,6 +81,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     mRewardedSpot.setRequestListener(requestListener);
 
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+    FyberAdapterUtils.addExtrasToAdRequest(request, mAdConfiguration.getMediationExtras());
     mRewardedSpot.requestAd(request);
   }
 
