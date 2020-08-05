@@ -146,5 +146,4 @@ public class UnityMediationAdapter extends Adapter {
         rewardedAd.load();
     }
 
-
 }

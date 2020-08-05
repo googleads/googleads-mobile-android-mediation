@@ -286,20 +286,33 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     @Override
     public void onDestroy() {
         mMediationInterstitialListener = null;
+        if (bannerAd != null)
+        {
+            bannerAd.onDestroy();
+        }
     }
 
     @Override
     public void onPause() {
-
+        if (bannerAd != null)
+        {
+            bannerAd.onPause();
+        }
     }
 
     @Override
     public void onResume() {
-
+        if (bannerAd != null)
+        {
+            bannerAd.onResume();
+        }
     }
 
     @Override
     public View getBannerView() {
+        if (bannerAd != null) {
+            return bannerAd.getBannerView();
+        }
         return null;
     }
 
