@@ -128,7 +128,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
         if (!UnityAdapter.isValidIds(gameId, bannerPlacementId)) {
-
             if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
                         AdRequest.ERROR_CODE_INVALID_REQUEST);
