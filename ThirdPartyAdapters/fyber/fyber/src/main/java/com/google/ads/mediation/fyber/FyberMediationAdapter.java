@@ -491,26 +491,21 @@ public class FyberMediationAdapter extends Adapter
 
   @Override
   public void showInterstitial() {
+    Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
     if (mInterstitialSpot.getSelectedUnitController() instanceof
-        InneractiveFullscreenUnitController) {
-      Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
-
-      if (context != null) {
-        if (mInterstitialSpot.isReady()) {
-          ((InneractiveFullscreenUnitController) mInterstitialSpot
-                  .getSelectedUnitController()).show(context);
-        } else {
-          Log.w(TAG, "showInterstitial called, but Ad has expired.");
-          mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_NETWORK_ERROR);
-
-        }
+            InneractiveFullscreenUnitController && context != null) {
+      if (mInterstitialSpot.isReady()) {
+        ((InneractiveFullscreenUnitController) mInterstitialSpot
+                .getSelectedUnitController()).show(context);
       } else {
-        Log.w(TAG, "showInterstitial called, but context reference was lost.");
+        Log.w(TAG, "showInterstitial called, but Ad has expired.");
         mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        mMediationInterstitialListener.onAdOpened(this);
+        mMediationInterstitialListener.onAdClosed(this);
+
       }
     } else {
-      Log.w(TAG, "showInterstitial called, but spot is not ready for show? " +
-          "Should never happen.");
+      Log.w(TAG, "showInterstitial called, but context reference was lost, or wrong spot has been used (shoudn't happen)");
       mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
     }
   }

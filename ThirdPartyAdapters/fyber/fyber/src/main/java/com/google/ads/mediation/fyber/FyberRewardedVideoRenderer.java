@@ -182,8 +182,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
       mUnitController.show(context);
     } else if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow("showAd called, " +
-          "but Fyber's rewarded spot is not ready.");
+      mRewardedAdCallback.onAdFailedToShow("showAd called, but Fyber's rewarded spot is not ready.");
     }
   }
 
