@@ -207,10 +207,37 @@ public class VungleManager {
     }
   }
 
-  void storeActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance) {
-    if (!mVungleBanners.containsKey(placementId)) {
+  /**
+   * maintain banner adapter instance, replace banner adapter instance if banner view changed.
+   *
+   * @param placementId placement
+   * @param instance    banner adapter instance with updated banner or MREC
+   * @param updated     banner instance updated after cleanUp
+   */
+  void storeActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance,
+      boolean updated) {
+    if (!mVungleBanners.containsKey(placementId) || updated) {
       mVungleBanners.put(placementId, instance);
       Log.d(TAG, "restoreActiveBannerAd:" + instance + "; size=" + mVungleBanners.size());
+    }
+  }
+
+  /**
+   * cleanup active banner and MREC instance
+   *
+   * @param placementId placement
+   */
+  void cleanUpActiveBannerAd(@NonNull String placementId) {
+    VungleBannerAdapter activeBannerAd = mVungleBanners.get(placementId);
+    if (activeBannerAd != null) {
+      activeBannerAd.cleanUp();
+    }
+  }
+
+  void destroyBannerAd(@NonNull VungleBannerAdapter bannerAdapter) {
+    VungleBannerAdapter activeBannerAd = mVungleBanners.get(bannerAdapter.getPlacementId());
+    if (activeBannerAd == bannerAdapter) {
+      activeBannerAd.destroy();
     }
   }
 }

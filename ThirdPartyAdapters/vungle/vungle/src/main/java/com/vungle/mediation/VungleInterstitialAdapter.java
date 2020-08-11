@@ -44,6 +44,10 @@ public class VungleInterstitialAdapter
   private AdConfig mAdConfig;
   private String mPlacementForPlay;
 
+  /**
+   * Ad container for Vungle's banner ad.
+   */
+  private volatile View adLayout;
   private VungleBannerAdapter vungleBannerAdapter;
 
   @Override
@@ -180,6 +184,8 @@ public class VungleInterstitialAdapter
     Log.d(TAG, "onDestroy: " + hashCode());
     if (vungleBannerAdapter != null) {
       vungleBannerAdapter.onDestroy();
+      vungleBannerAdapter = null;
+      adLayout = null;
     }
   }
 
@@ -205,16 +211,13 @@ public class VungleInterstitialAdapter
       Bundle mediationExtras) {
     vungleBannerAdapter = new VungleBannerAdapter(context, VungleInterstitialAdapter.this,
         mediationBannerListener);
-    vungleBannerAdapter
+    adLayout = vungleBannerAdapter
         .requestBannerAd(adSize, mediationAdRequest, serverParameters, mediationExtras);
   }
 
   @Override
   public View getBannerView() {
-    if (vungleBannerAdapter != null) {
-      return vungleBannerAdapter.getBannerView();
-    }
-    return null;
+    return adLayout;
   }
 
 }
