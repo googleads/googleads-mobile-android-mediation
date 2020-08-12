@@ -65,18 +65,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     };
 
     /**
-     * Creates a UnityRewardedAd instance.
-     *
-     * @param adConfiguration      Ad configuration for ad rendering.
-     * @param callback  Ad listener used to forward ad load status to the Google Mobile Ads SDK.
-     */
-    public UnityRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-                           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-        this.mediationRewardedAdConfiguration = adConfiguration;
-        this.mMediationAdLoadCallback = callback;
-    }
-
-    /**
      * Returns the placement ID of the ad being loaded.
      *
      * @return mPlacementId.
@@ -88,11 +76,14 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     /**
      * Loads a rewarded ad.
      */
-    public void load()
+    public void load(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+                     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback)
     {
+        this.mMediationAdLoadCallback = callback;
+
         Context context = mediationRewardedAdConfiguration.getContext();
-        if (!(context instanceof Activity)) {
-            mMediationAdLoadCallback.onFailure("Context is not an Activity." +
+        if (context == null || !(context instanceof Activity)) {
+            mMediationAdLoadCallback.onFailure("Context is null or is not an Activity." +
                     " Unity Ads requires an Activity context to show ads.");
             return;
         }
