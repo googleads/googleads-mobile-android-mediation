@@ -109,7 +109,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
                     ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
             Log.w(TAG, "Unity Ads failed to load interstitial ad: " + ids + " cannot be empty.");
-
             return false;
         }
 
@@ -203,8 +202,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
                         "'. Placement is not ready.");
                 mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
             }
-        }
-        else {
+        } else {
             Log.w(TAG, "Failed to show interstitial ad for placement ID '" + getPlacementId() +
                     "' from Unity Ads: Activity context is null.");
             mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
