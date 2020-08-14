@@ -351,6 +351,8 @@ public class FyberMediationAdapter extends Adapter
 
         InneractiveAdViewUnitController controller =
             (InneractiveAdViewUnitController) mBannerSpot.getSelectedUnitController();
+        InneractiveAdViewEventsListener listener = createFyberAdViewListener();
+        controller.setEventsListener(listener);
         controller.bindView(mBannerWrapperView);
 
         // Validate the ad size returned by Fyber Marketplace with the requested ad size.
@@ -374,9 +376,6 @@ public class FyberMediationAdapter extends Adapter
               .onAdFailedToLoad(FyberMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
           return;
         }
-
-        InneractiveAdViewEventsListener listener = createFyberAdViewListener();
-        controller.setEventsListener(listener);
         mMediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
       }
 
@@ -391,7 +390,6 @@ public class FyberMediationAdapter extends Adapter
         } else if (inneractiveErrorCode == InneractiveErrorCode.NO_FILL) {
           adMobErrorCode = AdRequest.ERROR_CODE_NO_FILL;
         }
-
         mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, adMobErrorCode);
       }
     };
@@ -573,5 +571,4 @@ public class FyberMediationAdapter extends Adapter
       }
     };
   }
-
 }
