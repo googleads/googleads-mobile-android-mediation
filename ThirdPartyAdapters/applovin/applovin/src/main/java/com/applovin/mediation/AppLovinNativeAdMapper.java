@@ -46,6 +46,8 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
     images.add(image);
     setImages(images);
     setIcon(icon);
+    // AppLovin SDK does not have an AdChoices icon.
+    setAdChoicesContent(null);
 
     mediaView.setImageDrawable(imageDrawable);
     setMediaView(mediaView);
