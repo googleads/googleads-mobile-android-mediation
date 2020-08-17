@@ -1,5 +1,11 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.7.1.0
+- Verified compatibility with Vungle SDK 6.7.1.
+- Various Bug Fixes
+- Adapter has been tested only for up to API version 29.
+- Vungle 6.7.1 SDK has support for Android 11, and has resolved some issues in order to be used with API version 30
+
 #### Version 6.7.0.0
 - Verified compatibility with Vungle SDK 6.7.0.
 - Updated the adapter to support inline adaptive banner requests.
