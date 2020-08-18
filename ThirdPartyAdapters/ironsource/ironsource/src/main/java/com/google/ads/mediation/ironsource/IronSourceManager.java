@@ -4,13 +4,13 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.ADAPTER
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_SHOW_UNAUTHORIZED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
@@ -29,9 +29,10 @@ class IronSourceManager
   private static final IronSourceManager instance = new IronSourceManager();
 
   private ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>> availableInstances;
-
   private ConcurrentHashMap<String, WeakReference<IronSourceAdapter>>
       availableInterstitialInstances;
+
+  private WeakReference<IronSourceMediationAdapter> currentlyShowingRewardedAdapter;
 
   static IronSourceManager getInstance() {
     return instance;
@@ -73,7 +74,6 @@ class IronSourceManager
       return;
     }
 
-    changeInterstitialInstanceState(ironSourceAdapter, INSTANCE_STATE.LOCKED);
     registerISInterstitialAdapter(instanceId, weakAdapter);
     IronSource.loadISDemandOnlyInterstitial(instanceId);
   }
@@ -99,7 +99,6 @@ class IronSourceManager
       return;
     }
 
-    changeRewardedInstanceState(ironSourceMediationAdapter, INSTANCE_STATE.LOCKED);
     registerISRewardedVideoAdapter(instanceId, weakAdapter);
     IronSource.loadISDemandOnlyRewardedVideo(instanceId);
   }
@@ -124,10 +123,7 @@ class IronSourceManager
       return true;
     }
     IronSourceAdapter ironSourceAdapter = weakAdapter.get();
-    if (ironSourceAdapter == null) {
-      return true;
-    }
-    return ironSourceAdapter.getInstanceState().equals(INSTANCE_STATE.CAN_LOAD);
+    return (ironSourceAdapter == null);
   }
 
   private boolean isRegisteredRewardedVideoAdapterCanLoad(@NonNull String instanceId) {
@@ -136,25 +132,22 @@ class IronSourceManager
       return true;
     }
     IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-    if (ironSourceMediationAdapter == null) {
-      return true;
+    return (ironSourceMediationAdapter == null);
+  }
+
+  void showRewardedVideo(@NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
+    WeakReference<IronSourceMediationAdapter> adapterReference = availableInstances.get(instanceId);
+    if (adapterReference == null || adapterReference.get() == null || !adapter
+        .equals(adapterReference.get())) {
+      adapter.onAdFailedToShow(ERROR_AD_SHOW_UNAUTHORIZED,
+          "IronSource adapter does not have authority to show this instance.");
+      return;
     }
-    return ironSourceMediationAdapter.getInstanceState().equals(INSTANCE_STATE.CAN_LOAD);
-  }
 
-  private void changeRewardedInstanceState(
-      @NonNull IronSourceMediationAdapter ironSourceMediationAdapter, INSTANCE_STATE newState) {
-    Log.d(TAG, String.format("IronSourceManager change state to %s", newState));
-    ironSourceMediationAdapter.setInstanceState(newState);
-  }
-
-  private void changeInterstitialInstanceState(
-      @NonNull IronSourceAdapter ironSourceAdapter, INSTANCE_STATE newState) {
-    Log.d(TAG, String.format("IronSourceManager change state to %s", newState));
-    ironSourceAdapter.setInstanceState(newState);
-  }
-
-  void showRewardedVideo(@NonNull String instanceId) {
+    // IronSource may call onRewardedVideoAdRewarded() after onRewardedVideoAdClosed() on some
+    // rewarded ads. Store the adapter reference so callbacks can be forwarded properly regardless
+    // of order.
+    currentlyShowingRewardedAdapter = adapterReference;
     IronSource.showISDemandOnlyRewardedVideo(instanceId);
   }
 
@@ -217,69 +210,47 @@ class IronSourceManager
     if (weakAdapter != null) {
       IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
       if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(
-            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(instanceId, ironSourceError);
       }
+      availableInstances.remove(instanceId);
     }
   }
 
   @Override
   public void onRewardedVideoAdOpened(String instanceId) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      if (ironSourceMediationAdapter != null) {
-        ironSourceMediationAdapter.onRewardedVideoAdOpened(instanceId);
-      }
+    if (currentlyShowingRewardedAdapter != null && currentlyShowingRewardedAdapter.get() != null) {
+      currentlyShowingRewardedAdapter.get().onRewardedVideoAdOpened(instanceId);
     }
   }
 
   @Override
   public void onRewardedVideoAdClosed(String instanceId) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(
-            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
-        ironSourceMediationAdapter.onRewardedVideoAdClosed(instanceId);
-      }
+    if (currentlyShowingRewardedAdapter != null && currentlyShowingRewardedAdapter.get() != null) {
+      currentlyShowingRewardedAdapter.get().onRewardedVideoAdClosed(instanceId);
     }
+    availableInstances.remove(instanceId);
   }
 
   @Override
   public void onRewardedVideoAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      if (ironSourceMediationAdapter != null) {
-        changeRewardedInstanceState(
-            ironSourceMediationAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
-        ironSourceMediationAdapter.onRewardedVideoAdShowFailed(instanceId, ironSourceError);
-      }
+    if (currentlyShowingRewardedAdapter != null && currentlyShowingRewardedAdapter.get() != null) {
+      currentlyShowingRewardedAdapter.get()
+          .onRewardedVideoAdShowFailed(instanceId, ironSourceError);
     }
+    availableInstances.remove(instanceId);
   }
 
   @Override
   public void onRewardedVideoAdClicked(String instanceId) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      if (ironSourceMediationAdapter != null) {
-        ironSourceMediationAdapter.onRewardedVideoAdClicked(instanceId);
-      }
+    if (currentlyShowingRewardedAdapter != null && currentlyShowingRewardedAdapter.get() != null) {
+      currentlyShowingRewardedAdapter.get().onRewardedVideoAdClicked(instanceId);
     }
   }
 
   @Override
   public void onRewardedVideoAdRewarded(String instanceId) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      if (ironSourceMediationAdapter != null) {
-        ironSourceMediationAdapter.onRewardedVideoAdRewarded(instanceId);
-      }
+    if (currentlyShowingRewardedAdapter != null && currentlyShowingRewardedAdapter.get() != null) {
+      currentlyShowingRewardedAdapter.get().onRewardedVideoAdRewarded(instanceId);
     }
   }
 
@@ -300,10 +271,9 @@ class IronSourceManager
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(
-            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdLoadFailed(instanceId, ironSourceError);
       }
+      availableInterstitialInstances.remove(instanceId);
     }
   }
 
@@ -324,10 +294,9 @@ class IronSourceManager
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(
-            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdClosed(instanceId);
       }
+      availableInterstitialInstances.remove(instanceId);
     }
   }
 
@@ -337,10 +306,9 @@ class IronSourceManager
     if (weakAdapter != null) {
       IronSourceAdapter ironSourceAdapter = weakAdapter.get();
       if (ironSourceAdapter != null) {
-        changeInterstitialInstanceState(
-            ironSourceAdapter, IronSourceMediationAdapter.INSTANCE_STATE.CAN_LOAD);
         ironSourceAdapter.onInterstitialAdShowFailed(instanceId, ironSourceError);
       }
+      availableInterstitialInstances.remove(instanceId);
     }
   }
 

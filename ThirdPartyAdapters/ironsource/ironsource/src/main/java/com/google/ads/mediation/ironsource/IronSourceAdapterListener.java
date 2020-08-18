@@ -8,8 +8,16 @@ public interface IronSourceAdapterListener {
   /**
    * Called when the adapter fails to load an ad.
    *
-   * @param errorCode The error code.
+   * @param errorCode    The error code.
    * @param errorMessage A message describing the error.
    */
   void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage);
+
+  /**
+   * Called when the adapter fails to show an ad.
+   *
+   * @param errorCode    The error code.
+   * @param errorMessage A message describing the error.
+   */
+  void onAdFailedToShow(@AdapterError int errorCode, @NonNull String errorMessage);
 }
