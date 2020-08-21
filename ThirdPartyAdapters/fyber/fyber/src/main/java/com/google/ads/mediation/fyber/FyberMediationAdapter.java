@@ -188,7 +188,7 @@ public class FyberMediationAdapter extends Adapter
     if (configuredAppIds.size() > 1) {
       String message = String.format("Multiple '%s' entries found: %s. " +
               "Using '%s' to initialize the Fyber Marketplace SDK.",
-          KEY_APP_ID, appIdForInitialization, appIdForInitialization);
+          KEY_APP_ID, configuredAppIds.toString(), appIdForInitialization);
       Log.w(TAG, message);
     }
 
