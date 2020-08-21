@@ -21,12 +21,18 @@ class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
     if (instance == null) {
       instance = new AdColonyRewardedEventForwarder();
     }
+    setRewardedListener();
     return instance;
+  }
+
+  private static void setRewardedListener() {
+    if (AdColony.getRewardListener() == null) {
+      AdColony.setRewardListener(instance);
+    }
   }
 
   private AdColonyRewardedEventForwarder() {
     mListeners = new HashMap<>();
-    AdColony.setRewardListener(AdColonyRewardedEventForwarder.this);
   }
 
   void addListener(@NonNull String zoneID, @NonNull AdColonyRewardedRenderer listener) {
