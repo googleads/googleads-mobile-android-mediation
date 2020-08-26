@@ -35,8 +35,7 @@ public class NendExtrasBundleBuilder {
     return this;
   }
 
-  public NendExtrasBundleBuilder setNativeAdsType(
-      NendMediationAdapter.FormatType nativeAdsType) {
+  public NendExtrasBundleBuilder setNativeAdsType(NendMediationAdapter.FormatType nativeAdsType) {
     this.nativeAdsType = nativeAdsType;
     return this;
   }

@@ -1,11 +1,8 @@
 package com.google.ads.mediation.adcolony;
 
-import static
-    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
-import static
-    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
-import static
-    com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
@@ -41,10 +38,10 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   public void render() {
-
     if (!adConfiguration.getBidResponse().equals("")) {
       isRtb = true;
     }
+
     boolean showPrePopup = false;
     boolean showPostPopup = false;
     Bundle serverParameters = adConfiguration.getServerParameters();
@@ -66,8 +63,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
     if (isRtb) {
       AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
           AdColonyRewardedRenderer.this);
-      AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance()
-          , adOptions);
+      AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
+          adOptions);
     } else {
       if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)) {
         String logMessage = "Failed to load ad from AdColony: " +
@@ -84,16 +81,15 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
       // Check if we have a valid zone and request the ad.
       if (adColonyConfigured && !TextUtils.isEmpty(requestedZone)) {
-
         AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
             AdColonyRewardedRenderer.this);
-
         AdColony.requestInterstitial(requestedZone,
             AdColonyRewardedEventForwarder.getInstance(), adOptions);
       } else {
         // Cannot request an ad without a valid zone.
         adColonyConfigured = false;
       }
+
       if (!adColonyConfigured) {
         String logMessage = "Failed to request ad from AdColony: Not configured";
         String errorMessage = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED, logMessage);

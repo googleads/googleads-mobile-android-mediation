@@ -173,6 +173,10 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
       return;
     }
 
+    String logMessage = String
+        .format("Requesting banner with ad size: %dx%d", adColonyAdSize.getWidth(),
+            adColonyAdSize.getHeight());
+    Log.d(TAG, logMessage);
     AdColony.requestAdView(requestedZone, adColonyBannerAdListener, adColonyAdSize);
   }
 
@@ -185,4 +189,5 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
     this.adColonyAdView = ad;
   }
   //endregion
+
 }

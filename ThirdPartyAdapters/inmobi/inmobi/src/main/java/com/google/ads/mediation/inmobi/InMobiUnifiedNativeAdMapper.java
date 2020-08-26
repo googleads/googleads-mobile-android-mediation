@@ -5,18 +5,15 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
-
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -24,19 +21,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /** InMobi native ad instance. */
+  /**
+   * InMobi native ad instance.
+   */
   private final InMobiNative mInMobiNative;
-  /** Flag to check whether urls are returned for image assets. */
+  /**
+   * Flag to check whether urls are returned for image assets.
+   */
   private final boolean mIsOnlyURL;
-  /** MediationNativeListener instance. */
+  /**
+   * MediationNativeListener instance.
+   */
   private final MediationNativeListener mMediationNativeListener;
-  /** InMobi adapter instance. */
+  /**
+   * InMobi adapter instance.
+   */
   private final InMobiAdapter mInMobiAdapter;
 
   public InMobiUnifiedNativeAdMapper(
@@ -124,17 +128,26 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     placeHolderView.setLayoutParams(
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+    placeHolderView.setGravity(Gravity.CENTER);
 
-    final View primaryView = mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView, 0);
-    if (primaryView == null) {
-      return;
-    }
+    placeHolderView.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            final View primaryView =
+                mInMobiNative.getPrimaryViewOfWidth(
+                    context, null, placeHolderView, placeHolderView.getWidth());
+            if (primaryView == null) {
+              return;
+            }
 
-    placeHolderView.addView(primaryView);
-    int viewHeight = primaryView.getLayoutParams().height;
-    if (viewHeight > 0) {
-      setMediaContentAspectRatio((float) primaryView.getLayoutParams().width / viewHeight);
-    }
+            placeHolderView.addView(primaryView);
+            int viewHeight = primaryView.getLayoutParams().height;
+            if (viewHeight > 0) {
+              setMediaContentAspectRatio((float) primaryView.getLayoutParams().width / viewHeight);
+            }
+          }
+        });
 
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
@@ -144,32 +157,32 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     // Download drawables.
     if (!this.mIsOnlyURL) {
       new ImageDownloaderAsyncTask(
-              new ImageDownloaderAsyncTask.DrawableDownloadListener() {
-                @Override
-                public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
-                  Drawable iconDrawable = drawableMap.get(ImageDownloaderAsyncTask.KEY_ICON);
-                  setIcon(new InMobiNativeMappedImage(iconDrawable, iconUri, iconScale));
+          new ImageDownloaderAsyncTask.DrawableDownloadListener() {
+            @Override
+            public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
+              Drawable iconDrawable = drawableMap.get(ImageDownloaderAsyncTask.KEY_ICON);
+              setIcon(new InMobiNativeMappedImage(iconDrawable, iconUri, iconScale));
 
-                  List<NativeAd.Image> imagesList = new ArrayList<>();
-                  imagesList.add(
-                      new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
-                  setImages(imagesList);
+              List<NativeAd.Image> imagesList = new ArrayList<>();
+              imagesList.add(
+                  new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
+              setImages(imagesList);
 
-                  if ((null != iconDrawable)) {
-                    mMediationNativeListener.onAdLoaded(
-                        mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
-                  } else {
-                    mMediationNativeListener.onAdFailedToLoad(
-                        mInMobiAdapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
-                  }
-                }
+              if ((null != iconDrawable)) {
+                mMediationNativeListener.onAdLoaded(
+                    mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
+              } else {
+                mMediationNativeListener.onAdFailedToLoad(
+                    mInMobiAdapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
+              }
+            }
 
-                @Override
-                public void onDownloadFailure() {
-                  mMediationNativeListener.onAdFailedToLoad(
-                      mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
-                }
-              })
+            @Override
+            public void onDownloadFailure() {
+              mMediationNativeListener.onAdFailedToLoad(
+                  mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
+            }
+          })
           .execute(map);
     } else {
       mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
@@ -195,7 +208,10 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(View view, Map<String, View> map, Map<String, View> map1) {
+  public void trackViews(
+      View containerView,
+      Map<String, View> clickableAssetViews,
+      Map<String, View> nonclickableAssetViews) {
     mInMobiNative.resume();
   }
 }

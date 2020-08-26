@@ -23,14 +23,12 @@ public class NendNativeMappedImage extends NativeAd.Image {
   }
 
   @Override
-  public @Nullable
-  Drawable getDrawable() {
+  public @Nullable Drawable getDrawable() {
     return drawable;
   }
 
   @Override
-  public @Nullable
-  Uri getUri() {
+  public @Nullable Uri getUri() {
     return uri;
   }
 

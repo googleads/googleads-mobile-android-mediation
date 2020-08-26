@@ -18,9 +18,7 @@ import java.util.ArrayList;
  */
 class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
 
-  /**
-   * AppLovin native ad instance.
-   */
+  /** AppLovin native ad instance. */
   private AppLovinNativeAd mNativeAd;
 
   AppLovinNativeAdMapper(AppLovinNativeAd nativeAd, Context context) {
@@ -30,8 +28,9 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
     setCallToAction(nativeAd.getCtaText());
 
     ImageView mediaView = new ImageView(context);
-    ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    ViewGroup.LayoutParams layoutParams =
+        new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     mediaView.setLayoutParams(layoutParams);
 
     ArrayList<NativeAd.Image> images = new ArrayList<>(1);
@@ -47,6 +46,8 @@ class AppLovinNativeAdMapper extends NativeAppInstallAdMapper {
     images.add(image);
     setImages(images);
     setIcon(icon);
+    // AppLovin SDK does not have an AdChoices icon.
+    setAdChoicesContent(null);
 
     mediaView.setImageDrawable(imageDrawable);
     setMediaView(mediaView);

@@ -17,27 +17,28 @@ class NativeVideoAdLoader {
   private NendNativeAdForwarder forwarder;
 
   private NendAdNativeVideoLoader videoAdLoader;
-  private NendAdNativeVideoLoader.Callback videoLoaderCallback = new NendAdNativeVideoLoader.Callback() {
-    @Override
-    public void onSuccess(NendAdNativeVideo nendAdNativeVideo) {
-      Context context = forwarder.getContextFromWeakReference();
-      if (context == null) {
-        Log.e(TAG, "Your context may be released...");
-        forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-      } else {
-        NendUnifiedNativeVideoAdMapper videoAdMapper =
-            new NendUnifiedNativeVideoAdMapper(context, forwarder, nendAdNativeVideo);
-        forwarder.setUnifiedNativeAdMapper(videoAdMapper);
-        forwarder.adLoaded();
-      }
-    }
+  private NendAdNativeVideoLoader.Callback videoLoaderCallback =
+      new NendAdNativeVideoLoader.Callback() {
+        @Override
+        public void onSuccess(NendAdNativeVideo nendAdNativeVideo) {
+          Context context = forwarder.getContextFromWeakReference();
+          if (context == null) {
+            Log.e(TAG, "Your context may be released...");
+            forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+          } else {
+            NendUnifiedNativeVideoAdMapper videoAdMapper =
+                new NendUnifiedNativeVideoAdMapper(context, forwarder, nendAdNativeVideo);
+            forwarder.setUnifiedNativeAdMapper(videoAdMapper);
+            forwarder.adLoaded();
+          }
+        }
 
-    @Override
-    public void onFailure(int nendErrorCode) {
-      forwarder.setUnifiedNativeAdMapper(null);
-      forwarder.failedToLoad(nendErrorCode);
-    }
-  };
+        @Override
+        public void onFailure(int nendErrorCode) {
+          forwarder.setUnifiedNativeAdMapper(null);
+          forwarder.failedToLoad(nendErrorCode);
+        }
+      };
 
   NativeVideoAdLoader(
       NendNativeAdForwarder forwarder,
@@ -53,8 +54,8 @@ class NativeVideoAdLoader {
     this.forwarder = forwarder;
 
     NendAdNativeVideo.VideoClickOption clickOption = NendAdNativeVideo.VideoClickOption.LP;
-    VideoOptions nativeVideoOptions = nativeMediationAdRequest.getNativeAdOptions()
-        .getVideoOptions();
+    VideoOptions nativeVideoOptions =
+        nativeMediationAdRequest.getNativeAdOptions().getVideoOptions();
     if (nativeVideoOptions != null && nativeVideoOptions.getClickToExpandRequested()) {
       clickOption = NendAdNativeVideo.VideoClickOption.FullScreen;
     }

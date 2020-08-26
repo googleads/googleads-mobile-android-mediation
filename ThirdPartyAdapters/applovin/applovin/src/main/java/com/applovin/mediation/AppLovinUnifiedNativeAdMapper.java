@@ -17,9 +17,7 @@ import java.util.ArrayList;
  */
 class AppLovinUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /**
-   * AppLovin native ad instance.
-   */
+  /** AppLovin native ad instance. */
   private AppLovinNativeAd mNativeAd;
 
   public AppLovinUnifiedNativeAdMapper(Context context, AppLovinNativeAd nativeAd) {
@@ -29,8 +27,9 @@ class AppLovinUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setCallToAction(mNativeAd.getCtaText());
 
     final ImageView mediaView = new ImageView(context);
-    ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    ViewGroup.LayoutParams layoutParams =
+        new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     mediaView.setLayoutParams(layoutParams);
 
     ArrayList<NativeAd.Image> images = new ArrayList<>(1);
@@ -73,5 +72,4 @@ class AppLovinUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   public void handleClick(View view) {
     mNativeAd.launchClickTarget(view.getContext());
   }
-
 }

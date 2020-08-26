@@ -28,8 +28,10 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
   private NendNativeAdConnector connector;
 
   NendUnifiedNativeNormalAdMapper(
-      Context context, NendNativeAdForwarder forwarder,
-      NendAdNative ad, NendNativeMappedImage adImage,
+      Context context,
+      NendNativeAdForwarder forwarder,
+      NendAdNative ad,
+      NendNativeMappedImage adImage,
       NendNativeMappedImage logoImage) {
     super(logoImage);
     this.forwarder = forwarder;
@@ -64,7 +66,8 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
   }
 
   @Override
-  public void trackViews(View containerView,
+  public void trackViews(
+      View containerView,
       Map<String, View> clickableAssetViews,
       Map<String, View> nonClickableAssetViews) {
     super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
@@ -83,9 +86,7 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
     }
   }
 
-  /**
-   * {@link NendAdNativeListener} implementation
-   */
+  /** {@link NendAdNativeListener} implementation */
   @Override
   public void onImpression(@NonNull NendAdNative nendAdNative) {
     forwarder.adImpression();
@@ -93,7 +94,8 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
 
   @Override
   public void onClickAd(@NonNull NendAdNative nendAdNative) {
-    // Note : never listened this event because NendUnifiedNativeNormalAdMapper did not override click handling.
+    // Note : never listened this event because NendUnifiedNativeNormalAdMapper did not override
+    // click handling.
   }
 
   @Override

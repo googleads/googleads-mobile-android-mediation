@@ -23,12 +23,9 @@ import net.nend.android.NendAdRewardedListener;
 import net.nend.android.NendAdRewardedVideo;
 import net.nend.android.NendAdVideo;
 
-/**
- * The {@link NendMediationAdapter} to load and show Nend rewarded video ads.
- */
-public class NendMediationAdapter extends Adapter implements
-    MediationNativeAdapter,
-    MediationRewardedAd, NendAdRewardedListener {
+/** The {@link NendMediationAdapter} to load and show Nend rewarded video ads. */
+public class NendMediationAdapter extends Adapter
+    implements MediationNativeAdapter, MediationRewardedAd, NendAdRewardedListener {
 
   static final String TAG = NendMediationAdapter.class.getSimpleName();
 
@@ -39,8 +36,7 @@ public class NendMediationAdapter extends Adapter implements
   static final String MEDIATION_NAME_ADMOB = "AdMob";
 
   private NendAdRewardedVideo mRewardedVideo;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mAdLoadCallback;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
 
   public enum FormatType {
@@ -50,9 +46,7 @@ public class NendMediationAdapter extends Adapter implements
 
   private NendNativeAdForwarder nativeAdForwarder;
 
-  /**
-   * {@link Adapter} implementation
-   */
+  /** {@link Adapter} implementation */
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
@@ -65,8 +59,10 @@ public class NendMediationAdapter extends Adapter implements
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -83,14 +79,16 @@ public class NendMediationAdapter extends Adapter implements
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
-  public void initialize(Context context,
+  public void initialize(
+      Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
 
@@ -101,14 +99,14 @@ public class NendMediationAdapter extends Adapter implements
   @Override
   public void loadRewardedAd(
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
 
     Context context = mediationRewardedAdConfiguration.getContext();
 
     if (!(context instanceof Activity)) {
-      String logMessage = "Failed to request ad from Nend: " +
-          "Nend requires an Activity context to load an ad.";
+      String logMessage =
+          "Failed to request ad from Nend: Nend requires an Activity context to load an ad.";
       Log.w(TAG, logMessage);
       mediationAdLoadCallback.onFailure(logMessage);
       return;
@@ -150,17 +148,14 @@ public class NendMediationAdapter extends Adapter implements
       if (context instanceof Activity) {
         mRewardedVideo.showAd((Activity) context);
       } else if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(
-            "Nend Ads require an Activity context to show ads.");
+        mRewardedAdCallback.onAdFailedToShow("Nend Ads require an Activity context to show ads.");
       }
     } else if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdFailedToShow("Ad not ready yet.");
     }
   }
 
-  /**
-   * {@link MediationNativeAdapter} implementation
-   */
+  /** {@link MediationNativeAdapter} implementation */
   @Override
   public void onResume() {
     if (nativeAdForwarder != null) {
@@ -196,13 +191,10 @@ public class NendMediationAdapter extends Adapter implements
         mediationNativeListener,
         serverParameters,
         nativeMediationAdRequest,
-        mediationExtras
-    );
+        mediationExtras);
   }
 
-  /**
-   * {@link NendAdRewardedListener} implementation
-   */
+  /** {@link NendAdRewardedListener} implementation */
   @Override
   public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
     if (mAdLoadCallback != null) {
@@ -212,8 +204,9 @@ public class NendMediationAdapter extends Adapter implements
 
   @Override
   public void onFailedToLoad(@NonNull NendAdVideo nendAdVideo, int errorCode) {
-    String logMessage = "Failed to request ad from Nend, Error Code: "
-        + ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode);
+    String logMessage =
+        "Failed to request ad from Nend, Error Code: "
+            + ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode);
     Log.w(TAG, logMessage);
     if (mAdLoadCallback != null) {
       mAdLoadCallback.onFailure(logMessage);
@@ -222,8 +215,8 @@ public class NendMediationAdapter extends Adapter implements
   }
 
   @Override
-  public void onRewarded(@NonNull NendAdVideo nendAdVideo,
-      @NonNull NendAdRewardItem nendAdRewardItem) {
+  public void onRewarded(
+      @NonNull NendAdVideo nendAdVideo, @NonNull NendAdRewardItem nendAdRewardItem) {
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onUserEarnedReward(new NendMediationRewardItem(nendAdRewardItem));
     }
@@ -282,5 +275,4 @@ public class NendMediationAdapter extends Adapter implements
   public void onInformationClicked(@NonNull NendAdVideo nendAdVideo) {
     // No relevant event to forward to the Google Mobile Ads SDK.
   }
-
 }
