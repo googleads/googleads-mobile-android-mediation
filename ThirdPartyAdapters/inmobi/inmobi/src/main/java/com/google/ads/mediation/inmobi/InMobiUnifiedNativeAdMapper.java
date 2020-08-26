@@ -52,6 +52,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
     this.mMediationNativeListener = mediationNativeListener;
+    setOverrideClickHandling(true);
+    setOverrideImpressionRecording(true);
   }
 
   // Map InMobi Native Ad to AdMob Unified Native Ad.
@@ -152,7 +154,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
     setHasVideoContent(hasVideo);
-    setOverrideClickHandling(false);
 
     // Download drawables.
     if (!this.mIsOnlyURL) {
