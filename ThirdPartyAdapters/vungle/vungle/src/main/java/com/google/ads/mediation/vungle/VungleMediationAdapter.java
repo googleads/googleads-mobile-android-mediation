@@ -188,7 +188,7 @@ public class VungleMediationAdapter extends Adapter
     VungleInitializer.getInstance()
         .initialize(
             appID,
-            context.getApplicationContext(),
+            mediationRewardedAdConfiguration.getContext(),
             new VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
