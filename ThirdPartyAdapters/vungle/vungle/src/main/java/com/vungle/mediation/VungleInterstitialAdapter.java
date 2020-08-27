@@ -211,8 +211,6 @@ public class VungleInterstitialAdapter
   public void requestBannerAd(Context context, MediationBannerListener mediationBannerListener,
       Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
-    vungleBannerAdapter = new VungleBannerAdapter(context, VungleInterstitialAdapter.this,
-        mediationBannerListener);
 
     AdConfig.AdSize vungleAdSize = VungleBannerAdapter.getSupportedAdSize(context, adSize);
     if (vungleAdSize == null) {
@@ -222,6 +220,9 @@ public class VungleInterstitialAdapter
           .onAdFailedToLoad(VungleInterstitialAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
+
+    vungleBannerAdapter = new VungleBannerAdapter(context, VungleInterstitialAdapter.this,
+        mediationBannerListener);
 
     // Create the banner ad container with the supported ad size, as Vungle's ad uses MATCH_PARENT
     // for its dimensions.

@@ -2,9 +2,9 @@
 
 #### Version 6.7.1.0
 - Verified compatibility with Vungle SDK 6.7.1.
-- Various Bug Fixes
-- Adapter has been tested only for up to API version 29.
-- Vungle 6.7.1 SDK has support for Android 11, and has resolved some issues in order to be used with API version 30
+- Fixed a bug where ads wouldn't load if an ad was loaded using an application context.
+- Updated `targetSdkVersion` to API 29.
+- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
 
 #### Version 6.7.0.0
 - Verified compatibility with Vungle SDK 6.7.0.
