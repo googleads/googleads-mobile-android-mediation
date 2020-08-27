@@ -80,12 +80,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
   @IntDef(
       value = {
         ERROR_BANNER_SIZE_MISMATCH,
-        ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
         ERROR_NULL_CONTEXT,
         ERROR_EMPTY_BID_TOKEN,
         ERROR_AD_ALREADY_REQUESTED,
         ERROR_PRESENTATON_AD_NOT_READY,
-        ERROR_MAPPING_NATIVE_ASSETS,
         ERROR_AD_FORMAT_UNSUPPORTED,
         ERROR_CONTEXT_NOT_ACTIVITY
       })
@@ -93,8 +91,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
   /** Banner size mismatch. */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
-  /** App did not request unified native ads. */
-  public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 102;
   /** Context is null. */
   public static final int ERROR_NULL_CONTEXT = 103;
   /** AppLovin bid token is empty. */
@@ -103,8 +99,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static final int ERROR_AD_ALREADY_REQUESTED = 105;
   /** Ad is not ready to display. */
   public static final int ERROR_PRESENTATON_AD_NOT_READY = 106;
-  /** Native ad is missing required assets. */
-  public static final int ERROR_MAPPING_NATIVE_ASSETS = 107;
   /** Adapter does not support the ad format being requested. */
   public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
   /** Context is not an Activity instance. */
@@ -277,16 +271,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
   @Override
   public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
     final MediationConfiguration config = rtbSignalData.getConfiguration();
-
-    // Check if supported ad format
-    if (config.getFormat() == AdFormat.NATIVE) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_AD_FORMAT_UNSUPPORTED,
-              "Requested to collect signal for unsupported native ad format. Ignoring...");
-      handleCollectSignalsFailure(errorMessage, signalCallbacks);
-      return;
-    }
 
     // Check if the publisher provided extra parameters
     if (rtbSignalData.getNetworkExtras() != null) {
