@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.INSTANCE_STATE;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -38,25 +37,15 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
    */
   private MediationInterstitialListener mInterstitialListener;
 
-  /** This is the id of the instance to be shown. */
+  /**
+   * This is the id of the instance to be shown.
+   */
   private String mInstanceID;
 
   private static AtomicBoolean mDidInitInterstitial = new AtomicBoolean(false);
 
   private static final List<IronSource.AD_UNIT> mAdUnitsToInit =
       new ArrayList<>(Collections.singletonList(IronSource.AD_UNIT.INTERSTITIAL));
-
-  /** Holds the interstitial instance state. */
-  private INSTANCE_STATE mState = INSTANCE_STATE.START;
-
-  /** This is the id of interstitial instance requested. */
-  INSTANCE_STATE getInstanceState() {
-    return mState;
-  }
-
-  void setInstanceState(IronSourceMediationAdapter.INSTANCE_STATE mState) {
-    this.mState = mState;
-  }
 
   // region MediationInterstitialAdapter implementation.
   @Override
@@ -112,13 +101,16 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
   // endregion
 
   @Override
-  public void onDestroy() {}
+  public void onDestroy() {
+  }
 
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
 
   // region ISDemandOnlyInterstitialListener implementation.
   public void onInterstitialAdReady(String instanceId) {
@@ -227,5 +219,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
           }
         });
   }
+
+  @Override
+  public void onAdFailedToShow(@AdapterError int errorCode, @NonNull String errorMessage) {
+    String adapterError = IronSourceAdapterUtils.createAdapterError(errorCode, errorMessage);
+    Log.e(TAG, adapterError);
+  }
+
   // endregion
 }

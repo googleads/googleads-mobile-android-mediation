@@ -1,5 +1,11 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.7.1.0
+- Verified compatibility with Vungle SDK 6.7.1.
+- Fixed a bug where ads wouldn't load if an ad was loaded using an application context.
+- Updated `targetSdkVersion` to API 29.
+- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
+
 #### Version 6.7.0.0
 - Verified compatibility with Vungle SDK 6.7.0.
 - Updated the adapter to support inline adaptive banner requests.
