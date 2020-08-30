@@ -505,7 +505,7 @@ public class FyberMediationAdapter extends Adapter
 
       }
     } else {
-      Log.w(TAG, "showInterstitial called, but context reference was lost, or wrong spot has been used (shoudn't happen)");
+      Log.w(TAG, "showInterstitial called, but context reference was lost, or wrong spot has been used (should not happen)");
       mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
     }
   }
