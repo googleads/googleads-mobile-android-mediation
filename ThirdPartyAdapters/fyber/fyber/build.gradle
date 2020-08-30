@@ -19,8 +19,8 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 2
-        versionCode 707000
+        targetSdkVersion 28
+        versionCode 7070000
         versionName stringVersion
     }
 
