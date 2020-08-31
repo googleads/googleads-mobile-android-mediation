@@ -272,6 +272,16 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
     final MediationConfiguration config = rtbSignalData.getConfiguration();
 
+    // Check if supported ad format
+    if (config.getFormat() == AdFormat.NATIVE) {
+      String errorMessage =
+              createAdapterError(
+                      ERROR_AD_FORMAT_UNSUPPORTED,
+                      "Requested to collect signal for unsupported native ad format. Ignoring...");
+      handleCollectSignalsFailure(errorMessage, signalCallbacks);
+      return;
+    }
+
     // Check if the publisher provided extra parameters
     if (rtbSignalData.getNetworkExtras() != null) {
       Log.i(TAG, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
