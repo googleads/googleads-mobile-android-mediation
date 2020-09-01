@@ -69,7 +69,8 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       MediationAdRequest mediationAdRequest,
       Bundle networkExtras) {
 
-    if (!(context instanceof Activity)) {
+    // SDK versions BELOW 7.2.0 require a instance of an Activity to be passed in as the context
+    if (AppLovinSdk.VERSION_CODE < 720 && !(context instanceof Activity)) {
       String adapterError =
           createAdapterError(
               ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
@@ -185,7 +186,8 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       MediationAdRequest mediationAdRequest,
       Bundle networkExtras) {
 
-    if (!(context instanceof Activity)) {
+    // SDK versions BELOW 7.1.0 require a instance of an Activity to be passed in as the context
+    if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {
       String adapterError =
           createAdapterError(
               ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
