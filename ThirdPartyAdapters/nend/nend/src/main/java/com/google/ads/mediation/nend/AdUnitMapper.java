@@ -23,14 +23,14 @@ class AdUnitMapper {
     AdUnitMapper mapper = new AdUnitMapper(serverParameters);
 
     if (TextUtils.isEmpty(mapper.apiKey)) {
-      Log.w(NendMediationAdapter.TAG,
-          "Failed to request ad from Nend: Missing or invalid API Key.");
+      Log.w(
+          NendMediationAdapter.TAG, "Failed to request ad from Nend: Missing or invalid API Key.");
       return null;
     }
 
     if (mapper.spotId <= 0) {
-      Log.w(NendMediationAdapter.TAG,
-          "Failed to request ad from Nend: Missing or invalid Spot ID.");
+      Log.w(
+          NendMediationAdapter.TAG, "Failed to request ad from Nend: Missing or invalid Spot ID.");
       return null;
     }
 

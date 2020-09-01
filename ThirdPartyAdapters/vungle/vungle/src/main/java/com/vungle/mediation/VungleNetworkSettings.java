@@ -2,9 +2,7 @@ package com.vungle.mediation;
 
 import com.vungle.warren.VungleSettings;
 
-/**
- * To apply the Vungle network settings during initialization.
- */
+/** To apply the Vungle network settings during initialization. */
 public class VungleNetworkSettings {
 
   private static final long MEGABYTE = 1024 * 1024;
@@ -34,12 +32,13 @@ public class VungleNetworkSettings {
    * called after first loading an ad, settings will not be applied.
    */
   private static void applySettings() {
-    vungleSettings = new VungleSettings.Builder()
-        .setMinimumSpaceForInit(minimumSpaceForInit)
-        .setMinimumSpaceForAd(minimumSpaceForAd)
-        .setAndroidIdOptOut(androidIdOptedOut)
-        .disableBannerRefresh()
-        .build();
+    vungleSettings =
+        new VungleSettings.Builder()
+            .setMinimumSpaceForInit(minimumSpaceForInit)
+            .setMinimumSpaceForAd(minimumSpaceForAd)
+            .setAndroidIdOptOut(androidIdOptedOut)
+            .disableBannerRefresh()
+            .build();
     if (vungleSettingsChangedListener != null) {
       vungleSettingsChangedListener.onVungleSettingsChanged(vungleSettings);
     }

@@ -29,12 +29,13 @@ public class VungleInitializer implements InitCallback {
 
   private VungleInitializer() {
     mInitListeners = new ArrayList<>();
-    Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.admob,
+    Plugin.addWrapperInfo(
+        VungleApiClient.WrapperFramework.admob,
         com.vungle.mediation.BuildConfig.VERSION_NAME.replace('.', '_'));
   }
 
-  public void initialize(final String appId, final Context context,
-      VungleInitializationListener listener) {
+  public void initialize(
+      final String appId, final Context context, VungleInitializationListener listener) {
 
     if (Vungle.isInitialized()) {
       listener.onInitializeSuccess();
@@ -57,11 +58,10 @@ public class VungleInitializer implements InitCallback {
               return;
             }
 
-            VungleSettings settings = (updatedSettings != null) ? updatedSettings :
-                new VungleSettings.Builder().build();
+            VungleSettings settings =
+                (updatedSettings != null) ? updatedSettings : new VungleSettings.Builder().build();
             // Pass new settings to SDK.
-            Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this,
-                settings);
+            Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
           }
         });
 
@@ -75,33 +75,36 @@ public class VungleInitializer implements InitCallback {
 
   @Override
   public void onSuccess() {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        if (VungleConsent.getCurrentVungleConsent() != null) {
-          Vungle.updateConsentStatus(VungleConsent.getCurrentVungleConsent(),
-              VungleConsent.getCurrentVungleConsentMessageVersion());
-        }
-        for (VungleInitializationListener listener : mInitListeners) {
-          listener.onInitializeSuccess();
-        }
-        mInitListeners.clear();
-      }
-    });
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (VungleConsent.getCurrentVungleConsent() != null) {
+              Vungle.updateConsentStatus(
+                  VungleConsent.getCurrentVungleConsent(),
+                  VungleConsent.getCurrentVungleConsentMessageVersion());
+            }
+            for (VungleInitializationListener listener : mInitListeners) {
+              listener.onInitializeSuccess();
+            }
+            mInitListeners.clear();
+          }
+        });
     mIsInitializing.set(false);
   }
 
   @Override
   public void onError(final VungleException throwable) {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        for (VungleInitializationListener listener : mInitListeners) {
-          listener.onInitializeError(throwable.getLocalizedMessage());
-        }
-        mInitListeners.clear();
-      }
-    });
+    mHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            for (VungleInitializationListener listener : mInitListeners) {
+              listener.onInitializeError(throwable.getLocalizedMessage());
+            }
+            mInitListeners.clear();
+          }
+        });
     mIsInitializing.set(false);
   }
 
@@ -116,5 +119,4 @@ public class VungleInitializer implements InitCallback {
 
     void onInitializeError(String errorMessage);
   }
-
 }

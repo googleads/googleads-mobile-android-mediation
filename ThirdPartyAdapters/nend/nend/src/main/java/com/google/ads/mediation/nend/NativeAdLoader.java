@@ -16,19 +16,13 @@ import net.nend.android.NendAdNativeClient;
 
 class NativeAdLoader {
 
-  /**
-   * Listener class to forward Nend native ad events to the Google Mobile Ads SDK.
-   */
+  /** Listener class to forward Nend native ad events to the Google Mobile Ads SDK. */
   private NendNativeAdForwarder forwarder;
 
-  /**
-   * Nend native ad client.
-   */
+  /** Nend native ad client. */
   private NendAdNativeClient client;
 
-  /**
-   * Custom options for requesting Nend native ads.
-   */
+  /** Custom options for requesting Nend native ads. */
   private NativeAdOptions nativeAdOptions;
 
   /**
@@ -37,9 +31,7 @@ class NativeAdLoader {
    */
   private boolean isAdImageDownloadComplete;
 
-  /**
-   * Nend's native ad image.
-   */
+  /** Nend's native ad image. */
   private Bitmap nendAdImage = null;
 
   /**
@@ -48,54 +40,55 @@ class NativeAdLoader {
    */
   private boolean isLogoImageDownloadComplete;
 
-  /**
-   * Nend's native ad logo
-   */
+  /** Nend's native ad logo */
   private Bitmap nendLogoImage = null;
 
-  NativeAdLoader(NendNativeAdForwarder forwarder, NendAdNativeClient client,
-      NativeAdOptions nativeAdOptions) {
+  NativeAdLoader(
+      NendNativeAdForwarder forwarder, NendAdNativeClient client, NativeAdOptions nativeAdOptions) {
     this.forwarder = forwarder;
     this.client = client;
     this.nativeAdOptions = nativeAdOptions;
   }
 
   void loadAd() {
-    client.loadAd(new NendAdNativeClient.Callback() {
-      @Override
-      public void onSuccess(final NendAdNative nendAdNative) {
-        Context context = forwarder.getContextFromWeakReference();
-        if (context == null) {
-          Log.e(TAG, "Your context may be released...");
-          forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-          return;
-        }
-
-        downloadImages(nendAdNative, new OnNendImagesDownloadedListener() {
+    client.loadAd(
+        new NendAdNativeClient.Callback() {
           @Override
-          public void onImagesDownloaded(@Nullable Bitmap adImage,
-              @Nullable Bitmap logoImage) {
-            NendUnifiedNativeNormalAdMapper adMapper =
-                createUnifiedNativeAdMapper(nendAdNative);
-            if (adMapper == null) {
-              Log.e(TAG, "Failed to create unified native ad mapper.");
-              forwarder.failedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+          public void onSuccess(final NendAdNative nendAdNative) {
+            Context context = forwarder.getContextFromWeakReference();
+            if (context == null) {
+              Log.e(TAG, "Your context may be released...");
+              forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
               return;
             }
 
-            forwarder.setUnifiedNativeAdMapper(adMapper);
-            forwarder.adLoaded();
+            downloadImages(
+                nendAdNative,
+                new OnNendImagesDownloadedListener() {
+                  @Override
+                  public void onImagesDownloaded(
+                      @Nullable Bitmap adImage, @Nullable Bitmap logoImage) {
+                    NendUnifiedNativeNormalAdMapper adMapper =
+                        createUnifiedNativeAdMapper(nendAdNative);
+                    if (adMapper == null) {
+                      Log.e(TAG, "Failed to create unified native ad mapper.");
+                      forwarder.failedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                      return;
+                    }
+
+                    forwarder.setUnifiedNativeAdMapper(adMapper);
+                    forwarder.adLoaded();
+                  }
+                });
+          }
+
+          @Override
+          public void onFailure(NendAdNativeClient.NendError nendError) {
+            Log.e(TAG, "Failed to request Nend native ad: " + nendError.getMessage());
+            forwarder.setUnifiedNativeAdMapper(null);
+            forwarder.failedToLoad(nendError.getCode());
           }
         });
-      }
-
-      @Override
-      public void onFailure(NendAdNativeClient.NendError nendError) {
-        Log.e(TAG, "Failed to request Nend native ad: " + nendError.getMessage());
-        forwarder.setUnifiedNativeAdMapper(null);
-        forwarder.failedToLoad(nendError.getCode());
-      }
-    });
   }
 
   @Nullable
@@ -114,20 +107,19 @@ class NativeAdLoader {
 
     NendNativeMappedImage adImage = null;
     if (shouldReturnUrlsForImageAssets || nendAdImage != null) {
-      adImage = new NendNativeMappedImage(context, nendAdImage,
-          Uri.parse(ad.getAdImageUrl()));
+      adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getAdImageUrl()));
     }
 
     NendNativeMappedImage logoImage = null;
     if (shouldReturnUrlsForImageAssets || nendLogoImage != null) {
-      logoImage = new NendNativeMappedImage(context, nendAdImage,
-          Uri.parse(ad.getLogoImageUrl()));
+      logoImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getLogoImageUrl()));
     }
 
     return new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);
   }
 
-  private void downloadImages(@NonNull final NendAdNative nendNativeAd,
+  private void downloadImages(
+      @NonNull final NendAdNative nendNativeAd,
       @NonNull final OnNendImagesDownloadedListener listener) {
     final Context context = forwarder.getContextFromWeakReference();
     if (context == null) {
@@ -137,50 +129,51 @@ class NativeAdLoader {
     }
 
     if (NendUnifiedNativeAdMapper.canDownloadImage(context, nendNativeAd.getAdImageUrl())) {
-      nendNativeAd.downloadAdImage(new Callback() {
-        @Override
-        public void onSuccess(Bitmap adImageBitmap) {
-          nendAdImage = adImageBitmap;
-          isAdImageDownloadComplete = true;
-          checkAndInvokeDownloadedListener(listener);
-        }
+      nendNativeAd.downloadAdImage(
+          new Callback() {
+            @Override
+            public void onSuccess(Bitmap adImageBitmap) {
+              nendAdImage = adImageBitmap;
+              isAdImageDownloadComplete = true;
+              checkAndInvokeDownloadedListener(listener);
+            }
 
-        @Override
-        public void onFailure(Exception exception) {
-          Log.d(TAG, "Unable to download Nend ad image bitmap.", exception);
-          isAdImageDownloadComplete = true;
-          checkAndInvokeDownloadedListener(listener);
-        }
-      });
+            @Override
+            public void onFailure(Exception exception) {
+              Log.d(TAG, "Unable to download Nend ad image bitmap.", exception);
+              isAdImageDownloadComplete = true;
+              checkAndInvokeDownloadedListener(listener);
+            }
+          });
     } else {
       isAdImageDownloadComplete = true;
       checkAndInvokeDownloadedListener(listener);
     }
 
     if (NendUnifiedNativeAdMapper.canDownloadImage(context, nendNativeAd.getLogoImageUrl())) {
-      nendNativeAd.downloadLogoImage(new Callback() {
-        @Override
-        public void onSuccess(Bitmap adLogoBitmap) {
-          nendLogoImage = adLogoBitmap;
-          isLogoImageDownloadComplete = true;
-          checkAndInvokeDownloadedListener(listener);
-        }
+      nendNativeAd.downloadLogoImage(
+          new Callback() {
+            @Override
+            public void onSuccess(Bitmap adLogoBitmap) {
+              nendLogoImage = adLogoBitmap;
+              isLogoImageDownloadComplete = true;
+              checkAndInvokeDownloadedListener(listener);
+            }
 
-        @Override
-        public void onFailure(Exception exception) {
-          Log.d(TAG, "Unable to download Nend logo image bitmap.", exception);
-          isLogoImageDownloadComplete = true;
-          checkAndInvokeDownloadedListener(listener);
-        }
-      });
+            @Override
+            public void onFailure(Exception exception) {
+              Log.d(TAG, "Unable to download Nend logo image bitmap.", exception);
+              isLogoImageDownloadComplete = true;
+              checkAndInvokeDownloadedListener(listener);
+            }
+          });
     } else {
       isLogoImageDownloadComplete = true;
       checkAndInvokeDownloadedListener(listener);
     }
   }
 
-  private void checkAndInvokeDownloadedListener(
-      @NonNull OnNendImagesDownloadedListener listener) {
+  private void checkAndInvokeDownloadedListener(@NonNull OnNendImagesDownloadedListener listener) {
     if (isAdImageDownloadComplete && isLogoImageDownloadComplete) {
       listener.onImagesDownloaded(nendAdImage, nendLogoImage);
     }

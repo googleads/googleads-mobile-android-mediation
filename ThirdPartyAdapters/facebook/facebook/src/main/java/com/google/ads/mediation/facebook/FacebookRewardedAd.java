@@ -13,8 +13,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdExperienceType;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
@@ -85,6 +87,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
           rewardedAd.buildLoadAdConfig()
               .withAdListener(this)
               .withBid(decodedBid)
+              .withAdExperience(getAdExperienceType())
               .build()
       );
     } else {
@@ -129,11 +132,17 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     }
   }
 
+  @NonNull
+  AdExperienceType getAdExperienceType() {
+    return AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED;
+  }
+
   private void createAndLoadRewardedVideo(Context context, String placementID) {
     rewardedAd = new RewardedVideoAd(context, placementID);
     rewardedAd.loadAd(
         rewardedAd.buildLoadAdConfig()
             .withAdListener(this)
+            .withAdExperience(getAdExperienceType())
             .build()
     );
   }

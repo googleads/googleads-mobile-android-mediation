@@ -14,7 +14,7 @@ import com.applovin.nativeAds.AppLovinNativeAdLoadListener;
 import com.applovin.nativeAds.AppLovinNativeAdPrecacheListener;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter.AdapterError;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import java.lang.ref.WeakReference;
@@ -29,7 +29,8 @@ class AppLovinNativeAdListener
   private final WeakReference<Context> mContextWeakReference;
   private final NativeMediationAdRequest mMediationAdRequest;
 
-  public AppLovinNativeAdListener(AppLovinNativeAdapter adapter,
+  public AppLovinNativeAdListener(
+      AppLovinNativeAdapter adapter,
       MediationNativeListener nativeListener,
       AppLovinSdk sdk,
       Context context,
@@ -46,8 +47,10 @@ class AppLovinNativeAdListener
     if (nativeAds.size() > 0 && isValidNativeAd(nativeAds.get(0))) {
       mSdk.getNativeAdService().precacheResources(nativeAds.get(0), this);
     } else {
-      String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS,
-          "Ad from AppLovin doesn't have all assets required for the app install ad format");
+      String errorMessage =
+          createAdapterError(
+              ERROR_MAPPING_NATIVE_ASSETS,
+              "Ad from AppLovin doesn't have all assets required for the app install ad format.");
       Log.e(TAG, errorMessage);
       notifyAdFailure(ERROR_MAPPING_NATIVE_ASSETS);
     }
@@ -65,31 +68,32 @@ class AppLovinNativeAdListener
     // Create a native ad.
     Context context = mContextWeakReference.get();
     if (context == null) {
-      String errorMessage = createAdapterError(ERROR_NULL_CONTEXT,
-          "Failed to create mapper. Context is null.");
+      String errorMessage =
+          createAdapterError(ERROR_NULL_CONTEXT, "Failed to create mapper. Context is null.");
       Log.e(TAG, errorMessage);
       notifyAdFailure(ERROR_NULL_CONTEXT);
       return;
     }
     if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
-      final AppLovinUnifiedNativeAdMapper mapper = new AppLovinUnifiedNativeAdMapper(context,
-          ad);
+      final AppLovinUnifiedNativeAdMapper mapper = new AppLovinUnifiedNativeAdMapper(context, ad);
       Log.d(TAG, "UnifiedNativeAd loaded.");
-      AppLovinSdkUtils.runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          mNativeListener.onAdLoaded(mAdapter, mapper);
-        }
-      });
+      AppLovinSdkUtils.runOnUiThread(
+          new Runnable() {
+            @Override
+            public void run() {
+              mNativeListener.onAdLoaded(mAdapter, mapper);
+            }
+          });
     } else if (mMediationAdRequest.isAppInstallAdRequested()) {
       final AppLovinNativeAdMapper mapper = new AppLovinNativeAdMapper(ad, context);
       Log.d(TAG, "AppInstallAd loaded.");
-      AppLovinSdkUtils.runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          mNativeListener.onAdLoaded(mAdapter, mapper);
-        }
-      });
+      AppLovinSdkUtils.runOnUiThread(
+          new Runnable() {
+            @Override
+            public void run() {
+              mNativeListener.onAdLoaded(mAdapter, mapper);
+            }
+          });
     }
   }
 
@@ -108,19 +112,17 @@ class AppLovinNativeAdListener
   @Override
   public void onNativeAdVideoPrecachingFailed(AppLovinNativeAd ad, final int errorCode) {
     // Do nothing.
-
   }
 
-  /**
-   * Sends a failure callback to {@link #mNativeListener}.
-   */
-  private void notifyAdFailure(@NonNull @AppLovinMediationAdapter.Error final int errorCode) {
-    AppLovinSdkUtils.runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        mNativeListener.onAdFailedToLoad(mAdapter, errorCode);
-      }
-    });
+  /** Sends a failure callback to {@link #mNativeListener}. */
+  private void notifyAdFailure(@NonNull @AdapterError final int errorCode) {
+    AppLovinSdkUtils.runOnUiThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            mNativeListener.onAdFailedToLoad(mAdapter, errorCode);
+          }
+        });
   }
 
   /**
@@ -130,8 +132,10 @@ class AppLovinNativeAdListener
    * @return {@code true} if the native ad has all the required assets.
    */
   private static boolean isValidNativeAd(AppLovinNativeAd nativeAd) {
-    return nativeAd.getImageUrl() != null && nativeAd.getIconUrl() != null &&
-        nativeAd.getTitle() != null && nativeAd.getDescriptionText() != null &&
-        nativeAd.getCtaText() != null;
+    return nativeAd.getImageUrl() != null
+        && nativeAd.getIconUrl() != null
+        && nativeAd.getTitle() != null
+        && nativeAd.getDescriptionText() != null
+        && nativeAd.getCtaText() != null;
   }
 }

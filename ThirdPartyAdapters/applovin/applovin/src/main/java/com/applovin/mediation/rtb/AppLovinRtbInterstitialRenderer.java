@@ -20,29 +20,24 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
-/**
- * Created by Thomas So on July 17 2018
- */
+/** Created by Thomas So on July 17 2018 */
 public final class AppLovinRtbInterstitialRenderer
-    implements MediationInterstitialAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
-    AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
+    implements MediationInterstitialAd,
+        AppLovinAdLoadListener,
+        AppLovinAdDisplayListener,
+        AppLovinAdClickListener,
+        AppLovinAdVideoPlaybackListener {
 
   private static final String TAG = AppLovinRtbInterstitialRenderer.class.getSimpleName();
 
-  /**
-   * Data used to render an RTB interstitial ad.
-   */
+  /** Data used to render an RTB interstitial ad. */
   private final MediationInterstitialAdConfiguration adConfiguration;
 
-  /**
-   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
-   */
+  /** Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed. */
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       callback;
 
-  /**
-   * Listener object to notify the Google Mobile Ads SDK of interstitial presentation events.
-   */
+  /** Listener object to notify the Google Mobile Ads SDK of interstitial presentation events. */
   private MediationInterstitialAdCallback mInterstitalAdCallback;
 
   private final AppLovinSdk sdk;
@@ -51,14 +46,14 @@ public final class AppLovinRtbInterstitialRenderer
 
   public AppLovinRtbInterstitialRenderer(
       MediationInterstitialAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> callback) {
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
 
     this.adConfiguration = adConfiguration;
     this.callback = callback;
 
-    this.sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(),
-        adConfiguration.getContext());
+    this.sdk =
+        AppLovinUtils.retrieveSdk(
+            adConfiguration.getServerParameters(), adConfiguration.getContext());
   }
 
   public void loadAd() {
@@ -91,7 +86,7 @@ public final class AppLovinRtbInterstitialRenderer
     interstitialAd.showAndRender(ad);
   }
 
-  //region AppLovin Listeners
+  // region AppLovin Listeners
   @Override
   public void adReceived(AppLovinAd ad) {
     Log.d(TAG, "Interstitial did load ad: " + ad.getAdIdNumber());
@@ -110,33 +105,33 @@ public final class AppLovinRtbInterstitialRenderer
 
   @Override
   public void adDisplayed(AppLovinAd ad) {
-    Log.d(TAG, "Interstitial displayed");
+    Log.d(TAG, "Interstitial displayed.");
     mInterstitalAdCallback.reportAdImpression();
     mInterstitalAdCallback.onAdOpened();
   }
 
   @Override
   public void adHidden(AppLovinAd ad) {
-    Log.d(TAG, "Interstitial hidden");
+    Log.d(TAG, "Interstitial hidden.");
     mInterstitalAdCallback.onAdClosed();
   }
 
   @Override
   public void adClicked(AppLovinAd ad) {
-    Log.d(TAG, "Interstitial clicked");
+    Log.d(TAG, "Interstitial clicked.");
     mInterstitalAdCallback.reportAdClicked();
     mInterstitalAdCallback.onAdLeftApplication();
   }
 
   @Override
   public void videoPlaybackBegan(AppLovinAd ad) {
-    Log.d(TAG, "Interstitial video playback began");
+    Log.d(TAG, "Interstitial video playback began.");
   }
 
   @Override
   public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
-    Log.d(TAG, "Interstitial video playback ended at playback percent: " + percentViewed + "%");
+    Log.d(TAG, "Interstitial video playback ended at playback percent: " + percentViewed + "%.");
   }
-  //endregion
+  // endregion
 
 }

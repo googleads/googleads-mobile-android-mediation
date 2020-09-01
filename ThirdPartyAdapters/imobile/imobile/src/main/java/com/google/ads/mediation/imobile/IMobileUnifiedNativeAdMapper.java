@@ -12,18 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/**
- * Mapper for UnifiedNativeAd.
- */
+/** Mapper for UnifiedNativeAd. */
 public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /**
-   * Called when clicked.
-   */
+  /** Called when clicked. */
   private Runnable clickEvent;
 
-  public IMobileUnifiedNativeAdMapper(@NonNull ImobileSdkAdsNativeAdData adData,
-      @NonNull Drawable adImage) {
+  public IMobileUnifiedNativeAdMapper(
+      @NonNull ImobileSdkAdsNativeAdData adData, @NonNull Drawable adImage) {
     // Initialize fields.
     this.clickEvent = adData.getClickEvent();
 
@@ -42,7 +38,7 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setCallToAction(Constants.CALL_TO_ACTION);
     setHeadline(adData.getTitle());
 
-    //Created a transparent drawable as i-mobile do not render AdIcon.
+    // Created a transparent drawable as i-mobile do not render AdIcon.
     setIcon(new NativeAdImage(new ColorDrawable(Color.TRANSPARENT), null, 1));
   }
 

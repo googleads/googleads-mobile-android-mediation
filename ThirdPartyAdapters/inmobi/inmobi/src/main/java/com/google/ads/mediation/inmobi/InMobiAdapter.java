@@ -8,9 +8,11 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -33,7 +35,6 @@ import com.inmobi.ads.listeners.NativeAdEventListener;
 import com.inmobi.ads.listeners.VideoEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -148,19 +149,20 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     });
   }
 
-  private AdSize getSupportedAdSize(Context context, AdSize adSize) {
-        /*
-            Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
-            320x50,
-            300x250,
-            728x90.
-         */
+  @Nullable
+  private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
+    /*
+        Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
+        320x50,
+        300x250,
+        728x90.
+     */
 
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(new AdSize(320, 50));
     potentials.add(new AdSize(300, 250));
     potentials.add(new AdSize(728, 90));
-    return InMobiAdapterUtils.findClosestSize(context, adSize, potentials);
+    return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
   @Override
@@ -223,10 +225,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     mNativeListener = listener;
 
-    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()
-        && !mNativeMedAdReq.isAppInstallAdRequested()) {
-      Log.e(TAG, "Failed to request InMobi native ad: "
-          + "Unified Native Ad or App install Ad should be requested.");
+    if (!mNativeMedAdReq.isUnifiedNativeAdRequested()) {
+      Log.e(TAG, "Failed to request InMobi native ad: Unified Native Ad should be requested.");
       mNativeListener.onAdFailedToLoad(this,
           AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
@@ -366,6 +366,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mediationAdSize.getHeightInPixels(context)));
     mWrappedAdView.addView(adView);
     InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
+
+    Log.d(TAG, "Requesting banner with ad size: " + mediationAdSize.toString());
     adView.load();
   }
 
@@ -502,22 +504,12 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
           }
 
-          if (InMobiAdapter.this.mNativeMedAdReq.isUnifiedNativeAdRequested()) {
-            InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-                new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
-                    imNativeAd,
-                    mIsOnlyUrl,
-                    mNativeListener);
-            inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
-          } else if (InMobiAdapter.this.mNativeMedAdReq.isAppInstallAdRequested()) {
-            InMobiAppInstallNativeAdMapper inMobiAppInstallNativeAdMapper =
-                new InMobiAppInstallNativeAdMapper(
-                    InMobiAdapter.this,
-                    imNativeAd,
-                    mIsOnlyUrl,
-                    mNativeListener);
-            inMobiAppInstallNativeAdMapper.mapAppInstallAd(context);
-          }
+          InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
+              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this,
+                  imNativeAd,
+                  mIsOnlyUrl,
+                  mNativeListener);
+          inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
         }
 
         @Override
