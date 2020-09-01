@@ -39,20 +39,34 @@ public class IronSourceMediationAdapter extends Adapter
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-        ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_REQUIRES_ACTIVITY_CONTEXT,
-        ERROR_AD_ALREADY_LOADED
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          ERROR_AD_ALREADY_LOADED,
+          ERROR_AD_SHOW_UNAUTHORIZED,
       })
-  public @interface AdapterError {}
+  public @interface AdapterError {
 
-  /** Server parameters (e.g. placement ID) are nil. */
+  }
+
+  /**
+   * Server parameters (e.g. placement ID) are nil.
+   */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
-  /** IronSource requires an {@link Activity} context to initialize their SDK. */
+  /**
+   * IronSource requires an {@link Activity} context to initialize their SDK.
+   */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 102;
 
-  /** IronSource can only load 1 ad per IronSource instance ID. */
+  /**
+   * IronSource can only load 1 ad per IronSource instance ID.
+   */
   public static final int ERROR_AD_ALREADY_LOADED = 103;
+
+  /**
+   * IronSource adapter does not have authority to show an ad instance.
+   */
+  public static final int ERROR_AD_SHOW_UNAUTHORIZED = 104;
   // endregion
 
   private static AtomicBoolean mDidInitRewardedVideo = new AtomicBoolean(false);
@@ -73,27 +87,14 @@ public class IronSourceMediationAdapter extends Adapter
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mMediationAdLoadCallback;
 
-  /** Holds the instance state */
-  private INSTANCE_STATE mState = INSTANCE_STATE.START;
-
-  /** This is the id of the rewarded video instance requested. */
+  /**
+   * This is the id of the rewarded video instance requested.
+   */
   private String mInstanceID;
 
-  INSTANCE_STATE getInstanceState() {
-    return mState;
-  }
-
-  void setInstanceState(INSTANCE_STATE mState) {
-    this.mState = mState;
-  }
-
-  enum INSTANCE_STATE {
-    START, // Initial state when instance wasn't loaded yet
-    CAN_LOAD, // If load is called on an instance with this state, pass it forward to IronSource SDK
-    LOCKED, // if load is called on an instance with this state, report load fail
-  }
-
-  /** MediationRewardedAd implementation. */
+  /**
+   * MediationRewardedAd implementation.
+   */
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = IronSourceUtils.getSDKVersion();
@@ -256,7 +257,8 @@ public class IronSourceMediationAdapter extends Adapter
   public void showAd(Context context) {
     Log.d(
         TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", this.mInstanceID));
-    IronSourceManager.getInstance().showRewardedVideo(this.mInstanceID);
+    IronSourceManager.getInstance()
+        .showRewardedVideo(this.mInstanceID, IronSourceMediationAdapter.this);
   }
 
   // region ISDemandOnlyRewardedVideoListener implementation.
@@ -386,9 +388,27 @@ public class IronSourceMediationAdapter extends Adapter
           }
         });
   }
+
+  @Override
+  public void onAdFailedToShow(@AdapterError int errorCode, @NonNull String errorMessage) {
+    final String adapterError = IronSourceAdapterUtils.createAdapterError(errorCode, errorMessage);
+    Log.e(TAG, adapterError);
+
+    IronSourceAdapterUtils.sendEventOnUIThread(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (mMediationRewardedAdCallback != null) {
+              mMediationRewardedAdCallback.onAdFailedToShow(adapterError);
+            }
+          }
+        });
+  }
   // endregion
 
-  /** A {@link RewardItem} used to map IronSource reward to Google's reward. */
+  /**
+   * A {@link RewardItem} used to map IronSource reward to Google's reward.
+   */
   static class IronSourceReward implements RewardItem {
 
     @Override

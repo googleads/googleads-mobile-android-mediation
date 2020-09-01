@@ -26,6 +26,7 @@ import com.fyber.inneractive.sdk.external.InneractiveMediationName;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -71,6 +72,11 @@ public class FyberMediationAdapter extends Adapter
    * Key to obtain a placement name or spot id. Required for creating a Fyber ad request.
    */
   static final String KEY_SPOT_ID = "spotId";
+
+  /**
+   * Requested banner ad size.
+   */
+  private AdSize requestedAdSize;
 
   /**
    * Fyber's Spot object for the banner.
@@ -182,7 +188,7 @@ public class FyberMediationAdapter extends Adapter
     if (configuredAppIds.size() > 1) {
       String message = String.format("Multiple '%s' entries found: %s. " +
               "Using '%s' to initialize the Fyber Marketplace SDK.",
-          KEY_APP_ID, appIdForInitialization, appIdForInitialization);
+          KEY_APP_ID, configuredAppIds.toString(), appIdForInitialization);
       Log.w(TAG, message);
     }
 
@@ -241,9 +247,8 @@ public class FyberMediationAdapter extends Adapter
    */
   @Override
   public void requestBannerAd(final Context context,
-      final MediationBannerListener mediationBannerListener,
-      final Bundle serverParameters, AdSize adSize,
-      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
+      final MediationBannerListener mediationBannerListener, final Bundle serverParameters,
+      final AdSize adSize, MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
     mMediationBannerListener = mediationBannerListener;
 
@@ -286,6 +291,7 @@ public class FyberMediationAdapter extends Adapter
         InneractiveAdSpot.RequestListener requestListener = createFyberBannerAdListener();
         mBannerSpot.setRequestListener(requestListener);
 
+        requestedAdSize = adSize;
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
         mBannerSpot.requestAd(request);
       }
@@ -345,9 +351,31 @@ public class FyberMediationAdapter extends Adapter
 
         InneractiveAdViewUnitController controller =
             (InneractiveAdViewUnitController) mBannerSpot.getSelectedUnitController();
-
         InneractiveAdViewEventsListener listener = createFyberAdViewListener();
         controller.setEventsListener(listener);
+        controller.bindView(mBannerWrapperView);
+
+        // Validate the ad size returned by Fyber Marketplace with the requested ad size.
+        Context context = mBannerWrapperView.getContext();
+        float density = context.getResources().getDisplayMetrics().density;
+        int fyberAdWidth = Math.round(controller.getAdContentWidth() / density);
+        int fyberAdHeight = Math.round(controller.getAdContentHeight() / density);
+
+        ArrayList<AdSize> potentials = new ArrayList<>();
+        potentials.add(new AdSize(fyberAdWidth, fyberAdHeight));
+        AdSize supportedAdSize = MediationUtils
+            .findClosestSize(context, requestedAdSize, potentials);
+        if (supportedAdSize == null) {
+          int requestedAdWidth = Math.round(requestedAdSize.getWidthInPixels(context) / density);
+          int requestedAdHeight = Math.round(requestedAdSize.getHeightInPixels(context) / density);
+          String errorMessage = String.format("The loaded ad size did not match the requested "
+                  + "ad size. Requested ad size: %dx%d. Loaded ad size: %dx%d.",
+              requestedAdWidth, requestedAdHeight, fyberAdWidth, fyberAdHeight);
+          Log.e(TAG, errorMessage);
+          mMediationBannerListener
+              .onAdFailedToLoad(FyberMediationAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+          return;
+        }
         mMediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
       }
 
@@ -362,7 +390,6 @@ public class FyberMediationAdapter extends Adapter
         } else if (inneractiveErrorCode == InneractiveErrorCode.NO_FILL) {
           adMobErrorCode = AdRequest.ERROR_CODE_NO_FILL;
         }
-
         mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, adMobErrorCode);
       }
     };
@@ -375,12 +402,6 @@ public class FyberMediationAdapter extends Adapter
    */
   @NonNull
   private InneractiveAdViewEventsListener createFyberAdViewListener() {
-    InneractiveAdViewUnitController controller =
-        (InneractiveAdViewUnitController) mBannerSpot.getSelectedUnitController();
-
-    // Bind the wrapper view.
-    controller.bindView(mBannerWrapperView);
-
     return new InneractiveAdViewEventsListenerAdapter() {
       @Override
       public void onAdImpression(InneractiveAdSpot adSpot) {
@@ -550,5 +571,4 @@ public class FyberMediationAdapter extends Adapter
       }
     };
   }
-
 }
