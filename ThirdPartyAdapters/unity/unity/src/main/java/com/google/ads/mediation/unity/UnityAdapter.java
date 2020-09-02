@@ -109,7 +109,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
                     ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
             Log.w(TAG, "Unity Ads failed to load interstitial ad: " + ids + " cannot be empty.");
-
             return false;
         }
 
@@ -192,20 +191,17 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         // ad.
         mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
 
-        if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-
+        Activity activityReference = mActivityWeakReference == null ? null : mActivityWeakReference.get();
+        if (activityReference != null) {
             if (UnityAds.isReady(getPlacementId())) {
                 // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
                 // Unity Ads fails to show an ad).
-                UnityAds.show(mActivityWeakReference.get(), getPlacementId());
-            }
-            else
-            {
+                UnityAds.show(activityReference, getPlacementId());
+            } else {
                 Log.w(TAG, "Unity Ads failed to show interstitial ad for placement ID '" + getPlacementId() +
                         "'. Placement is not ready.");
                 mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
             }
-
         } else {
             Log.w(TAG, "Failed to show interstitial ad for placement ID '" + getPlacementId() +
                     "' from Unity Ads: Activity context is null.");
@@ -220,8 +216,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
                                 AdSize adSize,
                                 MediationAdRequest adRequest,
                                 Bundle mediationExtras){
-        bannerAd = new UnityBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
-        bannerAd.requestBannerAd();
+        bannerAd = new UnityBannerAd();
+        bannerAd.requestBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
     }
 
     @Override

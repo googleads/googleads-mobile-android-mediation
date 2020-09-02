@@ -141,9 +141,8 @@ public class UnityMediationAdapter extends Adapter {
     public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
                                MediationAdLoadCallback<MediationRewardedAd,
                                        MediationRewardedAdCallback> mediationAdLoadCallback) {
-        rewardedAd = new UnityRewardedAd(mediationRewardedAdConfiguration,
-                mediationAdLoadCallback);
-        rewardedAd.load();
+        rewardedAd = new UnityRewardedAd();
+        rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
     }
 
 }
