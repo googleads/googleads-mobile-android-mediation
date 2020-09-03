@@ -14,7 +14,7 @@
 
 package com.google.ads.mediation.unity;
 
-import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 import com.unity3d.ads.BuildConfig;
@@ -49,12 +49,12 @@ public class UnityInitializer {
     /**
      * This method will initialize {@link UnityAds}.
      *
-     * @param activity    The Activity context.
+     * @param context    The context.
      * @param gameId      Unity Ads Game ID.
      * @param initializationListener   Unity Ads Initialization listener.
      *
      */
-    public void initializeUnityAds(Activity activity, String gameId, IUnityAdsInitializationListener
+    public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
             initializationListener) {
         // Check if the current device is supported by Unity Ads before initializing.
         if (!UnityAds.isSupported()) {
@@ -67,13 +67,13 @@ public class UnityInitializer {
         }
 
         // Set mediation meta data before initializing.
-        MediationMetaData mediationMetaData = new MediationMetaData(activity);
+        MediationMetaData mediationMetaData = new MediationMetaData(context);
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
         mediationMetaData.set("adapter_version", UnityAds.getVersion());
         mediationMetaData.commit();
 
-        UnityAds.initialize(activity, gameId, false, true, initializationListener);
+        UnityAds.initialize(context, gameId, false, true, initializationListener);
     }
 
 }

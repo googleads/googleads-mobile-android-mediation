@@ -31,11 +31,6 @@ import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedListener {
 
     /**
-     * Mediation rewarded video ad configuration to render ad.
-     */
-    private MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
-
-    /**
      * Mediation rewarded video ad listener used to forward ad load status
      * to the Google Mobile Ads SDK.
      */
@@ -115,7 +110,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
             return;
         }
 
-        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameId,
+        UnityInitializer.getInstance().initializeUnityAds(context, gameId,
                 new IUnityAdsInitializationListener() {
                     @Override
                     public void onInitializationComplete() {
@@ -134,7 +129,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
                         if (mMediationAdLoadCallback != null) {
                             mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads.");
                         }
-                        return;
                     }
                 });
     }

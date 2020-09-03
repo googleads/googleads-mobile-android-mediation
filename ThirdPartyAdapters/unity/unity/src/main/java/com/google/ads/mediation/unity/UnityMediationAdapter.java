@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.unity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -135,7 +134,7 @@ public class UnityMediationAdapter extends Adapter {
             return;
         }
 
-        UnityInitializer.getInstance().initializeUnityAds((Activity) context, gameID,
+        UnityInitializer.getInstance().initializeUnityAds(context, gameID,
                 new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {

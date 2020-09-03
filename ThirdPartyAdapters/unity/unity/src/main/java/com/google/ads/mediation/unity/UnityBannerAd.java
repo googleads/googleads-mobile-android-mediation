@@ -62,11 +62,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     private MediationBannerListener mMediationBannerListener;
 
     /**
-     * Activity needed to initialize Unity Ads.
-     */
-    private Activity activity;
-
-    /**
      * Context needed to load Unity Ads.
      */
     private Context context;
@@ -156,11 +151,10 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             }
             return;
         }
-        activity = (Activity) context;
         this.context = context;
         this.adSize = adSize;
 
-        UnityInitializer.getInstance().initializeUnityAds(activity, gameId, new IUnityAdsInitializationListener() {
+        UnityInitializer.getInstance().initializeUnityAds(context, gameId, new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
                 Log.d(TAG, "Unity Ads successfully initialized, can now load " +

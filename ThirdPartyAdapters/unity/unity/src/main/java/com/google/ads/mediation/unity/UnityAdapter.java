@@ -148,7 +148,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         Activity activity = (Activity) context;
         mActivityWeakReference = new WeakReference<>(activity);
 
-        UnityInitializer.getInstance().initializeUnityAds(activity, gameId,
+        UnityInitializer.getInstance().initializeUnityAds(context, gameId,
                 new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
