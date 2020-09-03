@@ -70,7 +70,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         @Override
         public void onUnityAdsFailedToLoad(String s) {
             Log.e(UnityAdapter.TAG, "Unity Ads rewarded ad load failure for placement ID '" +
-                    s+ "'");
+                    s + "'");
             if (mMediationAdLoadCallback != null) {
                 mMediationAdLoadCallback.onFailure(s);
             }

@@ -81,7 +81,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
         @Override
         public void onUnityAdsFailedToLoad(String s) {
-            Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID  '"
+            Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
                     + s + "'.");
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
@@ -168,7 +168,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
                     mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                             AdRequest.ERROR_CODE_INVALID_REQUEST);
                 }
-                return;
             }
         });
 

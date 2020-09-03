@@ -74,7 +74,6 @@ public class UnityInitializer {
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, false, true, initializationListener);
-
     }
 
 }
