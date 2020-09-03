@@ -146,8 +146,10 @@ public class UnityMediationAdapter extends Adapter {
             @Override
             public void onInitializationFailed(UnityAds.UnityAdsInitializationError
                                                            unityAdsInitializationError, String s) {
-                initializationCompleteCallback.onInitializationFailed("Unity Ads initialization failed: [" +
-                        unityAdsInitializationError + "] " + s);
+                String message = "Unity Ads initialization failed: [" +
+                        unityAdsInitializationError + "] " + s;
+                Log.d(TAG, message);
+                initializationCompleteCallback.onInitializationFailed(message);
             }
         });
     }

@@ -129,7 +129,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
                     public void onInitializationFailed(UnityAds.UnityAdsInitializationError
                                                                unityAdsInitializationError, String s) {
                         Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
-                                unityAdsInitializationError + "] " + s + ", cannot load rewarded ad"
+                                unityAdsInitializationError + "] " + s + ", cannot load rewarded ad "
                                 + "for placement ID '" + getPlacementId() + "' in game '" + gameId + "'");
                         if (mMediationAdLoadCallback != null) {
                             mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads.");
