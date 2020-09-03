@@ -6,18 +6,22 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_SHOW_UNAUTHORIZED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A centralized {@link ISDemandOnlyRewardedVideoListener} to forward IronSource ad events to all
@@ -27,6 +31,7 @@ class IronSourceManager
     implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener {
 
   private static final IronSourceManager instance = new IronSourceManager();
+  private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
   private ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>> availableInstances;
   private ConcurrentHashMap<String, WeakReference<IronSourceAdapter>>
@@ -45,12 +50,32 @@ class IronSourceManager
     IronSource.setISDemandOnlyInterstitialListener(this);
   }
 
-  void initIronSourceSDK(Activity activity, String appKey, List<IronSource.AD_UNIT> adUnits) {
-    IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
-    if (adUnits.size() > 0) {
-      Log.d(TAG, "Initializing IronSource SDK.");
-      IronSource.initISDemandOnly(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[0]));
+  void initIronSourceSDK(@Nullable Context context, @Nullable String appKey,
+      @NonNull InitializationCallback listener) {
+    if (isInitialized.get()) {
+      listener.onInitializeSuccess();
+      return;
     }
+
+    if (!(context instanceof Activity)) {
+      listener.onInitializeError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "IronSource SDK requires an Activity context to initialize.");
+      return;
+    }
+    Activity activity = (Activity) context;
+
+    if (TextUtils.isEmpty(appKey)) {
+      listener.onInitializeError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.");
+      return;
+    }
+
+    IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
+    Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
+    IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL,
+        IronSource.AD_UNIT.REWARDED_VIDEO);
+
+    isInitialized.set(true);
+    listener.onInitializeSuccess();
   }
 
   void loadInterstitial(
@@ -322,4 +347,12 @@ class IronSourceManager
       }
     }
   }
+
+  interface InitializationCallback {
+
+    void onInitializeSuccess();
+
+    void onInitializeError(@AdapterError int errorCode, @NonNull String errorMessage);
+  }
+
 }
