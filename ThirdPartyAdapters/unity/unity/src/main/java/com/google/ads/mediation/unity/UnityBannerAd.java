@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2020 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.google.ads.mediation.unity;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -91,7 +90,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
         @Override
         public void onBannerClick(BannerView bannerView) {
-            Log.v(TAG, "Unity Ads banner for placement ID '" + bannerPlacementId + "' was clicked.");
+            Log.v(TAG, "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' was clicked.");
             if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdClicked(UnityBannerAd.this);
             }
@@ -112,6 +111,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
         @Override
         public void onBannerLeftApplication(BannerView bannerView) {
+            Log.v(TAG, "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' has left the application.");
             mMediationBannerListener.onAdLeftApplication(UnityBannerAd.this);
         }
     };
@@ -180,6 +180,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
                         mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
                                 AdRequest.ERROR_CODE_INTERNAL_ERROR);
                     }
+                    return;
                 }
 
                 if (mBannerView == null){

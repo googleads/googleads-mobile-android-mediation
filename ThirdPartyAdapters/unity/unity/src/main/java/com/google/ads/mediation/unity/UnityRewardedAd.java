@@ -1,9 +1,22 @@
+// Copyright 2020 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.unity;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -57,7 +70,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         @Override
         public void onUnityAdsFailedToLoad(String s) {
             Log.e(UnityAdapter.TAG, "Unity Ads rewarded ad load failure for placement ID '" +
-                    getPlacementId() + "' " + s);
+                    s+ "'");
             if (mMediationAdLoadCallback != null) {
                 mMediationAdLoadCallback.onFailure(s);
             }
@@ -83,8 +96,10 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
         Context context = mediationRewardedAdConfiguration.getContext();
         if (context == null || !(context instanceof Activity)) {
-            mMediationAdLoadCallback.onFailure("Context is null or is not an Activity." +
-                    " Unity Ads requires an Activity context to show ads.");
+            if (mMediationAdLoadCallback != null) {
+                mMediationAdLoadCallback.onFailure("Context is null or is not an Activity." +
+                        " Unity Ads requires an Activity context to show ads.");
+            }
             return;
         }
 
@@ -93,8 +108,10 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         mPlacementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
 
         if (!UnityAdapter.isValidIds(gameId, getPlacementId())) {
-            mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from UnityAds: " +
-                    "Missing or invalid game ID and placement ID.");
+            if (mMediationAdLoadCallback != null) {
+                mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads: " +
+                        "Missing or invalid game ID and placement ID.");
+            }
             return;
         }
 
@@ -114,6 +131,10 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
                         Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
                                 unityAdsInitializationError + "] " + s + ", cannot load rewarded ad"
                                 + "for placement ID '" + getPlacementId() + "' in game '" + gameId + "'");
+                        if (mMediationAdLoadCallback != null) {
+                            mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads.");
+                        }
+                        return;
                     }
                 });
     }
@@ -220,6 +241,5 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         if (mMediationRewardedAdCallback != null) {
             mMediationRewardedAdCallback.onAdFailedToShow(logMessage);
         }
-        // check with google
     }
 }

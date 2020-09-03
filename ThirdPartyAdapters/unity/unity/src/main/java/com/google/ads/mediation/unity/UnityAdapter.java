@@ -81,8 +81,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
         @Override
         public void onUnityAdsFailedToLoad(String s) {
-            Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
-                    + getPlacementId() + "' " + s);
+            Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID  '"
+                    + s + "'.");
             if (mMediationInterstitialListener != null) {
                 mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
                             AdRequest.ERROR_CODE_NO_FILL);
@@ -164,14 +164,18 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
                 Log.e(TAG, "Unity Ads initialization failed: [" +
                         unityAdsInitializationError + "] " + s + ", cannot  load interstitial ad for " +
                         "placement ID '" + getPlacementId() + "' in game '" + gameId + "'");
+                if (mMediationInterstitialListener != null) {
+                    mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
+                            AdRequest.ERROR_CODE_INVALID_REQUEST);
+                }
+                return;
             }
         });
 
     }
 
     /**
-     * This method will load Unity ads for a given Placement ID and send the ad loaded event if the
-     * ads have already loaded.
+     * This method will load a Unity ad for the given Placement ID.
      *
      * @param placementId Used to identify the ad being loaded.
      */
@@ -275,8 +279,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         // Unity Ads ad failed to show.
         Log.e(TAG, "Failed to show interstitial ad for placement ID '" + getPlacementId() +
                 "' from Unity Ads. Error: " + unityAdsError.toString() + " - " + errorMessage);
-
-        // check with google if we need to make any calls with mMediationInterstitialListener
     }
 
     @Override

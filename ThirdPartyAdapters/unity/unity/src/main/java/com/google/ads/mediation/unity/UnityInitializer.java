@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2020 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class UnityInitializer {
      * @return the {@link #unityInitializerInstance}.
      *
      */
-    static UnityInitializer getInstance() {
+    static synchronized UnityInitializer getInstance() {
         if (unityInitializerInstance == null) {
             unityInitializerInstance = new UnityInitializer();
         }
@@ -70,7 +70,7 @@ public class UnityInitializer {
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
         mediationMetaData.setName("AdMob");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.set("adapter_version", "3.5.0");
+        mediationMetaData.set("adapter_version", UnityAds.getVersion());
         mediationMetaData.commit();
 
         UnityAds.initialize(activity, gameId, false, true, initializationListener);
