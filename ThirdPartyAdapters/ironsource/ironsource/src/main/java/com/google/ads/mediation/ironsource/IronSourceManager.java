@@ -115,20 +115,6 @@ class IronSourceManager
   }
 
   private boolean canLoadInterstitialInstance(@NonNull String instanceId) {
-    if (!isISInterstitialAdapterRegistered(instanceId)) {
-      return true;
-    }
-    return isRegisteredInterstitialAdapterCanLoad(instanceId);
-  }
-
-  private boolean canLoadRewardedVideoInstance(@NonNull String instanceId) {
-    if (!isISRewardedVideoAdapterRegistered(instanceId)) {
-      return true;
-    }
-    return isRegisteredRewardedVideoAdapterCanLoad(instanceId);
-  }
-
-  private boolean isRegisteredInterstitialAdapterCanLoad(@NonNull String instanceId) {
     WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
     if (weakAdapter == null) {
       return true;
@@ -137,7 +123,7 @@ class IronSourceManager
     return (ironSourceAdapter == null);
   }
 
-  private boolean isRegisteredRewardedVideoAdapterCanLoad(@NonNull String instanceId) {
+  private boolean canLoadRewardedVideoInstance(@NonNull String instanceId) {
     WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
     if (weakAdapter == null) {
       return true;
@@ -184,24 +170,6 @@ class IronSourceManager
       return;
     }
     availableInstances.put(instanceId, weakAdapter);
-  }
-
-  private boolean isISInterstitialAdapterRegistered(@NonNull String instanceId) {
-    WeakReference<IronSourceAdapter> weakAdapter = availableInterstitialInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceAdapter ironSourceAdapter = weakAdapter.get();
-      return ironSourceAdapter != null;
-    }
-    return false;
-  }
-
-  private boolean isISRewardedVideoAdapterRegistered(@NonNull String instanceId) {
-    WeakReference<IronSourceMediationAdapter> weakAdapter = availableInstances.get(instanceId);
-    if (weakAdapter != null) {
-      IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-      return ironSourceMediationAdapter != null;
-    }
-    return false;
   }
 
   @Override
