@@ -15,7 +15,6 @@ import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import java.lang.ref.WeakReference;
 
 /**
  * A {@link MediationInterstitialAdapter} to load and show IronSource interstitial ads using Google
@@ -50,8 +49,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
             Log.d(TAG,
                 String.format("Loading IronSource interstitial ad with instance ID: %s",
                     mInstanceID));
-            IronSourceManager.getInstance()
-                .loadInterstitial(mInstanceID, new WeakReference<>(IronSourceAdapter.this));
+            IronSourceManager.getInstance().loadInterstitial(mInstanceID, IronSourceAdapter.this);
           }
 
           @Override

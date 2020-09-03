@@ -78,16 +78,9 @@ class IronSourceManager
     listener.onInitializeSuccess();
   }
 
-  void loadInterstitial(
-      @NonNull String instanceId, @NonNull WeakReference<IronSourceAdapter> weakAdapter) {
-    IronSourceAdapter ironSourceAdapter = weakAdapter.get();
-    if (ironSourceAdapter == null) {
-      Log.e(TAG, "IronSource intersitial adapter weak reference has been lost.");
-      return;
-    }
-
+  void loadInterstitial(@NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
     if (TextUtils.isEmpty(instanceId)) {
-      ironSourceAdapter.onAdFailedToLoad(
+      adapter.onAdFailedToLoad(
           ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
       return;
     }
@@ -95,24 +88,17 @@ class IronSourceManager
     if (!canLoadInterstitialInstance(instanceId)) {
       String errorMessage =
           String.format("An ad is already loading for instance ID: %s", instanceId);
-      ironSourceAdapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
+      adapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
       return;
     }
 
-    registerISInterstitialAdapter(instanceId, weakAdapter);
+    registerISInterstitialAdapter(instanceId, new WeakReference<>(adapter));
     IronSource.loadISDemandOnlyInterstitial(instanceId);
   }
 
-  void loadRewardedVideo(
-      @NonNull String instanceId, @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
-    IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
-    if (ironSourceMediationAdapter == null) {
-      Log.e(TAG, "IronSource rewarded adapter weak reference has been lost.");
-      return;
-    }
-
+  void loadRewardedVideo(@NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
     if (TextUtils.isEmpty(instanceId)) {
-      ironSourceMediationAdapter.onAdFailedToLoad(
+      adapter.onAdFailedToLoad(
           ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
       return;
     }
@@ -120,11 +106,11 @@ class IronSourceManager
     if (!canLoadRewardedVideoInstance(instanceId)) {
       String errorMessage =
           String.format("An ad is already loading for instance ID: %s", instanceId);
-      ironSourceMediationAdapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
+      adapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
       return;
     }
 
-    registerISRewardedVideoAdapter(instanceId, weakAdapter);
+    registerISRewardedVideoAdapter(instanceId, new WeakReference<>(adapter));
     IronSource.loadISDemandOnlyRewardedVideo(instanceId);
   }
 

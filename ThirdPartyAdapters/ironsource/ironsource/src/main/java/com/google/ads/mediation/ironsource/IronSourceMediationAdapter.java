@@ -26,7 +26,6 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 
@@ -207,8 +206,8 @@ public class IronSourceMediationAdapter extends Adapter
             mMediationAdLoadCallback = mediationAdLoadCallback;
             Log.d(TAG,
                 String.format("Loading IronSource rewarded ad with instance ID: %s", mInstanceID));
-            IronSourceManager.getInstance().loadRewardedVideo(mInstanceID,
-                new WeakReference<>(IronSourceMediationAdapter.this));
+            IronSourceManager.getInstance()
+                .loadRewardedVideo(mInstanceID, IronSourceMediationAdapter.this);
           }
 
           @Override
