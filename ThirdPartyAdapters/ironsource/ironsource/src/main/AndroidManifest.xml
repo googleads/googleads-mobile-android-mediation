@@ -1,1 +1,25 @@
-<manifest package="com.google.ads.mediation.ironsource"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.ads.mediation.ironsource">
+
+    <application>
+        <activity
+            android:name="com.ironsource.sdk.controller.ControllerActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:exported="false"/>
+
+        <activity
+            android:name="com.ironsource.sdk.controller.InterstitialActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:theme="@android:style/Theme.Translucent"
+            android:exported="false"/>
+
+        <activity
+            android:name="com.ironsource.sdk.controller.OpenUrlActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:theme="@android:style/Theme.Translucent"
+            android:exported="false"/>
+    </application>
+</manifest>

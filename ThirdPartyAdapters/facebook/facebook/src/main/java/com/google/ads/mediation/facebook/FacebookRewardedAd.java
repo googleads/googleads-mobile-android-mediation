@@ -1,159 +1,225 @@
 package com.google.ads.mediation.facebook;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdExperienceType;
+import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
-import com.facebook.ads.RewardedVideoAdListener;
+import com.facebook.ads.RewardedVideoAdExtendedListener;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdExtendedListener {
 
+  private MediationRewardedAdConfiguration adConfiguration;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      mMediationAdLoadCallback;
 
-public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdListener {
+  /**
+   * Facebook rewarded video ad instance.
+   */
+  private RewardedVideoAd rewardedAd;
 
-    private MediationRewardedAdConfiguration adConfiguration;
-    private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mMediationAdLoadCallback;
-    private RewardedVideoAd rewardedAd;
-    private MediationRewardedAdCallback mRewardedAdCallback;
+  /**
+   * Flag to determine whether the rewarded ad has been presented.
+   */
+  private AtomicBoolean showAdCalled = new AtomicBoolean();
 
-    private boolean isRtbAd = false;
+  /**
+   * Mediation rewarded video ad listener used to forward rewarded video ad events from the Facebook
+   * Audience Network SDK to the Google Mobile Ads SDK.
+   */
+  private MediationRewardedAdCallback mRewardedAdCallback;
 
-    public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-                              MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-        this.adConfiguration = adConfiguration;
-        this.mMediationAdLoadCallback = callback;
+  private boolean isRtbAd = false;
+  private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
+
+  public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    this.adConfiguration = adConfiguration;
+    this.mMediationAdLoadCallback = callback;
+  }
+
+  public void render() {
+    final Context context = adConfiguration.getContext();
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    final String placementID = getPlacementID(serverParameters);
+
+    if (TextUtils.isEmpty(placementID)) {
+      String message = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad, placementID is null or empty.");
+      Log.e(TAG, message);
+      mMediationAdLoadCallback.onFailure(message);
+      return;
     }
 
-    public void render() {
-        final Context context = adConfiguration.getContext();
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        if (!FacebookMediationAdapter.isValidRequestParameters(context, serverParameters)) {
-            mMediationAdLoadCallback.onFailure("Invalid request");
-            return;
-        }
-        if (!adConfiguration.getBidResponse().equals("")) {
-            isRtbAd = true;
-        }
-        if (isRtbAd) {
-            String placementId = FacebookMediationAdapter.getPlacementID(serverParameters);
-            if (placementId == null || placementId.isEmpty()) {
-                mMediationAdLoadCallback.onFailure("FacebookRtbRewardedAd received a null or " +
-                        "empty placement ID.");
-                return;
+    String decodedBid = adConfiguration.getBidResponse();
+    if (!TextUtils.isEmpty(decodedBid)) {
+      isRtbAd = true;
+    }
+
+    setMixedAudience(adConfiguration);
+
+    if (isRtbAd) {
+      rewardedAd = new RewardedVideoAd(context, placementID);
+      if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+        rewardedAd.setExtraHints(new ExtraHints.Builder()
+            .mediationData(adConfiguration.getWatermark()).build());
+      }
+      rewardedAd.loadAd(
+          rewardedAd.buildLoadAdConfig()
+              .withAdListener(this)
+              .withBid(decodedBid)
+              .withAdExperience(getAdExperienceType())
+              .build()
+      );
+    } else {
+      FacebookInitializer.getInstance().initialize(context, placementID,
+          new FacebookInitializer.Listener() {
+            @Override
+            public void onInitializeSuccess() {
+              createAndLoadRewardedVideo(context, placementID);
             }
-            String decodedBid = adConfiguration.getBidResponse();
-            if (decodedBid.isEmpty()) {
-                mMediationAdLoadCallback.onFailure("FacebookRtbRewardedAd failed to decode bid"
-                        + "response as UTF-8.");
-                return;
+
+            @Override
+            public void onInitializeError(String message) {
+              String logMessage = "Failed to load ad from Facebook: " + message;
+              String errorMessage = createAdapterError(ERROR_FACEBOOK_INITIALIZATION, logMessage);
+              Log.w(TAG, errorMessage);
+              if (mMediationAdLoadCallback != null) {
+                mMediationAdLoadCallback.onFailure(errorMessage);
+              }
             }
-            rewardedAd = new RewardedVideoAd(context, placementId);
-            rewardedAd.setAdListener(this);
-            rewardedAd.loadAdFromBid(decodedBid);
-        } else {
-            final String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
-            FacebookInitializer.getInstance().initialize(context, placementID,
-                    new FacebookInitializer.Listener() {
-                @Override
-                public void onInitializeSuccess() {
-                    createAndLoadRewardedVideo(context, placementID);
-                }
+          });
+    }
+  }
 
-                @Override
-                public void onInitializeError(String message) {
-                    String logMessage = "Failed to load ad from Facebook: " + message;
-                    Log.w(TAG, logMessage);
-                    if (mMediationAdLoadCallback != null) {
-                        mMediationAdLoadCallback.onFailure(logMessage);
-                    }
-                }
-            });
-        }
+  @Override
+  public void showAd(Context context) {
+    showAdCalled.set(true);
+    if (!rewardedAd.show()) {
+      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present rewarded ad.");
+      Log.w(TAG, errorMessage);
+
+      if (mRewardedAdCallback != null) {
+        mRewardedAdCallback.onAdFailedToShow(errorMessage);
+      }
+      rewardedAd.destroy();
+      return;
     }
 
-    @Override
-    public void showAd(Context context) {
-        if (rewardedAd.isAdLoaded()) {
-            rewardedAd.show();
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onVideoStart();
-                mRewardedAdCallback.onAdOpened();
-            }
-        } else {
-            if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdFailedToShow("No ads to show");
-            }
-        }
+    if (mRewardedAdCallback != null) {
+      mRewardedAdCallback.onVideoStart();
+      mRewardedAdCallback.onAdOpened();
+    }
+  }
+
+  @NonNull
+  AdExperienceType getAdExperienceType() {
+    return AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED;
+  }
+
+  private void createAndLoadRewardedVideo(Context context, String placementID) {
+    rewardedAd = new RewardedVideoAd(context, placementID);
+    rewardedAd.loadAd(
+        rewardedAd.buildLoadAdConfig()
+            .withAdListener(this)
+            .withAdExperience(getAdExperienceType())
+            .build()
+    );
+  }
+
+  @Override
+  public void onRewardedVideoCompleted() {
+    mRewardedAdCallback.onVideoComplete();
+    mRewardedAdCallback.onUserEarnedReward(new FacebookReward());
+  }
+
+  @Override
+  public void onError(Ad ad, AdError adError) {
+    String errorMessage = createSdkError(adError);
+
+    if (showAdCalled.get()) {
+      Log.w(TAG, "Failed to present rewarded ad: " + errorMessage);
+      if (mRewardedAdCallback != null) {
+        mRewardedAdCallback.onAdFailedToShow(errorMessage);
+      }
+    } else {
+      Log.w(TAG, "Failed to load rewarded ad: " + errorMessage);
+      if (mMediationAdLoadCallback != null) {
+        mMediationAdLoadCallback.onFailure(errorMessage);
+      }
     }
 
-    private void createAndLoadRewardedVideo(Context context, String placementID) {
-        rewardedAd = new RewardedVideoAd(context, placementID);
-        rewardedAd.setAdListener(this);
-        rewardedAd.loadAd(true);
-    }
+    rewardedAd.destroy();
+  }
 
-    @Override
-    public void onRewardedVideoCompleted() {
-        mRewardedAdCallback.onVideoComplete();
-        mRewardedAdCallback.onUserEarnedReward(new FacebookReward());
+  @Override
+  public void onAdLoaded(Ad ad) {
+    if (mMediationAdLoadCallback != null) {
+      mRewardedAdCallback = mMediationAdLoadCallback.onSuccess(this);
     }
+  }
 
-    @Override
-    public void onError(Ad ad, AdError adError) {
-        String errorMessage = adError.getErrorMessage();
-        if (!TextUtils.isEmpty(errorMessage)) {
-            Log.w(TAG, "Failed to load ad from Facebook: " + errorMessage);
-        }
-        if (mMediationAdLoadCallback != null) {
-            mMediationAdLoadCallback.onFailure(errorMessage);
-        }
-        rewardedAd.destroy();
+  @Override
+  public void onAdClicked(Ad ad) {
+    if (mRewardedAdCallback != null) {
+      if (isRtbAd) {
+        // TODO: Upon approval, add this callback back in.
+        // mRewardedAdCallback.reportAdClicked();
+      } else {
+        mRewardedAdCallback.reportAdClicked();
+      }
     }
+  }
 
-    @Override
-    public void onAdLoaded(Ad ad) {
-        if (mMediationAdLoadCallback != null) {
-            mRewardedAdCallback = mMediationAdLoadCallback.onSuccess(this);
-        }
+  @Override
+  public void onLoggingImpression(Ad ad) {
+    if (mRewardedAdCallback != null) {
+      if (isRtbAd) {
+        // TODO: Upon approval, add this callback back in.
+        // mRewardedAdCallback.reportAdImpression();
+      } else {
+        mRewardedAdCallback.reportAdImpression();
+      }
     }
+  }
 
-    @Override
-    public void onAdClicked(Ad ad) {
-        if (mRewardedAdCallback != null) {
-            if (isRtbAd) {
-                // TODO: Upon approval, add this callback back in.
-                // mRewardedAdCallback.reportAdClicked();
-            } else {
-                mRewardedAdCallback.reportAdClicked();
-            }
-        }
+  @Override
+  public void onRewardedVideoClosed() {
+    if (!didRewardedAdClose.getAndSet(true) && mRewardedAdCallback != null) {
+      mRewardedAdCallback.onAdClosed();
     }
+    if (rewardedAd != null) {
+      rewardedAd.destroy();
+    }
+  }
 
-    @Override
-    public void onLoggingImpression(Ad ad) {
-        if (mRewardedAdCallback != null) {
-            if (isRtbAd) {
-                // TODO: Upon approval, add this callback back in.
-                // mRewardedAdCallback.reportAdImpression();
-            } else {
-                mRewardedAdCallback.reportAdImpression();
-            }
-        }
+  @Override
+  public void onRewardedVideoActivityDestroyed() {
+    if (!didRewardedAdClose.getAndSet(true) && mRewardedAdCallback != null) {
+      mRewardedAdCallback.onAdClosed();
     }
-
-    @Override
-    public void onRewardedVideoClosed() {
-        if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onAdClosed();
-        }
-        rewardedAd.destroy();
+    if (rewardedAd != null) {
+      rewardedAd.destroy();
     }
+  }
 }

@@ -1,36 +1,24 @@
 package com.vungle.mediation;
 
 /**
- * A listener class used to send Vungle events from {@link VungleManager} to
- * {@link VungleInterstitialAdapter}.
+ * A listener class used to send Vungle events from {@link VungleManager} to {@link
+ * VungleInterstitialAdapter} and {@link VungleAdapter}.
  */
 abstract class VungleListener {
-    private String mWaitingForPlacement;
-    private boolean mIsWaitingInit = false;
 
-    void waitForAd(String placement) {
-        this.mWaitingForPlacement = placement;
-    }
+  void onAdClick(String placementId) {}
 
-    String getWaitingForPlacement() {
-        return mWaitingForPlacement;
-    }
+  void onAdEnd(String placementId) {}
 
-    public boolean isWaitingInit() {
-        return mIsWaitingInit;
-    }
+  void onAdRewarded(String placementId) {}
 
-    void setWaitingInit(boolean isWaitingInit) {
-        this.mIsWaitingInit = isWaitingInit;
-    }
+  void onAdLeftApplication(String placementId) {}
 
-    void onAdEnd(String placement, boolean wasSuccessfulView, boolean wasCallToActionClicked) {}
+  void onAdStart(String placement) {}
 
-    void onAdStart(String placement) {}
+  void onAdFail(String placement) {}
 
-    void onAdFail(String placement) {}
+  void onAdAvailable() {}
 
-    void onAdAvailable() {}
-
-    void onAdFailedToLoad() {}
+  void onAdFailedToLoad(int errorCode) {}
 }

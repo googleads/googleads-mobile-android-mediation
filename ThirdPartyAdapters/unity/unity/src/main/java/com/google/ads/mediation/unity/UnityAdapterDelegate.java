@@ -14,17 +14,26 @@
 
 package com.google.ads.mediation.unity;
 
+import androidx.annotation.NonNull;
+import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 
 /**
- * An {@link IUnityAdsExtendedListener} used to mediate callbacks and data between
- * {@link UnitySingleton} and {@link UnityAdapter}.
+ * An {@link IUnityAdsExtendedListener} used to mediate callbacks and data between {@link
+ * UnitySingleton} and {@link UnityAdapter}.
  */
 public interface UnityAdapterDelegate extends IUnityAdsExtendedListener {
 
-    /**
-     * @return the Unity Ads Placement ID associated with the adapter that implements this
-     * interface.
-     */
-    String getPlacementId();
+  /**
+   * @return the Unity Ads Placement ID associated with the adapter that implements this interface.
+   */
+  String getPlacementId();
+
+  /**
+   * Called when the adapter fails to load an ad.
+   *
+   * @param errorCode The error code.
+   * @param errorMessage A message describing the error.
+   */
+  void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage);
 }
