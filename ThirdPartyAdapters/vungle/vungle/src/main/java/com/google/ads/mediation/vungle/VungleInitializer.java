@@ -109,7 +109,7 @@ public class VungleInitializer implements InitCallback {
   }
 
   @Override
-  public void onAutoCacheAdAvailable(String placementID) {
+  public void onAutoCacheAdAvailable(String placementId) {
     // Unused
   }
 
