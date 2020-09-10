@@ -4,16 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
-import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
-import com.fyber.inneractive.sdk.external.InneractiveFullScreenAdRewardedListener;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
-import com.fyber.inneractive.sdk.external.InneractiveMediationName;
-import com.fyber.inneractive.sdk.external.VideoContentListenerAdapter;
+import com.fyber.inneractive.sdk.external.*;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -81,7 +72,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     mRewardedSpot.setRequestListener(requestListener);
 
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-    FyberAdapterUtils.addExtrasToAdRequest(request, mAdConfiguration.getMediationExtras());
+    final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mAdConfiguration.getMediationExtras());
+    request.setUserParams(inneractiveUserConfig);
     mRewardedSpot.requestAd(request);
   }
 

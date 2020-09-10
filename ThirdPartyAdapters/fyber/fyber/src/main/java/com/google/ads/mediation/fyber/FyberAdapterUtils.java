@@ -56,13 +56,17 @@ class FyberAdapterUtils {
   /**
    * extract age from mediation extras and add it to user params ad request
    *
-   * @param request Fyber ad request
    * @param mediationExtras mediation extra bundle
    */
-  static void addExtrasToAdRequest(InneractiveAdRequest request, Bundle mediationExtras) {
-    if (mediationExtras != null && mediationExtras.containsKey(InneractiveMediationDefs.KEY_AGE)) {
-      int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
-      request.setUserParams(new InneractiveUserConfig().setAge(age));
+  static InneractiveUserConfig generateUserConfig(Bundle mediationExtras) {
+    InneractiveUserConfig userConfig = new InneractiveUserConfig();
+    if (mediationExtras == null) {
+      return userConfig;
     }
+    if (mediationExtras.containsKey(InneractiveMediationDefs.KEY_AGE)) {
+      int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
+      userConfig.setAge(age);
+    }
+    return userConfig;
   }
 }

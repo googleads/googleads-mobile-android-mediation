@@ -11,19 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
-import com.fyber.inneractive.sdk.external.InneractiveAdManager;
-import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListener;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveMediationName;
-import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
+import com.fyber.inneractive.sdk.external.*;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -294,7 +282,8 @@ public class FyberMediationAdapter extends Adapter
 
         requestedAdSize = adSize;
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        FyberAdapterUtils.addExtrasToAdRequest(request, mediationExtras);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mBannerSpot.requestAd(request);
       }
     });
@@ -481,7 +470,8 @@ public class FyberMediationAdapter extends Adapter
         mInterstitialSpot.setRequestListener(requestListener);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        FyberAdapterUtils.addExtrasToAdRequest(request, mediationExtras);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mInterstitialSpot.requestAd(request);
       }
     });
@@ -497,7 +487,6 @@ public class FyberMediationAdapter extends Adapter
                 .getSelectedUnitController()).show(context);
       } else {
         Log.w(TAG, "showInterstitial called, but Ad has expired.");
-        mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         mMediationInterstitialListener.onAdOpened(this);
         mMediationInterstitialListener.onAdClosed(this);
 
