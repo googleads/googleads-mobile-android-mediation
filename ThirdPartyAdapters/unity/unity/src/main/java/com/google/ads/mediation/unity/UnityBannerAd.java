@@ -80,18 +80,20 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.v(TAG,
           "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId()
               + "'.");
-      if (mMediationBannerListener != null) {
-        mMediationBannerListener.onAdLoaded(UnityBannerAd.this);
+      if (mMediationBannerListener == null) {
+        return;
       }
+      mMediationBannerListener.onAdLoaded(UnityBannerAd.this);
     }
 
     @Override
     public void onBannerClick(BannerView bannerView) {
       Log.v(TAG,
           "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' was clicked.");
-      if (mMediationBannerListener != null) {
-        mMediationBannerListener.onAdClicked(UnityBannerAd.this);
+      if (mMediationBannerListener == null) {
+        return;
       }
+      mMediationBannerListener.onAdClicked(UnityBannerAd.this);
     }
 
     @Override
@@ -99,15 +101,18 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.w(TAG,
           "Unity Ads failed to load banner ad for placement ID '" + mBannerView.getPlacementId()
               + "'. Error: " + bannerErrorInfo.errorMessage);
-      if (mMediationBannerListener != null) {
-        if (bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL) {
-          mMediationBannerListener
-              .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_NO_FILL);
-        } else {
-          mMediationBannerListener
-              .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        }
+      if (mMediationBannerListener == null) {
+        return;
       }
+
+      if (bannerErrorInfo.errorCode == BannerErrorCode.NO_FILL) {
+        mMediationBannerListener
+            .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_NO_FILL);
+        return;
+      }
+
+      mMediationBannerListener
+          .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
     }
 
     @Override
@@ -145,20 +150,22 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!UnityAdapter.isValidIds(gameId, bannerPlacementId)) {
-      if (mMediationBannerListener != null) {
-        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+      if (mMediationBannerListener == null) {
+        return;
       }
+      mMediationBannerListener
+          .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
 
     if (context == null || !(context instanceof Activity)) {
       Log.e(TAG, "Unity Ads failed to load banner ad for placement ID '" + bannerPlacementId
           + "': Context is null or is not an Activity. Unity Ads requires an Activity context to load ads.");
-      if (mMediationBannerListener != null) {
-        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+      if (mMediationBannerListener == null) {
+        return;
       }
+      mMediationBannerListener
+          .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       return;
     }
     this.context = context;
@@ -180,10 +187,11 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             if (adSize == null || size == null) {
               Log.e(TAG, "Unity banner ad failed to load for placement ID '"
                   + bannerPlacementId + "' in game '" + gameId + "': ad size is null");
-              if (mMediationBannerListener != null) {
-                mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+              if (mMediationBannerListener == null) {
+                return;
               }
+              mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
+                  AdRequest.ERROR_CODE_INTERNAL_ERROR);
               return;
             }
 
@@ -202,10 +210,12 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
                 unityAdsInitializationError + "] " + s
                 + ", cannot load banner ad for placement ID '"
                 + bannerPlacementId + "' in game '" + gameId + "'.");
-            if (mMediationBannerListener != null) {
-              mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-                  AdRequest.ERROR_CODE_INTERNAL_ERROR);
+            if (mMediationBannerListener == null) {
+              return;
             }
+
+            mMediationBannerListener
+                .onAdFailedToLoad(UnityBannerAd.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
           }
         });
   }
