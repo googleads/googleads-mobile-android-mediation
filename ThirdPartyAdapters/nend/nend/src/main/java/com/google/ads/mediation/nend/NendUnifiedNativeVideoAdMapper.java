@@ -23,10 +23,11 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   private NendAdNativeVideo nativeVideo;
   private NendNativeAdForwarder forwarder;
 
-  NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder,
-      NendAdNativeVideo ad) {
-    super(new NendNativeMappedImage(
-        context, ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
+  NendUnifiedNativeVideoAdMapper(
+      Context context, NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
+    super(
+        new NendNativeMappedImage(
+            context, ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
     this.forwarder = forwarder;
 
     // Note: NendAdNativeMediaView handles Click Event for changing action by VideoClickOption.
@@ -61,8 +62,10 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     boolean isContainerViewLandscape = containerViewWidth > containerViewHeight;
     ViewGroup.LayoutParams params = mediaView.getLayoutParams();
 
-    if (mediaView.getWidth() == 0 && params.width == ViewGroup.LayoutParams.MATCH_PARENT
-        && mediaView.getHeight() == 0 && params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
+    if (mediaView.getWidth() == 0
+        && params.width == ViewGroup.LayoutParams.MATCH_PARENT
+        && mediaView.getHeight() == 0
+        && params.height == ViewGroup.LayoutParams.MATCH_PARENT) {
       // Note: Below codes are fitting into the "containerView" as NendAdNativeMediaView's
       // aspect ratio. Because NendAdNativeMediaView needs parent`s frame for measuring own
       // texture frame size.
@@ -70,10 +73,10 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
         mediaView.setMinimumWidth(containerViewWidth);
         mediaView.setMinimumHeight(containerViewHeight);
       } else {
-        int width = getOffsetSide(containerViewHeight, containerViewWidth,
-            isContainerViewLandscape);
-        int height = getOffsetSide(containerViewWidth, containerViewHeight,
-            !isContainerViewLandscape);
+        int width =
+            getOffsetSide(containerViewHeight, containerViewWidth, isContainerViewLandscape);
+        int height =
+            getOffsetSide(containerViewWidth, containerViewHeight, !isContainerViewLandscape);
         mediaView.setMinimumWidth(width);
         mediaView.setMinimumHeight(height);
       }
@@ -98,7 +101,8 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   }
 
   @Override
-  public void trackViews(View containerView,
+  public void trackViews(
+      View containerView,
       Map<String, View> clickableAssetViews,
       Map<String, View> nonClickableAssetViews) {
     super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
@@ -114,9 +118,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     super.untrackView(view);
   }
 
-  /**
-   * {@link NendAdNativeVideoListener} implementation
-   */
+  /** {@link NendAdNativeVideoListener} implementation */
   @Override
   public void onImpression(@NonNull NendAdNativeVideo nendAdNativeVideo) {
     forwarder.adImpression();
@@ -133,9 +135,7 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     forwarder.leftApplication();
   }
 
-  /**
-   * {@link NendAdNativeMediaStateListener} implementation
-   */
+  /** {@link NendAdNativeMediaStateListener} implementation */
   @Override
   public void onStartPlay(@NonNull NendAdNativeMediaView nendAdNativeMediaView) {
     // Do nothing here

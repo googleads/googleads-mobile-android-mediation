@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -20,33 +21,22 @@ import jp.co.imobile.sdkads.android.FailNotificationReason;
 import jp.co.imobile.sdkads.android.ImobileSdkAd;
 import jp.co.imobile.sdkads.android.ImobileSdkAdListener;
 
-/**
- * i-mobile mediation adapter for AdMob banner and interstitial ads.
- */
-public final class IMobileAdapter
-    implements MediationBannerAdapter, MediationInterstitialAdapter {
+/** i-mobile mediation adapter for AdMob banner and interstitial ads. */
+public final class IMobileAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
 
   // region - Fields for log.
-  /**
-   * Tag for log.
-   */
+  /** Tag for log. */
   private static final String TAG = IMobileAdapter.class.getSimpleName();
   // endregion
 
   // region - Fields for banner ads.
-  /**
-   * Listener for banner ads.
-   */
+  /** Listener for banner ads. */
   private MediationBannerListener mediationBannerListener;
 
-  /**
-   * View to display banner ads.
-   */
+  /** View to display banner ads. */
   private ViewGroup bannerView;
 
-  /**
-   * Supported ad sizes.
-   */
+  /** Supported ad sizes. */
   private static final ArrayList<AdSize> supportedSizes;
 
   static {
@@ -61,8 +51,12 @@ public final class IMobileAdapter
 
   // region - Methods for banner ads.
   @Override
-  public void requestBannerAd(Context context, MediationBannerListener listener,
-      Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
+  public void requestBannerAd(
+      Context context,
+      MediationBannerListener listener,
+      Bundle serverParameters,
+      AdSize adSize,
+      MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
     // Validate Context.
@@ -73,8 +67,7 @@ public final class IMobileAdapter
     }
 
     // Validate AdSize.
-    Log.d(TAG, "Banner : Potential ad sizes : " + supportedSizes.toString());
-    AdSize supportedAdSize = AdapterHelper.findClosestSize(context, adSize, supportedSizes);
+    AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
     if (supportedAdSize == null) {
       Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
       listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
@@ -92,50 +85,67 @@ public final class IMobileAdapter
     Activity activity = (Activity) context;
 
     // Call i-mobile SDK.
+    Log.d(TAG, "Banner : Requesting banner with ad size: " + adSize.toString());
     ImobileSdkAd.registerSpotInline(activity, publisherId, mediaId, spotId);
     ImobileSdkAd.start(spotId);
-    ImobileSdkAd.setImobileSdkAdListener(spotId, new ImobileSdkAdListener() {
-      @Override
-      public void onAdReadyCompleted() {
-        if (mediationBannerListener != null) {
-          mediationBannerListener.onAdLoaded(IMobileAdapter.this);
-        }
-      }
+    ImobileSdkAd.setImobileSdkAdListener(
+        spotId,
+        new ImobileSdkAdListener() {
+          @Override
+          public void onAdReadyCompleted() {
+            if (mediationBannerListener != null) {
+              mediationBannerListener.onAdLoaded(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onAdCliclkCompleted() {
-        if (mediationBannerListener != null) {
-          mediationBannerListener.onAdClicked(IMobileAdapter.this);
-          mediationBannerListener.onAdOpened(IMobileAdapter.this);
-          mediationBannerListener.onAdLeftApplication(IMobileAdapter.this);
-        }
-      }
+          @Override
+          public void onAdCliclkCompleted() {
+            if (mediationBannerListener != null) {
+              mediationBannerListener.onAdClicked(IMobileAdapter.this);
+              mediationBannerListener.onAdOpened(IMobileAdapter.this);
+              mediationBannerListener.onAdLeftApplication(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onDismissAdScreen() {
-        if (mediationBannerListener != null) {
-          mediationBannerListener.onAdClosed(IMobileAdapter.this);
-        }
-      }
+          @Override
+          public void onDismissAdScreen() {
+            if (mediationBannerListener != null) {
+              mediationBannerListener.onAdClosed(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onFailed(FailNotificationReason reason) {
-        Log.w(TAG, "Banner : Error. Reason is " + reason);
-        if (mediationBannerListener != null) {
-          mediationBannerListener.onAdFailedToLoad(IMobileAdapter.this,
-              AdapterHelper.convertToAdMobErrorCode(reason));
-        }
-      }
-    });
+          @Override
+          public void onFailed(FailNotificationReason reason) {
+            Log.w(TAG, "Banner : Error. Reason is " + reason);
+            if (mediationBannerListener != null) {
+              mediationBannerListener.onAdFailedToLoad(
+                  IMobileAdapter.this, AdapterHelper.convertToAdMobErrorCode(reason));
+            }
+          }
+        });
 
     // Create view to display banner ads.
     bannerView = new FrameLayout(activity);
+    float scaleRatio =
+        canScale(supportedAdSize) ? calcScaleRatio(activity, adSize, supportedAdSize) : 1.0f;
     bannerView.setLayoutParams(
-        new FrameLayout.LayoutParams(supportedAdSize.getWidthInPixels(activity),
-            supportedAdSize.getHeightInPixels(activity)));
+        new FrameLayout.LayoutParams(
+            (int) (supportedAdSize.getWidthInPixels(activity) * scaleRatio),
+            (int) (supportedAdSize.getHeightInPixels(activity) * scaleRatio)));
+    ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView, scaleRatio);
+  }
 
-    // Start getting ads.
-    ImobileSdkAd.showAdForAdMobMediation(activity, spotId, bannerView);
+  private boolean canScale(AdSize iMobileAdSize) {
+    return iMobileAdSize.getWidth() == 320
+        && (iMobileAdSize.getHeight() == 50 || iMobileAdSize.getHeight() == 100);
+  }
+
+  private float calcScaleRatio(Context context, AdSize requestedAdSize, AdSize iMobileAdSize) {
+    return Math.min(
+        ((float) requestedAdSize.getWidthInPixels(context)
+            / iMobileAdSize.getWidthInPixels(context)),
+        ((float) requestedAdSize.getHeightInPixels(context)
+            / iMobileAdSize.getHeightInPixels(context)));
   }
 
   @Override
@@ -145,26 +155,23 @@ public final class IMobileAdapter
   // endregion
 
   // region - Fields for interstitial ads.
-  /**
-   * Listener for interstitial ads.
-   */
+  /** Listener for interstitial ads. */
   private MediationInterstitialListener mediationInterstitialListener;
 
-  /**
-   * Activity to display interstitial ads.
-   */
+  /** Activity to display interstitial ads. */
   private Activity interstitialActivity;
 
-  /**
-   * i-mobile spot ID.
-   */
+  /** i-mobile spot ID. */
   private String interstitialSpotId;
   // endregion
 
   // region - Methods for interstitial ads.
   @Override
-  public void requestInterstitialAd(Context context, MediationInterstitialListener listener,
-      Bundle serverParameters, MediationAdRequest mediationAdRequest,
+  public void requestInterstitialAd(
+      Context context,
+      MediationInterstitialListener listener,
+      Bundle serverParameters,
+      MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
     // Validate Context.
@@ -184,47 +191,49 @@ public final class IMobileAdapter
     interstitialSpotId = serverParameters.getString(Constants.KEY_SPOT_ID);
 
     // Call i-mobile SDK.
-    ImobileSdkAd.registerSpotFullScreen(interstitialActivity, publisherId, mediaId,
-        interstitialSpotId);
-    ImobileSdkAd.setImobileSdkAdListener(interstitialSpotId, new ImobileSdkAdListener() {
-      @Override
-      public void onAdReadyCompleted() {
-        if (mediationInterstitialListener != null) {
-          mediationInterstitialListener.onAdLoaded(IMobileAdapter.this);
-        }
-      }
+    ImobileSdkAd.registerSpotFullScreen(
+        interstitialActivity, publisherId, mediaId, interstitialSpotId);
+    ImobileSdkAd.setImobileSdkAdListener(
+        interstitialSpotId,
+        new ImobileSdkAdListener() {
+          @Override
+          public void onAdReadyCompleted() {
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdLoaded(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onAdShowCompleted() {
-        if (mediationInterstitialListener != null) {
-          mediationInterstitialListener.onAdOpened(IMobileAdapter.this);
-        }
-      }
+          @Override
+          public void onAdShowCompleted() {
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdOpened(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onAdCliclkCompleted() {
-        if (mediationInterstitialListener != null) {
-          mediationInterstitialListener.onAdClicked(IMobileAdapter.this);
-          mediationInterstitialListener.onAdLeftApplication(IMobileAdapter.this);
-        }
-      }
+          @Override
+          public void onAdCliclkCompleted() {
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdClicked(IMobileAdapter.this);
+              mediationInterstitialListener.onAdLeftApplication(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onAdCloseCompleted() {
-        if (mediationInterstitialListener != null) {
-          mediationInterstitialListener.onAdClosed(IMobileAdapter.this);
-        }
-      }
+          @Override
+          public void onAdCloseCompleted() {
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdClosed(IMobileAdapter.this);
+            }
+          }
 
-      @Override
-      public void onFailed(FailNotificationReason reason) {
-        Log.w(TAG, "Interstitial : Error. Reason is " + reason);
-        if (mediationInterstitialListener != null) {
-          mediationInterstitialListener.onAdFailedToLoad(IMobileAdapter.this,
-              AdapterHelper.convertToAdMobErrorCode(reason));
-        }
-      }
-    });
+          @Override
+          public void onFailed(FailNotificationReason reason) {
+            Log.w(TAG, "Interstitial : Error. Reason is " + reason);
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdFailedToLoad(
+                  IMobileAdapter.this, AdapterHelper.convertToAdMobErrorCode(reason));
+            }
+          }
+        });
 
     // Start getting ads.
     if (ImobileSdkAd.isShowAd(interstitialSpotId)) {
@@ -237,7 +246,8 @@ public final class IMobileAdapter
   @Override
   public void showInterstitial() {
     // Show ad.
-    if (interstitialActivity != null && interstitialActivity.hasWindowFocus()
+    if (interstitialActivity != null
+        && interstitialActivity.hasWindowFocus()
         && interstitialSpotId != null) {
       ImobileSdkAd.showAdforce(interstitialActivity, interstitialSpotId);
     }
@@ -255,12 +265,10 @@ public final class IMobileAdapter
   }
 
   @Override
-  public void onPause() {
-  }
+  public void onPause() {}
 
   @Override
-  public void onResume() {
-  }
+  public void onResume() {}
   // endregion
 
 }

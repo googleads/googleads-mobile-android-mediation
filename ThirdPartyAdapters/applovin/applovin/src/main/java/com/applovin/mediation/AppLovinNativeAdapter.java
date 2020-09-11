@@ -23,19 +23,21 @@ public class AppLovinNativeAdapter implements MediationNativeAdapter {
   public static final String KEY_EXTRA_CAPTION_TEXT = "caption_text";
 
   @Override
-  public void requestNativeAd(final Context context,
+  public void requestNativeAd(
+      final Context context,
       final MediationNativeListener mediationNativeListener,
       final Bundle serverParameters,
       final NativeMediationAdRequest nativeMediationAdRequest,
       final Bundle mediationExtras) {
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()
         && !nativeMediationAdRequest.isAppInstallAdRequested()) {
-      String errorMessage = createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-          "Failed to request native ad. Unified Native Ad or App install Ad should " +
-              "be requested");
+      String errorMessage =
+          createAdapterError(
+              ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+              "Failed to request native ad. "
+                  + "Unified Native Ad or App install Ad should be requested");
       Log.e(TAG, errorMessage);
-      mediationNativeListener.onAdFailedToLoad(this,
-          ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
+      mediationNativeListener.onAdFailedToLoad(this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
       return;
     }
 
@@ -50,20 +52,18 @@ public class AppLovinNativeAdapter implements MediationNativeAdapter {
     }
 
     final AppLovinSdk sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-    AppLovinNativeAdListener listener = new AppLovinNativeAdListener(this,
-        mediationNativeListener, sdk, context, nativeMediationAdRequest);
+    AppLovinNativeAdListener listener =
+        new AppLovinNativeAdListener(
+            this, mediationNativeListener, sdk, context, nativeMediationAdRequest);
     sdk.getNativeAdService().loadNativeAds(1, listener);
   }
 
   @Override
-  public void onDestroy() {
-  }
+  public void onDestroy() {}
 
   @Override
-  public void onPause() {
-  }
+  public void onPause() {}
 
   @Override
-  public void onResume() {
-  }
+  public void onResume() {}
 }

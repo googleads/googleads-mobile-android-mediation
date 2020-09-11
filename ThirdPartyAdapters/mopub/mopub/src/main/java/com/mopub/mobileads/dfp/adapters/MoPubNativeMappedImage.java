@@ -34,5 +34,4 @@ public class MoPubNativeMappedImage extends NativeAd.Image {
   public double getScale() {
     return mScale;
   }
-
 }

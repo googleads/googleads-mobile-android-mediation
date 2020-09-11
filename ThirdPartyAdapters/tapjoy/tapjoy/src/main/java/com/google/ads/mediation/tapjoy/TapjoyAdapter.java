@@ -14,6 +14,8 @@ import com.tapjoy.TJError;
 import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
 import com.tapjoy.Tapjoy;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 /**
@@ -30,6 +32,8 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
    */
   private String sdkKey = null;
   private String interstitialPlacementName = null;
+
+  private static HashMap<String, WeakReference<TapjoyAdapter>> placementsInUse = new HashMap<>();
 
   private TJPlacement interstitialPlacement;
   private MediationInterstitialListener mediationInterstitialListener;
@@ -58,6 +62,18 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
         new TapjoyInitializer.Listener() {
           @Override
           public void onInitializeSucceeded() {
+            if (placementsInUse.containsKey(interstitialPlacementName) &&
+                placementsInUse.get(interstitialPlacementName).get() != null) {
+              String logMessage =
+                  "An ad has already been requested for placement: " + interstitialPlacementName;
+              String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
+              Log.w(TAG, errorMessage);
+              mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this,
+                  ERROR_AD_ALREADY_REQUESTED);
+              return;
+            }
+            placementsInUse.put(interstitialPlacementName,
+                new WeakReference<>(TapjoyAdapter.this));
             if (interstitialPlacement != null && interstitialPlacement.isContentAvailable()) {
               mediationInterstitialListener.onAdLoaded(TapjoyAdapter.this);
             } else {
@@ -114,6 +130,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
               @Override
               public void run() {
                 if (!interstitialPlacement.isContentAvailable()) {
+                  placementsInUse.remove(interstitialPlacementName);
                   mediationInterstitialListener.onAdFailedToLoad(
                       TapjoyAdapter.this, ERROR_REQUIRES_ACTIVITY_CONTEXT);
                 }
@@ -126,6 +143,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
             mainHandler.post(new Runnable() {
               @Override
               public void run() {
+                placementsInUse.remove(interstitialPlacementName);
                 String errorMessage = createSDKError(tjError);
                 Log.w(TAG, errorMessage);
                 mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, tjError.code);
@@ -158,6 +176,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
             mainHandler.post(new Runnable() {
               @Override
               public void run() {
+                placementsInUse.remove(interstitialPlacementName);
                 mediationInterstitialListener.onAdClosed(TapjoyAdapter.this);
               }
             });
