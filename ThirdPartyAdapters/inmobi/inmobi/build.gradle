@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "9.0.8.0"
+    stringVersion = "9.0.9.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:19.3.0'
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads:9.0.8'
+    implementation 'com.inmobi.monetization:inmobi-ads:9.0.9'
 
     // inMobi required dependencies
     // https://support.inmobi.com/monetize/android-guidelines/
