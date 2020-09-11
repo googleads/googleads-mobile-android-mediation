@@ -21,15 +21,15 @@ import com.google.android.gms.ads.rewarded.RewardItem;
  */
 public class UnityReward implements RewardItem {
 
-    @Override
-    public String getType() {
-        // Unity Ads doesn't provide a reward type.
-        return "";
-    }
+  @Override
+  public String getType() {
+    // Unity Ads doesn't provide a reward type.
+    return "";
+  }
 
-    @Override
-    public int getAmount() {
-        // Unity Ads doesn't provide a reward amount.
-        return 1;
-    }
+  @Override
+  public int getAmount() {
+    // Unity Ads doesn't provide a reward amount.
+    return 1;
+  }
 }

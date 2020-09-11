@@ -35,130 +35,130 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded
- * video ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
+ * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded video
+ * ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
  */
 public class UnityMediationAdapter extends Adapter {
 
-    /**
-     * TAG used for logging messages.
-     */
-    static final String TAG = UnityMediationAdapter.class.getSimpleName();
+  /**
+   * TAG used for logging messages.
+   */
+  static final String TAG = UnityMediationAdapter.class.getSimpleName();
 
-    /**
-     * Key to obtain Game ID, required for loading Unity Ads.
-     */
-    static final String KEY_GAME_ID = "gameId";
+  /**
+   * Key to obtain Game ID, required for loading Unity Ads.
+   */
+  static final String KEY_GAME_ID = "gameId";
 
-    /**
-     * Key to obtain Placement ID, used to set the type of ad to be shown. Unity Ads has changed
-     * the name from Zone ID to Placement ID in Unity Ads SDK 2.0.0. To maintain backwards
-     * compatibility the key is not changed.
-     */
-    static final String KEY_PLACEMENT_ID = "zoneId";
+  /**
+   * Key to obtain Placement ID, used to set the type of ad to be shown. Unity Ads has changed the
+   * name from Zone ID to Placement ID in Unity Ads SDK 2.0.0. To maintain backwards compatibility
+   * the key is not changed.
+   */
+  static final String KEY_PLACEMENT_ID = "zoneId";
 
-    /**
-     * UnityRewardedAd instance.
-     */
-    private UnityRewardedAd rewardedAd;
+  /**
+   * UnityRewardedAd instance.
+   */
+  private UnityRewardedAd rewardedAd;
 
-    /**
-     * {@link Adapter} implementation
-     */
-    @Override
-    public VersionInfo getVersionInfo() {
-        String versionString = BuildConfig.VERSION_NAME;
-        String splits[] = versionString.split("\\.");
+  /**
+   * {@link Adapter} implementation
+   */
+  @Override
+  public VersionInfo getVersionInfo() {
+    String versionString = BuildConfig.VERSION_NAME;
+    String splits[] = versionString.split("\\.");
 
-        if (splits.length >= 4) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-            return new VersionInfo(major, minor, micro);
-        }
-
-        String logMessage = String.format("Unexpected adapter version format: %s." +
-                "Returning 0.0.0 for adapter version.", versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 4) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @Override
-    public VersionInfo getSDKVersionInfo() {
-        String versionString = UnityAds.getVersion();
-        String splits[] = versionString.split("\\.");
+    String logMessage = String.format("Unexpected adapter version format: %s." +
+        "Returning 0.0.0 for adapter version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-        if (splits.length >= 3) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]);
-            return new VersionInfo(major, minor, micro);
-        }
+  @Override
+  public VersionInfo getSDKVersionInfo() {
+    String versionString = UnityAds.getVersion();
+    String splits[] = versionString.split("\\.");
 
-        String logMessage = String.format("Unexpected SDK version format: %s." +
-                "Returning 0.0.0 for SDK version.", versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 3) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @Override
-    public void initialize(Context context,
-                           final InitializationCompleteCallback initializationCompleteCallback,
-                           List<MediationConfiguration> mediationConfigurations) {
-        HashSet<String> gameIDs = new HashSet<>();
-        for (MediationConfiguration configuration: mediationConfigurations) {
-            Bundle serverParameters = configuration.getServerParameters();
-            String gameIDFromServer = serverParameters.getString(KEY_GAME_ID);
+    String logMessage = String.format("Unexpected SDK version format: %s." +
+        "Returning 0.0.0 for SDK version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-            if (!TextUtils.isEmpty(gameIDFromServer)) {
-                gameIDs.add(gameIDFromServer);
-            }
-        }
+  @Override
+  public void initialize(Context context,
+      final InitializationCompleteCallback initializationCompleteCallback,
+      List<MediationConfiguration> mediationConfigurations) {
+    HashSet<String> gameIDs = new HashSet<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      Bundle serverParameters = configuration.getServerParameters();
+      String gameIDFromServer = serverParameters.getString(KEY_GAME_ID);
 
-        String gameID = "";
-        int count = gameIDs.size();
-        if (count > 0) {
-            gameID = gameIDs.iterator().next();
+      if (!TextUtils.isEmpty(gameIDFromServer)) {
+        gameIDs.add(gameIDFromServer);
+      }
+    }
 
-            if (count > 1) {
-                String message = String.format("Multiple '%s' entries found: %s. " +
-                                "Using '%s' to initialize the UnityAds SDK",
-                        KEY_GAME_ID, gameIDs.toString(), gameID);
-                Log.w(TAG, message);
-            }
-        }
+    String gameID = "";
+    int count = gameIDs.size();
+    if (count > 0) {
+      gameID = gameIDs.iterator().next();
 
-        if (TextUtils.isEmpty(gameID)) {
-            initializationCompleteCallback.onInitializationFailed(
-                    "Unity Ads could not be initialized: Missing or invalid Game ID.");
-            return;
-        }
+      if (count > 1) {
+        String message = String.format("Multiple '%s' entries found: %s. " +
+                "Using '%s' to initialize the UnityAds SDK",
+            KEY_GAME_ID, gameIDs.toString(), gameID);
+        Log.w(TAG, message);
+      }
+    }
 
-        UnityInitializer.getInstance().initializeUnityAds(context, gameID,
-                new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                Log.d(TAG, "Unity Ads initialized successfully.");
-                initializationCompleteCallback.onInitializationSucceeded();
-            }
+    if (TextUtils.isEmpty(gameID)) {
+      initializationCompleteCallback.onInitializationFailed(
+          "Unity Ads could not be initialized: Missing or invalid Game ID.");
+      return;
+    }
 
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-                                                           unityAdsInitializationError, String s) {
-                String message = "Unity Ads initialization failed: [" +
-                        unityAdsInitializationError + "] " + s;
-                Log.d(TAG, message);
-                initializationCompleteCallback.onInitializationFailed(message);
-            }
+    UnityInitializer.getInstance().initializeUnityAds(context, gameID,
+        new IUnityAdsInitializationListener() {
+          @Override
+          public void onInitializationComplete() {
+            Log.d(TAG, "Unity Ads initialized successfully.");
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
+
+          @Override
+          public void onInitializationFailed(UnityAds.UnityAdsInitializationError
+              unityAdsInitializationError, String s) {
+            String message = "Unity Ads initialization failed: [" +
+                unityAdsInitializationError + "] " + s;
+            Log.d(TAG, message);
+            initializationCompleteCallback.onInitializationFailed(message);
+          }
         });
-    }
+  }
 
-    @Override
-    public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-                               MediationAdLoadCallback<MediationRewardedAd,
-                                       MediationRewardedAdCallback> mediationAdLoadCallback) {
-        rewardedAd = new UnityRewardedAd();
-        rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    }
+  @Override
+  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd,
+          MediationRewardedAdCallback> mediationAdLoadCallback) {
+    rewardedAd = new UnityRewardedAd();
+    rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+  }
 
 }
