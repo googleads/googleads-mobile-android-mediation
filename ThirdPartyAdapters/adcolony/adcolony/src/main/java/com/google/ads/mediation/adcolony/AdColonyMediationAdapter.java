@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyCustomMessage;
@@ -92,7 +91,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_PRESENTATION_AD_NOT_LOADED = 105;
 
-  public static String createAdapterError(@NonNull @Error int error, String errorMessage) {
+  public static String createAdapterError(@Error int error, String errorMessage) {
     return String.format(Locale.US, "%d: %s", error, errorMessage);
   }
 
@@ -117,8 +116,9 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -135,8 +135,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", sdkVersion);
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", sdkVersion);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -151,6 +151,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
           "Activity context to initialize");
       return;
     }
+    Activity activity = (Activity) context;
 
     HashSet<String> appIDs = new HashSet<>();
     ArrayList<String> zoneList = new ArrayList<>();
@@ -173,19 +174,18 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
     String appID;
     int count = appIDs.size();
-    if (count > 0) {
-      appID = appIDs.iterator().next();
-
-      if (count > 1) {
-        String logMessage = String.format("Multiple '%s' entries found: %s. " +
-                "Using '%s' to initialize the AdColony SDK.",
-            AdColonyAdapterUtils.KEY_APP_ID, appIDs.toString(), appID);
-        Log.w(TAG, logMessage);
-      }
-    } else {
+    if (count <= 0) {
       initializationCompleteCallback.onInitializationFailed("Initialization Failed: " +
           "Missing or Invalid App ID.");
       return;
+    }
+
+    appID = appIDs.iterator().next();
+    if (count > 1) {
+      String logMessage = String.format("Multiple '%s' entries found: %s. " +
+              "Using '%s' to initialize the AdColony SDK.",
+          AdColonyAdapterUtils.KEY_APP_ID, appIDs.toString(), appID);
+      Log.w(TAG, logMessage);
     }
 
     if (zoneList.isEmpty()) {
@@ -196,8 +196,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
     // Always set mediation network info.
     appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
-    boolean success = AdColony.configure((Activity) context, appOptions, appID,
-        zoneList.toArray(new String[0]));
+    boolean success = AdColonyManager.getInstance()
+        .configureAdColony(activity, appOptions, appID, zoneList);
 
     if (success) {
       initializationCompleteCallback.onInitializationSucceeded();
