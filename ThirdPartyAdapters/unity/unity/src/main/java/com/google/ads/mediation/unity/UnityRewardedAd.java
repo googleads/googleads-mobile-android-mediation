@@ -69,7 +69,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       if (mMediationAdLoadCallback == null) {
         return;
       }
-      mMediationAdLoadCallback.onFailure(s);
+      mMediationAdLoadCallback.onFailure(errorMessage);
     }
   };
 
@@ -87,7 +87,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       }
       mMediationAdLoadCallback.onFailure("Context is null or is not an Activity." +
           " Unity Ads requires an Activity context to show ads.");
-      }
       return;
     }
 
