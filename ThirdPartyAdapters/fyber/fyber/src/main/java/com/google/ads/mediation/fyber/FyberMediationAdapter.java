@@ -11,19 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
-import com.fyber.inneractive.sdk.external.InneractiveAdManager;
-import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListener;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveMediationName;
-import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
+import com.fyber.inneractive.sdk.external.*;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -247,8 +235,9 @@ public class FyberMediationAdapter extends Adapter
    */
   @Override
   public void requestBannerAd(final Context context,
-      final MediationBannerListener mediationBannerListener, final Bundle serverParameters,
-      final AdSize adSize, MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
+                              final MediationBannerListener mediationBannerListener,
+                              final Bundle serverParameters, final AdSize adSize,
+                              MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
 
     mMediationBannerListener = mediationBannerListener;
 
@@ -293,6 +282,8 @@ public class FyberMediationAdapter extends Adapter
 
         requestedAdSize = adSize;
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mBannerSpot.requestAd(request);
       }
     });
@@ -434,7 +425,7 @@ public class FyberMediationAdapter extends Adapter
       final MediationInterstitialListener mediationInterstitialListener,
       final Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+      final Bundle mediationExtras) {
 
     mMediationInterstitialListener = mediationInterstitialListener;
 
@@ -479,6 +470,8 @@ public class FyberMediationAdapter extends Adapter
         mInterstitialSpot.setRequestListener(requestListener);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mInterstitialSpot.requestAd(request);
       }
     });
@@ -486,20 +479,20 @@ public class FyberMediationAdapter extends Adapter
 
   @Override
   public void showInterstitial() {
+    Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
     if (mInterstitialSpot.getSelectedUnitController() instanceof
-        InneractiveFullscreenUnitController) {
-      Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
-
-      if (context != null) {
+            InneractiveFullscreenUnitController && context != null) {
+      if (mInterstitialSpot.isReady()) {
         ((InneractiveFullscreenUnitController) mInterstitialSpot
-            .getSelectedUnitController()).show(context);
+                .getSelectedUnitController()).show(context);
       } else {
-        Log.w(TAG, "showInterstitial called, but context reference was lost.");
-        mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        Log.w(TAG, "showInterstitial called, but Ad has expired.");
+        mMediationInterstitialListener.onAdOpened(this);
+        mMediationInterstitialListener.onAdClosed(this);
+
       }
     } else {
-      Log.w(TAG, "showInterstitial called, but spot is not ready for show? " +
-          "Should never happen.");
+      Log.w(TAG, "showInterstitial called, but context reference was lost, or wrong spot has been used (should not happen)");
       mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
     }
   }

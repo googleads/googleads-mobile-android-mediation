@@ -1,6 +1,12 @@
 package com.google.ads.mediation.fyber;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+
+import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
+import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
+import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus;
 
 /**
@@ -47,4 +53,20 @@ class FyberAdapterUtils {
     return 299;
   }
 
+  /**
+   * extract age from mediation extras and add it to user params ad request
+   *
+   * @param mediationExtras mediation extra bundle
+   */
+  static InneractiveUserConfig generateUserConfig(Bundle mediationExtras) {
+    InneractiveUserConfig userConfig = new InneractiveUserConfig();
+    if (mediationExtras == null) {
+      return userConfig;
+    }
+    if (mediationExtras.containsKey(InneractiveMediationDefs.KEY_AGE)) {
+      int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
+      userConfig.setAge(age);
+    }
+    return userConfig;
+  }
 }
