@@ -4,7 +4,17 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.fyber.inneractive.sdk.external.*;
+import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
+import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
+import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
+import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
+import com.fyber.inneractive.sdk.external.InneractiveFullScreenAdRewardedListener;
+import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
+import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
+import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
+import com.fyber.inneractive.sdk.external.InneractiveMediationName;
+import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
+import com.fyber.inneractive.sdk.external.VideoContentListenerAdapter;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -42,7 +52,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
    * Constructor.
    *
    * @param adConfiguration AdMob interstitial ad configuration.
-   * @param adLoadCallback AdMob load callback.
+   * @param adLoadCallback  AdMob load callback.
    */
   FyberRewardedVideoRenderer(MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
@@ -72,7 +82,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     mRewardedSpot.setRequestListener(requestListener);
 
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-    final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils.generateUserConfig(mAdConfiguration.getMediationExtras());
+    final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils
+        .generateUserConfig(mAdConfiguration.getMediationExtras());
     request.setUserParams(inneractiveUserConfig);
     mRewardedSpot.requestAd(request);
   }
@@ -174,7 +185,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
       mUnitController.show(context);
     } else if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow("showAd called, but Fyber's rewarded spot is not ready.");
+      mRewardedAdCallback
+          .onAdFailedToShow("showAd called, but Fyber's rewarded spot is not ready.");
     }
   }
 
