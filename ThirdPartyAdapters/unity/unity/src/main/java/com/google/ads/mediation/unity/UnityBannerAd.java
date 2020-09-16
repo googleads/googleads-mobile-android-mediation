@@ -93,7 +93,13 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       if (mMediationBannerListener == null) {
         return;
       }
+      
       mMediationBannerListener.onAdClicked(UnityBannerAd.this);
+
+      // The Unity Ads SDK doesn't provide an event for leaving the application, so the adapter assumes
+      // that onBannerClick indicates the user is leaving the application for a browser or deeplink, and
+      // notifies the Google Mobile Ads SDK accordingly.
+      mMediationBannerListener.onAdOpened(UnityBannerAd.this);
     }
 
     @Override
@@ -205,9 +211,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-              unityAdsInitializationError, String s) {
+              unityAdsInitializationError, String errorMessage) {
             Log.e(TAG, "Unity Ads initialization failed: [" +
-                unityAdsInitializationError + "] " + s
+                unityAdsInitializationError + "] " + errorMessage
                 + ", cannot load banner ad for placement ID '"
                 + bannerPlacementId + "' in game '" + gameId + "'.");
             if (mMediationBannerListener == null) {

@@ -82,9 +82,10 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void onUnityAdsFailedToLoad(String errorMessage) {
+    public void onUnityAdsFailedToLoad(String placementId) {
+      UnityAds.removeListener(UnityAdapter.this);
       Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
-          + errorMessage + "'.");
+          + placementId + "'.");
       if (mMediationInterstitialListener == null) {
         return;
       }
@@ -151,15 +152,17 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.d(TAG, "Unity Ads successfully initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
+            UnityAds.addListener(UnityAdapter.this);
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
+            UnityAds.removeListener(UnityAdapter.this);
             Log.e(TAG, "Unity Ads initialization failed: [" +
                 unityAdsInitializationError + "] " + errorMessage +
-                ", cannot  load interstitial ad for " + "placement ID '" + mPlacementId
+                ", cannot load interstitial ad for placement ID '" + mPlacementId
                 + "' in game '" + gameId + "'");
             if (mMediationInterstitialListener != null) {
               mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
@@ -251,6 +254,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
 
     // Unity Ads ad closed.
+    UnityAds.removeListener(this);
+
     if (mMediationInterstitialListener == null) {
       return;
     }
@@ -269,6 +274,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   @Override
   public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String errorMessage) {
     // Unity Ads ad failed to show.
+    UnityAds.removeListener(this);
     Log.e(TAG, "Failed to show interstitial ad for placement ID '" + mPlacementId +
         "' from Unity Ads. Error: " + unityAdsError.toString() + " - " + errorMessage);
   }
