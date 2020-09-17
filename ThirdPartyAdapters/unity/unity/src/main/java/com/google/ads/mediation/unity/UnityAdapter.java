@@ -219,7 +219,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
   @Override
   public void onUnityAdsReady(String placementId) {
-    // Unity Ads is ready to show ads for the given placementId.
     // Logic to mark a placement ready has moved to the IUnityAdsLoadListener function
     // onUnityAdsAdLoaded.
   }
