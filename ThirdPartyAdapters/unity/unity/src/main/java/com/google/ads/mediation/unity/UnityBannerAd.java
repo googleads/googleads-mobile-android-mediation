@@ -95,10 +95,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       }
       
       mMediationBannerListener.onAdClicked(UnityBannerAd.this);
-
-      // The Unity Ads SDK doesn't provide an event for leaving the application, so the adapter assumes
-      // that onBannerClick indicates the user is leaving the application for a browser or deeplink, and
-      // notifies the Google Mobile Ads SDK accordingly.
       mMediationBannerListener.onAdOpened(UnityBannerAd.this);
     }
 
