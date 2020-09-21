@@ -211,16 +211,6 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
     });
   }
 
-  @Override
-  public void onCacheLoaded(final InlineAdFactory inlineAdFactory, final int numRequested,
-      final int numReceived) {
-    // no op.  caching not supported in adapter
-  }
-
-  @Override
-  public void onCacheUpdated(final InlineAdFactory inlineAdFactory, final int cacheSize) {
-    // no op.  caching not supported in adapter
-  }
 
   @Override
   public void onError(final InlineAdFactory inlineAdFactory, final ErrorInfo errorInfo) {
