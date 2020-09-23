@@ -61,6 +61,7 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
         .getInstance().getZoneFromRequest(listFromServerParams, networkExtras);
 
     if (isRtb) {
+      AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
       AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
           AdColonyRewardedRenderer.this);
       AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
@@ -81,6 +82,7 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
       // Check if we have a valid zone and request the ad.
       if (adColonyConfigured && !TextUtils.isEmpty(requestedZone)) {
+        AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
         AdColonyRewardedEventForwarder.getInstance().addListener(requestedZone,
             AdColonyRewardedRenderer.this);
         AdColony.requestInterstitial(requestedZone,
@@ -164,12 +166,19 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
   @Override
   public void showAd(Context context) {
-    if (mAdColonyInterstitial != null) {
-      mAdColonyInterstitial.show();
-    } else {
+    if (mAdColonyInterstitial == null) {
       String errorMessage = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
       Log.w(TAG, errorMessage);
       mRewardedAdCallback.onAdFailedToShow(errorMessage);
+      return;
     }
+
+    if (AdColony.getRewardListener() != AdColonyRewardedEventForwarder.getInstance()) {
+      Log.w(TAG, "AdColony's reward listener has been changed since load time. Setting the "
+          + "listener back to the Google AdColony adapter to be able to detect rewarded events.");
+      AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
+    }
+
+    mAdColonyInterstitial.show();
   }
 }

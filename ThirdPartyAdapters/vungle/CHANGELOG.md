@@ -6,6 +6,10 @@
 - Updated `targetSdkVersion` to API 29.
 - Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
 
+Built and tested with:
+- Google Mobile Ads SDK version 19.3.0.
+- Vungle SDK version 6.7.1.
+
 #### Version 6.7.0.0
 - Verified compatibility with Vungle SDK 6.7.0.
 - Updated the adapter to support inline adaptive banner requests.
