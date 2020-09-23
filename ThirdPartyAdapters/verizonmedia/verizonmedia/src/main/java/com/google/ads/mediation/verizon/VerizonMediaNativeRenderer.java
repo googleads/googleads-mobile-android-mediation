@@ -191,18 +191,6 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
     });
   }
 
-  @Override
-  public void onCacheLoaded(final NativeAdFactory nativeAdFactory, final int numRequested,
-      final int numReceived) {
-
-    // no op.  caching not supported in adapter
-  }
-
-  @Override
-  public void onCacheUpdated(final NativeAdFactory nativeAdFactory, final int cacheSize) {
-
-    // no op.  caching not supported in adapter
-  }
 
   @Override
   public void onError(final NativeAdFactory nativeAdFactory, final ErrorInfo errorInfo) {

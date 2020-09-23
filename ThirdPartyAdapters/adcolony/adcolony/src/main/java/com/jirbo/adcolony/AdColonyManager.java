@@ -41,7 +41,7 @@ public class AdColonyManager {
     return _instance;
   }
 
-  private boolean configureAdColony(Context context,
+  public boolean configureAdColony(Context context,
       AdColonyAppOptions options,
       String appID,
       ArrayList<String> zones) {
@@ -69,6 +69,7 @@ public class AdColonyManager {
         isConfigured = false;
       }
     }
+
     if (isConfigured) {
       AdColony.setAppOptions(options);
     } else {

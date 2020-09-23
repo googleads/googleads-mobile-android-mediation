@@ -23,6 +23,7 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
+import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -247,8 +248,9 @@ public class FyberMediationAdapter extends Adapter
    */
   @Override
   public void requestBannerAd(final Context context,
-      final MediationBannerListener mediationBannerListener, final Bundle serverParameters,
-      final AdSize adSize, MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
+      final MediationBannerListener mediationBannerListener,
+      final Bundle serverParameters, final AdSize adSize,
+      MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
 
     mMediationBannerListener = mediationBannerListener;
 
@@ -293,6 +295,9 @@ public class FyberMediationAdapter extends Adapter
 
         requestedAdSize = adSize;
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils
+            .generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mBannerSpot.requestAd(request);
       }
     });
@@ -434,7 +439,7 @@ public class FyberMediationAdapter extends Adapter
       final MediationInterstitialListener mediationInterstitialListener,
       final Bundle serverParameters,
       MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+      final Bundle mediationExtras) {
 
     mMediationInterstitialListener = mediationInterstitialListener;
 
@@ -479,6 +484,9 @@ public class FyberMediationAdapter extends Adapter
         mInterstitialSpot.setRequestListener(requestListener);
 
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils
+            .generateUserConfig(mediationExtras);
+        request.setUserParams(inneractiveUserConfig);
         mInterstitialSpot.requestAd(request);
       }
     });
@@ -486,22 +494,32 @@ public class FyberMediationAdapter extends Adapter
 
   @Override
   public void showInterstitial() {
-    if (mInterstitialSpot.getSelectedUnitController() instanceof
-        InneractiveFullscreenUnitController) {
-      Context context = mInterstitialContext != null ? mInterstitialContext.get() : null;
-
-      if (context != null) {
-        ((InneractiveFullscreenUnitController) mInterstitialSpot
-            .getSelectedUnitController()).show(context);
-      } else {
-        Log.w(TAG, "showInterstitial called, but context reference was lost.");
-        mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-      }
-    } else {
-      Log.w(TAG, "showInterstitial called, but spot is not ready for show? " +
-          "Should never happen.");
-      mMediationInterstitialListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+    Context context = (mInterstitialContext != null ? mInterstitialContext.get() : null);
+    if (context == null) {
+      Log.w(TAG, "showInterstitial called, but context reference was lost.");
+      mMediationInterstitialListener.onAdOpened(this);
+      mMediationInterstitialListener.onAdClosed(this);
+      return;
     }
+
+    if (!(mInterstitialSpot
+        .getSelectedUnitController() instanceof InneractiveFullscreenUnitController)) {
+      Log.w(TAG, "showInterstitial called, but wrong spot has been used (should not happen)");
+      mMediationInterstitialListener.onAdOpened(this);
+      mMediationInterstitialListener.onAdClosed(this);
+      return;
+    }
+    InneractiveFullscreenUnitController controller =
+        (InneractiveFullscreenUnitController) mInterstitialSpot.getSelectedUnitController();
+
+    if (!mInterstitialSpot.isReady()) {
+      Log.w(TAG, "showInterstitial called, but Ad has expired.");
+      mMediationInterstitialListener.onAdOpened(this);
+      mMediationInterstitialListener.onAdClosed(this);
+      return;
+    }
+
+    controller.show(context);
   }
 
   @NonNull
