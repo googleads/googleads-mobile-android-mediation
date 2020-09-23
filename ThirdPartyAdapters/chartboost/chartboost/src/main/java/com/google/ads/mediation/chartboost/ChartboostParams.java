@@ -14,115 +14,96 @@
 
 package com.google.ads.mediation.chartboost;
 
+import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost.CBFramework;
 
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
- * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter}
- * to {@link ChartboostSingleton}.
+ * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter} to {@link
+ * ChartboostSingleton}.
  */
 public class ChartboostParams {
 
-    /**
-     * Chartboost App ID.
-     */
-    private String appId;
+  /** Chartboost App ID. */
+  private String appId;
 
-    /**
-     * Chartboost App Signature.
-     */
-    private String appSignature;
+  /** Chartboost App Signature. */
+  private String appSignature;
 
-    /**
-     * Charboost location used to load ads.
-     */
-    private String cbLocation;
+  /** Charboost location used to load ads. */
+  private String cbLocation;
 
-    /**
-     * Chartboost readable framework.
-     */
-    private CBFramework cbFramework;
+  /** Chartboost readable framework. */
+  private CBFramework cbFramework;
 
-    /**
-     * The version name for {@link #cbFramework}.
-     */
-    private String cbFrameworkVersion;
+  /** The version name for {@link #cbFramework}. */
+  private String cbFrameworkVersion;
 
-    /**
-     * Default constructor, sets a default value for {@link #cbLocation}.
-     */
-    public ChartboostParams() {
-        this.cbLocation = CBLocation.LOCATION_DEFAULT;
-    }
+  /** Size of the Chartboost banner required to create a banner */
+  private BannerSize cbBannerSize;
+  /** Default constructor, sets a default value for {@link #cbLocation}. */
+  public ChartboostParams() {
+    this.cbLocation = CBLocation.LOCATION_DEFAULT;
+  }
 
-    /**
-     * @return {@link #appId}.
-     */
-    public String getAppId() {
-        return appId;
-    }
+  /** @return {@link #appId}. */
+  public String getAppId() {
+    return appId;
+  }
 
-    /**
-     * @param appId set to {@link #appId}.
-     */
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
+  /** @param appId set to {@link #appId}. */
+  public void setAppId(String appId) {
+    this.appId = appId;
+  }
 
-    /**
-     * @return {@link #appSignature}.
-     */
-    public String getAppSignature() {
-        return appSignature;
-    }
+  /** @return {@link #appSignature}. */
+  public String getAppSignature() {
+    return appSignature;
+  }
 
-    /**
-     * @param appSignature set to {@link #appSignature}
-     */
-    public void setAppSignature(String appSignature) {
-        this.appSignature = appSignature;
-    }
+  /** @param appSignature set to {@link #appSignature} */
+  public void setAppSignature(String appSignature) {
+    this.appSignature = appSignature;
+  }
 
-    /**
-     * @return {@link #cbLocation}.
-     */
-    public String getLocation() {
-        return cbLocation;
-    }
+  /** @return {@link #cbLocation}. */
+  public String getLocation() {
+    return cbLocation;
+  }
 
-    /**
-     * @param location set to {@link #cbLocation}.
-     */
-    public void setLocation(String location) {
-        this.cbLocation = location;
-    }
+  /** @param location set to {@link #cbLocation}. */
+  public void setLocation(String location) {
+    this.cbLocation = location;
+  }
 
-    /**
-     * @return {@link #cbFramework}.
-     */
-    public CBFramework getFramework() {
-        return cbFramework;
-    }
+  /** @return {@link #cbFramework}. */
+  public CBFramework getFramework() {
+    return cbFramework;
+  }
 
-    /**
-     * @param framework set to {@link #cbFramework}.
-     */
-    public void setFramework(CBFramework framework) {
-        this.cbFramework = framework;
-    }
+  /** @param framework set to {@link #cbFramework}. */
+  public void setFramework(CBFramework framework) {
+    this.cbFramework = framework;
+  }
 
-    /**
-     * @return {@link #cbFrameworkVersion}.
-     */
-    public String getFrameworkVersion() {
-        return cbFrameworkVersion;
-    }
+  /** @return {@link #cbFrameworkVersion}. */
+  public String getFrameworkVersion() {
+    return cbFrameworkVersion;
+  }
 
-    /**
-     * @param version set to {@link #cbFrameworkVersion}.
-     */
-    public void setFrameworkVersion(String version) {
-        this.cbFrameworkVersion = version;
-    }
+  /** @param version set to {@link #cbFrameworkVersion}. */
+  public void setFrameworkVersion(String version) {
+    this.cbFrameworkVersion = version;
+  }
+
+  /** @return {@link #cbBannerSize}. */
+  public BannerSize getBannerSize() {
+    return cbBannerSize;
+  }
+
+  /** @param bannerSize {@link #cbBannerSize}. */
+  public void setBannerSize(BannerSize bannerSize) {
+    this.cbBannerSize = bannerSize;
+  }
 }

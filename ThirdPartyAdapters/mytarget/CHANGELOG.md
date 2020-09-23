@@ -1,5 +1,103 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.10.0.0
+- Verified compatibility with myTarget SDK version 5.10.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- MyTarget SDK version 5.10.0.
+
+#### Version 5.9.1.0
+- Verified compatibility with myTarget SDK version 5.9.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- MyTarget SDK version 5.9.1.
+
+#### Version 5.8.4.0
+- Verified compatibility with myTarget SDK version 5.8.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- MyTarget SDK version 5.8.4.
+
+#### Version 5.8.3.0
+- Verified compatibility with myTarget SDK version 5.8.3.
+- Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- MyTarget SDK version 5.8.3.
+
+#### Version 5.8.2.0
+- Verified compatibility with myTarget SDK version 5.8.2.
+- Updated the adapter to support inline adaptive banner requests.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MyTarget SDK version 5.8.2.
+
+#### Version 5.8.1.0
+- Verified compatibility with myTarget SDK version 5.8.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MyTarget SDK version 5.8.1.
+
+#### Version 5.8.0.0
+- Verified compatibility with myTarget SDK version 5.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MyTarget SDK version 5.8.0.
+
+#### Version 5.7.1.0
+- Verified compatibility with myTarget SDK version 5.7.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MyTarget SDK version 5.7.1.
+
+#### Version 5.7.0.0
+- Verified compatibility with myTarget SDK version 5.7.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- MyTarget SDK version 5.7.0.
+
+#### Version 5.6.3.0
+- Verified compatibility with myTarget SDK version 5.6.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- MyTarget SDK version 5.6.3.
+
+#### Version 5.6.2.0
+- Verified compatibility with myTarget SDK version 5.6.2.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- MyTarget SDK version 5.6.2.
+
+#### Version 5.6.1.0
+- Verified compatibility with myTarget SDK version 5.6.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.0.
+- MyTarget SDK version 5.6.1.
+
+#### Version 5.6.0.0
+- Verified compatibility with myTarget SDK version 5.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.0.
+- Updated the minimum required Android API level to 16.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.0.
+- MyTarget SDK version 5.6.0.
+
 #### Version 5.5.5.0
 - Verified compatibility with myTarget SDK version 5.5.5.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.

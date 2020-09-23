@@ -1,5 +1,147 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 9.13.4.0
+- Verified compatibility with AppLovin SDK 9.13.4.
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- AppLovin SDK version 9.13.4.
+
+#### Version 9.13.3.0
+- Verified compatibility with AppLovin SDK 9.13.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.3.0.
+- AppLovin SDK version 9.13.3.
+
+#### Version 9.13.2.0
+- Verified compatibility with AppLovin SDK 9.13.2.
+- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.3.0.
+- AppLovin SDK version 9.13.2.
+
+#### Version 9.13.1.0
+- Verified compatibility with AppLovin SDK 9.13.1.
+- Adapter now throws an error if multiple interstitial ads are requested using the same Zone ID.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- AppLovin SDK version 9.13.1.
+
+#### Version 9.13.0.0
+- Updated the adapter to support inline adaptive banner requests.
+- Verified compatibility with AppLovin SDK 9.13.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- AppLovin SDK version 9.13.0.
+
+#### Version 9.12.8.0
+- Verified compatibility with AppLovin SDK 9.12.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.8.
+
+#### Version 9.12.7.0
+- Verified compatibility with AppLovin SDK 9.12.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.7.
+
+#### Version 9.12.6.1
+- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/master/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where open bidding banner ads timeout.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.6.
+
+#### Version 9.12.6.0
+- Verified compatibility with AppLovin SDK 9.12.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.6.
+
+#### Version 9.12.5.0
+- Verified compatibility with AppLovin SDK 9.12.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.5.
+
+#### Version 9.12.4.0
+- Verified compatibility with AppLovin SDK 9.12.4.
+- Adapter now requires an `Activity` context to initialize and load ads from AppLovin.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.4.
+
+#### Version 9.12.3.0
+- Verified compatibility with AppLovin SDK 9.12.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.3.
+
+#### Version 9.12.2.0
+- Verified compatibility with AppLovin SDK 9.12.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.2.
+
+#### Version 9.12.1.0
+- Verified compatibility with AppLovin SDK 9.12.1.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- AppLovin SDK version 9.12.1.
+
+#### Version 9.12.0.0
+- Verified compatibility with AppLovin SDK 9.12.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- AppLovin SDK version 9.12.0.
+
+#### Version 9.11.4.1
+- Fixed an issue that may cause open bidding banner/interstitial ad requests to timeout.
+- Added descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- AppLovin SDK version 9.11.4.
+
+#### Version 9.11.4.0
+- Verified compatibility with AppLovin SDK 9.11.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AppLovin SDK version 9.11.4.
+
+#### Version 9.11.2.0
+- Verified compatibility with AppLovin SDK 9.11.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AppLovin SDK version 9.11.2.
+
+#### Version 9.11.1.0
+- Verified compatibility with AppLovin SDK 9.11.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- AppLovin SDK version 9.11.1.
+
 #### Version 9.10.5.0
 - Verified compatibility with AppLovin SDK 9.10.5.
 

@@ -21,37 +21,36 @@ import com.google.ads.mediation.sample.sdk.SampleMediaViewListener;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 
 /**
- * A {@link SampleMediaViewListener} that forwards events to AdMob Mediation's
- * {@link MediationNativeListener}.
+ * A {@link SampleMediaViewListener} that forwards events to AdMob Mediation's {@link
+ * MediationNativeListener}.
  */
 public class SampleMediaViewEventForwarder implements SampleMediaViewListener {
-    private final MediationNativeListener nativeListener;
-    private final SampleAdapter adapter;
-    // For the sake of simplicity, the media view is not used by the Sample Adapter.
-    // It's included to demonstrate how the adapter can communicate between the Google Mobile Ads
-    // SDK and the Sample SDK for events related to the media view.
-    private final SampleMediaView mediaView;
 
-    /**
-     * Creates a new {@code SampleNativeMediationEventForwarder}.
-     *
-     * @param listener  An AdMob Mediation {@link MediationNativeListener} that should receive
-     *                 forwarded events.
-     *
-     * @param adapter  A {@link SampleAdapter} mediation adapter.
-     *
-     * @param mediaView A {@link SampleMediaView} for which to forward events to the Google Mobile
-     *                  Ads SDK.
-     */
-    public SampleMediaViewEventForwarder(MediationNativeListener listener,
-                                         SampleAdapter adapter, SampleMediaView mediaView) {
-        nativeListener = listener;
-        this.adapter = adapter;
-        this.mediaView = mediaView;
-    }
+  private final MediationNativeListener nativeListener;
+  private final SampleAdapter adapter;
+  // For the sake of simplicity, the media view is not used by the Sample Adapter.
+  // It's included to demonstrate how the adapter can communicate between the Google Mobile Ads
+  // SDK and the Sample SDK for events related to the media view.
+  private final SampleMediaView mediaView;
 
-    @Override
-    public void onVideoEnd() {
-        nativeListener.onVideoEnd(adapter);
-    }
+  /**
+   * Creates a new {@code SampleNativeMediationEventForwarder}.
+   *
+   * @param listener An AdMob Mediation {@link MediationNativeListener} that should receive
+   * forwarded events.
+   * @param adapter A {@link SampleAdapter} mediation adapter.
+   * @param mediaView A {@link SampleMediaView} for which to forward events to the Google Mobile Ads
+   * SDK.
+   */
+  public SampleMediaViewEventForwarder(MediationNativeListener listener,
+      SampleAdapter adapter, SampleMediaView mediaView) {
+    nativeListener = listener;
+    this.adapter = adapter;
+    this.mediaView = mediaView;
+  }
+
+  @Override
+  public void onVideoEnd() {
+    nativeListener.onVideoEnd(adapter);
+  }
 }

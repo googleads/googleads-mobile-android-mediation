@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.8.1"
+    id "com.jfrog.bintray" version "1.8.4"
 }
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -9,17 +9,17 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "2.0.20.2"
+    stringVersion = "2.0.22.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 2002002
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 2002200
         versionName stringVersion
     }
     buildTypes {
@@ -31,10 +31,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'jp.co.imobile:adnw-sdk-android:2.0.20'
+    implementation 'jp.co.imobile:adnw-sdk-android:2.0.22'
 
-    implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.1.0'
 }
 
 /**

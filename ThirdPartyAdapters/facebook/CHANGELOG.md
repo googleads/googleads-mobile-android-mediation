@@ -1,5 +1,113 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 6.0.0.0
+- Verified compatibility with Facebook SDK v6.0.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.3.0.
+- Facebook SDK version 6.0.0.
+
+#### 5.11.0.0
+- Verified compatibility with Facebook SDK v5.11.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- Facebook SDK version 5.11.0.
+
+#### 5.10.1.0
+- Verified compatibility with Facebook SDK v5.10.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- Facebook SDK version 5.10.1.
+
+#### 5.10.0.0
+- Verified compatibility with Facebook SDK v5.10.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- Facebook SDK version 5.10.0.
+
+#### 5.9.1.0
+- Verified compatibility with Facebook SDK v5.9.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- Facebook SDK version 5.9.1.
+
+#### 5.9.0.2
+- Added support for rewarded interstitial ads.
+- Updated the adapter to support inline adaptive banner requests.
+- Fixed an issue where open-bidding banner ads always render full-width.
+- Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.2.0.
+- Facebook SDK version 5.9.0.
+
+#### 5.9.0.1
+- Adapter now forwards an error if the FAN SDK encounters an error while presenting an interstitial/rewarded ad.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.9.0.
+
+#### 5.9.0.0
+- Verified compatibility with Facebook SDK v5.9.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.9.0.
+
+#### 5.8.0.2
+- Fixed incorrect variable reference which caused a crash in certain scenarios
+when loading native ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.8.0.
+
+#### 5.8.0.1
+- Added additional descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Facebook SDK version 5.8.0.
+
+#### 5.8.0.0
+- Verified compatibility with Facebook SDK v5.8.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- Facebook SDK version 5.8.0.
+
+#### 5.7.1.1
+- Added support for Facebook Audience Network adapter errors.
+- Added descriptive error codes and reasons for adapter load/show failures.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.7.1.
+
+#### 5.7.1.0
+- Verified compatibility with Facebook SDK v5.7.1.
+- Added support for Facebook Native Banner ads when using open bidding.
+- Native ads now use 'Drawable' for the icon asset.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.7.1.
+
+#### 5.7.0.0
+- Verified compatibility with Facebook SDK v5.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Facebook SDK version 5.7.0.
+
 #### 5.6.1.0
 - Verified compatibility with Facebook SDK v5.6.1.
 - Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
@@ -24,7 +132,7 @@ Built and tested with:
 
 #### 5.4.1.0
 - Verified compatibility with Facebook SDK v5.4.1.
-- Added support for Facebook Native Banner Ads.
+- Added support for Facebook Native Banner Ads for waterfall mediation.
   * Use `setNativeBanner()` from the `FacebookExtras` class to request for Native Banner Ads.
 - Fixed an issue that caused Smart Banner Ad requests to fail.
 - Fixed an issue where Rewarded Video Ads were not forwarding the `onAdClosed()` event in some cases where the app was backgrounded while the video was in progress.

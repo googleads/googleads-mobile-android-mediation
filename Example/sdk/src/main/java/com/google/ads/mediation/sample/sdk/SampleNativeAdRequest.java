@@ -21,33 +21,33 @@ package com.google.ads.mediation.sample.sdk;
  */
 public class SampleNativeAdRequest extends SampleAdRequest {
 
-    public static final int IMAGE_ORIENTATION_ANY = 0;
-    public static final int IMAGE_ORIENTATION_PORTRAIT = 1;
-    public static final int IMAGE_ORIENTATION_LANDSCAPE = 2;
+  public static final int IMAGE_ORIENTATION_ANY = 0;
+  public static final int IMAGE_ORIENTATION_PORTRAIT = 1;
+  public static final int IMAGE_ORIENTATION_LANDSCAPE = 2;
 
-    private boolean shouldDownloadImages;
+  private boolean shouldDownloadImages;
 
-    public SampleNativeAdRequest() {
-        super();
-        shouldDownloadImages = true;
-    }
+  public SampleNativeAdRequest() {
+    super();
+    shouldDownloadImages = true;
+  }
 
-    public boolean getShouldDownloadImages() {
-        return shouldDownloadImages;
-    }
+  public boolean getShouldDownloadImages() {
+    return shouldDownloadImages;
+  }
 
-    public void setShouldDownloadImages(boolean shouldDownloadImages) {
-        this.shouldDownloadImages = shouldDownloadImages;
-    }
+  public void setShouldDownloadImages(boolean shouldDownloadImages) {
+    this.shouldDownloadImages = shouldDownloadImages;
+  }
 
-    // For the sake of simplicity, the following two values are ignored by the Sample SDK.
-    // They're included so that the custom event and adapter classes can demonstrate how to take
-    // a request from the Google Mobile Ads SDK and translate it into one for the Sample SDK.
-    public void setShouldDownloadMultipleImages(boolean shouldDownloadMultipleImages) {
+  // For the sake of simplicity, the following two values are ignored by the Sample SDK.
+  // They're included so that the custom event and adapter classes can demonstrate how to take
+  // a request from the Google Mobile Ads SDK and translate it into one for the Sample SDK.
+  public void setShouldDownloadMultipleImages(boolean shouldDownloadMultipleImages) {
 
-    }
+  }
 
-    public void setPreferredImageOrientation(int preferredImageOrientation) {
+  public void setPreferredImageOrientation(int preferredImageOrientation) {
 
-    }
+  }
 }
