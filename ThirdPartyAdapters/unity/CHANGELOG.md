@@ -1,5 +1,72 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 3.4.8.0
+- Fixed a `NullPointerException` error that occurs when a banner ad is destroyed.
+- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.3.0.
+- Unity Ads SDK version 3.4.8.
+
+#### Version 3.4.6.1
+- Created an adapter build that does not include the Unity Ads SDK bundled in.
+This gives publishers an option to use the Unity Ads Services when mediating on
+Unity to avoid conflicting dependency issues.
+  * Publishers may opt to use this by including the
+  `com.google.ads.mediation:unity-adapter-only:x.y.z.p` dependency on their
+  app-level `build.gradle` file.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Unity Ads SDK version 3.4.6.
+
+#### Version 3.4.6.0
+- Verified compatibility with Unity Ads SDK 3.4.6.
+- Adapter now forwards the `onAdOpened()` callback when a banner ad is clicked.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Unity Ads SDK version 3.4.6.
+
+#### Version 3.4.2.3
+- Added descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.1.0.
+- Unity Ads SDK version 3.4.2.
+
+#### Version 3.4.2.2
+- Fixed a `ConcurrentModificationException` crash that occurred when Unity Ads returns an error.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- Unity Ads SDK version 3.4.2.
+
+#### Version 3.4.2.1
+- Improved forwarding of Unity's errors to recognize initialization and ad load failures earlier and reduce timeouts.
+- Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.0.1.
+- Unity Ads SDK version 3.4.2.
+
+#### Version 3.4.2.0
+- Verified compatibility with Unity Ads SDK 3.4.2.
+- Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Unity Ads SDK version 3.4.2.
+
+#### Version 3.4.0.0
+- Verified compatibility with Unity Ads SDK 3.4.0.
+- Updated the minimum required Google Mobile Ads SDK version to 18.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 18.3.0.
+- Unity Ads SDK version 3.4.0.
+
 #### Version 3.3.0.0
 - Verified compatibility with Unity Ads SDK 3.3.0.
 

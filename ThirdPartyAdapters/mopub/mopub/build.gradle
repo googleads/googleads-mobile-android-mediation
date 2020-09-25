@@ -9,19 +9,18 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "5.10.0.0"
+    stringVersion = "5.13.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 5100000
+        minSdkVersion 19
+        targetSdkVersion 29
+        versionCode 5130100
         versionName stringVersion
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,17 +32,20 @@ android {
 }
 
 repositories {
-    maven { url "https://s3.amazonaws.com/moat-sdk-builds" }
+    google()
+    jcenter()
+    maven {
+        url "https://s3.amazonaws.com/moat-sdk-builds"
+    }
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:18.3.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    implementation 'androidx.browser:browser:1.0.0'
-    implementation 'com.mopub.volley:mopub-volley:2.1.0'
-    implementation('com.mopub:mopub-sdk:5.10.0@aar') {
+    implementation('com.mopub:mopub-sdk:5.13.1@aar') {
         transitive = true
     }
+
+    implementation 'com.google.android.gms:play-services-ads:19.2.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
 }
 
 /**

@@ -1,12 +1,20 @@
 package com.google.ads.mediation.facebook.rtb;
 
-import android.os.Bundle;
-import androidx.annotation.NonNull;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
+import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
@@ -18,81 +26,95 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
-
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
-    private MediationBannerAdConfiguration adConfiguration;
-    private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
-    private AdView adView;
-    private MediationBannerAdCallback mBannerAdCallback;
+  private MediationBannerAdConfiguration adConfiguration;
+  private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
+  private AdView adView;
+  private FrameLayout mWrappedAdView;
+  private MediationBannerAdCallback mBannerAdCallback;
 
-    public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
-            MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        this.adConfiguration = adConfiguration;
-        this.callback = callback;
+  public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    this.adConfiguration = adConfiguration;
+    this.callback = callback;
+  }
+
+  public void render() {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
+    if (TextUtils.isEmpty(placementID)) {
+      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad, placementID is null or empty.");
+      Log.e(TAG, errorMessage);
+      callback.onFailure(errorMessage);
+      return;
     }
 
-    public void render() {
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
-        if (TextUtils.isEmpty(placementID)) {
-            String message = "Failed to request ad, placementID is null or empty.";
-            Log.e(TAG, message);
-            callback.onFailure(message);
-            return;
-        }
-        setMixedAudience(adConfiguration);
-        try {
-            adView = new AdView(adConfiguration.getContext(), placementID,
-                    adConfiguration.getBidResponse());
-            if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
-                adView.setExtraHints(new ExtraHints.Builder()
-                        .mediationData(adConfiguration.getWatermark()).build());
-            }
-            adView.loadAd(
-                    adView.buildLoadAdConfig()
-                            .withAdListener(this)
-                            .withBid(adConfiguration.getBidResponse())
-                            .build()
-            );
-        } catch (Exception e) {
-            callback.onFailure("FacebookRtbBannerAd Failed to load: " + e.getMessage());
-        }
+    setMixedAudience(adConfiguration);
+    try {
+      adView = new AdView(adConfiguration.getContext(), placementID,
+          adConfiguration.getBidResponse());
+    } catch (Exception exception) {
+      String errorMessage = createAdapterError(ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
+          "Failed to create banner ad: " + exception.getMessage());
+      Log.e(TAG, errorMessage);
+      callback.onFailure(errorMessage);
+      return;
     }
 
-    @NonNull
-    @Override
-    public View getView() {
-        return adView;
+    if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+      adView.setExtraHints(
+          new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
     }
 
-    @Override
-    public void onError(Ad ad, AdError adError) {
-        callback.onFailure(adError.getErrorMessage());
-    }
+    Context context = adConfiguration.getContext();
+    FrameLayout.LayoutParams adViewLayoutParams = new FrameLayout.LayoutParams(
+        adConfiguration.getAdSize().getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
+    mWrappedAdView = new FrameLayout(context);
+    adView.setLayoutParams(adViewLayoutParams);
+    mWrappedAdView.addView(adView);
+    adView.loadAd(
+        adView.buildLoadAdConfig()
+            .withAdListener(this)
+            .withBid(adConfiguration.getBidResponse())
+            .build()
+    );
+  }
 
-    @Override
-    public void onAdLoaded(Ad ad) {
-        mBannerAdCallback = callback.onSuccess(this);
-    }
+  @NonNull
+  @Override
+  public View getView() {
+    return mWrappedAdView;
+  }
 
-    @Override
-    public void onAdClicked(Ad ad) {
-        if (mBannerAdCallback != null) {
-            // TODO: Upon approval, add this callback back in.
-            //mBannerAdCallback.reportAdClicked();
-            mBannerAdCallback.onAdOpened();
-            mBannerAdCallback.onAdLeftApplication();
-        }
-    }
+  @Override
+  public void onError(Ad ad, AdError adError) {
+    String errorMessage = createSdkError(adError);
+    Log.w(TAG, errorMessage);
+    callback.onFailure(errorMessage);
+  }
 
-    @Override
-    public void onLoggingImpression(Ad ad) {
-        if (mBannerAdCallback != null) {
-            // TODO: Upon approval, add this callback back in.
-            //mBannerAdCallback.reportAdImpression();
-        }
+  @Override
+  public void onAdLoaded(Ad ad) {
+    mBannerAdCallback = callback.onSuccess(this);
+  }
+
+  @Override
+  public void onAdClicked(Ad ad) {
+    if (mBannerAdCallback != null) {
+      // TODO: Upon approval, add this callback back in.
+      //mBannerAdCallback.reportAdClicked();
+      mBannerAdCallback.onAdOpened();
+      mBannerAdCallback.onAdLeftApplication();
     }
+  }
+
+  @Override
+  public void onLoggingImpression(Ad ad) {
+    if (mBannerAdCallback != null) {
+      // TODO: Upon approval, add this callback back in.
+      //mBannerAdCallback.reportAdImpression();
+    }
+  }
 }

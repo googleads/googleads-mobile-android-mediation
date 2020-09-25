@@ -1,48 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.SampleSDKAdsActivity">
 
-    <ImageButton
-        android:id="@+id/close_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:visibility="gone"/>
+  <ImageButton
+      android:id="@+id/close_button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@android:drawable/ic_menu_close_clear_cancel"
+      android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/video_ad_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.StatusBar.Title"
-        android:text="This is a sample rewarded video ad"
-        android:layout_centerInParent="true"/>
+  <TextView
+      android:id="@+id/video_ad_textView"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textAppearance="@android:style/TextAppearance.StatusBar.Title"
+      android:text="This is a sample rewarded video ad"
+      android:layout_centerInParent="true" />
 
-    <TextView
-        android:id="@+id/title_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:textColor="@android:color/white"
-        android:textSize="30sp"
-        android:layout_above="@id/video_ad_textView"
-        tools:text="Ad 1 of 6"/>
+  <TextView
+      android:id="@+id/title_textView"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:layout_margin="8dp"
+      android:textColor="@android:color/white"
+      android:textSize="30sp"
+      android:layout_above="@id/video_ad_textView"
+      tools:text="Ad 1 of 6" />
 
-    <TextView
-        android:id="@+id/countdown_timer_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:textColor="@android:color/white"
-        android:textSize="30sp"
-        android:layout_below="@id/video_ad_textView"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal"
-        tools:text="5"/>
+  <TextView
+      android:id="@+id/countdown_timer_textView"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_margin="8dp"
+      android:textColor="@android:color/white"
+      android:textSize="30sp"
+      android:layout_below="@id/video_ad_textView"
+      android:layout_centerHorizontal="true"
+      android:gravity="center_horizontal"
+      tools:text="5" />
 
 </RelativeLayout>
