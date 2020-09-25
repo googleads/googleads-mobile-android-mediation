@@ -52,6 +52,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
     this.mMediationNativeListener = mediationNativeListener;
+    setOverrideClickHandling(true);
+    setOverrideImpressionRecording(true);
   }
 
   // Map InMobi Native Ad to AdMob Unified Native Ad.
