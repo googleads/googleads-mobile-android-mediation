@@ -1,6 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
 #### Version 9.0.9.0
+- Fix for InMobi Impression and click Handling
 - Verified compatibility with InMobi SDK version 9.0.9.
 
 Built and test with:
