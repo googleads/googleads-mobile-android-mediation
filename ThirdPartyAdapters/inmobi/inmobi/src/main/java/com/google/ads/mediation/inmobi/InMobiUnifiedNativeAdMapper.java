@@ -52,7 +52,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
     this.mMediationNativeListener = mediationNativeListener;
-    setOverrideClickHandling(true);
     setOverrideImpressionRecording(true);
   }
 
@@ -188,13 +187,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     } else {
       mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
     }
-  }
-
-  @Override
-  public void recordImpression() {
-    // All impression render events are fired automatically when the primary view is displayed
-    // on the screen.
-    // Reference: https://support.inmobi.com/monetize/android-guidelines/native-ads-for-android
   }
 
   @Override
