@@ -75,42 +75,74 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private MediationRewardedAdConfiguration adConfiguration;
   private AppLovinAd ad;
 
-  /** Applovin adapter errors. */
+  /**
+   * Applovin adapter errors.
+   */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-        ERROR_BANNER_SIZE_MISMATCH,
-        ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-        ERROR_NULL_CONTEXT,
-        ERROR_EMPTY_BID_TOKEN,
-        ERROR_AD_ALREADY_REQUESTED,
-        ERROR_PRESENTATON_AD_NOT_READY,
-        ERROR_MAPPING_NATIVE_ASSETS,
-        ERROR_AD_FORMAT_UNSUPPORTED,
-        ERROR_CONTEXT_NOT_ACTIVITY
+          ERROR_BANNER_SIZE_MISMATCH,
+          // ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          ERROR_NULL_CONTEXT,
+          ERROR_EMPTY_BID_TOKEN,
+          ERROR_AD_ALREADY_REQUESTED,
+          ERROR_PRESENTATON_AD_NOT_READY,
+          // ERROR_MAPPING_NATIVE_ASSETS,
+          ERROR_AD_FORMAT_UNSUPPORTED,
+          ERROR_CONTEXT_NOT_ACTIVITY
       })
-  public @interface AdapterError {}
+  public @interface AdapterError {
 
-  /** Banner size mismatch. */
+  }
+
+  /**
+   * Banner size mismatch.
+   */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
-  /** App did not request unified native ads. */
-  public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 102;
-  /** Context is null. */
+
+  /**
+   * App did not request unified native ads. This error code is no longer used.
+   */
+  // public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 102;
+
+  /**
+   * Context is null.
+   */
   public static final int ERROR_NULL_CONTEXT = 103;
-  /** AppLovin bid token is empty. */
+
+  /**
+   * AppLovin bid token is empty.
+   */
   public static final int ERROR_EMPTY_BID_TOKEN = 104;
-  /** Requested multiple ads for the same zone. AppLovin can only load 1 ad at a time per zone. */
+
+  /**
+   * Requested multiple ads for the same zone. AppLovin can only load 1 ad at a time per zone.
+   */
   public static final int ERROR_AD_ALREADY_REQUESTED = 105;
-  /** Ad is not ready to display. */
+
+  /**
+   * Ad is not ready to display.
+   */
   public static final int ERROR_PRESENTATON_AD_NOT_READY = 106;
-  /** Native ad is missing required assets. */
-  public static final int ERROR_MAPPING_NATIVE_ASSETS = 107;
-  /** Adapter does not support the ad format being requested. */
+
+  /**
+   * Native ad is missing required assets. This error code is no longer used.
+   */
+  // public static final int ERROR_MAPPING_NATIVE_ASSETS = 107;
+
+  /**
+   * Adapter does not support the ad format being requested.
+   */
   public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
-  /** Context is not an Activity instance. */
+
+  /**
+   * Context is not an Activity instance.
+   */
   public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
-  /** Creates a formatted adapter error string given a code and description. */
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   */
   public static String createAdapterError(@AdapterError int code, @NonNull String description) {
     return String.format("%d: %s", code, description);
   }

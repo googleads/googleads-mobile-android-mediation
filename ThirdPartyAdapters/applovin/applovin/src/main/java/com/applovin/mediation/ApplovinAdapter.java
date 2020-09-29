@@ -34,10 +34,8 @@ import java.util.HashMap;
  * video ads and to mediate the callbacks between the AppLovin SDK and the Google Mobile Ads SDK.
  */
 public class ApplovinAdapter extends AppLovinMediationAdapter
-    implements MediationBannerAdapter,
-        MediationInterstitialAdapter,
-        OnContextChangedListener,
-        MediationRewardedAd {
+    implements MediationBannerAdapter, MediationInterstitialAdapter, OnContextChangedListener,
+    MediationRewardedAd {
 
   private static final boolean LOGGING_ENABLED = true;
 
@@ -236,13 +234,16 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationAdapter.
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
 
   @Override
-  public void onDestroy() {}
+  public void onDestroy() {
+  }
   // endregion
 
   // OnContextChangedListener Method.
