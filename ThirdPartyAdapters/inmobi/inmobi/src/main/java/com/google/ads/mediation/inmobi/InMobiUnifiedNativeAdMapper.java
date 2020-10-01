@@ -125,7 +125,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
 
     // Add primary view as media view
-    final RelativeLayout placeHolderView = new RelativeLayout(context);
+    final RelativeLayout placeHolderView = new ClickInterceptorRelativeLayout(context);
     placeHolderView.setLayoutParams(
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
