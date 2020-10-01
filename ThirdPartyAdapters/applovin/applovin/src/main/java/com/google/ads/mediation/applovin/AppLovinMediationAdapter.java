@@ -4,7 +4,7 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -89,7 +89,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
           ERROR_PRESENTATON_AD_NOT_READY,
           // ERROR_MAPPING_NATIVE_ASSETS,
           ERROR_AD_FORMAT_UNSUPPORTED,
-          ERROR_CONTEXT_NOT_ACTIVITY
+          // ERROR_CONTEXT_NOT_ACTIVITY
       })
   public @interface AdapterError {
 
@@ -136,9 +136,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
 
   /**
-   * Context is not an Activity instance.
+   * Context is not an Activity instance. This error code is no longer used, as AppLovin can
+   * accept an {@link Application} context.
    */
-  public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
+  // public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
   /**
    * Creates a formatted adapter error string given a code and description.
@@ -153,25 +154,17 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void initialize(
-      Context context,
+  public void initialize(Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
     log(DEBUG, "Attempting to initialize SDK.");
 
-    if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "AppLovin requires an Activity context to initialize.");
-      return;
-    }
-    Activity activity = (Activity) context;
-
-    if (AppLovinUtils.androidManifestHasValidSdkKey(activity)) {
-      AppLovinSdk.getInstance(activity).initializeSdk();
+    if (AppLovinUtils.androidManifestHasValidSdkKey(context)) {
+      AppLovinSdk.getInstance(context).initializeSdk();
     }
 
     for (MediationConfiguration mediationConfig : mediationConfigurations) {
-      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), activity);
+      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), context);
       sdk.initializeSdk();
     }
     initializationCompleteCallback.onInitializationSucceeded();
@@ -224,15 +217,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
     adConfiguration = mediationRewardedAdConfiguration;
     Context context = adConfiguration.getContext();
-
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      log(ERROR, "Failed to load rewarded ad from AppLovin: " + adapterError);
-      mediationAdLoadCallback.onFailure(adapterError);
-      return;
-    }
 
     if (mediationRewardedAdConfiguration.getBidResponse().equals("")) {
       isRtbAd = false;
