@@ -17,12 +17,16 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
-/** A helper class used by {@link ApplovinAdapter}. */
+/**
+ * A helper class used by {@link ApplovinAdapter}.
+ */
 public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
-  /** Keys for retrieving values from the server parameters. */
+  /**
+   * Keys for retrieving values from the server parameters.
+   */
   private static class ServerParameterKeys {
 
     private static final String SDK_KEY = "sdkKey";
@@ -49,7 +53,9 @@ public class AppLovinUtils {
     return sdk;
   }
 
-  /** Checks whether or not the Android Manifest has a valid SDK key */
+  /**
+   * Checks whether or not the Android Manifest has a valid SDK key
+   */
   public static boolean androidManifestHasValidSdkKey(Context context) {
     final Bundle metaData = retrieveMetadata(context);
     if (metaData != null) {
@@ -86,16 +92,18 @@ public class AppLovinUtils {
     }
   }
 
-  /** Retrieves whether or not to mute the ad that is about to be rendered. */
+  /**
+   * Retrieves whether or not to mute the ad that is about to be rendered.
+   */
   public static boolean shouldMuteAudio(Bundle networkExtras) {
     return networkExtras != null && networkExtras.getBoolean(AppLovinExtras.Keys.MUTE_AUDIO);
   }
 
-  /** Convert the given AppLovin SDK error code into the appropriate AdMob error code. */
+  /**
+   * Convert the given AppLovin SDK error code into the appropriate AdMob error code.
+   */
   public static int toAdMobErrorCode(int applovinErrorCode) {
-    //
-    // TODO: Be more exhaustive
-    //
+    // TODO: Be more exhaustive.
     if (applovinErrorCode == AppLovinErrorCodes.NO_FILL) {
       return AdRequest.ERROR_CODE_NO_FILL;
     } else if (applovinErrorCode == AppLovinErrorCodes.FETCH_AD_TIMEOUT) {
@@ -105,21 +113,19 @@ public class AppLovinUtils {
     }
   }
 
-  /** Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob. */
+  /**
+   * Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob.
+   */
   @Nullable
-  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(
-      @NonNull Context context, @NonNull AdSize adSize) {
+  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(@NonNull Context context,
+      @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
-    potentials.add(AdSize.MEDIUM_RECTANGLE);
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
-
     if (AdSize.BANNER.equals(closestSize)) {
       return AppLovinAdSize.BANNER;
-    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
-      return AppLovinAdSize.MREC;
     } else if (AdSize.LEADERBOARD.equals(closestSize)) {
       return AppLovinAdSize.LEADER;
     }

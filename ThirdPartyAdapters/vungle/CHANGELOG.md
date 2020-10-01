@@ -1,5 +1,8 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to not forward `onAdClosed()` when banner ads are refreshed or destroyed.
+
 #### Version 6.7.1.0
 - Verified compatibility with Vungle SDK 6.7.1.
 - Fixed a bug where ads wouldn't load if an ad was loaded using an application context.
