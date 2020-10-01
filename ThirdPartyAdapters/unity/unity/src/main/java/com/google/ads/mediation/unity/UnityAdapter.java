@@ -115,8 +115,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
     @Override
     public void onUnityAdsPlacementStateChanged(String s, UnityAds.PlacementState placementState, UnityAds.PlacementState placementState1) {
-      // This callback is not forwarded to Google Mobile Ads SDK. onUnityAdsError should be used
-      // to forward Unity Ads SDK state to Google Mobile Ads SDK.
+      // This callback is not forwarded to Google Mobile Ads SDK.
     }
 
     @Override
