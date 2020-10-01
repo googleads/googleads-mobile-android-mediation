@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.IntDef;
+
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -31,6 +33,8 @@ import com.unity3d.ads.BuildConfig;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
@@ -44,6 +48,49 @@ public class UnityMediationAdapter extends Adapter {
    * TAG used for logging messages.
    */
   static final String TAG = UnityMediationAdapter.class.getSimpleName();
+
+  // region Error Codes
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+          value = {
+                  ERROR_INVALID_SERVER_PARAMETERS,
+                  ERROR_PLACEMENT_STATE_NO_FILL,
+                  ERROR_PLACEMENT_STATE_DISABLED,
+                  ERROR_NULL_CONTEXT,
+                  ERROR_CONTEXT_NOT_ACTIVITY,
+                  ERROR_AD_NOT_READY,
+                  ERROR_UNITY_ADS_NOT_SUPPORTED,
+                  ERROR_AD_ALREADY_LOADING,
+                  ERROR_FINISH
+          })
+  @interface AdapterError {}
+
+  /** Invalid server parameters. */
+  static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
+  /** UnityAds returned a placement with a {@link PlacementStateNO_FILL} state. */
+  static final int ERROR_PLACEMENT_STATE_NO_FILL = 102;
+
+  /** UnityAds returned a placement with a {@link PlacementState#DISABLED} state. */
+  static final int ERROR_PLACEMENT_STATE_DISABLED = 103;
+
+  /** Tried to show an ad with a {@code null} context. */
+  static final int ERROR_NULL_CONTEXT = 104;
+
+  static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
+
+  /** Tried to show an ad that's not ready to be shown. */
+  static final int ERROR_AD_NOT_READY = 106;
+
+  /** UnityAds is not supported on the device. */
+  static final int ERROR_UNITY_ADS_NOT_SUPPORTED = 107;
+
+  /** UnityAds can only load 1 ad per placement at a time. */
+  static final int ERROR_AD_ALREADY_LOADING = 108;
+
+  /** UnityAds finished with a {@link FinishState#ERROR} state. */
+  static final int ERROR_FINISH = 109;
+  // endregion
 
   /**
    * Key to obtain Game ID, required for loading Unity Ads.

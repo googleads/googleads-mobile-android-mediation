@@ -33,6 +33,9 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import java.lang.ref.WeakReference;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
  * Mobile Ads SDK and Unity Ads SDK.
@@ -83,8 +86,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       if (mMediationInterstitialListener == null) {
         return;
       }
+      String errorMessage = createAdapterError(
+                      ERROR_PLACEMENT_STATE_NO_FILL,
+                      "Received onUnityAdsPlacementStateChanged() callback "
+                              + "with state NO_FILL for placement ID: "
+                              + placementId);
+      Log.w(TAG, errorMessage);
       mMediationInterstitialListener
-          .onAdFailedToLoad(UnityAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+          .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
     }
   };
 
@@ -118,20 +127,22 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!isValidIds(gameId, mPlacementId)) {
+      createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+
       if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
       }
       return;
     }
 
+
     if (context == null || !(context instanceof Activity)) {
-      Log.e(TAG, "Unity Ads failed to load interstitial ad for placement ID '" +
-          mPlacementId + "': Context is not an Activity. Unity Ads requires an Activity" +
-          " context to load ads.");
+      String adapterError =
+              createAdapterError(
+                      ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
       }
       return;
     }
@@ -154,13 +165,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
             UnityAds.removeListener(UnityAdapter.this);
-            Log.e(TAG, "Unity Ads initialization failed: [" +
-                unityAdsInitializationError + "] " + errorMessage +
-                ", cannot load interstitial ad for placement ID '" + mPlacementId
-                + "' in game '" + gameId + "'");
+            String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Unity Ads initialization failed: [" +
+                    unityAdsInitializationError + "] " + errorMessage +
+                    ", cannot load interstitial ad for placement ID '" + mPlacementId
+                    + "' in game '" + gameId + "'");
+            Log.e(TAG, adapterError);
             if (mMediationInterstitialListener != null) {
               mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                  AdRequest.ERROR_CODE_INVALID_REQUEST);
+                  ERROR_INVALID_SERVER_PARAMETERS);
             }
           }
         });
@@ -269,6 +281,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   @Override
   public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String errorMessage) {
     // Unity Ads ad failed to show.
+    String sdkError = createSDKError(unityAdsError, errorMessage);
+    Log.w(TAG, "Unity Ads returned an error: " + sdkError);
+
     UnityAds.removeListener(this);
     Log.e(TAG, "Failed to show interstitial ad for placement ID '" + mPlacementId +
         "' from Unity Ads. Error: " + unityAdsError.toString() + " - " + errorMessage);
