@@ -79,19 +79,15 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
-      Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
-          + placementId + "'.");
-      if (mMediationInterstitialListener == null) {
-        return;
-      }
       String errorMessage = createAdapterError(
-                      ERROR_PLACEMENT_STATE_NO_FILL,
-                      "Received onUnityAdsPlacementStateChanged() callback "
-                              + "with state NO_FILL for placement ID: "
-                              + placementId);
+              ERROR_PLACEMENT_STATE_NO_FILL,
+              "UnityAds failed to load for placement ID: "
+                      + placementId);
       Log.w(TAG, errorMessage);
-      mMediationInterstitialListener
-          .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener
+                .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+      }
     }
   };
 
@@ -193,8 +189,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!isValidIds(gameId, mPlacementId)) {
-      createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
-
+      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
       }
@@ -228,14 +224,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Unity Ads initialization failed: [" +
+            String adapterError = createAdapterError(INITIALIZATION_FAILURE, "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load interstitial ad for placement ID '" + mPlacementId
                     + "' in game '" + gameId + "'");
             Log.e(TAG, adapterError);
             if (mMediationInterstitialListener != null) {
               mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                  ERROR_INVALID_SERVER_PARAMETERS);
+                      INITIALIZATION_FAILURE);
             }
           }
         });
