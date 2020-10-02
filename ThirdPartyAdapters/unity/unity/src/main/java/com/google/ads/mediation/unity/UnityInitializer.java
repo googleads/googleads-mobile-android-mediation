@@ -60,12 +60,13 @@ public class UnityInitializer {
             initializationListener) {
         // Check if the current device is supported by Unity Ads before initializing.
         if (!UnityAds.isSupported()) {
-            Log.w(UnityAdapter.TAG, "Unity Ads cannot be initialized: current device is not supported.");
+            String errorMessage = "Unity Ads cannot be initialized: current device is not supported.";
+            initializationListener.onInitializationFailed(UnityAds.UnityAdsInitializationError.INTERNAL_ERROR, errorMessage);
         }
 
         if (UnityAds.isInitialized()) {
             // Unity Ads is already initialized.
-            Log.d(UnityAdapter.TAG, "Unity Ads is already initialized.");
+            initializationListener.onInitializationComplete();
         }
 
         // Set mediation meta data before initializing.
@@ -77,5 +78,4 @@ public class UnityInitializer {
 
         UnityAds.initialize(context, gameId, false, true, initializationListener);
     }
-
 }
