@@ -28,7 +28,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.services.banners.BannerErrorCode;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -182,7 +181,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
 
             if (adSize == null || size == null) {
-              String adapterError = createAdapterError(ERROR_SIZE_MISMATCH, "Unity banner ad failed to load : banner size is null.");
+              String adapterError = createAdapterError(ERROR_SIZE_MISMATCH, "Unity banner ad failed to load : banner size is invalid.");
               Log.e(TAG, adapterError);
               if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
