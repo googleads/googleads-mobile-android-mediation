@@ -1,11 +1,9 @@
 package com.applovin.mediation.rtb;
 
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
@@ -25,23 +23,28 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
-/** Created by Thomas So on July 17 2018 */
+/**
+ * Created by Thomas So on July 17 2018
+ */
 public final class AppLovinRtbBannerRenderer
-    implements MediationBannerAd,
-        AppLovinAdLoadListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdViewEventListener {
+    implements MediationBannerAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
+    AppLovinAdClickListener, AppLovinAdViewEventListener {
 
   private static final String TAG = AppLovinRtbBannerRenderer.class.getSimpleName();
 
-  /** Data used to render an RTB banner ad. */
+  /**
+   * Data used to render an RTB banner ad.
+   */
   private final MediationBannerAdConfiguration adConfiguration;
 
-  /** Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed. */
+  /**
+   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
+   */
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
 
-  /** Listener object to notify the Google Mobile Ads SDK of banner presentation events. */
+  /**
+   * Listener object to notify the Google Mobile Ads SDK of banner presentation events.
+   */
   private MediationBannerAdCallback mBannerAdCallback;
 
   private AppLovinAdView adView;
@@ -55,15 +58,6 @@ public final class AppLovinRtbBannerRenderer
 
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      Log.e(TAG, "Failed to load banner ad from AppLovin: " + adapterError);
-      callback.onFailure(adapterError);
-      return;
-    }
-
     AppLovinAdSize adSize =
         AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adConfiguration.getAdSize());
 
