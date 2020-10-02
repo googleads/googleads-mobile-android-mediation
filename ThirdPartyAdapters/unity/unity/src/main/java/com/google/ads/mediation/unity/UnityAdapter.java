@@ -79,19 +79,15 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
-      Log.e(TAG, "Unity Ads interstitial ad load failure for placement ID '"
-          + placementId + "'.");
-      if (mMediationInterstitialListener == null) {
-        return;
-      }
       String errorMessage = createAdapterError(
-                      ERROR_PLACEMENT_STATE_NO_FILL,
-                      "Received onUnityAdsPlacementStateChanged() callback "
-                              + "with state NO_FILL for placement ID: "
-                              + placementId);
+              ERROR_PLACEMENT_STATE_NO_FILL,
+              "UnityAds failed to load for placement ID: "
+                      + placementId);
       Log.w(TAG, errorMessage);
-      mMediationInterstitialListener
-          .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener
+                .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+      }
     }
   };
 

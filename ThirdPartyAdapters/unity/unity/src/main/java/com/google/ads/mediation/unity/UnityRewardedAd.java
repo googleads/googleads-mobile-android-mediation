@@ -28,6 +28,10 @@ import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.*;
+
 public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedListener {
 
   /**
@@ -54,7 +58,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
   private IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
-      Log.d(UnityAdapter.TAG, "Unity Ads rewarded ad successfully loaded for placement ID '"
+      Log.d(TAG, "Unity Ads rewarded ad successfully loaded for placement ID '"
           + placementId + "'");
       if (mMediationAdLoadCallback == null) {
         return;
@@ -64,13 +68,15 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
-      Log.e(UnityAdapter.TAG, "Unity Ads rewarded ad load failure for placement ID '" +
-          placementId + "'");
-      if (mMediationAdLoadCallback == null) {
-        return;
+      String errorMessage = createAdapterError(
+              ERROR_PLACEMENT_STATE_NO_FILL,
+              "UnityAds failed to load for placement ID: "
+                      + placementId);
+      Log.w(TAG, errorMessage);
+      if (mMediationAdLoadCallback != null) {
+        mMediationAdLoadCallback
+                .onFailure(errorMessage);
       }
-      mMediationAdLoadCallback
-          .onFailure("Failed to load rewarded ad for placement ID '" + placementId + "'");
     }
   };
 
@@ -86,8 +92,11 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       if (mMediationAdLoadCallback == null) {
         return;
       }
-      mMediationAdLoadCallback.onFailure("Context is null or is not an Activity." +
-          " Unity Ads requires an Activity context to show ads.");
+      String adapterError =
+              createAdapterError(
+                      ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      mMediationAdLoadCallback.onFailure(adapterError);
       return;
     }
 
@@ -99,8 +108,11 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       if (mMediationAdLoadCallback == null) {
         return;
       }
-      mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads: " +
-          "Missing or invalid game ID and placement ID.");
+      String adapterError =
+              createAdapterError(
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      mMediationAdLoadCallback.onFailure(adapterError);
       return;
     }
 
@@ -108,24 +120,21 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
-            Log.d(UnityAdapter.TAG, "Unity Ads successfully initialized, can now " +
+            Log.d(TAG, "Unity Ads successfully initialized, can now " +
                 "load rewarded ad for placement ID '" + mPlacementId + "' in game " +
                 "'" + gameId + "'.");
-            UnityAds.addListener(UnityRewardedAd.this);
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            UnityAds.removeListener(UnityRewardedAd.this);
-            Log.e(UnityAdapter.TAG, "Unity Ads initialization failed: [" +
-                unityAdsInitializationError + "] " + errorMessage + ", cannot load rewarded ad "
-                + "for placement ID '" + mPlacementId + "' in game '" + gameId + "'");
-            if (mMediationAdLoadCallback != null) {
-              mMediationAdLoadCallback.onFailure("Failed to load rewarded ad from Unity Ads.");
+            String adapterError =
+                    createAdapterError(
+                            INITIALIZATION_FAILURE, "UnityAds initialization failed.");
+            Log.w(TAG, adapterError);
+            mMediationAdLoadCallback.onFailure(adapterError);
             }
-          }
         });
   }
 
@@ -133,32 +142,30 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
   public void showAd(Context context) {
 
     if (!(context instanceof Activity)) {
-      String message = "Unity Ads failed to show rewarded ad: activity context is required.";
-      Log.w(UnityAdapter.TAG, message);
-      if (mMediationRewardedAdCallback == null) {
-        return;
-      }
-
-      mMediationRewardedAdCallback.onAdFailedToShow(message);
+      String adapterError =
+              createAdapterError(
+                      ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to show ads.");
+        Log.e(TAG, "Failed to load ad: " + adapterError);
+        if (mMediationRewardedAdCallback != null) {
+          mMediationRewardedAdCallback.onAdFailedToShow(adapterError);
+        }
       return;
     }
     Activity activity = (Activity) context;
 
     // Check if the placement is ready before showing
     if (!UnityAds.isReady(mPlacementId)) {
-      String message = "Unity Ads failed to show rewarded ad. Placement ID '" +
-          mPlacementId + "' is not ready.";
-      Log.w(UnityAdapter.TAG, message);
-      if (mMediationRewardedAdCallback == null) {
-        return;
+      String adapterError = createAdapterError(ERROR_AD_NOT_READY, "Ad is not ready to be shown.");
+      Log.w(TAG, "Failed to show Unity Ads Rewarded ad: " + adapterError);
+      if (mMediationRewardedAdCallback != null) {
+        mMediationRewardedAdCallback.onAdFailedToShow(adapterError);
       }
-      mMediationRewardedAdCallback.onAdFailedToShow(message);
       return;
     }
 
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
-
+    UnityAds.addListener(UnityRewardedAd.this);
     UnityAds.show(activity, mPlacementId);
 
     // Unity Ads does not have an ad opened callback.
@@ -225,12 +232,12 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
   public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String errorMessage) {
     // Unity Ads ad failed to show.
     UnityAds.removeListener(UnityRewardedAd.this);
-    String logMessage = "Failed to show Rewarded ad for placement ID '" + mPlacementId +
-        "' from Unity Ads. Error: " + unityAdsError.toString() + " - " + errorMessage;
-    Log.w(UnityAdapter.TAG, logMessage);
+
+    String sdkError = createSDKError(unityAdsError, errorMessage);
+    Log.w(TAG, "Unity Ads returned an error: " + sdkError);
     if (mMediationRewardedAdCallback == null) {
       return;
     }
-    mMediationRewardedAdCallback.onAdFailedToShow(logMessage);
+    mMediationRewardedAdCallback.onAdFailedToShow(sdkError);
   }
 }
