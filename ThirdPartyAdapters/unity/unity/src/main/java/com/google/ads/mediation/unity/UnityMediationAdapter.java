@@ -29,10 +29,8 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
-import com.unity3d.ads.BuildConfig;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
