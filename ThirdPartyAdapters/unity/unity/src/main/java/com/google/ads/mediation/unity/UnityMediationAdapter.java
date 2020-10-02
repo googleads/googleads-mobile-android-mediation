@@ -36,6 +36,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+
 /**
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded video
  * ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
@@ -59,7 +61,9 @@ public class UnityMediationAdapter extends Adapter {
                   ERROR_AD_NOT_READY,
                   ERROR_UNITY_ADS_NOT_SUPPORTED,
                   ERROR_AD_ALREADY_LOADING,
-                  ERROR_FINISH
+                  ERROR_FINISH,
+                  ERROR_SIZE_MISMATCH,
+                  INITIALIZATION_FAILURE
           })
   @interface AdapterError {}
 
@@ -88,6 +92,12 @@ public class UnityMediationAdapter extends Adapter {
 
   /** UnityAds finished with a {@link FinishState#ERROR} state. */
   static final int ERROR_FINISH = 109;
+
+  /** UnityAds Banner size mismatch. */
+  static final int ERROR_SIZE_MISMATCH = 110;
+
+  /** UnityAds returned an initialization error. */
+  static final int INITIALIZATION_FAILURE = 111;
   // endregion
 
   /**
@@ -174,8 +184,8 @@ public class UnityMediationAdapter extends Adapter {
     }
 
     if (TextUtils.isEmpty(gameID)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Unity Ads could not be initialized: Missing or invalid Game ID.");
+      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Game ID.");
+      initializationCompleteCallback.onInitializationFailed(adapterError);
       return;
     }
 
@@ -190,10 +200,11 @@ public class UnityMediationAdapter extends Adapter {
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String message = "Unity Ads initialization failed: [" +
-                unityAdsInitializationError + "] " + errorMessage;
-            Log.d(TAG, message);
-            initializationCompleteCallback.onInitializationFailed(message);
+            String adapterError =
+                    createAdapterError(INITIALIZATION_FAILURE, "Missing or Invalid Game ID.");
+
+            Log.d(TAG, adapterError);
+            initializationCompleteCallback.onInitializationFailed(adapterError);
           }
         });
   }
