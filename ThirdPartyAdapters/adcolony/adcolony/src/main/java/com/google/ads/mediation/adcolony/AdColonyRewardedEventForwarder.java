@@ -1,7 +1,6 @@
 package com.google.ads.mediation.adcolony;
 
 import androidx.annotation.NonNull;
-import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
@@ -10,14 +9,14 @@ import com.adcolony.sdk.AdColonyZone;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
-class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
+public class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
     implements AdColonyRewardListener {
 
   private static AdColonyRewardedEventForwarder instance = null;
 
   private static HashMap<String, WeakReference<AdColonyRewardedRenderer>> mListeners;
 
-  static AdColonyRewardedEventForwarder getInstance() {
+  public static AdColonyRewardedEventForwarder getInstance() {
     if (instance == null) {
       instance = new AdColonyRewardedEventForwarder();
     }
@@ -26,7 +25,6 @@ class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
 
   private AdColonyRewardedEventForwarder() {
     mListeners = new HashMap<>();
-    AdColony.setRewardListener(AdColonyRewardedEventForwarder.this);
   }
 
   void addListener(@NonNull String zoneID, @NonNull AdColonyRewardedRenderer listener) {

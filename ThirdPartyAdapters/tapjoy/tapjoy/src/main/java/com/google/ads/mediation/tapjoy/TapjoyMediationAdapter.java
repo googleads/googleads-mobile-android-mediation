@@ -22,7 +22,6 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.tapjoy.BuildConfig;
 import com.tapjoy.TJError;
 import com.tapjoy.Tapjoy;
 import java.lang.annotation.Retention;
@@ -64,35 +63,41 @@ public class TapjoyMediationAdapter extends RtbAdapter {
    * Invalid server parameters.
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
   /**
    * Banner size mismatch.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+
   /**
    * Adapter requires an activity context to load ads.
    */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+
   /**
    * Tapjoy failed to initialize.
    */
   public static final int ERROR_TAPJOY_INITIALIZATION = 104;
+
   /**
    * Presentation error occurred during video playback.
    */
   public static final int ERROR_PRESENTATION_VIDEO_PLAYBACK = 105;
+
   /**
    * Tapjoy SDK can't load two ads for the same placement ID at once.
    */
   public static final int ERROR_AD_ALREADY_REQUESTED = 106;
+
   /**
    * App did not request unified native ads.
    */
   public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 107;
+
   /**
    * Tapjoy SDK has no content available.
    */
   public static final int ERROR_NO_CONTENT_AVAILABLE = 108;
-
 
   /**
    * Creates a formatted adapter error string given a code and description.
@@ -105,7 +110,6 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   public static String createSDKError(@NonNull TJError error) {
     return String.format("%d: %s", error.code, error.message);
   }
-
 
   /**
    * {@link Adapter} implementation
@@ -122,8 +126,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -140,8 +145,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
