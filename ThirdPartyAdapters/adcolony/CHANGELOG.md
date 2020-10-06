@@ -2,7 +2,8 @@
 
 #### Next Version
 - Fixed a bug where `onUserEarnedReward()` was not forwarded for rewarded ads.
-- Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
+- Added additional error codes for AdColony SDK initialization errors.
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
 
 #### Version 4.2.0.0
 - Verified compatibility with AdColony SDK version 4.2.0.
