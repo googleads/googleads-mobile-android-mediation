@@ -20,9 +20,9 @@ import java.util.Map;
  */
 public class AppLovinIncentivizedAdListener
     implements AppLovinAdRewardListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdVideoPlaybackListener {
+    AppLovinAdDisplayListener,
+    AppLovinAdClickListener,
+    AppLovinAdVideoPlaybackListener {
 
   private MediationRewardedAdCallback mRewardedAdCallback;
 
