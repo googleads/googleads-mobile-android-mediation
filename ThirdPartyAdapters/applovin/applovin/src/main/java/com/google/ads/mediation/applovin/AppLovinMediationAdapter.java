@@ -4,7 +4,7 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -75,42 +75,75 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private MediationRewardedAdConfiguration adConfiguration;
   private AppLovinAd ad;
 
-  /** Applovin adapter errors. */
+  /**
+   * Applovin adapter errors.
+   */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-        ERROR_BANNER_SIZE_MISMATCH,
-        ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-        ERROR_NULL_CONTEXT,
-        ERROR_EMPTY_BID_TOKEN,
-        ERROR_AD_ALREADY_REQUESTED,
-        ERROR_PRESENTATON_AD_NOT_READY,
-        ERROR_MAPPING_NATIVE_ASSETS,
-        ERROR_AD_FORMAT_UNSUPPORTED,
-        ERROR_CONTEXT_NOT_ACTIVITY
+          ERROR_BANNER_SIZE_MISMATCH,
+          // ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          ERROR_NULL_CONTEXT,
+          ERROR_EMPTY_BID_TOKEN,
+          ERROR_AD_ALREADY_REQUESTED,
+          ERROR_PRESENTATON_AD_NOT_READY,
+          // ERROR_MAPPING_NATIVE_ASSETS,
+          ERROR_AD_FORMAT_UNSUPPORTED,
+          // ERROR_CONTEXT_NOT_ACTIVITY
       })
-  public @interface AdapterError {}
+  public @interface AdapterError {
 
-  /** Banner size mismatch. */
+  }
+
+  /**
+   * Banner size mismatch.
+   */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
-  /** App did not request unified native ads. */
-  public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 102;
-  /** Context is null. */
-  public static final int ERROR_NULL_CONTEXT = 103;
-  /** AppLovin bid token is empty. */
-  public static final int ERROR_EMPTY_BID_TOKEN = 104;
-  /** Requested multiple ads for the same zone. AppLovin can only load 1 ad at a time per zone. */
-  public static final int ERROR_AD_ALREADY_REQUESTED = 105;
-  /** Ad is not ready to display. */
-  public static final int ERROR_PRESENTATON_AD_NOT_READY = 106;
-  /** Native ad is missing required assets. */
-  public static final int ERROR_MAPPING_NATIVE_ASSETS = 107;
-  /** Adapter does not support the ad format being requested. */
-  public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
-  /** Context is not an Activity instance. */
-  public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
-  /** Creates a formatted adapter error string given a code and description. */
+  /**
+   * App did not request unified native ads. This error code is no longer used.
+   */
+  // public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 102;
+
+  /**
+   * Context is null.
+   */
+  public static final int ERROR_NULL_CONTEXT = 103;
+
+  /**
+   * AppLovin bid token is empty.
+   */
+  public static final int ERROR_EMPTY_BID_TOKEN = 104;
+
+  /**
+   * Requested multiple ads for the same zone. AppLovin can only load 1 ad at a time per zone.
+   */
+  public static final int ERROR_AD_ALREADY_REQUESTED = 105;
+
+  /**
+   * Ad is not ready to display.
+   */
+  public static final int ERROR_PRESENTATON_AD_NOT_READY = 106;
+
+  /**
+   * Native ad is missing required assets. This error code is no longer used.
+   */
+  // public static final int ERROR_MAPPING_NATIVE_ASSETS = 107;
+
+  /**
+   * Adapter does not support the ad format being requested.
+   */
+  public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
+
+  /**
+   * Context is not an Activity instance. This error code is no longer used, as AppLovin can
+   * accept an {@link Application} context.
+   */
+  // public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
+
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   */
   public static String createAdapterError(@AdapterError int code, @NonNull String description) {
     return String.format("%d: %s", code, description);
   }
@@ -121,25 +154,17 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void initialize(
-      Context context,
+  public void initialize(Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
     log(DEBUG, "Attempting to initialize SDK.");
 
-    if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "AppLovin requires an Activity context to initialize.");
-      return;
-    }
-    Activity activity = (Activity) context;
-
-    if (AppLovinUtils.androidManifestHasValidSdkKey(activity)) {
-      AppLovinSdk.getInstance(activity).initializeSdk();
+    if (AppLovinUtils.androidManifestHasValidSdkKey(context)) {
+      AppLovinSdk.getInstance(context).initializeSdk();
     }
 
     for (MediationConfiguration mediationConfig : mediationConfigurations) {
-      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), activity);
+      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), context);
       sdk.initializeSdk();
     }
     initializationCompleteCallback.onInitializationSucceeded();
@@ -192,15 +217,6 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
     adConfiguration = mediationRewardedAdConfiguration;
     Context context = adConfiguration.getContext();
-
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      log(ERROR, "Failed to load rewarded ad from AppLovin: " + adapterError);
-      mediationAdLoadCallback.onFailure(adapterError);
-      return;
-    }
 
     if (mediationRewardedAdConfiguration.getBidResponse().equals("")) {
       isRtbAd = false;

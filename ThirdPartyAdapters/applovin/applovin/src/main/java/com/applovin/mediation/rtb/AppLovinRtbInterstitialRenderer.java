@@ -1,9 +1,5 @@
 package com.applovin.mediation.rtb;
 
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
-
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import com.applovin.adview.AppLovinInterstitialAd;
@@ -20,24 +16,29 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
-/** Created by Thomas So on July 17 2018 */
+/**
+ * Created by Thomas So on July 17 2018
+ */
 public final class AppLovinRtbInterstitialRenderer
-    implements MediationInterstitialAd,
-        AppLovinAdLoadListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdVideoPlaybackListener {
+    implements MediationInterstitialAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
+    AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
   private static final String TAG = AppLovinRtbInterstitialRenderer.class.getSimpleName();
 
-  /** Data used to render an RTB interstitial ad. */
+  /**
+   * Data used to render an RTB interstitial ad.
+   */
   private final MediationInterstitialAdConfiguration adConfiguration;
 
-  /** Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed. */
+  /**
+   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
+   */
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       callback;
 
-  /** Listener object to notify the Google Mobile Ads SDK of interstitial presentation events. */
+  /**
+   * Listener object to notify the Google Mobile Ads SDK of interstitial presentation events.
+   */
   private MediationInterstitialAdCallback mInterstitalAdCallback;
 
   private final AppLovinSdk sdk;
@@ -57,18 +58,8 @@ public final class AppLovinRtbInterstitialRenderer
   }
 
   public void loadAd() {
-    Context context = adConfiguration.getContext();
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      Log.e(TAG, "Failed to load interstitial ad from AppLovin: " + adapterError);
-      callback.onFailure(adapterError);
-      return;
-    }
-
     // Create interstitial object
-    interstitialAd = AppLovinInterstitialAd.create(sdk, context);
+    interstitialAd = AppLovinInterstitialAd.create(sdk, adConfiguration.getContext());
     interstitialAd.setAdDisplayListener(this);
     interstitialAd.setAdClickListener(this);
     interstitialAd.setAdVideoPlaybackListener(this);
