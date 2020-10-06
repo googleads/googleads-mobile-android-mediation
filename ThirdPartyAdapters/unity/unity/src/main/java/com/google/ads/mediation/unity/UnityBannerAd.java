@@ -14,14 +14,16 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 import androidx.annotation.Keep;
-
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -31,9 +33,6 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
 
 /**
  * The {@link UnityBannerAd} is used to load Unity Banner ads and mediate the callbacks between
@@ -94,7 +93,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       if (mMediationBannerListener == null) {
         return;
       }
-      
+
       mMediationBannerListener.onAdClicked(UnityBannerAd.this);
       mMediationBannerListener.onAdOpened(UnityBannerAd.this);
     }
@@ -149,8 +148,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         return;
       }
       String adapterError =
-              createAdapterError(
-                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+          createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       mMediationBannerListener
           .onAdFailedToLoad(UnityBannerAd.this, ERROR_INVALID_SERVER_PARAMETERS);
@@ -158,7 +157,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     }
 
     if (context == null || !(context instanceof Activity)) {
-      String adapterError = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+      String adapterError = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
+          "Unity Ads requires an Activity context to load ads.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationBannerListener != null) {
         mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
@@ -181,11 +181,12 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
 
             if (adSize == null || size == null) {
-              String adapterError = createAdapterError(ERROR_SIZE_MISMATCH, "Unity banner ad failed to load : banner size is invalid.");
+              String adapterError = createAdapterError(ERROR_SIZE_MISMATCH,
+                  "Unity banner ad failed to load : banner size is invalid.");
               Log.e(TAG, adapterError);
               if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-                        ERROR_SIZE_MISMATCH);
+                    ERROR_SIZE_MISMATCH);
               }
             }
 
@@ -201,7 +202,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
 
-            String adapterError = createAdapterError(INITIALIZATION_FAILURE, "Unity Ads initialization failed: [" +
+            String adapterError = createAdapterError(INITIALIZATION_FAILURE,
+                "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load banner ad for placement ID '" + bannerPlacementId
                     + "' in game '" + gameId + "'");
@@ -209,7 +211,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
             if (mMediationBannerListener != null) {
               mMediationBannerListener
-                      .onAdFailedToLoad(UnityBannerAd.this, INITIALIZATION_FAILURE);
+                  .onAdFailedToLoad(UnityBannerAd.this, INITIALIZATION_FAILURE);
             }
           }
         });

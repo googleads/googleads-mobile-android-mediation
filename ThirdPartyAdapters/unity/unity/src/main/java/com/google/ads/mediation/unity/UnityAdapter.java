@@ -14,6 +14,9 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -33,15 +36,13 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import java.lang.ref.WeakReference;
 
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
-
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
  * Mobile Ads SDK and Unity Ads SDK.
  */
 @Keep
-public class UnityAdapter extends UnityMediationAdapter implements MediationInterstitialAdapter, MediationBannerAdapter {
+public class UnityAdapter extends UnityMediationAdapter implements MediationInterstitialAdapter,
+    MediationBannerAdapter {
 
   /**
    * Mediation interstitial listener used to forward events to Google Mobile Ads SDK.
@@ -71,22 +72,21 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     public void onUnityAdsAdLoaded(String placementId) {
       Log.d(TAG, "Unity Ads interstitial ad successfully loaded for placement ID '"
           + placementId + "'.");
-      if (mMediationInterstitialListener == null) {
-        return;
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
       }
-      mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
     }
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
       String errorMessage = createAdapterError(
-              ERROR_PLACEMENT_STATE_NO_FILL,
-              "UnityAds failed to load for placement ID: "
-                      + placementId);
+          ERROR_PLACEMENT_STATE_NO_FILL,
+          "UnityAds failed to load for placement ID: "
+              + placementId);
       Log.w(TAG, errorMessage);
       if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener
-                .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+            .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
       }
     }
   };
@@ -97,7 +97,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   private IUnityAdsExtendedListener mUnityShowListener = new IUnityAdsExtendedListener() {
     @Override
     public void onUnityAdsClick(String s) {
-      Log.v(TAG, "Unity interstitial ad for placement ID '" + mPlacementId + "' was clicked.");
+      Log.d(TAG, "Unity interstitial ad for placement ID '" + mPlacementId + "' was clicked.");
       // Unity Ads ad clicked.
       if (mMediationInterstitialListener == null) {
         return;
@@ -110,7 +110,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void onUnityAdsPlacementStateChanged(String s, UnityAds.PlacementState placementState, UnityAds.PlacementState placementState1) {
+    public void onUnityAdsPlacementStateChanged(String s, UnityAds.PlacementState placementState,
+        UnityAds.PlacementState placementState1) {
       // This callback is not forwarded to Google Mobile Ads SDK.
     }
 
@@ -132,19 +133,17 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad closed.
       UnityAds.removeListener(mUnityShowListener);
 
-      if (mMediationInterstitialListener == null) {
-        return;
-      }
-
       if (finishState == UnityAds.FinishState.ERROR) {
         Log.v(TAG, "Unity interstitial ad for placement ID '" + mPlacementId +
-                "' finished with an error.");
+            "' finished with an error.");
       } else {
         Log.v(TAG, "Unity interstitial ad for placement ID '" + mPlacementId +
-                "' finished playing.");
+            "' finished playing.");
       }
 
-      mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
+      }
     }
 
     @Override
@@ -154,8 +153,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       Log.w(TAG, "Unity Ads returned an error: " + sdkError);
 
       UnityAds.removeListener(this);
-      Log.e(TAG, "Failed to show interstitial ad for placement ID '" + mPlacementId +
-              "' from Unity Ads. Error: " + unityAdsError.toString() + " - " + errorMessage);
     }
   };
 
@@ -189,21 +186,24 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!isValidIds(gameId, mPlacementId)) {
-      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid server parameters.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
+        mMediationInterstitialListener
+            .onAdFailedToLoad(UnityAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
       }
       return;
     }
 
     if (context == null || !(context instanceof Activity)) {
       String adapterError =
-              createAdapterError(
-                      ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+          createAdapterError(
+              ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
+        mMediationInterstitialListener
+            .onAdFailedToLoad(UnityAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
       }
       return;
     }
@@ -224,14 +224,15 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String adapterError = createAdapterError(INITIALIZATION_FAILURE, "Unity Ads initialization failed: [" +
+            String adapterError = createAdapterError(INITIALIZATION_FAILURE,
+                "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load interstitial ad for placement ID '" + mPlacementId
                     + "' in game '" + gameId + "'");
             Log.e(TAG, adapterError);
             if (mMediationInterstitialListener != null) {
               mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                      INITIALIZATION_FAILURE);
+                  INITIALIZATION_FAILURE);
             }
           }
         });

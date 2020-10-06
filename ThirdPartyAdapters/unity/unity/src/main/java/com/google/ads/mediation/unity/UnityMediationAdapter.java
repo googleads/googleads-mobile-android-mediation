@@ -14,13 +14,13 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.IntDef;
-
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -36,8 +36,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
-
 /**
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded video
  * ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
@@ -52,51 +50,73 @@ public class UnityMediationAdapter extends Adapter {
   // region Error Codes
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
-          value = {
-                  ERROR_INVALID_SERVER_PARAMETERS,
-                  ERROR_PLACEMENT_STATE_NO_FILL,
-                  ERROR_PLACEMENT_STATE_DISABLED,
-                  ERROR_NULL_CONTEXT,
-                  ERROR_CONTEXT_NOT_ACTIVITY,
-                  ERROR_AD_NOT_READY,
-                  ERROR_UNITY_ADS_NOT_SUPPORTED,
-                  ERROR_AD_ALREADY_LOADING,
-                  ERROR_FINISH,
-                  ERROR_SIZE_MISMATCH,
-                  INITIALIZATION_FAILURE
-          })
-  @interface AdapterError {}
+      value = {
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_PLACEMENT_STATE_NO_FILL,
+          ERROR_PLACEMENT_STATE_DISABLED,
+          ERROR_NULL_CONTEXT,
+          ERROR_CONTEXT_NOT_ACTIVITY,
+          ERROR_AD_NOT_READY,
+          ERROR_UNITY_ADS_NOT_SUPPORTED,
+          ERROR_AD_ALREADY_LOADING,
+          ERROR_FINISH,
+          ERROR_SIZE_MISMATCH,
+          INITIALIZATION_FAILURE
+      })
+  @interface AdapterError {
 
-  /** Invalid server parameters. */
+  }
+
+  /**
+   * Invalid server parameters.
+   */
   static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
-  /** UnityAds returned a placement with a {@link PlacementStateNO_FILL} state. */
+  /**
+   * UnityAds returned a placement with a {@link PlacementStateNO_FILL} state.
+   */
   static final int ERROR_PLACEMENT_STATE_NO_FILL = 102;
 
-  /** UnityAds returned a placement with a {@link PlacementState#DISABLED} state. */
+  /**
+   * UnityAds returned a placement with a {@link PlacementState#DISABLED} state.
+   */
   static final int ERROR_PLACEMENT_STATE_DISABLED = 103;
 
-  /** Tried to show an ad with a {@code null} context. */
+  /**
+   * Tried to show an ad with a {@code null} context.
+   */
   static final int ERROR_NULL_CONTEXT = 104;
 
   static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
 
-  /** Tried to show an ad that's not ready to be shown. */
+  /**
+   * Tried to show an ad that's not ready to be shown.
+   */
   static final int ERROR_AD_NOT_READY = 106;
 
-  /** UnityAds is not supported on the device. */
+  /**
+   * UnityAds is not supported on the device.
+   */
   static final int ERROR_UNITY_ADS_NOT_SUPPORTED = 107;
 
-  /** UnityAds can only load 1 ad per placement at a time. */
+  /**
+   * UnityAds can only load 1 ad per placement at a time.
+   */
   static final int ERROR_AD_ALREADY_LOADING = 108;
 
-  /** UnityAds finished with a {@link FinishState#ERROR} state. */
+  /**
+   * UnityAds finished with a {@link FinishState#ERROR} state.
+   */
   static final int ERROR_FINISH = 109;
 
-  /** UnityAds Banner size mismatch. */
+  /**
+   * UnityAds Banner size mismatch.
+   */
   static final int ERROR_SIZE_MISMATCH = 110;
 
-  /** UnityAds returned an initialization error. */
+  /**
+   * UnityAds returned an initialization error.
+   */
   static final int INITIALIZATION_FAILURE = 111;
   // endregion
 
@@ -184,7 +204,8 @@ public class UnityMediationAdapter extends Adapter {
     }
 
     if (TextUtils.isEmpty(gameID)) {
-      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Game ID.");
+      String adapterError = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid Game ID.");
       initializationCompleteCallback.onInitializationFailed(adapterError);
       return;
     }
@@ -201,7 +222,7 @@ public class UnityMediationAdapter extends Adapter {
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
             String adapterError =
-                    createAdapterError(INITIALIZATION_FAILURE, "Missing or Invalid Game ID.");
+                createAdapterError(INITIALIZATION_FAILURE, "Missing or Invalid Game ID.");
 
             Log.d(TAG, adapterError);
             initializationCompleteCallback.onInitializationFailed(adapterError);
