@@ -60,11 +60,13 @@ public class UnityInitializer {
         if (!UnityAds.isSupported()) {
             String errorMessage = "Unity Ads cannot be initialized: current device is not supported.";
             initializationListener.onInitializationFailed(UnityAds.UnityAdsInitializationError.INTERNAL_ERROR, errorMessage);
+            return;
         }
 
         if (UnityAds.isInitialized()) {
             // Unity Ads is already initialized.
             initializationListener.onInitializationComplete();
+            return;
         }
 
         // Set mediation meta data before initializing.

@@ -62,16 +62,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   private MediationBannerListener mMediationBannerListener;
 
   /**
-   * Context needed to load Unity Ads.
-   */
-  private Context context;
-
-  /**
-   * Size of Unity banner ad.
-   */
-  private AdSize adSize;
-
-  /**
    * BannerView.IListener instance.
    */
   private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
@@ -164,8 +154,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
       }
     }
-    this.context = context;
-    this.adSize = adSize;
 
     UnityInitializer.getInstance()
         .initializeUnityAds(context, gameId, new IUnityAdsInitializationListener() {
