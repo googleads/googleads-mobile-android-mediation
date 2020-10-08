@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "1.8.0.0"
+    stringVersion = "1.8.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -33,7 +33,7 @@ android {
 dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.4.0'
-    implementation ('com.verizon.ads:android-vas-standard-edition:1.8.0') {
+    implementation ('com.verizon.ads:android-vas-standard-edition:1.8.1') {
         exclude module: 'support-compat'
     }
     implementation 'androidx.browser:browser:1.2.0'
