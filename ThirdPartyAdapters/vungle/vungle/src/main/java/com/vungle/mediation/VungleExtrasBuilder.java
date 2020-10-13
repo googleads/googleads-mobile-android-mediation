@@ -15,7 +15,6 @@ public final class VungleExtrasBuilder {
 
   public static final String EXTRA_USER_ID = "userId";
   private static final String EXTRA_START_MUTED = "startMuted";
-  private static final String EXTRA_FLEXVIEW_CLOSE_TIME = "flexViewCloseTimeInSec";
   private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
   private static final String EXTRA_ORIENTATION = "adOrientation";
   static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
@@ -48,11 +47,6 @@ public final class VungleExtrasBuilder {
     return this;
   }
 
-  public VungleExtrasBuilder setFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
-    mBundle.putInt(EXTRA_FLEXVIEW_CLOSE_TIME, flexViewCloseTimeInSec);
-    return this;
-  }
-
   public VungleExtrasBuilder setOrdinalViewCount(int ordinalViewCount) {
     mBundle.putInt(EXTRA_ORDINAL_VIEW_COUNT, ordinalViewCount);
     return this;
@@ -81,7 +75,6 @@ public final class VungleExtrasBuilder {
 
     if (networkExtras != null) {
       adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, defaultMuteState));
-      adConfig.setFlexViewCloseTime(networkExtras.getInt(EXTRA_FLEXVIEW_CLOSE_TIME, 0));
       adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
       adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
     }

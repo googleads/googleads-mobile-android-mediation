@@ -1,17 +1,23 @@
 package com.jirbo.adcolony;
 
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
+import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyUserMetadata;
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -23,8 +29,6 @@ import java.util.Date;
  * A helper class used by the {@link AdColonyAdapter}.
  */
 public class AdColonyManager {
-
-  private static final String TAG = AdColonyAdapter.class.getSimpleName();
 
   private static AdColonyManager _instance = null;
   private ArrayList<String> configuredZones;
@@ -41,24 +45,29 @@ public class AdColonyManager {
     return _instance;
   }
 
-  public boolean configureAdColony(Context context,
-      AdColonyAppOptions options,
-      String appID,
-      ArrayList<String> zones) {
+  public void configureAdColony(@NonNull Context context, @NonNull AdColonyAppOptions options,
+      @NonNull String appID, @NonNull ArrayList<String> zones,
+      @NonNull InitializationListener listener) {
 
     if (!(context instanceof Activity || context instanceof Application)) {
-      Log.w(TAG, "Context must be of type Activity or Application.");
-      return false;
+      AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_DOMAIN,
+          "AdColony SDK requires an Activity context to initialize");
+      listener.onInitializeFailed(error);
+      return;
     }
 
     if (TextUtils.isEmpty(appID)) {
-      Log.w(TAG, "A valid appId wasn't provided.");
-      return false;
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid AdColony app ID.");
+      listener.onInitializeFailed(error);
+      return;
     }
 
-    if (zones == null || zones.isEmpty()) {
-      Log.w(TAG, "No zones provided to request ad.");
-      return false;
+    if (zones.isEmpty()) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "No zones provided to initialize the AdColony SDK.");
+      listener.onInitializeFailed(error);
+      return;
     }
 
     // Check to see if the stored list of zones is missing any values.
@@ -82,26 +91,32 @@ public class AdColonyManager {
           ? AdColony.configure((Activity) context, options, appID, zoneArray)
           : AdColony.configure((Application) context, options, appID, zoneArray);
     }
-    return isConfigured;
+
+    if (!isConfigured) {
+      AdError error = new AdError(ERROR_ADCOLONY_NOT_INITIALIZED, ERROR_DOMAIN,
+          "AdColony SDK failed to initialize.");
+      listener.onInitializeFailed(error);
+      return;
+    }
+    listener.onInitializeSuccess();
   }
 
-  boolean configureAdColony(Context context,
-      Bundle serverParams,
-      MediationAdRequest adRequest,
-      Bundle networkExtras) {
+  void configureAdColony(@NonNull Context context, @NonNull Bundle serverParams,
+      @NonNull MediationAdRequest adRequest, @NonNull InitializationListener listener) {
     String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
     ArrayList<String> newZoneList = parseZoneList(serverParams);
     AdColonyAppOptions appOptions = buildAppOptions(adRequest);
-    return configureAdColony(context, appOptions, appId, newZoneList);
+    configureAdColony(context, appOptions, appId, newZoneList, listener);
   }
 
-  public boolean configureAdColony(MediationRewardedAdConfiguration adConfiguration) {
+  public void configureAdColony(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull InitializationListener listener) {
     Context context = adConfiguration.getContext();
     Bundle serverParams = adConfiguration.getServerParameters();
     String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
     ArrayList<String> newZoneList = parseZoneList(serverParams);
     AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
-    return configureAdColony(context, appOptions, appId, newZoneList);
+    configureAdColony(context, appOptions, appId, newZoneList, listener);
   }
 
   /**
@@ -204,5 +219,20 @@ public class AdColonyManager {
       requestedZone = adRequestParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
     }
     return requestedZone;
+  }
+
+  public interface InitializationListener {
+
+    /**
+     * Called when the AdColony SDK initializes successfully.
+     */
+    void onInitializeSuccess();
+
+    /**
+     * Called when the AdColony SDK fails to initialize.
+     *
+     * @param error the initialization error.
+     */
+    void onInitializeFailed(@NonNull AdError error);
   }
 }
