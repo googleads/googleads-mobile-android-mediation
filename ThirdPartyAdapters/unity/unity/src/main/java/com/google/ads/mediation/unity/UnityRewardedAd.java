@@ -176,7 +176,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     }
 
     mMediationRewardedAdCallback.onAdOpened();
-    mMediationRewardedAdCallback.reportAdImpression();
   }
 
   @Override
@@ -190,6 +189,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
     // video.
     if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.reportAdImpression();
       mMediationRewardedAdCallback.onVideoStart();
     }
   }

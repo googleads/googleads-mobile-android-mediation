@@ -51,17 +51,17 @@ public class UnityMediationAdapter extends Adapter {
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-          ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_PLACEMENT_STATE_NO_FILL,
-          ERROR_PLACEMENT_STATE_DISABLED,
-          ERROR_NULL_CONTEXT,
-          ERROR_CONTEXT_NOT_ACTIVITY,
-          ERROR_AD_NOT_READY,
-          ERROR_UNITY_ADS_NOT_SUPPORTED,
-          ERROR_AD_ALREADY_LOADING,
-          ERROR_FINISH,
-          ERROR_SIZE_MISMATCH,
-          INITIALIZATION_FAILURE
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_PLACEMENT_STATE_NO_FILL,
+        ERROR_PLACEMENT_STATE_DISABLED,
+        ERROR_NULL_CONTEXT,
+        ERROR_CONTEXT_NOT_ACTIVITY,
+        ERROR_AD_NOT_READY,
+        ERROR_UNITY_ADS_NOT_SUPPORTED,
+        ERROR_AD_ALREADY_LOADING,
+        ERROR_FINISH,
+        ERROR_BANNER_SIZE_MISMATCH,
+        INITIALIZATION_FAILURE
       })
   @interface AdapterError {
 
@@ -109,10 +109,8 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_FINISH = 109;
 
-  /**
-   * UnityAds Banner size mismatch.
-   */
-  static final int ERROR_SIZE_MISMATCH = 110;
+  /** The requested ad size does not match a UnityAds supported banner size. */
+  static final int ERROR_BANNER_SIZE_MISMATCH = 110;
 
   /**
    * UnityAds returned an initialization error.

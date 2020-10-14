@@ -56,12 +56,6 @@ public class UnityInitializer {
      */
     public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
             initializationListener) {
-        // Check if the current device is supported by Unity Ads before initializing.
-        if (!UnityAds.isSupported()) {
-            String errorMessage = "Unity Ads cannot be initialized: current device is not supported.";
-            initializationListener.onInitializationFailed(UnityAds.UnityAdsInitializationError.INTERNAL_ERROR, errorMessage);
-            return;
-        }
 
         if (UnityAds.isInitialized()) {
             // Unity Ads is already initialized.

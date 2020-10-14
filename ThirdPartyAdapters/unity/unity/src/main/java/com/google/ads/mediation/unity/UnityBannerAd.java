@@ -162,24 +162,21 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             Log.d(TAG, "Unity Ads successfully initialized, can now load " +
                 "banner ad for placement ID '" + bannerPlacementId + "' in game '" + gameId + "'.");
 
-            float density = context.getResources().getDisplayMetrics().density;
-            int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
-            int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
+            final UnityBannerSize unityBannerSize =
+                    UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
 
-            UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
-
-            if (adSize == null || size == null) {
-              String adapterError = createAdapterError(ERROR_SIZE_MISMATCH,
+            if (adSize == null) {
+              String adapterError = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
                   "Unity banner ad failed to load : banner size is invalid.");
               Log.e(TAG, adapterError);
               if (mMediationBannerListener != null) {
                 mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-                    ERROR_SIZE_MISMATCH);
+                        ERROR_BANNER_SIZE_MISMATCH);
               }
             }
 
             if (mBannerView == null) {
-              mBannerView = new BannerView((Activity) context, bannerPlacementId, size);
+              mBannerView = new BannerView((Activity) context, bannerPlacementId, unityBannerSize);
             }
 
             mBannerView.setListener(mUnityBannerListener);

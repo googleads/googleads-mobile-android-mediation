@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyCustomMessage;
 import com.adcolony.sdk.AdColonyCustomMessageListener;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -25,6 +27,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.jirbo.adcolony.AdColonyManager;
+import com.jirbo.adcolony.AdColonyManager.InitializationListener;
 import com.jirbo.adcolony.BuildConfig;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -48,21 +51,25 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   // Keeps a strong reference to the rewarded ad renderer, which loads ads asynchronously.
   private AdColonyRewardedRenderer adColonyRewardedRenderer;
 
-  /**
-   * AdColony adapter errors.
-   */
+  // region Error codes
+  // AdColony adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.adcolony";
+
+  // AdColony SDK error domain.
+  public static final String ADCOLONY_SDK_ERROR_DOMAIN = "com.jirbo.adcolony";
+
   @IntDef(value = {
       ERROR_ADCOLONY_SDK,
-      ERROR_REQUEST_INVALID,
+      ERROR_INVALID_SERVER_PARAMETERS,
       ERROR_AD_ALREADY_REQUESTED,
       ERROR_ADCOLONY_NOT_INITIALIZED,
       ERROR_BANNER_SIZE_MISMATCH,
-      ERROR_PRESENTATION_AD_NOT_LOADED
-
+      ERROR_PRESENTATION_AD_NOT_LOADED,
+      ERROR_CONTEXT_NOT_ACTIVITY,
   })
 
   @Retention(RetentionPolicy.SOURCE)
-  public @interface Error {
+  public @interface AdapterError {
 
   }
 
@@ -70,40 +77,56 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    * The AdColony SDK returned a failure callback.
    */
   public static final int ERROR_ADCOLONY_SDK = 100;
+
   /**
    * Missing server parameters.
    */
-  public static final int ERROR_REQUEST_INVALID = 101;
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
   /**
    * The ad already was requested.
    */
   public static final int ERROR_AD_ALREADY_REQUESTED = 102;
+
   /**
    * The AdColony SDK returned an initialization error.
    */
   public static final int ERROR_ADCOLONY_NOT_INITIALIZED = 103;
+
   /**
    * The requested banner size does not map to a valid AdColony ad size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 104;
+
   /**
    * Presentation error due to ad not loaded.
    */
   public static final int ERROR_PRESENTATION_AD_NOT_LOADED = 105;
 
-  public static String createAdapterError(@Error int error, String errorMessage) {
+  /**
+   * Context used to initialize the AdColony SDK was not an {@link Activity} instance.
+   */
+  public static final int ERROR_CONTEXT_NOT_ACTIVITY = 106;
+
+  // TODO: Migrate all users to return an AdError instead.
+  @Deprecated
+  @NonNull
+  public static String createAdapterError(@AdapterError int error, @NonNull String errorMessage) {
     return String.format(Locale.US, "%d: %s", error, errorMessage);
   }
 
+  // TODO: Migrate all users to return an AdError instead.
+  @Deprecated
+  @NonNull
   public static String createSdkError() {
     return String.format(Locale.US, "%d: %s", ERROR_ADCOLONY_SDK,
         "AdColony SDK returned a failure callback");
   }
+  // endregion
 
   /**
    * {@link Adapter} implementation
    */
-
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.VERSION_NAME;
@@ -143,7 +166,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
+      final InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
@@ -175,8 +198,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     String appID;
     int count = appIDs.size();
     if (count <= 0) {
-      initializationCompleteCallback.onInitializationFailed("Initialization Failed: " +
-          "Missing or Invalid App ID.");
+      initializationCompleteCallback.onInitializationFailed("Missing or invalid AdColony app ID.");
       return;
     }
 
@@ -188,23 +210,21 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       Log.w(TAG, logMessage);
     }
 
-    if (zoneList.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed("Initialization Failed: " +
-          "No zones provided to initialize the AdColony SDK.");
-      return;
-    }
-
     // Always set mediation network info.
     appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
-    boolean success = AdColonyManager.getInstance()
-        .configureAdColony(activity, appOptions, appID, zoneList);
+    AdColonyManager.getInstance().configureAdColony(activity, appOptions, appID,
+        zoneList, new InitializationListener() {
+          @Override
+          public void onInitializeSuccess() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
 
-    if (success) {
-      initializationCompleteCallback.onInitializationSucceeded();
-    } else {
-      initializationCompleteCallback.onInitializationFailed("Initialization Failed: " +
-          "Internal Error on Configuration");
-    }
+          @Override
+          public void onInitializeFailed(@NonNull AdError error) {
+            // TODO: Forward the AdError object once available.
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+          }
+        });
   }
 
   @Override
@@ -254,5 +274,5 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     }
     signalCallbacks.onSuccess(signals);
   }
-  //endregion
+
 }

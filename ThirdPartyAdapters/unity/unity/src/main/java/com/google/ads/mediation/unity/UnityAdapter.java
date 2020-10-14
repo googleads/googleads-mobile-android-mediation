@@ -272,16 +272,17 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     UnityAds.show(activityReference, mPlacementId);
   }
 
+  // region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(Context context,
+  public void requestBannerAd(
+      Context context,
       MediationBannerListener listener,
       Bundle serverParameters,
       AdSize adSize,
       MediationAdRequest adRequest,
       Bundle mediationExtras) {
     bannerAd = new UnityBannerAd();
-    bannerAd
-        .requestBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
+    bannerAd.requestBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
   }
 
   @Override
@@ -316,5 +317,5 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
     return bannerAd.getBannerView();
   }
-
+  // endregion
 }

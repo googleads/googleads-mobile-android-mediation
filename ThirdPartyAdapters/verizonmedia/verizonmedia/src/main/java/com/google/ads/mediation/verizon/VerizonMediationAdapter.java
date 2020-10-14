@@ -1,6 +1,5 @@
 package com.google.ads.mediation.verizon;
 
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -28,7 +27,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.verizon.ads.ActivityStateManager;
-import com.verizon.ads.BuildConfig;
 import com.verizon.ads.Configuration;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
@@ -73,7 +71,7 @@ public class VerizonMediationAdapter extends Adapter
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = com.google.ads.mediation.verizon.BuildConfig.VERSION_NAME;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -83,20 +81,20 @@ public class VerizonMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = Configuration.getString("com.verizon.ads",
-        "editionVersion", null);
-
+    String versionString = Configuration.getString("com.verizon.ads", "editionVersion", null);
     if (TextUtils.isEmpty(versionString)) {
       versionString = VASAds.getSDKInfo().version;
     }
+
     String[] splits = versionString.split("\\.");
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
@@ -105,8 +103,9 @@ public class VerizonMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -285,7 +284,8 @@ public class VerizonMediationAdapter extends Adapter
     contextWeakRef = new WeakReference<>(context);
   }
 
-  private @Nullable Context getContext() {
+  @Nullable
+  private Context getContext() {
     if (contextWeakRef == null) {
       return null;
     }
