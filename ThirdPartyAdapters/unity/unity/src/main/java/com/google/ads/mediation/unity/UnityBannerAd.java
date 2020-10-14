@@ -164,8 +164,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.e(TAG, adapterError);
       if (mMediationBannerListener != null) {
         mMediationBannerListener
-                .onAdFailedToLoad(UnityBannerAd.this,
-                ERROR_BANNER_SIZE_MISMATCH);
+                .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
       }
       return;
     }
@@ -173,10 +172,10 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
 
     if (unityBannerSize == null) {
-      String errorMessage = createAdapterError(
+      String adapterError = createAdapterError(
               ERROR_BANNER_SIZE_MISMATCH,
               "There is no matching UnityAds ad size for Google ad size: " + adSize);
-      Log.w(TAG, errorMessage);
+      Log.w(TAG, adapterError);
       if (mMediationBannerListener != null) {
         mMediationBannerListener
                 .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
