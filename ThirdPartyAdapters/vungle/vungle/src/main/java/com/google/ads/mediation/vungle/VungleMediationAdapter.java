@@ -335,6 +335,11 @@ public class VungleMediationAdapter extends Adapter
         });
   }
 
+  @Override
+  public void onAdViewed(String id) {
+    // no op for now
+  }
+
   /**
    * This class is used to map Vungle rewarded video ad rewards to Google Mobile Ads SDK rewards.
    */
