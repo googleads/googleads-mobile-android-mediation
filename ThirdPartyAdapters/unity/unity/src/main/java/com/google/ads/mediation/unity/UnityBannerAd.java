@@ -137,9 +137,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       if (mMediationBannerListener == null) {
         return;
       }
-      String adapterError =
-          createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid server parameters.");
+      String adapterError = createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or Invalid server parameters.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       mMediationBannerListener
           .onAdFailedToLoad(UnityBannerAd.this, ERROR_INVALID_SERVER_PARAMETERS);
@@ -151,8 +151,37 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           "Unity Ads requires an Activity context to load ads.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationBannerListener != null) {
-        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
+        mMediationBannerListener
+                .onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
       }
+      return;
+    }
+
+    if (adSize == null) {
+      String adapterError = createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              "Unity banner ad failed to load : banner size is invalid.");
+      Log.e(TAG, adapterError);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener
+                .onAdFailedToLoad(UnityBannerAd.this,
+                ERROR_BANNER_SIZE_MISMATCH);
+      }
+      return;
+    }
+
+    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+
+    if (unityBannerSize == null) {
+      String errorMessage = createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              "There is no matching UnityAds ad size for Google ad size: " + adSize);
+      Log.w(TAG, errorMessage);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener
+                .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
+      }
+      return;
     }
 
     UnityInitializer.getInstance()
@@ -161,19 +190,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           public void onInitializationComplete() {
             Log.d(TAG, "Unity Ads successfully initialized, can now load " +
                 "banner ad for placement ID '" + bannerPlacementId + "' in game '" + gameId + "'.");
-
-            final UnityBannerSize unityBannerSize =
-                    UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
-
-            if (adSize == null) {
-              String adapterError = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-                  "Unity banner ad failed to load : banner size is invalid.");
-              Log.e(TAG, adapterError);
-              if (mMediationBannerListener != null) {
-                mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this,
-                        ERROR_BANNER_SIZE_MISMATCH);
-              }
-            }
 
             if (mBannerView == null) {
               mBannerView = new BannerView((Activity) context, bannerPlacementId, unityBannerSize);
