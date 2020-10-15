@@ -243,6 +243,11 @@ class VungleBannerAdapter {
             listener.onAdFail(placementId);
           }
         }
+
+        @Override
+        public void onAdViewed(String id) {
+          // "no-op , to be mapped to respective adapter events in future release"
+        }
       };
 
   private void loadBanner() {
