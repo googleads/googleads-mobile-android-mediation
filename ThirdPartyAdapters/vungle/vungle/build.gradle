@@ -36,13 +36,9 @@ android {
 
 dependencies {
 
-//TODO: Replace
-    implementation 'com.github.vungle:vungle-android-sdk:6.8.1-RC2'
-
-//TODO: Replace
-//    implementation ('com.vungle:publisher-sdk-android:6.8.1') {
-//        transitive=true
-//    }
+    implementation ('com.vungle:publisher-sdk-android:6.8.1') {
+        transitive=true
+    }
 
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.4.0'
