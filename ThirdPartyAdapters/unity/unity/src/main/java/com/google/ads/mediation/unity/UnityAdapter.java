@@ -88,6 +88,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener
             .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
       }
+      UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     }
   };
 
@@ -208,6 +209,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       return;
     }
 
+    if (UnityAdsAdapterUtils.getPlacementInUse().contains(mPlacementId)) {
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener
+                .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+      }
+      return;
+    }
+
     Activity activity = (Activity) context;
     mActivityWeakReference = new WeakReference<>(activity);
 
@@ -218,6 +227,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.d(TAG, "Unity Ads successfully initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
+            UnityAdsAdapterUtils.getPlacementInUse().add(mPlacementId);
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
@@ -269,6 +279,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(mUnityShowListener);
+    UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     UnityAds.show(activityReference, mPlacementId);
   }
 

@@ -16,6 +16,7 @@ package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_AD_ALREADY_LOADING;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_AD_NOT_READY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -81,6 +82,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         mMediationAdLoadCallback
             .onFailure(errorMessage);
       }
+      UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     }
   };
 
@@ -118,6 +120,14 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       return;
     }
 
+    if (UnityAdsAdapterUtils.getPlacementInUse().contains(mPlacementId)) {
+      if (mMediationAdLoadCallback != null) {
+        String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
+        mMediationAdLoadCallback.onFailure(adapterError);
+      }
+      return;
+    }
+
     UnityInitializer.getInstance().initializeUnityAds(context, gameId,
         new IUnityAdsInitializationListener() {
           @Override
@@ -125,6 +135,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
             Log.d(TAG, "Unity Ads successfully initialized, can now " +
                 "load rewarded ad for placement ID '" + mPlacementId + "' in game " +
                 "'" + gameId + "'.");
+            UnityAdsAdapterUtils.getPlacementInUse().add(mPlacementId);
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
@@ -168,6 +179,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(UnityRewardedAd.this);
+    UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     UnityAds.show(activity, mPlacementId);
 
     // Unity Ads does not have an ad opened callback.

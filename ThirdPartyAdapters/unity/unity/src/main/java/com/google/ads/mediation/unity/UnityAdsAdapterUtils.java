@@ -10,6 +10,8 @@ import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import com.google.android.gms.ads.AdSize;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Utility class for the Unity adapter.
@@ -138,6 +140,15 @@ public class UnityAdsAdapterUtils {
     }
 
     return null;
+  }
+
+  /**
+   * A list of placement IDs that are currently loaded to prevent duplicate requests.
+   */
+  private static Set<String> mPlacementsInUse = new HashSet<String>();
+
+  public static Set<String> getPlacementInUse() {
+    return  mPlacementsInUse;
   }
 
 }
