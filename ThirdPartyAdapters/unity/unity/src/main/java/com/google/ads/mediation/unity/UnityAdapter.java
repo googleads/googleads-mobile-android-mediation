@@ -111,25 +111,24 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void onUnityAdsPlacementStateChanged(String s, UnityAds.PlacementState placementState,
-        UnityAds.PlacementState placementState1) {
+    public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
       // This callback is not forwarded to Google Mobile Ads SDK.
     }
 
     @Override
-    public void onUnityAdsReady(String s) {
+    public void onUnityAdsReady(String placementId) {
       // Logic to mark a placement ready has moved to the IUnityAdsLoadListener function
       // onUnityAdsAdLoaded.
     }
 
     @Override
-    public void onUnityAdsStart(String s) {
+    public void onUnityAdsStart(String placementId) {
       // Unity Ads video ad started playing. Google Mobile Ads SDK does not support
       // callbacks for Interstitial ads when they start playing.
     }
 
     @Override
-    public void onUnityAdsFinish(String s, UnityAds.FinishState finishState) {
+    public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
 
       // Unity Ads ad closed.
       UnityAds.removeListener(mUnityShowListener);
@@ -166,9 +165,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
    */
   public static boolean isValidIds(String gameId, String placementId) {
     if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
-      String ids = TextUtils.isEmpty(gameId) ? TextUtils.isEmpty(placementId)
-          ? "Game ID and Placement ID" : "Game ID" : "Placement ID";
-      Log.w(TAG, "Unity Ads failed to load interstitial ad: " + ids + " cannot be empty.");
       return false;
     }
 
