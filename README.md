@@ -26,7 +26,6 @@ these adapters is available on our
 [Mediation](https://developers.google.com/admob/android/mediation#choosing_your_mediation_networks)
 page.
 
-
 ## Downloads
 
 For prebuilt versions of these adapters, see our
