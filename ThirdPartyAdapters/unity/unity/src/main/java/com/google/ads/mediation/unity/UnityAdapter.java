@@ -53,19 +53,29 @@ public class UnityAdapter extends UnityMediationAdapter
    */
   private MediationInterstitialListener mMediationInterstitialListener;
 
-  /** Placement ID used to determine what type of ad to load. */
+  /**
+   * Placement ID used to determine what type of ad to load.
+   */
   private String mPlacementId;
 
-  /** Placement ID for banner if requested. */
+  /**
+   * Placement ID for banner if requested.
+   */
   private String bannerPlacementId;
 
-  /** The view for the banner instance. */
+  /**
+   * The view for the banner instance.
+   */
   private BannerView mBannerView;
 
-  /** Callback object for Google's Banner Lifecycle. */
+  /**
+   * Callback object for Google's Banner Lifecycle.
+   */
   private MediationBannerListener mMediationBannerListener;
 
-  /** An Android {@link Activity} weak reference used to show ads. */
+  /**
+   * An Android {@link Activity} weak reference used to show ads.
+   */
   private WeakReference<Activity> mActivityWeakReference;
 
   /**
@@ -245,7 +255,7 @@ public class UnityAdapter extends UnityMediationAdapter
   /**
    * Checks whether or not the provided Unity Ads IDs are valid.
    *
-   * @param gameId Unity Ads Game ID to be verified.
+   * @param gameId      Unity Ads Game ID to be verified.
    * @param placementId Unity Ads Placement ID to be verified.
    * @return {@code true} if all the IDs provided are valid.
    */
@@ -384,10 +394,12 @@ public class UnityAdapter extends UnityMediationAdapter
   }
 
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
   // endregion
 
   // region MediationBannerAdapter implementation.
@@ -399,6 +411,22 @@ public class UnityAdapter extends UnityMediationAdapter
       AdSize adSize,
       MediationAdRequest adRequest,
       Bundle mediationExtras) {
+
+    // Convert requested size to unity Ad Size.
+    final UnityBannerSize unityBannerSize =
+        UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+    if (unityBannerSize == null) {
+      String errorMessage =
+          createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              "There is no matching UnityAds ad size for Google ad size: " + adSize);
+      Log.w(TAG, errorMessage);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener.onAdFailedToLoad(UnityAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
+      }
+      return;
+    }
+
     Log.v(TAG, "Requesting Unity Ads Banner.");
     mMediationBannerListener = listener;
 
@@ -441,14 +469,8 @@ public class UnityAdapter extends UnityMediationAdapter
       return;
     }
 
-    float density = context.getResources().getDisplayMetrics().density;
-    int bannerWidth = Math.round(adSize.getWidthInPixels(context) / density);
-    int bannerHeight = Math.round(adSize.getHeightInPixels(context) / density);
-
-    UnityBannerSize size = new UnityBannerSize(bannerWidth, bannerHeight);
-
     if (mBannerView == null) {
-      mBannerView = new BannerView((Activity) context, bannerPlacementId, size);
+      mBannerView = new BannerView((Activity) context, bannerPlacementId, unityBannerSize);
     }
 
     mBannerView.setListener(mUnityBannerListener);

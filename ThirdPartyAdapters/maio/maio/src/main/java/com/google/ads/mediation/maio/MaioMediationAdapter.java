@@ -52,7 +52,7 @@ public class MaioMediationAdapter extends Adapter
   /** {@link Adapter} implementation */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

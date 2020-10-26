@@ -48,7 +48,8 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
         ERROR_AD_NOT_READY,
         ERROR_UNITY_ADS_NOT_SUPPORTED,
         ERROR_AD_ALREADY_LOADING,
-        ERROR_FINISH
+        ERROR_FINISH,
+        ERROR_BANNER_SIZE_MISMATCH
       })
   @interface AdapterError {}
 
@@ -81,6 +82,9 @@ public class UnityMediationAdapter extends Adapter implements MediationRewardedA
 
   /** UnityAds finished with a {@link FinishState#ERROR} state. */
   static final int ERROR_FINISH = 109;
+
+  /** The requested ad size does not match a UnityAds supported banner size. */
+  static final int ERROR_BANNER_SIZE_MISMATCH = 110;
   // endregion
 
   /** Key to obtain Game ID, required for loading Unity Ads. */

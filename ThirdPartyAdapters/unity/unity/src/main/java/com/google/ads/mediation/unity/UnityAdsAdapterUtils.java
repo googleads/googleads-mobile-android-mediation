@@ -1,9 +1,15 @@
 package com.google.ads.mediation.unity;
 
+import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
+import com.google.android.gms.ads.MediationUtils;
 import com.unity3d.ads.UnityAds.UnityAdsError;
 import com.unity3d.services.banners.BannerErrorInfo;
+import com.unity3d.services.banners.UnityBannerSize;
+import com.google.android.gms.ads.AdSize;
+import java.util.ArrayList;
 
 /** Utility class for the Unity adapter. */
 public class UnityAdsAdapterUtils {
@@ -113,4 +119,20 @@ public class UnityAdsAdapterUtils {
     }
     return errorCode;
   }
+
+  @Nullable
+  public static UnityBannerSize getUnityBannerSize(@NonNull Context context,
+      @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.LEADERBOARD);
+
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    if (closestSize != null) {
+      return new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
+    }
+
+    return null;
+  }
+
 }

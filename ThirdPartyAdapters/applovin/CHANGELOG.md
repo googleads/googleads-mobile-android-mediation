@@ -1,5 +1,14 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 9.14.4.0
+- Removed support for Native ads and Medium Rectangle banner ads.
+- Adapter can now load and request ads using an `Application` context.
+- Verified compatibility with AppLovin SDK 9.14.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- AppLovin SDK version 9.14.4.
+
 #### Version 9.13.4.0
 - Verified compatibility with AppLovin SDK 9.13.4.
 - Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
