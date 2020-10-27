@@ -135,15 +135,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
             Log.d(TAG, "Unity Ads successfully initialized, can now " +
                 "load rewarded ad for placement ID '" + mPlacementId + "' in game " +
                 "'" + gameId + "'.");
-            if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
-              if (mMediationAdLoadCallback != null) {
-                String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
-                mMediationAdLoadCallback.onFailure(adapterError);
-              }
-              return;
-            }
-            mPlacementsInUse.put(mPlacementId, new WeakReference<UnityRewardedAd>(UnityRewardedAd.this));
-            UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
           @Override
@@ -156,10 +147,22 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
             mMediationAdLoadCallback.onFailure(adapterError);
           }
         });
+
+    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+      if (mMediationAdLoadCallback != null) {
+        String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
+        mMediationAdLoadCallback.onFailure(adapterError);
+      }
+      return;
+    }
+    mPlacementsInUse.put(mPlacementId, new WeakReference<UnityRewardedAd>(UnityRewardedAd.this));
+    UnityAds.load(mPlacementId, mUnityLoadListener);
   }
 
   @Override
   public void showAd(Context context) {
+
+    mPlacementsInUse.remove(mPlacementId);
 
     if (!(context instanceof Activity)) {
       String adapterError =
@@ -186,7 +189,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(UnityRewardedAd.this);
-    mPlacementsInUse.remove(mPlacementId);
     UnityAds.show(activity, mPlacementId);
 
     // Unity Ads does not have an ad opened callback.

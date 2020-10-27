@@ -221,15 +221,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.d(TAG, "Unity Ads successfully initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
-            if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
-              if (mMediationInterstitialListener != null) {
-                mMediationInterstitialListener
-                        .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
-              }
-              return;
-            }
-            mPlacementsInUse.put(mPlacementId, new WeakReference<UnityAdapter>(UnityAdapter.this));
-            UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
           @Override
@@ -248,6 +239,16 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
+    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+      if (mMediationInterstitialListener != null) {
+        mMediationInterstitialListener
+                .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+      }
+      return;
+    }
+    mPlacementsInUse.put(mPlacementId, new WeakReference<UnityAdapter>(UnityAdapter.this));
+    UnityAds.load(mPlacementId, mUnityLoadListener);
+
   }
 
   /**
@@ -259,6 +260,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
     // ad.
     mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
+    mPlacementsInUse.remove(mPlacementId);
 
     Activity activityReference =
         mActivityWeakReference == null ? null : mActivityWeakReference.get();
@@ -280,7 +282,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(mUnityShowListener);
-    mPlacementsInUse.remove(mPlacementId);
     UnityAds.show(activityReference, mPlacementId);
   }
 
