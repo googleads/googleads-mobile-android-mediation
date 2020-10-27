@@ -141,14 +141,4 @@ public class UnityAdsAdapterUtils {
 
     return null;
   }
-
-  /**
-   * A list of placement IDs that are currently loaded to prevent duplicate requests.
-   */
-  private static Set<String> mPlacementsInUse = new HashSet<String>();
-
-  public static Set<String> getPlacementInUse() {
-    return  mPlacementsInUse;
-  }
-
 }

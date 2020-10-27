@@ -37,6 +37,9 @@ import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+
 public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedListener {
 
   /**
@@ -58,6 +61,11 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
   private String mPlacementId;
 
   /**
+   * A list of placement IDs that are currently loaded to prevent duplicate requests.
+   */
+  private static HashMap<String, WeakReference<UnityRewardedAd>> mPlacementsInUse = new HashMap<>();
+
+  /**
    * IUnityAdsLoadListener instance.
    */
   private IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
@@ -73,6 +81,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
+      mPlacementsInUse.remove(mPlacementId);
       String errorMessage = createAdapterError(
           ERROR_PLACEMENT_STATE_NO_FILL,
           "UnityAds failed to load for placement ID: "
@@ -82,7 +91,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
         mMediationAdLoadCallback
             .onFailure(errorMessage);
       }
-      UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     }
   };
 
@@ -120,14 +128,6 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
       return;
     }
 
-    if (UnityAdsAdapterUtils.getPlacementInUse().contains(mPlacementId)) {
-      if (mMediationAdLoadCallback != null) {
-        String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
-        mMediationAdLoadCallback.onFailure(adapterError);
-      }
-      return;
-    }
-
     UnityInitializer.getInstance().initializeUnityAds(context, gameId,
         new IUnityAdsInitializationListener() {
           @Override
@@ -135,7 +135,14 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
             Log.d(TAG, "Unity Ads successfully initialized, can now " +
                 "load rewarded ad for placement ID '" + mPlacementId + "' in game " +
                 "'" + gameId + "'.");
-            UnityAdsAdapterUtils.getPlacementInUse().add(mPlacementId);
+            if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+              if (mMediationAdLoadCallback != null) {
+                String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
+                mMediationAdLoadCallback.onFailure(adapterError);
+              }
+              return;
+            }
+            mPlacementsInUse.put(mPlacementId, new WeakReference<UnityRewardedAd>(UnityRewardedAd.this));
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
@@ -179,7 +186,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(UnityRewardedAd.this);
-    UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
+    mPlacementsInUse.remove(mPlacementId);
     UnityAds.show(activity, mPlacementId);
 
     // Unity Ads does not have an ad opened callback.

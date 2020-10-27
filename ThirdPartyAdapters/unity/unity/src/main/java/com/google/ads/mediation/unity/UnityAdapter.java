@@ -35,6 +35,7 @@ import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
@@ -65,6 +66,11 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   private UnityBannerAd bannerAd;
 
   /**
+   * A list of placement IDs that are currently loaded to prevent duplicate requests.
+   */
+  private static HashMap<String, WeakReference<UnityAdapter>> mPlacementsInUse = new HashMap<>();
+
+  /**
    * IUnityAdsLoadListener instance.
    */
   private IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
@@ -79,6 +85,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
     @Override
     public void onUnityAdsFailedToLoad(String placementId) {
+      mPlacementsInUse.remove(mPlacementId);
       String errorMessage = createAdapterError(
           ERROR_PLACEMENT_STATE_NO_FILL,
           "UnityAds failed to load for placement ID: "
@@ -88,7 +95,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener
             .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
       }
-      UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
     }
   };
 
@@ -205,14 +211,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       return;
     }
 
-    if (UnityAdsAdapterUtils.getPlacementInUse().contains(mPlacementId)) {
-      if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener
-                .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
-      }
-      return;
-    }
-
     Activity activity = (Activity) context;
     mActivityWeakReference = new WeakReference<>(activity);
 
@@ -223,7 +221,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.d(TAG, "Unity Ads successfully initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
-            UnityAdsAdapterUtils.getPlacementInUse().add(mPlacementId);
+            if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+              if (mMediationInterstitialListener != null) {
+                mMediationInterstitialListener
+                        .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+              }
+              return;
+            }
+            mPlacementsInUse.put(mPlacementId, new WeakReference<UnityAdapter>(UnityAdapter.this));
             UnityAds.load(mPlacementId, mUnityLoadListener);
           }
 
@@ -275,7 +280,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     // Every call to UnityAds#show will result in an onUnityAdsFinish callback (even when
     // Unity Ads fails to show an ad).
     UnityAds.addListener(mUnityShowListener);
-    UnityAdsAdapterUtils.getPlacementInUse().remove(mPlacementId);
+    mPlacementsInUse.remove(mPlacementId);
     UnityAds.show(activityReference, mPlacementId);
   }
 
