@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -18,7 +17,7 @@ import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
 import com.my.target.common.CustomParams;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -54,7 +53,6 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       return;
     }
 
-    adSize = getSupportedAdSize(context, adSize);
     if (adSize == null) {
       Log.w(TAG, "Failed to request ad, AdSize is null.");
       if (mediationBannerListener != null) {
@@ -68,28 +66,38 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     if (mediationBannerListener != null) {
       bannerListener = new MyTargetBannerListener(mediationBannerListener);
     }
-
-    if (adSize.getWidth() == 300 && adSize.getHeight() == 250) {
+    int width = adSize.getWidth();
+    int height = adSize.getHeight();
+    int widthInPixels = adSize.getWidthInPixels(context);
+    int heightInPixels = adSize.getHeightInPixels(context);
+    if (width == 300 && height == 250) {
       Log.d(TAG, "Loading myTarget banner, size: 300x250");
       loadBanner(bannerListener,
           mediationAdRequest,
           slotId,
-          MyTargetView.AdSize.BANNER_300x250,
+          MyTargetView.AdSize.ADSIZE_300x250,
           context);
     } else if (adSize.getWidth() == 728 && adSize.getHeight() == 90) {
       Log.d(TAG, "Loading myTarget banner, size: 728x90");
       loadBanner(bannerListener,
           mediationAdRequest,
           slotId,
-          MyTargetView.AdSize.BANNER_728x90,
+          MyTargetView.AdSize.ADSIZE_728x90,
           context);
     } else if (adSize.getWidth() == 320 && adSize.getHeight() == 50) {
       Log.d(TAG, "Loading myTarget banner, size: 320x50");
       loadBanner(bannerListener,
           mediationAdRequest,
           slotId,
-          MyTargetView.AdSize.BANNER_320x50,
+          MyTargetView.AdSize.ADSIZE_320x50,
           context);
+    } else if (widthInPixels > 0 && heightInPixels > 0 && heightInPixels < 0.75f * widthInPixels) {
+      Log.d(TAG, "Loading myTarget banner, size: adaptive");
+      loadBanner(bannerListener,
+                 mediationAdRequest,
+                 slotId,
+                 MyTargetView.AdSize.getAdSizeForCurrentOrientation(MyTargetTools.toDips(widthInPixels, context), context),
+                 context);
     } else {
       Log.w(TAG, "AdSize " + adSize.toString() + " is not currently supported");
       if (mediationBannerListener != null) {
@@ -97,23 +105,6 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
             .onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
       }
     }
-
-  }
-
-  @Nullable
-  private AdSize getSupportedAdSize(@NonNull Context context, @NonNull AdSize adSize) {
-        /*
-            Supported Sizes:
-            MyTargetView.AdSize.BANNER_300x250;
-            MyTargetView.AdSize.BANNER_320x50;
-            MyTargetView.AdSize.BANNER_728x90;
-        */
-
-    ArrayList<AdSize> potentials = new ArrayList<>();
-    potentials.add(AdSize.BANNER);
-    potentials.add(AdSize.MEDIUM_RECTANGLE);
-    potentials.add(AdSize.LEADERBOARD);
-    return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
   @Override
@@ -204,47 +195,46 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
    * @param myTargetBannerListener listener for ad callbacks
    * @param mediationAdRequest Google mediation request
    * @param slotId myTarget slot ID
-   * @param adSize myTarget banner size
+   * @param adSize myTarget banner size.
    * @param context app context
    */
   private void loadBanner(@Nullable MyTargetBannerListener myTargetBannerListener,
       @Nullable MediationAdRequest mediationAdRequest,
       int slotId,
-      int adSize,
+      @NonNull MyTargetView.AdSize adSize,
       @NonNull Context context) {
     if (mMyTargetView != null) {
       mMyTargetView.destroy();
     }
 
     mMyTargetView = new MyTargetView(context);
-
-    mMyTargetView.init(slotId, adSize, false);
+    mMyTargetView.setSlotId(slotId);
+    mMyTargetView.setAdSize(adSize);
+    mMyTargetView.setRefreshAd(false);
 
     CustomParams params = mMyTargetView.getCustomParams();
-    if (params != null) {
-      if (mediationAdRequest != null) {
-        int gender = mediationAdRequest.getGender();
-        params.setGender(gender);
-        Log.d(TAG, "Set gender to " + gender);
+    if (mediationAdRequest != null) {
+      int gender = mediationAdRequest.getGender();
+      params.setGender(gender);
+      Log.d(TAG, "Set gender to " + gender);
 
-        Date date = mediationAdRequest.getBirthday();
-        if (date != null && date.getTime() != -1) {
-          GregorianCalendar calendar = new GregorianCalendar();
-          GregorianCalendar calendarNow = new GregorianCalendar();
+      Date date = mediationAdRequest.getBirthday();
+      if (date != null && date.getTime() != -1) {
+        GregorianCalendar calendar = new GregorianCalendar();
+        GregorianCalendar calendarNow = new GregorianCalendar();
 
-          calendar.setTimeInMillis(date.getTime());
-          int age = calendarNow.get(GregorianCalendar.YEAR) -
-              calendar.get(GregorianCalendar.YEAR);
-          if (age >= 0) {
-            Log.d(TAG, "Set age to " + age);
-            params.setAge(age);
-          }
+        calendar.setTimeInMillis(date.getTime());
+        int age = calendarNow.get(GregorianCalendar.YEAR) -
+            calendar.get(GregorianCalendar.YEAR);
+        if (age >= 0) {
+          Log.d(TAG, "Set age to " + age);
+          params.setAge(age);
         }
       }
-
-      params.setCustomParam(
-          MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
     }
+
+    params.setCustomParam(
+        MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
 
     mMyTargetView.setListener(myTargetBannerListener);
     mMyTargetView.load();

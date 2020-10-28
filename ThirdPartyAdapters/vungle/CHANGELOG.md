@@ -1,7 +1,14 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.8.0.0
+- Verified compatibility with Vungle SDK 6.8.0.
 - Updated the adapter to not forward `onAdClosed()` when banner ads are refreshed or destroyed.
+- Remove `FlexFeed` and `FlexView` (deprecated in Vungle 6.8.0).
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- Vungle SDK version 6.8.0.
 
 #### Version 6.7.1.0
 - Verified compatibility with Vungle SDK 6.7.1.
