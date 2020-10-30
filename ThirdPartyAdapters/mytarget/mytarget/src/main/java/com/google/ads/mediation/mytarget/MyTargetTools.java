@@ -3,6 +3,7 @@ package com.google.ads.mediation.mytarget;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,4 +57,7 @@ class MyTargetTools {
     return slotId;
   }
 
+  static int toDips(int pixels, @NonNull Context context) {
+    return Math.round(pixels / (((float) context.getResources().getDisplayMetrics().densityDpi) / DisplayMetrics.DENSITY_DEFAULT));
+  }
 }

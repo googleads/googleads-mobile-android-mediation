@@ -13,18 +13,20 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
-import com.my.target.ads.InterstitialAd;
-import com.my.target.ads.InterstitialAd.InterstitialAdListener;
+import com.my.target.ads.Reward;
+import com.my.target.ads.RewardedAd;
+import com.my.target.ads.RewardedAd.RewardedAdListener;
 import com.my.target.common.CustomParams;
+
 import com.my.target.common.MyTargetVersion;
 import java.util.List;
 
 public class MyTargetMediationAdapter extends Adapter
-    implements MediationRewardedAd, InterstitialAdListener {
+    implements MediationRewardedAd, RewardedAdListener  {
 
   static final String TAG = MyTargetMediationAdapter.class.getSimpleName();
 
-  private InterstitialAd mRewardedAd;
+  private RewardedAd mRewardedAd;
 
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mAdLoadCallback;
@@ -98,7 +100,7 @@ public class MyTargetMediationAdapter extends Adapter
 
     mAdLoadCallback = mediationAdLoadCallback;
 
-    mRewardedAd = new InterstitialAd(slotId, context);
+    mRewardedAd = new RewardedAd(slotId, context);
     CustomParams params = mRewardedAd.getCustomParams();
     params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY,
         MyTargetTools.PARAM_MEDIATION_VALUE);
@@ -117,10 +119,10 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   /**
-   * A {@link InterstitialAdListener} used to forward myTarget rewarded video events to Google.
+   * A {@link RewardedAdListener} used to forward myTarget rewarded video events to Google.
    */
   @Override
-  public void onLoad(@NonNull final InterstitialAd ad) {
+  public void onLoad(@NonNull final RewardedAd ad) {
     Log.d(TAG, "Ad loaded");
     if (mAdLoadCallback != null) {
       mRewardedAdCallback = mAdLoadCallback.onSuccess(MyTargetMediationAdapter.this);
@@ -128,7 +130,7 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
+  public void onNoAd(@NonNull final String reason, @NonNull final RewardedAd ad) {
     String logMessage = "Failed to load ad from MyTarget: " + reason;
     Log.i(TAG, logMessage);
     if (mAdLoadCallback != null) {
@@ -137,7 +139,7 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void onClick(@NonNull final InterstitialAd ad) {
+  public void onClick(@NonNull final RewardedAd ad) {
     Log.d(TAG, "Ad clicked");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.reportAdClicked();
@@ -145,7 +147,7 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void onDismiss(@NonNull final InterstitialAd ad) {
+  public void onDismiss(@NonNull final RewardedAd ad) {
     Log.d(TAG, "Ad dismissed");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdClosed();
@@ -153,16 +155,16 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void onVideoCompleted(@NonNull final InterstitialAd ad) {
-    Log.d(TAG, "Video completed");
+  public void onReward(@NonNull Reward reward, @NonNull RewardedAd ad) {
+    Log.d(TAG, "Rewarded");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onVideoComplete();
-      mRewardedAdCallback.onUserEarnedReward(new MyTargetReward());
+      mRewardedAdCallback.onUserEarnedReward(new MyTargetReward(reward));
     }
   }
 
   @Override
-  public void onDisplay(@NonNull final InterstitialAd ad) {
+  public void onDisplay(@NonNull final RewardedAd ad) {
     Log.d(TAG, "Ad displayed");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdOpened();
@@ -173,14 +175,17 @@ public class MyTargetMediationAdapter extends Adapter
     }
   }
 
-  /**
-   * MyTarget doesn't provide reward for this moment, so we use this.
-   */
   private static class MyTargetReward implements RewardItem {
 
+    private final @NonNull String type;
+
+    public MyTargetReward(@NonNull Reward reward) {
+      this.type = reward.type;
+    }
+
     @Override
-    public String getType() {
-      return "";
+    public @NonNull String getType() {
+      return type;
     }
 
     @Override
@@ -188,5 +193,4 @@ public class MyTargetMediationAdapter extends Adapter
       return 1;
     }
   }
-
 }
