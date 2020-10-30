@@ -10,12 +10,19 @@ import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import com.google.android.gms.ads.AdSize;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-/** Utility class for the Unity adapter. */
+/**
+ * Utility class for the Unity adapter.
+ */
 public class UnityAdsAdapterUtils {
 
-  /** Private constructor */
-  private UnityAdsAdapterUtils() {}
+  /**
+   * Private constructor
+   */
+  private UnityAdsAdapterUtils() {
+  }
 
   /**
    * Creates a formatted SDK error message based on the specified {@link BannerErrorInfo}.
@@ -32,7 +39,7 @@ public class UnityAdsAdapterUtils {
    * Creates a formatted SDK error message based on the specified {@link UnityAdsError}.
    *
    * @param unityAdsError error object from Unity.
-   * @param description the error message.
+   * @param description   the error message.
    * @return the error message.
    */
   @NonNull
@@ -43,7 +50,7 @@ public class UnityAdsAdapterUtils {
   /**
    * Creates a formatted adapter error string given a code and description.
    *
-   * @param code the error code.
+   * @param code        the error code.
    * @param description the error message.
    * @return the error message.
    */
@@ -134,5 +141,4 @@ public class UnityAdsAdapterUtils {
 
     return null;
   }
-
 }
