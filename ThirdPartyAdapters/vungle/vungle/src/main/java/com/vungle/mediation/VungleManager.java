@@ -129,6 +129,11 @@ public class VungleManager {
           listener.onAdFail(id);
         }
       }
+
+      @Override
+      public void onAdViewed(String id) {
+        // "no-op , to be mapped to respective adapter events in future release"
+      }
     };
   }
 

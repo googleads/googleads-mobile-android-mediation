@@ -22,6 +22,7 @@ android {
         targetSdkVersion 28
         versionCode 7070200
         versionName stringVersion
+        buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
 
     buildTypes {
@@ -34,7 +35,7 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.3.0'
+    implementation 'com.google.android.gms:play-services-ads:19.4.0'
 
     implementation 'com.fyber.vamp:core-sdk:7.7.2'
     implementation 'com.fyber.vamp:mraid-kit:7.7.2'
