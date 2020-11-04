@@ -131,7 +131,7 @@ public class VungleManager {
       }
 
       @Override
-      public void onAdViewed(String id) {
+      public void onAdViewed(String placementId) {
         // "no-op , to be mapped to respective adapter events in future release"
       }
     };
