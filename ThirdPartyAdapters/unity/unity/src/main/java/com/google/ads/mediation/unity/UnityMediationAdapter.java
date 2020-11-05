@@ -51,17 +51,17 @@ public class UnityMediationAdapter extends Adapter {
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-        ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_PLACEMENT_STATE_NO_FILL,
-        ERROR_PLACEMENT_STATE_DISABLED,
-        ERROR_NULL_CONTEXT,
-        ERROR_CONTEXT_NOT_ACTIVITY,
-        ERROR_AD_NOT_READY,
-        ERROR_UNITY_ADS_NOT_SUPPORTED,
-        ERROR_AD_ALREADY_LOADING,
-        ERROR_FINISH,
-        ERROR_BANNER_SIZE_MISMATCH,
-        INITIALIZATION_FAILURE
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_PLACEMENT_STATE_NO_FILL,
+          ERROR_PLACEMENT_STATE_DISABLED,
+          ERROR_NULL_CONTEXT,
+          ERROR_CONTEXT_NOT_ACTIVITY,
+          ERROR_AD_NOT_READY,
+          ERROR_UNITY_ADS_NOT_SUPPORTED,
+          ERROR_AD_ALREADY_LOADING,
+          ERROR_FINISH,
+          ERROR_BANNER_SIZE_MISMATCH,
+          INITIALIZATION_FAILURE
       })
   @interface AdapterError {
 
@@ -109,7 +109,9 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_FINISH = 109;
 
-  /** The requested ad size does not match a UnityAds supported banner size. */
+  /**
+   * The requested ad size does not match a UnityAds supported banner size.
+   */
   static final int ERROR_BANNER_SIZE_MISMATCH = 110;
 
   /**
@@ -140,7 +142,7 @@ public class UnityMediationAdapter extends Adapter {
    */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String splits[] = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -150,8 +152,9 @@ public class UnityMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -168,8 +171,9 @@ public class UnityMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
