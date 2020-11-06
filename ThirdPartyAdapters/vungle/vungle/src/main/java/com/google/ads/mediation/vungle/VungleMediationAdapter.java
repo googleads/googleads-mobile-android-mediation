@@ -253,8 +253,6 @@ public class VungleMediationAdapter extends Adapter
           public void run() {
             if (mMediationRewardedAdCallback != null) {
               mMediationRewardedAdCallback.onAdOpened();
-              mMediationRewardedAdCallback.onVideoStart();
-              mMediationRewardedAdCallback.reportAdImpression();
             }
           }
         });
@@ -337,7 +335,8 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void onAdViewed(String placementId) {
-    // "no-op , to be mapped to respective adapter events in future release"
+    mMediationRewardedAdCallback.reportAdImpression();
+    mMediationRewardedAdCallback.onVideoStart();
   }
 
   /**
