@@ -1,29 +1,21 @@
 package com.google.ads.mediation.adcolony;
 
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyZone;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.jirbo.adcolony.AdColonyManager;
-import com.jirbo.adcolony.AdColonyManager.InitializationListener;
 import java.util.ArrayList;
 
 public class AdColonyRewardedRenderer implements MediationRewardedAd {
@@ -41,70 +33,16 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   public void render() {
-    boolean showPrePopup = false;
-    boolean showPostPopup = false;
-    Bundle serverParameters = adConfiguration.getServerParameters();
-    Bundle networkExtras = adConfiguration.getMediationExtras();
-
-    if (networkExtras != null) {
-      showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
-      showPostPopup = networkExtras.getBoolean("show_post_popup", false);
-    }
-
-    final AdColonyAdOptions adOptions = new AdColonyAdOptions()
-        .enableConfirmationDialog(showPrePopup).enableResultsDialog(showPostPopup);
-    ArrayList<String> listFromServerParams = AdColonyManager.getInstance()
-        .parseZoneList(serverParameters);
-    final String requestedZone = AdColonyManager.getInstance()
-        .getZoneFromRequest(listFromServerParams, networkExtras);
-
-    // Short circuit to ad loading if the response is Open Bidding.
-    if (!adConfiguration.getBidResponse().equals("")) {
-      AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
-      AdColonyRewardedEventForwarder.getInstance()
-          .addListener(requestedZone, AdColonyRewardedRenderer.this);
-      AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
-          adOptions);
-      return;
-    }
-
-    if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)) {
-      String logMessage = "Failed to load ad from AdColony: " +
-          "Only a maximum of one ad can be loaded per Zone ID.";
-      String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
-      Log.e(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
-      return;
-    }
-
-    // Configures the AdColony SDK, which also initializes the SDK if it has not been yet.
-    AdColonyManager.getInstance().configureAdColony(adConfiguration,
-        new InitializationListener() {
-          @Override
-          public void onInitializeSuccess() {
-            // Cannot request an ad without a valid zone.
-            if (TextUtils.isEmpty(requestedZone)) {
-              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-                  "Missing or invalid Zone ID.");
-              Log.e(TAG, error.getMessage());
-              mAdLoadCallback.onFailure(error);
-              return;
-            }
-
-            AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
-            AdColonyRewardedEventForwarder.getInstance()
-                .addListener(requestedZone, AdColonyRewardedRenderer.this);
-            AdColony
-                .requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
-                    adOptions);
-          }
-
-          @Override
-          public void onInitializeFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
-          }
-        });
+    AdColonyAdOptions adOptions =
+        AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
+    ArrayList<String> listFromServerParams =
+        AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
+    String requestedZone = AdColonyManager
+        .getInstance()
+        .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+    AdColonyRewardedEventForwarder.getInstance()
+        .addListener(requestedZone, AdColonyRewardedRenderer.this);
+    AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(), adOptions);
   }
 
   //region AdColony Rewarded Events

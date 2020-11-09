@@ -1,5 +1,8 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.3.0.0
+- Added support of AdColony's collectSignals() method for open bidding.
+
 #### Version 4.2.4.0
 - Fixed a bug where `onUserEarnedReward()` was not forwarded for rewarded ads.
 - Added additional error codes for AdColony SDK initialization errors.
