@@ -129,7 +129,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -211,7 +211,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     }
 
     // Always set mediation network info.
-    appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
+    appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.ADAPTER_VERSION);
     AdColonyManager.getInstance().configureAdColony(activity, appOptions, appID,
         zoneList, new InitializationListener() {
           @Override
