@@ -71,7 +71,7 @@ public class VerizonMediationAdapter extends Adapter
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = com.google.ads.mediation.verizon.BuildConfig.VERSION_NAME;
+    String versionString = com.google.ads.mediation.verizon.BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
