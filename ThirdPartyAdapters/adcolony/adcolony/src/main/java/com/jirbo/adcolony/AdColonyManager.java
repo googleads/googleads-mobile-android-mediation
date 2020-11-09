@@ -173,7 +173,7 @@ public class AdColonyManager {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (bidResponse != null && !bidResponse.equals("")) {
-      if(adColonyAdOptions == null) {
+      if (adColonyAdOptions == null) {
         adColonyAdOptions = new AdColonyAdOptions();
       }
       adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);
