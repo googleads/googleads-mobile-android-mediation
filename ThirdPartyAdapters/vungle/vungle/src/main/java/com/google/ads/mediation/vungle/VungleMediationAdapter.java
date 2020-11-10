@@ -335,8 +335,8 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void onAdViewed(String placementId) {
-    mMediationRewardedAdCallback.reportAdImpression();
     mMediationRewardedAdCallback.onVideoStart();
+    mMediationRewardedAdCallback.reportAdImpression();
   }
 
   /**
