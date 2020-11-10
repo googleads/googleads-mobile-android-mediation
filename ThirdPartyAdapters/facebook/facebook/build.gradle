@@ -21,6 +21,7 @@ android {
         targetSdkVersion 29
         versionCode 6200000
         versionName stringVersion
+        buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
     buildTypes {
         release {
@@ -33,7 +34,7 @@ android {
 dependencies {
     implementation 'com.facebook.android:audience-network-sdk:6.2.0'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.4.0'
+    implementation 'com.google.android.gms:play-services-ads:19.5.0'
 }
 
 /**
