@@ -272,12 +272,14 @@ public class AppLovinMediationAdapter extends RtbAdapter
   @Override
   public void showAd(Context context) {
     mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
-    String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
-    log(DEBUG, logMessage);
     final AppLovinIncentivizedAdListener listener =
         new AppLovinIncentivizedAdListener(adConfiguration, mRewardedAdCallback);
 
     if (!isRtbAd) {
+      if (mZoneId != null) {
+        String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
+        log(DEBUG, logMessage);
+      }
       if (!mIncentivizedInterstitial.isAdReadyToDisplay()) {
         String errorMessage =
             createAdapterError(ERROR_PRESENTATON_AD_NOT_READY, "Ad Failed to show.");
