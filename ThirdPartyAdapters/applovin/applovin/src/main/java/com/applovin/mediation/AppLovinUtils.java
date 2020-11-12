@@ -48,7 +48,7 @@ public class AppLovinUtils {
       sdk = AppLovinSdk.getInstance(context);
     }
 
-    sdk.setPluginVersion(BuildConfig.VERSION_NAME);
+    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
     sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
     return sdk;
   }
