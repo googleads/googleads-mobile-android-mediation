@@ -4,6 +4,7 @@
 - Verified compatibility with Vungle SDK 6.9.0.
 - Added support for OMSDK
 - Various bug fixes
+- Rewarded Ad Support for Vungle onAdViewed callback
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.6.0.

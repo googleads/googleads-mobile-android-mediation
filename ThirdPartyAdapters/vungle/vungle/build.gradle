@@ -40,8 +40,7 @@ dependencies {
 //    implementation ('com.vungle:publisher-sdk-android:6.9.0') {
 //        transitive=true
 //    }
-
-    implementation 'com.github.vungle:vungle-android-sdk:6.9.0-QA1'
+    implementation 'com.github.vungle:vungle-android-sdk:6.9.0-early1'
 
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.6.0'
