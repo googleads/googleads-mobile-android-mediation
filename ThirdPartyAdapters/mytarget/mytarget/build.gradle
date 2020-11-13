@@ -24,7 +24,7 @@ android {
         versionName stringVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+        buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
     buildTypes {
         release {
@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:19.4.0'
+    implementation 'com.google.android.gms:play-services-ads:19.5.0'
     implementation 'androidx.annotation:annotation:1.1.0'
 
     implementation 'com.my.target:mytarget-sdk:5.11.3'
