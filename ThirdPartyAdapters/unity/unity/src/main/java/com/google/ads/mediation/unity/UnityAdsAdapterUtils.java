@@ -136,7 +136,7 @@ public class UnityAdsAdapterUtils {
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize != null) {
-      return new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
+      return new UnityBannerSize(closestSize.getWidth(), closestSize.getHeight());
     }
 
     return null;

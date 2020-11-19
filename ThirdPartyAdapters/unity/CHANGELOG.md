@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue that causes smart banner ad requests to fail.
+
 #### Version 3.5.0.0
 - Verified compatibility with Unity Ads SDK 3.5.0.
 - Added adaptive banner support.
