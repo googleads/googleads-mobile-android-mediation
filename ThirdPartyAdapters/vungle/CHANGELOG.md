@@ -1,7 +1,7 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.9.0.0
-- Verified compatibility with Vungle SDK 6.9.0.
+#### Version 6.9.1.0
+- Verified compatibility with Vungle SDK 6.9.1.
 - Added support for OMSDK
 - Various bug fixes
 - Rewarded Ad Support for Vungle onAdViewed callback

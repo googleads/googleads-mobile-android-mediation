@@ -10,7 +10,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "6.9.0.0-early1"
+    stringVersion = "6.9.1.0-early1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 6080101
+        versionCode 6090100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -37,10 +37,9 @@ android {
 
 dependencies {
 
-//    implementation ('com.vungle:publisher-sdk-android:6.9.0') {
-//        transitive=true
-//    }
-    implementation 'com.github.vungle:vungle-android-sdk:6.9.0-early1'
+    implementation ('com.vungle.early-access:publisher-sdk-android:6.9.1-early1') {
+        transitive=true
+    }
 
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.6.0'
