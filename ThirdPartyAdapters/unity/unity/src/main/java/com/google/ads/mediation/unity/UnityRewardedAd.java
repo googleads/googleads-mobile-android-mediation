@@ -148,7 +148,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
           }
         });
 
-    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId).get() != null) {
       if (mMediationAdLoadCallback != null) {
         String adapterError = createAdapterError(ERROR_AD_ALREADY_LOADING, "Unity Ads has already loaded placement " + mPlacementId);
         mMediationAdLoadCallback.onFailure(adapterError);

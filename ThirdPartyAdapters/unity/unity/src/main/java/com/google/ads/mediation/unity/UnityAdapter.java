@@ -239,7 +239,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
+    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId).get() != null) {
       if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener
                 .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
