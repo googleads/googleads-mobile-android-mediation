@@ -4,7 +4,6 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,6 +19,7 @@ import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkSettings;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -49,6 +49,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
   private static final String DEFAULT_ZONE = "";
   private static boolean isRtbAd = true;
+
+  // AppLovin SDK settings.
+  public static AppLovinSdkSettings appLovinSdkSettings = new AppLovinSdkSettings();
 
   // AppLovin open-bidding banner ad renderer.
   private AppLovinRtbBannerRenderer mRtbBannerRenderer;
@@ -151,6 +154,11 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static String createSDKError(int code) {
     String message = "AppLovin SDK returned a failure callback.";
     return String.format("%d: %s", code, message);
+  }
+
+  @NonNull
+  public static AppLovinSdkSettings getSdkSettings() {
+    return appLovinSdkSettings;
   }
 
   @Override

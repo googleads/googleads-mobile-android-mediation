@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Added the `AppLovinMediationAdapter.getSdkSettings()` method. Publishers may now configure AppLovin SDK settings through these options.
+
 #### Version 9.14.6.0
 - Verified compatibility with AppLovin SDK 9.14.6.
 - Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
