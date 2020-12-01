@@ -20,6 +20,8 @@ import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -107,6 +109,16 @@ public class AdColonyManager {
     configureAdColony(context, appOptions, appId, newZoneList, listener);
   }
 
+  public void configureAdColony(@NonNull MediationRewardedAdConfiguration adConfiguration,
+                                @NonNull InitializationListener listener) {
+    Context context = adConfiguration.getContext();
+    Bundle serverParams = adConfiguration.getServerParameters();
+    String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
+    ArrayList<String> newZoneList = parseZoneList(serverParams);
+    AdColonyAppOptions appOptions = buildAppOptions(adConfiguration);
+    configureAdColony(context, appOptions, appId, newZoneList, listener);
+  }
+
   /**
    * Places user_id, age, location, and gender into AdColonyAppOptions.
    *
@@ -119,6 +131,22 @@ public class AdColonyManager {
     if (adRequest != null && adRequest.isTesting()) {
       // Enable test ads from AdColony when a Test Ad Request was sent.
         options.setTestModeEnabled(true);
+    }
+    return options;
+  }
+
+  /**
+   * Places user_id, age, location, and gender into AdColonyAppOptions.
+   *
+   * @param adConfiguration rewarded ad configuration received from AdMob.
+   * @return a valid AppOptions object.
+   */
+  private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
+    AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
+
+    // Enable test ads from AdColony when a Test Ad Request was sent.
+    if (adConfiguration.isTestRequest()) {
+      options.setTestModeEnabled(true);
     }
     return options;
   }
@@ -165,17 +193,9 @@ public class AdColonyManager {
   }
 
   public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
-    AdColonyAdOptions adColonyAdOptions = null;
-
-    if (adConfiguration.getMediationExtras() != null) {
-      adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
-    }
-
+    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
     String bidResponse = adConfiguration.getBidResponse();
     if (bidResponse != null && !bidResponse.equals("")) {
-      if (adColonyAdOptions == null) {
-        adColonyAdOptions = new AdColonyAdOptions();
-      }
       adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);
     }
     return adColonyAdOptions;
