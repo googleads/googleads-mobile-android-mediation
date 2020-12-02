@@ -59,6 +59,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
     this.mMediationNativeListener = mediationNativeListener;
+    setOverrideImpressionRecording(true);
   }
 
   // Map InMobi Native Ad to AdMob Unified Native Ad.
@@ -132,8 +133,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       }
     }
 
-    // Add primary view as media view.
-    final RelativeLayout placeHolderView = new RelativeLayout(context);
+    // Add primary view as media view
+    final RelativeLayout placeHolderView = new ClickInterceptorRelativeLayout(context);
     placeHolderView.setLayoutParams(
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
@@ -160,7 +161,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
     setHasVideoContent(hasVideo);
-    setOverrideClickHandling(false);
 
     // Download drawables.
     if (!this.mIsOnlyURL) {
@@ -199,13 +199,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     } else {
       mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
     }
-  }
-
-  @Override
-  public void recordImpression() {
-    // All impression render events are fired automatically when the primary view is displayed
-    // on the screen.
-    // Reference: https://support.inmobi.com/monetize/android-guidelines/native-ads-for-android
   }
 
   @Override
