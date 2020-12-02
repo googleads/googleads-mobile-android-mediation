@@ -239,12 +239,15 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    if (mPlacementsInUse.containsKey(mPlacementId) && mPlacementsInUse.get(mPlacementId) != null) {
-      if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener
-                .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+    if (mPlacementsInUse.containsKey(mPlacementId)) {
+      WeakReference<UnityAdapter> adapterRef = mPlacementsInUse.get(mPlacementId);
+      if (adapterRef != null && adapterRef.get() != null) {
+        if (mMediationInterstitialListener != null) {
+          mMediationInterstitialListener
+                  .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+        }
+        return;
       }
-      return;
     }
     mPlacementsInUse.put(mPlacementId, new WeakReference<UnityAdapter>(UnityAdapter.this));
     UnityAds.load(mPlacementId, mUnityLoadListener);
