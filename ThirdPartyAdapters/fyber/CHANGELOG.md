@@ -1,5 +1,8 @@
 ## Fyber Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where `onUserEarnedReward()` is forwarded twice for rewarded ads.
+
 #### Version 7.7.3.0
 - Verified compatibility with Fyber SDK 7.7.3.
 
