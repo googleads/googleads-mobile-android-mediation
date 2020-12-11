@@ -4,8 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -27,6 +29,8 @@ import java.util.GregorianCalendar;
 public class MyTargetAdapter extends MyTargetMediationAdapter
     implements MediationBannerAdapter, MediationInterstitialAdapter {
 
+  public static final int MIN_BANNER_HEIGHT_DP = 50;
+  public static final float MIN_BANNER_PROPORTION = 0.75f;
   @NonNull
   private static final String TAG = "MyTargetAdapter";
 
@@ -68,43 +72,38 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     }
     int width = adSize.getWidth();
     int height = adSize.getHeight();
-    int widthInPixels = adSize.getWidthInPixels(context);
-    int heightInPixels = adSize.getHeightInPixels(context);
+    MyTargetView.AdSize myTargetSize = null;
     if (width == 300 && height == 250) {
-      Log.d(TAG, "Loading myTarget banner, size: 300x250");
-      loadBanner(bannerListener,
-          mediationAdRequest,
-          slotId,
-          MyTargetView.AdSize.ADSIZE_300x250,
-          context);
-    } else if (adSize.getWidth() == 728 && adSize.getHeight() == 90) {
-      Log.d(TAG, "Loading myTarget banner, size: 728x90");
-      loadBanner(bannerListener,
-          mediationAdRequest,
-          slotId,
-          MyTargetView.AdSize.ADSIZE_728x90,
-          context);
-    } else if (adSize.getWidth() == 320 && adSize.getHeight() == 50) {
-      Log.d(TAG, "Loading myTarget banner, size: 320x50");
-      loadBanner(bannerListener,
-          mediationAdRequest,
-          slotId,
-          MyTargetView.AdSize.ADSIZE_320x50,
-          context);
-    } else if (widthInPixels > 0 && heightInPixels > 0 && heightInPixels < 0.75f * widthInPixels) {
-      Log.d(TAG, "Loading myTarget banner, size: adaptive");
-      loadBanner(bannerListener,
-                 mediationAdRequest,
-                 slotId,
-                 MyTargetView.AdSize.getAdSizeForCurrentOrientation(MyTargetTools.toDips(widthInPixels, context), context),
-                 context);
+      myTargetSize = MyTargetView.AdSize.ADSIZE_300x250;
+    } else if (width == 728 && height == 90) {
+      myTargetSize = MyTargetView.AdSize.ADSIZE_728x90;
+    } else if (width == 320 && height == 50) {
+      myTargetSize = MyTargetView.AdSize.ADSIZE_320x50;
     } else {
+      int widthInPixels = adSize.getWidthInPixels(context);
+      int heightInPixels = adSize.getHeightInPixels(context);
+      int widthDips = MyTargetTools.toDips(widthInPixels, context);
+      int heightDips = MyTargetTools.toDips(heightInPixels, context);
+      if (widthInPixels > 0 && heightDips >= MIN_BANNER_HEIGHT_DP && heightInPixels < MIN_BANNER_PROPORTION * widthInPixels) {
+        myTargetSize = MyTargetView.AdSize.getAdSizeForCurrentOrientation(widthDips, heightDips, context);
+      }
+    }
+
+    if (myTargetSize == null) {
       Log.w(TAG, "AdSize " + adSize.toString() + " is not currently supported");
       if (mediationBannerListener != null) {
         mediationBannerListener
-            .onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+                .onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
       }
+      return;
     }
+
+    Log.d(TAG, "Loading myTarget banner, size: " + myTargetSize.getWidth() + "x" + myTargetSize.getHeight());
+    loadBanner(bannerListener,
+            mediationAdRequest,
+            slotId,
+            myTargetSize,
+            context);
   }
 
   @Override
