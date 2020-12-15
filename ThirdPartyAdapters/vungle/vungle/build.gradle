@@ -25,6 +25,7 @@ android {
         targetSdkVersion 29
         versionCode 6080100
         versionName stringVersion
+        buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
     buildTypes {
         release {

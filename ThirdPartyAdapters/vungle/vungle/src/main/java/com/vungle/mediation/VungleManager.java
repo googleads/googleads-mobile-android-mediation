@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.ads.mediation.vungle.VungleBannerAd;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -23,7 +24,7 @@ public class VungleManager {
 
   private static VungleManager sInstance;
 
-  private ConcurrentHashMap<String, VungleBannerAdapter> mVungleBanners;
+  private ConcurrentHashMap<String, VungleBannerAd> mVungleBanners;
 
   public static synchronized VungleManager getInstance() {
     if (sInstance == null) {
@@ -93,7 +94,8 @@ public class VungleManager {
 
       @Override
       @Deprecated
-      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {}
+      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
+      }
 
       @Override
       public void onAdEnd(String id) {
@@ -155,64 +157,71 @@ public class VungleManager {
    * VungleInterstitialAdapter#onDestroy()} is not called and adapter was garbage collected.
    */
   private void cleanLeakedBannerAdapters() {
-    for (String id : new HashSet<>(mVungleBanners.keySet())) {
-      VungleBannerAdapter banner = mVungleBanners.get(id);
-      if (banner != null && !banner.isActive()) {
-        banner = mVungleBanners.remove(id);
-        if (banner != null) {
-          banner.destroy();
-        }
+    for (String placementId : new HashSet<>(mVungleBanners.keySet())) {
+      VungleBannerAd bannerAd = mVungleBanners.get(placementId);
+      if (bannerAd != null && bannerAd.getAdapter() == null) {
+        removeActiveBannerAd(placementId, bannerAd);
       }
+    }
+  }
+
+  // TODO: Make this method return an AdError object instead of a boolean.
+  synchronized boolean canRequestBannerAd(@NonNull String placementId,
+      @Nullable String requestUniqueId) {
+    cleanLeakedBannerAdapters();
+
+    VungleBannerAd bannerAd = mVungleBanners.get(placementId);
+    if (bannerAd == null) {
+      return true;
+    }
+
+    if (bannerAd.getAdapter() == null) {
+      mVungleBanners.remove(placementId);
+      return true;
+    }
+
+    VungleBannerAdapter adapter = bannerAd.getAdapter();
+    String activeUniqueRequestId = adapter.getUniqueRequestId();
+    Log.d(TAG,
+        "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
+
+    if (activeUniqueRequestId == null) {
+      Log.w(TAG, "Ad already loaded for placement ID: " + placementId + ", and cannot "
+          + "determine if this is a refresh. Set Vungle extras when making an ad request to "
+          + "support refresh on Vungle banner ads.");
+      return false;
+    }
+
+    if (!activeUniqueRequestId.equals(requestUniqueId)) {
+      Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
+      return false;
+    }
+
+    return true;
+  }
+
+  public void removeActiveBannerAd(@NonNull String placementId,
+      @Nullable VungleBannerAd activeBannerAd) {
+    Log.d(TAG, "try to removeActiveBannerAd: " + placementId);
+
+    boolean didRemove = mVungleBanners.remove(placementId, activeBannerAd);
+    if (didRemove && activeBannerAd != null) {
+      Log.d(TAG, "removeActiveBannerAd: " + activeBannerAd + "; size=" + mVungleBanners.size());
+      activeBannerAd.detach();
+      activeBannerAd.destroyAd();
+    }
+  }
+
+  void registerBannerAd(@NonNull String placementId, @NonNull VungleBannerAd instance) {
+    removeActiveBannerAd(placementId, mVungleBanners.get(placementId));
+    if (!mVungleBanners.containsKey(placementId)) {
+      mVungleBanners.put(placementId, instance);
+      Log.d(TAG, "registerBannerAd: " + instance + "; size=" + mVungleBanners.size());
     }
   }
 
   @Nullable
-  synchronized VungleBannerAdapter getBannerRequest(
-      @NonNull String placementId, @Nullable String requestUniqueId, @NonNull AdConfig adConfig) {
-    cleanLeakedBannerAdapters();
-    VungleBannerAdapter bannerRequest = mVungleBanners.get(placementId);
-    if (bannerRequest != null) {
-      String activeUniqueRequestId = bannerRequest.getUniquePubRequestId();
-      Log.d(
-          TAG, "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
-
-      if (activeUniqueRequestId == null) {
-        Log.w(
-            TAG,
-            "Ad already loaded for placement ID: "
-                + placementId
-                + ", and cannot determine if "
-                + "this is a refresh. Set Vungle extras when making an ad request to support "
-                + "refresh on Vungle banner ads.");
-        return null;
-      }
-
-      if (!activeUniqueRequestId.equals(requestUniqueId)) {
-        Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
-        return null;
-      }
-    } else {
-      bannerRequest = new VungleBannerAdapter(placementId, requestUniqueId, adConfig);
-      mVungleBanners.put(placementId, bannerRequest);
-    }
-
-    Log.d(TAG, "New banner request:" + bannerRequest + "; size=" + mVungleBanners.size());
-    return bannerRequest;
-  }
-
-  void removeActiveBannerAd(String placementId) {
-    Log.d(TAG, "try to removeActiveBannerAd:" + placementId);
-    VungleBannerAdapter activeBannerAd = mVungleBanners.remove(placementId);
-    Log.d(TAG, "removeActiveBannerAd:" + activeBannerAd + "; size=" + mVungleBanners.size());
-    if (activeBannerAd != null) {
-      activeBannerAd.cleanUp();
-    }
-  }
-
-  void storeActiveBannerAd(@NonNull String placementId, @NonNull VungleBannerAdapter instance) {
-    if (!mVungleBanners.containsKey(placementId)) {
-      mVungleBanners.put(placementId, instance);
-      Log.d(TAG, "restoreActiveBannerAd:" + instance + "; size=" + mVungleBanners.size());
-    }
+  public VungleBannerAd getVungleBannerAd(@NonNull String placementId) {
+    return mVungleBanners.get(placementId);
   }
 }

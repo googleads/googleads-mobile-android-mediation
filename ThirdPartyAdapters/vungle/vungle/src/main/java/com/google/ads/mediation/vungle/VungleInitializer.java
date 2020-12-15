@@ -31,7 +31,7 @@ public class VungleInitializer implements InitCallback {
     mInitListeners = new ArrayList<>();
     Plugin.addWrapperInfo(
         VungleApiClient.WrapperFramework.admob,
-        com.vungle.mediation.BuildConfig.VERSION_NAME.replace('.', '_'));
+        com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
   }
 
   public void initialize(
