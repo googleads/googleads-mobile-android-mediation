@@ -1,5 +1,8 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### Next Version
+- Removed support for the deprecated `NativeAppInstallAd` format. Apps should request for unified native ads.
+
 #### 6.2.0.0
 - Verified compatibility with Facebook SDK v6.2.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
