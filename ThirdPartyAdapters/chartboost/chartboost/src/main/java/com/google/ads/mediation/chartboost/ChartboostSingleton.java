@@ -263,13 +263,13 @@ public final class ChartboostSingleton {
     }
 
     mIsChartboostInitializing = true;
+    Chartboost.setDelegate(getInstance());
     Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
     Chartboost.setMediation(
         Chartboost.CBMediation.CBMediationAdMob,
         Chartboost.getSDKVersion(),
         com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
     Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
-    Chartboost.setDelegate(getInstance());
     Chartboost.setAutoCacheAds(false);
   }
 
