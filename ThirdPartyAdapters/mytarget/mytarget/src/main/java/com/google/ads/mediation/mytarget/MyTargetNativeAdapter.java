@@ -46,7 +46,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
   public static final String EXTRA_KEY_VOTES = "votes";
 
   @Nullable
-  private MediationNativeListener customEventNativeListener;
+  private MediationNativeListener nativeListener;
 
   private static int findMediaAdViewPosition(@NonNull List<View> clickableViews,
       @NonNull MediaAdView mediaAdView) {
@@ -68,25 +68,25 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
   }
 
   @Override
-  public void requestNativeAd(Context context, MediationNativeListener customEventNativeListener,
+  public void requestNativeAd(Context context, MediationNativeListener mediationNativeListener,
       Bundle serverParameter, NativeMediationAdRequest nativeMediationAdRequest,
       Bundle customEventExtras) {
-    this.customEventNativeListener = customEventNativeListener;
+    this.nativeListener = mediationNativeListener;
 
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
       Log.e(TAG, "Unified Native Ads should be requested.");
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onAdFailedToLoad(
-            MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      if (mediationNativeListener != null) {
+        mediationNativeListener
+            .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       }
       return;
     }
 
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameter);
     if (slotId < 0) {
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onAdFailedToLoad(
-            MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      if (mediationNativeListener != null) {
+        mediationNativeListener
+            .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
       }
       return;
     }
@@ -137,7 +137,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
   @Override
   public void onDestroy() {
-    customEventNativeListener = null;
+    nativeListener = null;
   }
 
   @Override
@@ -300,9 +300,9 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     public void onLoad(@NonNull NativePromoBanner banner, @NonNull NativeAd nativeAd) {
       if (this.nativeAd != nativeAd) {
         Log.d(TAG, "Failed to load: loaded native ad does not match with requested");
-        if (customEventNativeListener != null) {
-          customEventNativeListener.onAdFailedToLoad(
-              MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        if (nativeListener != null) {
+          nativeListener
+              .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
         }
         return;
       }
@@ -313,27 +313,26 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final NativeAd nativeAd) {
       Log.i(TAG, "No ad: MyTarget callback with reason " + reason);
-      if (customEventNativeListener != null) {
-        customEventNativeListener
-            .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+      if (nativeListener != null) {
+        nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
       }
     }
 
     @Override
     public void onClick(@NonNull final NativeAd nativeAd) {
       Log.d(TAG, "Ad clicked");
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onAdClicked(MyTargetNativeAdapter.this);
-        customEventNativeListener.onAdOpened(MyTargetNativeAdapter.this);
-        customEventNativeListener.onAdLeftApplication(MyTargetNativeAdapter.this);
+      if (nativeListener != null) {
+        nativeListener.onAdClicked(MyTargetNativeAdapter.this);
+        nativeListener.onAdOpened(MyTargetNativeAdapter.this);
+        nativeListener.onAdLeftApplication(MyTargetNativeAdapter.this);
       }
     }
 
     @Override
     public void onShow(@NonNull final NativeAd nativeAd) {
       Log.d(TAG, "Ad show");
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onAdImpression(MyTargetNativeAdapter.this);
+      if (nativeListener != null) {
+        nativeListener.onAdImpression(MyTargetNativeAdapter.this);
       }
     }
 
@@ -350,8 +349,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     @Override
     public void onVideoComplete(@NonNull NativeAd nativeAd) {
       Log.d(TAG, "Complete ad video");
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onVideoEnd(MyTargetNativeAdapter.this);
+      if (nativeListener != null) {
+        nativeListener.onVideoEnd(MyTargetNativeAdapter.this);
       }
     }
 
@@ -359,27 +358,26 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
         final @NonNull NativePromoBanner banner) {
       if (nativeMediationAdRequest == null) {
         Log.d(TAG, "Failed to load: resources or nativeMediationAdRequest null");
-        if (customEventNativeListener != null) {
-          customEventNativeListener.onAdFailedToLoad(
-              MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        if (nativeListener != null) {
+          nativeListener
+              .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        }
+        return;
+      }
+
+      if (banner.getImage() == null || banner.getIcon() == null) {
+        Log.d(TAG, "No ad: Some of the Always Included assets are not available for the ad.");
+        if (nativeListener != null) {
+          nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
         }
         return;
       }
 
       MyTargetNativeUnifiedAdMapper unifiedMapper = new MyTargetNativeUnifiedAdMapper(nativeAd,
           context);
-      if (banner.getImage() == null || banner.getIcon() == null) {
-        Log.d(TAG, "No ad: Some of the Always Included assets are not available for the ad.");
-        if (customEventNativeListener != null) {
-          customEventNativeListener
-              .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
-        }
-        return;
-      }
-
       Log.d(TAG, "Ad loaded successfully.");
-      if (customEventNativeListener != null) {
-        customEventNativeListener.onAdLoaded(MyTargetNativeAdapter.this, unifiedMapper);
+      if (nativeListener != null) {
+        nativeListener.onAdLoaded(MyTargetNativeAdapter.this, unifiedMapper);
       }
     }
   }
