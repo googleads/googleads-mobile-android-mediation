@@ -1,5 +1,12 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.8.1.1
+- Updated the minimum required Google Mobile Ads SDK version to 19.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- Vungle SDK version 6.8.1.
+
 #### Version 6.8.1.0
 - Verified compatibility with Vungle SDK 6.8.1.
 - Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
