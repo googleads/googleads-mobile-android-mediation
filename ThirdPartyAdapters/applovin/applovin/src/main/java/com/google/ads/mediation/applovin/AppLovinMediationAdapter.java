@@ -281,9 +281,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
     // Check if supported ad format
     if (config.getFormat() == AdFormat.NATIVE) {
       String errorMessage =
-            createAdapterError(
-                  ERROR_AD_FORMAT_UNSUPPORTED,
-                  "Requested to collect signal for unsupported native ad format. Ignoring...");
+          createAdapterError(
+              ERROR_AD_FORMAT_UNSUPPORTED,
+              "Requested to collect signal for unsupported native ad format. Ignoring...");
       handleCollectSignalsFailure(errorMessage, signalCallbacks);
       return;
     }
