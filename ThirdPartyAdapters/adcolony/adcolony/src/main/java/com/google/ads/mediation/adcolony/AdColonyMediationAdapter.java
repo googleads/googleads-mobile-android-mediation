@@ -10,6 +10,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
+import com.adcolony.sdk.AdColonySignalsListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -246,8 +247,17 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
-    signalCallbacks.onSuccess(AdColony.collectSignals());
-  }
+  public void collectSignals(RtbSignalData rtbSignalData, final SignalCallbacks signalCallbacks) {
+    AdColony.collectSignals(new AdColonySignalsListener() {
+      @Override
+      public void onSuccess(String signals) {
+        signalCallbacks.onSuccess(signals);
+      }
 
+      @Override
+      public void onFailure() {
+        signalCallbacks.onFailure(new AdError(0, "", ""));
+      }
+    });
+  }
 }
