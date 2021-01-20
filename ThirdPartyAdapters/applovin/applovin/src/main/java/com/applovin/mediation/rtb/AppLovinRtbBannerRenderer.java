@@ -1,7 +1,5 @@
 package com.applovin.mediation.rtb;
 
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
 
 import android.content.Context;
@@ -18,6 +16,7 @@ import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -27,8 +26,11 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
  * Created by Thomas So on July 17 2018
  */
 public final class AppLovinRtbBannerRenderer
-    implements MediationBannerAd, AppLovinAdLoadListener, AppLovinAdDisplayListener,
-    AppLovinAdClickListener, AppLovinAdViewEventListener {
+    implements MediationBannerAd,
+    AppLovinAdLoadListener,
+    AppLovinAdDisplayListener,
+    AppLovinAdClickListener,
+    AppLovinAdViewEventListener {
 
   private static final String TAG = AppLovinRtbBannerRenderer.class.getSimpleName();
 
@@ -58,19 +60,17 @@ public final class AppLovinRtbBannerRenderer
 
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    AppLovinAdSize adSize =
-        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adConfiguration.getAdSize());
 
-    if (adSize == null) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH, "Failed to request banner with unsupported size.");
-      callback.onFailure(errorMessage);
-      return;
+    AppLovinAdSize appLovinAdSize = AppLovinAdSize.BANNER;
+    AdSize googleAdSize = adConfiguration.getAdSize();
+    if (googleAdSize.getWidth() >= 728 && googleAdSize.getHeight() >= 90) {
+      appLovinAdSize = AppLovinAdSize.LEADER;
+    } else if (googleAdSize.getWidth() >= 320 && googleAdSize.getHeight() >= 50) {
+      appLovinAdSize = AppLovinAdSize.BANNER;
     }
 
     AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
-    adView = new AppLovinAdView(sdk, adSize, context);
+    adView = new AppLovinAdView(sdk, appLovinAdSize, context);
     adView.setAdDisplayListener(this);
     adView.setAdClickListener(this);
     adView.setAdViewEventListener(this);

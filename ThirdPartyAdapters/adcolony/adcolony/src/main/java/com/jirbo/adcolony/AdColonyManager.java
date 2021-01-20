@@ -86,7 +86,7 @@ public class AdColonyManager {
       String[] zoneArray = configuredZones.toArray(new String[0]);
 
       // Always set mediation network info.
-      options.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
+      options.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.ADAPTER_VERSION);
       isConfigured = context instanceof Activity
           ? AdColony.configure((Activity) context, options, appID, zoneArray)
           : AdColony.configure((Application) context, options, appID, zoneArray);

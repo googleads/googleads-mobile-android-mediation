@@ -1,15 +1,22 @@
 package com.google.ads.mediation.inmobi;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MALFORMED_IMAGE_URL;
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MISSING_NATIVE_ASSETS;
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_NATIVE_ASSET_DOWNLOAD_FAILED;
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
@@ -30,113 +37,115 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
    * InMobi native ad instance.
    */
   private final InMobiNative mInMobiNative;
+
   /**
    * Flag to check whether urls are returned for image assets.
    */
   private final boolean mIsOnlyURL;
+
   /**
    * MediationNativeListener instance.
    */
   private final MediationNativeListener mMediationNativeListener;
+
   /**
    * InMobi adapter instance.
    */
   private final InMobiAdapter mInMobiAdapter;
 
-  public InMobiUnifiedNativeAdMapper(
-      InMobiAdapter inMobiAdapter,
-      InMobiNative inMobiNative,
-      Boolean isOnlyURL,
-      MediationNativeListener mediationNativeListener) {
+  public InMobiUnifiedNativeAdMapper(InMobiAdapter inMobiAdapter, InMobiNative inMobiNative,
+      Boolean isOnlyURL, MediationNativeListener mediationNativeListener) {
     this.mInMobiAdapter = inMobiAdapter;
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
     this.mMediationNativeListener = mediationNativeListener;
+    setOverrideImpressionRecording(true);
   }
 
   // Map InMobi Native Ad to AdMob Unified Native Ad.
   void mapUnifiedNativeAd(final Context context) {
-    JSONObject payLoad;
-    HashMap<String, URL> map;
-    final Uri iconUri;
-    final Double iconScale;
 
-    try {
-      if (mInMobiNative.getCustomAdContent() != null) {
-        payLoad = mInMobiNative.getCustomAdContent();
-      } else {
-        mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
-        return;
-      }
-
-      setHeadline(
-          InMobiAdapterUtils.mandatoryChecking(
-              mInMobiNative.getAdTitle(), InMobiNetworkValues.TITLE));
-      setBody(
-          InMobiAdapterUtils.mandatoryChecking(
-              mInMobiNative.getAdDescription(), InMobiNetworkValues.DESCRIPTION));
-      setCallToAction(
-          InMobiAdapterUtils.mandatoryChecking(
-              mInMobiNative.getAdCtaText(), InMobiNetworkValues.CTA));
-
-      String landingURL =
-          InMobiAdapterUtils.mandatoryChecking(
-              mInMobiNative.getAdLandingPageUrl(), InMobiNetworkValues.LANDING_URL);
-      Bundle paramMap = new Bundle();
-      paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
-      setExtras(paramMap);
-      map = new HashMap<>();
-
-      // App icon.
-      URL iconURL = new URL(mInMobiNative.getAdIconUrl());
-      iconUri = Uri.parse(iconURL.toURI().toString());
-      iconScale = 1.0;
-      if (!this.mIsOnlyURL) {
-        map.put(ImageDownloaderAsyncTask.KEY_ICON, iconURL);
-      } else {
-        setIcon(new InMobiNativeMappedImage(null, iconUri, iconScale));
-        List<NativeAd.Image> imagesList = new ArrayList<>();
-        imagesList.add(
-            new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
-        setImages(imagesList);
-      }
-
-    } catch (MandatoryParamException | MalformedURLException | URISyntaxException e) {
-      e.printStackTrace();
-      mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
+    if (!InMobiAdapterUtils.isValidNativeAd(mInMobiNative)) {
+      AdError error = new AdError(ERROR_MISSING_NATIVE_ASSETS, ERROR_DOMAIN,
+          "InMobi native ad returned with a missing asset.");
+      Log.w(TAG, error.getMessage());
+      mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
       return;
     }
 
+    setHeadline(mInMobiNative.getAdTitle());
+    setBody(mInMobiNative.getAdDescription());
+    setCallToAction(mInMobiNative.getAdCtaText());
+
+    // App icon.
+    final URL iconURL;
+    final Uri iconUri;
+    final double iconScale = 1.0;
+
     try {
-      if (payLoad.has(InMobiNetworkValues.RATING)) {
-        setStarRating(Double.parseDouble(payLoad.getString(InMobiNetworkValues.RATING)));
+      iconURL = new URL(mInMobiNative.getAdIconUrl());
+      iconUri = Uri.parse(iconURL.toURI().toString());
+    } catch (MalformedURLException | URISyntaxException exception) {
+      AdError error = new AdError(ERROR_MALFORMED_IMAGE_URL, ERROR_DOMAIN,
+          exception.getLocalizedMessage());
+      Log.w(TAG, error.getMessage());
+      mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
+      return;
+    }
+
+    HashMap<String, URL> map = new HashMap<>();
+    String landingURL = mInMobiNative.getAdLandingPageUrl();
+    Bundle paramMap = new Bundle();
+    paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
+    setExtras(paramMap);
+
+    if (!this.mIsOnlyURL) {
+      map.put(ImageDownloaderAsyncTask.KEY_ICON, iconURL);
+    } else {
+      setIcon(new InMobiNativeMappedImage(null, iconUri, iconScale));
+      List<NativeAd.Image> imagesList = new ArrayList<>();
+      imagesList.add(
+          new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
+      setImages(imagesList);
+    }
+
+    // Optional assets.
+    if (mInMobiNative.getCustomAdContent() != null) {
+      JSONObject payLoad = mInMobiNative.getCustomAdContent();
+
+      try {
+        if (payLoad.has(InMobiNetworkValues.RATING)) {
+          setStarRating(Double.parseDouble(payLoad.getString(InMobiNetworkValues.RATING)));
+        }
+
+        if (payLoad.has(InMobiNetworkValues.PRICE)) {
+          setPrice(payLoad.getString(InMobiNetworkValues.PRICE));
+        }
+      } catch (JSONException jsonException) {
+        Log.w(TAG, "InMobi custom native ad content payload could not be parsed. "
+            + "The returned native ad will not have star rating or price values.");
       }
+
       if (payLoad.has(InMobiNetworkValues.PACKAGE_NAME)) {
         setStore("Google Play");
       } else {
         setStore("Others");
       }
-      if (payLoad.has(InMobiNetworkValues.PRICE)) {
-        setPrice(payLoad.getString(InMobiNetworkValues.PRICE));
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
     }
 
     // Add primary view as media view
-    final RelativeLayout placeHolderView = new RelativeLayout(context);
+    final RelativeLayout placeHolderView = new ClickInterceptorRelativeLayout(context);
     placeHolderView.setLayoutParams(
         new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
     placeHolderView.setGravity(Gravity.CENTER);
-
     placeHolderView.post(
         new Runnable() {
           @Override
           public void run() {
             final View primaryView =
-                mInMobiNative.getPrimaryViewOfWidth(
-                    context, null, placeHolderView, placeHolderView.getWidth());
+                mInMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView,
+                    placeHolderView.getWidth());
             if (primaryView == null) {
               return;
             }
@@ -152,7 +161,6 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setMediaView(placeHolderView);
     boolean hasVideo = (mInMobiNative.isVideo() == null) ? false : mInMobiNative.isVideo();
     setHasVideoContent(hasVideo);
-    setOverrideClickHandling(false);
 
     // Download drawables.
     if (!this.mIsOnlyURL) {
@@ -168,32 +176,29 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                   new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
               setImages(imagesList);
 
-              if ((null != iconDrawable)) {
+              if (null != iconDrawable) {
                 mMediationNativeListener.onAdLoaded(
                     mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
               } else {
-                mMediationNativeListener.onAdFailedToLoad(
-                    mInMobiAdapter, AdRequest.ERROR_CODE_NETWORK_ERROR);
+                AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED, ERROR_DOMAIN,
+                    "Failed to download image assets.");
+                Log.w(TAG, error.getMessage());
+                mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
               }
             }
 
             @Override
             public void onDownloadFailure() {
-              mMediationNativeListener.onAdFailedToLoad(
-                  mInMobiAdapter, AdRequest.ERROR_CODE_NO_FILL);
+              AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED, ERROR_DOMAIN,
+                  "Failed to download image assets.");
+              Log.w(TAG, error.getMessage());
+              mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
             }
           })
           .execute(map);
     } else {
       mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
     }
-  }
-
-  @Override
-  public void recordImpression() {
-    // All impression render events are fired automatically when the primary view is displayed
-    // on the screen.
-    // Reference: https://support.inmobi.com/monetize/android-guidelines/native-ads-for-android
   }
 
   @Override
@@ -208,9 +213,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(
-      View containerView,
-      Map<String, View> clickableAssetViews,
+  public void trackViews(View containerView, Map<String, View> clickableAssetViews,
       Map<String, View> nonclickableAssetViews) {
     mInMobiNative.resume();
   }

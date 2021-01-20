@@ -100,17 +100,16 @@ public class MoPubAdapter
   }
 
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
 
   @Override
-  public void requestNativeAd(
-      final Context context,
-      final MediationNativeListener listener,
-      Bundle serverParameters,
-      final NativeMediationAdRequest mediationAdRequest,
+  public void requestNativeAd(final Context context, final MediationNativeListener listener,
+      Bundle serverParameters, final NativeMediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
 
     String adUnit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
@@ -122,17 +121,15 @@ public class MoPubAdapter
       listener.onAdFailedToLoad(MoPubAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
       return;
     }
-    if (!mediationAdRequest.isUnifiedNativeAdRequested()
-        && !mediationAdRequest.isAppInstallAdRequested()) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-              "Failed to request native ad: "
-                  + "Unified Native Ad or App install Ad should be requested.");
+
+    if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
+      String errorMessage = createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          "Failed to request native ad: Unified Native Ad should be requested.");
       Log.e(TAG, errorMessage);
       listener.onAdFailedToLoad(this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
       return;
     }
+
     final NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
     if (options != null) {
       privacyIconPlacement = options.getAdChoicesPlacement();
@@ -187,47 +184,28 @@ public class MoPubAdapter
             }
 
             new DownloadDrawablesAsync(
-                    new DrawableDownloadListener() {
-                      @Override
-                      public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
-                        Drawable icon = drawableMap.get(DownloadDrawablesAsync.KEY_ICON);
-                        Drawable image = drawableMap.get(DownloadDrawablesAsync.KEY_IMAGE);
-                        if (mediationAdRequest.isUnifiedNativeAdRequested()) {
-                          final MoPubUnifiedNativeAdMapper moPubUnifiedNativeAdMapper =
-                              new MoPubUnifiedNativeAdMapper(
-                                  context,
-                                  staticNativeAd,
-                                  icon,
-                                  image,
-                                  privacyIconPlacement,
-                                  mPrivacyIconSize);
+                new DrawableDownloadListener() {
+                  @Override
+                  public void onDownloadSuccess(HashMap<String, Drawable> drawableMap) {
+                    Drawable icon = drawableMap.get(DownloadDrawablesAsync.KEY_ICON);
+                    Drawable image = drawableMap.get(DownloadDrawablesAsync.KEY_IMAGE);
+                    final MoPubUnifiedNativeAdMapper moPubUnifiedNativeAdMapper =
+                        new MoPubUnifiedNativeAdMapper(context, staticNativeAd, icon, image,
+                            privacyIconPlacement, mPrivacyIconSize);
+                    listener.onAdLoaded(MoPubAdapter.this, moPubUnifiedNativeAdMapper);
+                  }
 
-                          listener.onAdLoaded(MoPubAdapter.this, moPubUnifiedNativeAdMapper);
-                        } else if (mediationAdRequest.isAppInstallAdRequested()) {
-                          final MoPubNativeAppInstallAdMapper moPubNativeAppInstallAdMapper =
-                              new MoPubNativeAppInstallAdMapper(
-                                  context,
-                                  staticNativeAd,
-                                  icon,
-                                  image,
-                                  privacyIconPlacement,
-                                  mPrivacyIconSize);
-
-                          listener.onAdLoaded(MoPubAdapter.this, moPubNativeAppInstallAdMapper);
-                        }
-                      }
-
-                      @Override
-                      public void onDownloadFailure() {
-                        // Failed to download images, send failure callback.
-                        String errorMessage =
-                            createAdapterError(
-                                ERROR_DOWNLOADING_NATIVE_ASSETS, "Failed to download images.");
-                        Log.w(TAG, errorMessage);
-                        listener.onAdFailedToLoad(
-                            MoPubAdapter.this, ERROR_DOWNLOADING_NATIVE_ASSETS);
-                      }
-                    })
+                  @Override
+                  public void onDownloadFailure() {
+                    // Failed to download images, send failure callback.
+                    String errorMessage =
+                        createAdapterError(
+                            ERROR_DOWNLOADING_NATIVE_ASSETS, "Failed to download images.");
+                    Log.w(TAG, errorMessage);
+                    listener.onAdFailedToLoad(
+                        MoPubAdapter.this, ERROR_DOWNLOADING_NATIVE_ASSETS);
+                  }
+                })
                 .execute(map);
           }
 
@@ -294,13 +272,9 @@ public class MoPubAdapter
   }
 
   @Override
-  public void requestBannerAd(
-      final Context context,
-      MediationBannerListener mediationBannerListener,
-      Bundle bundle,
-      final AdSize adSize,
-      MediationAdRequest mediationAdRequest,
-      final Bundle mediationExtras) {
+  public void requestBannerAd(final Context context,
+      MediationBannerListener mediationBannerListener, Bundle bundle, final AdSize adSize,
+      MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
     mContext = context;
     mAdSize = adSize;
     mExtras = mediationExtras;
@@ -497,12 +471,9 @@ public class MoPubAdapter
   }
 
   @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener mediationInterstitialListener,
-      Bundle bundle,
-      MediationAdRequest mediationAdRequest,
-      Bundle bundle1) {
+  public void requestInterstitialAd(Context context,
+      MediationInterstitialListener mediationInterstitialListener, Bundle bundle,
+      MediationAdRequest mediationAdRequest, Bundle bundle1) {
 
     if (!(context instanceof Activity)) {
       String errorMessage =
@@ -611,49 +582,73 @@ public class MoPubAdapter
    */
   public static final class BundleBuilder {
 
-    /** Key to add and obtain {@link #mPrivacyIconSizeDp}. */
+    /**
+     * Key to add and obtain {@link #mPrivacyIconSizeDp}.
+     */
     private static final String ARG_PRIVACY_ICON_SIZE_DP = "privacy_icon_size_dp";
 
-    /** Key to add and obtain {@link #mMinimumBannerWidth}. */
+    /**
+     * Key to add and obtain {@link #mMinimumBannerWidth}.
+     */
     private static final String ARG_MINIMUM_BANNER_WIDTH = "minimum_banner_width";
 
-    /** Key to add and obtain {@link #mMinimumBannerHeight}. */
+    /**
+     * Key to add and obtain {@link #mMinimumBannerHeight}.
+     */
     private static final String ARG_MINIMUM_BANNER_HEIGHT = "minimum_banner_height";
 
-    /** Key to add and obtain {@link #customRewardData}. */
+    /**
+     * Key to add and obtain {@link #customRewardData}.
+     */
     public static final String ARG_CUSTOM_REWARD_DATA = "custom_reward_data";
 
-    /** MoPub's privacy icon size in dp. */
+    /**
+     * MoPub's privacy icon size in dp.
+     */
     private int mPrivacyIconSizeDp;
 
-    /** Minimum allowable MoPub banner width. */
+    /**
+     * Minimum allowable MoPub banner width.
+     */
     private int mMinimumBannerWidth;
 
-    /** Minimum allowable MoPub banner height. */
+    /**
+     * Minimum allowable MoPub banner height.
+     */
     private int mMinimumBannerHeight;
 
-    /** Custom reward data for MoPub Rewarded Ads. */
+    /**
+     * Custom reward data for MoPub Rewarded Ads.
+     */
     private String customRewardData;
 
-    /** Sets the privacy icon size in dp. */
+    /**
+     * Sets the privacy icon size in dp.
+     */
     public BundleBuilder setPrivacyIconSize(int iconSizeDp) {
       mPrivacyIconSizeDp = iconSizeDp;
       return BundleBuilder.this;
     }
 
-    /** Sets the minimum allowable MoPub banner width. */
+    /**
+     * Sets the minimum allowable MoPub banner width.
+     */
     public BundleBuilder setMinimumBannerWidth(int width) {
       mMinimumBannerWidth = width;
       return BundleBuilder.this;
     }
 
-    /** Sets the minimum allowable MoPub banner height. */
+    /**
+     * Sets the minimum allowable MoPub banner height.
+     */
     public BundleBuilder setMinimumBannerHeight(int height) {
       mMinimumBannerHeight = height;
       return BundleBuilder.this;
     }
 
-    /** Sets the custom reward data for MoPub Rewarded Ads. */
+    /**
+     * Sets the custom reward data for MoPub Rewarded Ads.
+     */
     public BundleBuilder setCustomRewardData(@NonNull String customRewardData) {
       this.customRewardData = customRewardData;
       return BundleBuilder.this;

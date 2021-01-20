@@ -141,13 +141,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
           @Override
           public void onAdDismissed(InneractiveAdSpot inneractiveAdSpot) {
             mRewardedAdCallback.onAdClosed();
-
-            // Check for the returned ad type to send back the reward callback properly.
-            // For video ads, the reward is earned only if the video is completed.
-            // For Display ads, the reward is earned when the ad is dismissed.
-            if (!isVideoAdAvailable(controller)) {
-              mRewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
-            }
           }
         };
 

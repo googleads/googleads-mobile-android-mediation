@@ -4,7 +4,6 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,6 +19,7 @@ import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkSettings;
 import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -49,6 +49,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
   private static final String DEFAULT_ZONE = "";
   private static boolean isRtbAd = true;
+
+  // AppLovin SDK settings.
+  public static AppLovinSdkSettings appLovinSdkSettings = new AppLovinSdkSettings();
 
   // AppLovin open-bidding banner ad renderer.
   private AppLovinRtbBannerRenderer mRtbBannerRenderer;
@@ -153,6 +156,11 @@ public class AppLovinMediationAdapter extends RtbAdapter
     return String.format("%d: %s", code, message);
   }
 
+  @NonNull
+  public static AppLovinSdkSettings getSdkSettings() {
+    return appLovinSdkSettings;
+  }
+
   @Override
   public void initialize(Context context,
       InitializationCompleteCallback initializationCompleteCallback,
@@ -172,7 +180,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -272,12 +280,14 @@ public class AppLovinMediationAdapter extends RtbAdapter
   @Override
   public void showAd(Context context) {
     mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
-    String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
-    log(DEBUG, logMessage);
     final AppLovinIncentivizedAdListener listener =
         new AppLovinIncentivizedAdListener(adConfiguration, mRewardedAdCallback);
 
     if (!isRtbAd) {
+      if (mZoneId != null) {
+        String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
+        log(DEBUG, logMessage);
+      }
       if (!mIncentivizedInterstitial.isAdReadyToDisplay()) {
         String errorMessage =
             createAdapterError(ERROR_PRESENTATON_AD_NOT_READY, "Ad Failed to show.");

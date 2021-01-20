@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2020 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@ package com.google.ads.mediation.unity;
 
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-/** The {@link UnityReward} class is used to create rewards for users. */
+/**
+ * The {@link UnityReward} class is used to create rewards for users.
+ */
 public class UnityReward implements RewardItem {
 
   @Override
