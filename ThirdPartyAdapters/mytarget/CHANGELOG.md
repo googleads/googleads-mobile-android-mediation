@@ -1,5 +1,12 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.11.7.0
+- Verified compatibility with myTarget SDK version 5.11.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- MyTarget SDK version 5.11.7.
+
 #### Version 5.11.6.0
 - Verified compatibility with myTarget SDK version 5.11.6.
 - Removed support for the deprecated `NativeContentAd` and `NativeAppInstallAd` formats. Apps should request for unified native ads.
