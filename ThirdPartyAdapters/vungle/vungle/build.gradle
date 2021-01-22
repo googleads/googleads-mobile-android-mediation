@@ -5,12 +5,6 @@ plugins {
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 /**
  * Extra properties used by the project.
  */
@@ -43,10 +37,9 @@ android {
 
 dependencies {
 
-//    implementation ('com.vungle.early-access:publisher-sdk-android:6.9.1-early1') {
-//        transitive=true
-//    }
-    implementation (name: 'vungle-android-sdk-6.9.1-RC2', ext: 'aar')
+    implementation ('com.vungle:publisher-sdk-android:6.9.1') {
+        transitive=true
+    }
 
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:19.6.0'
