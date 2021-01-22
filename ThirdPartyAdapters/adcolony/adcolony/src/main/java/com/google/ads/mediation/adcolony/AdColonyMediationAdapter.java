@@ -1,6 +1,7 @@
 package com.google.ads.mediation.adcolony;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,8 +10,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
-import com.adcolony.sdk.AdColonyCustomMessage;
-import com.adcolony.sdk.AdColonyCustomMessageListener;
+import com.adcolony.sdk.AdColonySignalsListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -32,18 +32,14 @@ import com.jirbo.adcolony.BuildConfig;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class AdColonyMediationAdapter extends RtbAdapter {
 
   public static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
   private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
-  private static HashMap<String, String> bidResponseDetailsHashMap = new HashMap<>();
 
   // Keeps a strong reference to the interstitial ad renderer, which loads ads asynchronously.
   private AdColonyInterstitialRenderer adColonyInterstitialRenderer;
@@ -169,12 +165,11 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       final InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> mediationConfigurations) {
 
-    if (!(context instanceof Activity)) {
+    if (!(context instanceof Activity) && !(context instanceof Application)) {
       initializationCompleteCallback.onInitializationFailed("AdColony SDK requires an " +
-          "Activity context to initialize");
+          "Activity or Application context to initialize.");
       return;
     }
-    Activity activity = (Activity) context;
 
     HashSet<String> appIDs = new HashSet<>();
     ArrayList<String> zoneList = new ArrayList<>();
@@ -212,7 +207,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
     // Always set mediation network info.
     appOptions.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.ADAPTER_VERSION);
-    AdColonyManager.getInstance().configureAdColony(activity, appOptions, appID,
+    AdColonyManager.getInstance().configureAdColony(context, appOptions, appID,
         zoneList, new InitializationListener() {
           @Override
           public void onInitializeSuccess() {
@@ -232,10 +227,9 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       MediationInterstitialAdConfiguration interstitialAdConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd,
           MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    String requestedZone = interstitialAdConfiguration.getServerParameters()
-        .getString(AdColonyAdapterUtils.KEY_ZONE_ID);
-    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(requestedZone);
-    adColonyInterstitialRenderer.requestInterstitial(mediationAdLoadCallback);
+    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration,
+        mediationAdLoadCallback);
+    adColonyInterstitialRenderer.render();
   }
 
   @Override
@@ -253,26 +247,17 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
-    String zone, signals = "";
-    AdColony.addCustomMessageListener(new AdColonyCustomMessageListener() {
+  public void collectSignals(RtbSignalData rtbSignalData, final SignalCallbacks signalCallbacks) {
+    AdColony.collectSignals(new AdColonySignalsListener() {
       @Override
-      public void onAdColonyCustomMessage(AdColonyCustomMessage adColonyCustomMessage) {
-        try {
-          JSONObject jsonObject = new JSONObject(adColonyCustomMessage.getMessage());
-          String zoneID = jsonObject.getString("zone");
-          bidResponseDetailsHashMap.put(zoneID, adColonyCustomMessage.getMessage());
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+      public void onSuccess(String signals) {
+        signalCallbacks.onSuccess(signals);
       }
-    }, "bid");
-    if (bidResponseDetailsHashMap != null && bidResponseDetailsHashMap.size() > 0) {
-      Bundle serverParameters = rtbSignalData.getConfiguration().getServerParameters();
-      zone = serverParameters.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
-      signals = bidResponseDetailsHashMap.get(zone);
-    }
-    signalCallbacks.onSuccess(signals);
-  }
 
+      @Override
+      public void onFailure() {
+        signalCallbacks.onFailure(new AdError(0, "", ""));
+      }
+    });
+  }
 }
