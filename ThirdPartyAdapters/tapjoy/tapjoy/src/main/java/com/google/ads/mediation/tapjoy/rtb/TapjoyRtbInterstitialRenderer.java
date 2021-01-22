@@ -1,14 +1,17 @@
 package com.google.ads.mediation.tapjoy.rtb;
 
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_NO_CONTENT_AVAILABLE;
-import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.createAdapterError;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.TAPJOY_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -42,20 +45,19 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
 
   private static final String PLACEMENT_NAME_SERVER_PARAMETER_KEY = "placementName";
   private static final String MEDIATION_AGENT = "admob";
-  private static final String TAPJOY_INTERNAL_ADAPTER_VERSION =
-      "2.0.0";
+  private static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "2.0.0";
 
   private static HashMap<String, WeakReference<TapjoyRtbInterstitialRenderer>> placementsInUse =
       new HashMap<>();
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
   /**
-   * Tapjoy Interstitial Placement
+   * Tapjoy Interstitial Placement.
    */
   private TJPlacement interstitialPlacement;
 
   /**
-   * Listener object to notify the Google Mobile Ads SDK of interstitial
+   * Listener object to notify the Google Mobile Ads SDK of interstitial.
    */
   private MediationInterstitialAdCallback listener;
 
@@ -67,46 +69,39 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
   }
 
   public void render() {
-    Log.i(TAG, "Rendering interstitial placement for AdMob adapter");
+    Log.i(TAG, "Rendering interstitial placement for AdMob adapter.");
 
-    if (checkParams()) {
-      if (placementsInUse.containsKey(interstitialPlacementName) &&
-          placementsInUse.get(interstitialPlacementName).get() != null) {
-        String logMessage =
-            "An ad has already been requested for placement: " + interstitialPlacementName;
-        String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
-        Log.w(TAG, errorMessage);
-        callback.onFailure(errorMessage);
-        return;
-      }
-      placementsInUse.put(interstitialPlacementName,
-          new WeakReference<>(TapjoyRtbInterstitialRenderer.this));
-      createInterstitialPlacementAndRequestContent();
-    } else {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Invalid server parameters specified in the UI");
-      callback.onFailure(errorMessage);
+    interstitialPlacementName = adConfiguration.getServerParameters()
+        .getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
+    if (TextUtils.isEmpty(interstitialPlacementName)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid Tapjoy placement name.");
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
+      return;
     }
+
+    if (placementsInUse.containsKey(interstitialPlacementName) &&
+        placementsInUse.get(interstitialPlacementName).get() != null) {
+      String errorMessage = String
+          .format("An ad has already been requested for placement: %s", interstitialPlacementName);
+      AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_DOMAIN, errorMessage);
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
+      return;
+    }
+
+    placementsInUse
+        .put(interstitialPlacementName, new WeakReference<>(TapjoyRtbInterstitialRenderer.this));
+    createInterstitialPlacementAndRequestContent();
   }
 
   @Override
   public void showAd(Context context) {
-    Log.i(TAG, "Show interstitial content for Tapjoy-AdMob adapter");
+    Log.i(TAG, "Show interstitial content for Tapjoy-AdMob adapter.");
     if (interstitialPlacement != null && interstitialPlacement.isContentAvailable()) {
       interstitialPlacement.showContent();
     }
-  }
-
-  private boolean checkParams() {
-    //Check for server parameters
-    if (adConfiguration.getServerParameters().getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY)
-        != null) {
-      interstitialPlacementName = adConfiguration.getServerParameters()
-          .getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
-    } else {
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -122,10 +117,11 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               public void run() {
                 if (!interstitialPlacement.isContentAvailable()) {
                   placementsInUse.remove(interstitialPlacementName);
-                  String errorMessage = createAdapterError(ERROR_NO_CONTENT_AVAILABLE,
-                      "Interstitial Content isn't available");
-                  Log.d(TAG, errorMessage);
-                  callback.onFailure(errorMessage);
+
+                  AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE, ERROR_DOMAIN,
+                      "Tapjoy request successful but no content was returned.");
+                  Log.e(TAG, error.getMessage());
+                  callback.onFailure(error);
                 }
               }
             });
@@ -137,7 +133,10 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               @Override
               public void run() {
                 placementsInUse.remove(interstitialPlacementName);
-                callback.onFailure(tjError.message);
+
+                AdError error = new AdError(tjError.code, TAPJOY_SDK_ERROR_DOMAIN, tjError.message);
+                Log.e(TAG, error.getMessage());
+                callback.onFailure(error);
               }
             });
           }
@@ -148,7 +147,7 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               @Override
               public void run() {
                 listener = callback.onSuccess(TapjoyRtbInterstitialRenderer.this);
-                Log.d(TAG, "Interstitial onContentReady");
+                Log.d(TAG, "Interstitial onContentReady.");
               }
             });
           }
@@ -217,7 +216,6 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
 
       auctionData.put(TapjoyAuctionFlags.AUCTION_ID, id);
       auctionData.put(TapjoyAuctionFlags.AUCTION_DATA, extData);
-
     } catch (JSONException e) {
       Log.e(TAG, "Bid Response JSON Error: " + e.getMessage());
     }
