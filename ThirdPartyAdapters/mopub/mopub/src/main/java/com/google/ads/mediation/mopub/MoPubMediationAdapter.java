@@ -46,7 +46,8 @@ public class MoPubMediationAdapter extends Adapter
 
   private String adUnitID = "";
 
-  @Nullable private String customRewardData = null;
+  @Nullable
+  private String customRewardData = null;
 
   // TODO: Remove `adExpired` parameter once MoPub fixes MoPubRewardedVideos.hasRewardedVideo()
   //  to return false for expired ads.
@@ -55,41 +56,98 @@ public class MoPubMediationAdapter extends Adapter
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
 
-  /** MoPub Network adapter errors. */
+  /**
+   * MoPub Network adapter errors.
+   */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-        ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_BANNER_SIZE_MISMATCH,
-        ERROR_REQUIRES_ACTIVITY_CONTEXT,
-        ERROR_MOPUB_INITIALIZATION,
-        ERROR_WRONG_NATIVE_TYPE,
-        ERROR_FAILED_PLAYBACK,
-        ERROR_AD_ALREADY_LOADED,
-        ERROR_AD_EXPIRED,
-        ERROR_HAS_REWARDED_AD,
-        ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-        ERROR_DOWNLOADING_NATIVE_ASSETS,
-        ERROR_AD_NOT_READY,
-        ERROR_MINIMUM_BANNER_SIZE
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_BANNER_SIZE_MISMATCH,
+          ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          // ERROR_MOPUB_INITIALIZATION,
+          ERROR_WRONG_NATIVE_TYPE,
+          // ERROR_FAILED_PLAYBACK,
+          ERROR_AD_ALREADY_LOADED,
+          ERROR_AD_EXPIRED,
+          // ERROR_HAS_REWARDED_AD,
+          ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          ERROR_DOWNLOADING_NATIVE_ASSETS,
+          ERROR_AD_NOT_READY,
+          ERROR_MINIMUM_BANNER_SIZE
       })
-  public @interface AdapterError {}
+  public @interface AdapterError {
 
+  }
+
+  /**
+   * Missing or invalid server parameters (e.g. ad unit ID is null).
+   */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
+  /**
+   * The requested ad size does not match a MoPub supported banner size.
+   */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+
+  /**
+   * MoPub requires an {@link Activity} context to request ads.
+   */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
-  public static final int ERROR_MOPUB_INITIALIZATION = 104;
+
+  /**
+   * MoPub SDK failed to initialize. This error code is never used.
+   */
+  // public static final int ERROR_MOPUB_INITIALIZATION = 104;
+
+  /**
+   * Loaded native ad is not a {@link com.mopub.nativeads.StaticNativeAd }instance.
+   */
   public static final int ERROR_WRONG_NATIVE_TYPE = 105;
-  public static final int ERROR_FAILED_PLAYBACK = 106;
+
+  /**
+   * This error code is never used.
+   */
+  // public static final int ERROR_FAILED_PLAYBACK = 106;
+
+  /**
+   * MoPub can only load one rewarded ad at a time.
+   */
   public static final int ERROR_AD_ALREADY_LOADED = 107;
+
+  /**
+   * MoPub's rewarded video ad has expired.
+   */
   public static final int ERROR_AD_EXPIRED = 108;
-  public static final int ERROR_HAS_REWARDED_AD = 109;
+
+  /**
+   * This error code is never used.
+   */
+  // public static final int ERROR_HAS_REWARDED_AD = 109;
+
+  /**
+   * A non-Unified native ad was requested.
+   */
   public static final int ERROR_REQUIRES_UNIFIED_NATIVE_ADS = 110;
+
+  /**
+   * Failed to download native ad assets.
+   */
   public static final int ERROR_DOWNLOADING_NATIVE_ASSETS = 111;
+
+  /**
+   * MoPub does not have a rewarded ad ready to show.
+   */
   public static final int ERROR_AD_NOT_READY = 112;
+
+  /**
+   * The loaded ad was smaller than the minimum required banner size.
+   */
   public static final int ERROR_MINIMUM_BANNER_SIZE = 113;
 
-  /** Creates a formatted adapter error string given a code and description. */
+  /**
+   * Creates a formatted adapter error string given a code and description.
+   */
   public static String createAdapterError(@AdapterError int code, String description) {
     return String.format("%d: %s", code, description);
   }
@@ -277,15 +335,12 @@ public class MoPubMediationAdapter extends Adapter
 
     SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(adUnitID).build();
     MoPubSingleton.getInstance()
-        .initializeMoPubSDK(
-            context,
-            sdkConfiguration,
-            new SdkInitializationListener() {
-              @Override
-              public void onInitializationFinished() {
-                initializationCompleteCallback.onInitializationSucceeded();
-              }
-            });
+        .initializeMoPubSDK(context, sdkConfiguration, new SdkInitializationListener() {
+          @Override
+          public void onInitializationFinished() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
+        });
   }
 
   @Override
@@ -345,7 +400,9 @@ public class MoPubMediationAdapter extends Adapter
     }
   }
 
-  /** {@link MoPubRewardedVideoListener} implementation */
+  /**
+   * {@link MoPubRewardedVideoListener} implementation
+   */
   @Override
   public void onAdFailedToLoad(int errorCode, String message) {
     String errorMessage = createAdapterError(errorCode, message);
