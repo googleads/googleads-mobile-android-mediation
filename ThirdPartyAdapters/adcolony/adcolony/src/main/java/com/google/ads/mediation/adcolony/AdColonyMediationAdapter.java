@@ -256,7 +256,10 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
       @Override
       public void onFailure() {
-        signalCallbacks.onFailure(new AdError(0, "", ""));
+        AdError error = new AdError(ERROR_ADCOLONY_SDK, ADCOLONY_SDK_ERROR_DOMAIN,
+            "Failed to get signals from AdColony.");
+        Log.e(TAG, error.getMessage());
+        signalCallbacks.onFailure(error);
       }
     });
   }
