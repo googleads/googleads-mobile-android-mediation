@@ -4,7 +4,6 @@ buildscript {
     repositories {
         google()
         jcenter()
-        maven { url 'https://jitpack.io' }  // For Vungle
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.4'
@@ -18,7 +17,6 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url 'https://jitpack.io' }  // For Vungle
     }
 }
 
