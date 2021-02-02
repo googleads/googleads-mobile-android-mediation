@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -17,14 +18,51 @@ import com.my.target.ads.Reward;
 import com.my.target.ads.RewardedAd;
 import com.my.target.ads.RewardedAd.RewardedAdListener;
 import com.my.target.common.CustomParams;
-
 import com.my.target.common.MyTargetVersion;
 import java.util.List;
 
 public class MyTargetMediationAdapter extends Adapter
-    implements MediationRewardedAd, RewardedAdListener  {
+    implements MediationRewardedAd, RewardedAdListener {
 
   static final String TAG = MyTargetMediationAdapter.class.getSimpleName();
+
+  // region Error codes
+  // MyTarget adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.mytarget";
+
+  // MyTarget SDK error domain.
+  public static final String MY_TARGET_SDK_ERROR_DOMAIN = "com.my.target.ads";
+
+  /**
+   * MyTarget SDK returned an error.
+   */
+  public static final int ERROR_MY_TARGET_SDK = 100;
+
+  /**
+   * Invalid server parameters (e.g. MyTarget Slot ID is missing).
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
+  /**
+   * The requested ad size does not match a MyTarget supported banner size.
+   */
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+
+  /**
+   * Ad request is not a Unified native ad request.
+   */
+  public static final int ERROR_NON_UNIFIED_NATIVE_REQUEST = 103;
+
+  /**
+   * The loaded native ad from MyTarget is different from the requested native ad.
+   */
+  public static final int ERROR_INVALID_NATIVE_AD_LOADED = 104;
+
+  /**
+   * The loaded native ad from myTarget is missing some required assets (e.g. image or icon).
+   */
+  public static final int ERROR_MISSING_REQUIRED_NATIVE_ASSET = 105;
+  // endregion
 
   private RewardedAd mRewardedAd;
 
@@ -47,8 +85,9 @@ public class MyTargetMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected adapter version format: %s." +
-        "Returning 0.0.0 for adapter version.", versionString);
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -65,8 +104,9 @@ public class MyTargetMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String.format("Unexpected SDK version format: %s." +
-        "Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -90,11 +130,13 @@ public class MyTargetMediationAdapter extends Adapter
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
-    Log.d(TAG, "Requesting rewarded mediation, slotID: " + slotId);
+    Log.d(TAG, "Requesting myTarget rewarded mediation with slot ID: " + slotId);
 
     if (slotId < 0) {
-      mediationAdLoadCallback.onFailure(
-          "Failed to request ad from MyTarget: Internal Error.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid Slot ID.");
+      Log.e(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -110,7 +152,7 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void showAd(Context context) {
-    Log.d(TAG, "Show video");
+    Log.d(TAG, "Showing video.");
     if (mRewardedAd != null) {
       mRewardedAd.show();
     } else if (mRewardedAdCallback != null) {
@@ -123,7 +165,7 @@ public class MyTargetMediationAdapter extends Adapter
    */
   @Override
   public void onLoad(@NonNull final RewardedAd ad) {
-    Log.d(TAG, "Ad loaded");
+    Log.d(TAG, "Ad loaded.");
     if (mAdLoadCallback != null) {
       mRewardedAdCallback = mAdLoadCallback.onSuccess(MyTargetMediationAdapter.this);
     }
@@ -131,16 +173,16 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void onNoAd(@NonNull final String reason, @NonNull final RewardedAd ad) {
-    String logMessage = "Failed to load ad from MyTarget: " + reason;
-    Log.i(TAG, logMessage);
+    AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+    Log.e(TAG, error.getMessage());
     if (mAdLoadCallback != null) {
-      mAdLoadCallback.onFailure(logMessage);
+      mAdLoadCallback.onFailure(error);
     }
   }
 
   @Override
   public void onClick(@NonNull final RewardedAd ad) {
-    Log.d(TAG, "Ad clicked");
+    Log.d(TAG, "Ad clicked.");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.reportAdClicked();
     }
@@ -148,7 +190,7 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void onDismiss(@NonNull final RewardedAd ad) {
-    Log.d(TAG, "Ad dismissed");
+    Log.d(TAG, "Ad dismissed.");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdClosed();
     }
@@ -156,7 +198,7 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void onReward(@NonNull Reward reward, @NonNull RewardedAd ad) {
-    Log.d(TAG, "Rewarded");
+    Log.d(TAG, "Rewarded.");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onVideoComplete();
       mRewardedAdCallback.onUserEarnedReward(new MyTargetReward(reward));
@@ -165,7 +207,7 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void onDisplay(@NonNull final RewardedAd ad) {
-    Log.d(TAG, "Ad displayed");
+    Log.d(TAG, "Ad displayed.");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdOpened();
       // myTarget has no callback for starting video, but rewarded video always
@@ -177,14 +219,16 @@ public class MyTargetMediationAdapter extends Adapter
 
   private static class MyTargetReward implements RewardItem {
 
-    private final @NonNull String type;
+    private final @NonNull
+    String type;
 
     public MyTargetReward(@NonNull Reward reward) {
       this.type = reward.type;
     }
 
     @Override
-    public @NonNull String getType() {
+    public @NonNull
+    String getType() {
       return type;
     }
 

@@ -6,7 +6,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -42,23 +42,24 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       AdSize adSize,
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
+
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
-    Log.d(TAG, "Requesting myTarget banner mediation, slotId: " + slotId);
+    Log.d(TAG, "Requesting myTarget banner mediation with Slot ID: " + slotId);
+
     if (slotId < 0) {
-      if (mediationBannerListener != null) {
-        mediationBannerListener.onAdFailedToLoad(
-            MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid Slot ID.");
+      Log.e(TAG, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
     }
 
     MyTargetView.AdSize myTargetSize = MyTargetTools.getSupportedAdSize(adSize, context);
     if (myTargetSize == null) {
-      Log.w(TAG, "Unsupported ad size: " + adSize.toString());
-      if (mediationBannerListener != null) {
-        mediationBannerListener.onAdFailedToLoad(
-            MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+      String errorMessage = String.format("Unsupported ad size: %s.", adSize.toString());
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, ERROR_DOMAIN, errorMessage);
+      Log.e(TAG, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
     }
 
@@ -86,20 +87,18 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameters);
-    Log.d(TAG, "Requesting myTarget interstitial mediation, slotId: " + slotId);
+    Log.d(TAG, "Requesting myTarget interstitial mediation with Slot ID: " + slotId);
 
     if (slotId < 0) {
-      if (mediationInterstitialListener != null) {
-        mediationInterstitialListener.onAdFailedToLoad(
-            MyTargetAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid Slot ID.");
+      Log.e(TAG, error.getMessage());
+      mediationInterstitialListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
     }
 
-    MyTargetInterstitialListener bannerListener = null;
-    if (mediationInterstitialListener != null) {
-      bannerListener = new MyTargetInterstitialListener(mediationInterstitialListener);
-    }
+    MyTargetInterstitialListener interstitialListener = new MyTargetInterstitialListener(
+        mediationInterstitialListener);
 
     if (mInterstitial != null) {
       mInterstitial.destroy();
@@ -127,7 +126,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
         }
       }
     }
-    mInterstitial.setListener(bannerListener);
+    mInterstitial.setListener(interstitialListener);
     mInterstitial.load();
   }
 
@@ -221,24 +220,25 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onLoad(@NonNull final MyTargetView view) {
-      Log.d(TAG, "Banner mediation Ad loaded");
+      Log.d(TAG, "Banner mediation Ad loaded.");
       listener.onAdLoaded(MyTargetAdapter.this);
     }
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-      Log.i(TAG, "Banner mediation Ad failed to load: " + reason);
-      listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      Log.e(TAG, error.getMessage());
+      listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }
 
     @Override
     public void onShow(@NonNull MyTargetView view) {
-      Log.d(TAG, "Banner mediation Ad show");
+      Log.d(TAG, "Banner mediation Ad show.");
     }
 
     @Override
     public void onClick(@NonNull final MyTargetView view) {
-      Log.d(TAG, "Banner mediation Ad clicked");
+      Log.d(TAG, "Banner mediation Ad clicked.");
       listener.onAdClicked(MyTargetAdapter.this);
       listener.onAdOpened(MyTargetAdapter.this);
       // click redirects user to Google Play, or web browser, so we can notify
@@ -261,19 +261,20 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onLoad(@NonNull final InterstitialAd ad) {
-      Log.d(TAG, "Interstitial mediation Ad loaded");
+      Log.d(TAG, "Interstitial mediation Ad loaded.");
       listener.onAdLoaded(MyTargetAdapter.this);
     }
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-      Log.i(TAG, "Interstitial mediation Ad failed to load: " + reason);
-      listener.onAdFailedToLoad(MyTargetAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      Log.e(TAG, error.getMessage());
+      listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }
 
     @Override
     public void onClick(@NonNull final InterstitialAd ad) {
-      Log.d(TAG, "Interstitial mediation Ad clicked");
+      Log.d(TAG, "Interstitial mediation Ad clicked.");
       listener.onAdClicked(MyTargetAdapter.this);
       // click redirects user to Google Play, or web browser, so we can notify
       // about left application.
@@ -282,7 +283,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onDismiss(@NonNull final InterstitialAd ad) {
-      Log.d(TAG, "Interstitial mediation Ad dismissed");
+      Log.d(TAG, "Interstitial mediation Ad dismissed.");
       listener.onAdClosed(MyTargetAdapter.this);
     }
 
@@ -292,7 +293,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onDisplay(@NonNull final InterstitialAd ad) {
-      Log.d(TAG, "Interstitial mediation Ad displayed");
+      Log.d(TAG, "Interstitial mediation Ad displayed.");
       listener.onAdOpened(MyTargetAdapter.this);
     }
   }

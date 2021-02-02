@@ -1,5 +1,13 @@
 package com.google.ads.mediation.mytarget;
 
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_INVALID_NATIVE_AD_LOADED;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MISSING_REQUIRED_NATIVE_ASSET;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MY_TARGET_SDK;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_NON_UNIFIED_NATIVE_REQUEST;
+import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_ERROR_DOMAIN;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,7 +20,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -74,23 +82,21 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     this.nativeListener = mediationNativeListener;
 
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
-      Log.e(TAG, "Unified Native Ads should be requested.");
-      if (mediationNativeListener != null) {
-        mediationNativeListener
-            .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+      AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST, ERROR_DOMAIN,
+          "Unified Native Ads should be requested.");
+      Log.e(TAG, error.getMessage());
+      mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
       return;
     }
 
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameter);
     if (slotId < 0) {
-      if (mediationNativeListener != null) {
-        mediationNativeListener
-            .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
+          "Missing or invalid Slot ID.");
+      Log.e(TAG, error.getMessage());
+      nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
       return;
     }
-    Log.d(TAG, "Requesting myTarget mediation with Slot ID: " + slotId);
 
     NativeAdOptions options = null;
     int gender = 0;
@@ -127,8 +133,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       }
     }
 
-    MyTargetNativeAdListener nativeAdListener = new MyTargetNativeAdListener(nativeAd,
-        nativeMediationAdRequest, context);
+    MyTargetNativeAdListener nativeAdListener = new MyTargetNativeAdListener(nativeAd, context);
 
     params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
     nativeAd.setListener(nativeAdListener);
@@ -155,6 +160,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @NonNull
     private final Uri uri;
+
     @Nullable
     private Drawable drawable;
 
@@ -192,6 +198,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @NonNull
     private final NativeAd nativeAd;
+
     @NonNull
     private final MediaAdView mediaAdView;
 
@@ -279,30 +286,25 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
    */
   private class MyTargetNativeAdListener implements NativeAd.NativeAdListener {
 
-    @Nullable
-    private final NativeMediationAdRequest nativeMediationAdRequest;
-
     @NonNull
     private final NativeAd nativeAd;
 
     @NonNull
     private final Context context;
 
-    MyTargetNativeAdListener(final @NonNull NativeAd nativeAd,
-        final @Nullable NativeMediationAdRequest nativeMediationAdRequest,
-        final @NonNull Context context) {
+    MyTargetNativeAdListener(final @NonNull NativeAd nativeAd, final @NonNull Context context) {
       this.nativeAd = nativeAd;
-      this.nativeMediationAdRequest = nativeMediationAdRequest;
       this.context = context;
     }
 
     @Override
     public void onLoad(@NonNull NativePromoBanner banner, @NonNull NativeAd nativeAd) {
       if (this.nativeAd != nativeAd) {
-        Log.d(TAG, "Failed to load: loaded native ad does not match with requested");
+        AdError error = new AdError(ERROR_INVALID_NATIVE_AD_LOADED, ERROR_DOMAIN,
+            "Loaded native ad object does not match the requested ad object.");
+        Log.e(TAG, error.getMessage());
         if (nativeListener != null) {
-          nativeListener
-              .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+          nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
         }
         return;
       }
@@ -312,15 +314,16 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final NativeAd nativeAd) {
-      Log.i(TAG, "No ad: MyTarget callback with reason " + reason);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null) {
-        nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+        nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
       }
     }
 
     @Override
     public void onClick(@NonNull final NativeAd nativeAd) {
-      Log.d(TAG, "Ad clicked");
+      Log.d(TAG, "Ad clicked.");
       if (nativeListener != null) {
         nativeListener.onAdClicked(MyTargetNativeAdapter.this);
         nativeListener.onAdOpened(MyTargetNativeAdapter.this);
@@ -330,7 +333,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void onShow(@NonNull final NativeAd nativeAd) {
-      Log.d(TAG, "Ad show");
+      Log.d(TAG, "Ad show.");
       if (nativeListener != null) {
         nativeListener.onAdImpression(MyTargetNativeAdapter.this);
       }
@@ -338,37 +341,29 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void onVideoPlay(@NonNull NativeAd nativeAd) {
-      Log.d(TAG, "Play ad video");
+      Log.d(TAG, "Play ad video.");
     }
 
     @Override
     public void onVideoPause(@NonNull NativeAd nativeAd) {
-      Log.d(TAG, "Pause ad video");
+      Log.d(TAG, "Pause ad video.");
     }
 
     @Override
     public void onVideoComplete(@NonNull NativeAd nativeAd) {
-      Log.d(TAG, "Complete ad video");
+      Log.d(TAG, "Complete ad video.");
       if (nativeListener != null) {
         nativeListener.onVideoEnd(MyTargetNativeAdapter.this);
       }
     }
 
-    private void mapAd(final @NonNull NativeAd nativeAd,
-        final @NonNull NativePromoBanner banner) {
-      if (nativeMediationAdRequest == null) {
-        Log.d(TAG, "Failed to load: resources or nativeMediationAdRequest null");
-        if (nativeListener != null) {
-          nativeListener
-              .onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        }
-        return;
-      }
-
+    private void mapAd(final @NonNull NativeAd nativeAd, final @NonNull NativePromoBanner banner) {
       if (banner.getImage() == null || banner.getIcon() == null) {
-        Log.d(TAG, "No ad: Some of the Always Included assets are not available for the ad.");
+        AdError error = new AdError(ERROR_MISSING_REQUIRED_NATIVE_ASSET, ERROR_DOMAIN,
+            "Native ad is missing one of the following required assets: image or icon.");
+        Log.e(TAG, error.getMessage());
         if (nativeListener != null) {
-          nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+          nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
         }
         return;
       }
@@ -381,5 +376,4 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       }
     }
   }
-
 }
