@@ -133,8 +133,8 @@ public class MyTargetMediationAdapter extends Adapter
     Log.d(TAG, "Requesting myTarget rewarded mediation with slot ID: " + slotId);
 
     if (slotId < 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid Slot ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.",
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -173,7 +173,7 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void onNoAd(@NonNull final String reason, @NonNull final RewardedAd ad) {
-    AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+    AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
     Log.e(TAG, error.getMessage());
     if (mAdLoadCallback != null) {
       mAdLoadCallback.onFailure(error);

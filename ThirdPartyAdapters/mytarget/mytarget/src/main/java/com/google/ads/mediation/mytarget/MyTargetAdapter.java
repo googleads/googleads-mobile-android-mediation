@@ -47,8 +47,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     Log.d(TAG, "Requesting myTarget banner mediation with Slot ID: " + slotId);
 
     if (slotId < 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid Slot ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.",
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
@@ -57,7 +57,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     MyTargetView.AdSize myTargetSize = MyTargetTools.getSupportedAdSize(adSize, context);
     if (myTargetSize == null) {
       String errorMessage = String.format("Unsupported ad size: %s.", adSize.toString());
-      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, ERROR_DOMAIN, errorMessage);
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
@@ -90,8 +90,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     Log.d(TAG, "Requesting myTarget interstitial mediation with Slot ID: " + slotId);
 
     if (slotId < 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid Slot ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.",
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationInterstitialListener.onAdFailedToLoad(MyTargetAdapter.this, error);
       return;
@@ -226,7 +226,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }
@@ -267,7 +267,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }

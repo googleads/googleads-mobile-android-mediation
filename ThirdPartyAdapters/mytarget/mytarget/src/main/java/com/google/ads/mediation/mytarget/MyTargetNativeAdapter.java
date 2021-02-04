@@ -82,8 +82,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     this.nativeListener = mediationNativeListener;
 
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
-      AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST, ERROR_DOMAIN,
-          "Unified Native Ads should be requested.");
+      AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST,
+          "Unified Native Ads should be requested.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationNativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
       return;
@@ -91,8 +91,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     int slotId = MyTargetTools.checkAndGetSlotId(context, serverParameter);
     if (slotId < 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid Slot ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.",
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
       return;
@@ -300,8 +300,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     @Override
     public void onLoad(@NonNull NativePromoBanner banner, @NonNull NativeAd nativeAd) {
       if (this.nativeAd != nativeAd) {
-        AdError error = new AdError(ERROR_INVALID_NATIVE_AD_LOADED, ERROR_DOMAIN,
-            "Loaded native ad object does not match the requested ad object.");
+        AdError error = new AdError(ERROR_INVALID_NATIVE_AD_LOADED,
+            "Loaded native ad object does not match the requested ad object.", ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
         if (nativeListener != null) {
           nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
@@ -314,7 +314,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void onNoAd(@NonNull final String reason, @NonNull final NativeAd nativeAd) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, MY_TARGET_SDK_ERROR_DOMAIN, reason);
+      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       if (nativeListener != null) {
         nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
@@ -359,8 +359,9 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     private void mapAd(final @NonNull NativeAd nativeAd, final @NonNull NativePromoBanner banner) {
       if (banner.getImage() == null || banner.getIcon() == null) {
-        AdError error = new AdError(ERROR_MISSING_REQUIRED_NATIVE_ASSET, ERROR_DOMAIN,
-            "Native ad is missing one of the following required assets: image or icon.");
+        AdError error = new AdError(ERROR_MISSING_REQUIRED_NATIVE_ASSET,
+            "Native ad is missing one of the following required assets: image or icon.",
+            ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
         if (nativeListener != null) {
           nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
