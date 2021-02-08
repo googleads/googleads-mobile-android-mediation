@@ -152,8 +152,8 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
-      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, ERROR_DOMAIN,
-          "Tapjoy SDK requires an Activity context to initialize.");
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Tapjoy SDK requires an Activity context to initialize.", ERROR_DOMAIN);
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
@@ -172,8 +172,8 @@ public class TapjoyMediationAdapter extends RtbAdapter {
     String sdkKey;
     int count = sdkKeys.size();
     if (count <= 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid SDK key.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
+          ERROR_DOMAIN);
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
@@ -201,7 +201,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
           @Override
           public void onInitializeFailed(String message) {
-            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, ERROR_DOMAIN, message);
+            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
             initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
         });

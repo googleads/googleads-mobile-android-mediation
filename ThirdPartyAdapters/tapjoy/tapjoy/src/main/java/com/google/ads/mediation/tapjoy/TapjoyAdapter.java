@@ -46,8 +46,8 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
     mediationInterstitialListener = listener;
 
     if (!(context instanceof Activity)) {
-      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, ERROR_DOMAIN,
-          "Tapjoy SDK requires an Activity context to request ads.");
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Tapjoy SDK requires an Activity context to request ads.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
       return;
@@ -56,8 +56,8 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
     sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid SDK key.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
       return;
@@ -77,8 +77,8 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
             interstitialPlacementName = serverParameters
                 .getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
             if (TextUtils.isEmpty(interstitialPlacementName)) {
-              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-                  "Missing or invalid Tapjoy placement name.");
+              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+                  "Missing or invalid Tapjoy placement name.", ERROR_DOMAIN);
               Log.e(TAG, error.getMessage());
               mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
               return;
@@ -87,9 +87,9 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
             if (placementsInUse.containsKey(interstitialPlacementName) &&
                 placementsInUse.get(interstitialPlacementName).get() != null) {
               String errorMessage = String
-                  .format("An ad has already been requested for placement: %s",
+                  .format("An ad has already been requested for placement: %s.",
                       interstitialPlacementName);
-              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_DOMAIN, errorMessage);
+              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, errorMessage, ERROR_DOMAIN);
               Log.e(TAG, error.getMessage());
               mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
               return;
@@ -107,7 +107,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
           @Override
           public void onInitializeFailed(String message) {
-            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, ERROR_DOMAIN, message);
+            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
             Log.e(TAG, error.getMessage());
             mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
           }
@@ -127,8 +127,8 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
                 if (!interstitialPlacement.isContentAvailable()) {
                   placementsInUse.remove(interstitialPlacementName);
 
-                  AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE, ERROR_DOMAIN,
-                      "Tapjoy request successful but no content was returned.");
+                  AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE,
+                      "Tapjoy request successful but no content was returned.", ERROR_DOMAIN);
                   Log.e(TAG, error.getMessage());
                   mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
                 }
@@ -143,7 +143,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
               public void run() {
                 placementsInUse.remove(interstitialPlacementName);
 
-                AdError error = new AdError(tjError.code, TAPJOY_SDK_ERROR_DOMAIN, tjError.message);
+                AdError error = new AdError(tjError.code, tjError.message, TAPJOY_SDK_ERROR_DOMAIN);
                 Log.e(TAG, error.getMessage());
                 mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
               }
