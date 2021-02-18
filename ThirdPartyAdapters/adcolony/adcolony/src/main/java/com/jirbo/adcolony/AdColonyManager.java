@@ -1,5 +1,6 @@
 package com.jirbo.adcolony;
 
+import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.KEY_ADCOLONY_BID_RESPONSE;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_DOMAIN;
@@ -8,22 +9,21 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_I
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyAppOptions;
-import com.adcolony.sdk.AdColonyUserMetadata;
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils;
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * A helper class used by the {@link AdColonyAdapter}.
@@ -86,7 +86,7 @@ public class AdColonyManager {
       String[] zoneArray = configuredZones.toArray(new String[0]);
 
       // Always set mediation network info.
-      options.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.VERSION_NAME);
+      options.setMediationNetwork(AdColonyAppOptions.ADMOB, BuildConfig.ADAPTER_VERSION);
       isConfigured = context instanceof Activity
           ? AdColony.configure((Activity) context, options, appID, zoneArray)
           : AdColony.configure((Application) context, options, appID, zoneArray);
@@ -110,7 +110,7 @@ public class AdColonyManager {
   }
 
   public void configureAdColony(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull InitializationListener listener) {
+                                @NonNull InitializationListener listener) {
     Context context = adConfiguration.getContext();
     Bundle serverParams = adConfiguration.getServerParameters();
     String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
@@ -128,41 +128,9 @@ public class AdColonyManager {
   private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest) {
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
-    if (adRequest != null) {
+    if (adRequest != null && adRequest.isTesting()) {
       // Enable test ads from AdColony when a Test Ad Request was sent.
-      if (adRequest.isTesting()) {
         options.setTestModeEnabled(true);
-      }
-
-      AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
-
-      // Try to update userMetaData with gender field.
-      int genderVal = adRequest.getGender();
-      if (genderVal == AdRequest.GENDER_FEMALE) {
-        userMetadata.setUserGender(AdColonyUserMetadata.USER_FEMALE);
-      } else if (genderVal == AdRequest.GENDER_MALE) {
-        userMetadata.setUserGender(AdColonyUserMetadata.USER_MALE);
-      }
-
-      // Try to update userMetaData with location (if provided).
-      Location location = adRequest.getLocation();
-      if (location != null) {
-        userMetadata.setUserLocation(location);
-      }
-
-      // Try to update userMetaData with age if birth date is provided.
-      Date birthday = adRequest.getBirthday();
-      if (birthday != null) {
-        long currentTime = System.currentTimeMillis();
-        long birthdayTime = birthday.getTime();
-        long diff = currentTime - birthdayTime;
-        if (diff > 0) {
-          long day = (1000 * 60 * 60 * 24);
-          long yearsPassed = diff / day / 365;
-          userMetadata.setUserAge((int) yearsPassed);
-        }
-      }
-      options.setUserMetadata(userMetadata);
     }
     return options;
   }
@@ -180,16 +148,6 @@ public class AdColonyManager {
     if (adConfiguration.isTestRequest()) {
       options.setTestModeEnabled(true);
     }
-
-    AdColonyUserMetadata userMetadata = new AdColonyUserMetadata();
-
-    // Try to update userMetaData with location (if provided).
-    Location location = adConfiguration.getLocation();
-    if (location != null) {
-      userMetadata.setUserLocation(location);
-    }
-
-    options.setUserMetadata(userMetadata);
     return options;
   }
 
@@ -219,6 +177,28 @@ public class AdColonyManager {
       requestedZone = adRequestParams.getString(AdColonyAdapterUtils.KEY_ZONE_ID);
     }
     return requestedZone;
+  }
+
+  public AdColonyAdOptions getAdOptionsFromExtras(Bundle networkExtras) {
+    boolean showPrePopup = false;
+    boolean showPostPopup = false;
+    if (networkExtras != null) {
+      showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
+      showPostPopup = networkExtras.getBoolean("show_post_popup", false);
+    }
+    AdColonyAdOptions adOptions = new AdColonyAdOptions()
+        .enableConfirmationDialog(showPrePopup)
+        .enableResultsDialog(showPostPopup);
+    return adOptions;
+  }
+
+  public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
+    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
+    String bidResponse = adConfiguration.getBidResponse();
+    if (bidResponse != null && !bidResponse.equals("")) {
+      adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);
+    }
+    return adColonyAdOptions;
   }
 
   public interface InitializationListener {

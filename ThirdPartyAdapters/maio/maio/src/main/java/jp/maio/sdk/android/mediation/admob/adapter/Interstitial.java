@@ -86,12 +86,6 @@ public class Interstitial extends MaioMediationAdapter
 
   // region MaioAdsManagerListener implementation
   @Override
-  public void onInitialized() {
-    // Not called.
-    // MaioAdsManager calls MaioAdsManager.InitializationListener.onMaioInitialized() instead.
-  }
-
-  @Override
   public void onChangedCanShow(String zoneId, boolean isAvailable) {
     if (this.mMediationInterstitialListener != null && isAvailable) {
       this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);

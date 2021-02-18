@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import com.google.ads.mediation.tapjoy.rtb.TapjoyRtbInterstitialRenderer;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -22,7 +22,6 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.tapjoy.TJError;
 import com.tapjoy.Tapjoy;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,8 +39,15 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   // only used internally for Tapjoy SDK
   static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "1.0.0";
 
+  // region Error codes.
+  // Tapjoy adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.tapjoy";
+
+  // Tapjoy SDK error domain.
+  public static final String TAPJOY_SDK_ERROR_DOMAIN = "com.tapjoy";
+
   /**
-   * TapJoy adapter errors.
+   * Tapjoy adapter errors.
    */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
@@ -54,8 +60,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
       ERROR_NO_CONTENT_AVAILABLE
   })
-
-  public @interface Error {
+  public @interface AdapterError {
 
   }
 
@@ -98,25 +103,14 @@ public class TapjoyMediationAdapter extends RtbAdapter {
    * Tapjoy SDK has no content available.
    */
   public static final int ERROR_NO_CONTENT_AVAILABLE = 108;
-
-  /**
-   * Creates a formatted adapter error string given a code and description.
-   */
-  public static String createAdapterError(@NonNull @TapjoyMediationAdapter.Error int code,
-      String description) {
-    return String.format("%d: %s", code, description);
-  }
-
-  public static String createSDKError(@NonNull TJError error) {
-    return String.format("%d: %s", error.code, error.message);
-  }
+  // endregion
 
   /**
    * {@link Adapter} implementation
    */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -158,12 +152,12 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
-      String errorMessage = createAdapterError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "Initialization Failed: "
-              + "Tapjoy SDK requires an Activity context to initialize");
-      initializationCompleteCallback.onInitializationFailed(errorMessage);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Tapjoy SDK requires an Activity context to initialize.", ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
+    Activity activity = (Activity) context;
 
     HashSet<String> sdkKeys = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
@@ -177,29 +171,28 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
     String sdkKey;
     int count = sdkKeys.size();
-    if (count > 0) {
-      sdkKey = sdkKeys.iterator().next();
-
-      if (count > 1) {
-        String message = String.format("Multiple '%s' entries found: %s. " +
-                "Using '%s' to initialize the Tapjoy SDK.",
-            SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
-        Log.w(TAG, message);
-      }
-    } else {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Initialization failed: Missing or Invalid SDK key.");
-      initializationCompleteCallback.onInitializationFailed(errorMessage);
+    if (count <= 0) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
+          ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
 
-    Tapjoy.setActivity((Activity) context);
+    sdkKey = sdkKeys.iterator().next();
+    if (count > 1) {
+      String message = String.format("Multiple '%s' entries found: %s. " +
+              "Using '%s' to initialize the Tapjoy SDK.",
+          SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
+      Log.w(TAG, message);
+    }
+
+    Tapjoy.setActivity(activity);
 
     Hashtable<String, Object> connectFlags = new Hashtable<>();
     // TODO: Get Debug flag from publisher at init time. Currently not possible.
     // connectFlags.put("TJC_OPTION_ENABLE_LOGGING", true);
 
-    TapjoyInitializer.getInstance().initialize((Activity) context, sdkKey, connectFlags,
+    TapjoyInitializer.getInstance().initialize(activity, sdkKey, connectFlags,
         new TapjoyInitializer.Listener() {
           @Override
           public void onInitializeSucceeded() {
@@ -208,9 +201,8 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
           @Override
           public void onInitializeFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_TAPJOY_INITIALIZATION,
-                "Initialization failed: " + message);
-            initializationCompleteCallback.onInitializationFailed(errorMessage);
+            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
         });
   }
@@ -225,19 +217,17 @@ public class TapjoyMediationAdapter extends RtbAdapter {
       MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd,
           MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    TapjoyRtbInterstitialRenderer interstitialRenderer =
-        new TapjoyRtbInterstitialRenderer(mediationInterstitialAdConfiguration,
-            mediationAdLoadCallback);
+    TapjoyRtbInterstitialRenderer interstitialRenderer = new TapjoyRtbInterstitialRenderer(
+        mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     interstitialRenderer.render();
   }
 
   @Override
-  public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback) {
-    TapjoyRewardedRenderer rewardedRenderer =
-        new TapjoyRewardedRenderer(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    TapjoyRewardedRenderer rewardedRenderer = new TapjoyRewardedRenderer(
+        mediationRewardedAdConfiguration, mediationAdLoadCallback);
     rewardedRenderer.render();
   }
 

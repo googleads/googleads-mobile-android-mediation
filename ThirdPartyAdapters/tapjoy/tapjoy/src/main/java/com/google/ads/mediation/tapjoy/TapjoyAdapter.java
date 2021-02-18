@@ -5,7 +5,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -39,16 +41,25 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
   private MediationInterstitialListener mediationInterstitialListener;
 
   @Override
-  public void requestInterstitialAd(Context context,
-      MediationInterstitialListener listener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle networkExtras) {
+  public void requestInterstitialAd(Context context, MediationInterstitialListener listener,
+      final Bundle serverParameters, MediationAdRequest mediationAdRequest, Bundle networkExtras) {
     mediationInterstitialListener = listener;
 
-    if (!checkParams(context, serverParameters)) {
-      this.mediationInterstitialListener
-          .onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+    if (!(context instanceof Activity)) {
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Tapjoy SDK requires an Activity context to request ads.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
+      return;
+    }
+    Activity activity = (Activity) context;
+
+    sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
+    if (TextUtils.isEmpty(sdkKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
+          ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
       return;
     }
 
@@ -58,20 +69,32 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
           networkExtras.getBoolean(TapjoyExtrasBundleBuilder.DEBUG, false));
     }
 
-    TapjoyInitializer.getInstance().initialize((Activity) context, sdkKey, connectFlags,
+    Tapjoy.setActivity(activity);
+    TapjoyInitializer.getInstance().initialize(activity, sdkKey, connectFlags,
         new TapjoyInitializer.Listener() {
           @Override
           public void onInitializeSucceeded() {
-            if (placementsInUse.containsKey(interstitialPlacementName) &&
-                placementsInUse.get(interstitialPlacementName).get() != null) {
-              String logMessage =
-                  "An ad has already been requested for placement: " + interstitialPlacementName;
-              String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
-              Log.w(TAG, errorMessage);
-              mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this,
-                  ERROR_AD_ALREADY_REQUESTED);
+            interstitialPlacementName = serverParameters
+                .getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
+            if (TextUtils.isEmpty(interstitialPlacementName)) {
+              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+                  "Missing or invalid Tapjoy placement name.", ERROR_DOMAIN);
+              Log.e(TAG, error.getMessage());
+              mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
               return;
             }
+
+            if (placementsInUse.containsKey(interstitialPlacementName) &&
+                placementsInUse.get(interstitialPlacementName).get() != null) {
+              String errorMessage = String
+                  .format("An ad has already been requested for placement: %s.",
+                      interstitialPlacementName);
+              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, errorMessage, ERROR_DOMAIN);
+              Log.e(TAG, error.getMessage());
+              mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
+              return;
+            }
+
             placementsInUse.put(interstitialPlacementName,
                 new WeakReference<>(TapjoyAdapter.this));
             if (interstitialPlacement != null && interstitialPlacement.isContentAvailable()) {
@@ -84,43 +107,15 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
           @Override
           public void onInitializeFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_TAPJOY_INITIALIZATION,
-                "Failed to load ad from Tapjoy: " + message);
-            Log.w(TAG, errorMessage);
-            mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this,
-                ERROR_TAPJOY_INITIALIZATION);
+            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
+            Log.e(TAG, error.getMessage());
+            mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
           }
         });
   }
 
-  private boolean checkParams(Context context, Bundle serverParameters) {
-    String placementName = null;
-
-    // Check for server parameters
-    if (serverParameters != null) {
-      sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
-      placementName = serverParameters.getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
-    }
-
-    if (sdkKey == null || placementName == null) {
-      Log.w(TAG, "Did not receive valid server parameters from AdMob");
-      return false;
-    }
-
-    interstitialPlacementName = placementName;
-
-    if (context instanceof Activity) {
-      Tapjoy.setActivity((Activity) context);
-    } else {
-      Log.w(TAG, "Tapjoy requires an Activity context to initialize");
-      return false;
-    }
-
-    return true;
-  }
-
   private void createInterstitialPlacementAndRequestContent() {
-    Log.i(TAG, "Creating interstitial placement for AdMob adapter");
+    Log.i(TAG, "Creating interstitial placement for AdMob adapter.");
     interstitialPlacement =
         Tapjoy.getPlacement(interstitialPlacementName, new TJPlacementListener() {
           // Placement Callbacks
@@ -131,8 +126,11 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
               public void run() {
                 if (!interstitialPlacement.isContentAvailable()) {
                   placementsInUse.remove(interstitialPlacementName);
-                  mediationInterstitialListener.onAdFailedToLoad(
-                      TapjoyAdapter.this, ERROR_REQUIRES_ACTIVITY_CONTEXT);
+
+                  AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE,
+                      "Tapjoy request successful but no content was returned.", ERROR_DOMAIN);
+                  Log.e(TAG, error.getMessage());
+                  mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
                 }
               }
             });
@@ -144,9 +142,10 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
               @Override
               public void run() {
                 placementsInUse.remove(interstitialPlacementName);
-                String errorMessage = createSDKError(tjError);
-                Log.w(TAG, errorMessage);
-                mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, tjError.code);
+
+                AdError error = new AdError(tjError.code, tjError.message, TAPJOY_SDK_ERROR_DOMAIN);
+                Log.e(TAG, error.getMessage());
+                mediationInterstitialListener.onAdFailedToLoad(TapjoyAdapter.this, error);
               }
             });
           }

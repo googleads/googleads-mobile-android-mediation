@@ -1,7 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Version 9.1.1.1
-- Fix for InMobi impression and click Handling
+#### Next Version
+- Adapter now overrides impression tracking and uses InMobi's impression
+  definition.
 
 Built and test with:
 - Google Mobile Ads SDK version 19.5.0.

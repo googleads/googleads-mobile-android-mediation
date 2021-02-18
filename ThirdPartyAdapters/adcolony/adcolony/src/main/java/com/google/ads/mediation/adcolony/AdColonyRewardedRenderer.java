@@ -9,10 +9,11 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createA
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
@@ -41,43 +42,24 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   public void render() {
-    boolean showPrePopup = false;
-    boolean showPostPopup = false;
-    Bundle serverParameters = adConfiguration.getServerParameters();
-    Bundle networkExtras = adConfiguration.getMediationExtras();
+    ArrayList<String> listFromServerParams =
+        AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
+    final String requestedZone = AdColonyManager
+        .getInstance()
+        .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
 
-    if (networkExtras != null) {
-      showPrePopup = networkExtras.getBoolean("show_pre_popup", false);
-      showPostPopup = networkExtras.getBoolean("show_post_popup", false);
-    }
-
-    final AdColonyAdOptions adOptions = new AdColonyAdOptions()
-        .enableConfirmationDialog(showPrePopup).enableResultsDialog(showPostPopup);
-    ArrayList<String> listFromServerParams = AdColonyManager.getInstance()
-        .parseZoneList(serverParameters);
-    final String requestedZone = AdColonyManager.getInstance()
-        .getZoneFromRequest(listFromServerParams, networkExtras);
-
-    // Short circuit to ad loading if the response is Open Bidding.
-    if (!adConfiguration.getBidResponse().equals("")) {
-      AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
-      AdColonyRewardedEventForwarder.getInstance()
-          .addListener(requestedZone, AdColonyRewardedRenderer.this);
-      AdColony.requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
-          adOptions);
-      return;
-    }
-
-    if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)) {
+    if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
+        && adConfiguration.getBidResponse().equals("")) {
       String logMessage = "Failed to load ad from AdColony: " +
           "Only a maximum of one ad can be loaded per Zone ID.";
-      String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
-      Log.e(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_DOMAIN, logMessage);
+      Log.e(TAG, logMessage);
+      mAdLoadCallback.onFailure(error);
       return;
     }
 
-    // Configures the AdColony SDK, which also initializes the SDK if it has not been yet.
+    // Either configures the AdColony SDK if it has not yet been initialized, or short circuits to
+    // the initialization success call if not needed to lead directly to the ad request.
     AdColonyManager.getInstance().configureAdColony(adConfiguration,
         new InitializationListener() {
           @Override
@@ -90,7 +72,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
               mAdLoadCallback.onFailure(error);
               return;
             }
-
+            AdColonyAdOptions adOptions =
+                AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
             AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
             AdColonyRewardedEventForwarder.getInstance()
                 .addListener(requestedZone, AdColonyRewardedRenderer.this);

@@ -100,7 +100,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   @Override
   public void recordImpression() {
-    verizonAd.fireImpression();
+    verizonAd.fireImpression(context);
   }
 
   @Override

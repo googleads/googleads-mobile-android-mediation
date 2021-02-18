@@ -4,21 +4,29 @@ package com.vungle.mediation;
  * A listener class used to send Vungle events from {@link VungleManager} to {@link
  * VungleInterstitialAdapter} and {@link VungleAdapter}.
  */
-abstract class VungleListener {
+public abstract class VungleListener {
 
-  void onAdClick(String placementId) {}
+  public void onAdClick(String placementId) {
+  }
 
-  void onAdEnd(String placementId) {}
+  public void onAdEnd(String placementId) {
+  }
 
-  void onAdRewarded(String placementId) {}
+  public void onAdRewarded(String placementId) {
+  }
 
-  void onAdLeftApplication(String placementId) {}
+  public void onAdLeftApplication(String placementId) {
+  }
 
-  void onAdStart(String placement) {}
+  public void onAdStart(String placement) {
+  }
 
-  void onAdFail(String placement) {}
+  void onAdFail(String placement) {
+  }
 
-  void onAdAvailable() {}
+  void onAdAvailable() {
+  }
 
-  void onAdFailedToLoad(int errorCode) {}
+  public void onAdFailedToLoad(int errorCode) {
+  }
 }

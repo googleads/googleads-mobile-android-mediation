@@ -103,8 +103,6 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
             mediationInterstitialListener.onAdFailedToLoad(AdColonyAdapter.this, error);
           }
         });
-
-    AdColony.requestInterstitial(requestedZone, adColonyInterstitialListener);
   }
 
   @Override
