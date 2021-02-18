@@ -1,5 +1,54 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.11.10.0
+- Verified compatibility with myTarget SDK version 5.11.10.
+- Added descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- MyTarget SDK version 5.11.10.
+
+#### Version 5.11.7.0
+- Verified compatibility with myTarget SDK version 5.11.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- MyTarget SDK version 5.11.7.
+
+#### Version 5.11.6.0
+- Verified compatibility with myTarget SDK version 5.11.6.
+- Removed support for the deprecated `NativeContentAd` and `NativeAppInstallAd` formats. Apps should request for unified native ads.
+- Fixed an issue where banner ads sometimes load with a larger size than requested.
+- Updated the minimum required Google Mobile Ads SDK version to 19.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- MyTarget SDK version 5.11.6.
+
+#### Version 5.11.5.0
+- Verified compatibility with myTarget SDK version 5.11.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- MyTarget SDK version 5.11.5.
+
+#### Version 5.11.4.0
+- Verified compatibility with myTarget SDK version 5.11.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- MyTarget SDK version 5.11.4.
+
+#### Version 5.11.3.0
+- Added support for myTarget's adaptive banner ad size.
+- Verified compatibility with myTarget SDK version 5.11.3.
+- Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- MyTarget SDK version 5.11.3.
+
 #### Version 5.10.0.0
 - Verified compatibility with myTarget SDK version 5.10.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.4.0.

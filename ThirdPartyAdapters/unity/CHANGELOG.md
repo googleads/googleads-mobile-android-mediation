@@ -1,5 +1,37 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 3.6.0.0
+- Verified compatibility with Unity Ads SDK 3.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- Unity Ads SDK version 3.6.0.
+
+#### Version 3.5.1.1
+- Fixed an issue where when trying to request for multiple interstitial and rewarded ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- Unity Ads SDK version 3.5.1.
+
+#### Version 3.5.1.0
+- Verified compatibility with Unity Ads SDK 3.5.1.
+- Fixed an issue that causes smart banner ad requests to fail.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- Unity Ads SDK version 3.5.1.
+
+#### Version 3.5.0.0
+- Verified compatibility with Unity Ads SDK 3.5.0.
+- Added adaptive banner support.
+- Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- Unity Ads SDK version 3.5.0.
+
 #### Version 3.4.8.0
 - Fixed a `NullPointerException` error that occurs when a banner ad is destroyed.
 - Updated the minimum required Google Mobile Ads SDK version to 19.3.0.

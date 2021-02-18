@@ -3,7 +3,6 @@ package com.applovin.mediation;
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -34,10 +33,8 @@ import java.util.HashMap;
  * video ads and to mediate the callbacks between the AppLovin SDK and the Google Mobile Ads SDK.
  */
 public class ApplovinAdapter extends AppLovinMediationAdapter
-    implements MediationBannerAdapter,
-        MediationInterstitialAdapter,
-        OnContextChangedListener,
-        MediationRewardedAd {
+    implements MediationBannerAdapter, MediationInterstitialAdapter, OnContextChangedListener,
+    MediationRewardedAd {
 
   private static final boolean LOGGING_ENABLED = true;
 
@@ -62,21 +59,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener interstitialListener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle networkExtras) {
-
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      log(ERROR, "Failed to load interstitial ad from AppLovin: " + adapterError);
-      interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
-      return;
-    }
+  public void requestInterstitialAd(Context context,
+      MediationInterstitialListener interstitialListener, Bundle serverParameters,
+      MediationAdRequest mediationAdRequest, Bundle networkExtras) {
 
     mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
     if (appLovinInterstitialAds.containsKey(mZoneId)
@@ -177,22 +162,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(
-      Context context,
-      final MediationBannerListener mediationBannerListener,
-      Bundle serverParameters,
-      AdSize adSize,
-      MediationAdRequest mediationAdRequest,
-      Bundle networkExtras) {
-
-    if (!(context instanceof Activity)) {
-      String adapterError =
-          createAdapterError(
-              ERROR_CONTEXT_NOT_ACTIVITY, "AppLovin requires an Activity context to load ads.");
-      log(ERROR, "Failed to load banner ad from AppLovin: " + adapterError);
-      mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_CONTEXT_NOT_ACTIVITY);
-      return;
-    }
+  public void requestBannerAd(Context context,
+      final MediationBannerListener mediationBannerListener, Bundle serverParameters, AdSize adSize,
+      MediationAdRequest mediationAdRequest, Bundle networkExtras) {
 
     // Store parent objects
     mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
@@ -236,13 +208,16 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationAdapter.
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
 
   @Override
-  public void onDestroy() {}
+  public void onDestroy() {
+  }
   // endregion
 
   // OnContextChangedListener Method.

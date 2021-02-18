@@ -18,10 +18,8 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
  * SDK to the Google Mobile Ads SDK.
  */
 class AppLovinBannerAdListener
-    implements AppLovinAdLoadListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdViewEventListener {
+    implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener,
+    AppLovinAdViewEventListener {
 
   private final ApplovinAdapter mAdapter;
   private final MediationBannerListener mMediationBannerListener;

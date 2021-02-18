@@ -267,7 +267,7 @@ public final class ChartboostSingleton {
     Chartboost.setMediation(
         Chartboost.CBMediation.CBMediationAdMob,
         Chartboost.getSDKVersion(),
-        com.google.ads.mediation.chartboost.BuildConfig.VERSION_NAME);
+        com.google.ads.mediation.chartboost.BuildConfig.ADAPTER_VERSION);
     Chartboost.setLoggingLevel(CBLogging.Level.INTEGRATION);
     Chartboost.setDelegate(getInstance());
     Chartboost.setAutoCacheAds(false);

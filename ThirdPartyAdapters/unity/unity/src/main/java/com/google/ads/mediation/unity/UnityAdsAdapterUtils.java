@@ -1,15 +1,28 @@
 package com.google.ads.mediation.unity;
 
+import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
+import com.google.android.gms.ads.MediationUtils;
 import com.unity3d.ads.UnityAds.UnityAdsError;
 import com.unity3d.services.banners.BannerErrorInfo;
+import com.unity3d.services.banners.UnityBannerSize;
+import com.google.android.gms.ads.AdSize;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-/** Utility class for the Unity adapter. */
+/**
+ * Utility class for the Unity adapter.
+ */
 public class UnityAdsAdapterUtils {
 
-  /** Private constructor */
-  private UnityAdsAdapterUtils() {}
+  /**
+   * Private constructor
+   */
+  private UnityAdsAdapterUtils() {
+  }
 
   /**
    * Creates a formatted SDK error message based on the specified {@link BannerErrorInfo}.
@@ -26,7 +39,7 @@ public class UnityAdsAdapterUtils {
    * Creates a formatted SDK error message based on the specified {@link UnityAdsError}.
    *
    * @param unityAdsError error object from Unity.
-   * @param description the error message.
+   * @param description   the error message.
    * @return the error message.
    */
   @NonNull
@@ -37,7 +50,7 @@ public class UnityAdsAdapterUtils {
   /**
    * Creates a formatted adapter error string given a code and description.
    *
-   * @param code the error code.
+   * @param code        the error code.
    * @param description the error message.
    * @return the error message.
    */
@@ -112,5 +125,20 @@ public class UnityAdsAdapterUtils {
         break;
     }
     return errorCode;
+  }
+
+  @Nullable
+  public static UnityBannerSize getUnityBannerSize(@NonNull Context context,
+      @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.LEADERBOARD);
+
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    if (closestSize != null) {
+      return new UnityBannerSize(closestSize.getWidth(), closestSize.getHeight());
+    }
+
+    return null;
   }
 }
