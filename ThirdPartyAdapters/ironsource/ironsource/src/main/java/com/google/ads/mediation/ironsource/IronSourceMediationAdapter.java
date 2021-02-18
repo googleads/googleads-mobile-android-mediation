@@ -221,6 +221,18 @@ public class IronSourceMediationAdapter extends Adapter
   }
 
   @Override
+  public void loadRewardedInterstitialAd(
+      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    // IronSource Rewarded Interstitial ads use the same Rewarded Video API.
+    Log.d(TAG, "IronSource adapter was asked to load a rewarded interstitial ad. "
+        + "Using the rewarded ad request flow to load the ad to attempt to load a "
+        + "rewarded interstitial ad from IronSource.");
+    loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+  }
+
+  @Override
   public void showAd(Context context) {
     Log.d(TAG,
         String.format("Showing IronSource rewarded ad for instance ID: %s", this.mInstanceID));
