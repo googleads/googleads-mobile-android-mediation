@@ -1,5 +1,12 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.4.1.0
+- Verified compatibility with AdColony SDK version 4.4.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- AdColony SDK version 4.4.1.
+
 #### Version 4.4.0.0
 - Verified compatibility with AdColony SDK version 4.4.0.
 - Added support of AdColony's `collectSignals()` method for open bidding.
