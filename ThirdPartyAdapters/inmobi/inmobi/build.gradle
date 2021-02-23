@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store version name.
-    stringVersion = "9.1.1.0"
+    stringVersion = "9.1.6.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,7 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 9010100
+        versionCode 9010600
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
     }
@@ -36,10 +36,10 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
 
     // Mobile Ads SDK
-    implementation 'com.google.android.gms:play-services-ads:19.5.0'
+    implementation 'com.google.android.gms:play-services-ads:19.7.0'
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads:9.1.1'
+    implementation 'com.inmobi.monetization:inmobi-ads:9.1.6'
 
     // inMobi required dependencies
     // https://support.inmobi.com/monetize/android-guidelines/
