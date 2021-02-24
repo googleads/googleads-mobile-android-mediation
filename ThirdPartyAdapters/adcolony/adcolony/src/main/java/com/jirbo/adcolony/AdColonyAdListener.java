@@ -1,6 +1,5 @@
 package com.jirbo.adcolony;
 
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_SDK;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
@@ -9,6 +8,7 @@ import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 /**
@@ -84,9 +84,9 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
   public void onRequestNotFilled(AdColonyZone zone) {
     if (_adapter != null) {
       _adapter.setAd(null);
-      String errorMessage = createSdkError();
-      Log.w(TAG, errorMessage);
-      _mediationInterstitialListener.onAdFailedToLoad(_adapter, ERROR_ADCOLONY_SDK);
+      AdError error = createSdkError();
+      Log.w(TAG, error.getMessage());
+      _mediationInterstitialListener.onAdFailedToLoad(_adapter, error);
     }
   }
 

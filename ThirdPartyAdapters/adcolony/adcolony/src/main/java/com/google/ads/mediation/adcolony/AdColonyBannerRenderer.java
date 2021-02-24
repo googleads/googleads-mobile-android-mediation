@@ -1,21 +1,29 @@
 package com.google.ads.mediation.adcolony;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyAdSize;
 import com.adcolony.sdk.AdColonyAdView;
 import com.adcolony.sdk.AdColonyAdViewListener;
 import com.adcolony.sdk.AdColonyZone;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.jirbo.adcolony.AdColonyManager;
+
+import java.util.ArrayList;
 
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.convertPixelsToDp;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 public class AdColonyBannerRenderer extends AdColonyAdViewListener implements MediationBannerAd {
 
@@ -33,18 +41,21 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
   }
 
   public void render() {
-    String requestedZone = adConfiguration.getServerParameters().getString(AdColonyAdapterUtils.KEY_ZONE_ID);
-    // Setting the requested size as it is as adcolony view size.
+    AdColonyAdOptions adOptions = AdColonyManager
+            .getInstance()
+            .getAdOptionsFromAdConfig(adConfiguration);
+    ArrayList<String> listFromServerParams = AdColonyManager
+            .getInstance()
+            .parseZoneList(adConfiguration.getServerParameters());
+    String requestedZone = AdColonyManager
+            .getInstance()
+            .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+    // Setting the requested size as it is as AdColony view size
     AdColonyAdSize adSize = new AdColonyAdSize(
             convertPixelsToDp(adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
             convertPixelsToDp(adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext()))
     );
-
-    if (adSize != null) {
-      AdColony.requestAdView(requestedZone, this, adSize);
-    } else {
-      mAdLoadCallback.onFailure("Failed to request banner with unsupported size");
-    }
+    AdColony.requestAdView(requestedZone, this, adSize, adOptions);
   }
 
   @Override
@@ -55,7 +66,9 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
-    this.mAdLoadCallback.onFailure("Failed to load banner.");
+    AdError error = createSdkError();
+    Log.w(TAG, error.getMessage());
+    this.mAdLoadCallback.onFailure(error);
   }
 
   @Override

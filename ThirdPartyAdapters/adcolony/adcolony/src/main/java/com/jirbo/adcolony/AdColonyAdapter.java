@@ -21,6 +21,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.jirbo.adcolony.AdColonyManager.InitializationListener;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * A {@link com.google.android.gms.ads.mediation.MediationAdapter} used to mediate interstitial ads
@@ -82,11 +83,10 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
     final String requestedZone = AdColonyManager.getInstance()
         .getZoneFromRequest(zoneList, mediationExtras);
     if (TextUtils.isEmpty(requestedZone)) {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid Zone ID.");
-      Log.e(TAG, errorMessage);
-      mediationInterstitialListener.onAdFailedToLoad(this,
-          ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid Zone ID.");
+      Log.e(TAG, error.getMessage());
+      mediationInterstitialListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -134,20 +134,20 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
       MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
     if (adSize == null) {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Fail to request banner ad: adSize is null.");
-      Log.e(TAG, errorMessage);
-      mediationBannerListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Fail to request banner ad: adSize is null.");
+      Log.e(TAG, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
     final AdColonyAdSize adColonyAdSize = AdColonyAdapterUtils
         .adColonyAdSizeFromAdMobAdSize(context, adSize);
     if (adColonyAdSize == null) {
-      String errorMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request banner with unsupported size: " + adSize.toString());
-      Log.e(TAG, errorMessage);
-      mediationBannerListener.onAdFailedToLoad(this, ERROR_BANNER_SIZE_MISMATCH);
+      AdError error = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+              "Failed to request banner with unsupported size: " + adSize.toString());
+      Log.e(TAG, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -157,10 +157,10 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         AdColonyManager.getInstance().getZoneFromRequest(zoneList, mediationExtras);
 
     if (TextUtils.isEmpty(requestedZone)) {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad: zone ID is null or empty");
-      Log.e(TAG, errorMessage);
-      mediationBannerListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to request ad: zone ID is null or empty");
+      Log.e(TAG, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -171,9 +171,12 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         new InitializationListener() {
           @Override
           public void onInitializeSuccess() {
-            String logMessage = String
-                .format("Requesting banner with ad size: %dx%d", adColonyAdSize.getWidth(),
-                    adColonyAdSize.getHeight());
+            String logMessage = String.format(
+                    Locale.US,
+                    "Requesting banner with ad size: %dx%d",
+                    adColonyAdSize.getWidth(),
+                    adColonyAdSize.getHeight()
+            );
             Log.d(TAG, logMessage);
             AdColony.requestAdView(requestedZone, adColonyBannerAdListener, adColonyAdSize);
           }
@@ -195,5 +198,4 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
     this.adColonyAdView = ad;
   }
   //endregion
-
 }
