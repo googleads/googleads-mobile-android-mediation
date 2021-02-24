@@ -15,6 +15,9 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -40,6 +43,9 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   public static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
   private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
+
+  // Keeps a strong reference to the banner ad renderer, which loads ads asynchronously.
+  private AdColonyBannerRenderer adColonyBannerRenderer;
 
   // Keeps a strong reference to the interstitial ad renderer, which loads ads asynchronously.
   private AdColonyInterstitialRenderer adColonyInterstitialRenderer;
@@ -223,6 +229,18 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
+  public void loadBannerAd(
+      MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
+  ) {
+    adColonyBannerRenderer = new AdColonyBannerRenderer(
+        mediationBannerAdConfiguration,
+        mediationAdLoadCallback
+    );
+    adColonyBannerRenderer.render();
+  }
+
+  @Override
   public void loadInterstitialAd(
       MediationInterstitialAdConfiguration interstitialAdConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd,
@@ -256,8 +274,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
       @Override
       public void onFailure() {
-        AdError error = new AdError(ERROR_ADCOLONY_SDK, ADCOLONY_SDK_ERROR_DOMAIN,
-            "Failed to get signals from AdColony.");
+        AdError error = new AdError(ERROR_ADCOLONY_SDK, "Failed to get signals from AdColony.",
+                ADCOLONY_SDK_ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
         signalCallbacks.onFailure(error);
       }

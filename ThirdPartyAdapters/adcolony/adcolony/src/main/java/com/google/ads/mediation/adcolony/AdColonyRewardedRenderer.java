@@ -66,8 +66,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
           public void onInitializeSuccess() {
             // Cannot request an ad without a valid zone.
             if (TextUtils.isEmpty(requestedZone)) {
-              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-                  "Missing or invalid Zone ID.");
+              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+                      "Missing or invalid Zone ID.", ERROR_DOMAIN);
               Log.e(TAG, error.getMessage());
               mAdLoadCallback.onFailure(error);
               return;
