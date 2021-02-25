@@ -13,7 +13,6 @@ import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
-import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -22,6 +21,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
@@ -476,7 +476,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
           Log.d(TAG, "InMobi native ad has been loaded.");
 
           // This setting decides whether to download images or not.
-          NativeAdOptions nativeAdOptions = InMobiAdapter.this.mNativeMedAdReq.getNativeAdOptions();
+          NativeAdOptions nativeAdOptions = InMobiAdapter.this.mNativeMedAdReq
+              .getNativeAdRequestOptions();
           boolean mIsOnlyUrl = false;
 
           if (null != nativeAdOptions) {
