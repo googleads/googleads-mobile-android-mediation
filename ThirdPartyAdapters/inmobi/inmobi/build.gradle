@@ -42,9 +42,15 @@ dependencies {
     implementation 'com.inmobi.monetization:inmobi-ads:9.1.6'
 
     // inMobi required dependencies
-    // https://support.inmobi.com/monetize/android-guidelines/
+    // https://support.inmobi.com/monetize/android-guidelines
+
+    // The InMobi SDK for Android uses the popular Picasso library for loading the ad assets.
     implementation 'com.squareup.picasso:picasso:2.71828'
+    // This is required to redirect the users to URLs outside InMobi WebView.
     implementation 'androidx.browser:browser:1.3.0'
+    // For supporting paged scroll of a deck of images or ads, you must use support-v4 library.
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    // For supporting free scroll of a deck of images or ads, you must use RecyclerView.
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // inMobi optional dependency
