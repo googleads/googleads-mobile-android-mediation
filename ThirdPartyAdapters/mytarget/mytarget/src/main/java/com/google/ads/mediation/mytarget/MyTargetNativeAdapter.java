@@ -31,6 +31,7 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.my.target.common.CachePolicy;
 import com.my.target.common.CustomParams;
 import com.my.target.common.models.ImageData;
+import com.my.target.nativeads.MediationHelper;
 import com.my.target.nativeads.NativeAd;
 import com.my.target.nativeads.banners.NativePromoBanner;
 import com.my.target.nativeads.views.MediaAdView;
@@ -270,7 +271,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
             clickableViews.remove(mediaPosition);
             clickableViews.add(mediaAdView);
           }
-          nativeAd.registerView(containerView, clickableViews);
+          MediationHelper.registerView(nativeAd, containerView, clickableViews, mediaAdView);
         }
       });
     }
