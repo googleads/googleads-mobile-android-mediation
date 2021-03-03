@@ -5,7 +5,8 @@
 - Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
 - Adapter now overrides impression tracking and uses InMobi's impression definition.
 - Adapter no longer reads gender and birthday targeting parameters, which are deprecated in the Google Mobile Ads SDK version 19.7.0.
- 
+- Migrated to AndroidX
+
 Built and test with:
 - Google Mobile Ads SDK version 19.7.0.
 - InMobi SDK version 9.1.6.
