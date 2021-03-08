@@ -46,7 +46,6 @@ import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
-import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -921,22 +920,44 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
       // Facebook does its own click handling.
       setOverrideClickHandling(true);
-      ImageView iconView = null;
+      View iconView = null;
 
       ArrayList<View> assetViews = new ArrayList<>();
       for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
         assetViews.add(clickableAssets.getValue());
 
-        if (clickableAssets.getKey().equals(NativeAppInstallAd.ASSET_ICON)
-            || clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-          iconView = (ImageView) clickableAssets.getValue();
+        if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
+          iconView = clickableAssets.getValue();
         }
       }
 
       if (isNativeBanner) {
-        mNativeBannerAd.registerViewForInteraction(view, iconView);
+        // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
+        // too late.
+        if (iconView == null) {
+          Log.w(TAG, "Missing or invalid native ad icon asset. Facebook impression "
+              + "recording might be impacted for this ad.");
+          return;
+        }
+
+        if (!(iconView instanceof ImageView)) {
+          String errorMessage = String.format("Native ad icon asset is rendered with an "
+              + "incompatible class type. Facebook impression recording might be impacted "
+              + "for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
+          Log.w(TAG, errorMessage);
+          return;
+        }
+
+        mNativeBannerAd.registerViewForInteraction(view, (ImageView) iconView);
+        return;
+      }
+
+      if (iconView instanceof ImageView) {
+        mNativeAd.registerViewForInteraction(view, mMediaView, (ImageView) iconView, assetViews);
       } else {
-        mNativeAd.registerViewForInteraction(view, mMediaView, iconView, assetViews);
+        Log.w(TAG, "Native icon asset is not of type ImageView. "
+            + "Calling registerViewForInteraction() without a reference to the icon view.");
+        mNativeAd.registerViewForInteraction(view, mMediaView, assetViews);
       }
     }
 
