@@ -3,8 +3,8 @@ package com.jirbo.adcolony;
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.KEY_ADCOLONY_BID_RESPONSE;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 
 import android.app.Activity;
 import android.app.Application;
@@ -50,22 +50,22 @@ public class AdColonyManager {
       @NonNull InitializationListener listener) {
 
     if (!(context instanceof Activity || context instanceof Application)) {
-      AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_DOMAIN,
-          "AdColony SDK requires an Activity context to initialize");
+      AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
+              "AdColony SDK requires an Activity context to initialize");
       listener.onInitializeFailed(error);
       return;
     }
 
     if (TextUtils.isEmpty(appID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or invalid AdColony app ID.");
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid AdColony app ID.");
       listener.onInitializeFailed(error);
       return;
     }
 
     if (zones.isEmpty()) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "No zones provided to initialize the AdColony SDK.");
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "No zones provided to initialize the AdColony SDK.");
       listener.onInitializeFailed(error);
       return;
     }
@@ -93,8 +93,8 @@ public class AdColonyManager {
     }
 
     if (!isConfigured) {
-      AdError error = new AdError(ERROR_ADCOLONY_NOT_INITIALIZED, ERROR_DOMAIN,
-          "AdColony SDK failed to initialize.");
+      AdError error = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED,
+              "AdColony SDK failed to initialize.");
       listener.onInitializeFailed(error);
       return;
     }

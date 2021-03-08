@@ -1,7 +1,6 @@
 package com.google.ads.mediation.adcolony;
 
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
@@ -30,8 +29,8 @@ import java.util.ArrayList;
 public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
   private MediationRewardedAdCallback mRewardedAdCallback;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-  private MediationRewardedAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
+  private final MediationRewardedAdConfiguration adConfiguration;
   private AdColonyInterstitial mAdColonyInterstitial;
 
   public AdColonyRewardedRenderer(
@@ -50,10 +49,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
     if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
         && adConfiguration.getBidResponse().equals("")) {
-      String logMessage = "Failed to load ad from AdColony: " +
-          "Only a maximum of one ad can be loaded per Zone ID.";
-      AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_DOMAIN, logMessage);
-      Log.e(TAG, logMessage);
+      AdError error = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
+              "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone ID.");
+      Log.e(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);
       return;
     }
@@ -66,8 +64,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
           public void onInitializeSuccess() {
             // Cannot request an ad without a valid zone.
             if (TextUtils.isEmpty(requestedZone)) {
-              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-                      "Missing or invalid Zone ID.", ERROR_DOMAIN);
+              AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+                      "Missing or invalid Zone ID.");
               Log.e(TAG, error.getMessage());
               mAdLoadCallback.onFailure(error);
               return;
@@ -101,9 +99,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
   void onRequestNotFilled(AdColonyZone zone) {
     if (mAdLoadCallback != null) {
-      String errorMessage = createSdkError();
-      Log.w(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
+      AdError error = createSdkError();
+      Log.w(TAG, error.getMessage());
+      mAdLoadCallback.onFailure(error);
     }
   }
 
@@ -156,9 +154,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   @Override
   public void showAd(Context context) {
     if (mAdColonyInterstitial == null) {
-      String errorMessage = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
-      Log.w(TAG, errorMessage);
-      mRewardedAdCallback.onAdFailedToShow(errorMessage);
+      AdError error = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
+      Log.w(TAG, error.getMessage());
+      mRewardedAdCallback.onAdFailedToShow(error);
       return;
     }
 

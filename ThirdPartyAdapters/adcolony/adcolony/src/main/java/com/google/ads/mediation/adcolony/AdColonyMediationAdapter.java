@@ -37,7 +37,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 
 public class AdColonyMediationAdapter extends RtbAdapter {
 
@@ -55,10 +54,10 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   // region Error codes
   // AdColony adapter error domain.
-  public static final String ERROR_DOMAIN = "com.google.ads.mediation.adcolony";
+  private static final String ERROR_DOMAIN = "com.google.ads.mediation.adcolony";
 
   // AdColony SDK error domain.
-  public static final String ADCOLONY_SDK_ERROR_DOMAIN = "com.jirbo.adcolony";
+  private static final String ADCOLONY_SDK_ERROR_DOMAIN = "com.jirbo.adcolony";
 
   @IntDef(value = {
       ERROR_ADCOLONY_SDK,
@@ -69,10 +68,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       ERROR_PRESENTATION_AD_NOT_LOADED,
       ERROR_CONTEXT_NOT_ACTIVITY,
   })
-
   @Retention(RetentionPolicy.SOURCE)
   public @interface AdapterError {
-
   }
 
   /**
@@ -110,19 +107,19 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_CONTEXT_NOT_ACTIVITY = 106;
 
-  // TODO: Migrate all users to return an AdError instead.
-  @Deprecated
   @NonNull
-  public static String createAdapterError(@AdapterError int error, @NonNull String errorMessage) {
-    return String.format(Locale.US, "%d: %s", error, errorMessage);
+  public static AdError createAdapterError(@AdapterError int error, @NonNull String errorMessage) {
+    return new AdError(error, errorMessage, ERROR_DOMAIN);
   }
 
-  // TODO: Migrate all users to return an AdError instead.
-  @Deprecated
   @NonNull
-  public static String createSdkError() {
-    return String.format(Locale.US, "%d: %s", ERROR_ADCOLONY_SDK,
-        "AdColony SDK returned a failure callback");
+  public static AdError createSdkError() {
+    return createSdkError(ERROR_ADCOLONY_SDK, "AdColony SDK returned a failure callback.");
+  }
+
+  @NonNull
+  public static AdError createSdkError(@AdapterError int error, @NonNull String errorMessage) {
+    return new AdError(error, errorMessage, ADCOLONY_SDK_ERROR_DOMAIN);
   }
   // endregion
 
@@ -172,8 +169,9 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity) && !(context instanceof Application)) {
-      initializationCompleteCallback.onInitializationFailed("AdColony SDK requires an " +
-          "Activity or Application context to initialize.");
+      AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
+              "AdColony SDK requires an Activity or Application context to initialize.");
+      initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
 
@@ -199,15 +197,20 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     String appID;
     int count = appIDs.size();
     if (count <= 0) {
-      initializationCompleteCallback.onInitializationFailed("Missing or invalid AdColony app ID.");
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid AdColony app ID.");
+      initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
 
     appID = appIDs.iterator().next();
     if (count > 1) {
-      String logMessage = String.format("Multiple '%s' entries found: %s. " +
-              "Using '%s' to initialize the AdColony SDK.",
-          AdColonyAdapterUtils.KEY_APP_ID, appIDs.toString(), appID);
+      String logMessage = String.format(
+              "Multiple '%s' entries found: %s. Using '%s' to initialize the AdColony SDK.",
+              AdColonyAdapterUtils.KEY_APP_ID,
+              appIDs.toString(),
+              appID
+      );
       Log.w(TAG, logMessage);
     }
 
@@ -223,7 +226,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
           @Override
           public void onInitializeFailed(@NonNull AdError error) {
             // TODO: Forward the AdError object once available.
-            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+            initializationCompleteCallback.onInitializationFailed(error.toString());
           }
         });
   }
@@ -274,8 +277,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
       @Override
       public void onFailure() {
-        AdError error = new AdError(ERROR_ADCOLONY_SDK, "Failed to get signals from AdColony.",
-                ADCOLONY_SDK_ERROR_DOMAIN);
+        AdError error = createSdkError(ERROR_ADCOLONY_SDK,
+                "Failed to get signals from AdColony.");
         Log.e(TAG, error.getMessage());
         signalCallbacks.onFailure(error);
       }
