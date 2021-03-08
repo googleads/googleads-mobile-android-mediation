@@ -64,4 +64,9 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
     Log.w(TAG, errorMessage);
     mediationBannerListener.onAdFailedToLoad(adapter, ERROR_ADCOLONY_SDK);
   }
+
+  void destroy() {
+    adapter = null;
+    mediationBannerListener = null;
+  }
 }

@@ -1,6 +1,8 @@
 package com.google.ads.mediation.adcolony;
 
 import android.content.Context;
+import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.adcolony.sdk.AdColonyAdSize;
@@ -41,4 +43,13 @@ public class AdColonyAdapterUtils {
     return null;
   }
 
+  /**
+   * This method converts device specific pixels to density independent pixels.
+   *
+   * @param px A value in px (pixels) unit. Which we need to convert into dp
+   * @return A int value to represent dp equivalent to px value
+   */
+  public static int convertPixelsToDp(int px) {
+    return (int) (px / Resources.getSystem().getDisplayMetrics().density);
+  }
 }

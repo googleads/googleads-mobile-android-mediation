@@ -35,11 +35,11 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
   // AdColony Ad Listeners
   private AdColonyAdListener adColonyInterstitialListener;
 
+  // AdColonyAdView ad view for banner.
+  private AdColonyAdView adColonyAdView;
+
   // AdColony banner Ad Listeners
   private AdColonyBannerAdListener adColonyBannerAdListener;
-
-  //AdColonyAdView ad view for banner.
-  private AdColonyAdView adColonyAdView;
 
   //region MediationAdapter methods.
   @Override
@@ -53,6 +53,9 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
     }
     if (adColonyAdView != null) {
       adColonyAdView.destroy();
+    }
+    if (adColonyBannerAdListener != null) {
+      adColonyBannerAdListener.destroy();
     }
   }
 
