@@ -150,6 +150,12 @@ public class VungleInterstitialAdapter
   @Override
   public void showInterstitial() {
     Vungle.playAd(mPlacementForPlay, mAdConfig, new PlayAdCallback() {
+
+      @Override
+      public void creativeId(String creativeId) {
+        // no-op
+      }
+
       @Override
       public void onAdStart(String placementID) {
         if (mMediationInterstitialListener != null) {
