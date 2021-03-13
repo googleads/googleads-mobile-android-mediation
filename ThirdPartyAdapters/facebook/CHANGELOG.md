@@ -1,7 +1,11 @@
 ## Facebook Android Mediation Adapter Changelog
 
-#### Next Version
+#### 6.3.0.1
 - Fixed an issue where a `ClassCastException` is thrown when rendering native ads on apps that don't use `ImageView` to render image assets.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- Facebook SDK version 6.3.0.
 
 #### 6.3.0.0
 - Verified compatibility with Facebook SDK v6.3.0.
