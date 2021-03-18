@@ -1,7 +1,11 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
-- Added support for rewarded interstitial ads.
+#### Version 7.1.2.0
+- Verified compatibility with ironSource SDK version 7.1.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- IronSource SDK version 7.1.2.
 
 #### Version 7.1.0.2.0
 - Verified compatibility with ironSource SDK version 7.1.0.2.
