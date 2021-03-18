@@ -1,16 +1,22 @@
 package jp.maio.sdk.android.mediation.admob.adapter;
 
 import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_AD_NOT_AVAILABLE;
+import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.maio.MaioMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.google.ads.mediation.maio.MaioAdsManagerListener;
+
+import com.google.android.gms.ads.AdError;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.MaioAdsInstance;
@@ -91,23 +97,27 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
     Log.d(TAG, "Requesting ad from zone ID: " + zoneID);
     // If maio does not have an ad ready to be shown, then we fail the ad request to avoid timeouts.
     if (!canShowAd(zoneID)) {
-      listener.onAdFailedToLoad(ERROR_AD_NOT_AVAILABLE, "No ad available.");
+      AdError error = new AdError(ERROR_AD_NOT_AVAILABLE,
+          "No ad available for zone id: " + zoneID, ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(error);
       return;
     }
-
     mListeners.put(zoneID, new WeakReference<>(listener));
     listener.onChangedCanShow(zoneID, true);
   }
 
-  public boolean showAd(String zoneID) {
-    if (canShowAd(zoneID)) {
-      this.mMaioInstance.show(zoneID);
-      return true;
-    } else {
-      Log.e(TAG, "Failed to show ad: Ad not ready for zone ID: " + zoneID);
+  public void showAd(String zoneID, MaioAdsManagerListener listener) {
+    if (!canShowAd(zoneID)) {
       this.mListeners.remove(zoneID);
-      return false;
+      AdError error = new AdError(ERROR_AD_NOT_AVAILABLE,
+          "Failed to show ad: Ad not ready for zone ID: " + zoneID, ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToShow(error);
+      return;
     }
+
+    this.mMaioInstance.show(zoneID);
   }
 
   // region MaioAdsListenerInterface implementation
@@ -175,7 +185,9 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
   public interface InitializationListener {
 
-    /** Called when Maio SDK successfully initializes. */
+    /**
+     * Called when Maio SDK successfully initializes.
+     */
     void onMaioInitialized();
   }
 }
