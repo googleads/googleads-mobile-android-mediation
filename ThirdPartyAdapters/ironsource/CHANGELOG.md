@@ -1,6 +1,7 @@
 ## IronSource Android Mediation Adapter Changelog
 
 #### Version 7.1.2.0
+- Added support for rewarded interstitial ads.
 - Verified compatibility with ironSource SDK version 7.1.2.
 
 Built and tested with:
