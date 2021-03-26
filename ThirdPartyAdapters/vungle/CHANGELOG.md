@@ -3,6 +3,7 @@
 #### Version 6.10.1.0
 - Verified compatibility with Vungle SDK 6.10.1.
 - Render MREC ads with Banner API supported.
+- Updated the minimum required Google Mobile Ads SDK version to 19.8.0.
 
 #### Version 6.10.0.0
 - Verified compatibility with Vungle SDK 6.10.0.
