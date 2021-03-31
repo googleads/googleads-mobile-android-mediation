@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
 import com.google.android.gms.ads.MediationUtils;
+import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsError;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -36,15 +37,15 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Creates a formatted SDK error message based on the specified {@link UnityAdsError}.
+   * Creates a formatted SDK error message based on the specified {@link UnityAds.UnityAdsShowError}.
    *
-   * @param unityAdsError error object from Unity.
+   * @param UnityAds.UnityAdsShowError error object from Unity.
    * @param description   the error message.
    * @return the error message.
    */
   @NonNull
-  static String createSDKError(@NonNull UnityAdsError unityAdsError, @NonNull String description) {
-    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
+  static String createSDKShowError(@NonNull UnityAds.UnityAdsShowError unityAdsShowError, @NonNull String description) {
+    return String.format("%d: %s", getMediationShowErrorCode(unityAdsShowError), description);
   }
 
   /**
@@ -122,6 +123,40 @@ public class UnityAdsAdapterUtils {
         break;
       case INTERNAL_ERROR:
         errorCode = 10;
+        break;
+    }
+    return errorCode;
+  }
+
+  /**
+   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsShowError}.
+   *
+   * @param UnityAds.UnityAdsShowError error object from Unity.
+   * @return mediation specific show error code.
+   */
+  static int getMediationShowErrorCode(@NonNull UnityAds.UnityAdsShowError unityAdsError) {
+    int errorCode = 0;
+    switch (unityAdsError) {
+      case NOT_INITIALIZED:
+        errorCode = 1;
+        break;
+      case NOT_READY:
+        errorCode = 2;
+        break;
+      case VIDEO_PLAYER_ERROR:
+        errorCode = 3;
+        break;
+      case INVALID_ARGUMENT:
+        errorCode = 4;
+        break;
+      case NO_CONNECTION:
+        errorCode = 5;
+        break;
+      case ALREADY_SHOWING:
+        errorCode = 6;
+        break;
+      case INTERNAL_ERROR:
+        errorCode = 7;
         break;
     }
     return errorCode;
