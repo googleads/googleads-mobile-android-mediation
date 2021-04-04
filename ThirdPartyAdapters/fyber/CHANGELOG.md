@@ -1,5 +1,9 @@
 ## Fyber Android Mediation Adapter Changelog
 
+#### Version 7.8.2.0
+- Fyber Marketplace 7.8.2
+- Changed the repository to point to mavenCentral
+
 #### Version 7.8.1.0
 - Verified compatibility with Fyber SDK 7.8.1.
 

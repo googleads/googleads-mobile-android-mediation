@@ -17,10 +17,8 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
-        maven {
-            url "https://fyber.bintray.com/marketplace"
-        }
     }
 }
 
