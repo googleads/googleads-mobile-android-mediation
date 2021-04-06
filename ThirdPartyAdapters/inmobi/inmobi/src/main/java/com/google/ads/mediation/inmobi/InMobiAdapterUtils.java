@@ -51,27 +51,6 @@ class InMobiAdapterUtils {
     if (mediationAdRequest.getLocation() != null) {
       InMobiSdk.setLocation(mediationAdRequest.getLocation());
     }
-
-    // Date Of Birth
-    if (mediationAdRequest.getBirthday() != null) {
-      Calendar dob = Calendar.getInstance();
-      dob.setTime(mediationAdRequest.getBirthday());
-      InMobiSdk.setYearOfBirth(dob.get(Calendar.YEAR));
-    }
-
-    // Gender
-    if (mediationAdRequest.getGender() != -1) {
-      switch (mediationAdRequest.getGender()) {
-        case AdRequest.GENDER_MALE:
-          InMobiSdk.setGender(Gender.MALE);
-          break;
-        case AdRequest.GENDER_FEMALE:
-          InMobiSdk.setGender(Gender.FEMALE);
-          break;
-        default:
-          break;
-      }
-    }
   }
 
   static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {

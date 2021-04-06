@@ -7,6 +7,15 @@ Built and tested with:
 - Google Mobile Ads SDK version 19.6.0.
 - Unity Ads SDK version 3.7.1.
 
+#### Version 3.6.2.0
+- Verified compatibility with Unity Ads SDK 3.6.2.
+- Fixed an issue where rewarded ads were not forwarding click callbacks.
+- Updated the minimum required Google Mobile Ads SDK version to 19.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.8.0.
+- Unity Ads SDK version 3.6.2.
+
 #### Version 3.6.0.0
 - Verified compatibility with Unity Ads SDK 3.6.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.6.0.
