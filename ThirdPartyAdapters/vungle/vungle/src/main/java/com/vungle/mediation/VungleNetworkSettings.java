@@ -45,6 +45,9 @@ public class VungleNetworkSettings {
   }
 
   public static VungleSettings getVungleSettings() {
+    if (vungleSettings == null) {
+      vungleSettings = new VungleSettings.Builder().disableBannerRefresh().build();
+    }
     return vungleSettings;
   }
 
