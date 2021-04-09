@@ -6,19 +6,19 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store the proper name of the mediation network adapter.
-    adapterName = "Fyber Marketplace"
+    adapterName = "FyberMarketplace"
     // String property to store version name.
-    stringVersion = "7.8.1.0"
+    stringVersion = "7.8.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 7080100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
@@ -33,11 +33,12 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.7.0'
-    implementation 'com.fyber.vamp:core-sdk:7.8.1'
-    implementation 'com.fyber.vamp:mraid-kit:7.8.1'
-    implementation 'com.fyber.vamp:video-kit:7.8.1'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+
+    implementation 'com.fyber.vamp:core-sdk:7.8.2'
+    implementation 'com.fyber.vamp:mraid-kit:7.8.2'
+    implementation 'com.fyber.vamp:video-kit:7.8.2'
 }
 
 /**
