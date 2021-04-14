@@ -34,8 +34,9 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   private AdColonyInterstitial mAdColonyInterstitial;
 
   public AdColonyRewardedRenderer(
-      MediationRewardedAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+          @NonNull MediationRewardedAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback
+  ) {
     this.adConfiguration = adConfiguration;
     this.mAdLoadCallback = callback;
   }
@@ -48,7 +49,7 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
         .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
 
     if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
-        && adConfiguration.getBidResponse().equals("")) {
+            && adConfiguration.getBidResponse().isEmpty()) {
       AdError error = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
               "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone ID.");
       Log.e(TAG, error.getMessage());
@@ -91,18 +92,13 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   //region AdColony Rewarded Events
   void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
     mAdColonyInterstitial = adColonyInterstitial;
-
-    if (mAdLoadCallback != null) {
-      mRewardedAdCallback = mAdLoadCallback.onSuccess(AdColonyRewardedRenderer.this);
-    }
+    mRewardedAdCallback = mAdLoadCallback.onSuccess(AdColonyRewardedRenderer.this);
   }
 
   void onRequestNotFilled(AdColonyZone zone) {
-    if (mAdLoadCallback != null) {
-      AdError error = createSdkError();
-      Log.w(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
-    }
+    AdError error = createSdkError();
+    Log.w(TAG, error.getMessage());
+    mAdLoadCallback.onFailure(error);
   }
 
   void onExpiring(AdColonyInterstitial ad) {
@@ -152,7 +148,7 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     if (mAdColonyInterstitial == null) {
       AdError error = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
       Log.w(TAG, error.getMessage());

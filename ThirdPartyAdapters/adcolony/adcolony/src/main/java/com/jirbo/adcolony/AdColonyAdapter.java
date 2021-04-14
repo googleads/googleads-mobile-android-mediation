@@ -73,11 +73,13 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
 
   //region MediationInterstitialAdapter methods.
   @Override
-  public void requestInterstitialAd(Context context,
-      final MediationInterstitialListener mediationInterstitialListener,
-      Bundle serverParams,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestInterstitialAd(
+          @NonNull Context context,
+          @NonNull final MediationInterstitialListener mediationInterstitialListener,
+          @NonNull Bundle serverParams,
+          @NonNull MediationAdRequest mediationAdRequest,
+          @NonNull Bundle mediationExtras
+  ) {
 
     ArrayList<String> zoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
     final String requestedZone = AdColonyManager.getInstance()
@@ -128,19 +130,14 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
 
   //region MediationBannerAdapter methods.
   @Override
-  public void requestBannerAd(Context context,
-      final MediationBannerListener mediationBannerListener,
-      Bundle serverParams, AdSize adSize,
-      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
-
-    if (adSize == null) {
-      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Fail to request banner ad: adSize is null.");
-      Log.e(TAG, error.getMessage());
-      mediationBannerListener.onAdFailedToLoad(this, error);
-      return;
-    }
-
+  public void requestBannerAd(
+          @NonNull Context context,
+          @NonNull final MediationBannerListener mediationBannerListener,
+          @NonNull Bundle serverParams,
+          @NonNull AdSize adSize,
+          @NonNull MediationAdRequest mediationAdRequest,
+          @NonNull Bundle mediationExtras
+  ) {
     final AdColonyAdSize adColonyAdSize = AdColonyAdapterUtils
         .adColonyAdSizeFromAdMobAdSize(context, adSize);
     if (adColonyAdSize == null) {
@@ -190,6 +187,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
   }
 
   @Override
+  @NonNull
   public View getBannerView() {
     return adColonyAdView;
   }

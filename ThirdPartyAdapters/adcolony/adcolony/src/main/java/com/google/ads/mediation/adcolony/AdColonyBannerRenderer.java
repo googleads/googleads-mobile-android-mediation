@@ -22,7 +22,9 @@ import com.jirbo.adcolony.AdColonyManager;
 import java.util.ArrayList;
 
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.convertPixelsToDp;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 public class AdColonyBannerRenderer extends AdColonyAdViewListener implements MediationBannerAd {
@@ -33,14 +35,22 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
   private final MediationBannerAdConfiguration adConfiguration;
 
   public AdColonyBannerRenderer(
-          MediationBannerAdConfiguration adConfiguration,
-          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback
+          @NonNull MediationBannerAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback
   ) {
     this.mAdLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
 
   public void render() {
+    if (adConfiguration.getAdSize() == null) {
+      AdError error = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+              "Failed to request banner with unsupported size: null");
+      Log.e(TAG, error.getMessage());
+      mAdLoadCallback.onFailure(error);
+      return;
+    }
+
     AdColonyAdOptions adOptions = AdColonyManager
             .getInstance()
             .getAdOptionsFromAdConfig(adConfiguration);

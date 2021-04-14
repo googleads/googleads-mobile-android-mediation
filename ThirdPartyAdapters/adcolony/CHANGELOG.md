@@ -4,7 +4,7 @@
 - Added support for banners advanced bidding.
 
 Built and tested with:
-- Google Mobile Ads SDK version 19.7.0.
+- Google Mobile Ads SDK version 20.0.0.
 - AdColony SDK version 4.4.1.
 
 #### Version 4.4.1.0

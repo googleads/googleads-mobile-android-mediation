@@ -127,6 +127,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    * {@link Adapter} implementation
    */
   @Override
+  @NonNull
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
@@ -146,6 +147,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
+  @NonNull
   public VersionInfo getSDKVersionInfo() {
     String sdkVersion = AdColony.getSDKVersion();
     String[] splits = sdkVersion.split("\\.");
@@ -164,10 +166,11 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void initialize(Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
-
+  public void initialize(
+          @NonNull Context context,
+          @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+          @NonNull List<MediationConfiguration> mediationConfigurations
+  ) {
     if (!(context instanceof Activity) && !(context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
               "AdColony SDK requires an Activity or Application context to initialize.");
@@ -232,34 +235,29 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadBannerAd(
-      MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
+  public void loadRtbBannerAd(
+          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
-    adColonyBannerRenderer = new AdColonyBannerRenderer(
-        mediationBannerAdConfiguration,
-        mediationAdLoadCallback
-    );
+    adColonyBannerRenderer = new AdColonyBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
     adColonyBannerRenderer.render();
   }
 
   @Override
-  public void loadInterstitialAd(
-      MediationInterstitialAdConfiguration interstitialAdConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration,
-        mediationAdLoadCallback);
+  public void loadRtbInterstitialAd(
+          @NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
+  ) {
+    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration, mediationAdLoadCallback);
     adColonyInterstitialRenderer.render();
   }
 
   @Override
-  public void loadRewardedAd(
-      MediationRewardedAdConfiguration rewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
-    adColonyRewardedRenderer =
-        new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
+  public void loadRtbRewardedAd(
+          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
+  ) {
+    adColonyRewardedRenderer = new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
     adColonyRewardedRenderer.render();
   }
 
@@ -268,7 +266,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void collectSignals(RtbSignalData rtbSignalData, final SignalCallbacks signalCallbacks) {
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull final SignalCallbacks signalCallbacks) {
     AdColony.collectSignals(new AdColonySignalsListener() {
       @Override
       public void onSuccess(String signals) {

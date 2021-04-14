@@ -5,6 +5,9 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 
 import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
@@ -23,14 +26,14 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
     MediationInterstitialAd {
 
   private MediationInterstitialAdCallback mInterstitialAdCallback;
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-      mAdLoadCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
   private final MediationInterstitialAdConfiguration adConfiguration;
 
   AdColonyInterstitialRenderer(
-      MediationInterstitialAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+          @NonNull MediationInterstitialAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
+  ) {
     this.mAdLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
@@ -46,7 +49,7 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     adColonyInterstitial.show();
   }
 
