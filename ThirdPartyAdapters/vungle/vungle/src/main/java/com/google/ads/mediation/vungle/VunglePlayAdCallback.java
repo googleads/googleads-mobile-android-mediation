@@ -3,7 +3,6 @@ package com.google.ads.mediation.vungle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.vungle.mediation.VungleBannerAdapter;
-import com.vungle.mediation.VungleListener;
 import com.vungle.mediation.VungleManager;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.error.VungleException;
@@ -17,63 +16,64 @@ import java.lang.ref.WeakReference;
 public class VunglePlayAdCallback implements PlayAdCallback {
 
   private final WeakReference<VungleBannerAdapter> adapterReference;
-  private final WeakReference<VungleListener> listenerReference;
+  private final WeakReference<PlayAdCallback> callbackReference;
   private final VungleBannerAd vungleBannerAd;
 
-  public VunglePlayAdCallback(@NonNull VungleListener listener,
+  public VunglePlayAdCallback(@NonNull PlayAdCallback callback,
       @NonNull VungleBannerAdapter adapter, @Nullable VungleBannerAd vungleBannerAd) {
-    this.listenerReference = new WeakReference<>(listener);
+    this.callbackReference = new WeakReference<>(callback);
     this.adapterReference = new WeakReference<>(adapter);
     this.vungleBannerAd = vungleBannerAd;
   }
 
   @Override
   public void onAdStart(String placementID) {
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdStart(placementID);
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onAdStart(placementID);
     }
   }
 
   @Override
   @Deprecated
   public void onAdEnd(String placementID, boolean completed, boolean isCTAClicked) {
+    // Deprecated, No-op.
   }
 
   @Override
   public void onAdEnd(String placementID) {
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdEnd(placementID);
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onAdEnd(placementID);
     }
   }
 
   @Override
   public void onAdClick(String placementID) {
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdClick(placementID);
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onAdClick(placementID);
     }
   }
 
   @Override
   public void onAdRewarded(String placementID) {
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdRewarded(placementID);
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onAdRewarded(placementID);
     }
   }
 
   @Override
   public void onAdLeftApplication(String placementID) {
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdLeftApplication(placementID);
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onAdLeftApplication(placementID);
     }
   }
 
@@ -81,10 +81,10 @@ public class VunglePlayAdCallback implements PlayAdCallback {
   public void onError(String placementID, VungleException exception) {
     VungleManager.getInstance().removeActiveBannerAd(placementID, vungleBannerAd);
 
-    VungleListener listener = listenerReference.get();
+    PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();
-    if (listener != null && adapter != null && adapter.isRequestPending()) {
-      listener.onAdFailedToLoad(exception.getExceptionCode());
+    if (callback != null && adapter != null && adapter.isRequestPending()) {
+      callback.onError(placementID, exception);
     }
   }
 
