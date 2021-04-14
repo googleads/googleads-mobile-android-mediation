@@ -221,7 +221,7 @@ public class UnityRewardedAd implements MediationRewardedAd, IUnityAdsExtendedLi
   @Override
   public void onUnityAdsClick(String placementId) {
     // Unity Ads ad clicked.
-    if (mMediationRewardedAdCallback == null) {
+    if (mMediationRewardedAdCallback != null) {
       mMediationRewardedAdCallback.reportAdClicked();
     }
   }
