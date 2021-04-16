@@ -1,5 +1,9 @@
 ## nend Android Mediation Adapter Changelog
 
+#### Next Version
+- Added descriptive error codes and reasons for adapter load/show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
 #### Version 7.0.0.0
 - Verified compatibility with nend SDK 7.0.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.4.0.

@@ -22,6 +22,7 @@ android {
         targetSdkVersion 29
         versionCode 7000000
         versionName stringVersion
+        buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
 
     buildTypes {
@@ -34,7 +35,7 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.4.0'
+    implementation 'com.google.android.gms:play-services-ads:20.0.0'
 
     // nendSDK
     implementation 'net.nend.android:nend-sdk:7.0.0'
