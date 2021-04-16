@@ -1,6 +1,8 @@
 package com.google.ads.mediation.adcolony;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
@@ -32,11 +34,12 @@ public class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
     mListeners.put(zoneID, weakListener);
   }
 
-  void removeListener(@NonNull String zoneID) {
+  private void removeListener(@NonNull String zoneID) {
     mListeners.remove(zoneID);
   }
 
-  AdColonyRewardedRenderer getListener(@NonNull String zoneID) {
+  @Nullable
+  private AdColonyRewardedRenderer getListener(@NonNull String zoneID) {
     WeakReference<AdColonyRewardedRenderer> reference = mListeners.get(zoneID);
     return reference != null ? reference.get() : null;
   }

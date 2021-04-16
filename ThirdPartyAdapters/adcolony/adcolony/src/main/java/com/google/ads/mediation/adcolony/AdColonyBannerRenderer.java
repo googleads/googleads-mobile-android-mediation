@@ -22,7 +22,7 @@ import com.jirbo.adcolony.AdColonyManager;
 import java.util.ArrayList;
 
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.convertPixelsToDp;
-import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
@@ -44,7 +44,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
 
   public void render() {
     if (adConfiguration.getAdSize() == null) {
-      AdError error = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
               "Failed to request banner with unsupported size: null");
       Log.e(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);

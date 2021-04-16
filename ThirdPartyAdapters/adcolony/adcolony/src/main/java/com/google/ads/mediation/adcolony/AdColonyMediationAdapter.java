@@ -236,10 +236,10 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRtbBannerAd(
-          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+          @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
-    adColonyBannerRenderer = new AdColonyBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    adColonyBannerRenderer = new AdColonyBannerRenderer(bannerAdConfiguration, mediationAdLoadCallback);
     adColonyBannerRenderer.render();
   }
 
@@ -254,6 +254,14 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRtbRewardedAd(
+          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
+  ) {
+    loadRewardedAd(rewardedAdConfiguration, mediationAdLoadCallback);
+  }
+
+  @Override
+  public void loadRewardedAd(
           @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
           @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
   ) {

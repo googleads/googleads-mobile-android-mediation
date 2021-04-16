@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdSize;
 import com.adcolony.sdk.AdColonyAdView;
@@ -78,7 +80,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
           @NonNull final MediationInterstitialListener mediationInterstitialListener,
           @NonNull Bundle serverParams,
           @NonNull MediationAdRequest mediationAdRequest,
-          @NonNull Bundle mediationExtras
+          @Nullable Bundle mediationExtras
   ) {
 
     ArrayList<String> zoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
@@ -136,7 +138,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
           @NonNull Bundle serverParams,
           @NonNull AdSize adSize,
           @NonNull MediationAdRequest mediationAdRequest,
-          @NonNull Bundle mediationExtras
+          @Nullable Bundle mediationExtras
   ) {
     final AdColonyAdSize adColonyAdSize = AdColonyAdapterUtils
         .adColonyAdSizeFromAdMobAdSize(context, adSize);
