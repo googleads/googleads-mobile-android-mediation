@@ -13,6 +13,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.vungle.warren.AdConfig;
+import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.Banners;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -167,7 +168,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   }
 
   void preCache() {
-    Banners.loadBanner(placementId, mAdConfig.getAdSize(), null);
+    Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), null);
   }
 
   void updateVisibility(boolean visible) {
@@ -200,7 +201,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
   private void loadBanner() {
     Log.d(TAG, "loadBanner: " + this);
-    Banners.loadBanner(placementId, mAdConfig.getAdSize(), mAdLoadCallback);
+    Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), mAdLoadCallback);
   }
 
   private void createBanner() {
@@ -220,7 +221,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
     if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
       VungleBanner vungleBanner = Banners
-          .getBanner(placementId, mAdConfig.getAdSize(), playAdCallback);
+          .getBanner(placementId, new BannerAdConfig(mAdConfig), playAdCallback);
       if (vungleBanner != null) {
         Log.d(TAG, "display banner:" + vungleBanner.hashCode() + this);
         if (vungleBannerAd != null) {
