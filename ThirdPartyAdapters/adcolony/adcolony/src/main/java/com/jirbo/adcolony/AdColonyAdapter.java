@@ -76,11 +76,11 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
   //region MediationInterstitialAdapter methods.
   @Override
   public void requestInterstitialAd(
-          @NonNull Context context,
-          @NonNull final MediationInterstitialListener mediationInterstitialListener,
-          @NonNull Bundle serverParams,
-          @NonNull MediationAdRequest mediationAdRequest,
-          @Nullable Bundle mediationExtras
+      @NonNull Context context,
+      @NonNull final MediationInterstitialListener mediationInterstitialListener,
+      @NonNull Bundle serverParams,
+      @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras
   ) {
 
     ArrayList<String> zoneList = AdColonyManager.getInstance().parseZoneList(serverParams);
@@ -88,7 +88,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         .getZoneFromRequest(zoneList, mediationExtras);
     if (TextUtils.isEmpty(requestedZone)) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid Zone ID.");
+          "Missing or invalid Zone ID.");
       Log.e(TAG, error.getMessage());
       mediationInterstitialListener.onAdFailedToLoad(this, error);
       return;
@@ -133,18 +133,18 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
   //region MediationBannerAdapter methods.
   @Override
   public void requestBannerAd(
-          @NonNull Context context,
-          @NonNull final MediationBannerListener mediationBannerListener,
-          @NonNull Bundle serverParams,
-          @NonNull AdSize adSize,
-          @NonNull MediationAdRequest mediationAdRequest,
-          @Nullable Bundle mediationExtras
+      @NonNull Context context,
+      @NonNull final MediationBannerListener mediationBannerListener,
+      @NonNull Bundle serverParams,
+      @NonNull AdSize adSize,
+      @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras
   ) {
     final AdColonyAdSize adColonyAdSize = AdColonyAdapterUtils
         .adColonyAdSizeFromAdMobAdSize(context, adSize);
     if (adColonyAdSize == null) {
       AdError error = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-              "Failed to request banner with unsupported size: " + adSize.toString());
+          "Failed to request banner with unsupported size: " + adSize.toString());
       Log.e(TAG, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(this, error);
       return;
@@ -157,7 +157,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
 
     if (TextUtils.isEmpty(requestedZone)) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to request ad: zone ID is null or empty");
+          "Failed to request ad: zone ID is null or empty");
       Log.e(TAG, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(this, error);
       return;
@@ -171,10 +171,10 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
           @Override
           public void onInitializeSuccess() {
             String logMessage = String.format(
-                    Locale.US,
-                    "Requesting banner with ad size: %dx%d",
-                    adColonyAdSize.getWidth(),
-                    adColonyAdSize.getHeight()
+                Locale.US,
+                "Requesting banner with ad size: %dx%d",
+                adColonyAdSize.getWidth(),
+                adColonyAdSize.getHeight()
             );
             Log.d(TAG, logMessage);
             AdColony.requestAdView(requestedZone, adColonyBannerAdListener, adColonyAdSize);

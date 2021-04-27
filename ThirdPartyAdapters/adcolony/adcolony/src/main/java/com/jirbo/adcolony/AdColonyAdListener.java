@@ -23,7 +23,8 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
   private MediationInterstitialListener mediationInterstitialListener;
   private AdColonyAdapter adapter;
 
-  AdColonyAdListener(@NonNull AdColonyAdapter adapter, @NonNull MediationInterstitialListener listener) {
+  AdColonyAdListener(@NonNull AdColonyAdapter adapter,
+      @NonNull MediationInterstitialListener listener) {
     this.mediationInterstitialListener = listener;
     this.adapter = adapter;
   }
@@ -62,7 +63,9 @@ class AdColonyAdListener extends AdColonyInterstitialListener {
 
   @Override
   public void onIAPEvent(AdColonyInterstitial ad, String productId, int engagementType) {
-    if (adapter != null) adapter.setAd(ad);
+    if (adapter != null) {
+      adapter.setAd(ad);
+    }
   }
 
   @Override

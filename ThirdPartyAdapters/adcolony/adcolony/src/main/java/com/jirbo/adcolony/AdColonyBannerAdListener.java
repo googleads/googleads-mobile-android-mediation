@@ -26,29 +26,38 @@ class AdColonyBannerAdListener extends AdColonyAdViewListener {
    */
   private AdColonyAdapter adapter;
 
-  AdColonyBannerAdListener(@NonNull AdColonyAdapter adapter, @NonNull MediationBannerListener listener) {
+  AdColonyBannerAdListener(@NonNull AdColonyAdapter adapter,
+      @NonNull MediationBannerListener listener) {
     this.mediationBannerListener = listener;
     this.adapter = adapter;
   }
 
   @Override
   public void onClicked(AdColonyAdView ad) {
-    if (mediationBannerListener != null && adapter != null) mediationBannerListener.onAdClicked(adapter);
+    if (mediationBannerListener != null && adapter != null) {
+      mediationBannerListener.onAdClicked(adapter);
+    }
   }
 
   @Override
   public void onOpened(AdColonyAdView ad) {
-    if (mediationBannerListener != null && adapter != null) mediationBannerListener.onAdOpened(adapter);
+    if (mediationBannerListener != null && adapter != null) {
+      mediationBannerListener.onAdOpened(adapter);
+    }
   }
 
   @Override
   public void onClosed(AdColonyAdView ad) {
-    if (mediationBannerListener != null && adapter != null) mediationBannerListener.onAdClosed(adapter);
+    if (mediationBannerListener != null && adapter != null) {
+      mediationBannerListener.onAdClosed(adapter);
+    }
   }
 
   @Override
   public void onLeftApplication(AdColonyAdView ad) {
-    if (mediationBannerListener != null && adapter != null) mediationBannerListener.onAdLeftApplication(adapter);
+    if (mediationBannerListener != null && adapter != null) {
+      mediationBannerListener.onAdLeftApplication(adapter);
+    }
   }
 
   @Override

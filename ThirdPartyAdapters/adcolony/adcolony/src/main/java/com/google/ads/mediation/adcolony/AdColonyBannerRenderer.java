@@ -60,7 +60,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
     String requestedZone = AdColonyManager
             .getInstance()
             .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
-    // Setting the requested size as it is as AdColony view size
+    // Setting the requested size as the AdColony view size
     AdColonyAdSize adSize = new AdColonyAdSize(
             convertPixelsToDp(adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
             convertPixelsToDp(adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext()))
