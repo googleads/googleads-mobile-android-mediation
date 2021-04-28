@@ -88,6 +88,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           input.close();
         }
       } catch (Exception e) {
+        Log.e(TAG, "Error closing InputStream.", e);
       }
 
       if (connection != null) {

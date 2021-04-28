@@ -17,6 +17,9 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            url  "https://artifactory.verizonmedia.com/artifactory/maven"
+        }
     }
 }
 
