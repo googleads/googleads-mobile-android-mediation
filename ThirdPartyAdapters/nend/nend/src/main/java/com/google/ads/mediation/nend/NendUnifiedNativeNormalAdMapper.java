@@ -86,7 +86,9 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
     }
   }
 
-  /** {@link NendAdNativeListener} implementation */
+  /**
+   * {@link NendAdNativeListener} implementation
+   */
   @Override
   public void onImpression(@NonNull NendAdNative nendAdNative) {
     forwarder.adImpression();

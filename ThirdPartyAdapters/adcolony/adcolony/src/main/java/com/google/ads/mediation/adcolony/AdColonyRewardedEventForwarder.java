@@ -1,6 +1,8 @@
 package com.google.ads.mediation.adcolony;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
@@ -32,85 +34,81 @@ public class AdColonyRewardedEventForwarder extends AdColonyInterstitialListener
     mListeners.put(zoneID, weakListener);
   }
 
+  private void removeListener(@NonNull String zoneID) {
+    mListeners.remove(zoneID);
+  }
+
+  @Nullable
+  private AdColonyRewardedRenderer getListener(@NonNull String zoneID) {
+    WeakReference<AdColonyRewardedRenderer> reference = mListeners.get(zoneID);
+    return reference != null ? reference.get() : null;
+  }
+
   boolean isListenerAvailable(@NonNull String zoneID) {
-    return (mListeners.containsKey(zoneID) && mListeners.get(zoneID).get() != null);
+    return getListener(zoneID) != null;
   }
 
   //region AdColonyInterstitialListener implementation
   @Override
   public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
-    String zoneID = adColonyInterstitial.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onRequestFilled(adColonyInterstitial);
-    }
+    AdColonyRewardedRenderer listener = getListener(adColonyInterstitial.getZoneID());
+    if (listener != null) listener.onRequestFilled(adColonyInterstitial);
   }
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
-    String zoneID = zone.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onRequestNotFilled(zone);
-      mListeners.remove(zoneID);
+    AdColonyRewardedRenderer listener = getListener(zone.getZoneID());
+    if (listener != null) {
+      listener.onRequestNotFilled(zone);
+      removeListener(zone.getZoneID());
     }
   }
 
   @Override
   public void onExpiring(AdColonyInterstitial ad) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onExpiring(ad);
-    }
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) listener.onExpiring(ad);
   }
 
   @Override
   public void onClicked(AdColonyInterstitial ad) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onClicked(ad);
-    }
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) listener.onClicked(ad);
   }
 
   @Override
   public void onOpened(AdColonyInterstitial ad) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onOpened(ad);
-    }
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) listener.onOpened(ad);
   }
 
   @Override
   public void onLeftApplication(AdColonyInterstitial ad) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onLeftApplication(ad);
-    }
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) listener.onLeftApplication(ad);
   }
 
   @Override
   public void onClosed(AdColonyInterstitial ad) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onClosed(ad);
-      mListeners.remove(zoneID);
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) {
+      listener.onClosed(ad);
+      removeListener(ad.getZoneID());
     }
   }
 
   @Override
-  public void onIAPEvent(AdColonyInterstitial ad, String product_id, int engagement_type) {
-    String zoneID = ad.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onIAPEvent(ad, product_id, engagement_type);
-    }
+  public void onIAPEvent(AdColonyInterstitial ad, String productId, int engagementType) {
+    AdColonyRewardedRenderer listener = getListener(ad.getZoneID());
+    if (listener != null) listener.onIAPEvent(ad, productId, engagementType);
   }
   //endregion
 
   //region AdColonyRewardListener implementation
   @Override
   public void onReward(AdColonyReward adColonyReward) {
-    String zoneID = adColonyReward.getZoneID();
-    if (isListenerAvailable(zoneID)) {
-      mListeners.get(zoneID).get().onReward(adColonyReward);
-    }
+    AdColonyRewardedRenderer listener = getListener(adColonyReward.getZoneID());
+    if (listener != null) listener.onReward(adColonyReward);
   }
   //endregion
 }

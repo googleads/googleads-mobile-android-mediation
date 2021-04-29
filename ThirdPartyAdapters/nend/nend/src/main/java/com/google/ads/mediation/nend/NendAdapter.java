@@ -14,7 +14,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -33,17 +33,18 @@ import net.nend.android.NendAdInterstitial.NendAdInterstitialStatusCode;
 import net.nend.android.NendAdInterstitial.OnCompletionListener;
 import net.nend.android.NendAdInterstitialVideo;
 import net.nend.android.NendAdVideo;
-import net.nend.android.NendAdVideoListener;
+import net.nend.android.NendAdVideoActionListener;
+import net.nend.android.NendAdVideoPlayingState;
+import net.nend.android.NendAdVideoPlayingStateListener;
+import net.nend.android.NendAdVideoType;
 import net.nend.android.NendAdView;
 import net.nend.android.NendAdView.NendError;
 
-/** The {@link NendAdapter} class is used to load and show Nend interstitial and banner ads. */
-@SuppressWarnings("unused")
-public class NendAdapter extends NendMediationAdapter
-    implements MediationBannerAdapter,
-        MediationInterstitialAdapter,
-        NendAdInformationListener,
-        OnContextChangedListener {
+/**
+ * The {@link NendAdapter} class is used to load and show Nend interstitial and banner ads.
+ */
+public class NendAdapter extends NendMediationAdapter implements MediationBannerAdapter,
+    MediationInterstitialAdapter, NendAdInformationListener, OnContextChangedListener {
 
   private NendAdView mNendAdView;
   private MediationBannerListener mListener;
@@ -76,7 +77,7 @@ public class NendAdapter extends NendMediationAdapter
   private boolean mIsRequestBannerAd = false;
   private boolean mIsPausingWebView = false;
 
-  private View.OnAttachStateChangeListener mAttachStateChangeListener =
+  private final View.OnAttachStateChangeListener mAttachStateChangeListener =
       new View.OnAttachStateChangeListener() {
         @Override
         public void onViewAttachedToWindow(View view) {
@@ -138,45 +139,60 @@ public class NendAdapter extends NendMediationAdapter
     }
   }
 
+  // region MediationInterstitialAdapter implementation
   @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener listener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    mListenerInterstitial = listener;
+  public void requestInterstitialAd(@NonNull Context context,
+      @NonNull MediationInterstitialListener listener,
+      @NonNull Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras) {
 
     if (!(context instanceof Activity)) {
-      Log.w(TAG, "Failed to request ad from Nend: Context not an Activity.");
-      adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Nend requires an Activity context to load an ad.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
       return;
     }
 
-    AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
-    if (mapper == null) {
-      Log.w(TAG, "Failed to request ad from Nend: Invalid Spot ID or API Key.");
-      adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+    String apiKey = serverParameters.getString(KEY_API_KEY);
+    if (TextUtils.isEmpty(apiKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid API key.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
       return;
     }
 
-    mActivityWeakReference = new WeakReference<>((Activity) context);
+    int spotID = Integer.parseInt(serverParameters.getString(KEY_SPOT_ID, "0"));
+    if (spotID <= 0) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid spot ID.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
+      return;
+    }
 
-    if (mediationExtras != null) {
-      final InterstitialType type =
-          (InterstitialType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
-      if (type == InterstitialType.TYPE_VIDEO) {
-        requestNendInterstialVideo(
-            context,
-            mapper.apiKey,
-            mapper.spotId,
-            mediationExtras.getString(KEY_USER_ID, ""),
-            mediationAdRequest);
-        return;
+    mListenerInterstitial = listener;
+
+    Activity activity = (Activity) context;
+    mActivityWeakReference = new WeakReference<>(activity);
+
+    InterstitialType type = InterstitialType.TYPE_NORMAL;
+    String userID = "";
+    if (mediationExtras != null)  {
+      try {
+        type = (InterstitialType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
+        userID = mediationExtras.getString(KEY_USER_ID);
+      } catch (Exception exception) {
+        // Ignore exception.
       }
     }
 
-    requestNendInterstitial(context, mapper.apiKey, mapper.spotId);
+    if (type == InterstitialType.TYPE_VIDEO) {
+      requestNendInterstialVideo(context, apiKey, spotID, userID);
+    } else {
+      requestNendInterstitial(context, apiKey, spotID);
+    }
   }
 
   private void requestNendInterstitial(Context context, String apikey, int spotId) {
@@ -186,101 +202,128 @@ public class NendAdapter extends NendMediationAdapter
         new OnCompletionListener() {
           @Override
           public void onCompletion(NendAdInterstitialStatusCode status) {
-            switch (status) {
-              case SUCCESS:
-                adLoaded();
-                break;
-              case FAILED_AD_DOWNLOAD:
-                adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-                break;
-              case FAILED_AD_REQUEST:
-                adFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-                break;
-              case INVALID_RESPONSE_TYPE:
-                adFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-                break;
+            if (status != NendAdInterstitialStatusCode.SUCCESS) {
+              String errorMessage = String
+                  .format("Failed to load interstitial ad from nend: %s", status.toString());
+              AdError error = new AdError(getMediationErrorCode(status), errorMessage,
+                  NEND_SDK_ERROR_DOMAIN);
+              Log.e(TAG, error.getMessage());
+              if (mListenerInterstitial != null) {
+                mListenerInterstitial.onAdFailedToLoad(NendAdapter.this, error);
+              }
+              return;
+            }
+
+            if (mListenerInterstitial != null) {
+              mListenerInterstitial.onAdLoaded(NendAdapter.this);
             }
           }
         });
   }
 
-  private void requestNendInterstialVideo(
-      Context context,
-      String apikey,
-      int spotId,
-      String userId,
-      MediationAdRequest mediationAdRequest) {
+  private void requestNendInterstialVideo(Context context, String apikey, int spotId,
+      String userId) {
+
     mNendAdInterstitialVideo = new NendAdInterstitialVideo(context, spotId, apikey);
     mNendAdInterstitialVideo.setMediationName(MEDIATION_NAME_ADMOB);
     if (!TextUtils.isEmpty(userId)) {
       mNendAdInterstitialVideo.setUserId(userId);
     }
-    mNendAdInterstitialVideo.setAdListener(
-        new NendAdVideoListener() {
-          @Override
-          public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
-            adLoaded();
-          }
 
-          @Override
-          public void onFailedToLoad(@NonNull NendAdVideo nendAdVideo, int errorCode) {
-            adFailedToLoad(ErrorUtil.convertErrorCodeFromNendVideoToAdMob(errorCode));
-          }
+    mNendAdInterstitialVideo.setActionListener(new NendAdVideoActionListener() {
+      @Override
+      public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
+        if (mNendAdInterstitialVideo.getType() == NendAdVideoType.NORMAL) {
+          NendAdVideoPlayingState state = mNendAdInterstitialVideo.playingState();
+          if (state != null) {
+            state.setPlayingStateListener(new NendAdVideoPlayingStateListener() {
+              @Override
+              public void onStarted(@NonNull NendAdVideo nendAdVideo) {
+                mInterstitialVideoStatus = InterstitialVideoStatus.PLAYING;
+              }
 
-          @Override
-          public void onFailedToPlay(@NonNull NendAdVideo nendAdVideo) {
-            Log.w(TAG, "Interstitial video ad failed to play...");
-          }
+              @Override
+              public void onStopped(@NonNull NendAdVideo nendAdVideo) {
+                if (mInterstitialVideoStatus != InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
+                  mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
+                }
+              }
 
-          @Override
-          public void onShown(@NonNull NendAdVideo nendAdVideo) {
-            adOpened();
+              @Override
+              public void onCompleted(@NonNull NendAdVideo nendAdVideo) {
+                mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
+              }
+            });
           }
+        }
 
-          @Override
-          public void onClosed(@NonNull NendAdVideo nendAdVideo) {
-            adClosed();
-            if (mInterstitialVideoStatus == InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
-              adLeftApplication();
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdLoaded(NendAdapter.this);
+        }
+      }
+
+      @Override
+      public void onFailedToLoad(@NonNull NendAdVideo nendAdVideo, int errorCode) {
+        String errorMessage = String
+            .format("Nend SDK returned an ad load failure callback with code: %d", errorCode);
+        AdError error = new AdError(errorCode, errorMessage, NEND_SDK_ERROR_DOMAIN);
+        Log.e(TAG, error.getMessage());
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdFailedToLoad(NendAdapter.this, error);
+        }
+        mNendAdInterstitialVideo.releaseAd();
+      }
+
+      @Override
+      public void onFailedToPlay(@NonNull NendAdVideo nendAdVideo) {
+        Log.e(TAG, "Failed to play nend interstitial video ad.");
+      }
+
+      @Override
+      public void onShown(@NonNull NendAdVideo nendAdVideo) {
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdOpened(NendAdapter.this);
+        }
+      }
+
+      @Override
+      public void onClosed(@NonNull NendAdVideo nendAdVideo) {
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdClosed(NendAdapter.this);
+          if (mInterstitialVideoStatus == InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
+            mListenerInterstitial.onAdLeftApplication(NendAdapter.this);
+          }
+        }
+        mNendAdInterstitialVideo.releaseAd();
+      }
+
+      @Override
+      public void onAdClicked(@NonNull NendAdVideo nendAdVideo) {
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdClicked(NendAdapter.this);
+        }
+
+        switch (mInterstitialVideoStatus) {
+          case PLAYING:
+          case PLAYING_WHEN_CLICKED:
+            mInterstitialVideoStatus = InterstitialVideoStatus.PLAYING_WHEN_CLICKED;
+            break;
+          default:
+            if (mListenerInterstitial != null) {
+              mListenerInterstitial.onAdLeftApplication(NendAdapter.this);
             }
-          }
+            break;
+        }
+      }
 
-          @Override
-          public void onStarted(@NonNull NendAdVideo nendAdVideo) {
-            mInterstitialVideoStatus = InterstitialVideoStatus.PLAYING;
-          }
+      @Override
+      public void onInformationClicked(@NonNull NendAdVideo nendAdVideo) {
+        if (mListenerInterstitial != null) {
+          mListenerInterstitial.onAdLeftApplication(NendAdapter.this);
+        }
+      }
+    });
 
-          @Override
-          public void onStopped(@NonNull NendAdVideo nendAdVideo) {
-            if (mInterstitialVideoStatus != InterstitialVideoStatus.PLAYING_WHEN_CLICKED) {
-              mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
-            }
-          }
-
-          @Override
-          public void onCompleted(@NonNull NendAdVideo nendAdVideo) {
-            mInterstitialVideoStatus = InterstitialVideoStatus.STOPPED;
-          }
-
-          @Override
-          public void onAdClicked(@NonNull NendAdVideo nendAdVideo) {
-            adClicked();
-            switch (mInterstitialVideoStatus) {
-              case PLAYING:
-              case PLAYING_WHEN_CLICKED:
-                mInterstitialVideoStatus = InterstitialVideoStatus.PLAYING_WHEN_CLICKED;
-                break;
-              default:
-                adLeftApplication();
-                break;
-            }
-          }
-
-          @Override
-          public void onInformationClicked(@NonNull NendAdVideo nendAdVideo) {
-            adLeftApplication();
-          }
-        });
     mNendAdInterstitialVideo.loadAd();
   }
 
@@ -295,102 +338,105 @@ public class NendAdapter extends NendMediationAdapter
 
   private void showNendAdInterstitial() {
     if (mActivityWeakReference == null || mActivityWeakReference.get() == null) {
-      Log.e(
-          TAG,
-          "Failed to show Nend Interstitial ad: "
-              + "An activity context is required to show Nend ads.");
+      Log.e(TAG, "Failed to show nend interstitial ad: The context object is null.");
       return;
     }
 
-    NendAdInterstitialShowResult result =
-        NendAdInterstitial.showAd(
-            mActivityWeakReference.get(),
-            new NendAdInterstitial.OnClickListener() {
-              @Override
-              public void onClick(NendAdInterstitialClickType clickType) {
-                switch (clickType) {
-                  case CLOSE:
-                    adClosed();
-                    break;
-                  case DOWNLOAD:
-                    adClicked();
-                    adLeftApplication();
-                    adClosed();
-                    break;
-                  case INFORMATION:
-                    adLeftApplication();
-                    adClosed();
-                    break;
-                  default:
-                    break;
+    NendAdInterstitialShowResult result = NendAdInterstitial.showAd(mActivityWeakReference.get(),
+        new NendAdInterstitial.OnClickListener() {
+          @Override
+          public void onClick(NendAdInterstitialClickType clickType) {
+            switch (clickType) {
+              case CLOSE:
+                if (mListenerInterstitial != null) {
+                  mListenerInterstitial.onAdClosed(NendAdapter.this);
                 }
-              }
-            });
+                break;
+              case DOWNLOAD:
+                if (mListenerInterstitial != null) {
+                  mListenerInterstitial.onAdClicked(NendAdapter.this);
+                  mListenerInterstitial.onAdLeftApplication(NendAdapter.this);
+                  mListenerInterstitial.onAdClosed(NendAdapter.this);
+                }
+                break;
+              case INFORMATION:
+                if (mListenerInterstitial != null) {
+                  mListenerInterstitial.onAdLeftApplication(NendAdapter.this);
+                  mListenerInterstitial.onAdClosed(NendAdapter.this);
+                }
+                break;
+              default:
+                break;
+            }
+          }
+        });
 
-    switch (result) {
-      case AD_SHOW_SUCCESS:
-        adOpened();
-        break;
-      case AD_SHOW_ALREADY:
-        break;
-      case AD_FREQUENCY_NOT_REACHABLE:
-        break;
-      case AD_REQUEST_INCOMPLETE:
-        break;
-      case AD_LOAD_INCOMPLETE:
-        // Request is not start yet or requesting now.
-        break;
-      case AD_DOWNLOAD_INCOMPLETE:
-        break;
-      default:
-        break;
+    if (result != NendAdInterstitialShowResult.AD_SHOW_SUCCESS) {
+      String errorMessage = String
+          .format("Failed to show interstitial ad from nend: %s", result.toString());
+      AdError error = new AdError(getMediationErrorCode(result), errorMessage,
+          NEND_SDK_ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      mListenerInterstitial.onAdOpened(NendAdapter.this);
+      mListenerInterstitial.onAdClosed(NendAdapter.this);
+      return;
+    }
+
+    if (mListenerInterstitial != null) {
+      mListenerInterstitial.onAdOpened(NendAdapter.this);
     }
   }
 
   private void showNendAdInterstitialVideo() {
-    if (mNendAdInterstitialVideo.isLoaded()) {
-      if (mActivityWeakReference != null && mActivityWeakReference.get() != null) {
-        mNendAdInterstitialVideo.showAd(mActivityWeakReference.get());
-      } else {
-        Log.e(
-            TAG,
-            "Failed to show Nend Interstitial ad: "
-                + "An activity context is required to show Nend ads.");
-      }
-    } else {
-      Log.w(TAG, "Nend Interstitial video ad is not ready.");
+    if (!mNendAdInterstitialVideo.isLoaded()) {
+      Log.w(TAG, "nend interstitial video ad is not ready.");
+      return;
     }
-  }
 
-  @Override
-  public View getBannerView() {
-    return bannerContainerView;
-  }
+    if (mActivityWeakReference == null || mActivityWeakReference.get() == null) {
+      Log.e(TAG, "Failed to show nend interstitial ad: The context object is null.");
+      return;
+    }
 
+    mNendAdInterstitialVideo.showAd(mActivityWeakReference.get());
+  }
+  // endregion
+
+  // region MediationBannerAdapter implementation
   @Override
-  public void requestBannerAd(
-      final Context context,
-      MediationBannerListener listener,
-      Bundle serverParameters,
-      AdSize adSize,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull MediationBannerListener listener, @NonNull Bundle serverParameters,
+      @NonNull AdSize adSize, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras) {
 
     final AdSize supportedAdSize = getSupportedAdSize(context, adSize);
     if (supportedAdSize == null) {
-      Log.w(TAG, "Failed to request ad, Unsupported ad size: " + adSize.toString());
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      String errorMessage = String.format("Unsupported ad size: %s", adSize.toString());
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
       return;
     }
 
-    AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
-    if (mapper == null) {
-      Log.w(TAG, "Failed to request ad from Nend: Invalid Spot ID or API Key.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+    String apiKey = serverParameters.getString(KEY_API_KEY);
+    if (TextUtils.isEmpty(apiKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid API key.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
       return;
     }
 
-    mNendAdView = new NendAdView(context, mapper.spotId, mapper.apiKey);
+    int spotID = Integer.parseInt(serverParameters.getString(KEY_SPOT_ID, "0"));
+    if (spotID <= 0) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid spot ID.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(NendAdapter.this, error);
+      return;
+    }
+
+    mNendAdView = new NendAdView(context, spotID, apiKey);
     bannerContainerView = new FrameLayout(context);
     FrameLayout.LayoutParams containerViewParams =
         new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -412,12 +458,19 @@ public class NendAdapter extends NendMediationAdapter
     // So, reload function of NendAdView should be stopped.
     mNendAdView.pause();
 
-    mNendAdView.setListener(this);
+    mNendAdView.setListener(NendAdapter.this);
     mNendAdView.addOnAttachStateChangeListener(mAttachStateChangeListener);
     mNendAdView.loadAd();
 
     mIsRequestBannerAd = true;
   }
+
+  @Override
+  @NonNull
+  public View getBannerView() {
+    return bannerContainerView;
+  }
+  // endregion
 
   // region Banner ad utility methods.
   @Nullable
@@ -457,7 +510,7 @@ public class NendAdapter extends NendMediationAdapter
   public void onReceiveAd(@NonNull NendAdView adView) {
     if (mListener != null && mIsRequestBannerAd) {
       // New request or auto reload from AdMob network.
-      mListener.onAdLoaded(this);
+      mListener.onAdLoaded(NendAdapter.this);
       mIsRequestBannerAd = false;
     } else {
       // This case is not need to send onAdLoaded to AdMob network.
@@ -471,25 +524,17 @@ public class NendAdapter extends NendMediationAdapter
       // This case is not need to call listener function to AdMob network.
       return;
     }
+
     mIsRequestBannerAd = false;
     NendError nendError = adView.getNendError();
     if (mListener != null) {
-      switch (nendError) {
-        case INVALID_RESPONSE_TYPE:
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-          break;
-        case FAILED_AD_DOWNLOAD:
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-          break;
-        case FAILED_AD_REQUEST:
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-          break;
-        case AD_SIZE_TOO_LARGE:
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-          break;
-        case AD_SIZE_DIFFERENCES:
-          mListener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-          break;
+      String errorMessage = String
+          .format("Nend SDK returned an ad load failure callback: ", nendError.toString());
+      AdError error = new AdError(getMediationErrorCode(nendError), errorMessage,
+          NEND_SDK_ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      if (mListener != null) {
+        mListener.onAdFailedToLoad(NendAdapter.this, error);
       }
     }
   }
@@ -497,73 +542,34 @@ public class NendAdapter extends NendMediationAdapter
   @Override
   public void onClick(@NonNull NendAdView adView) {
     if (mListener != null) {
-      mListener.onAdClicked(this);
-      mListener.onAdOpened(this);
-      mListener.onAdLeftApplication(this);
+      mListener.onAdClicked(NendAdapter.this);
+      mListener.onAdOpened(NendAdapter.this);
+      mListener.onAdLeftApplication(NendAdapter.this);
     }
   }
 
   @Override
   public void onDismissScreen(@NonNull NendAdView adView) {
     if (mListener != null) {
-      mListener.onAdClosed(this);
+      mListener.onAdClosed(NendAdapter.this);
     }
   }
 
   @Override
   public void onInformationButtonClick(@NonNull NendAdView adView) {
     if (mListener != null) {
-      mListener.onAdLeftApplication(this);
-    }
-  }
-  // endregion
-
-  // region MediationInterstitialListener callbacks.
-  public void adLeftApplication() {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdLeftApplication(this);
-    }
-  }
-
-  public void adClicked() {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdClicked(this);
-    }
-  }
-
-  public void adClosed() {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdClosed(this);
-    }
-  }
-
-  public void adFailedToLoad(int errorCode) {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdFailedToLoad(this, errorCode);
-    }
-  }
-
-  public void adLoaded() {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdLoaded(this);
-    }
-  }
-
-  public void adOpened() {
-    if (mListenerInterstitial != null) {
-      mListenerInterstitial.onAdOpened(this);
+      mListener.onAdLeftApplication(NendAdapter.this);
     }
   }
   // endregion
 
   // region OnContextChangedListener implementation
   @Override
-  public void onContextChanged(Context context) {
+  public void onContextChanged(@NonNull Context context) {
     if (!(context instanceof Activity)) {
       Log.w(TAG, "Nend Ads require an Activity context to show ads.");
       return;
     }
-
     mActivityWeakReference = new WeakReference<>((Activity) context);
   }
   // endregion

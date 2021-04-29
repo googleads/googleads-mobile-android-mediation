@@ -1,5 +1,28 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Next version
+- Verified compatibility with MoPub SDK 5.16.4.
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- MoPub SDK version 5.16.4.
+
+#### Version 5.16.3.0
+- Verified compatibility with MoPub SDK 5.16.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.8.0.
+- MoPub SDK version 5.16.3.
+
+#### Version 5.16.2.0
+- Verified compatibility with MoPub SDK 5.16.2.
+- Updated the minimum required Google Mobile Ads SDK version to 19.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.8.0.
+- MoPub SDK version 5.16.2.
+
 #### Version 5.15.0.1
 - Removed support for the deprecated `NativeAppInstallAd` format. Apps should request for unified native ads.
 - Updated the minimum required Google Mobile Ads SDK version to 19.6.0.

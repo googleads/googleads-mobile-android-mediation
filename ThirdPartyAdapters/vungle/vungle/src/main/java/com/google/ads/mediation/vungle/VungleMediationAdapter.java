@@ -41,9 +41,9 @@ public class VungleMediationAdapter extends Adapter
   private AdConfig mAdConfig;
   private String mUserID;
   private String mPlacement;
-  private Handler mHandler = new Handler(Looper.getMainLooper());
+  private final Handler mHandler = new Handler(Looper.getMainLooper());
 
-  private static HashMap<String, WeakReference<VungleMediationAdapter>> mPlacementsInUse =
+  private static final HashMap<String, WeakReference<VungleMediationAdapter>> mPlacementsInUse =
       new HashMap<>();
 
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
@@ -225,7 +225,7 @@ public class VungleMediationAdapter extends Adapter
   }
 
   /**
-   * {@link LoadAdCallback} implemenatation from Vungle
+   * {@link LoadAdCallback} implemenatation from Vungle.
    */
   @Override
   public void onAdLoad(final String placementId) {
@@ -260,9 +260,7 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   @Deprecated
-  public void onAdEnd(
-      final String placementId,
-      final boolean wasSuccessfulView,
+  public void onAdEnd(final String placementId, final boolean wasSuccessfulView,
       final boolean wasCallToActionClicked) {
   }
 
@@ -321,7 +319,7 @@ public class VungleMediationAdapter extends Adapter
           @Override
           public void run() {
             if (mMediationAdLoadCallback != null) {
-              Log.w(TAG, "Failed to load ad from Vungle", throwable);
+              Log.w(TAG, "Failed to load ad from Vungle.", throwable);
               mMediationAdLoadCallback.onFailure(throwable.getLocalizedMessage());
             }
 

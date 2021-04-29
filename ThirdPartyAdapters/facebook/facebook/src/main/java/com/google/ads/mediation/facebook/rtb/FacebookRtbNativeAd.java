@@ -293,20 +293,47 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(View view,
-      Map<String, View> clickableAssetViews,
+  public void trackViews(View view, Map<String, View> clickableAssetViews,
       Map<String, View> nonClickableAssetViews) {
 
     // Facebook does its own click handling.
     setOverrideClickHandling(true);
 
     ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
-    ImageView iconView = (ImageView) clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
+    View iconView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
 
-    if (mNativeAdBase instanceof NativeAd) {
-      ((NativeAd) mNativeAdBase).registerViewForInteraction(view, mMediaView, iconView, assetViews);
-    } else if (mNativeAdBase instanceof NativeBannerAd) {
-      ((NativeBannerAd) mNativeAdBase).registerViewForInteraction(view, iconView, assetViews);
+    if (mNativeAdBase instanceof NativeBannerAd) {
+      // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
+      // too late.
+      if (iconView == null) {
+        Log.w(TAG, "Missing or invalid native ad icon asset. Facebook impression "
+            + "recording might be impacted for this ad.");
+        return;
+      }
+
+      if (!(iconView instanceof ImageView)) {
+        String errorMessage = String.format("Native ad icon asset is rendered with an "
+            + "incompatible class type. Facebook impression recording might be impacted "
+            + "for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
+        Log.w(TAG, errorMessage);
+        return;
+      }
+
+      NativeBannerAd nativeBannerAd = (NativeBannerAd) mNativeAdBase;
+      nativeBannerAd.registerViewForInteraction(view, (ImageView) iconView, assetViews);
+    } else if (mNativeAdBase instanceof NativeAd) {
+      NativeAd nativeAd = (NativeAd) mNativeAdBase;
+      if (iconView instanceof ImageView) {
+        nativeAd.registerViewForInteraction(view, mMediaView, (ImageView) iconView, assetViews);
+      } else {
+        Log.w(TAG, "Native icon asset is not of type ImageView. "
+            + "Calling registerViewForInteraction() without a reference to the icon view.");
+        nativeAd.registerViewForInteraction(view, mMediaView, assetViews);
+      }
+    } else {
+      Log.w(TAG, "Native ad type is not of type NativeAd or NativeBannerAd. "
+          + "It is not currently supported by the Facebook Adapter. Facebook impression "
+          + "recording might be impacted for this ad.");
     }
   }
 
