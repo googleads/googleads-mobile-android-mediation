@@ -248,7 +248,6 @@ public class VerizonMediationAdapter extends Adapter
 
     boolean success = true;
     if (!VASAds.isInitialized()) {
-
       if (!(context instanceof Activity)) {
         Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity" +
             " context.");
