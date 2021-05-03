@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 9010700
+        versionCode 9010900
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
     }
