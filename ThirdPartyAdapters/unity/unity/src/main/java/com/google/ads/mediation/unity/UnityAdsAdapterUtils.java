@@ -6,13 +6,11 @@ import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
 import com.google.android.gms.ads.MediationUtils;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.UnityAds.UnityAdsError;
+import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import com.google.android.gms.ads.AdSize;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Utility class for the Unity adapter.
@@ -23,6 +21,18 @@ public class UnityAdsAdapterUtils {
    * Private constructor
    */
   private UnityAdsAdapterUtils() {
+  }
+
+  /**
+   * Creates a formatted SDK error message based on the specified {@link UnityAds.UnityAdsInitializationError}.
+   *
+   * @param UnityAds.UnityAdsInitializationError error object from Unity.
+   * @param description   the error message.
+   * @return the error message.
+   */
+  @NonNull
+  static String createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError, @NonNull String description) {
+    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
   }
 
   /**
@@ -37,6 +47,18 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
+   * Creates a formatted SDK error message based on the specified {@link UnityAds.UnityAdsLoadError}.
+   *
+   * @param UnityAds.UnityAdsLoadError error object from Unity.
+   * @param description   the error message.
+   * @return the error message.
+   */
+  @NonNull
+  static String createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError, @NonNull String description) {
+    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
+  }
+
+  /**
    * Creates a formatted SDK error message based on the specified {@link UnityAds.UnityAdsShowError}.
    *
    * @param UnityAds.UnityAdsShowError error object from Unity.
@@ -44,8 +66,8 @@ public class UnityAdsAdapterUtils {
    * @return the error message.
    */
   @NonNull
-  static String createSDKShowError(@NonNull UnityAds.UnityAdsShowError unityAdsShowError, @NonNull String description) {
-    return String.format("%d: %s", getMediationShowErrorCode(unityAdsShowError), description);
+  static String createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError, @NonNull String description) {
+    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
   }
 
   /**
@@ -86,46 +108,45 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Gets the mediation specific error code for the specified {@link UnityAdsError}.
+   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsInitializationError}.
    *
-   * @param unityAdsError error object from Unity.
-   * @return mediation specific error code.
+   * @param UnityAds.UnityAdsInitializationError error object from Unity.
+   * @return mediation specific show error code.
    */
-  static int getMediationErrorCode(@NonNull UnityAdsError unityAdsError) {
-    int errorCode = 0;
+  static int getMediationErrorCode(@NonNull UnityAdsInitializationError unityAdsError) {
     switch (unityAdsError) {
-      case NOT_INITIALIZED:
-        errorCode = 1;
-        break;
-      case INITIALIZE_FAILED:
-        errorCode = 2;
-        break;
-      case INVALID_ARGUMENT:
-        errorCode = 3;
-        break;
-      case VIDEO_PLAYER_ERROR:
-        errorCode = 4;
-        break;
-      case INIT_SANITY_CHECK_FAIL:
-        errorCode = 5;
-        break;
-      case AD_BLOCKER_DETECTED:
-        errorCode = 6;
-        break;
-      case FILE_IO_ERROR:
-        errorCode = 7;
-        break;
-      case DEVICE_ID_ERROR:
-        errorCode = 8;
-        break;
-      case SHOW_ERROR:
-        errorCode = 9;
-        break;
       case INTERNAL_ERROR:
-        errorCode = 10;
-        break;
+        return 301;
+      case INVALID_ARGUMENT:
+        return 302;
+      case AD_BLOCKER_DETECTED:
+        return 303;
+      default:
+        return 300;
     }
-    return errorCode;
+  }
+
+  /**
+   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsLoadError}.
+   *
+   * @param UnityAds.UnityAdsLoadError error object from Unity.
+   * @return mediation specific show error code.
+   */
+  static int getMediationErrorCode(@NonNull UnityAds.UnityAdsLoadError unityAdsError) {
+    switch (unityAdsError) {
+      case INITIALIZE_FAILED:
+        return 401;
+      case INTERNAL_ERROR:
+        return 402;
+      case INVALID_ARGUMENT:
+        return 403;
+      case NO_FILL:
+        return 404;
+      case TIMEOUT:
+        return 405;
+      default:
+        return 400;
+    }
   }
 
   /**
@@ -134,32 +155,25 @@ public class UnityAdsAdapterUtils {
    * @param UnityAds.UnityAdsShowError error object from Unity.
    * @return mediation specific show error code.
    */
-  static int getMediationShowErrorCode(@NonNull UnityAds.UnityAdsShowError unityAdsError) {
-    int errorCode = 0;
+  static int getMediationErrorCode(@NonNull UnityAds.UnityAdsShowError unityAdsError) {
     switch (unityAdsError) {
       case NOT_INITIALIZED:
-        errorCode = 1;
-        break;
+        return 501;
       case NOT_READY:
-        errorCode = 2;
-        break;
+        return 502;
       case VIDEO_PLAYER_ERROR:
-        errorCode = 3;
-        break;
+        return 503;
       case INVALID_ARGUMENT:
-        errorCode = 4;
-        break;
+        return 504;
       case NO_CONNECTION:
-        errorCode = 5;
-        break;
+        return 505;
       case ALREADY_SHOWING:
-        errorCode = 6;
-        break;
+        return 506;
       case INTERNAL_ERROR:
-        errorCode = 7;
-        break;
+        return 507;
+      default:
+        return 500;
     }
-    return errorCode;
   }
 
   @Nullable

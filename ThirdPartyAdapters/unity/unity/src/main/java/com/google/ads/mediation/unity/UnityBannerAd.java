@@ -202,7 +202,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
 
-            String adapterError = createAdapterError(INITIALIZATION_FAILURE,
+            String adapterError = createSDKError(unityAdsInitializationError,
                 "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load banner ad for placement ID '" + bannerPlacementId
@@ -211,7 +211,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
             if (mMediationBannerListener != null) {
               mMediationBannerListener
-                  .onAdFailedToLoad(UnityBannerAd.this, INITIALIZATION_FAILURE);
+                  .onAdFailedToLoad(UnityBannerAd.this,
+                      getMediationErrorCode(unityAdsInitializationError));
             }
           }
         });

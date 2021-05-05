@@ -15,7 +15,8 @@
 package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKShowError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
 
 import android.app.Activity;
 import android.content.Context;
@@ -90,14 +91,12 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error, String message) {
       mPlacementId = placementId;
       mPlacementsInUse.remove(mPlacementId);
-      String errorMessage = createAdapterError(
-          ERROR_PLACEMENT_STATE_NO_FILL,
-          "UnityAds failed to load for placement ID: "
-              + placementId);
+      String errorMessage = createSDKError(error,
+          "UnityAds failed to load for placement ID: " + placementId);
       Log.w(TAG, errorMessage);
       if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener
-            .onAdFailedToLoad(UnityAdapter.this, ERROR_PLACEMENT_STATE_NO_FILL);
+            .onAdFailedToLoad(UnityAdapter.this, getMediationErrorCode(error));
       }
     }
   };
@@ -166,7 +165,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String adapterError = createAdapterError(INITIALIZATION_FAILURE,
+            String adapterError = createSDKError(unityAdsInitializationError,
                 "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load interstitial ad for placement ID '" + mPlacementId
@@ -174,7 +173,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.e(TAG, adapterError);
             if (mMediationInterstitialListener != null) {
               mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this,
-                  INITIALIZATION_FAILURE);
+                  getMediationErrorCode(unityAdsInitializationError));
             }
           }
         });
@@ -261,7 +260,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     @Override
     public void onUnityAdsShowFailure(String placementId, UnityAdsShowError error, String message) {
       // Unity Ads ad failed to show.
-      String sdkError = createSDKShowError(error, message);
+      String sdkError = createSDKError(error, message);
       Log.w(TAG, "Unity Ads returned an error: " + sdkError);
       if (mMediationInterstitialListener != null && error == UnityAdsShowError.NOT_READY) {
         mMediationInterstitialListener.onAdClosed(UnityAdapter.this);

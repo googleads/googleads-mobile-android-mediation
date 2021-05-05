@@ -15,13 +15,10 @@
 package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKShowError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_AD_ALREADY_LOADING;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_AD_NOT_READY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_PLACEMENT_STATE_NO_FILL;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.INITIALIZATION_FAILURE;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.TAG;
 
 import android.app.Activity;
@@ -86,10 +83,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error, String message) {
       mPlacementId = placementId;
       mPlacementsInUse.remove(mPlacementId);
-      String errorMessage = createAdapterError(
-          ERROR_PLACEMENT_STATE_NO_FILL,
-          "UnityAds failed to load for placement ID: "
-              + placementId);
+      String errorMessage = createSDKError(error,
+          "UnityAds failed to load for placement ID: " + placementId);
       Log.w(TAG, errorMessage);
       if (mMediationAdLoadCallback != null) {
         mMediationAdLoadCallback
@@ -145,8 +140,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
             String adapterError =
-                createAdapterError(
-                    INITIALIZATION_FAILURE, "UnityAds initialization failed.");
+                createSDKError(
+                    unityAdsInitializationError, "UnityAds initialization failed.");
             Log.w(TAG, adapterError);
             mMediationAdLoadCallback.onFailure(adapterError);
           }
@@ -239,7 +234,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     @Override
     public void onUnityAdsShowFailure(String placementId, UnityAdsShowError error, String message) {
       // Unity Ads ad failed to show.
-      String sdkError = createSDKShowError(error, message);
+      String sdkError = createSDKError(error, message);
       Log.w(TAG, "Unity Ads returned an error: " + sdkError);
       if (mMediationRewardedAdCallback != null) {
         mMediationRewardedAdCallback.onAdFailedToShow(sdkError);
