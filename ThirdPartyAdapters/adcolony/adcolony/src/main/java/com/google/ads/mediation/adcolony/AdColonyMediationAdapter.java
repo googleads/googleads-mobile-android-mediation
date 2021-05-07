@@ -67,6 +67,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       ERROR_BANNER_SIZE_MISMATCH,
       ERROR_PRESENTATION_AD_NOT_LOADED,
       ERROR_CONTEXT_NOT_ACTIVITY,
+      ERROR_PRESENTATION_AD_SHOW,
   })
   @Retention(RetentionPolicy.SOURCE)
   public @interface AdapterError {
@@ -106,6 +107,11 @@ public class AdColonyMediationAdapter extends RtbAdapter {
    * Context used to initialize the AdColony SDK was not an {@link Activity} instance.
    */
   public static final int ERROR_CONTEXT_NOT_ACTIVITY = 106;
+
+  /**
+   * Presentation error due to ad show returning false.
+   */
+  public static final int ERROR_PRESENTATION_AD_SHOW = 107;
 
   @NonNull
   public static AdError createAdapterError(@AdapterError int error, @NonNull String errorMessage) {
@@ -167,9 +173,9 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void initialize(
-          @NonNull Context context,
-          @NonNull final InitializationCompleteCallback initializationCompleteCallback,
-          @NonNull List<MediationConfiguration> mediationConfigurations
+      @NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations
   ) {
     if (!(context instanceof Activity) && !(context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
@@ -236,8 +242,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRtbBannerAd(
-          @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
+      @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
     adColonyBannerRenderer = new AdColonyBannerRenderer(bannerAdConfiguration, mediationAdLoadCallback);
     adColonyBannerRenderer.render();
@@ -245,8 +251,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRtbInterstitialAd(
-          @NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
+      @NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
   ) {
     adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration, mediationAdLoadCallback);
     adColonyInterstitialRenderer.render();
@@ -254,16 +260,16 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRtbRewardedAd(
-          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
+      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
   ) {
     loadRewardedAd(rewardedAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
   public void loadRewardedAd(
-          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
+      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
   ) {
     adColonyRewardedRenderer = new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
     adColonyRewardedRenderer.render();

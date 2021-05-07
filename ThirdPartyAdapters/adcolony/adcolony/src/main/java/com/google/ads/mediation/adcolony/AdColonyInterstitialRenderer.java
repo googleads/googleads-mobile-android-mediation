@@ -1,9 +1,14 @@
 package com.google.ads.mediation.adcolony;
 
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_NOT_LOADED;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_PRESENTATION_AD_SHOW;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
+import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -25,38 +30,59 @@ import java.util.ArrayList;
 public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener implements
     MediationInterstitialAd {
 
-  private MediationInterstitialAdCallback mInterstitialAdCallback;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
-  private AdColonyInterstitial adColonyInterstitial;
   private final MediationInterstitialAdConfiguration adConfiguration;
+  private final AdColonyAdOptions adOptions;
+  private MediationInterstitialAdCallback mInterstitialAdCallback;
+  private AdColonyInterstitial adColonyInterstitial;
 
   AdColonyInterstitialRenderer(
-          @NonNull MediationInterstitialAdConfiguration adConfiguration,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
   ) {
     this.mAdLoadCallback = callback;
     this.adConfiguration = adConfiguration;
+    this.adOptions = AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
   }
 
   public void render() {
-    AdColonyAdOptions adOptions = AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
     ArrayList<String> listFromServerParams =
-            AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
+        AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
     String requestedZone = AdColonyManager
-            .getInstance()
-            .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+        .getInstance()
+        .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+
+    // Cannot request an ad without a valid zone.
+    if (TextUtils.isEmpty(requestedZone)) {
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Zone ID.");
+      Log.e(TAG, error.getMessage());
+      mAdLoadCallback.onFailure(error);
+      return;
+    }
+
     AdColony.requestInterstitial(requestedZone, this, adOptions);
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    adColonyInterstitial.show();
+    AdError error = null;
+    if (adColonyInterstitial == null) {
+      error = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
+    } else if (!adColonyInterstitial.show()) {
+      error = createAdapterError(ERROR_PRESENTATION_AD_SHOW, "Ad show failed.");
+    }
+
+    if (error != null) {
+      Log.w(TAG, error.getMessage());
+      mInterstitialAdCallback.onAdFailedToShow(error);
+    }
   }
 
   @Override
   public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
-    AdColonyInterstitialRenderer.this.adColonyInterstitial = adColonyInterstitial;
-    mInterstitialAdCallback = mAdLoadCallback.onSuccess(AdColonyInterstitialRenderer.this);
+    this.adColonyInterstitial = adColonyInterstitial;
+    mInterstitialAdCallback = mAdLoadCallback.onSuccess(this);
   }
 
   @Override
@@ -93,6 +119,6 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
   public void onExpiring(AdColonyInterstitial ad) {
     super.onExpiring(ad);
 
-    AdColony.requestInterstitial(ad.getZoneID(), this);
+    AdColony.requestInterstitial(ad.getZoneID(), this, adOptions);
   }
 }

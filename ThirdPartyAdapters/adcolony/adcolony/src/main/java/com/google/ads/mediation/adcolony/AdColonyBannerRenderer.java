@@ -1,5 +1,6 @@
 package com.google.ads.mediation.adcolony;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -29,14 +30,14 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 
 public class AdColonyBannerRenderer extends AdColonyAdViewListener implements MediationBannerAd {
 
-  private MediationBannerAdCallback mBannerAdCallback;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mAdLoadCallback;
-  private AdColonyAdView adColonyAdView;
   private final MediationBannerAdConfiguration adConfiguration;
+  private MediationBannerAdCallback mBannerAdCallback;
+  private AdColonyAdView adColonyAdView;
 
   public AdColonyBannerRenderer(
-          @NonNull MediationBannerAdConfiguration adConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback
   ) {
     this.mAdLoadCallback = callback;
     this.adConfiguration = adConfiguration;
@@ -45,26 +46,36 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
   public void render() {
     if (adConfiguration.getAdSize() == null) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to request banner with unsupported size: null");
+          "Failed to request banner with unsupported size: null");
       Log.e(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);
       return;
     }
 
-    AdColonyAdOptions adOptions = AdColonyManager
-            .getInstance()
-            .getAdOptionsFromAdConfig(adConfiguration);
     ArrayList<String> listFromServerParams = AdColonyManager
-            .getInstance()
-            .parseZoneList(adConfiguration.getServerParameters());
+        .getInstance()
+        .parseZoneList(adConfiguration.getServerParameters());
     String requestedZone = AdColonyManager
-            .getInstance()
-            .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+        .getInstance()
+        .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+
+    // Cannot request an ad without a valid zone.
+    if (TextUtils.isEmpty(requestedZone)) {
+      AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Zone ID.");
+      Log.e(TAG, error.getMessage());
+      mAdLoadCallback.onFailure(error);
+      return;
+    }
+
     // Setting the requested size as the AdColony view size
     AdColonyAdSize adSize = new AdColonyAdSize(
-            convertPixelsToDp(adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
-            convertPixelsToDp(adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext()))
+        convertPixelsToDp(adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
+        convertPixelsToDp(adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext()))
     );
+    AdColonyAdOptions adOptions = AdColonyManager
+        .getInstance()
+        .getAdOptionsFromAdConfig(adConfiguration);
     AdColony.requestAdView(requestedZone, this, adSize, adOptions);
   }
 
