@@ -1,5 +1,12 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.5.0.1
+- Added support for loading of multiple rewarded ads from same zone.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- AdColony SDK version 4.5.0.
+
 #### Version 4.5.0.0
 - Added support for banners advanced bidding.
 - Verified compatibility with AdColony SDK version 4.5.0.

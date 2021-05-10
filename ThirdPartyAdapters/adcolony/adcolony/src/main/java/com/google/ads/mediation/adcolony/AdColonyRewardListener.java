@@ -38,12 +38,11 @@ class AdColonyRewardListener implements com.adcolony.sdk.AdColonyRewardListener 
 
   private void removeListener(@NonNull AdColonyRewardListenerExtended listener) {
     for (Iterator<WeakReference<AdColonyRewardListenerExtended>> iterator = mListeners.iterator(); iterator.hasNext(); ) {
-      WeakReference<AdColonyRewardListenerExtended> weakReference = iterator.next();
-      AdColonyRewardListenerExtended reference = weakReference.get();
+      AdColonyRewardListenerExtended reference = iterator.next().get();
       if (reference == null) {
         iterator.remove();
       } else if (reference == listener) {
-        mListeners.remove(weakReference);
+        iterator.remove();
         break;
       }
     }
