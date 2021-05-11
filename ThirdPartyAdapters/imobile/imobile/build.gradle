@@ -34,7 +34,7 @@ dependencies {
     implementation 'jp.co.imobile:adnw-sdk-android:2.0.22'
 
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+    implementation 'com.google.android.gms:play-services-ads:20.1.0'
 }
 
 /**

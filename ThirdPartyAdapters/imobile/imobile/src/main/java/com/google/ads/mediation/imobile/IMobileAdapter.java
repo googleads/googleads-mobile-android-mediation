@@ -1,5 +1,9 @@
 package com.google.ads.mediation.imobile;
 
+import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -7,7 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -21,22 +25,32 @@ import jp.co.imobile.sdkads.android.FailNotificationReason;
 import jp.co.imobile.sdkads.android.ImobileSdkAd;
 import jp.co.imobile.sdkads.android.ImobileSdkAdListener;
 
-/** i-mobile mediation adapter for AdMob banner and interstitial ads. */
+/**
+ * i-mobile mediation adapter for AdMob banner and interstitial ads.
+ */
 public final class IMobileAdapter implements MediationBannerAdapter, MediationInterstitialAdapter {
 
   // region - Fields for log.
-  /** Tag for log. */
+  /**
+   * Tag for log.
+   */
   private static final String TAG = IMobileAdapter.class.getSimpleName();
   // endregion
 
   // region - Fields for banner ads.
-  /** Listener for banner ads. */
+  /**
+   * Listener for banner ads.
+   */
   private MediationBannerListener mediationBannerListener;
 
-  /** View to display banner ads. */
+  /**
+   * View to display banner ads.
+   */
   private ViewGroup bannerView;
 
-  /** Supported ad sizes. */
+  /**
+   * Supported ad sizes.
+   */
   private static final ArrayList<AdSize> supportedSizes;
 
   static {
@@ -61,16 +75,20 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
     // Validate Context.
     if (!(context instanceof Activity)) {
-      Log.w(TAG, "Banner : Context is not Activity.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Context is not an Activity.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(this, error);
       return;
     }
 
     // Validate AdSize.
     AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
     if (supportedAdSize == null) {
-      Log.w(TAG, "Banner : " + adSize.toString() + " is not supported.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "Ad size" + adSize.toString() + "is not supported.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -85,7 +103,7 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
     Activity activity = (Activity) context;
 
     // Call i-mobile SDK.
-    Log.d(TAG, "Banner : Requesting banner with ad size: " + adSize.toString());
+    Log.d(TAG, "Requesting banner with ad size: " + adSize.toString());
     ImobileSdkAd.registerSpotInline(activity, publisherId, mediaId, spotId);
     ImobileSdkAd.start(spotId);
     ImobileSdkAd.setImobileSdkAdListener(
@@ -116,10 +134,10 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
           @Override
           public void onFailed(FailNotificationReason reason) {
-            Log.w(TAG, "Banner : Error. Reason is " + reason);
+            AdError error = AdapterHelper.getAdError(reason);
+            Log.w(TAG, error.getMessage());
             if (mediationBannerListener != null) {
-              mediationBannerListener.onAdFailedToLoad(
-                  IMobileAdapter.this, AdapterHelper.convertToAdMobErrorCode(reason));
+              mediationBannerListener.onAdFailedToLoad(IMobileAdapter.this, error);
             }
           }
         });
@@ -155,13 +173,19 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
   // endregion
 
   // region - Fields for interstitial ads.
-  /** Listener for interstitial ads. */
+  /**
+   * Listener for interstitial ads.
+   */
   private MediationInterstitialListener mediationInterstitialListener;
 
-  /** Activity to display interstitial ads. */
+  /**
+   * Activity to display interstitial ads.
+   */
   private Activity interstitialActivity;
 
-  /** i-mobile spot ID. */
+  /**
+   * i-mobile spot ID.
+   */
   private String interstitialSpotId;
   // endregion
 
@@ -176,8 +200,10 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
     // Validate Context.
     if (!(context instanceof Activity)) {
-      Log.w(TAG, "Interstitial : Context is not Activity.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Context is not an Activity.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(this, error);
       return;
     }
     interstitialActivity = (Activity) context;
@@ -227,10 +253,11 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
 
           @Override
           public void onFailed(FailNotificationReason reason) {
-            Log.w(TAG, "Interstitial : Error. Reason is " + reason);
-            if (mediationInterstitialListener != null) {
-              mediationInterstitialListener.onAdFailedToLoad(
-                  IMobileAdapter.this, AdapterHelper.convertToAdMobErrorCode(reason));
+            AdError error = AdapterHelper.getAdError(reason);
+            Log.w(TAG, error.getMessage());
+            if (mediationBannerListener != null) {
+              mediationBannerListener.onAdFailedToLoad(
+                  IMobileAdapter.this, error);
             }
           }
         });
@@ -265,10 +292,12 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
   }
 
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
   // endregion
 
 }
