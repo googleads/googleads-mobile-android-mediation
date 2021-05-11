@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "InMobi"
     // String property to store version name.
-    stringVersion = "9.1.7.0"
+    stringVersion = "9.1.9.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 9010700
+        versionCode 9010900
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
     }
@@ -35,10 +35,10 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
 
     // Mobile Ads SDK
-    implementation 'com.google.android.gms:play-services-ads:19.8.0'
+    implementation 'com.google.android.gms:play-services-ads:20.1.0'
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads:9.1.7'
+    implementation 'com.inmobi.monetization:inmobi-ads:9.1.9'
 
     // inMobi required dependencies
     // https://support.inmobi.com/monetize/android-guidelines

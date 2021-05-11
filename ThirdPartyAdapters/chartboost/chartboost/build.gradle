@@ -1,6 +1,3 @@
-plugins {
-    id "com.jfrog.bintray" version "1.8.4"
-}
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
@@ -8,18 +5,20 @@ apply plugin: 'maven-publish'
  * Extra properties used by the project.
  */
 ext {
+    // String property to store the proper name of the mediation network adapter.
+    adapterName = "Chartboost"
     // String property to store version name.
-    stringVersion = "8.2.0.0"
+    stringVersion = "8.2.0.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 29
-        versionCode 8020000
+        targetSdkVersion 30
+        versionCode 8020001
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -31,45 +30,59 @@ android {
     }
 }
 
-
-
 dependencies {
     implementation 'com.chartboost:chartboost-sdk:8.2.0'
 
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.google.android.gms:play-services-ads:19.5.0'
-    implementation 'com.google.android.gms:play-services-base:17.5.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+    implementation 'com.google.android.gms:play-services-base:17.6.0'
     implementation 'com.google.android.gms:play-services-ads-identifier:17.0.0'
 }
-
 
 /**
  * Jar task to make a sources jar.
  */
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
 
 /**
- * Publish closure consisting of maven publications that will be published using bintrayUpload.
+ * Publish closure consisting of maven publications.
  */
 publishing {
     publications {
-        chartboostPublications(MavenPublication) {
+        adapterPublications(MavenPublication) {
             groupId = stringGroupId
             artifactId = project.name
             version = stringVersion
 
             // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+            artifact("$buildDir/outputs/aar/${project.name}-release.aar") {
                 builtBy build
             }
 
             // Add the sources jar artifact to the publication.
             artifact(sourcesJar)
 
-            // Add the required dependencies to the published `pom.xml` file.
+            // Generate the pom file.
+            pom {
+                name = "${adapterName} mediation adapter for the Google Mobile Ads SDK"
+                description = "The ${adapterName} mediation adapter is a library that handles " +
+                        "communication between the Google Mobile Ads SDK and the ${adapterName} " +
+                        "SDK. It enables you to load ads from ${adapterName} using the mediation " +
+                        "feature in the Google Mobile Ads SDK."
+                url = "https://developers.google.com/admob/android/mediation/${project.name}"
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/master/LICENSE'
+                        distribution = 'repo'
+                    }
+                }
+            }
+
+            // Add the required dependencies to the generated `pom.xml` file.
             pom.withXml {
                 final dependenciesNode = asNode().appendNode('dependencies')
                 configurations.implementation.allDependencies.each {
@@ -92,46 +105,30 @@ publishing {
 }
 
 /**
- * Bintray closure needed to run the buntrayUpload task.
- *
- * Usage:
- * ./gradlew bintrayUpload -PbintrayUser=YOUR_BINTRAY_USER_ID -PbintrayApiKey=YOUR_BINTRAY_API_KEY
- *
- * The Bintray User ID and API key can be added to your system environment variables as BINTRAY_USER
- * and BINTRAY_API_KEY respectively, and the command could be reduced to:
- * ./gradlew bintrayUpload
+ * Copy artifacts into a single directory for redistribution.
  */
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser')
-            : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey')
-            : System.getenv('BINTRAY_API_KEY')
-    publications = ['chartboostPublications']
-
-    dryRun = false // Deploy after running.
-    publish = false // Don't auto publish after deploying.
-
-    pkg {
-        repo = 'mobile-ads-adapters-android'
-        name = "${stringGroupId}.${project.name}" // Display name for the package.
-        userOrg = 'google'
-        desc = 'Chartboost adapter for Google Mobile Ads mediation.'
-        licenses = ['Apache-2.0']
-        websiteUrl = 'https://firebase.google.com/docs/admob/android/mediation'
-        vcsUrl = 'https://github.com/googleads/googleads-mobile-android-mediation.git'
-        issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
-        githubRepo = 'googleads/googleads-mobile-android-mediation'
-        githubReleaseNotesFile = 'ThirdPartyAdapters/chartboost/CHANGELOG.md'
-        version {
-            name = stringVersion
-        }
-    }
+task copyArtifactsForDistribution(type: Copy) {
+    from "$buildDir/outputs/aar/${project.name}-release.aar",
+            "$buildDir/libs/${project.name}-sources.jar",
+            "$buildDir/publications/adapterPublications/pom-default.xml"
+    into "$buildDir/distribution"
 }
 
 /**
- * Add dependency tasks for bintrayUpload. The project needs to be built before bintrayUpload
- * task is run.
+ * Create `zip` file for redistribution under `build/distribution` directory.
  */
-bintrayUpload.dependsOn(clean, build)
-bintrayUpload.mustRunAfter build
+task packageDistribution(type: Zip) {
+    from("$buildDir/distribution") {
+        rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
+        rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
+        rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+    }
+
+    archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
+    destinationDirectory = file("${rootProject.projectDir}/build/distribution")
+}
+
+build.dependsOn clean
 build.mustRunAfter clean
+copyArtifactsForDistribution.dependsOn(build, sourcesJar, generatePomFileForAdapterPublicationsPublication)
+packageDistribution.dependsOn copyArtifactsForDistribution
