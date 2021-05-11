@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -83,12 +84,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error, String message) {
       mPlacementId = placementId;
       mPlacementsInUse.remove(mPlacementId);
-      String errorMessage = createSDKError(error,
-          "UnityAds failed to load for placement ID: " + placementId);
-      Log.w(TAG, errorMessage);
+      AdError adError = createSDKError(error, message);
+      Log.w(TAG, adError.toString());
       if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback
-            .onFailure(errorMessage);
+        mMediationAdLoadCallback.onFailure(adError);
       }
     }
   };
@@ -139,11 +138,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String adapterError =
-                createSDKError(
-                    unityAdsInitializationError, "UnityAds initialization failed.");
-            Log.w(TAG, adapterError);
-            mMediationAdLoadCallback.onFailure(adapterError);
+            AdError adError = createSDKError(unityAdsInitializationError, errorMessage);
+            Log.w(TAG, adError.toString());
+            mMediationAdLoadCallback.onFailure(adError);
           }
         });
 
@@ -184,6 +181,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
           "Unity Ads received call to show before successfully loading an ad");
     }
 
+    // UnityAds can handle a null placement ID so show is always called here.
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
     // Unity Ads does not have an ad opened callback.
@@ -234,10 +232,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
     @Override
     public void onUnityAdsShowFailure(String placementId, UnityAdsShowError error, String message) {
       // Unity Ads ad failed to show.
-      String sdkError = createSDKError(error, message);
-      Log.w(TAG, "Unity Ads returned an error: " + sdkError);
+      AdError adError = createSDKError(error, message);
+      Log.w(TAG, "|-o-| " + adError.toString());
       if (mMediationRewardedAdCallback != null) {
-        mMediationRewardedAdCallback.onAdFailedToShow(sdkError);
+        mMediationRewardedAdCallback.onAdFailedToShow(adError);
       }
     }
   };

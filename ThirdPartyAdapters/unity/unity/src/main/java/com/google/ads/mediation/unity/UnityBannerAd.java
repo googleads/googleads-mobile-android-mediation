@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -202,17 +203,16 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
 
-            String adapterError = createSDKError(unityAdsInitializationError,
+            AdError adError = createSDKError(unityAdsInitializationError,
                 "Unity Ads initialization failed: [" +
                     unityAdsInitializationError + "] " + errorMessage +
                     ", cannot load banner ad for placement ID '" + bannerPlacementId
                     + "' in game '" + gameId + "'");
-            Log.e(TAG, adapterError);
+            Log.e(TAG, adError.toString());
 
             if (mMediationBannerListener != null) {
               mMediationBannerListener
-                  .onAdFailedToLoad(UnityBannerAd.this,
-                      getMediationErrorCode(unityAdsInitializationError));
+                  .onAdFailedToLoad(UnityBannerAd.this, adError);
             }
           }
         });

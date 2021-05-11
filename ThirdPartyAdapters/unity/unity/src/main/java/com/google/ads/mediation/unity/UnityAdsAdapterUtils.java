@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MediationUtils;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
  */
 public class UnityAdsAdapterUtils {
 
+  private static final String ERROR_DOMAIN = "UnityAds";
+
   /**
    * Private constructor
    */
@@ -28,11 +31,11 @@ public class UnityAdsAdapterUtils {
    *
    * @param UnityAds.UnityAdsInitializationError error object from Unity.
    * @param description   the error message.
-   * @return the error message.
+   * @return the error.
    */
   @NonNull
-  static String createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError, @NonNull String description) {
-    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError, @NonNull String description) {
+    return new AdError(getMediationErrorCode(unityAdsError), description, ERROR_DOMAIN);
   }
 
   /**
@@ -51,11 +54,11 @@ public class UnityAdsAdapterUtils {
    *
    * @param UnityAds.UnityAdsLoadError error object from Unity.
    * @param description   the error message.
-   * @return the error message.
+   * @return the error.
    */
   @NonNull
-  static String createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError, @NonNull String description) {
-    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError, @NonNull String description) {
+    return new AdError(getMediationErrorCode(unityAdsError), description, ERROR_DOMAIN);
   }
 
   /**
@@ -63,11 +66,11 @@ public class UnityAdsAdapterUtils {
    *
    * @param UnityAds.UnityAdsShowError error object from Unity.
    * @param description   the error message.
-   * @return the error message.
+   * @return the error.
    */
   @NonNull
-  static String createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError, @NonNull String description) {
-    return String.format("%d: %s", getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError, @NonNull String description) {
+    return new AdError(getMediationErrorCode(unityAdsError), description, ERROR_DOMAIN);
   }
 
   /**
@@ -121,9 +124,10 @@ public class UnityAdsAdapterUtils {
         return 302;
       case AD_BLOCKER_DETECTED:
         return 303;
-      default:
-        return 300;
+      // Excluding default to allow for compile warnings if UnityAdsInitializationError is expanded
+      // in the future.
     }
+    return 300;
   }
 
   /**
@@ -144,9 +148,10 @@ public class UnityAdsAdapterUtils {
         return 404;
       case TIMEOUT:
         return 405;
-      default:
-        return 400;
+      // Excluding default to allow for compile warnings if UnityAdsLoadError is expanded
+      // in the future.
     }
+    return 400;
   }
 
   /**
@@ -171,9 +176,10 @@ public class UnityAdsAdapterUtils {
         return 506;
       case INTERNAL_ERROR:
         return 507;
-      default:
-        return 500;
+      // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
+      // in the future.
     }
+    return 500;
   }
 
   @Nullable

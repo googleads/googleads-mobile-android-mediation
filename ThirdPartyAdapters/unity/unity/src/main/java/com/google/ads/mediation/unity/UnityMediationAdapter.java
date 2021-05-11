@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -224,10 +225,10 @@ public class UnityMediationAdapter extends Adapter {
           @Override
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
-            String adapterError = createSDKError(unityAdsInitializationError,
+            AdError adError = createSDKError(unityAdsInitializationError,
                 "Missing or Invalid Game ID.");
-            Log.d(TAG, adapterError);
-            initializationCompleteCallback.onInitializationFailed(adapterError);
+            Log.d(TAG, adError.toString());
+            initializationCompleteCallback.onInitializationFailed(adError.toString());
           }
         });
   }
