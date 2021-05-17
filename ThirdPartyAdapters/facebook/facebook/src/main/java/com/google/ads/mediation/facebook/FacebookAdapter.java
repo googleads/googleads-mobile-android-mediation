@@ -793,7 +793,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         setHeadline(mNativeAd.getAdHeadline());
         List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
         images.add(
-            new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().toString())));
+            new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().getUrl())));
         setImages(images);
         setBody(mNativeAd.getAdBodyText());
         if (mNativeAd.getPreloadedIconViewDrawable() == null) {
