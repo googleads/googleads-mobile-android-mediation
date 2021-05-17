@@ -226,7 +226,8 @@ public class UnityMediationAdapter extends Adapter {
           public void onInitializationFailed(UnityAds.UnityAdsInitializationError
               unityAdsInitializationError, String errorMessage) {
             AdError adError = createSDKError(unityAdsInitializationError,
-                "Missing or Invalid Game ID.");
+                "Unity Ads initialization failed: [" +
+                    unityAdsInitializationError + "] " + errorMessage);
             Log.d(TAG, adError.toString());
             initializationCompleteCallback.onInitializationFailed(adError.toString());
           }

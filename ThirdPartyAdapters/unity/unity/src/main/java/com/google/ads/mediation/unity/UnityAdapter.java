@@ -261,7 +261,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad failed to show.
       AdError adError = createSDKError(error, message);
       Log.w(TAG, adError.toString());
-      if (mMediationInterstitialListener != null && error == UnityAdsShowError.NOT_READY) {
+      if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
       }
     }

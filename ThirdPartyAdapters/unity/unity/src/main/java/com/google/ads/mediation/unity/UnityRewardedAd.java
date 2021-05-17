@@ -233,7 +233,6 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowFailure(String placementId, UnityAdsShowError error, String message) {
       // Unity Ads ad failed to show.
       AdError adError = createSDKError(error, message);
-      Log.w(TAG, "|-o-| " + adError.toString());
       if (mMediationRewardedAdCallback != null) {
         mMediationRewardedAdCallback.onAdFailedToShow(adError);
       }
