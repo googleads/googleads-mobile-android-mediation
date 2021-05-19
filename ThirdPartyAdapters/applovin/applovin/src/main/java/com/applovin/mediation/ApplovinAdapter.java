@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
@@ -16,7 +18,10 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkUtils;
+import com.google.ads.mediation.applovin.AppLovinInitializer;
+import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -59,70 +64,90 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(Context context,
-      MediationInterstitialListener interstitialListener, Bundle serverParameters,
-      MediationAdRequest mediationAdRequest, Bundle networkExtras) {
+  public void requestInterstitialAd(@NonNull final Context context,
+      @NonNull final MediationInterstitialListener interstitialListener,
+      @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle networkExtras) {
 
-    mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-    if (appLovinInterstitialAds.containsKey(mZoneId)
-        && appLovinInterstitialAds.get(mZoneId).get() != null) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_AD_ALREADY_REQUESTED,
-              "Cannot load multiple interstitial ads with the same Zone ID. "
-                  + "Display one ad before attempting to load another.");
-      log(ERROR, errorMessage);
-      interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_AD_ALREADY_REQUESTED);
+    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    if (TextUtils.isEmpty(sdkKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
+          ERROR_DOMAIN);
+      log(ERROR, error.getMessage());
+      interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, error);
       return;
     }
-    appLovinInterstitialAds.put(mZoneId, new WeakReference<>(ApplovinAdapter.this));
 
-    // Store parent objects.
-    mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-    mContext = context;
-    mNetworkExtras = networkExtras;
-    mMediationInterstitialListener = interstitialListener;
-
-    log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
-
-    // Create Ad Load listener.
-    final AppLovinAdLoadListener adLoadListener =
-        new AppLovinAdLoadListener() {
+    AppLovinInitializer.getInstance()
+        .initialize(context, sdkKey, new OnInitializeSuccessListener() {
           @Override
-          public void adReceived(final AppLovinAd ad) {
-            log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId);
-            appLovinInterstitialAd = ad;
+          public void onInitializeSuccess(@NonNull String sdkKey) {
+            mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+            if (appLovinInterstitialAds.containsKey(mZoneId)
+                && appLovinInterstitialAds.get(mZoneId).get() != null) {
+              String errorMessage =
+                  createAdapterError(
+                      ERROR_AD_ALREADY_REQUESTED,
+                      "Cannot load multiple interstitial ads with the same Zone ID. "
+                          + "Display one ad before attempting to load another.");
+              log(ERROR, errorMessage);
+              interstitialListener
+                  .onAdFailedToLoad(ApplovinAdapter.this, ERROR_AD_ALREADY_REQUESTED);
+              return;
+            }
+            appLovinInterstitialAds.put(mZoneId, new WeakReference<>(ApplovinAdapter.this));
 
-            AppLovinSdkUtils.runOnUiThread(
-                new Runnable() {
+            // Store parent objects.
+            mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            mContext = context;
+            mNetworkExtras = networkExtras;
+            mMediationInterstitialListener = interstitialListener;
+
+            log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
+
+            // Create Ad Load listener.
+            final AppLovinAdLoadListener adLoadListener =
+                new AppLovinAdLoadListener() {
                   @Override
-                  public void run() {
-                    mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+                  public void adReceived(final AppLovinAd ad) {
+                    log(DEBUG,
+                        "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
+                            + mZoneId);
+                    appLovinInterstitialAd = ad;
+
+                    AppLovinSdkUtils.runOnUiThread(
+                        new Runnable() {
+                          @Override
+                          public void run() {
+                            mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+                          }
+                        });
                   }
-                });
-          }
 
-          @Override
-          public void failedToReceiveAd(final int code) {
-            String errorMessage = createSDKError(code);
-            log(ERROR, errorMessage);
-
-            ApplovinAdapter.this.unregister();
-            AppLovinSdkUtils.runOnUiThread(
-                new Runnable() {
                   @Override
-                  public void run() {
-                    mMediationInterstitialListener.onAdFailedToLoad(ApplovinAdapter.this, code);
-                  }
-                });
-          }
-        };
+                  public void failedToReceiveAd(final int code) {
+                    String errorMessage = createSDKError(code);
+                    log(ERROR, errorMessage);
 
-    if (!TextUtils.isEmpty(mZoneId)) {
-      mSdk.getAdService().loadNextAdForZoneId(mZoneId, adLoadListener);
-    } else {
-      mSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
-    }
+                    ApplovinAdapter.this.unregister();
+                    AppLovinSdkUtils.runOnUiThread(
+                        new Runnable() {
+                          @Override
+                          public void run() {
+                            mMediationInterstitialListener
+                                .onAdFailedToLoad(ApplovinAdapter.this, code);
+                          }
+                        });
+                  }
+                };
+
+            if (!TextUtils.isEmpty(mZoneId)) {
+              mSdk.getAdService().loadNextAdForZoneId(mZoneId, adLoadListener);
+            } else {
+              mSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
+            }
+          }
+        });
   }
 
   @Override
@@ -162,42 +187,58 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(Context context,
-      final MediationBannerListener mediationBannerListener, Bundle serverParameters, AdSize adSize,
-      MediationAdRequest mediationAdRequest, Bundle networkExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull final MediationBannerListener mediationBannerListener,
+      @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
+      @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle networkExtras) {
 
-    // Store parent objects
-    mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-    mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-
-    // Convert requested size to AppLovin Ad Size.
-    final AppLovinAdSize appLovinAdSize =
-        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
-    if (appLovinAdSize == null) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              "Failed to request banner with unsupported size: " + adSize.toString());
-      log(ERROR, errorMessage);
-      if (mediationBannerListener != null) {
-        mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
-      }
+    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    if (TextUtils.isEmpty(sdkKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
+          ERROR_DOMAIN);
+      log(ERROR, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
+      return;
     }
 
-    log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + mZoneId);
-    mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
+    AppLovinInitializer.getInstance()
+        .initialize(context, sdkKey, new OnInitializeSuccessListener() {
+          @Override
+          public void onInitializeSuccess(@NonNull String sdkKey) {
+            // Store parent objects
+            mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-    final AppLovinBannerAdListener listener =
-        new AppLovinBannerAdListener(mZoneId, mAdView, this, mediationBannerListener);
-    mAdView.setAdDisplayListener(listener);
-    mAdView.setAdClickListener(listener);
-    mAdView.setAdViewEventListener(listener);
+            // Convert requested size to AppLovin Ad Size.
+            final AppLovinAdSize appLovinAdSize =
+                AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
+            if (appLovinAdSize == null) {
+              String errorMessage =
+                  createAdapterError(
+                      ERROR_BANNER_SIZE_MISMATCH,
+                      "Failed to request banner with unsupported size: " + adSize.toString());
+              log(ERROR, errorMessage);
+              mediationBannerListener
+                  .onAdFailedToLoad(ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
+            }
 
-    if (!TextUtils.isEmpty(mZoneId)) {
-      mSdk.getAdService().loadNextAdForZoneId(mZoneId, listener);
-    } else {
-      mSdk.getAdService().loadNextAd(appLovinAdSize, listener);
-    }
+            log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + mZoneId);
+            mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
+
+            final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(mZoneId, mAdView,
+                ApplovinAdapter.this,
+                mediationBannerListener);
+            mAdView.setAdDisplayListener(listener);
+            mAdView.setAdClickListener(listener);
+            mAdView.setAdViewEventListener(listener);
+
+            if (!TextUtils.isEmpty(mZoneId)) {
+              mSdk.getAdService().loadNextAdForZoneId(mZoneId, listener);
+            } else {
+              mSdk.getAdService().loadNextAd(appLovinAdSize, listener);
+            }
+          }
+        });
   }
 
   @Override

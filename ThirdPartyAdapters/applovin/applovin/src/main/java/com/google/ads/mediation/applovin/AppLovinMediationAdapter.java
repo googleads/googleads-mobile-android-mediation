@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinIncentivizedAdListener;
 import com.applovin.mediation.AppLovinUtils;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
 import com.applovin.mediation.rtb.AppLovinRtbBannerRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
@@ -21,6 +22,8 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.applovin.sdk.AppLovinSdkUtils;
+import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -41,6 +44,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class AppLovinMediationAdapter extends RtbAdapter
@@ -81,6 +85,12 @@ public class AppLovinMediationAdapter extends RtbAdapter
   /**
    * Applovin adapter errors.
    */
+  // AppLovin adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.applovin";
+
+  // AppLovin SDK error domain.
+  public static final String APPLOVIN_SDK_ERROR_DOMAIN = "com.applovin.sdk";
+
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
@@ -93,7 +103,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
           // ERROR_MAPPING_NATIVE_ASSETS,
           ERROR_AD_FORMAT_UNSUPPORTED,
           // ERROR_CONTEXT_NOT_ACTIVITY
+          ERROR_INVALID_SERVER_PARAMETERS
       })
+
   public @interface AdapterError {
 
   }
@@ -145,6 +157,11 @@ public class AppLovinMediationAdapter extends RtbAdapter
   // public static final int ERROR_CONTEXT_NOT_ACTIVITY = 109;
 
   /**
+   * Invalid server parameters (e.g. SDK key is null).
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
+
+  /**
    * Creates a formatted adapter error string given a code and description.
    */
   public static String createAdapterError(@AdapterError int code, @NonNull String description) {
@@ -162,23 +179,51 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
-    log(DEBUG, "Attempting to initialize SDK.");
+  public void initialize(@NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (AppLovinUtils.androidManifestHasValidSdkKey(context)) {
-      AppLovinSdk.getInstance(context).initializeSdk();
+    final HashSet<String> sdkKeys = new HashSet<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      String sdkKey = configuration.getServerParameters().getString(ServerParameterKeys.SDK_KEY);
+      if (!TextUtils.isEmpty(sdkKey)) {
+        sdkKeys.add(sdkKey);
+      }
     }
 
-    for (MediationConfiguration mediationConfig : mediationConfigurations) {
-      AppLovinSdk sdk = AppLovinUtils.retrieveSdk(mediationConfig.getServerParameters(), context);
-      sdk.initializeSdk();
+    // Include the SDK key declared in the AndroidManifest.xml file.
+    String manifestSdkKey = AppLovinUtils.retrieveSdkKey(context, null);
+    if (!TextUtils.isEmpty(manifestSdkKey)) {
+      sdkKeys.add(manifestSdkKey);
     }
-    initializationCompleteCallback.onInitializationSucceeded();
+
+    if (sdkKeys.isEmpty()) {
+      String logMessage = "Missing or invalid SDK Key.";
+      initializationCompleteCallback.onInitializationFailed(logMessage);
+      return;
+    }
+
+    // Keep track of the SDK keys that were used to initialize the AppLovin SDK. Once all of them
+    // have been initialized, then the completion callback is invoked.
+    final HashSet<String> initializedSdkKeys = new HashSet<>();
+
+    for (String sdkKey : sdkKeys) {
+      AppLovinInitializer.getInstance()
+          .initialize(context, sdkKey, new OnInitializeSuccessListener() {
+            @Override
+            public void onInitializeSuccess(@NonNull String sdkKey) {
+              initializedSdkKeys.add(sdkKey);
+
+              if (initializedSdkKeys.equals(sdkKeys)) {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
+            }
+          });
+    }
   }
 
   @Override
+  @NonNull
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
@@ -199,6 +244,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
+  @NonNull
   public VersionInfo getSDKVersionInfo() {
     String versionString = AppLovinSdk.VERSION;
     String[] splits = versionString.split("\\.");
@@ -220,11 +266,11 @@ public class AppLovinMediationAdapter extends RtbAdapter
   @Override
   public void loadRewardedAd(
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
 
     adConfiguration = mediationRewardedAdConfiguration;
-    Context context = adConfiguration.getContext();
+    final Context context = adConfiguration.getContext();
 
     if (mediationRewardedAdConfiguration.getBidResponse().equals("")) {
       isRtbAd = false;
@@ -232,36 +278,52 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
     if (!isRtbAd) {
       synchronized (INCENTIVIZED_ADS_LOCK) {
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-        mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-        mNetworkExtras = adConfiguration.getMediationExtras();
-        mMediationAdLoadCallback = mediationAdLoadCallback;
+        final Bundle serverParameters = adConfiguration.getServerParameters();
 
-        String logMessage = String.format("Requesting rewarded video for zone '%s'", mZoneId);
-        log(DEBUG, logMessage);
-
-        // Check if incentivized ad for zone already exists.
-        if (INCENTIVIZED_ADS.containsKey(mZoneId)) {
-          mIncentivizedInterstitial = INCENTIVIZED_ADS.get(mZoneId);
-          String errorMessage =
-              createAdapterError(
-                  ERROR_AD_ALREADY_REQUESTED,
-                  "Cannot load multiple rewarded ads with the same Zone ID. "
-                      + "Display one ad before attempting to load another.");
-          log(ERROR, errorMessage);
-          mMediationAdLoadCallback.onFailure(errorMessage);
-        } else {
-          // If this is a default Zone, create the incentivized ad normally
-          if (DEFAULT_ZONE.equals(mZoneId)) {
-            mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
-          }
-          // Otherwise, use the Zones API
-          else {
-            mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mZoneId, mSdk);
-          }
-          INCENTIVIZED_ADS.put(mZoneId, mIncentivizedInterstitial);
+        String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+        if (TextUtils.isEmpty(sdkKey)) {
+          AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid SDK Key.", ERROR_DOMAIN);
+          log(ERROR, error.getMessage());
+          mediationAdLoadCallback.onFailure(error);
+          return;
         }
+
+        AppLovinInitializer.getInstance()
+            .initialize(context, sdkKey, new OnInitializeSuccessListener() {
+              @Override
+              public void onInitializeSuccess(@NonNull String sdkKey) {
+                mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+                mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+                mNetworkExtras = adConfiguration.getMediationExtras();
+                mMediationAdLoadCallback = mediationAdLoadCallback;
+
+                String logMessage = String
+                    .format("Requesting rewarded video for zone '%s'", mZoneId);
+                log(DEBUG, logMessage);
+
+                // Check if incentivized ad for zone already exists.
+                if (INCENTIVIZED_ADS.containsKey(mZoneId)) {
+                  mIncentivizedInterstitial = INCENTIVIZED_ADS.get(mZoneId);
+                  String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
+                      "Cannot load multiple rewarded ads with the same Zone ID. "
+                          + "Display one ad before attempting to load another.");
+                  log(ERROR, errorMessage);
+                  mMediationAdLoadCallback.onFailure(errorMessage);
+                } else {
+                  // If this is a default Zone, create the incentivized ad normally
+                  if (DEFAULT_ZONE.equals(mZoneId)) {
+                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
+                  }
+                  // Otherwise, use the Zones API
+                  else {
+                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial
+                        .create(mZoneId, mSdk);
+                  }
+                  INCENTIVIZED_ADS.put(mZoneId, mIncentivizedInterstitial);
+                }
+              }
+            });
       }
 
       mIncentivizedInterstitial.preload(this);
