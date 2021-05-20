@@ -8,17 +8,17 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "VerizonMedia"
     // String property to store version name.
-    stringVersion = "1.12.1.0"
+    stringVersion = "1.13.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 1120100
+        targetSdkVersion 30
+        versionCode 1130000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -32,8 +32,8 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
-    implementation ('com.verizon.ads:android-vas-standard-edition:1.12.1') {
+    implementation 'com.google.android.gms:play-services-ads:20.1.0'
+    implementation ('com.verizon.ads:android-vas-standard-edition:1.13.0') {
         exclude module: 'support-compat'
     }
     implementation 'androidx.browser:browser:1.3.0'
