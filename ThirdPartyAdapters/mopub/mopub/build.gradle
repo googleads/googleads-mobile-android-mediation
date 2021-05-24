@@ -8,17 +8,17 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "MoPub"
     // String property to store version name.
-    stringVersion = "5.16.4.0"
+    stringVersion = "5.17.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 29
-        versionCode 5160400
+        targetSdkVersion 30
+        versionCode 5170000
         versionName stringVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
@@ -29,23 +29,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
-
-repositories {
-    google()
-    jcenter()
-    maven {
-        url "https://s3.amazonaws.com/moat-sdk-builds"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.16.4@aar') {
+    implementation('com.mopub:mopub-sdk:5.17.0@aar') {
         transitive = true
     }
 
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
-    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'com.google.android.gms:play-services-ads:20.1.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
 }
 
 /**
