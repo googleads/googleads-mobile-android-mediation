@@ -1,7 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 10.2.1.0 (in progress)
+- Verified compatibility with AppLovin SDK 10.2.1.
 - The adapter will now attempt to initialize the AppLovin SDK before requesting ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.1.0.
+- AppLovin SDK version 10.2.1.
 
 #### Version 10.2.0.0 (in progress)
 - Verified compatibility with AppLovin SDK 10.2.0.
