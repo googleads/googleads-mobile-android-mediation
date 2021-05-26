@@ -8,7 +8,7 @@ Built and tested with:
 - Google Mobile Ads SDK version 20.1.0.
 - AppLovin SDK version 10.2.1.
 
-#### Version 10.2.0.0 (in progress)
+#### Version 10.2.0.0
 - Verified compatibility with AppLovin SDK 10.2.0.
 
 Built and tested with:
