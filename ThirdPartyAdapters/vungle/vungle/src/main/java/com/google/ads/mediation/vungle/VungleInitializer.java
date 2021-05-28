@@ -17,11 +17,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VungleInitializer implements InitCallback {
 
   private static final VungleInitializer instance = new VungleInitializer();
-  private AtomicBoolean mIsInitializing = new AtomicBoolean(false);
+  private final AtomicBoolean mIsInitializing = new AtomicBoolean(false);
 
-  private ArrayList<VungleInitializationListener> mInitListeners;
+  private final ArrayList<VungleInitializationListener> mInitListeners;
 
-  private Handler mHandler = new Handler(Looper.getMainLooper());
+  private final Handler mHandler = new Handler(Looper.getMainLooper());
 
   public static VungleInitializer getInstance() {
     return instance;

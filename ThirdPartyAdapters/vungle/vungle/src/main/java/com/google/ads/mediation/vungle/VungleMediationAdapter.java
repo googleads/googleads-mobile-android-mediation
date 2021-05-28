@@ -6,7 +6,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -51,6 +54,7 @@ public class VungleMediationAdapter extends Adapter
   private MediationRewardedAdCallback mMediationRewardedAdCallback;
 
   @Override
+  @NonNull
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
@@ -71,6 +75,7 @@ public class VungleMediationAdapter extends Adapter
   }
 
   @Override
+  @NonNull
   public VersionInfo getSDKVersionInfo() {
     String versionString = com.vungle.warren.BuildConfig.VERSION_NAME;
     String[] splits = versionString.split("\\.");
@@ -91,9 +96,9 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void initialize(
-      Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+      @NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     if (Vungle.isInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
@@ -146,8 +151,8 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
@@ -162,7 +167,8 @@ public class VungleMediationAdapter extends Adapter
     if (TextUtils.isEmpty(mPlacement)) {
       String logMessage = "Failed to load ad from Vungle: Missing or invalid Placement ID.";
       Log.w(TAG, logMessage);
-      mediationAdLoadCallback.onFailure(logMessage);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, logMessage, TAG);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -170,7 +176,8 @@ public class VungleMediationAdapter extends Adapter
         && mPlacementsInUse.get(mPlacement).get() != null) {
       String logMessage = "Only a maximum of one ad can be loaded per placement.";
       Log.w(TAG, logMessage);
-      mediationAdLoadCallback.onFailure(logMessage);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, logMessage, TAG);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -178,7 +185,8 @@ public class VungleMediationAdapter extends Adapter
     if (TextUtils.isEmpty(appID)) {
       String logMessage = "Failed to load ad from Vungle: Missing or Invalid App ID.";
       Log.w(TAG, logMessage);
-      mediationAdLoadCallback.onFailure(logMessage);
+      AdError error = new AdError(AdRequest.ERROR_CODE_APP_ID_MISSING, logMessage, TAG);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -205,23 +213,18 @@ public class VungleMediationAdapter extends Adapter
 
               @Override
               public void onInitializeError(String errorMessage) {
-                Log.w(TAG, errorMessage);
-                mMediationAdLoadCallback.onFailure(errorMessage);
+                String message = "SDK init failed: " + errorMessage;
+                Log.w(TAG, message);
+                AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, TAG);
+                mMediationAdLoadCallback.onFailure(error);
                 mPlacementsInUse.remove(mPlacement);
               }
             });
   }
 
   @Override
-  public void showAd(Context context) {
-    if (Vungle.canPlayAd(mPlacement)) {
-      Vungle.playAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
-    } else {
-      if (mMediationRewardedAdCallback != null) {
-        mMediationRewardedAdCallback.onAdFailedToShow("Not ready.");
-      }
-      mPlacementsInUse.remove(mPlacement);
-    }
+  public void showAd(@NonNull Context context) {
+    Vungle.playAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
   }
 
   /**
@@ -323,13 +326,15 @@ public class VungleMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
+            AdError error = VungleManager.mapErrorCode(throwable, TAG);
             if (mMediationAdLoadCallback != null) {
               Log.w(TAG, "Failed to load ad from Vungle.", throwable);
-              mMediationAdLoadCallback.onFailure(throwable.getLocalizedMessage());
+              mMediationAdLoadCallback.onFailure(error);
             }
 
             if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdFailedToShow(throwable.getLocalizedMessage());
+              Log.w(TAG, "Failed to show ad from Vungle.", throwable);
+              mMediationRewardedAdCallback.onAdFailedToShow(error);
             }
             mPlacementsInUse.remove(placementId);
           }
@@ -345,7 +350,7 @@ public class VungleMediationAdapter extends Adapter
   /**
    * This class is used to map Vungle rewarded video ad rewards to Google Mobile Ads SDK rewards.
    */
-  private class VungleReward implements RewardItem {
+  private static class VungleReward implements RewardItem {
 
     private final String mType;
     private final int mAmount;
@@ -361,6 +366,7 @@ public class VungleMediationAdapter extends Adapter
     }
 
     @Override
+    @NonNull
     public String getType() {
       return mType;
     }

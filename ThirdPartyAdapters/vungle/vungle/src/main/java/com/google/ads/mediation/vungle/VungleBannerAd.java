@@ -1,7 +1,6 @@
 package com.google.ads.mediation.vungle;
 
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
@@ -20,12 +19,12 @@ public class VungleBannerAd {
   /**
    * Weak reference to the adapter owning this Vungle banner ad.
    */
-  private WeakReference<VungleBannerAdapter> adapter;
+  private final WeakReference<VungleBannerAdapter> adapter;
 
   /**
    * Vungle banner placement ID.
    */
-  private String placementId;
+  private final String placementId;
 
   /**
    * Vungle ad object for banner ads.
