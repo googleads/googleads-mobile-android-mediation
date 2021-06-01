@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 10.2.1.0 (in progress)
+#### Version 10.2.1.0
 - Verified compatibility with AppLovin SDK 10.2.1.
 - The adapter will now attempt to initialize the AppLovin SDK before requesting ads.
 
