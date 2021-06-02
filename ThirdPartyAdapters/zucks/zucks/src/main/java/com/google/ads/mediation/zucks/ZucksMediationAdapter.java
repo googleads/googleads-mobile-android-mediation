@@ -1,79 +1,64 @@
 package com.google.ads.mediation.zucks;
 
-import android.content.Context;
-import android.util.Log;
-import com.google.android.gms.ads.mediation.Adapter;
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationConfiguration;
-import com.google.android.gms.ads.mediation.MediationRewardedAd;
-import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.VersionInfo;
-import java.util.List;
+import android.os.Bundle;
 
-public class ZucksMediationAdapter extends Adapter {
+import androidx.annotation.NonNull;
 
-  static final String TAG = ZucksMediationAdapter.class.getSimpleName();
+/**
+ * Mediation Adapter for Zucks Ad Network.
+ * <p>
+ * Supported formats:
+ *   - Rewarded Ad (In the plan)
+ * <p>
+ * Unsupported formats:
+ *   - Banner
+ *   - Interstitial
+ * <p>
+ * If you want to integrate Banner/Interstitial Ad, see the legacy adapter implementation.
+ *
+ * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
+ */
+public class ZucksMediationAdapter {
 
-  /** Zucks mediation adapter rewarded ad loader. */
-  private ZucksRewardedLoader rewardedLoader;
+  /** Interstitial types for Zucks Ad Network SDK. */
+  public enum InterstitialType {
+    /**
+     * @see <a
+     *     href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adFullscreenInterstitial">ⅳ.
+     *     全画面（縦）インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
+     */
+    FULLSCREEN,
+    /**
+     * @see <a href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adInterstitial">ⅱ.
+     *     インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
+     */
+    MEDIUM_RECTANGLE,
+  }
 
-  @Override
-  public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
-    String[] splits = versionString.split("\\.");
+  /** Format-wide extras builder. */
+  public static class MediationExtrasBundleBuilder {
 
-    if (splits.length >= 4) {
-      int major = Integer.parseInt(splits[0]);
-      int minor = Integer.parseInt(splits[1]);
-      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-      return new VersionInfo(major, minor, micro);
+    /** Default value of setInterstitialType. */
+    public static final InterstitialType DEFAULT_INTERSTITIAL_TYPE =
+        InterstitialType.MEDIUM_RECTANGLE;
+
+    public static final String KEY_FULLSCREEN_FOR_INTERSTITIAL = "fullscreen";
+
+    @NonNull private InterstitialType interstitialType = DEFAULT_INTERSTITIAL_TYPE;
+
+    /** Switch interstitial format. */
+    @NonNull
+    public MediationExtrasBundleBuilder setInterstitialType(@NonNull InterstitialType type) {
+      this.interstitialType = type;
+      return this;
     }
 
-    String logMessage =
-        String.format(
-            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
-    Log.w(TAG, logMessage);
-    return new VersionInfo(0, 0, 0);
-  }
-
-  @Override
-  public VersionInfo getSDKVersionInfo() {
-    // TODO: Populate `versionString` with the ad-network's SDK version in String format.
-    String versionString = "";
-    String[] splits = versionString.split("\\.");
-
-    if (splits.length >= 3) {
-      int major = Integer.parseInt(splits[0]);
-      int minor = Integer.parseInt(splits[1]);
-      int micro = Integer.parseInt(splits[2]);
-      return new VersionInfo(major, minor, micro);
+    @NonNull
+    public Bundle build() {
+      Bundle extras = new Bundle();
+      extras.putBoolean(
+          KEY_FULLSCREEN_FOR_INTERSTITIAL, interstitialType == InterstitialType.FULLSCREEN);
+      return extras;
     }
-
-    String logMessage =
-        String.format(
-            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
-    Log.w(TAG, logMessage);
-    return new VersionInfo(0, 0, 0);
-  }
-
-  @Override
-  public void initialize(
-      Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> list) {
-    // TODO: Initialize the ad-network's SDK and forward the success callback:
-    initializationCompleteCallback.onInitializationSucceeded();
-  }
-
-  @Override
-  public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
-    rewardedLoader = new ZucksRewardedLoader(mediationRewardedAdConfiguration);
-    rewardedLoader.loadAd(mediationAdLoadCallback);
   }
 }
