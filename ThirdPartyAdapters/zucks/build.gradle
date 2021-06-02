@@ -36,6 +36,12 @@ allprojects {
         google()
         mavenCentral()
         jcenter()
+        maven {
+            url 'https://github.com/zucks/ZucksAdNetworkSDK-Maven/raw/master/'
+            content {
+                includeGroupByRegex '^net\\.zucks(\\..+)?$'
+            }
+        }
     }
 }
 
