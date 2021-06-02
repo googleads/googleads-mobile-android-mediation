@@ -10,25 +10,24 @@ public class ZucksAdapter implements MediationBannerAdapter, MediationInterstiti
   // region Lifecycle methods
   // TODO: Fill with any required lifecycle events.
   @Override
-  public void onPause() {
-
-  }
+  public void onPause() {}
 
   @Override
-  public void onResume() {
-
-  }
+  public void onResume() {}
 
   @Override
-  public void onDestroy() {
+  public void onDestroy() {}
 
-  }
   // endregion
 
   // region MediationBannerAdapter methods
   @Override
-  public void requestBannerAd(Context context, MediationBannerListener mediationBannerListener,
-      Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
+  public void requestBannerAd(
+      Context context,
+      MediationBannerListener mediationBannerListener,
+      Bundle serverParameters,
+      AdSize adSize,
+      MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
     // TODO: Load banner ad and forward the success callback:
     mediationBannerListener.onAdLoaded(ZucksAdapter.this);
@@ -43,9 +42,12 @@ public class ZucksAdapter implements MediationBannerAdapter, MediationInterstiti
 
   // region MediationInterstitialAdapter methods
   @Override
-  public void requestInterstitialAd(Context context,
-      MediationInterstitialListener mediationInterstitialListener, Bundle serverParameters,
-      MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
+  public void requestInterstitialAd(
+      Context context,
+      MediationInterstitialListener mediationInterstitialListener,
+      Bundle serverParameters,
+      MediationAdRequest mediationAdRequest,
+      Bundle mediationExtras) {
     // TODO: Load interstitial ad and forward the success callback:
     mediationInterstitialListener.onAdLoaded(ZucksAdapter.this);
   }

@@ -14,11 +14,9 @@ import java.util.List;
 
 public class ZucksMediationAdapter extends Adapter {
 
-  final static String TAG = ZucksMediationAdapter.class.getSimpleName();
+  static final String TAG = ZucksMediationAdapter.class.getSimpleName();
 
-  /**
-   * Zucks mediation adapter rewarded ad loader.
-   */
+  /** Zucks mediation adapter rewarded ad loader. */
   private ZucksRewardedLoader rewardedLoader;
 
   @Override
@@ -33,8 +31,9 @@ public class ZucksMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
             versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
@@ -53,15 +52,16 @@ public class ZucksMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-            versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
-  public void initialize(Context context,
+  public void initialize(
+      Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> list) {
     // TODO: Initialize the ad-network's SDK and forward the success callback:
@@ -69,7 +69,8 @@ public class ZucksMediationAdapter extends Adapter {
   }
 
   @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+  public void loadRewardedAd(
+      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     rewardedLoader = new ZucksRewardedLoader(mediationRewardedAdConfiguration);

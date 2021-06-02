@@ -8,27 +8,22 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 public class ZucksRewardedLoader implements MediationRewardedAd {
 
-  /**
-   * Configuration of the rewarded ad request.
-   */
+  /** Configuration of the rewarded ad request. */
   MediationRewardedAdConfiguration adConfiguration;
 
-  /**
-   * The mediation callback for ad load events.
-   */
+  /** The mediation callback for ad load events. */
   MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
 
-  /**
-   * The mediation callback for rewarded ad events.
-   */
+  /** The mediation callback for rewarded ad events. */
   MediationRewardedAdCallback rewardedAdCallback;
 
   ZucksRewardedLoader(MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     adConfiguration = mediationRewardedAdConfiguration;
   }
 
-  void loadAd(MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mediationAdLoadCallback) {
+  void loadAd(
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     adLoadCallback = mediationAdLoadCallback;
 
     // TODO: Load rewarded ad and forward the success callback:
@@ -39,5 +34,4 @@ public class ZucksRewardedLoader implements MediationRewardedAd {
   public void showAd(Context context) {
     // TODO: Show the rewarded ad.
   }
-
 }
