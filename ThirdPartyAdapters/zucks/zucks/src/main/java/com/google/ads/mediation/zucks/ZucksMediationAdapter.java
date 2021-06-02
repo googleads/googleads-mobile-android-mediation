@@ -7,51 +7,43 @@ import androidx.annotation.NonNull;
 /**
  * Mediation Adapter for Zucks Ad Network.
  *
- * Supported formats:
- * - Rewarded Ad (In the plan)
+ * <p>Supported formats: - Rewarded Ad (In the plan)
  *
- * Unsupported formats:
- * - Banner
- * - Interstitial
+ * <p>Unsupported formats: - Banner - Interstitial
  *
- * If you want to integrate Banner/Interstitial Ad, see the legacy  adapter implementation.
+ * <p>If you want to integrate Banner/Interstitial Ad, see the legacy adapter implementation.
+ *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
 public class ZucksMediationAdapter {
 
-  /**
-   * Interstitial types for Zucks Ad Network SDK.
-   */
+  /** Interstitial types for Zucks Ad Network SDK. */
   public enum InterstitialType {
     /**
-     * @see <a href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adFullscreenInterstitial">ⅳ. 全画面（縦）インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
+     * @see <a
+     *     href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adFullscreenInterstitial">ⅳ.
+     *     全画面（縦）インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
      */
     FULLSCREEN,
     /**
-     * @see <a href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adInterstitial">ⅱ. インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
+     * @see <a href="https://ms.zucksadnetwork.com/media/sdk/manual/android/#adInterstitial">ⅱ.
+     *     インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
      */
     MEDIUM_RECTANGLE,
   }
 
-  /**
-   * Format-wide extras builder.
-   */
+  /** Format-wide extras builder. */
   public static class MediationExtrasBundleBuilder {
 
-    /**
-     * Default value of setInterstitialType.
-     */
+    /** Default value of setInterstitialType. */
     public static final InterstitialType DEFAULT_INTERSTITIAL_TYPE =
-            InterstitialType.MEDIUM_RECTANGLE;
+        InterstitialType.MEDIUM_RECTANGLE;
 
     public static final String KEY_FULLSCREEN_FOR_INTERSTITIAL = "fullscreen";
 
-    @NonNull
-    private InterstitialType interstitialType = DEFAULT_INTERSTITIAL_TYPE;
+    @NonNull private InterstitialType interstitialType = DEFAULT_INTERSTITIAL_TYPE;
 
-    /**
-     * Switch interstitial format.
-     */
+    /** Switch interstitial format. */
     @NonNull
     public MediationExtrasBundleBuilder setInterstitialType(@NonNull InterstitialType type) {
       this.interstitialType = type;
@@ -62,9 +54,8 @@ public class ZucksMediationAdapter {
     public Bundle build() {
       Bundle extras = new Bundle();
       extras.putBoolean(
-              KEY_FULLSCREEN_FOR_INTERSTITIAL, interstitialType == InterstitialType.FULLSCREEN);
+          KEY_FULLSCREEN_FOR_INTERSTITIAL, interstitialType == InterstitialType.FULLSCREEN);
       return extras;
     }
   }
-
 }

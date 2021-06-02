@@ -1,5 +1,2 @@
-/**
- * Zucks Ad Network SDK for Android
- * AdMob Mediation Adapter
- */
+/** Zucks Ad Network SDK for Android AdMob Mediation Adapter */
 package com.google.ads.mediation.zucks;
