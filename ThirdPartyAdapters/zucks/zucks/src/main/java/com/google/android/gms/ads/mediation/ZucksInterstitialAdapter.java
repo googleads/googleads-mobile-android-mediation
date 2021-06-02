@@ -110,6 +110,7 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
 
     /**
      * Legacy adapter implementation
+     * This class will be removed.
      */
     @Deprecated
     private static class ZucksMediationInterstitialAdapter implements MediationInterstitialAdapter {

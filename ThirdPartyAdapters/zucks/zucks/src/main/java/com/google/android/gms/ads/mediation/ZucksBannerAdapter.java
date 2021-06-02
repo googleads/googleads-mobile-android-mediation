@@ -111,6 +111,7 @@ class ZucksBannerAdapter extends BaseMediationAdapter
 
     /**
      * Legacy adapter implementation
+     * This class will be removed.
      */
     @VisibleForTesting
     @Deprecated
