@@ -51,7 +51,7 @@ dependencies {
     api "net.zucks:zucks-ad-network-sdk:${stringCoreVersionName}"
 
     testImplementation "junit:junit:${rootProject.ext.externalVersions.junit}"
-    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.externalVersions.kotlin}"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.externalVersions.kotlin}"
     testImplementation "org.hamcrest:hamcrest-core:${rootProject.ext.externalVersions.hamcrest}"
     testImplementation "io.mockk:mockk:${rootProject.ext.externalVersions.mockk}"
 }
