@@ -20,6 +20,7 @@ ext {
 
 android {
     compileSdkVersion 30
+
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
@@ -37,6 +38,12 @@ android {
 
         consumerProguardFiles 'lib-proguard-rules.pro'
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     buildTypes {
         release {
             minifyEnabled false
