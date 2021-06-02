@@ -139,8 +139,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         return;
       }
       String adapterError = createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or Invalid server parameters.");
+          ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid server parameters.");
       Log.e(TAG, "Failed to load ad: " + adapterError);
       mMediationBannerListener
           .onAdFailedToLoad(UnityBannerAd.this, ERROR_INVALID_SERVER_PARAMETERS);
@@ -153,33 +153,33 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.e(TAG, "Failed to load ad: " + adapterError);
       if (mMediationBannerListener != null) {
         mMediationBannerListener
-                .onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
+            .onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
       }
       return;
     }
 
     if (adSize == null) {
       String adapterError = createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              "Unity banner ad failed to load : banner size is invalid.");
+          ERROR_BANNER_SIZE_MISMATCH,
+          "Unity banner ad failed to load : banner size is invalid.");
       Log.e(TAG, adapterError);
       if (mMediationBannerListener != null) {
         mMediationBannerListener
-                .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
+            .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
       }
       return;
     }
 
-    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils
+        .getUnityBannerSize(context, adSize);
 
     if (unityBannerSize == null) {
       String adapterError = createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              "There is no matching UnityAds ad size for Google ad size: " + adSize);
+          ERROR_BANNER_SIZE_MISMATCH,
+          "There is no matching UnityAds ad size for Google ad size: " + adSize);
       Log.w(TAG, adapterError);
       if (mMediationBannerListener != null) {
-        mMediationBannerListener
-                .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
+        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
       }
       return;
     }

@@ -2,9 +2,10 @@
 
 #### Version 3.7.1.0 (In Progress)
 - Verified compatibility with Unity Ads SDK 3.7.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.1.0.
 
 Built and tested with:
-- Google Mobile Ads SDK version 19.6.0.
+- Google Mobile Ads SDK version 20.1.0.
 - Unity Ads SDK version 3.7.1.
 
 #### Version 3.6.2.0

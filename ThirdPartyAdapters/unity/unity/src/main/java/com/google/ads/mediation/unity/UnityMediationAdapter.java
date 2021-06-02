@@ -145,7 +145,7 @@ public class UnityMediationAdapter extends Adapter {
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
@@ -164,7 +164,7 @@ public class UnityMediationAdapter extends Adapter {
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = UnityAds.getVersion();
-    String splits[] = versionString.split("\\.");
+    String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);

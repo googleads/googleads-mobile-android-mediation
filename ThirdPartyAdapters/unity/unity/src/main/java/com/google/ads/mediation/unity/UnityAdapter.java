@@ -71,12 +71,12 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   /**
    * A list of placement IDs that are currently loaded to prevent duplicate requests.
    */
-  private static HashMap<String, WeakReference<UnityAdapter>> mPlacementsInUse = new HashMap<>();
+  private static final HashMap<String, WeakReference<UnityAdapter>> mPlacementsInUse = new HashMap<>();
 
   /**
    * IUnityAdsLoadListener instance.
    */
-  private IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
+  private final IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
       Log.d(TAG, "Unity Ads interstitial ad successfully loaded for placement ID '"
@@ -88,7 +88,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error, String message) {
+    public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error,
+        String message) {
       mPlacementId = placementId;
       mPlacementsInUse.remove(mPlacementId);
       AdError adError = createSDKError(error, message);
@@ -108,11 +109,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
    * @return {@code true} if all the IDs provided are valid.
    */
   public static boolean isValidIds(String gameId, String placementId) {
-    if (TextUtils.isEmpty(gameId) || TextUtils.isEmpty(placementId)) {
-      return false;
-    }
-
-    return true;
+    return !TextUtils.isEmpty(gameId) && !TextUtils.isEmpty(placementId);
   }
 
   @Override
@@ -181,7 +178,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       if (adapterRef != null && adapterRef.get() != null) {
         if (mMediationInterstitialListener != null) {
           mMediationInterstitialListener
-                  .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
+              .onAdFailedToLoad(UnityAdapter.this, ERROR_AD_ALREADY_LOADING);
         }
         return;
       }
@@ -224,7 +221,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   /**
    * IUnityAdsShowListener instance. Contains logic for callbacks when showing ads.
    */
-  private IUnityAdsShowListener mUnityShowListener = new IUnityAdsShowListener() {
+  private final IUnityAdsShowListener mUnityShowListener = new IUnityAdsShowListener() {
     @Override
     public void onUnityAdsShowStart(String placementId) {
       Log.d(TAG, "Unity interstitial ad for placement ID '" + mPlacementId + "' started.");
@@ -247,10 +244,11 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     @Override
-    public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state){
+    public void onUnityAdsShowComplete(String placementId,
+        UnityAds.UnityAdsShowCompletionState state) {
       // Unity Ads ad closed.
       Log.v(TAG, "Unity interstitial ad for placement ID '" + mPlacementId +
-            "' finished playing.");
+          "' finished playing.");
       if (mMediationInterstitialListener != null) {
         mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
       }
@@ -277,7 +275,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       MediationAdRequest adRequest,
       Bundle mediationExtras) {
     bannerAd = new UnityBannerAd();
-    bannerAd.requestBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
+    bannerAd
+        .requestBannerAd(context, listener, serverParameters, adSize, adRequest, mediationExtras);
   }
 
   @Override
