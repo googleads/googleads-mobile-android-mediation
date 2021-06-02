@@ -2,8 +2,6 @@ package net.zucks.admob;
 
 import android.content.Context;
 
-import androidx.annotation.StringDef;
-
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
