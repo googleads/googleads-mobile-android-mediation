@@ -1,9 +1,11 @@
 ## Zucks Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 4.8.6.2
+
 - Initial release!
-- Supports banner, interstitial and rewarded ads.
+- Supports banner and interstitial.
+- **NOT** supports rewarded ads. This feature will be supports in next release.
 
 Built and tested with:
-- Google Mobile Ads SDK version x.y.z.
-- Zucks SDK version x.y.z.
+- Google Mobile Ads SDK version 19.7.0.
+- Zucks Ad Network SDK version 4.8.6.
