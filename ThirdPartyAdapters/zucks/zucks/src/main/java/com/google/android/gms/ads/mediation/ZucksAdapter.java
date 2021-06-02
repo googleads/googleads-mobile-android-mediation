@@ -15,12 +15,15 @@ import net.zucks.admob.BaseMediationAdapter;
 
 /**
  * [LEGACY] Mediation Adapter for Zucks Ad Network.
- *
- * <p>Supported formats: - Banner - Interstitial
- *
- * <p>Unsupported formats: - Rewarded Ad
- *
- * <p>If you want to integrate Rewarded Ad, see the new mediation adapter implementation.
+ * <p>
+ * Supported formats:
+ *   - Banner
+ *   - Interstitial
+ * <p>
+ * Unsupported formats:
+ *   - Rewarded Ad
+ * <p>
+ * If you want to integrate Rewarded Ad, see the new mediation adapter implementation.
  *
  * @see ZucksMediationAdapter ZucksMediationAdapter
  */

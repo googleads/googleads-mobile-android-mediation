@@ -6,12 +6,15 @@ import androidx.annotation.NonNull;
 
 /**
  * Mediation Adapter for Zucks Ad Network.
- *
- * <p>Supported formats: - Rewarded Ad (In the plan)
- *
- * <p>Unsupported formats: - Banner - Interstitial
- *
- * <p>If you want to integrate Banner/Interstitial Ad, see the legacy adapter implementation.
+ * <p>
+ * Supported formats:
+ *   - Rewarded Ad (In the plan)
+ * <p>
+ * Unsupported formats:
+ *   - Banner
+ *   - Interstitial
+ * <p>
+ * If you want to integrate Banner/Interstitial Ad, see the legacy adapter implementation.
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
