@@ -2,14 +2,18 @@ plugins {
     id "com.jfrog.bintray" version "1.8.4"
 }
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 /**
  * Extra properties used by the project.
  */
 ext {
-    // String property to store version name.
-    stringVersion = "x.y.z.0"
+    stringCoreVersionName = rootProject.ext.sdkVersions.core.name.join('.')
+    
+    stringVersionName = "${stringCoreVersionName}.${rootProject.ext.sdkVersions.adapter.name}"
+    stringVersionCode = Integer.parseInt("${rootProject.ext.sdkVersions.core.code}${rootProject.ext.sdkVersions.adapter.code}")
+
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,9 +23,19 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 1020304
-        versionName stringVersion
-        buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
+
+        versionCode stringVersionCode
+        versionName stringVersionName
+
+        buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersionName}\"")
+        buildConfigField("int", "VERSION_CODE", "${rootProject.ext.sdkVersions.adapter.name}")
+
+        buildConfigField("String", "ADAPTER_VERSION_MAJOR", "\"${rootProject.ext.sdkVersions.core.name[0]}\"")
+        buildConfigField("String", "ADAPTER_VERSION_MINOR", "\"${rootProject.ext.sdkVersions.core.name[1]}\"")
+        buildConfigField("String", "ADAPTER_VERSION_SDK_PATCH", "\"${rootProject.ext.sdkVersions.core.name[2]}\"")
+        buildConfigField("String", "ADAPTER_VERSION_ADAPTER_PATCH", "\"${rootProject.ext.sdkVersions.adapter.name}\"")
+
+        consumerProguardFiles 'lib-proguard-rules.pro'
     }
     buildTypes {
         release {
@@ -32,10 +46,14 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:19.7.0'
-    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation "com.google.android.gms:play-services-ads:${rootProject.ext.externalVersions.admob}"
+    api "androidx.annotation:annotation:${rootProject.ext.externalVersions.annotation}"
+    api "net.zucks:zucks-ad-network-sdk:${stringCoreVersionName}"
 
-    // TODO: Insert required dependencies here.
+    testImplementation "junit:junit:${rootProject.ext.externalVersions.junit}"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.externalVersions.kotlin}"
+    testImplementation "org.hamcrest:hamcrest-core:${rootProject.ext.externalVersions.hamcrest}"
+    testImplementation "io.mockk:mockk:${rootProject.ext.externalVersions.mockk}"
 }
 
 /**
@@ -54,7 +72,7 @@ publishing {
         zucksPublications(MavenPublication) {
             groupId = stringGroupId
             artifactId = project.name
-            version = stringVersion
+            version = stringVersionName
 
             // Add the aar artifact to publication.
             artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
@@ -117,7 +135,7 @@ bintray {
         issueTrackerUrl = 'https://github.com/googleads/googleads-mobile-android-mediation/issues'
         githubRepo = 'googleads/googleads-mobile-android-mediation'
         version {
-            name = stringVersion
+            name = stringVersionName
         }
     }
 }
