@@ -8,6 +8,7 @@ buildscript {
                 'junit': '4.13.2',
                 'hamcrest': '2.2',
                 'mockk': '1.10.6',
+                'gjf': '1.9',
         ]
         sdkVersions = [
                 'core': [
@@ -28,6 +29,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:${externalVersions.gradle}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${externalVersions.kotlin}"
+        classpath "com.google.googlejavaformat:google-java-format:${externalVersions.gjf}"
     }
 }
 
