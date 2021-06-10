@@ -1,5 +1,11 @@
 package com.google.ads.mediation.fyber;
 
+import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.TAG;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,6 +21,7 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentContr
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
 import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.fyber.inneractive.sdk.external.VideoContentListenerAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -65,10 +72,10 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     String spotId = mAdConfiguration.getServerParameters()
         .getString(FyberMediationAdapter.KEY_SPOT_ID);
     if (TextUtils.isEmpty(spotId)) {
-      String logMessage = "Cannot render rewarded ad. " +
-          "Please define a valid spot id on the AdMob UI.";
-      Log.e(FyberMediationAdapter.TAG, logMessage);
-      mAdLoadCallback.onFailure(logMessage);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Spot ID is null or empty.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -100,13 +107,9 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
           InneractiveErrorCode errorCode) {
-        String logMessage = "Fyber rewarded video request failed. Error: " + errorCode.toString();
-        if (errorCode != InneractiveErrorCode.NO_FILL
-            && errorCode != InneractiveErrorCode.CONNECTION_ERROR) {
-          Log.w(FyberMediationAdapter.TAG, logMessage);
-        }
-
-        mAdLoadCallback.onFailure(logMessage);
+        AdError error = getAdError(errorCode);
+        Log.w(TAG, error.getMessage());
+        mAdLoadCallback.onFailure(error);
       }
     };
   }
@@ -174,12 +177,14 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
       mUnitController.show(context);
     } else if (mRewardedAdCallback != null) {
-      mRewardedAdCallback
-          .onAdFailedToShow("showAd called, but Fyber's rewarded spot is not ready.");
+      AdError error = new AdError(ERROR_AD_NOT_READY, "Fyber's rewarded spot is not ready.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mRewardedAdCallback.onAdFailedToShow(error);
     }
   }
 

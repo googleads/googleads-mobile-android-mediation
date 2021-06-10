@@ -1,8 +1,18 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 3.7.1.0
+- Verified compatibility with Unity Ads SDK 3.7.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.1.0.
+- Unity Ads SDK version 3.7.1.
+
 #### Version 3.6.2.0
 - Verified compatibility with Unity Ads SDK 3.6.2.
 - Fixed an issue where rewarded ads were not forwarding click callbacks.
+- The UnityAds SDK has been removed from the bundled adapter build.
+Publishers are now required to manually include the UnityAds SDK as an additional dependency.
 - Updated the minimum required Google Mobile Ads SDK version to 19.8.0.
 
 Built and tested with:

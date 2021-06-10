@@ -7,7 +7,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import com.google.android.gms.ads.AdRequest;
+import androidx.annotation.IntDef;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
@@ -15,19 +16,68 @@ import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
 import jp.co.imobile.sdkads.android.ImobileSdkAd;
 import jp.co.imobile.sdkads.android.ImobileSdkAdListener;
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/** i-mobile mediation adapter for AdMob native ads. */
+/**
+ * i-mobile mediation adapter for AdMob native ads.
+ */
 public final class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
 
   // region - Fields for log.
-  /** Tag for log. */
+  /**
+   * Tag for log.
+   */
   private static final String TAG = IMobileMediationAdapter.class.getSimpleName();
-  // endregion
+  // end region
+
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+      value = {
+          ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_BANNER_SIZE_MISMATCH,
+          ERROR_EMPTY_NATIVE_ADS_LIST
+      })
+
+  public @interface AdapterError {
+
+  }
+
+  /**
+   * i-mobile adapter error domain.
+   */
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.imobile";
+
+  /**
+   * i-mobile sdk adapter error domain.
+   */
+  public static final String IMOBILE_SDK_ERROR_DOMAIN = "jp.co.com.google.ads.mediation.imobile";
+
+  /**
+   * Activity context is required.
+   */
+  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 101;
+
+  /**
+   * Server parameters (e.g. publisher ID) are nil.
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
+
+  /**
+   * The requested ad size does not match an i-mobile supported banner size.
+   */
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 103;
+
+  /**
+   * i-mobile's native ad load success callback returned an empty native ads list.
+   */
+  public static final int ERROR_EMPTY_NATIVE_ADS_LIST = 104;
 
   // region - Adapter interface
   @Override
@@ -38,7 +88,7 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -68,7 +118,9 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   // end region
 
   // region - Fields for native ads.
-  /** Listener for native ads. */
+  /**
+   * Listener for native ads.
+   */
   private MediationNativeListener mediationNativeListener;
   // endregion
 
@@ -83,18 +135,13 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
 
     // Validate Context.
     if (!(context instanceof Activity)) {
-      Log.w(TAG, "Native : Context is not Activity.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Context is not an Activity. ", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      listener.onAdFailedToLoad(this, error);
       return;
     }
     final Activity activity = (Activity) context;
-
-    // Check request type.
-    if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
-      Log.w(TAG, "Native : i-mobile SDK only support UnifiedNativeAd.");
-      listener.onAdFailedToLoad(this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      return;
-    }
 
     // Initialize fields.
     this.mediationNativeListener = listener;
@@ -118,9 +165,11 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
             }
 
             if (adDataList == null || adDataList.isEmpty()) {
-              Log.w(TAG, "Native : No ads.");
-              mediationNativeListener.onAdFailedToLoad(
-                  IMobileMediationAdapter.this, AdRequest.ERROR_CODE_NO_FILL);
+              AdError error = new AdError(ERROR_EMPTY_NATIVE_ADS_LIST,
+                  "i-mobile's native ad load success callback returned an empty native ads list.",
+                  ERROR_DOMAIN);
+              Log.w(TAG, error.getMessage());
+              mediationNativeListener.onAdFailedToLoad(IMobileMediationAdapter.this, error);
               return;
             }
 
@@ -140,10 +189,10 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
 
           @Override
           public void onFailed(FailNotificationReason reason) {
-            Log.w(TAG, "Native : Error. Reason is " + reason);
+            AdError error = AdapterHelper.getAdError(reason);
+            Log.w(TAG, error.getMessage());
             if (mediationNativeListener != null) {
-              mediationNativeListener.onAdFailedToLoad(
-                  IMobileMediationAdapter.this, AdapterHelper.convertToAdMobErrorCode(reason));
+              mediationNativeListener.onAdFailedToLoad(IMobileMediationAdapter.this, error);
             }
           }
         });
@@ -158,10 +207,12 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   }
 
   @Override
-  public void onPause() {}
+  public void onPause() {
+  }
 
   @Override
-  public void onResume() {}
+  public void onResume() {
+  }
   // endregion
 
 }

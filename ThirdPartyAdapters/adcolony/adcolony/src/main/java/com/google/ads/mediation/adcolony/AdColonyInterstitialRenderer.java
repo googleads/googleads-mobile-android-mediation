@@ -5,11 +5,15 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 
 import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -22,14 +26,14 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
     MediationInterstitialAd {
 
   private MediationInterstitialAdCallback mInterstitialAdCallback;
-  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-      mAdLoadCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
-  private MediationInterstitialAdConfiguration adConfiguration;
+  private final MediationInterstitialAdConfiguration adConfiguration;
 
   AdColonyInterstitialRenderer(
-      MediationInterstitialAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+          @NonNull MediationInterstitialAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
+  ) {
     this.mAdLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
@@ -45,7 +49,7 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     adColonyInterstitial.show();
   }
 
@@ -57,9 +61,9 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
-    String errorMessage = createSdkError();
-    Log.w(TAG, errorMessage);
-    mAdLoadCallback.onFailure(errorMessage);
+    AdError error = createSdkError();
+    Log.w(TAG, error.getMessage());
+    mAdLoadCallback.onFailure(error);
   }
 
   @Override
@@ -92,4 +96,3 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
     AdColony.requestInterstitial(ad.getZoneID(), this);
   }
 }
-

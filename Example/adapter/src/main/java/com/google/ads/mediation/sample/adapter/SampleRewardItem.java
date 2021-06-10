@@ -16,7 +16,7 @@
 
 package com.google.ads.mediation.sample.adapter;
 
-import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardItem;
 
 /**
  * A {@link RewardItem} that maps the sample reward type and reward amount.

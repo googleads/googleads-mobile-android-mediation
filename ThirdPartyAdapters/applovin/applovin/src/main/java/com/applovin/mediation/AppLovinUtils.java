@@ -27,10 +27,14 @@ public class AppLovinUtils {
   /**
    * Keys for retrieving values from the server parameters.
    */
-  private static class ServerParameterKeys {
+  public static class ServerParameterKeys {
 
-    private static final String SDK_KEY = "sdkKey";
-    private static final String ZONE_ID = "zone_id";
+    public static final String SDK_KEY = "sdkKey";
+    public static final String ZONE_ID = "zone_id";
+
+    // Private constructor
+    private ServerParameterKeys() {
+    }
   }
 
   /**
@@ -54,16 +58,31 @@ public class AppLovinUtils {
   }
 
   /**
-   * Checks whether or not the Android Manifest has a valid SDK key
+   * Retrieves the AppLovin SDK key.
+   *
+   * @param context          the context object.
+   * @param serverParameters the ad request's server parameters.
+   * @return the AppLovin SDK key.
    */
-  public static boolean androidManifestHasValidSdkKey(Context context) {
-    final Bundle metaData = retrieveMetadata(context);
-    if (metaData != null) {
-      final String sdkKey = metaData.getString("applovin.sdk.key");
-      return !TextUtils.isEmpty(sdkKey);
+  @Nullable
+  public static String retrieveSdkKey(@NonNull Context context, @Nullable Bundle serverParameters) {
+    String sdkKey = null;
+
+    // Prioritize the SDK Key contained in the server parameters, if any.
+    if (serverParameters != null) {
+      sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     }
 
-    return false;
+    // Fetch the SDK key in the AndroidManifest.xml file if no SDK key is found in the server
+    // paremeters.
+    if (TextUtils.isEmpty(sdkKey)) {
+      final Bundle metaData = retrieveMetadata(context);
+      if (metaData != null) {
+        sdkKey = metaData.getString("applovin.sdk.key");
+      }
+    }
+
+    return sdkKey;
   }
 
   private static Bundle retrieveMetadata(Context context) {

@@ -11,12 +11,10 @@ abstract class NendUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   NendUnifiedNativeAdMapper(NendNativeMappedImage logoImage) {
     if (logoImage == null) {
-      Log.w(
-          TAG,
+      Log.w(TAG,
           "Missing Icon image of nend's native ad, so UnifiedNativeAd#getIcon() will be null.");
     }
     setIcon(logoImage);
-
     setOverrideImpressionRecording(true);
   }
 

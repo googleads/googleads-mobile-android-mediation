@@ -19,10 +19,9 @@ package com.google.ads.mediation.sample.customevent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Keep;
 import android.util.DisplayMetrics;
 import android.util.Log;
-
+import androidx.annotation.Keep;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
@@ -48,7 +47,6 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitial;
 import com.google.android.gms.ads.mediation.customevent.CustomEventInterstitialListener;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNative;
 import com.google.android.gms.ads.mediation.customevent.CustomEventNativeListener;
-
 import java.util.List;
 
 /**
@@ -280,7 +278,7 @@ public class SampleCustomEvent extends Adapter implements CustomEventBanner,
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

@@ -118,7 +118,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     super.untrackView(view);
   }
 
-  /** {@link NendAdNativeVideoListener} implementation */
+  /**
+   * {@link NendAdNativeVideoListener} implementation
+   */
   @Override
   public void onImpression(@NonNull NendAdNativeVideo nendAdNativeVideo) {
     forwarder.adImpression();
@@ -135,7 +137,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     forwarder.leftApplication();
   }
 
-  /** {@link NendAdNativeMediaStateListener} implementation */
+  /**
+   * {@link NendAdNativeMediaStateListener} implementation
+   */
   @Override
   public void onStartPlay(@NonNull NendAdNativeMediaView nendAdNativeMediaView) {
     // Do nothing here

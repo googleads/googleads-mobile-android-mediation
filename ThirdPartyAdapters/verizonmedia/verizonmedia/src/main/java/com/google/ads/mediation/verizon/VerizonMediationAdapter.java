@@ -29,7 +29,6 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.verizon.ads.ActivityStateManager;
 import com.verizon.ads.Configuration;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
@@ -249,9 +248,8 @@ public class VerizonMediationAdapter extends Adapter
 
     boolean success = true;
     if (!VASAds.isInitialized()) {
-
       if (!(context instanceof Activity)) {
-        Log.e(TAG, "StandardEdition.initialize must be explicitly called with an Activity" +
+        Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity" +
             " context.");
 
         return false;
@@ -265,7 +263,7 @@ public class VerizonMediationAdapter extends Adapter
       try {
         Application application = ((Activity) context).getApplication();
         Log.d(TAG, "Initializing using site ID: " + siteId);
-        success = StandardEdition.initialize(application, siteId);
+        success = VASAds.initialize(application, siteId);
       } catch (Exception e) {
         Log.e(TAG, "Error occurred initializing Verizon Ads SDK, ", e);
 

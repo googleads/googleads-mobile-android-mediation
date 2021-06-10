@@ -181,8 +181,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
    */
   public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
-      String message = "Ad from Facebook doesn't have all assets required for the app install"
-          + " format.";
+      String message = "Ad from Facebook doesn't have all required assets.";
       Log.w(TAG, message);
       mapperListener.onMappingFailed(message);
       return;
@@ -191,9 +190,12 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     // Map all required assets (headline, one image, body, icon and call to
     // action).
     setHeadline(mNativeAdBase.getAdHeadline());
-    List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-    images.add(new FacebookAdapterNativeAdImage());
-    setImages(images);
+    if (mNativeAdBase.getAdCoverImage() != null) {
+      List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
+      images.add(
+          new FacebookAdapterNativeAdImage(Uri.parse(mNativeAdBase.getAdCoverImage().getUrl())));
+      setImages(images);
+    }
     setBody(mNativeAdBase.getAdBodyText());
     if (mNativeAdBase.getPreloadedIconViewDrawable() == null) {
       if (mNativeAdBase.getAdIcon() == null) {

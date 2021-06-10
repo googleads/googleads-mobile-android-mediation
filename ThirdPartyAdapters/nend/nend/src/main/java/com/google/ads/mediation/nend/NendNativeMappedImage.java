@@ -5,16 +5,17 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.formats.NativeAd;
 
 public class NendNativeMappedImage extends NativeAd.Image {
 
   private Drawable drawable;
-  private Uri uri;
+  private final Uri uri;
   private double scale;
 
-  NendNativeMappedImage(Context context, Bitmap bitmap, Uri uri) {
+  NendNativeMappedImage(@NonNull Context context, @Nullable Bitmap bitmap, @NonNull Uri uri) {
     this.uri = uri;
     if (bitmap != null) {
       drawable = new BitmapDrawable(context.getResources(), bitmap);
@@ -23,12 +24,12 @@ public class NendNativeMappedImage extends NativeAd.Image {
   }
 
   @Override
-  public @Nullable Drawable getDrawable() {
+  public Drawable getDrawable() {
     return drawable;
   }
 
   @Override
-  public @Nullable Uri getUri() {
+  public Uri getUri() {
     return uri;
   }
 

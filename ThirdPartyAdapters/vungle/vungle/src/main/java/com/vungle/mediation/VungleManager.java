@@ -5,11 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleBannerAd;
-import com.vungle.warren.AdConfig;
-import com.vungle.warren.LoadAdCallback;
-import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
-import com.vungle.warren.error.VungleException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,86 +53,6 @@ public class VungleManager {
       Log.e(TAG, "placementID not provided from serverParameters.");
     }
     return placement;
-  }
-
-  void loadAd(String placement, @Nullable final VungleListener listener) {
-    Vungle.loadAd(
-        placement,
-        new LoadAdCallback() {
-          @Override
-          public void onAdLoad(String placement) {
-            if (listener != null) {
-              listener.onAdAvailable();
-            }
-          }
-
-          @Override
-          public void onError(String placement, VungleException cause) {
-            if (listener != null) {
-              listener.onAdFailedToLoad(cause.getExceptionCode());
-            }
-          }
-        });
-  }
-
-  void playAd(String placement, AdConfig cfg, @Nullable VungleListener listener) {
-    Vungle.playAd(placement, cfg, playAdCallback(listener));
-  }
-
-  private PlayAdCallback playAdCallback(@Nullable final VungleListener listener) {
-    return new PlayAdCallback() {
-      @Override
-      public void onAdStart(String id) {
-        if (listener != null) {
-          listener.onAdStart(id);
-        }
-      }
-
-      @Override
-      @Deprecated
-      public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
-      }
-
-      @Override
-      public void onAdEnd(String id) {
-        if (listener != null) {
-          listener.onAdEnd(id);
-        }
-      }
-
-      @Override
-      public void onAdClick(String id) {
-        if (listener != null) {
-          listener.onAdClick(id);
-        }
-      }
-
-      @Override
-      public void onAdRewarded(String id) {
-        if (listener != null) {
-          listener.onAdRewarded(id);
-        }
-      }
-
-      @Override
-      public void onAdLeftApplication(String id) {
-        if (listener != null) {
-          listener.onAdLeftApplication(id);
-        }
-      }
-
-      @Override
-      public void onError(String id, VungleException error) {
-        if (listener != null) {
-          listener.onAdFail(id);
-        }
-      }
-
-      @Override
-      public void onAdViewed(String placementId) {
-        // "no-op , to be mapped to respective adapter events in future release"
-      }
-    };
   }
 
   boolean isAdPlayable(String placement) {
