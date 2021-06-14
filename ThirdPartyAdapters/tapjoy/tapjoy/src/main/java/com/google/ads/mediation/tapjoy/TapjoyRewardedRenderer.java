@@ -74,8 +74,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
     if (!(context instanceof Activity)) {
       AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
           "Tapjoy SDK requires an Activity context to request ads.", ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        mAdLoadCallback.onFailure(error);
+      }
       return;
     }
     Activity activity = (Activity) context;
@@ -85,8 +87,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
           ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        mAdLoadCallback.onFailure(error);
+      }
       return;
     }
 
@@ -107,8 +111,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
             if (TextUtils.isEmpty(placementName)) {
               AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
                   "Missing or invalid Tapjoy placement name.", ERROR_DOMAIN);
-              Log.e(TAG, error.getMessage());
-              mAdLoadCallback.onFailure(error);
+              if (error != null) {
+                Log.e(TAG, error.getMessage());
+                mAdLoadCallback.onFailure(error);
+              }
               return;
             }
 
@@ -117,8 +123,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
               String errorMessage = String
                   .format("An ad has already been requested for placement: %s.", placementName);
               AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, errorMessage, ERROR_DOMAIN);
-              Log.e(TAG, error.getMessage());
-              mAdLoadCallback.onFailure(error);
+              if (error != null) {
+                Log.e(TAG, error.getMessage());
+                mAdLoadCallback.onFailure(error);
+              }
               return;
             }
 
@@ -130,8 +138,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
           @Override
           public void onInitializeFailed(String message) {
             AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
-            Log.e(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
+            if (error != null) {
+              Log.e(TAG, error.getMessage());
+              mAdLoadCallback.onFailure(error);
+            }
           }
         });
   }
@@ -151,9 +161,11 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
 
               AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE,
                   "Tapjoy request successful but no content was returned.", ERROR_DOMAIN);
-              Log.e(TAG, error.getMessage());
-              if (mAdLoadCallback != null) {
-                mAdLoadCallback.onFailure(error);
+              if (error != null) {
+                Log.w(TAG, error.getMessage());
+                if (mAdLoadCallback != null) {
+                  mAdLoadCallback.onFailure(error);
+                }
               }
             }
           }
@@ -168,9 +180,11 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
             mPlacementsInUse.remove(placementName);
 
             AdError error = new AdError(tjError.code, tjError.message, TAPJOY_SDK_ERROR_DOMAIN);
-            Log.e(TAG, error.getMessage());
-            if (mAdLoadCallback != null) {
-              mAdLoadCallback.onFailure(error);
+            if (error != null) {
+              Log.e(TAG, error.getMessage());
+              if (mAdLoadCallback != null) {
+                mAdLoadCallback.onFailure(error);
+              }
             }
           }
         });
@@ -275,8 +289,10 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
     } else if (mMediationRewardedAdCallback != null) {
       AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE, "Tapjoy content not available.",
           ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      mMediationRewardedAdCallback.onAdFailedToShow(error);
+      if (error != null) {
+        Log.w(TAG, error.getMessage());
+        mMediationRewardedAdCallback.onAdFailedToShow(error);
+      }
     }
   }
 
@@ -306,9 +322,11 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
         mPlacementsInUse.remove(tjPlacement.getName());
 
         AdError error = new AdError(ERROR_PRESENTATION_VIDEO_PLAYBACK, errorMessage, ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        if (mMediationRewardedAdCallback != null) {
-          mMediationRewardedAdCallback.onAdFailedToShow(error);
+        if (error != null) {
+          Log.w(TAG, error.getMessage());
+          if (mMediationRewardedAdCallback != null) {
+            mMediationRewardedAdCallback.onAdFailedToShow(error);
+          }
         }
       }
     });
