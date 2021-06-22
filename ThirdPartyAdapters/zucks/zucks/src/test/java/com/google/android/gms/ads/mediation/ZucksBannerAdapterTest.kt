@@ -1,5 +1,7 @@
 package com.google.android.gms.ads.mediation
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import io.mockk.*
@@ -9,6 +11,8 @@ import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 class ZucksBannerAdapterTest {
 
@@ -19,19 +23,6 @@ class ZucksBannerAdapterTest {
     fun setUp() {
         mockAdapter = mockk(relaxed = true)
         listener = mockk(relaxed = true)
-    }
-
-    /**
-     * Returns false if AdSize is unsupported and/or invalid.
-     */
-    @Test
-    fun testIsSizeSupported_invalidSize() {
-        val adSize = AdSize(Int.MAX_VALUE, Int.MAX_VALUE)
-
-        assertThat(
-            ZucksBannerAdapter.isSizeSupported(adSize),
-            `is`(false)
-        )
     }
 
     /**
@@ -274,6 +265,39 @@ class ZucksBannerAdapterTest {
         verify(exactly = 1) { callback.onAdLoaded(any()) }
         verify(exactly = 0) { callback.onAdFailedToLoad(any(), any<AdError>()) }
         verify(exactly = 0) { callback.onAdFailedToLoad(any(), any<Int>()) }
+    }
+
+}
+
+@RunWith(RobolectricTestRunner::class)
+class ZucksBannerAdapterTest_Robolectric {
+
+    private val context by lazy { ApplicationProvider.getApplicationContext<Context>() }
+
+    /**
+     * Returns false if AdSize is unsupported and/or invalid.
+     */
+    @Test
+    fun testIsSizeSupported_invalidSize() {
+        val adSize = AdSize(Int.MAX_VALUE, Int.MAX_VALUE)
+
+        assertThat(
+            ZucksBannerAdapter.isSizeSupported(context, adSize),
+            `is`(false)
+        )
+    }
+
+    /**
+     * Returns true if AdSize is supported.
+     */
+    @Test
+    fun testIsSizeSupported_validSize() {
+        val adSize = AdSize.BANNER
+
+        assertThat(
+            ZucksBannerAdapter.isSizeSupported(context, adSize),
+            `is`(true)
+        )
     }
 
 }
