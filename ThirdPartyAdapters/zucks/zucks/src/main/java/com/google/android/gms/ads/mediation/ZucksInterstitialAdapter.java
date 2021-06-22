@@ -73,13 +73,13 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
           }
 
           @Override
-          public void onLoadFailure(Exception e) {
-            loadCallback.onFailure(ErrorMapper.convertSdkError(e));
+          public void onLoadFailure(Exception exception) {
+            loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
           }
 
           @Override
-          public void onShowFailure(Exception e) {
-            adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(e));
+          public void onShowFailure(Exception exception) {
+            adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
           }
         };
 
@@ -145,14 +145,14 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
           }
 
           @Override
-          public void onLoadFailure(Exception e) {
-            AdError error = ErrorMapper.convertSdkError(e);
+          public void onLoadFailure(Exception exception) {
+            AdError error = ErrorMapper.convertSdkError(exception);
             oldCallback.onAdFailedToLoad(self.root, error);
           }
 
           @Override
-          public void onShowFailure(Exception e) {
-            AdMobUtil.ZUCKS_LOG.d("Call #onShowFailure(Exception e) in AdMob adapter.", e);
+          public void onShowFailure(Exception exception) {
+            AdMobUtil.ZUCKS_LOG.d("Call #onShowFailure(Exception exception) in AdMob adapter.", exception);
             oldCallback.onAdOpened(self.root);
             oldCallback.onAdClosed(self.root);
           }

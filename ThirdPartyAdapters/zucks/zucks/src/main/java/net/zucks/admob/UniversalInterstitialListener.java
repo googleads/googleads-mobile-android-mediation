@@ -31,9 +31,9 @@ public abstract class UniversalInterstitialListener<T> {
 
     void onCloseAd();
 
-    void onLoadFailure(Exception e);
+    void onLoadFailure(Exception exception);
 
-    void onShowFailure(Exception e);
+    void onShowFailure(Exception exception);
   }
 
   /**
