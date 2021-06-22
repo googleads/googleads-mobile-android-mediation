@@ -152,7 +152,8 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
 
           @Override
           public void onShowFailure(Exception exception) {
-            AdMobUtil.ZUCKS_LOG.d("Call #onShowFailure(Exception exception) in AdMob adapter.", exception);
+            AdMobUtil.ZUCKS_LOG.d(
+                "Call #onShowFailure(Exception exception) in AdMob adapter.", exception);
             oldCallback.onAdOpened(self.root);
             oldCallback.onAdClosed(self.root);
           }
