@@ -16,6 +16,7 @@ public abstract class BaseMediationAdapter extends Adapter {
       Context context,
       InitializationCompleteCallback initializationCompleteCallback,
       List<MediationConfiguration> list) {
+    // Initialization is not needed in Zucks Ad Network SDK.
     initializationCompleteCallback.onInitializationSucceeded();
   }
 
