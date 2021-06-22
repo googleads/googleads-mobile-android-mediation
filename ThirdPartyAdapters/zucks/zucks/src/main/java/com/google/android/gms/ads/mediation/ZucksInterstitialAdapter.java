@@ -333,10 +333,12 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
     useInterstitialAdapter().onResume();
   }
 
+  /**
+   * Returns false if defined `KEY_FULLSCREEN_FOR_INTERSTITIAL` as `false` explicitly or value not
+   * defined.
+   */
   private static boolean isFullscreenInterstitial(@Nullable Bundle mediationExtras) {
     return mediationExtras != null
-        && mediationExtras.containsKey(
-            ZucksMediationAdapter.MediationExtrasBundleBuilder.KEY_FULLSCREEN_FOR_INTERSTITIAL)
         && mediationExtras.getBoolean(
             ZucksMediationAdapter.MediationExtrasBundleBuilder.KEY_FULLSCREEN_FOR_INTERSTITIAL);
   }
