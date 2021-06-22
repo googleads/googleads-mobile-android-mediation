@@ -78,9 +78,8 @@ public final class AdMobUtil {
   public static String getFrameId(@Nullable Bundle serverParams) {
     if (serverParams != null && serverParams.containsKey(AD_FRAME_ID)) {
       return serverParams.getString(AD_FRAME_ID);
-    } else {
-      return null;
     }
+    return null;
   }
 
   // region configurePlatform
