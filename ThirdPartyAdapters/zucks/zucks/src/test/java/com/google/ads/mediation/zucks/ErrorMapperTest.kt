@@ -1,9 +1,9 @@
-package net.zucks.admob
+package com.google.ads.mediation.zucks
 
 import net.zucks.exception.FrameIdNotFoundException
 import net.zucks.exception.NetworkNotFoundException
-import org.hamcrest.CoreMatchers.*
-import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert
 import org.junit.Test
 import java.lang.RuntimeException
 
@@ -13,9 +13,9 @@ class ErrorMapperTest {
     fun testConvertSdkErrorCode_frameIdNotFound() {
         val e = FrameIdNotFoundException()
 
-        assertThat(
+        MatcherAssert.assertThat(
             ErrorMapper.convertSdkErrorCode(e),
-            `is`(ErrorMapper.ERROR_INVALID_REQUEST)
+            CoreMatchers.`is`(ErrorMapper.ERROR_INVALID_REQUEST)
         )
     }
 
@@ -23,9 +23,9 @@ class ErrorMapperTest {
     fun testConvertSdkErrorCode_offline() {
         val e = NetworkNotFoundException()
 
-        assertThat(
+        MatcherAssert.assertThat(
             ErrorMapper.convertSdkErrorCode(e),
-            `is`(ErrorMapper.ERROR_NETWORK_ERROR)
+            CoreMatchers.`is`(ErrorMapper.ERROR_NETWORK_ERROR)
         )
     }
 
@@ -33,9 +33,9 @@ class ErrorMapperTest {
     fun testConvertSdkErrorCode_unknown() {
         val e = RuntimeException()
 
-        assertThat(
+        MatcherAssert.assertThat(
             ErrorMapper.convertSdkErrorCode(e),
-            `is`(ErrorMapper.ERROR_INTERNAL_ERROR)
+            CoreMatchers.`is`(ErrorMapper.ERROR_INTERNAL_ERROR)
         )
     }
 
@@ -44,13 +44,19 @@ class ErrorMapperTest {
         val first = ErrorMapper.convertSdkError(null)
         val second = ErrorMapper.convertSdkError(RuntimeException("foo"))
 
-        assertThat(
+        MatcherAssert.assertThat(
             first.message,
-            `is`(not(equalTo(second.message)))
+            CoreMatchers.`is`(CoreMatchers.not(CoreMatchers.equalTo(second.message)))
         )
 
-        assertThat(first.message, `is`(not(nullValue())))
-        assertThat(second.message, `is`(not(nullValue())))
+        MatcherAssert.assertThat(
+            first.message,
+            CoreMatchers.`is`(CoreMatchers.not(CoreMatchers.nullValue()))
+        )
+        MatcherAssert.assertThat(
+            second.message,
+            CoreMatchers.`is`(CoreMatchers.not(CoreMatchers.nullValue()))
+        )
     }
 
     @Test
@@ -58,9 +64,9 @@ class ErrorMapperTest {
         val first = ErrorMapper.createAdapterError(Int.MAX_VALUE, "a")
         val second = ErrorMapper.createAdapterError(Int.MAX_VALUE, "b")
 
-        assertThat(
+        MatcherAssert.assertThat(
             first.message,
-            `is`(not(equalTo(second.message)))
+            CoreMatchers.`is`(CoreMatchers.not(CoreMatchers.equalTo(second.message)))
         )
     }
 

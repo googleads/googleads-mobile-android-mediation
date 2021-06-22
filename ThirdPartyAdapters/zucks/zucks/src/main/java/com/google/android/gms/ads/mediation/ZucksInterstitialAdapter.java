@@ -12,10 +12,10 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
-import net.zucks.admob.AdMobUtil;
-import net.zucks.admob.UniversalInterstitialListener;
-import net.zucks.admob.BaseMediationAdapter;
-import net.zucks.admob.ErrorMapper;
+import com.google.ads.mediation.zucks.AdMobUtil;
+import com.google.ads.mediation.zucks.UniversalInterstitialListener;
+import com.google.ads.mediation.zucks.BaseMediationAdapter;
+import com.google.ads.mediation.zucks.ErrorMapper;
 import net.zucks.view.AdFullscreenInterstitial;
 import net.zucks.view.AdInterstitial;
 import net.zucks.view.IZucksInterstitial;

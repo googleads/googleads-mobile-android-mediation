@@ -1,4 +1,4 @@
-package net.zucks.admob
+package com.google.ads.mediation.zucks
 
 import io.mockk.mockk
 import io.mockk.verify

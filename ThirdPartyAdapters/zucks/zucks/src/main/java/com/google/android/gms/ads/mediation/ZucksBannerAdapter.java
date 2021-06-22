@@ -12,9 +12,9 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 
-import net.zucks.admob.AdMobUtil;
-import net.zucks.admob.BaseMediationAdapter;
-import net.zucks.admob.ErrorMapper;
+import com.google.ads.mediation.zucks.AdMobUtil;
+import com.google.ads.mediation.zucks.BaseMediationAdapter;
+import com.google.ads.mediation.zucks.ErrorMapper;
 import net.zucks.listener.AdBannerListener;
 import net.zucks.view.AdBanner;
 
