@@ -256,14 +256,14 @@ class ZucksInterstitialAdapter extends BaseMediationAdapter
     // Check a supported context.
     if (!(context instanceof Activity)) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ERROR_INVALID_REQUEST, "Context not an Activity.");
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity.");
     }
 
     String adFrameId = AdMobUtil.getFrameId(serverParameters);
 
     if (adFrameId == null) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
     } else {
       if (isFullscreenInterstitial(mediationExtras)) {
         mAdInterstitial =

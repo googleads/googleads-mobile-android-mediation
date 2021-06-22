@@ -269,14 +269,14 @@ class ZucksBannerAdapter extends BaseMediationAdapter
       Context context, AdSize adSize, Bundle serverParams, AdBannerListener listener) {
     if (!isSizeSupported(context, adSize)) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
     }
 
     String adFrameId = AdMobUtil.getFrameId(serverParams);
 
     if (adFrameId == null) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
     } else {
       this.adSize = adSize;
       zucksBanner = new AdBanner(context, adFrameId, listener);
@@ -342,7 +342,7 @@ class ZucksBannerAdapter extends BaseMediationAdapter
     if (adSize.getWidth() != banner.getWidthInDp()
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
+          ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE, "It is not a supported size. size=" + adSize);
     } else {
       return null;
     }
