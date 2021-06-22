@@ -1,6 +1,6 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Version 3.7.2.0 (in progress)
+#### Version 3.7.2.0
 - Verified compatibility with Unity Ads SDK 3.7.2.
 - Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
 
