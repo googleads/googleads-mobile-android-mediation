@@ -1,7 +1,13 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 12.8.1.0 (in progress)
+- Verified compatibility with Tapjoy SDK version 12.8.1.
 - Fixed an issue where a `NullPointerException` is being logged when an error is logged by the adapter.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- Tapjoy SDK version 12.8.1.
 
 #### Version 12.8.0.1
 - Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
