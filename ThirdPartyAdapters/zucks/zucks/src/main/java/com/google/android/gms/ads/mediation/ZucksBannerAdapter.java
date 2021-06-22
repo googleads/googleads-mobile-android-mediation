@@ -10,12 +10,16 @@ import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 
 import net.zucks.admob.AdMobUtil;
 import net.zucks.admob.BaseMediationAdapter;
 import net.zucks.admob.ErrorMapper;
 import net.zucks.listener.AdBannerListener;
 import net.zucks.view.AdBanner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Banner Ad Adapter implementation for calls from ZucksAdapter. Can **NOT** use this as a
@@ -263,7 +267,7 @@ class ZucksBannerAdapter extends BaseMediationAdapter
   @Nullable
   AdError configureBannerAd(
       Context context, AdSize adSize, Bundle serverParams, AdBannerListener listener) {
-    if (!isSizeSupported(adSize)) {
+    if (!isSizeSupported(context, adSize)) {
       return ErrorMapper.createAdapterError(
           ErrorMapper.ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
     }
@@ -314,11 +318,15 @@ class ZucksBannerAdapter extends BaseMediationAdapter
 
   /** Validate passed size are supported in Zucks Ad Network SDK. */
   @VisibleForTesting
-  static boolean isSizeSupported(AdSize adSize) {
-    return adSize.equals(AdSize.BANNER)
-        || adSize.equals(new AdSize(320, 50))
-        || adSize.equals(AdSize.LARGE_BANNER)
-        || adSize.equals(AdSize.MEDIUM_RECTANGLE);
+  static boolean isSizeSupported(@NonNull Context context, @NonNull AdSize adSize) {
+    List<AdSize> supported = new ArrayList<>();
+
+    supported.add(AdSize.BANNER);
+    supported.add(new AdSize(320, 50));
+    supported.add(AdSize.LARGE_BANNER);
+    supported.add(AdSize.MEDIUM_RECTANGLE);
+
+    return MediationUtils.findClosestSize(context, adSize, supported) != null;
   }
 
   @VisibleForTesting
