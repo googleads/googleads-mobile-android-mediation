@@ -1,5 +1,9 @@
 ## MoPub Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to forward the `onAdOpened()` callback when the banner ad is tapped.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
 #### Version 5.17.0.0
 - Verified compatibility with MoPub SDK 5.17.0.
 - Updated error codes to capture additional MoPub errors.

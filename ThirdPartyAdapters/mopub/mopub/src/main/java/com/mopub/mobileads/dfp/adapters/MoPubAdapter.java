@@ -393,6 +393,7 @@ public class MoPubAdapter
     @Override
     public void onBannerClicked(MoPubView moPubView) {
       mMediationBannerListener.onAdClicked(MoPubAdapter.this);
+      mMediationBannerListener.onAdOpened(MoPubAdapter.this);
       mMediationBannerListener.onAdLeftApplication(MoPubAdapter.this);
     }
 
