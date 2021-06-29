@@ -128,9 +128,7 @@ public class FyberMediationAdapter extends Adapter
   @IntDef(
       value = {
           ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_NETWORK_ERROR,
           ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_NO_FILL,
           ERROR_WRONG_CONTROLLER_TYPE,
           ERROR_AD_NOT_READY
       })
@@ -150,19 +148,9 @@ public class FyberMediationAdapter extends Adapter
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * Network error (connection time out).
-   */
-  public static final int ERROR_NETWORK_ERROR = 102;
-
-  /**
    * The requested ad size does not match a Fyber supported banner size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 103;
-
-  /**
-   * No fill.
-   */
-  public static final int ERROR_NO_FILL = 104;
 
   /**
    * Fyber SDK loaded an ad but returned an unexpected controller.
