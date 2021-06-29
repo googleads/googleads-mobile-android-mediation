@@ -25,7 +25,7 @@ class ErrorMapperTest {
 
         MatcherAssert.assertThat(
             ErrorMapper.convertSdkErrorCode(e),
-            CoreMatchers.`is`(ErrorMapper.ERROR_NETWORK_ERROR)
+            CoreMatchers.`is`(ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE)
         )
     }
 
@@ -35,7 +35,7 @@ class ErrorMapperTest {
 
         MatcherAssert.assertThat(
             ErrorMapper.convertSdkErrorCode(e),
-            CoreMatchers.`is`(ErrorMapper.ERROR_INTERNAL_ERROR)
+            CoreMatchers.`is`(ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE)
         )
     }
 
