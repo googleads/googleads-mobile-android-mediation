@@ -40,12 +40,6 @@ public final class AdMobUtil {
         Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_SDK_PATCH));
   }
 
-  /** Version string of Zucks Ad Network SDK. */
-  @NonNull
-  public static String getNetworkSdkVersionName() {
-    return BuildConfig.VERSION_NAME;
-  }
-
   /**
    * Version object of (this) mediation adapter.
    *
@@ -67,12 +61,6 @@ public final class AdMobUtil {
         sdkPatch + adapterPatch);
   }
 
-  /** Version string of (this) mediation adapter. */
-  @NonNull
-  public static String getAdapterVersionName() {
-    return com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION;
-  }
-
   /** Get FrameID from serverParams. */
   @Nullable
   public static String getFrameId(@Nullable Bundle serverParams) {
@@ -86,17 +74,20 @@ public final class AdMobUtil {
   /** Configure mediation platform flags for Banner. */
   public static void configurePlatform(@NonNull AdBanner adBanner) {
     adBanner.setPlatform(
-        Platform.ADMOB, getGooglePlayServicesVersionCode(), AdMobUtil.getAdapterVersionName());
+        Platform.ADMOB,
+            String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
+            com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION
+    );
   }
 
   /** Configure mediation platform flags for Interstitial. */
   public static void configurePlatform(@NonNull IZucksInterstitial zucksInterstitial) {
     zucksInterstitial.setPlatform(
-        Platform.ADMOB, getGooglePlayServicesVersionCode(), AdMobUtil.getAdapterVersionName());
+        Platform.ADMOB,
+            String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
+            com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION
+    );
   }
   // endregion
 
-  private static String getGooglePlayServicesVersionCode() {
-    return String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE);
-  }
 }
