@@ -57,6 +57,8 @@ public class AdColonyRewardedRenderer extends AdColonyInterstitialListener imple
             requestedZone = AdColonyManager
                 .getInstance()
                 .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+            // Set global reward listener if not already assigned
+            AdColonyRewardListener.getInstance();
             AdColony.requestInterstitial(requestedZone, AdColonyRewardedRenderer.this, adOptions);
           }
 
