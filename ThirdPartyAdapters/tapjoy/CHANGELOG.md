@@ -109,7 +109,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
 
 #### Version 12.2.1.1
-- Added open bidding capability to the adapter for interstitial and
+- Added bidding capability to the adapter for interstitial and
   rewarded ads.
 
 #### Version 12.2.1.0

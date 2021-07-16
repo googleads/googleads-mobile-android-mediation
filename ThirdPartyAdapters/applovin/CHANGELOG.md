@@ -151,7 +151,7 @@ Built and tested with:
 - AppLovin SDK version 9.12.7.
 
 #### Version 9.12.6.1
-- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/master/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where open bidding banner ads timeout.
+- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/master/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where bidding banner ads timeout.
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
@@ -209,7 +209,7 @@ Built and tested with:
 - AppLovin SDK version 9.12.0.
 
 #### Version 9.11.4.1
-- Fixed an issue that may cause open bidding banner/interstitial ad requests to timeout.
+- Fixed an issue that may cause bidding banner/interstitial ad requests to timeout.
 - Added descriptive error codes and reasons for adapter load/show failures.
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
 
@@ -273,7 +273,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.0.
 
 #### Version 9.4.2.0
-- Added open bidding capability to the adapter for banner, interstitial and rewarded ads.
+- Added bidding capability to the adapter for banner, interstitial and rewarded ads.
 - Added support for flexible banner ad sizes.
 - Verified compatibility with AppLovin SDK 9.4.2.
 

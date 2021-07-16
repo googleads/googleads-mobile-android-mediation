@@ -276,11 +276,11 @@ public class FacebookMediationAdapter extends RtbAdapter {
    */
   public static @Nullable
   String getPlacementID(@NonNull Bundle serverParameters) {
-    // Open bidding uses a different key for Placement ID than non-open bidding. Try the open
+    // Bidding uses a different key for Placement ID than waterfall mediation. Try the
     // bidding key first.
     String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);
     if (placementId == null) {
-      // Fall back to checking the non-open bidding key.
+      // Fall back to checking the waterfall mediation key.
       placementId = serverParameters.getString(PLACEMENT_PARAMETER);
     }
     return placementId;
