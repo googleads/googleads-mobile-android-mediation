@@ -1,5 +1,8 @@
 ## nend Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated error codes to capture the nend `UNSUPPORTED_DEVICE` error.
+
 #### Version 7.0.3.0
 - Verified compatibility with nend SDK 7.0.3.
 - Added descriptive error codes and reasons for adapter load/show failures.
