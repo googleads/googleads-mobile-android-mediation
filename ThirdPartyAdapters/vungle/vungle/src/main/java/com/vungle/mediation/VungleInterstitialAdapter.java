@@ -1,5 +1,6 @@
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
 import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
@@ -14,32 +15,37 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleBannerAd;
 import com.google.ads.mediation.vungle.VungleInitializer;
-import com.google.ads.mediation.vungle.VungleMediationAdapter;
+import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.VersionInfo;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.error.VungleException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
- * A {@link RtbAdapter} used to load and show Vungle interstitial/banner ads using Google Mobile Ads
+ * A {@link Adapter} used to load and show Vungle interstitial/banner ads using Google Mobile Ads
  * SDK mediation.
  */
 @Keep
-public class VungleInterstitialAdapter extends VungleMediationAdapter
+public class VungleInterstitialAdapter extends Adapter
     implements MediationInterstitialAd, MediationBannerAd {
 
   private static final String TAG = VungleInterstitialAdapter.class.getSimpleName();
@@ -55,10 +61,108 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
   private VungleBannerAdapter vungleBannerAdapter;
 
   @Override
+  @NonNull
+  public VersionInfo getVersionInfo() {
+    String versionString = BuildConfig.ADAPTER_VERSION;
+    String[] splits = versionString.split("\\.");
+
+    if (splits.length >= 4) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      return new VersionInfo(major, minor, micro);
+    }
+
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
+
+  @Override
+  @NonNull
+  public VersionInfo getSDKVersionInfo() {
+    String versionString = com.vungle.warren.BuildConfig.VERSION_NAME;
+    String[] splits = versionString.split("\\.");
+
+    if (splits.length >= 3) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]);
+      return new VersionInfo(major, minor, micro);
+    }
+
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
+
+  @Override
+  public void initialize(
+      @NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
+
+    if (Vungle.isInitialized()) {
+      initializationCompleteCallback.onInitializationSucceeded();
+      return;
+    }
+
+    HashSet<String> appIDs = new HashSet<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      Bundle serverParameters = configuration.getServerParameters();
+      String appIDFromServer = serverParameters.getString(KEY_APP_ID);
+
+      if (!TextUtils.isEmpty(appIDFromServer)) {
+        appIDs.add(appIDFromServer);
+      }
+    }
+
+    int count = appIDs.size();
+    if (count <= 0) {
+      initializationCompleteCallback.onInitializationFailed(
+          "Initialization failed: Missing or Invalid App ID.");
+      return;
+    }
+
+    String appID = appIDs.iterator().next();
+    if (count > 1) {
+      String logMessage =
+          String.format(
+              "Multiple '%s' entries found: %s. Using '%s' to initialize the Vungle SDK.",
+              KEY_APP_ID, appIDs.toString(), appID);
+      Log.w(TAG, logMessage);
+    }
+
+    VungleInitializer.getInstance()
+        .initialize(
+            appID,
+            context.getApplicationContext(),
+            new VungleInitializationListener() {
+              @Override
+              public void onInitializeSuccess() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
+
+              @Override
+              public void onInitializeError(String errorMessage) {
+                initializationCompleteCallback.onInitializationFailed(
+                    "Initialization Failed: " + errorMessage);
+              }
+            });
+  }
+
+  @Override
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
     mMediationAdLoadCallback = mediationAdLoadCallback;
+
+    Log.d(TAG,"loadInterstitialAd()....");
 
     Bundle mediationExtras = mediationInterstitialAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
@@ -221,35 +325,10 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
     });
   }
 
-//  @Override
-//  public void onDestroy() {
-//    Log.d(TAG, "onDestroy: " + hashCode());
-//    if (vungleBannerAdapter != null) {
-//      vungleBannerAdapter.destroy();
-//      vungleBannerAdapter = null;
-//    }
-//  }
-//
-//  // banner
-//  @Override
-//  public void onPause() {
-//    Log.d(TAG, "onPause");
-//    if (vungleBannerAdapter != null) {
-//      vungleBannerAdapter.updateVisibility(false);
-//    }
-//  }
-//
-//  @Override
-//  public void onResume() {
-//    Log.d(TAG, "onResume");
-//    if (vungleBannerAdapter != null) {
-//      vungleBannerAdapter.updateVisibility(true);
-//    }
-//  }
-
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+    Log.d(TAG,"loadBannerAd()....");
 
     Bundle mediationExtras = mediationBannerAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();

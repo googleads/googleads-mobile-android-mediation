@@ -86,11 +86,6 @@ public class VungleBannerAdapter implements PlayAdCallback {
    */
   private boolean mPendingRequestBanner = false;
 
-  /**
-   * Indicates the Vungle banner ad's visibility.
-   */
-  private boolean mVisibility = true;
-
   VungleBannerAdapter(@NonNull String placementId, @NonNull String uniqueRequestId,
       @NonNull AdConfig adConfig, @NonNull MediationBannerAd mediationBannerAdapter) {
     mVungleManager = VungleManager.getInstance();
@@ -180,30 +175,9 @@ public class VungleBannerAdapter implements PlayAdCallback {
             });
   }
 
-  void destroy() {
-    Log.d(TAG, "Vungle banner adapter destroy:" + this);
-    mVisibility = false;
-    mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
-    if (vungleBannerAd != null) {
-      vungleBannerAd.detach();
-      vungleBannerAd.destroyAd();
-    }
-    vungleBannerAd = null;
-    mPendingRequestBanner = false;
-  }
-
   void preCache() {
-    Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), null);
-  }
-
-  void updateVisibility(boolean visible) {
-    if (vungleBannerAd == null) {
-      return;
-    }
-
-    this.mVisibility = visible;
-    if (vungleBannerAd.getVungleBanner() != null) {
-      vungleBannerAd.getVungleBanner().setAdVisibility(visible);
+    if (mAdMarkup == null) {
+      Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), null);
     }
   }
 
@@ -254,7 +228,6 @@ public class VungleBannerAdapter implements PlayAdCallback {
           vungleBannerAd.setVungleBanner(vungleBanner);
         }
 
-        updateVisibility(mVisibility);
         vungleBanner.setLayoutParams(adParams);
         // don't add to parent here
         if (mediationAdapter != null && mediationListener != null) {
@@ -284,6 +257,8 @@ public class VungleBannerAdapter implements PlayAdCallback {
         + placementId
         + " # uniqueRequestId="
         + uniqueRequestId
+        + " # adMarkup="
+        + (mAdMarkup == null ? "None" : "Yes")
         + " # hashcode="
         + hashCode()
         + "] ";

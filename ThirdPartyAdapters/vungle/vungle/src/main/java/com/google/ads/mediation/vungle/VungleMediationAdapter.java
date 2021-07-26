@@ -12,7 +12,13 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -23,6 +29,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.VungleExtrasBuilder;
+import com.vungle.mediation.VungleInterstitialAdapter;
 import com.vungle.mediation.VungleManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
@@ -41,7 +48,7 @@ public class VungleMediationAdapter extends RtbAdapter
     implements MediationRewardedAd, LoadAdCallback, PlayAdCallback {
 
   private static final String TAG = VungleMediationAdapter.class.getSimpleName();
-  private static final String KEY_APP_ID = "appid";
+  public static final String KEY_APP_ID = "appid";
 
   private AdConfig mAdConfig;
   private String mUserID;
@@ -101,6 +108,7 @@ public class VungleMediationAdapter extends RtbAdapter
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
     String token = Vungle.getAvailableBidTokens(rtbSignalData.getContext());
+    Log.d(TAG, "token=" + token);
     signalCallbacks.onSuccess(token);
   }
 
@@ -387,4 +395,22 @@ public class VungleMediationAdapter extends RtbAdapter
       return mType;
     }
   }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+    Log.d(TAG, "loadInterstitialAd()...");
+    VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
+    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+  }
+
+  @Override
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+    Log.d(TAG, "loadBannerAd()...");
+    VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
+    adapter.loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+  }
+
 }
