@@ -7,12 +7,12 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -129,20 +129,18 @@ public class FacebookMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION = 111;
 
-  /**
-   * Creates a formatted adapter error string given a code and description.
-   */
-  @NonNull
-  public static String createAdapterError(@AdapterError int code, String description) {
-    return String.format("%d: %s", code, description);
-  }
+  // Facebook adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.facebook";
+
+  // Facebook SDK error domain.
+  public static final String FACEBOOK_SDK_ERROR_DOMAIN = "com.facebook.ads";
 
   /**
-   * Creates a formatted SDK error string from a given {@link AdError}.
+   * Converts Facebook SDK error codes to admob error codes {@link AdError}.
    */
   @NonNull
-  public static String createSdkError(@NonNull AdError error) {
-    return String.format("%d: %s", error.getErrorCode(), error.getErrorMessage());
+  public static AdError getAdError(com.facebook.ads.AdError error) {
+    return new AdError(error.getErrorCode(), error.getErrorMessage(), FACEBOOK_SDK_ERROR_DOMAIN);
   }
 
   @Override
@@ -188,7 +186,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     if (context == null) {
       initializationCompleteCallback.onInitializationFailed(
-          "Initialization Failed: Context is null.");
+          "Initialization Failed. Context is null.");
       return;
     }
 
@@ -204,7 +202,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     if (placements.isEmpty()) {
       initializationCompleteCallback.onInitializationFailed(
-          "Initialization failed: No placement IDs found.");
+          "Initialization failed. No placement IDs found.");
       return;
     }
 
@@ -216,9 +214,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
           }
 
           @Override
-          public void onInitializeError(String message) {
-            initializationCompleteCallback.onInitializationFailed(
-                "Initialization failed: " + message);
+          public void onInitializeError(AdError error) {
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
         });
   }
