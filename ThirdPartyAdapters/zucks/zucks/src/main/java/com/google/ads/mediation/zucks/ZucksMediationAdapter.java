@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
  *   - Banner
  *   - Interstitial
  * <p>
+ * For compatibility, Banner/Interstitial Ad is implemented only in legacy adapter's FQCN.
  * If you want to integrate Banner/Interstitial Ad, see the legacy adapter implementation.
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter

@@ -24,7 +24,7 @@ import com.google.ads.mediation.zucks.BaseMediationAdapter;
  *   - Rewarded Ad
  * <p>
  * Currently, Rewarded Ad is not supported in this version.
- * It's will be implemented in the new mediation adapter.
+ * It's will be implemented in the new mediation adapter (for the latest FQCN naming convention reason).
  *
  * @see ZucksMediationAdapter ZucksMediationAdapter
  */
