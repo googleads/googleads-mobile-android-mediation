@@ -23,7 +23,8 @@ import com.google.ads.mediation.zucks.BaseMediationAdapter;
  * Unsupported formats:
  *   - Rewarded Ad
  * <p>
- * If you want to integrate Rewarded Ad, see the new mediation adapter implementation.
+ * Currently, Rewarded Ad is not supported in this version.
+ * It's will be implemented in the new mediation adapter.
  *
  * @see ZucksMediationAdapter ZucksMediationAdapter
  */
