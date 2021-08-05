@@ -1,6 +1,8 @@
 package com.applovin.mediation.rtb;
 
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.createSDKError;
+import static android.util.Log.DEBUG;
+import static android.util.Log.WARN;
+import static com.applovin.mediation.ApplovinAdapter.log;
 
 import android.content.Context;
 import android.util.Log;
@@ -16,6 +18,7 @@ import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -96,9 +99,9 @@ public final class AppLovinRtbBannerRenderer
 
   @Override
   public void failedToReceiveAd(int code) {
-    Log.e(TAG, "Failed to load banner ad with error: " + code);
-    String errorMessage = createSDKError(code);
-    callback.onFailure(errorMessage);
+    AdError error = AppLovinUtils.getAdError(code);
+    log(DEBUG, error.getMessage());
+    callback.onFailure(error);
   }
 
   @Override
@@ -140,7 +143,7 @@ public final class AppLovinRtbBannerRenderer
   @Override
   public void adFailedToDisplay(
       AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code) {
-    Log.e(TAG, "Banner failed to display: " + code);
+    log(WARN, "Banner failed to display: " + code);
   }
   // endregion
 

@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Added standardized adapter error codes and messages.
+
 #### Version 10.3.2.0 (in progress)
 - Verified compatibility with AppLovin SDK 10.3.2.
 
