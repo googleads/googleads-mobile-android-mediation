@@ -30,7 +30,6 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
@@ -44,6 +43,7 @@ import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
@@ -163,17 +163,19 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
     final String placementID = getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad: placementID is null or empty."));
-      mBannerListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
     final com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
     if (facebookAdSize == null) {
-      Log.w(TAG, createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "There is no matching Facebook ad size for Google ad size: " + adSize.toString()));
-      mBannerListener.onAdFailedToLoad(this, ERROR_BANNER_SIZE_MISMATCH);
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "There is no matching Facebook ad size for Google ad size.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -200,11 +202,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
                 if (mBannerListener != null) {
-                  mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
-                      ERROR_FACEBOOK_INITIALIZATION);
+                  mBannerListener.onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -227,9 +227,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty."));
-      mInterstitialListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      mInterstitialListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -244,11 +244,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
                 if (mInterstitialListener != null) {
-                  mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                      ERROR_FACEBOOK_INITIALIZATION);
+                  mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -258,9 +256,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   public void showInterstitial() {
     showInterstitialCalled.set(true);
     if (!mInterstitialAd.show()) {
-      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
-          "Failed to present interstitial ad.");
-      Log.w(TAG, errorMessage);
+      AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present interstitial ad.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
 
       if (mInterstitialListener != null) {
         mInterstitialListener.onAdOpened(FacebookAdapter.this);
@@ -281,16 +279,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty."));
-      mNativeListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mNativeListener.onAdFailedToLoad(this, error);
       return;
     }
 
     if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
-      Log.e(TAG, createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-          "Unified Native Ads should be requested."));
-      mNativeListener.onAdFailedToLoad(this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
+      AdError error = new AdError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          "Unified Native Ads should be requested.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mNativeListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -305,11 +305,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
+                Log.w(TAG, error.getMessage());
                 if (mNativeListener != null) {
                   mNativeListener
-                      .onAdFailedToLoad(FacebookAdapter.this, ERROR_FACEBOOK_INITIALIZATION);
+                      .onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -355,11 +355,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      Log.w(TAG, errorMessage);
-      FacebookAdapter.this.mBannerListener
-          .onAdFailedToLoad(FacebookAdapter.this, adError.getErrorCode());
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
+      FacebookAdapter.this.mBannerListener.onAdFailedToLoad(FacebookAdapter.this, error);
     }
   }
   //endregion
@@ -401,10 +400,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      Log.w(TAG, errorMessage);
-
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
       if (showInterstitialCalled.get()) {
         FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
         FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
@@ -512,30 +510,30 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
-      }
-      FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-          FacebookAdapter.this, adError.getErrorCode());
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
+      FacebookAdapter.this.mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
     }
 
     @Override
     public void onAdLoaded(Ad ad) {
       if (ad != mNativeBannerAd) {
-        Log.w(TAG, createAdapterError(ERROR_WRONG_NATIVE_TYPE,
-            "Ad loaded is not a native banner ad."));
-        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, ERROR_WRONG_NATIVE_TYPE);
+
+        AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad loaded is not a native banner ad.",
+            ERROR_DOMAIN);
+
+        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
       Context context = mContext.get();
       if (context == null) {
-        Log.w(TAG, createAdapterError(ERROR_NULL_CONTEXT,
-            "Failed to create ad options view, Context is null."));
-        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, ERROR_NULL_CONTEXT);
+
+        AdError error = new AdError(ERROR_NULL_CONTEXT,
+            "Failed to create ad options view. Context is null.", ERROR_DOMAIN);
+
+        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
@@ -547,11 +545,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
 
         @Override
-        public void onMappingFailed(String message) {
-          String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-          Log.w(TAG, errorMessage);
-          mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-              ERROR_MAPPING_NATIVE_ASSETS);
+        public void onMappingFailed(AdError error) {
+          Log.w(TAG, error.getMessage());
+          mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         }
       });
     }
@@ -619,21 +615,24 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onAdLoaded(Ad ad) {
       if (ad != mNativeAd) {
-        String errorMessage = createAdapterError(ERROR_WRONG_NATIVE_TYPE,
-            "Ad loaded is not a native ad.");
-        Log.w(TAG, errorMessage);
+
+        AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad loaded is not a native ad.",
+            ERROR_DOMAIN);
+
+        Log.w(TAG, error.getMessage());
         FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, ERROR_WRONG_NATIVE_TYPE);
+            FacebookAdapter.this, error);
         return;
       }
 
       Context context = mContext.get();
       if (context == null) {
-        String errorMessage = createAdapterError(ERROR_NULL_CONTEXT,
-            "Failed to create ad options view, Context is null.");
-        Log.w(TAG, errorMessage);
-        mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-            ERROR_NULL_CONTEXT);
+
+        AdError error = new AdError(ERROR_NULL_CONTEXT,
+            "Failed to create ad options view. Context is null", ERROR_DOMAIN);
+
+        Log.w(TAG, error.getMessage());
+        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
@@ -645,20 +644,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         }
 
         @Override
-        public void onMappingFailed(String message) {
-          String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-          Log.w(TAG, errorMessage);
-          mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-              ERROR_MAPPING_NATIVE_ASSETS);
+        public void onMappingFailed(AdError error) {
+          Log.w(TAG, error.getMessage());
+          mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         }
       });
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = getAdError(adError);
       if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
+        Log.w(TAG, error.getMessage());
       }
       FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
           FacebookAdapter.this, adError.getErrorCode());
@@ -752,10 +749,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
       if (isNativeBanner) {
         if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the " +
-              "Native Banner Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
+          AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
+              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
+              ERROR_DOMAIN);
+          Log.w(TAG, error.getMessage());
+          mapperListener.onMappingFailed(error);
           return;
         }
 
@@ -782,10 +780,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         setExtras(extras);
       } else {
         if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the" +
-              " Native Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
+          AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
+              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
+              ERROR_DOMAIN);
+          Log.w(TAG, error.getMessage());
+          mapperListener.onMappingFailed(error);
           return;
         }
         // Map all required assets (headline, one image, body, icon and call to
@@ -955,7 +954,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       if (iconView instanceof ImageView) {
         mNativeAd.registerViewForInteraction(view, mMediaView, (ImageView) iconView, assetViews);
       } else {
-        Log.w(TAG, "Native icon asset is not of type ImageView. "
+        Log.w(TAG, "Native icon asset is not of type ImageView."
             + "Calling registerViewForInteraction() without a reference to the icon view.");
         mNativeAd.registerViewForInteraction(view, mMediaView, assetViews);
       }
@@ -1063,7 +1062,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * This method will be called if the native ad mapping failed.
      */
-    void onMappingFailed(String message);
+    void onMappingFailed(AdError error);
   }
   // endregion
 }

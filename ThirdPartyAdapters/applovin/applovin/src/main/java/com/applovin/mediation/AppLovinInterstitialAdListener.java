@@ -42,7 +42,6 @@ class AppLovinInterstitialAdListener
   @Override
   public void adClicked(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Interstitial clicked.");
-
     mMediationInterstitialListener.onAdClicked(mAdapter);
     mMediationInterstitialListener.onAdLeftApplication(mAdapter);
   }
