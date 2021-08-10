@@ -2,7 +2,9 @@ package com.vungle.mediation;
 
 import com.vungle.warren.VungleSettings;
 
-/** To apply the Vungle network settings during initialization. */
+/**
+ * To apply the Vungle network settings during initialization.
+ */
 public class VungleNetworkSettings {
 
   private static final long MEGABYTE = 1024 * 1024;
