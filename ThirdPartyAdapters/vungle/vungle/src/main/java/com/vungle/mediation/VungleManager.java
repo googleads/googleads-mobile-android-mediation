@@ -1,26 +1,11 @@
 package com.vungle.mediation;
 
-import static com.vungle.warren.error.VungleException.AD_EXPIRED;
-import static com.vungle.warren.error.VungleException.AD_FAILED_TO_DOWNLOAD;
-import static com.vungle.warren.error.VungleException.AD_PAST_EXPIRATION;
-import static com.vungle.warren.error.VungleException.ASSET_DOWNLOAD_ERROR;
-import static com.vungle.warren.error.VungleException.INVALID_SIZE;
-import static com.vungle.warren.error.VungleException.MISSING_REQUIRED_ARGUMENTS_FOR_INIT;
-import static com.vungle.warren.error.VungleException.NETWORK_ERROR;
-import static com.vungle.warren.error.VungleException.NETWORK_UNREACHABLE;
-import static com.vungle.warren.error.VungleException.NO_SERVE;
-import static com.vungle.warren.error.VungleException.PLACEMENT_NOT_FOUND;
-import static com.vungle.warren.error.VungleException.VUNGLE_NOT_INTIALIZED;
-
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleBannerAd;
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
 import com.vungle.warren.Vungle;
-import com.vungle.warren.error.VungleException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -92,18 +77,18 @@ public class VungleManager {
     }
   }
 
-  synchronized AdError canRequestBannerAd(@NonNull String placementId,
+  synchronized boolean canRequestBannerAd(@NonNull String placementId,
       @Nullable String requestUniqueId) {
     cleanLeakedBannerAdapters();
 
     VungleBannerAd bannerAd = mVungleBanners.get(placementId);
     if (bannerAd == null) {
-      return null;
+      return true;
     }
 
     if (bannerAd.getAdapter() == null) {
       mVungleBanners.remove(placementId);
-      return null;
+      return true;
     }
 
     VungleBannerAdapter adapter = bannerAd.getAdapter();
@@ -112,20 +97,18 @@ public class VungleManager {
         "activeUniqueId: " + activeUniqueRequestId + " ###  RequestId: " + requestUniqueId);
 
     if (activeUniqueRequestId == null) {
-      String message = "Ad already loaded for placement ID: " + placementId + ", and cannot "
+      Log.w(TAG, "Ad already loaded for placement ID: " + placementId + ", and cannot "
           + "determine if this is a refresh. Set Vungle extras when making an ad request to "
-          + "support refresh on Vungle banner ads.";
-      Log.w(TAG, message);
-      return new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, message, TAG);
+          + "support refresh on Vungle banner ads.");
+      return false;
     }
 
     if (!activeUniqueRequestId.equals(requestUniqueId)) {
-      String message = "Ad already loaded for placement ID: " + placementId;
-      Log.w(TAG, message);
-      return new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, message, TAG);
+      Log.w(TAG, "Ad already loaded for placement ID: " + placementId);
+      return false;
     }
 
-    return null;
+    return true;
   }
 
   public void removeActiveBannerAd(@NonNull String placementId,
@@ -151,32 +134,5 @@ public class VungleManager {
   @Nullable
   public VungleBannerAd getVungleBannerAd(@NonNull String placementId) {
     return mVungleBanners.get(placementId);
-  }
-
-  @NonNull
-  public static AdError mapErrorCode(@NonNull VungleException vungleError,
-      @Nullable String domain) {
-    switch (vungleError.getExceptionCode()) {
-      case INVALID_SIZE:
-      case MISSING_REQUIRED_ARGUMENTS_FOR_INIT:
-      case PLACEMENT_NOT_FOUND:
-      case VUNGLE_NOT_INTIALIZED:
-        return new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST,
-            "" + vungleError.getLocalizedMessage(), "" + domain);
-      case NETWORK_ERROR:
-      case NETWORK_UNREACHABLE:
-      case ASSET_DOWNLOAD_ERROR:
-      case AD_FAILED_TO_DOWNLOAD:
-        return new AdError(AdRequest.ERROR_CODE_NETWORK_ERROR,
-            "" + vungleError.getLocalizedMessage(), "" + domain);
-      case NO_SERVE:
-      case AD_EXPIRED:
-      case AD_PAST_EXPIRATION:
-        return new AdError(AdRequest.ERROR_CODE_NO_FILL,
-            "" + vungleError.getLocalizedMessage(), "" + domain);
-      default:
-        return new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR,
-            "" + vungleError.getLocalizedMessage(), "" + domain);
-    }
   }
 }

@@ -3,6 +3,7 @@ package com.google.ads.mediation.vungle;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import com.google.android.gms.ads.AdError;
 import com.vungle.mediation.VungleConsent;
 import com.vungle.mediation.VungleNetworkSettings;
 import com.vungle.warren.InitCallback;
@@ -94,13 +95,14 @@ public class VungleInitializer implements InitCallback {
   }
 
   @Override
-  public void onError(final VungleException throwable) {
+  public void onError(final VungleException exception) {
+    final AdError error = VungleMediationAdapter.getAdError(exception);
     mHandler.post(
         new Runnable() {
           @Override
           public void run() {
             for (VungleInitializationListener listener : mInitListeners) {
-              listener.onInitializeError(throwable.getLocalizedMessage());
+              listener.onInitializeError(error);
             }
             mInitListeners.clear();
           }
@@ -117,6 +119,7 @@ public class VungleInitializer implements InitCallback {
 
     void onInitializeSuccess();
 
-    void onInitializeError(String errorMessage);
+    void onInitializeError(AdError error);
+
   }
 }
