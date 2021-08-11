@@ -327,7 +327,7 @@ public class VungleMediationAdapter extends Adapter
   }
 
   /**
-   * {@link PlayAdCallback} implemenatation from Vungle
+   * {@link PlayAdCallback} implementation from Vungle
    */
   @Override
   public void onAdStart(final String placementId) {
