@@ -273,7 +273,7 @@ public class VerizonMediationAdapter extends Adapter
 
     VASAds.getActivityStateManager().setState((Activity) context,
         ActivityStateManager.ActivityState.RESUMED);
-    VASAds.setPrivacyData(VerizonPrivacy.getInstance().getPrivacyData());
+    VASAds.setDataPrivacy(VerizonPrivacy.getInstance().getDataPrivacy());
 
     return success;
   }
