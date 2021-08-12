@@ -1,5 +1,13 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 6.5.1.1 (In-progress)
+- Fixed a bug introduced in 6.5.1.0 where test ads are returned instead of live ads.
+- Updated the adapter to use the new `AdError` API.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- Facebook SDK version 6.5.1.
+
 #### 6.5.1.0 (Deprecated)
 - An issue with version 6.5.1.0 has been detected and confirmed. A new version
   will be released soon. In the meantime, it is recommended to downgrade to
