@@ -18,7 +18,7 @@ Built and tested with:
 
 #### Version 4.4.0.0
 - Verified compatibility with AdColony SDK version 4.4.0.
-- Added support of AdColony's `collectSignals()` method for open bidding.
+- Added support of AdColony's `collectSignals()` method for bidding.
 - Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
 
 Built and tested with:
@@ -102,7 +102,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
 
 #### Version 3.3.10.1
-- Added open bidding capability to the adapter for interstitial
+- Added bidding capability to the adapter for interstitial
   and rewarded ads.
 
 #### Version 3.3.10.0
