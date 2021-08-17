@@ -1,6 +1,6 @@
 ## Facebook Android Mediation Adapter Changelog
 
-#### 6.5.0.0 (in progress)
+#### 6.5.0.0
 - Verified compatibility with Facebook SDK v6.5.0.
 - Fixed an issue where native ads did not include Facebook's cover image.
 - Updated the minimum required Google Mobile Ads SDK version to 20.1.0.
