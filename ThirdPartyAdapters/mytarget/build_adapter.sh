@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to create a Facebook Android adapter release.
+# Script to create a myTarget Android adapter release.
 # Prerequisites:
 # 1. Requires a fig client
 # 2. Requires gcert
@@ -9,4 +9,4 @@ source "/google/src/head/depot/third_party/java_src/gma_sdk_mediation/scripts/bu
 # GOOGLE3=$(pwd | sed "s,^\(.*\)google3.*$,\1google3,")
 # source "${GOOGLE3}/third_party/java_src/gma_sdk_mediation/scripts/build_adapter_common.sh"
 
-build_and_upload_adapter "facebook"
+build_and_upload_adapter "mytarget"
