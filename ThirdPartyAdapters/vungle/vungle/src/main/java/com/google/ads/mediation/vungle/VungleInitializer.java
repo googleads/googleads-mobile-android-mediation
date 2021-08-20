@@ -3,6 +3,7 @@ package com.google.ads.mediation.vungle;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.vungle.mediation.VungleConsent;
 import com.vungle.mediation.VungleNetworkSettings;
@@ -53,23 +54,18 @@ public class VungleInitializer implements InitCallback {
     VungleNetworkSettings.setVungleSettingsChangedListener(
         new VungleNetworkSettings.VungleSettingsChangedListener() {
           @Override
-          public void onVungleSettingsChanged(VungleSettings updatedSettings) {
+          public void onVungleSettingsChanged(@NonNull VungleSettings settings) {
             // Ignore if sdk is yet to initialize, it will get considered while init
             if (!Vungle.isInitialized()) {
               return;
             }
 
-            VungleSettings settings =
-                (updatedSettings != null) ? updatedSettings : new VungleSettings.Builder().build();
             // Pass new settings to SDK.
             Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
           }
         });
 
     VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
-    if (vungleSettings == null) {
-      vungleSettings = new VungleSettings.Builder().build();
-    }
     Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
     mInitListeners.add(listener);
   }
