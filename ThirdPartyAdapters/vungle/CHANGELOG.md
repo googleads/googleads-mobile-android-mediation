@@ -1,6 +1,8 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.10.1.0
+- Verified compatibility with Vungle SDK 6.10.1.
+- Render MREC ads with Banner API supported.
 - Updated standardized error codes and messages.
 
 #### Version 6.9.1.1

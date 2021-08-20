@@ -27,6 +27,11 @@ public class VunglePlayAdCallback implements PlayAdCallback {
   }
 
   @Override
+  public void creativeId(String creativeId) {
+    // no-op
+  }
+
+  @Override
   public void onAdStart(String placementID) {
     PlayAdCallback callback = callbackReference.get();
     VungleBannerAdapter adapter = adapterReference.get();

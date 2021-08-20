@@ -229,8 +229,8 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
@@ -300,16 +300,7 @@ public class VungleMediationAdapter extends Adapter
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (Vungle.canPlayAd(mPlacement)) {
-      Vungle.playAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
-    } else {
-      if (mMediationRewardedAdCallback != null) {
-        AdError error = new AdError(ERROR_CANNOT_PLAY_AD,
-            "Vungle SDK is not ready to play the ad.", VUNGLE_SDK_ERROR_DOMAIN);
-        mMediationRewardedAdCallback.onAdFailedToShow(error);
-      }
-      mPlacementsInUse.remove(mPlacement);
-    }
+    Vungle.playAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
   }
 
   /**
@@ -328,6 +319,11 @@ public class VungleMediationAdapter extends Adapter
             mPlacementsInUse.put(mPlacement, new WeakReference<>(VungleMediationAdapter.this));
           }
         });
+  }
+
+  @Override
+  public void creativeId(String creativeId) {
+    // no-op
   }
 
   /**
@@ -430,7 +426,7 @@ public class VungleMediationAdapter extends Adapter
   /**
    * This class is used to map Vungle rewarded video ad rewards to Google Mobile Ads SDK rewards.
    */
-  private class VungleReward implements RewardItem {
+  private static class VungleReward implements RewardItem {
 
     private final String mType;
     private final int mAmount;
