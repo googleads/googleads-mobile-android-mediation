@@ -57,6 +57,23 @@ dependencies {
     api "androidx.annotation:annotation:${rootProject.ext.externalVersions.annotation}"
     api "net.zucks:zucks-ad-network-sdk:${stringCoreVersionName}"
 
+    // region Zucks SDK uses JCenter only version of ExoPlayer for non AndroidX apps support.
+    // The following defines import newly version from Google Maven Repository.
+    implementation('com.google.android.exoplayer:exoplayer-core') {
+        version {
+            strictly rootProject.ext.externalVersions.exoplayer.strictly
+            prefer rootProject.ext.externalVersions.exoplayer.prefer
+        }
+    }
+
+    implementation('com.google.android.exoplayer:exoplayer-ui') {
+        version {
+            strictly rootProject.ext.externalVersions.exoplayer.strictly
+            prefer rootProject.ext.externalVersions.exoplayer.prefer
+        }
+    }
+    // endregion
+
     testImplementation "androidx.test:core:${rootProject.ext.externalVersions.androidTest}"
     testImplementation "junit:junit:${rootProject.ext.externalVersions.junit}"
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.externalVersions.kotlin}"
