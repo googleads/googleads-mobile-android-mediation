@@ -20,7 +20,7 @@ public class VungleManager {
 
   private static VungleManager sInstance;
 
-  private ConcurrentHashMap<String, VungleBannerAd> mVungleBanners;
+  private final ConcurrentHashMap<String, VungleBannerAd> mVungleBanners;
 
   public static synchronized VungleManager getInstance() {
     if (sInstance == null) {
@@ -55,10 +55,6 @@ public class VungleManager {
     return placement;
   }
 
-  boolean isAdPlayable(String placement) {
-    return (placement != null && !placement.isEmpty()) && Vungle.canPlayAd(placement);
-  }
-
   /**
    * Checks and returns if the passed Placement ID is a valid placement for App ID
    *
@@ -81,7 +77,6 @@ public class VungleManager {
     }
   }
 
-  // TODO: Make this method return an AdError object instead of a boolean.
   synchronized boolean canRequestBannerAd(@NonNull String placementId,
       @Nullable String requestUniqueId) {
     cleanLeakedBannerAdapters();

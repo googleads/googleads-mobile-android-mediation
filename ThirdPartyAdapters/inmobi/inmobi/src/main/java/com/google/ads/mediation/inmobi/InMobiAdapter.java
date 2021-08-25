@@ -85,7 +85,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       String errorMessage = String
           .format("InMobi SDK supported banner sizes are not valid for the requested size: %s",
               mediationAdSize.toString());
-      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, ERROR_DOMAIN, errorMessage);
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.w(TAG, errorMessage);
       listener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -93,8 +93,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
     String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     if (TextUtils.isEmpty(accountID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Account ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       listener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -149,8 +149,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
     final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     if (TextUtils.isEmpty(accountID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Account ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       listener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -177,8 +177,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
   @Override
   public void showInterstitial() {
     if (!mAdInterstitial.isReady()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY, ERROR_DOMAIN,
-          "InMobi Interstitial ad is not yet ready to be shown.");
+      AdError error = new AdError(ERROR_AD_NOT_READY,
+          "InMobi Interstitial ad is not yet ready to be shown.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       return;
     }
@@ -194,8 +194,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       final Bundle mediationExtras) {
 
     if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
-      AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST, ERROR_DOMAIN,
-          "Unified Native Ad should be requested.");
+      AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST,
+          "Unified Native Ad should be requested.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       listener.onAdFailedToLoad(this, error);
       return;
@@ -203,8 +203,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
     String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     if (TextUtils.isEmpty(accountID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Account ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       listener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -235,8 +235,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
     if (placement <= 0L) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Placement ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -248,8 +248,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     try {
       adView = new InMobiBanner(context, placement);
     } catch (SdkNotInitializedException exception) {
-      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, ERROR_DOMAIN,
-          exception.getLocalizedMessage());
+      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -297,7 +297,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       public void onAdLoadFailed(@NonNull InMobiBanner inMobiBanner,
           @NonNull InMobiAdRequestStatus requestStatus) {
         AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
-            INMOBI_SDK_ERROR_DOMAIN, requestStatus.getMessage());
+            requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
         Log.w(TAG, error.getMessage());
         mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       }
@@ -351,8 +351,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       MediationAdRequest mediationAdRequest, Bundle mediationExtras) {
 
     if (placement <= 0L) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Placement ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -376,8 +376,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
             @Override
             public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-              AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, ERROR_DOMAIN,
-                  "InMobi ad failed to show.");
+              AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.",
+                  ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
             }
 
@@ -398,7 +398,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             public void onAdLoadFailed(@NonNull InMobiInterstitial inMobiInterstitial,
                 @NonNull InMobiAdRequestStatus requestStatus) {
               AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
-                  INMOBI_SDK_ERROR_DOMAIN, requestStatus.getMessage());
+                  requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
               mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
             }
@@ -432,8 +432,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             }
           });
     } catch (SdkNotInitializedException exception) {
-      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, ERROR_DOMAIN,
-          exception.getLocalizedMessage());
+      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -461,8 +461,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       final NativeMediationAdRequest mNativeMedAdReq, Bundle mediationExtras) {
 
     if (placement <= 0L) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Placement ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
@@ -494,7 +494,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         public void onAdLoadFailed(@NonNull InMobiNative inMobiNative,
             @NonNull InMobiAdRequestStatus requestStatus) {
           AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
-              INMOBI_SDK_ERROR_DOMAIN, requestStatus.getMessage());
+              requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
           mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
         }
@@ -540,8 +540,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         }
       });
     } catch (SdkNotInitializedException exception) {
-      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, ERROR_DOMAIN,
-          exception.getLocalizedMessage());
+      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;

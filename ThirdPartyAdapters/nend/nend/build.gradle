@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "nend"
     // String property to store version name.
-    stringVersion = "7.0.3.0"
+    stringVersion = "7.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,7 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 7000300
+        versionCode 7010000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -34,10 +34,10 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+    implementation 'com.google.android.gms:play-services-ads:20.2.0'
 
     // nendSDK
-    implementation 'net.nend.android:nend-sdk:7.0.3'
+    implementation 'net.nend.android:nend-sdk:7.1.0'
 }
 
 /**

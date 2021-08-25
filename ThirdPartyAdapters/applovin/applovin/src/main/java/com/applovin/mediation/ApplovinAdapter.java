@@ -1,6 +1,7 @@
 package com.applovin.mediation;
 
 import static android.util.Log.DEBUG;
+import static android.util.Log.WARN;
 import static android.util.Log.ERROR;
 
 import android.content.Context;
@@ -85,14 +86,11 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
             if (appLovinInterstitialAds.containsKey(mZoneId)
                 && appLovinInterstitialAds.get(mZoneId).get() != null) {
-              String errorMessage =
-                  createAdapterError(
-                      ERROR_AD_ALREADY_REQUESTED,
-                      "Cannot load multiple interstitial ads with the same Zone ID. "
-                          + "Display one ad before attempting to load another.");
-              log(ERROR, errorMessage);
-              interstitialListener
-                  .onAdFailedToLoad(ApplovinAdapter.this, ERROR_AD_ALREADY_REQUESTED);
+              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED,
+                  " Cannot load multiple interstitial ads with the same Zone ID. "
+                      + "Display one ad before attempting to load another. ", ERROR_DOMAIN);
+              log(ERROR, error.getMessage());
+              interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, error);
               return;
             }
             appLovinInterstitialAds.put(mZoneId, new WeakReference<>(ApplovinAdapter.this));
@@ -126,16 +124,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
                   @Override
                   public void failedToReceiveAd(final int code) {
-                    String errorMessage = createSDKError(code);
-                    log(ERROR, errorMessage);
-
+                    AdError error = AppLovinUtils.getAdError(code);
+                    log(WARN, error.getMessage());
                     ApplovinAdapter.this.unregister();
                     AppLovinSdkUtils.runOnUiThread(
                         new Runnable() {
                           @Override
                           public void run() {
                             mMediationInterstitialListener
-                                .onAdFailedToLoad(ApplovinAdapter.this, code);
+                                .onAdFailedToLoad(ApplovinAdapter.this, error);
                           }
                         });
                   }
@@ -213,13 +210,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             final AppLovinAdSize appLovinAdSize =
                 AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
             if (appLovinAdSize == null) {
-              String errorMessage =
-                  createAdapterError(
-                      ERROR_BANNER_SIZE_MISMATCH,
-                      "Failed to request banner with unsupported size: " + adSize.toString());
-              log(ERROR, errorMessage);
-              mediationBannerListener
-                  .onAdFailedToLoad(ApplovinAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
+              AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+                  "Failed to request banner with unsupported size.", ERROR_DOMAIN);
+              log(ERROR, error.getMessage());
+              mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
             }
 
             log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + mZoneId);
@@ -241,6 +235,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         });
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
     return mAdView;
@@ -263,11 +258,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // OnContextChangedListener Method.
   @Override
-  public void onContextChanged(Context context) {
-    if (context != null) {
-      log(DEBUG, "Context changed: " + context);
-      mContext = context;
-    }
+  public void onContextChanged(@NonNull Context context) {
+    log(DEBUG, "Context changed: " + context);
+    mContext = context;
   }
 
   // Logging
