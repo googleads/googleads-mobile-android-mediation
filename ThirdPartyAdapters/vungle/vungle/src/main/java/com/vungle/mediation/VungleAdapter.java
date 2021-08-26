@@ -9,4 +9,6 @@ import com.google.android.gms.ads.mediation.MediationAdapter;
  * mediation.
  */
 @Keep
-public class VungleAdapter extends VungleMediationAdapter {}
+public class VungleAdapter extends VungleMediationAdapter {
+
+}
