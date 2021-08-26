@@ -149,18 +149,6 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     final InneractiveFullscreenVideoContentController videoContentController =
         new InneractiveFullscreenVideoContentController();
 
-    videoContentController.setEventsListener(new VideoContentListenerAdapter() {
-      /**
-       * Called by inneractive when a rewarded video ad was played to the end.
-       * <br>Note: This event does not indicate that the rewarded video was closed.
-       */
-      @Override
-      public void onCompleted() {
-        // The video is completed. an end card is shown.
-        mRewardedAdCallback.onVideoComplete();
-      }
-    });
-
     controller.setEventsListener(adListener);
 
     // Official rewarded interface for both Video and display ads (Since Marketplace 7.6.0)
@@ -168,6 +156,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
       @Override
       public void onAdRewarded(InneractiveAdSpot inneractiveAdSpot) {
         mRewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+        mRewardedAdCallback.onVideoComplete();
       }
     });
 
