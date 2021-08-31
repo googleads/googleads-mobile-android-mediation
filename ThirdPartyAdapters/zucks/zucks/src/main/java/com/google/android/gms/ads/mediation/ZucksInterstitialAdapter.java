@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
@@ -94,7 +95,8 @@ class ZucksInterstitialAdapter {
     );
   }
 
-  private ZucksInterstitialAdapter(
+  @VisibleForTesting
+  ZucksInterstitialAdapter(
           @NonNull ZucksAdapter root,
           @NonNull Context context,
           @NonNull Bundle serverParameters,

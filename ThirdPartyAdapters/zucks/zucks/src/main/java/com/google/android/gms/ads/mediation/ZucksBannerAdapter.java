@@ -92,7 +92,8 @@ class ZucksBannerAdapter {
     );
   }
 
-  private ZucksBannerAdapter(
+  @VisibleForTesting
+  ZucksBannerAdapter(
           @NonNull MediationBannerAd root,
           @NonNull Context context,
           @Nullable AdSize adSize,
@@ -138,7 +139,8 @@ class ZucksBannerAdapter {
   }
 
   /** Validate passed size are supported in Zucks Ad Network SDK. */
-  private static boolean isSizeSupported(@NonNull Context context, @Nullable AdSize adSize) {
+  @VisibleForTesting
+  static boolean isSizeSupported(@NonNull Context context, @Nullable AdSize adSize) {
     if (adSize == null) {
       return false;
     }
@@ -159,8 +161,9 @@ class ZucksBannerAdapter {
   }
 
   /** For internal assertion. Validate passed size and actual size are equals. */
+  @VisibleForTesting
   @Nullable
-  private static AdError isValidAdSize(@Nullable AdSize adSize, @NonNull AdBanner banner) {
+  static AdError isValidAdSize(@Nullable AdSize adSize, @NonNull AdBanner banner) {
     if (adSize == null || adSize.getWidth() != banner.getWidthInDp()
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(

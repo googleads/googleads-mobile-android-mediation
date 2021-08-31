@@ -28,62 +28,17 @@ class ZucksInterstitialAdapterTest {
         val context: Context = mockk()
         assertThat(context, `is`(not(instanceOf(Activity::class.java))))
 
-        val error = ZucksInterstitialAdapter(zucksAdapter).configureInterstitialAd(
+        val callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mockk(relaxed = true)
+
+        ZucksInterstitialAdapter(
+            zucksAdapter,
             context,
             mockk(),
             mockk(),
-            mockk()
-        )
-
-        assertThat(error, not(nullValue()))
-    }
-
-    /**
-     * Returns error if params is invalid.
-     */
-    @Test
-    fun testLoadInterstitialAd_invalidParams() {
-        // region `configureInterstitialAd` returns non-null if params are invalid.
-        val parent: ZucksInterstitialAdapter = mockk {
-            every { configureInterstitialAd(any(), any()) } returns mockk()
-        }
-        assertThat(parent.configureInterstitialAd(mockk(), mockk()), `is`(not(nullValue())))
-        // endregion
-
-
-        val target = ZucksInterstitialAdapter.ZucksMediationInterstitialAd(parent)
-
-        val callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mockk(relaxed = true)
-        target.loadInterstitialAd(mockk(), callback)
+            callback
+        ).loadInterstitialAd()
 
         verify(exactly = 1) { callback.onFailure(any<AdError>()) }
-        verify(exactly = 0) { callback.onFailure(any<String>()) }
-        verify(exactly = 0) { callback.onSuccess(any()) }
-    }
-
-    /**
-     * Validate callbacks if params is valid.
-     */
-    @Test
-    fun testLoadInterstitialAd_validParams() {
-        // region `configureInterstitialAd` returns null if params are valid.
-        val parent: ZucksInterstitialAdapter = mockk {
-            every { configureInterstitialAd(any(), any()) } returns null
-        }
-        assertThat(parent.configureInterstitialAd(mockk(), mockk()), `is`(nullValue()))
-        // endregion
-
-        val target = ZucksInterstitialAdapter.ZucksMediationInterstitialAd(parent)
-
-        val callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mockk(relaxed = true)
-        target.loadInterstitialAd(mockk(), callback)
-
-        verify(exactly = 0) { callback.onFailure(any<AdError>()) }
-        verify(exactly = 0) { callback.onFailure(any<String>()) }
-
-        // Succeeded callbacks are not called at this time.
-        // `AdInterstitial#load` runs on `configureInterstitialAd`.
-        verify(exactly = 0) { callback.onSuccess(any()) }
     }
 
 }
