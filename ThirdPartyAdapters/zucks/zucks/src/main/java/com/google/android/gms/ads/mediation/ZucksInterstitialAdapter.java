@@ -26,7 +26,7 @@ import net.zucks.view.IZucksInterstitial;
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
 class ZucksInterstitialAdapter extends ZucksMediationAdapter
-    implements MediationInterstitialAdapter, MediationInterstitialAd {
+    implements MediationInterstitialAd {
 
   /** New adapter implementation */
   @VisibleForTesting
@@ -105,99 +105,6 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
     }
   }
 
-  /** Legacy adapter implementation This class will be removed. */
-  @Deprecated
-  private static class ZucksMediationInterstitialAdapter implements MediationInterstitialAdapter {
-
-    @NonNull private final ZucksInterstitialAdapter self;
-
-    @Nullable private MediationInterstitialListener oldCallback = null;
-
-    @NonNull
-    private final UniversalInterstitialListener.Callback callback =
-        new UniversalInterstitialListener.Callback() {
-
-          @Override
-          public void onReceiveAd() {
-            oldCallback.onAdLoaded(self.root);
-          }
-
-          @Override
-          public void onShowAd() {
-            oldCallback.onAdOpened(self.root);
-          }
-
-          @Override
-          public void onCancelDisplayRate() {
-            // no-op
-          }
-
-          @Override
-          public void onTapAd() {
-            oldCallback.onAdClicked(self.root);
-            oldCallback.onAdLeftApplication(self.root);
-          }
-
-          @Override
-          public void onCloseAd() {
-            oldCallback.onAdClosed(self.root);
-          }
-
-          @Override
-          public void onLoadFailure(Exception exception) {
-            AdError error = ErrorMapper.convertSdkError(exception);
-            oldCallback.onAdFailedToLoad(self.root, error);
-          }
-
-          @Override
-          public void onShowFailure(Exception exception) {
-            AdMobUtil.ZUCKS_LOG.d(
-                "Call #onShowFailure(Exception exception) in AdMob adapter.", exception);
-            oldCallback.onAdOpened(self.root);
-            oldCallback.onAdClosed(self.root);
-          }
-        };
-
-    private ZucksMediationInterstitialAdapter(@NonNull ZucksInterstitialAdapter self) {
-      this.self = self;
-    }
-
-    @Override
-    public void requestInterstitialAd(
-        Context context,
-        MediationInterstitialListener mediationInterstitialListener,
-        Bundle serverParameters,
-        MediationAdRequest mediationAdRequest,
-        Bundle mediationExtras) {
-      oldCallback = mediationInterstitialListener;
-      AdError error =
-          self.configureInterstitialAd(context, serverParameters, mediationExtras, callback);
-      if (error != null) {
-        oldCallback.onAdFailedToLoad(self.root, error);
-      }
-    }
-
-    @Override
-    public void showInterstitial() {
-      self.mAdInterstitial.show();
-    }
-
-    @Override
-    public void onDestroy() {
-      // no-op
-    }
-
-    @Override
-    public void onPause() {
-      // no-op
-    }
-
-    @Override
-    public void onResume() {
-      // no-op
-    }
-  }
-
   @NonNull private final ZucksAdapter root;
 
   /** Interstitial instance of Zucks Ad Network SDK. */
@@ -212,20 +119,6 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
       mediationInterstitialAd = new ZucksMediationInterstitialAd(this);
     }
     return mediationInterstitialAd;
-  }
-  // endregion
-
-  // region Legacy adapter
-  @Deprecated @Nullable
-  private ZucksMediationInterstitialAdapter mediationInterstitialAdapter = null;
-
-  @Deprecated
-  @NonNull
-  private ZucksMediationInterstitialAdapter useInterstitialAdapter() {
-    if (mediationInterstitialAdapter == null) {
-      mediationInterstitialAdapter = new ZucksMediationInterstitialAdapter(this);
-    }
-    return mediationInterstitialAdapter;
   }
   // endregion
 
@@ -283,23 +176,6 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
     }
   }
 
-  @Deprecated
-  @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener mediationInterstitialListener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    useInterstitialAdapter()
-        .requestInterstitialAd(
-            context,
-            mediationInterstitialListener,
-            serverParameters,
-            mediationAdRequest,
-            mediationExtras);
-  }
-
   @Override
   public void loadInterstitialAd(
       MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
@@ -307,30 +183,6 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
           mediationAdLoadCallback) {
     useInterstitialAd()
         .loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-  }
-
-  @Deprecated
-  @Override
-  public void showInterstitial() {
-    useInterstitialAdapter().showInterstitial();
-  }
-
-  @Deprecated
-  @Override
-  public void onDestroy() {
-    useInterstitialAdapter().onDestroy();
-  }
-
-  @Deprecated
-  @Override
-  public void onPause() {
-    useInterstitialAdapter().onPause();
-  }
-
-  @Deprecated
-  @Override
-  public void onResume() {
-    useInterstitialAdapter().onResume();
   }
 
   /**
