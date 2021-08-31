@@ -31,18 +31,7 @@ public class ZucksAdapter extends ZucksMediationAdapter
         MediationInterstitialAd {
 
   @Nullable private ZucksBannerAdapter bannerAdapter = null;
-
-  // region Interstitial
   @Nullable private ZucksInterstitialAdapter interstitialAdapter = null;
-
-  @NonNull
-  private ZucksInterstitialAdapter useInterstitialAdapter() {
-    if (interstitialAdapter == null) {
-      interstitialAdapter = new ZucksInterstitialAdapter(this);
-    }
-    return interstitialAdapter;
-  }
-  // endregion
 
   @Override
   public void loadBannerAd(
@@ -61,16 +50,16 @@ public class ZucksAdapter extends ZucksMediationAdapter
 
   @Override
   public void loadInterstitialAd(
-      MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback) {
-    useInterstitialAdapter()
-        .loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
+  ) {
+    interstitialAdapter = new ZucksInterstitialAdapter(this, mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    interstitialAdapter.loadInterstitialAd();
   }
 
   @Override
   public void showAd(Context context) {
-    useInterstitialAdapter().showAd(context);
+    interstitialAdapter.showAd();
   }
 
   /**

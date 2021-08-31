@@ -23,7 +23,7 @@ import net.zucks.view.IZucksInterstitial;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksInterstitialAdapter implements MediationInterstitialAd {
+class ZucksInterstitialAdapter {
 
   @NonNull private final ZucksAdapter root;
 
@@ -79,7 +79,6 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
   /** Interstitial instance of Zucks Ad Network SDK. */
   private IZucksInterstitial zucksInterstitial = null;
-
 
   public ZucksInterstitialAdapter(
           @NonNull ZucksAdapter root,
@@ -163,8 +162,7 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
             ZucksMediationAdapter.MediationExtrasBundleBuilder.KEY_FULLSCREEN_FOR_INTERSTITIAL);
   }
 
-  @Override
-  public void showAd(@NonNull Context context) {
+  public void showAd() {
     zucksInterstitial.show();
   }
 
