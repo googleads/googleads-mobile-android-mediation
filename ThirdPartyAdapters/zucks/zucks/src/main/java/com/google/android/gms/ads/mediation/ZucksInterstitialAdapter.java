@@ -6,9 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
@@ -25,164 +23,134 @@ import net.zucks.view.IZucksInterstitial;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksInterstitialAdapter extends ZucksMediationAdapter
-    implements MediationInterstitialAd {
-
-  /** New adapter implementation */
-  @VisibleForTesting
-  static class ZucksMediationInterstitialAd implements MediationInterstitialAd {
-
-    @NonNull private final ZucksInterstitialAdapter self;
-
-    @Nullable
-    private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-        loadCallback;
-
-    @Nullable private MediationInterstitialAdCallback adCallback;
-
-    @NonNull
-    private final UniversalInterstitialListener.Callback callback =
-        new UniversalInterstitialListener.Callback() {
-
-          @Override
-          public void onReceiveAd() {
-            adCallback = loadCallback.onSuccess(self.root);
-          }
-
-          @Override
-          public void onShowAd() {
-            adCallback.onAdOpened();
-            adCallback.reportAdImpression();
-          }
-
-          @Override
-          public void onCancelDisplayRate() {
-            // no-op
-          }
-
-          @Override
-          public void onTapAd() {
-            adCallback.reportAdClicked();
-            adCallback.onAdLeftApplication();
-          }
-
-          @Override
-          public void onCloseAd() {
-            adCallback.onAdClosed();
-          }
-
-          @Override
-          public void onLoadFailure(Exception exception) {
-            loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
-          }
-
-          @Override
-          public void onShowFailure(Exception exception) {
-            adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
-          }
-        };
-
-    @VisibleForTesting
-    ZucksMediationInterstitialAd(@NonNull ZucksInterstitialAdapter self) {
-      this.self = self;
-    }
-
-    @VisibleForTesting
-    void loadInterstitialAd(
-        MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-        MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-            mediationAdLoadCallback) {
-      loadCallback = mediationAdLoadCallback;
-      AdError error = self.configureInterstitialAd(mediationInterstitialAdConfiguration, callback);
-      if (error != null) {
-        loadCallback.onFailure(error);
-      }
-    }
-
-    @Override
-    public void showAd(Context context) {
-      self.mAdInterstitial.show();
-    }
-  }
+class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
   @NonNull private final ZucksAdapter root;
 
-  /** Interstitial instance of Zucks Ad Network SDK. */
-  private IZucksInterstitial mAdInterstitial = null;
+  @NonNull private final Context context;
+  @NonNull private final Bundle serverParameters;
+  @NonNull private final Bundle mediationExtras;
+  @NonNull private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback;
 
-  // region New adapter
-  @Nullable private ZucksMediationInterstitialAd mediationInterstitialAd = null;
+  @Nullable private MediationInterstitialAdCallback adCallback = null;
 
   @NonNull
-  private ZucksMediationInterstitialAd useInterstitialAd() {
-    if (mediationInterstitialAd == null) {
-      mediationInterstitialAd = new ZucksMediationInterstitialAd(this);
-    }
-    return mediationInterstitialAd;
-  }
-  // endregion
+  private final UniversalInterstitialListener.Callback callback =
+          new UniversalInterstitialListener.Callback() {
 
-  public ZucksInterstitialAdapter(@NonNull ZucksAdapter root) {
+            @Override
+            public void onReceiveAd() {
+              adCallback = loadCallback.onSuccess(root);
+            }
+
+            @Override
+            public void onShowAd() {
+              adCallback.onAdOpened();
+              adCallback.reportAdImpression();
+            }
+
+            @Override
+            public void onCancelDisplayRate() {
+              // no-op
+            }
+
+            @Override
+            public void onTapAd() {
+              adCallback.reportAdClicked();
+              adCallback.onAdLeftApplication();
+            }
+
+            @Override
+            public void onCloseAd() {
+              adCallback.onAdClosed();
+            }
+
+            @Override
+            public void onLoadFailure(Exception exception) {
+              loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+            }
+
+            @Override
+            public void onShowFailure(Exception exception) {
+              adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
+            }
+
+          };
+
+  /** Interstitial instance of Zucks Ad Network SDK. */
+  private IZucksInterstitial zucksInterstitial = null;
+
+
+  public ZucksInterstitialAdapter(
+          @NonNull ZucksAdapter root,
+          @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
+  ) {
+    this(
+            root,
+            mediationInterstitialAdConfiguration.getContext(),
+            mediationInterstitialAdConfiguration.getServerParameters(),
+            mediationInterstitialAdConfiguration.getMediationExtras(),
+             mediationAdLoadCallback
+    );
+  }
+
+  private ZucksInterstitialAdapter(
+          @NonNull ZucksAdapter root,
+          @NonNull Context context,
+          @NonNull Bundle serverParameters,
+          @NonNull Bundle mediationExtras,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback
+  ) {
     this.root = root;
+    this.context = context;
+    this.serverParameters = serverParameters;
+    this.mediationExtras = mediationExtras;
+    this.loadCallback = loadCallback;
   }
 
-  @VisibleForTesting
-  @Nullable
-  AdError configureInterstitialAd(
-      MediationInterstitialAdConfiguration configuration,
-      UniversalInterstitialListener.Callback callback) {
-    return configureInterstitialAd(
-        configuration.getContext(),
-        configuration.getServerParameters(),
-        configuration.getMediationExtras(),
-        callback);
-  }
+  void loadInterstitialAd() {
+    String adFrameId;
 
-  @VisibleForTesting
-  @Nullable
-  AdError configureInterstitialAd(
-      Context context,
-      Bundle serverParameters,
-      Bundle mediationExtras,
-      UniversalInterstitialListener.Callback callback) {
     // Check a supported context.
     if (!(context instanceof Activity)) {
-      return ErrorMapper.createAdapterError(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity.");
+      loadCallback.onFailure(
+              ErrorMapper.createAdapterError(
+                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity."
+              )
+      );
+      return;
     }
 
-    String adFrameId = AdMobUtil.getFrameId(serverParameters);
+    if ((adFrameId = AdMobUtil.getFrameId(serverParameters)) == null) {
+      loadCallback.onFailure(
+              ErrorMapper.createAdapterError(
+                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
+                      "FrameID not contained in serverParameters."
+              )
+      );
+      return;
+    }
 
-    if (adFrameId == null) {
-      return ErrorMapper.createAdapterError(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
+    if (isFullscreenInterstitial(mediationExtras)) {
+      zucksInterstitial =
+              new AdFullscreenInterstitial(
+                      context,
+                      adFrameId,
+                      new UniversalInterstitialListener.FullscreenInterstitial(callback).use()
+              );
     } else {
-      if (isFullscreenInterstitial(mediationExtras)) {
-        mAdInterstitial =
-            new AdFullscreenInterstitial(
-                context,
-                adFrameId,
-                new UniversalInterstitialListener.FullscreenInterstitial(callback).use());
-      } else {
-        mAdInterstitial =
-            new AdInterstitial(
-                context, adFrameId, new UniversalInterstitialListener.Interstitial(callback).use());
-      }
-
-      AdMobUtil.configurePlatform(mAdInterstitial);
-
-      mAdInterstitial.load();
-      return null;
+      zucksInterstitial =
+              new AdInterstitial(
+                      context,
+                      adFrameId,
+                      new UniversalInterstitialListener.Interstitial(callback).use()
+              );
     }
-  }
 
-  @Override
-  public void loadInterstitialAd(
-      MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback) {
-    useInterstitialAd()
-        .loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    AdMobUtil.configurePlatform(zucksInterstitial);
+
+    zucksInterstitial.load();
   }
 
   /**
@@ -196,8 +164,8 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
   }
 
   @Override
-  public void showAd(Context context) {
-    useInterstitialAd().showAd(context);
+  public void showAd(@NonNull Context context) {
+    zucksInterstitial.show();
   }
 
   /**
@@ -214,4 +182,5 @@ class ZucksInterstitialAdapter extends ZucksMediationAdapter
             .build());
     return builder;
   }
+
 }
