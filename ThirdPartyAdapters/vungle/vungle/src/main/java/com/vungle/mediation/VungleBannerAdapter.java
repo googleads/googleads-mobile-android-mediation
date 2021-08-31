@@ -239,20 +239,22 @@ public class VungleBannerAdapter implements PlayAdCallback {
           mediationListener.onAdLoaded(mediationAdapter);
         }
       } else {
+        AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+            "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+                + "Vungle.getNativeAd() returned null.",
+            ERROR_DOMAIN);
+        Log.d(TAG, error.getMessage());
         if (mediationAdapter != null && mediationListener != null) {
-          AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
-              "Vungle SDK returned a successful load callback, but Banners.getBanner() or Vungle.getNativeAd() returned null.",
-              ERROR_DOMAIN);
-          Log.d(TAG, error.getMessage());
           mediationListener.onAdFailedToLoad(mediationAdapter, error);
         }
       }
     } else {
+      AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+          "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+              + "Vungle.getNativeAd() returned null.",
+          ERROR_DOMAIN);
+      Log.d(TAG, error.getMessage());
       if (mediationAdapter != null && mediationListener != null) {
-          AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
-              "Vungle SDK returned a successful load callback, but Banners.getBanner() or Vungle.getNativeAd() returned null.",
-              ERROR_DOMAIN);
-          Log.d(TAG, error.getMessage());
         mediationListener.onAdFailedToLoad(mediationAdapter, error);
       }
     }

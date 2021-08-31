@@ -20,9 +20,7 @@ public class VungleInitializer implements InitCallback {
 
   private static final VungleInitializer instance = new VungleInitializer();
   private final AtomicBoolean mIsInitializing = new AtomicBoolean(false);
-
   private final ArrayList<VungleInitializationListener> mInitListeners;
-
   private final Handler mHandler = new Handler(Looper.getMainLooper());
 
   public static VungleInitializer getInstance() {
