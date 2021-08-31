@@ -53,15 +53,37 @@ public class ZucksMediationAdapter extends Adapter {
     initializationCompleteCallback.onInitializationSucceeded();
   }
 
+  // region getVersionInfo
+  /**
+   * Version object of (this) mediation adapter.
+   *
+   * <p>`VersionInfo` does not support the 4-segment versioning. This method will be joining sdk and
+   * adapter's patch segment.
+   */
   @Override
   public VersionInfo getVersionInfo() {
-    return AdMobUtil.getAdapterVersionInfo();
+    int sdkPatch =
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH)
+                    * 100;
+
+    int adapterPatch =
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_ADAPTER_PATCH);
+
+    return new VersionInfo(
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
+            sdkPatch + adapterPatch);
   }
 
+  /** Version object of Zucks Ad Network SDK. */
   @Override
   public VersionInfo getSDKVersionInfo() {
-    return AdMobUtil.getNetworkSdkVersionInfo();
+    return new VersionInfo(
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
+            Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH));
   }
+  // endregion
 
   /** Format-wide extras builder. */
   public static class MediationExtrasBundleBuilder {

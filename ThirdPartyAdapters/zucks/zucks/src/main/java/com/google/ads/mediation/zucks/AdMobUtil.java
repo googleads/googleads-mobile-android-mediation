@@ -31,36 +31,6 @@ public final class AdMobUtil {
   /** Frame ID key in serverParams. */
   @NonNull private static final String AD_FRAME_ID = "frame_id";
 
-  /** Version object of Zucks Ad Network SDK. */
-  @NonNull
-  public static VersionInfo getNetworkSdkVersionInfo() {
-    return new VersionInfo(
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_MAJOR),
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_MINOR),
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_SDK_PATCH));
-  }
-
-  /**
-   * Version object of (this) mediation adapter.
-   *
-   * <p>`VersionInfo` does not support the 4-segment versioning. This method will be joining sdk and
-   * adapter's patch segment.
-   */
-  @NonNull
-  public static VersionInfo getAdapterVersionInfo() {
-    int sdkPatch =
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_SDK_PATCH)
-            * 100;
-
-    int adapterPatch =
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_ADAPTER_PATCH);
-
-    return new VersionInfo(
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_MAJOR),
-        Integer.parseInt(com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION_MINOR),
-        sdkPatch + adapterPatch);
-  }
-
   /** Get FrameID from serverParams. */
   @Nullable
   public static String getFrameId(@Nullable Bundle serverParams) {
