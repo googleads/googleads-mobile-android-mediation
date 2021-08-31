@@ -11,8 +11,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
-import com.google.ads.mediation.zucks.BaseMediationAdapter;
-
 /**
  * [LEGACY] Mediation Adapter for Zucks Ad Network.
  * <p>
@@ -28,7 +26,7 @@ import com.google.ads.mediation.zucks.BaseMediationAdapter;
  *
  * @see ZucksMediationAdapter ZucksMediationAdapter
  */
-public class ZucksAdapter extends BaseMediationAdapter
+public class ZucksAdapter extends ZucksMediationAdapter
     implements MediationBannerAdapter,
         MediationInterstitialAdapter,
         MediationBannerAd,

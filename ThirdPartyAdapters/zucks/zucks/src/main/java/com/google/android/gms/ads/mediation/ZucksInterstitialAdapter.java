@@ -14,7 +14,6 @@ import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
 import com.google.ads.mediation.zucks.AdMobUtil;
 import com.google.ads.mediation.zucks.UniversalInterstitialListener;
-import com.google.ads.mediation.zucks.BaseMediationAdapter;
 import com.google.ads.mediation.zucks.ErrorMapper;
 import net.zucks.view.AdFullscreenInterstitial;
 import net.zucks.view.AdInterstitial;
@@ -26,7 +25,7 @@ import net.zucks.view.IZucksInterstitial;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksInterstitialAdapter extends BaseMediationAdapter
+class ZucksInterstitialAdapter extends ZucksMediationAdapter
     implements MediationInterstitialAdapter, MediationInterstitialAd {
 
   /** New adapter implementation */

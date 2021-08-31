@@ -1,8 +1,16 @@
 package com.google.ads.mediation.zucks;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.VersionInfo;
+
+import java.util.List;
 
 /**
  * Mediation Adapter for Zucks Ad Network.
@@ -19,7 +27,7 @@ import androidx.annotation.NonNull;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-public class ZucksMediationAdapter {
+public class ZucksMediationAdapter extends Adapter {
 
   /** Interstitial types for Zucks Ad Network SDK. */
   public enum InterstitialType {
@@ -34,6 +42,25 @@ public class ZucksMediationAdapter {
      *     インタースティシャル広告 - Zucks Ad Network Android SDK 導入手順</a>
      */
     MEDIUM_RECTANGLE,
+  }
+
+  @Override
+  public void initialize(
+          Context context,
+          InitializationCompleteCallback initializationCompleteCallback,
+          List<MediationConfiguration> list) {
+    // Initialization is not needed in Zucks Ad Network SDK.
+    initializationCompleteCallback.onInitializationSucceeded();
+  }
+
+  @Override
+  public VersionInfo getVersionInfo() {
+    return AdMobUtil.getAdapterVersionInfo();
+  }
+
+  @Override
+  public VersionInfo getSDKVersionInfo() {
+    return AdMobUtil.getNetworkSdkVersionInfo();
   }
 
   /** Format-wide extras builder. */
@@ -62,4 +89,5 @@ public class ZucksMediationAdapter {
       return extras;
     }
   }
+
 }

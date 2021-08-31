@@ -8,12 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 
 import com.google.ads.mediation.zucks.AdMobUtil;
-import com.google.ads.mediation.zucks.BaseMediationAdapter;
 import com.google.ads.mediation.zucks.ErrorMapper;
 import net.zucks.listener.AdBannerListener;
 import net.zucks.view.AdBanner;
@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksBannerAdapter extends BaseMediationAdapter
+class ZucksBannerAdapter extends ZucksMediationAdapter
     implements MediationBannerAdapter, MediationBannerAd {
 
   /** New adapter implementation */
