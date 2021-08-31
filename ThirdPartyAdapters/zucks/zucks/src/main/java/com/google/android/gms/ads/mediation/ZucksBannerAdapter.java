@@ -27,8 +27,7 @@ import java.util.List;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksBannerAdapter extends ZucksMediationAdapter
-    implements MediationBannerAd {
+class ZucksBannerAdapter {
 
   @NonNull private final MediationBannerAd root;
 
@@ -82,16 +81,32 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
   ZucksBannerAdapter(
           @NonNull MediationBannerAd root,
           @NonNull MediationBannerAdConfiguration configuration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    this.root = root;
-    this.context = configuration.getContext();
-    this.adSize = configuration.getAdSize();
-    this.serverParams = configuration.getServerParameters();
-    this.loadCallback = mediationAdLoadCallback;
+          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
+  ) {
+    this(
+            root,
+            configuration.getContext(),
+            configuration.getAdSize(),
+            configuration.getServerParameters(),
+            mediationAdLoadCallback
+    );
   }
 
-  @VisibleForTesting
-  void loadBannerAd() {
+  private ZucksBannerAdapter(
+          @NonNull MediationBannerAd root,
+          @NonNull Context context,
+          @Nullable AdSize adSize,
+          @NonNull Bundle serverParams,
+          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback
+  ) {
+    this.root = root;
+    this.context = context;
+    this.adSize = adSize;
+    this.serverParams = serverParams;
+    this.loadCallback = loadCallback;
+  }
+
+  public void loadBannerAd() {
     String adFrameId;
 
     if (!isSizeSupported(context, adSize)) {
@@ -118,14 +133,12 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
   }
 
   @NonNull
-  @Override
   public View getView() {
     return zucksBanner;
   }
 
   /** Validate passed size are supported in Zucks Ad Network SDK. */
-  @VisibleForTesting
-  static boolean isSizeSupported(@NonNull Context context, @Nullable AdSize adSize) {
+  private static boolean isSizeSupported(@NonNull Context context, @Nullable AdSize adSize) {
     if (adSize == null) {
       return false;
     }
@@ -140,16 +153,14 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
     return MediationUtils.findClosestSize(context, adSize, supported) != null;
   }
 
-  @VisibleForTesting
   @Nullable
-  AdError isValidAdSize(@NonNull AdBanner banner) {
+  private AdError isValidAdSize(@NonNull AdBanner banner) {
     return isValidAdSize(adSize, banner);
   }
 
   /** For internal assertion. Validate passed size and actual size are equals. */
-  @VisibleForTesting
   @Nullable
-  static AdError isValidAdSize(@Nullable AdSize adSize, @NonNull AdBanner banner) {
+  private static AdError isValidAdSize(@Nullable AdSize adSize, @NonNull AdBanner banner) {
     if (adSize == null || adSize.getWidth() != banner.getWidthInDp()
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(
