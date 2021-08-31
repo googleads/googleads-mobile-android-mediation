@@ -28,7 +28,7 @@ import java.util.List;
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
 class ZucksBannerAdapter extends ZucksMediationAdapter
-    implements MediationBannerAdapter, MediationBannerAd {
+    implements MediationBannerAd {
 
   /** New adapter implementation */
   @VisibleForTesting
@@ -111,94 +111,6 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
     }
   }
 
-  /** Legacy adapter implementation This class will be removed. */
-  @VisibleForTesting
-  @Deprecated
-  static class ZucksMediationBannerAdapter implements MediationBannerAdapter {
-
-    @NonNull private final ZucksBannerAdapter self;
-
-    @Nullable private MediationBannerListener callback = null;
-
-    @VisibleForTesting @NonNull
-    final AdBannerListener listener =
-        new AdBannerListener() {
-
-          @Override
-          public void onReceiveAd(AdBanner banner) {
-            AdError error = self.isValidAdSize(banner);
-            if (error != null) {
-              callback.onAdFailedToLoad(self.root, error);
-            } else {
-              callback.onAdLoaded(self.root);
-            }
-          }
-
-          @Override
-          public void onFailure(AdBanner banner, Exception e) {
-            callback.onAdFailedToLoad(self.root, ErrorMapper.convertSdkError(e));
-          }
-
-          @Override
-          public void onTapAd(AdBanner banner) {
-            callback.onAdClicked(self.root);
-            callback.onAdOpened(self.root);
-            callback.onAdLeftApplication(self.root);
-          }
-
-          @Override
-          public void onBackApplication(AdBanner banner) {
-            callback.onAdClosed(self.root);
-          }
-        };
-
-    @VisibleForTesting
-    ZucksMediationBannerAdapter(@NonNull ZucksBannerAdapter self) {
-      this.self = self;
-    }
-
-    @Override
-    public void requestBannerAd(
-        Context context,
-        MediationBannerListener callback,
-        Bundle serverParameters,
-        AdSize adSize,
-        MediationAdRequest mediationAdRequest,
-        Bundle mediationExtras) {
-      AdError error = self.configureBannerAd(context, adSize, serverParameters, listener);
-      if (error != null) {
-        callback.onAdFailedToLoad(self.root, error);
-      } else {
-        setCallback(callback);
-      }
-    }
-
-    @VisibleForTesting
-    void setCallback(@NonNull MediationBannerListener callback) {
-      this.callback = callback;
-    }
-
-    @Override
-    public View getBannerView() {
-      return self.zucksBanner;
-    }
-
-    @Override
-    public void onDestroy() {
-      // no-op
-    }
-
-    @Override
-    public void onPause() {
-      // no-op
-    }
-
-    @Override
-    public void onResume() {
-      // no-op
-    }
-  }
-
   @NonNull private final ZucksAdapter root;
 
   /** Banner instance of Zucks Ad Network SDK. */
@@ -219,19 +131,6 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
   }
   // endregion
 
-  // region Legacy adapter
-  @Deprecated @Nullable private ZucksMediationBannerAdapter mediationBannerAdapter = null;
-
-  @Deprecated
-  @NonNull
-  private ZucksMediationBannerAdapter useBannerAdapter() {
-    if (mediationBannerAdapter == null) {
-      mediationBannerAdapter = new ZucksMediationBannerAdapter(this);
-    }
-    return mediationBannerAdapter;
-  }
-  // endregion
-
   ZucksBannerAdapter(@NonNull ZucksAdapter root) {
     this.root = root;
   }
@@ -242,25 +141,6 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
       MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
     useBannerAd().loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-  }
-
-  @Deprecated
-  @Override
-  public void requestBannerAd(
-      Context context,
-      MediationBannerListener mediationBannerListener,
-      Bundle serverParameters,
-      AdSize adSize,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    useBannerAdapter()
-        .requestBannerAd(
-            context,
-            mediationBannerListener,
-            serverParameters,
-            adSize,
-            mediationAdRequest,
-            mediationExtras);
   }
 
   @VisibleForTesting
@@ -286,34 +166,10 @@ class ZucksBannerAdapter extends ZucksMediationAdapter
     }
   }
 
-  @Deprecated
-  @Override
-  public View getBannerView() {
-    return useBannerAdapter().getBannerView();
-  }
-
   @NonNull
   @Override
   public View getView() {
     return useBannerAd().getView();
-  }
-
-  @Deprecated
-  @Override
-  public void onDestroy() {
-    useBannerAdapter().onDestroy();
-  }
-
-  @Deprecated
-  @Override
-  public void onPause() {
-    useBannerAdapter().onPause();
-  }
-
-  @Deprecated
-  @Override
-  public void onResume() {
-    useBannerAdapter().onResume();
   }
 
   /** Validate passed size are supported in Zucks Ad Network SDK. */
