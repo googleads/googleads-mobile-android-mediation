@@ -27,9 +27,7 @@ import com.google.ads.mediation.zucks.ZucksMediationAdapter;
  * @see ZucksMediationAdapter ZucksMediationAdapter
  */
 public class ZucksAdapter extends ZucksMediationAdapter
-    implements MediationBannerAdapter,
-        MediationInterstitialAdapter,
-        MediationBannerAd,
+    implements MediationBannerAd,
         MediationInterstitialAd {
 
   // region Banner
@@ -57,36 +55,6 @@ public class ZucksAdapter extends ZucksMediationAdapter
   // endregion
 
   @Override
-  public void onDestroy() {
-    if (bannerAdapter != null) {
-      bannerAdapter.onDestroy();
-    }
-    if (interstitialAdapter != null) {
-      interstitialAdapter.onDestroy();
-    }
-  }
-
-  @Override
-  public void onPause() {
-    if (bannerAdapter != null) {
-      bannerAdapter.onPause();
-    }
-    if (interstitialAdapter != null) {
-      interstitialAdapter.onPause();
-    }
-  }
-
-  @Override
-  public void onResume() {
-    if (bannerAdapter != null) {
-      bannerAdapter.onResume();
-    }
-    if (interstitialAdapter != null) {
-      interstitialAdapter.onResume();
-    }
-  }
-
-  @Override
   public void loadBannerAd(
       MediationBannerAdConfiguration mediationBannerAdConfiguration,
       MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -94,55 +62,10 @@ public class ZucksAdapter extends ZucksMediationAdapter
     useBannerAdapter().loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
-  /** NOTE: This method will be removed. */
-  @Deprecated
-  @Override
-  public void requestBannerAd(
-      Context context,
-      MediationBannerListener mediationBannerListener,
-      Bundle serverParameters,
-      AdSize adSize,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    useBannerAdapter()
-        .requestBannerAd(
-            context,
-            mediationBannerListener,
-            serverParameters,
-            adSize,
-            mediationAdRequest,
-            mediationExtras);
-  }
-
-  /** NOTE: This method will be removed. */
-  @Deprecated
-  @Override
-  public View getBannerView() {
-    return useBannerAdapter().getBannerView();
-  }
-
   @NonNull
   @Override
   public View getView() {
     return useBannerAdapter().getView();
-  }
-
-  /** NOTE: This method will be removed. */
-  @Deprecated
-  @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener mediationInterstitialListener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
-    useInterstitialAdapter()
-        .requestInterstitialAd(
-            context,
-            mediationInterstitialListener,
-            serverParameters,
-            mediationAdRequest,
-            mediationExtras);
   }
 
   @Override
@@ -152,13 +75,6 @@ public class ZucksAdapter extends ZucksMediationAdapter
           mediationAdLoadCallback) {
     useInterstitialAdapter()
         .loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-  }
-
-  /** NOTE: This method will be removed. */
-  @Deprecated
-  @Override
-  public void showInterstitial() {
-    useInterstitialAdapter().showInterstitial();
   }
 
   @Override
