@@ -7,5 +7,5 @@
 - **DOES NOT** supports rewarded ads. This feature will be supports in next release.
 
 Built and tested with:
-- Google Mobile Ads SDK version 19.7.0.
+- Google Mobile Ads SDK version 20.3.0.
 - Zucks Ad Network SDK version 4.8.6.
