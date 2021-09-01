@@ -82,7 +82,7 @@ public class VungleInterstitialAdapter
       return;
     }
 
-    AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, serverParameters);
+    AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
     // Unmute full-screen ads by default.
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
     VungleInitializer.getInstance()
@@ -242,7 +242,7 @@ public class VungleInterstitialAdapter
     mMediationBannerListener = mediationBannerListener;
     String appID = serverParameters.getString(KEY_APP_ID);
     AdapterParametersParser.Config config;
-    config = AdapterParametersParser.parse(appID, serverParameters);
+    config = AdapterParametersParser.parse(appID, mediationExtras);
 
     if (TextUtils.isEmpty(appID)) {
 
