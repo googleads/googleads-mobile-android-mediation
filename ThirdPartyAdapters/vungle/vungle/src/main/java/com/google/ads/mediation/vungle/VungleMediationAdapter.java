@@ -288,9 +288,6 @@ public class VungleMediationAdapter extends RtbAdapter
 
     mAdMarkup = mediationRewardedAdConfiguration.getBidResponse();
     Log.d(TAG, "Render rewarded mAdMarkup=" + mAdMarkup);
-    if (TextUtils.isEmpty(mAdMarkup)) {
-      mAdMarkup = null;
-    }
 
     // Unmute full-screen ads by default.
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
@@ -473,20 +470,25 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void loadInterstitialAd(
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    loadRewardedAd(adConfiguration, callback);
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    Log.d(TAG, "loadInterstitialAd()...");
+    Log.d(TAG, "loadRtbInterstitialAd()...");
     VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
     adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
-  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    Log.d(TAG, "loadBannerAd()...");
+    Log.d(TAG, "loadRtbBannerAd()...");
     VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
     adapter.loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
-
 }

@@ -119,9 +119,6 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
     mAdMarkup = mediationBannerAdConfiguration.getBidResponse();
     Log.d(TAG, "Render banner mAdMarkup=" + mAdMarkup);
-    if (TextUtils.isEmpty(mAdMarkup)) {
-      mAdMarkup = null;
-    }
 
     // Create the adLayout wrapper with the requested ad size, as Vungle's ad uses MATCH_PARENT for
     // its dimensions.
@@ -176,7 +173,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   }
 
   void preCache() {
-    if (mAdMarkup == null) {
+    if (TextUtils.isEmpty(mAdMarkup)) {
       Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), null);
     }
   }
