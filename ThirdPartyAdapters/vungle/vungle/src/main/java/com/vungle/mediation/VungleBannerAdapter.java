@@ -1,5 +1,8 @@
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_VUNGLE_BANNER_NULL;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -8,9 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleBannerAd;
 import com.google.ads.mediation.vungle.VungleInitializer;
+import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.ads.mediation.vungle.VunglePlayAdCallback;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -162,13 +165,10 @@ public class VungleBannerAdapter implements PlayAdCallback {
               }
 
               @Override
-              public void onInitializeError(String errorMessage) {
-                String message = "SDK init failed: " + errorMessage;
-                Log.d(TAG, message);
+              public void onInitializeError(AdError error) {
                 mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
-                if (mPendingRequestBanner && mediationAdapter != null
-                    && mediationListener != null) {
-                  AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, TAG);
+                if (mPendingRequestBanner && mediationListener != null) {
+                  Log.w(TAG, error.getMessage());
                   mediationListener.onFailure(error);
                 }
               }
@@ -190,10 +190,10 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
         @Override
         public void onError(String id, VungleException exception) {
-          Log.d(TAG, "Ad load failed:" + VungleBannerAdapter.this);
           mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
           if (mPendingRequestBanner && mediationListener != null) {
-            AdError error = VungleManager.mapErrorCode(exception, TAG);
+            AdError error = VungleMediationAdapter.getAdError(exception);
+            Log.w("TAG", error.getMessage());
             mediationListener.onFailure(error);
           }
         }
@@ -214,7 +214,6 @@ public class VungleBannerAdapter implements PlayAdCallback {
         RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
     adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-
     vungleBannerAd = mVungleManager.getVungleBannerAd(placementId);
     VunglePlayAdCallback playAdCallback = new VunglePlayAdCallback(VungleBannerAdapter.this,
         VungleBannerAdapter.this, vungleBannerAd);
@@ -234,17 +233,22 @@ public class VungleBannerAdapter implements PlayAdCallback {
           mediationBannerAdCallback = mediationListener.onSuccess(mediationAdapter);
         }
       } else {
-        // missing resources
+        AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+            "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+                + "Vungle.getNativeAd() returned null.",
+            ERROR_DOMAIN);
+        Log.d(TAG, error.getMessage());
         if (mediationListener != null) {
-          AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR,
-              "Can't create Vungle banner", TAG);
           mediationListener.onFailure(error);
         }
       }
     } else {
+      AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+          "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+              + "Vungle.getNativeAd() returned null.",
+          ERROR_DOMAIN);
+      Log.d(TAG, error.getMessage());
       if (mediationListener != null) {
-        AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Invalid banner size",
-            TAG);
         mediationListener.onFailure(error);
       }
     }
@@ -323,10 +327,9 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
   @Override
   public void onError(String placementID, VungleException exception) {
-    Log.w(TAG, "Failed to load ad from Vungle: " + exception.getLocalizedMessage() + ";"
-        + VungleBannerAdapter.this);
+    AdError error = VungleMediationAdapter.getAdError(exception);
+    Log.w(TAG, error.getMessage());
     if (mediationListener != null) {
-      AdError error = VungleManager.mapErrorCode(exception, TAG);
       mediationListener.onFailure(error);
     }
   }

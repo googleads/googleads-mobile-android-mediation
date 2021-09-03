@@ -1,5 +1,7 @@
 package com.applovin.mediation;
 
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -12,7 +14,7 @@ import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
@@ -74,7 +76,7 @@ public class AppLovinUtils {
     }
 
     // Fetch the SDK key in the AndroidManifest.xml file if no SDK key is found in the server
-    // paremeters.
+    // parameters.
     if (TextUtils.isEmpty(sdkKey)) {
       final Bundle metaData = retrieveMetadata(context);
       if (metaData != null) {
@@ -119,17 +121,67 @@ public class AppLovinUtils {
   }
 
   /**
-   * Convert the given AppLovin SDK error code into the appropriate AdMob error code.
+   * Convert the given AppLovin SDK error code into a Google AdError.
    */
-  public static int toAdMobErrorCode(int applovinErrorCode) {
-    // TODO: Be more exhaustive.
-    if (applovinErrorCode == AppLovinErrorCodes.NO_FILL) {
-      return AdRequest.ERROR_CODE_NO_FILL;
-    } else if (applovinErrorCode == AppLovinErrorCodes.FETCH_AD_TIMEOUT) {
-      return AdRequest.ERROR_CODE_NETWORK_ERROR;
-    } else {
-      return AdRequest.ERROR_CODE_INTERNAL_ERROR;
+  public static AdError getAdError(int applovinErrorCode) {
+    String reason = "AppLovin error code " + applovinErrorCode;
+    switch (applovinErrorCode) {
+      case AppLovinErrorCodes.NO_FILL:
+        reason = "NO_FILL";
+        break;
+      case AppLovinErrorCodes.FETCH_AD_TIMEOUT:
+        reason = "FETCH_AD_TIMEOUT";
+        break;
+      case AppLovinErrorCodes.INCENTIVIZED_NO_AD_PRELOADED:
+        reason = "INCENTIVIZED_NO_AD_PRELOADED";
+        break;
+      case AppLovinErrorCodes.INCENTIVIZED_SERVER_TIMEOUT:
+        reason = "INCENTIVIZED_SERVER_TIMEOUT";
+        break;
+      case AppLovinErrorCodes.INCENTIVIZED_UNKNOWN_SERVER_ERROR:
+        reason = "INCENTIVIZED_UNKNOWN_SERVER_ERROR";
+        break;
+      case AppLovinErrorCodes.INCENTIVIZED_USER_CLOSED_VIDEO:
+        reason = "INCENTIVIZED_USER_CLOSED_VIDEO";
+        break;
+      case AppLovinErrorCodes.INVALID_AD_TOKEN:
+        reason = "INVALID_AD_TOKEN";
+        break;
+      case AppLovinErrorCodes.INVALID_RESPONSE:
+        reason = "INVALID_RESPONSE";
+        break;
+      case AppLovinErrorCodes.INVALID_URL:
+        reason = "INVALID_URL";
+        break;
+      case AppLovinErrorCodes.INVALID_ZONE:
+        reason = "INVALID_ZONE";
+        break;
+      case AppLovinErrorCodes.NO_NETWORK:
+        reason = "NO_NETWORK";
+        break;
+      case AppLovinErrorCodes.SDK_DISABLED:
+        reason = "SDK_DISABLED";
+        break;
+      case AppLovinErrorCodes.UNABLE_TO_PRECACHE_IMAGE_RESOURCES:
+        reason = "UNABLE_TO_PRECACHE_IMAGE_RESOURCES";
+        break;
+      case AppLovinErrorCodes.UNABLE_TO_PRECACHE_RESOURCES:
+        reason = "UNABLE_TO_PRECACHE_RESOURCES";
+        break;
+      case AppLovinErrorCodes.UNABLE_TO_PRECACHE_VIDEO_RESOURCES:
+        reason = "UNABLE_TO_PRECACHE_VIDEO_RESOURCES";
+        break;
+      case AppLovinErrorCodes.UNABLE_TO_RENDER_AD:
+        reason = "UNABLE_TO_RENDER_AD";
+        break;
+      case AppLovinErrorCodes.UNSPECIFIED_ERROR:
+        reason = "UNSPECIFIED_ERROR";
+        break;
+      default: // fall out
     }
+
+    return new AdError(applovinErrorCode,
+        "AppLovin SDK returned a load failure callback with reason: " + reason, ERROR_DOMAIN);
   }
 
   /**
@@ -148,7 +200,6 @@ public class AppLovinUtils {
     } else if (AdSize.LEADERBOARD.equals(closestSize)) {
       return AppLovinAdSize.LEADER;
     }
-
     return null;
   }
 }

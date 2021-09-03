@@ -3,6 +3,8 @@ package com.google.ads.mediation.vungle;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import androidx.annotation.NonNull;
+import com.google.android.gms.ads.AdError;
 import com.vungle.mediation.VungleConsent;
 import com.vungle.mediation.VungleNetworkSettings;
 import com.vungle.warren.InitCallback;
@@ -18,9 +20,7 @@ public class VungleInitializer implements InitCallback {
 
   private static final VungleInitializer instance = new VungleInitializer();
   private final AtomicBoolean mIsInitializing = new AtomicBoolean(false);
-
   private final ArrayList<VungleInitializationListener> mInitListeners;
-
   private final Handler mHandler = new Handler(Looper.getMainLooper());
 
   public static VungleInitializer getInstance() {
@@ -52,23 +52,18 @@ public class VungleInitializer implements InitCallback {
     VungleNetworkSettings.setVungleSettingsChangedListener(
         new VungleNetworkSettings.VungleSettingsChangedListener() {
           @Override
-          public void onVungleSettingsChanged(VungleSettings updatedSettings) {
+          public void onVungleSettingsChanged(@NonNull VungleSettings settings) {
             // Ignore if sdk is yet to initialize, it will get considered while init
             if (!Vungle.isInitialized()) {
               return;
             }
 
-            VungleSettings settings =
-                (updatedSettings != null) ? updatedSettings : new VungleSettings.Builder().build();
             // Pass new settings to SDK.
             Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
           }
         });
 
     VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
-    if (vungleSettings == null) {
-      vungleSettings = new VungleSettings.Builder().build();
-    }
     Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
     mInitListeners.add(listener);
   }
@@ -94,13 +89,14 @@ public class VungleInitializer implements InitCallback {
   }
 
   @Override
-  public void onError(final VungleException throwable) {
+  public void onError(final VungleException exception) {
+    final AdError error = VungleMediationAdapter.getAdError(exception);
     mHandler.post(
         new Runnable() {
           @Override
           public void run() {
             for (VungleInitializationListener listener : mInitListeners) {
-              listener.onInitializeError(throwable.getLocalizedMessage());
+              listener.onInitializeError(error);
             }
             mInitListeners.clear();
           }
@@ -117,6 +113,7 @@ public class VungleInitializer implements InitCallback {
 
     void onInitializeSuccess();
 
-    void onInitializeError(String errorMessage);
+    void onInitializeError(AdError error);
+
   }
 }

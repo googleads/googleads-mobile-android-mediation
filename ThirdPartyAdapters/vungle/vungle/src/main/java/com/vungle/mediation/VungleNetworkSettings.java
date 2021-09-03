@@ -1,8 +1,11 @@
 package com.vungle.mediation;
 
+import androidx.annotation.NonNull;
 import com.vungle.warren.VungleSettings;
 
-/** To apply the Vungle network settings during initialization. */
+/**
+ * To apply the Vungle network settings during initialization.
+ */
 public class VungleNetworkSettings {
 
   private static final long MEGABYTE = 1024 * 1024;
@@ -44,6 +47,7 @@ public class VungleNetworkSettings {
     }
   }
 
+  @NonNull
   public static VungleSettings getVungleSettings() {
     if (vungleSettings == null) {
       vungleSettings = new VungleSettings.Builder().disableBannerRefresh().build();
@@ -58,6 +62,6 @@ public class VungleNetworkSettings {
 
   public interface VungleSettingsChangedListener {
 
-    void onVungleSettingsChanged(VungleSettings vungleSettings);
+    void onVungleSettingsChanged(@NonNull VungleSettings vungleSettings);
   }
 }
