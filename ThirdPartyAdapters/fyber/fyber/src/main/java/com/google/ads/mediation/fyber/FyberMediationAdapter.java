@@ -105,7 +105,7 @@ public class FyberMediationAdapter extends Adapter
   private MediationInterstitialListener mMediationInterstitialListener;
 
   /**
-   * The (hopefully) Activity which was passed by AdMob to {@link #requestInterstitialAd}.
+   * The Activity which was passed by AdMob to {@link #requestInterstitialAd}.
    */
   private WeakReference<Activity> mInterstitialActivityRef;
 
@@ -531,7 +531,7 @@ public class FyberMediationAdapter extends Adapter
           return;
         }
 
-        //we must have an activity context to show interstitial ads
+        // We need an activity context to show interstitial ads.
         if (!(context instanceof Activity)) {
           AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
                   "Cannot request an interstitial ad without an activity context.",

@@ -1,5 +1,15 @@
 ## Fyber Android Mediation Adapter Changelog
 
+#### Version 7.8.4.0 (in progress)
+- Verified compatibility with Fyber SDK 7.8.4.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+- Fixed an issue with rewarded display ads, where `onVideoComplete()` was not called.
+- Fyber now requires an Activity context to show ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Fyber SDK version 7.8.4.
+
 #### Version 7.8.3.0
 - Verified compatibility with Fyber SDK 7.8.3.
 - Added standardized adapter error codes and messages.

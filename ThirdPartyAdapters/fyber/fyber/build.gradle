@@ -34,8 +34,7 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.1.0'
-
+    implementation 'com.google.android.gms:play-services-ads:20.3.0'
     implementation 'com.fyber.vamp:core-sdk:7.8.4'
     implementation 'com.fyber.vamp:mraid-kit:7.8.4'
     implementation 'com.fyber.vamp:video-kit:7.8.4'
