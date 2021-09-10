@@ -1,8 +1,12 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.10.2.0
- - Fix adapter issue with passing of the Unique ID to help with concurrent Banner request for same Banner AdUnit. This was broken since re-work around error handling
- - Fix for low occurring ConcurrentModificationException crash in Vungle’s SDK
+#### Version 6.10.2.0 (in progress)
+ - Verified compatibility with Vungle SDK 6.10.2.
+ - Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.2.
 
 #### Version 6.10.1.0
 - Verified compatibility with Vungle SDK 6.10.1.
