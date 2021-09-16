@@ -286,10 +286,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
                   INCENTIVIZED_ADS.put(mZoneId, mIncentivizedInterstitial);
                 }
               }
+              mIncentivizedInterstitial.preload(this);
             });
       }
-
-      mIncentivizedInterstitial.preload(this);
     } else {
       mMediationAdLoadCallback = mediationAdLoadCallback;
       mNetworkExtras = adConfiguration.getMediationExtras();
