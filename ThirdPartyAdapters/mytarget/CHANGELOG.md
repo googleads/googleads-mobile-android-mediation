@@ -1,6 +1,6 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Version 5.13.4.0 (in progress)
+#### Version 5.13.4.0
 - Verified compatibility with myTarget SDK version 5.13.4.
 
 Built and tested with:
