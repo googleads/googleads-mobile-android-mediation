@@ -48,7 +48,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Fyber's official AdMob 3rd party adapter class. Implements Banners and Interstitials by
@@ -209,7 +211,7 @@ public class FyberMediationAdapter extends Adapter
       return;
     }
 
-    List<String> configuredAppIds = new ArrayList<>();
+    Set<String> configuredAppIds = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle serverParameters = configuration.getServerParameters();
       if (serverParameters == null) {
@@ -233,18 +235,13 @@ public class FyberMediationAdapter extends Adapter
       return;
     }
 
-    // We can only use one app id.
-    String appIdForInitialization = configuredAppIds.get(0);
+    // We can only use one app id to initialize the Fyber Marketplace SDK.
+    String appIdForInitialization = configuredAppIds.iterator().next();
     if (configuredAppIds.size() > 1) {
-      if (completionCallback != null) {
-        String message = String.format("Multiple '%s' entries found: %s. "
-                + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID,
-            configuredAppIds.toString(), appIdForInitialization);
-        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, message, ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        completionCallback.onInitializationFailed(error.getMessage());
-      }
-      return;
+      String logMessage = String.format("Multiple '%s' entries found: %s. "
+              + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID,
+          configuredAppIds.toString(), appIdForInitialization);
+      Log.w(TAG, logMessage);
     }
 
     InneractiveAdManager.initialize(context, appIdForInitialization,
@@ -534,12 +531,12 @@ public class FyberMediationAdapter extends Adapter
         // We need an activity context to show interstitial ads.
         if (!(context instanceof Activity)) {
           AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
-                  "Cannot request an interstitial ad without an activity context.",
-                  ERROR_DOMAIN);
+              "Cannot request an interstitial ad without an activity context.",
+              ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
           if (mMediationInterstitialListener != null) {
             mMediationInterstitialListener
-                    .onAdFailedToLoad(FyberMediationAdapter.this, error);
+                .onAdFailedToLoad(FyberMediationAdapter.this, error);
           }
           return;
         }
