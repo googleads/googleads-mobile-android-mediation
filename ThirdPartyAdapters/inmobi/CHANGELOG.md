@@ -1,19 +1,27 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 9.2.1.0
+- Verified compatibility with InMobi SDK version 9.2.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- InMobi SDK version 9.2.1.
+
 #### Version 9.2.0.0
 - Verified compatibility with InMobi SDK version 9.2.0.
 - Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
 - Fixed incorrect error messages.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 20.2.0.
 - InMobi SDK version 9.2.0.
 
-#### Version 9.1.9.0 (in progress)
+#### Version 9.1.9.0
 - Verified compatibility with InMobi SDK version 9.1.9.
 - Updated the minimum required Google Mobile Ads SDK version to 20.1.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 20.1.0.
 - InMobi SDK version 9.1.9.
 
@@ -21,7 +29,7 @@ Built and test with:
 - Verified compatibility with InMobi SDK version 9.1.7.
 - Updated the minimum required Google Mobile Ads SDK version to 19.8.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.8.0.
 - InMobi SDK version 9.1.7.
 
@@ -32,7 +40,7 @@ Built and test with:
 - Adapter no longer reads gender and birthday targeting parameters, which are deprecated in the Google Mobile Ads SDK version 19.7.0.
 - Migrated to AndroidX
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.7.0.
 - InMobi SDK version 9.1.6.
 
@@ -41,7 +49,7 @@ Built and test with:
 - Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
 - Added descriptive error codes and reasons for adapter load/show failures.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.5.0.
 - InMobi SDK version 9.1.1.
 
@@ -49,14 +57,14 @@ Built and test with:
 - Verified compatibility with InMobi SDK version 9.1.0.
 - Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.4.0.
 - InMobi SDK version 9.1.0.
 
 #### Version 9.0.9.0
 - Verified compatibility with InMobi SDK version 9.0.9.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.3.0.
 - InMobi SDK version 9.0.9.
 
@@ -65,7 +73,7 @@ Built and test with:
 - Updated the minimum required Google Mobile Ads SDK version to 19.3.0.
 - Verified compatibility with InMobi SDK version 9.0.8.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.3.0.
 - InMobi SDK version 9.0.8.
 
@@ -73,7 +81,7 @@ Built and test with:
 - Fixed an issue where the adapter did not keep InMobi SDK's initialization state properly.
 - Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.2.0.
 - InMobi SDK version 9.0.7.
 
@@ -82,7 +90,7 @@ Built and test with:
 - Updated the adapter to support inline adaptive banner requests.
 - Adapter now includes proguard configuration as suggested by [InMobi's guidelines](https://support.inmobi.com/monetize/android-guidelines).
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
 - InMobi SDK version 9.0.7.
 
@@ -93,21 +101,21 @@ while scrolling in native feed integration.
 - Native ads: Fixed a bug that causes the `primaryView` of InMobi not being
 positioned center inside the `mediaView`.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
 - InMobi SDK version 9.0.6.
 
 #### Version 9.0.5.0
 - Verified compatibility with InMobi SDK version 9.0.5.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
 - InMobi SDK version 9.0.5.
 
 #### Version 9.0.4.0
 - Updated the minimum required Google Mobile Ads SDK version to 19.1.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
 - InMobi SDK version 9.0.4.
 

@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "AdColony"
     // String property to store version name.
-    stringVersion = "4.6.0.0"
+    stringVersion = "4.6.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,12 +19,10 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 4060000
+        versionCode 4060300
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -38,9 +36,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.adcolony:sdk:4.6.0'
+    implementation 'com.adcolony:sdk:4.6.3'
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.3.0'
+    implementation 'com.google.android.gms:play-services-ads:20.4.0'
 }
 
 /**
@@ -93,7 +91,6 @@ publishing {
                     // Exclude filetree dependencies.
                     if (it.name != 'unspecified') {
                         println("Adding dependency: " + it.group + ":" + it.name + ":" + it.version)
-
                         final dependencyNode = dependenciesNode.appendNode('dependency')
                         dependencyNode.appendNode('groupId', it.group)
                         dependencyNode.appendNode('artifactId', it.name)
@@ -127,7 +124,6 @@ task packageDistribution(type: Zip) {
         rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
         rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
     }
-
     archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
     destinationDirectory = file("${rootProject.projectDir}/build/distribution")
 }

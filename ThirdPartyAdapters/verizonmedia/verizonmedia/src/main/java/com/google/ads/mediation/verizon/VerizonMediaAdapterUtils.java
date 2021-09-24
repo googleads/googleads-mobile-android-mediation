@@ -10,6 +10,7 @@ import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.verizon.ads.BuildConfig;
+import com.verizon.ads.DataPrivacy;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import java.util.ArrayList;
@@ -52,10 +53,10 @@ class VerizonMediaAdapterUtils {
   public static void setCoppaValue(final MediationAdRequest mediationAdRequest) {
     if (mediationAdRequest.taggedForChildDirectedTreatment() ==
         MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      VASAds.setCoppa(true);
+      VASAds.setDataPrivacy(new DataPrivacy.Builder(VASAds.getDataPrivacy()).setCoppaApplies(true).build());
     } else if (mediationAdRequest.taggedForChildDirectedTreatment() ==
         MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
-      VASAds.setCoppa(false);
+      VASAds.setDataPrivacy(new DataPrivacy.Builder(VASAds.getDataPrivacy()).setCoppaApplies(false).build());
     }
   }
 
@@ -65,10 +66,10 @@ class VerizonMediaAdapterUtils {
   public static void setCoppaValue(final MediationAdConfiguration mediationAdConfiguration) {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment() ==
         MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      VASAds.setCoppa(true);
+      VASAds.setDataPrivacy(new DataPrivacy.Builder(VASAds.getDataPrivacy()).setCoppaApplies(true).build());
     } else if (mediationAdConfiguration.taggedForChildDirectedTreatment() ==
         MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
-      VASAds.setCoppa(false);
+      VASAds.setDataPrivacy(new DataPrivacy.Builder(VASAds.getDataPrivacy()).setCoppaApplies(false).build());
     }
   }
 
