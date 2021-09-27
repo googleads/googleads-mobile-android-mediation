@@ -9,6 +9,8 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
+import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
+import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -29,7 +31,6 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.VungleExtrasBuilder;
-import com.vungle.mediation.VungleInterstitialAdapter;
 import com.vungle.mediation.VungleManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
@@ -480,15 +481,18 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbInterstitialAd()...");
-    VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
-    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    VungleRtbInterstitialAd rtbInterstitialAd = new VungleRtbInterstitialAd(
+        mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    rtbInterstitialAd.render();
   }
 
   @Override
-  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbBannerAd()...");
-    VungleInterstitialAdapter adapter = new VungleInterstitialAdapter();
-    adapter.loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    VungleRtbBannerAd rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    rtbBannerAd.render();
   }
 }
