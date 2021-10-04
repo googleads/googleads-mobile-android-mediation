@@ -1,6 +1,6 @@
 ## Facebook Android Mediation Adapter Changelog
 
-#### 6.7.0.0 (In progress)
+#### 6.7.0.0
 - Verified compatibility with Facebook SDK v6.7.0.
 
 Built and tested with:
