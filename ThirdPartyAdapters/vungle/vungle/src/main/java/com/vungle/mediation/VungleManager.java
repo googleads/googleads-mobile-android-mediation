@@ -21,7 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A helper class to load and show Vungle ads and keep track of multiple {@link
- * VungleInterstitialAdapter} instances.
+ * VungleInterstitialAdapter} instances, each of which in turn may contain {@link VungleBannerAdapter}
+ * instance.
  */
 public class VungleManager {
 

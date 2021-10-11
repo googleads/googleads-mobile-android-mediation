@@ -471,9 +471,9 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    loadRewardedAd(adConfiguration, callback);
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+    loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
