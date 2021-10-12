@@ -27,9 +27,7 @@ import java.util.List;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksBannerAdapter {
-
-  @NonNull private final MediationBannerAd root;
+class ZucksBannerAdapter implements MediationBannerAd {
 
   @NonNull private final Context context;
 
@@ -55,7 +53,7 @@ class ZucksBannerAdapter {
               if (error != null) {
                 loadCallback.onFailure(error);
               } else {
-                adCallback = loadCallback.onSuccess(root);
+                adCallback = loadCallback.onSuccess(ZucksBannerAdapter.this);
                 adCallback.reportAdImpression();
               }
             }
@@ -79,12 +77,10 @@ class ZucksBannerAdapter {
           };
 
   ZucksBannerAdapter(
-          @NonNull MediationBannerAd root,
           @NonNull MediationBannerAdConfiguration configuration,
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
     this(
-            root,
             configuration.getContext(),
             configuration.getAdSize(),
             configuration.getServerParameters(),
@@ -94,13 +90,11 @@ class ZucksBannerAdapter {
 
   @VisibleForTesting
   ZucksBannerAdapter(
-          @NonNull MediationBannerAd root,
           @NonNull Context context,
           @Nullable AdSize adSize,
           @NonNull Bundle serverParams,
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback
   ) {
-    this.root = root;
     this.context = context;
     this.adSize = adSize;
     this.serverParams = serverParams;
@@ -134,6 +128,7 @@ class ZucksBannerAdapter {
   }
 
   @NonNull
+  @Override
   public View getView() {
     return zucksBanner;
   }

@@ -38,7 +38,7 @@ public class ZucksAdapter extends ZucksMediationAdapter
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
-    bannerAdapter = new ZucksBannerAdapter(this, mediationBannerAdConfiguration, mediationAdLoadCallback);
+    bannerAdapter = new ZucksBannerAdapter(mediationBannerAdConfiguration, mediationAdLoadCallback);
     bannerAdapter.loadBannerAd();
   }
 
@@ -53,13 +53,13 @@ public class ZucksAdapter extends ZucksMediationAdapter
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
   ) {
-    interstitialAdapter = new ZucksInterstitialAdapter(this, mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    interstitialAdapter = new ZucksInterstitialAdapter(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     interstitialAdapter.loadInterstitialAd();
   }
 
   @Override
-  public void showAd(Context context) {
-    interstitialAdapter.showAd();
+  public void showAd(@NonNull Context context) {
+    interstitialAdapter.showAd(context);
   }
 
   /**

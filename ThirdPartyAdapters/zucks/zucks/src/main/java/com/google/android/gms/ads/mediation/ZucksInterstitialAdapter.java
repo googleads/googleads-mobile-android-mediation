@@ -24,9 +24,7 @@ import net.zucks.view.IZucksInterstitial;
  *
  * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
  */
-class ZucksInterstitialAdapter {
-
-  @NonNull private final ZucksAdapter root;
+class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
   @NonNull private final Context context;
   @NonNull private final Bundle serverParameters;
@@ -41,7 +39,7 @@ class ZucksInterstitialAdapter {
 
             @Override
             public void onReceiveAd() {
-              adCallback = loadCallback.onSuccess(root);
+              adCallback = loadCallback.onSuccess(ZucksInterstitialAdapter.this);
             }
 
             @Override
@@ -82,12 +80,10 @@ class ZucksInterstitialAdapter {
   private IZucksInterstitial zucksInterstitial = null;
 
   public ZucksInterstitialAdapter(
-          @NonNull ZucksAdapter root,
           @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
           @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
   ) {
     this(
-            root,
             mediationInterstitialAdConfiguration.getContext(),
             mediationInterstitialAdConfiguration.getServerParameters(),
             mediationInterstitialAdConfiguration.getMediationExtras(),
@@ -97,13 +93,11 @@ class ZucksInterstitialAdapter {
 
   @VisibleForTesting
   ZucksInterstitialAdapter(
-          @NonNull ZucksAdapter root,
           @NonNull Context context,
           @NonNull Bundle serverParameters,
           @NonNull Bundle mediationExtras,
           @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback
   ) {
-    this.root = root;
     this.context = context;
     this.serverParameters = serverParameters;
     this.mediationExtras = mediationExtras;
@@ -164,7 +158,8 @@ class ZucksInterstitialAdapter {
             ZucksMediationAdapter.MediationExtrasBundleBuilder.KEY_FULLSCREEN_FOR_INTERSTITIAL);
   }
 
-  public void showAd() {
+  @Override
+  public void showAd(@NonNull Context context) {
     zucksInterstitial.show();
   }
 
