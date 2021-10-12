@@ -1,5 +1,8 @@
 ## nend Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed bug where some AdErrors returned were using the incorrect domain.
+
 #### Version 7.1.0.0
 - Verified compatibility with nend SDK 7.1.0.
 - Updated error codes to capture the nend `UNSUPPORTED_DEVICE` error.
