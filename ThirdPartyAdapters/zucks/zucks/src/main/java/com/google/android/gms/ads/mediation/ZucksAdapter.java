@@ -12,19 +12,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
 /**
- * [LEGACY] Mediation Adapter for Zucks Ad Network.
- * <p>
- * Supported formats:
- *   - Banner
- *   - Interstitial
- * <p>
- * Unsupported formats:
- *   - Rewarded Ad
- * <p>
- * Currently, Rewarded Ad is not supported in this version.
- * It's will be implemented in the new mediation adapter (for the latest FQCN naming convention reason).
- *
- * @see ZucksMediationAdapter ZucksMediationAdapter
+ * The {@link ZucksAdapter} class is used to load Zucks banner and interstitial ads using Google Mobile Ads SDK mediation.
  */
 public class ZucksAdapter extends ZucksMediationAdapter
     implements MediationBannerAd,
