@@ -13,13 +13,6 @@ import org.junit.Test
 
 class ZucksInterstitialAdapterTest {
 
-    private lateinit var zucksAdapter: ZucksAdapter
-
-    @Before
-    fun setUp() {
-        zucksAdapter = mockk(relaxed = true)
-    }
-
     /**
      * Returns error if passed Context is not Activity.
      */
@@ -31,7 +24,6 @@ class ZucksInterstitialAdapterTest {
         val callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mockk(relaxed = true)
 
         ZucksInterstitialAdapter(
-            zucksAdapter,
             context,
             mockk(),
             mockk(),
