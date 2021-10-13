@@ -18,12 +18,6 @@ import net.zucks.view.AdFullscreenInterstitial;
 import net.zucks.view.AdInterstitial;
 import net.zucks.view.IZucksInterstitial;
 
-/**
- * Interstitial Ad Adapter implementation for calls from ZucksAdapter. Can **NOT** use this as a
- * standalone adapter implementation.
- *
- * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
- */
 class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
   @NonNull private final Context context;

@@ -21,12 +21,6 @@ import net.zucks.view.AdBanner;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Banner Ad Adapter implementation for calls from ZucksAdapter. Can **NOT** use this as a
- * standalone adapter implementation.
- *
- * @see com.google.android.gms.ads.mediation.ZucksAdapter ZucksAdapter
- */
 class ZucksBannerAdapter implements MediationBannerAd {
 
   @NonNull private final Context context;
