@@ -1,6 +1,6 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Version 7.1.11.1.0 (In progress)
+#### Version 7.1.11.1.0
 - Verified compatibility with ironSource SDK version 7.1.11.1.
 
 Built and tested with:
