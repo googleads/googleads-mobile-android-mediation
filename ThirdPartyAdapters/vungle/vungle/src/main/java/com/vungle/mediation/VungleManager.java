@@ -20,9 +20,7 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A helper class to load and show Vungle ads and keep track of multiple {@link
- * VungleInterstitialAdapter} instances, each of which in turn may contain {@link VungleBannerAdapter}
- * instance.
+ * A helper class to load and show Vungle ads and keep track of {@link VungleBannerAd} instances
  */
 public class VungleManager {
 

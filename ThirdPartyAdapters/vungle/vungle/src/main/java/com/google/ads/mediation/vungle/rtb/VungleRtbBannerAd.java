@@ -54,7 +54,6 @@ public class VungleRtbBannerAd implements MediationBannerAd {
       return;
     }
 
-    AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
 
     String placementForPlay = VungleManager
         .getInstance().findPlacement(mediationExtras, serverParameters);
@@ -82,6 +81,7 @@ public class VungleRtbBannerAd implements MediationBannerAd {
       return;
     }
 
+    AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
     // Adapter does not support multiple Banner instances playing for same placement except for
     // refresh.
     String uniqueRequestId = config.getRequestUniqueId();
