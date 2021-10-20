@@ -2,6 +2,7 @@ package com.google.ads.mediation.fyber;
 
 import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -47,7 +48,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Fyber's official AdMob 3rd party adapter class. Implements Banners and Interstitials by
@@ -104,9 +107,9 @@ public class FyberMediationAdapter extends Adapter
   private MediationInterstitialListener mMediationInterstitialListener;
 
   /**
-   * The context which was passed by AdMob to {@link #requestInterstitialAd}.
+   * The Activity which was passed by AdMob to {@link #requestInterstitialAd}.
    */
-  private WeakReference<Context> mInterstitialContext;
+  private WeakReference<Activity> mInterstitialActivityRef;
 
   /**
    * Fyber's spot object for interstitial.
@@ -163,6 +166,11 @@ public class FyberMediationAdapter extends Adapter
   public static final int ERROR_AD_NOT_READY = 106;
 
   /**
+   * Context is not an activity instance.
+   */
+  public static final int ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE = 107;
+
+  /**
    * Only rewarded ads are implemented using the new Adapter interface.
    */
   public void loadRewardedAd(final MediationRewardedAdConfiguration configuration,
@@ -203,7 +211,7 @@ public class FyberMediationAdapter extends Adapter
       return;
     }
 
-    List<String> configuredAppIds = new ArrayList<>();
+    Set<String> configuredAppIds = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle serverParameters = configuration.getServerParameters();
       if (serverParameters == null) {
@@ -227,18 +235,13 @@ public class FyberMediationAdapter extends Adapter
       return;
     }
 
-    // We can only use one app id.
-    String appIdForInitialization = configuredAppIds.get(0);
+    // We can only use one app id to initialize the Fyber Marketplace SDK.
+    String appIdForInitialization = configuredAppIds.iterator().next();
     if (configuredAppIds.size() > 1) {
-      if (completionCallback != null) {
-        String message = String.format("Multiple '%s' entries found: %s. "
-                + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID,
-            configuredAppIds.toString(), appIdForInitialization);
-        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, message, ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        completionCallback.onInitializationFailed(error.getMessage());
-      }
-      return;
+      String logMessage = String.format("Multiple '%s' entries found: %s. "
+              + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID,
+          configuredAppIds.toString(), appIdForInitialization);
+      Log.w(TAG, logMessage);
     }
 
     InneractiveAdManager.initialize(context, appIdForInitialization,
@@ -371,9 +374,9 @@ public class FyberMediationAdapter extends Adapter
       mInterstitialSpot = null;
     }
 
-    if (mInterstitialContext != null) {
-      mInterstitialContext.clear();
-      mInterstitialContext = null;
+    if (mInterstitialActivityRef != null) {
+      mInterstitialActivityRef.clear();
+      mInterstitialActivityRef = null;
     }
   }
 
@@ -525,8 +528,21 @@ public class FyberMediationAdapter extends Adapter
           return;
         }
 
+        // We need an activity context to show interstitial ads.
+        if (!(context instanceof Activity)) {
+          AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
+              "Cannot request an interstitial ad without an activity context.",
+              ERROR_DOMAIN);
+          Log.w(TAG, error.getMessage());
+          if (mMediationInterstitialListener != null) {
+            mMediationInterstitialListener
+                .onAdFailedToLoad(FyberMediationAdapter.this, error);
+          }
+          return;
+        }
+
         // Cache the context for showInterstitial.
-        mInterstitialContext = new WeakReference<>(context);
+        mInterstitialActivityRef = new WeakReference<>((Activity) context);
 
         mInterstitialSpot = InneractiveAdSpotManager.get().createSpot();
         mInterstitialSpot.setMediationName(MEDIATOR_NAME);
@@ -548,9 +564,9 @@ public class FyberMediationAdapter extends Adapter
 
   @Override
   public void showInterstitial() {
-    Context context = (mInterstitialContext != null ? mInterstitialContext.get() : null);
-    if (context == null) {
-      Log.w(TAG, "showInterstitial called, but context reference was lost.");
+    Activity activity = mInterstitialActivityRef == null ? null : mInterstitialActivityRef.get();
+    if (activity == null) {
+      Log.w(TAG, "showInterstitial called, but activity reference was lost.");
       mMediationInterstitialListener.onAdOpened(this);
       mMediationInterstitialListener.onAdClosed(this);
       return;
@@ -572,7 +588,7 @@ public class FyberMediationAdapter extends Adapter
       mMediationInterstitialListener.onAdClosed(this);
       return;
     }
-    controller.show(context);
+    controller.show(activity);
   }
 
   @NonNull

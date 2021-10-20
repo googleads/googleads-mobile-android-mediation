@@ -8,20 +8,18 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "MyTarget"
     // String property to store version name.
-    stringVersion = "5.13.1.0"
+    stringVersion = "5.14.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 30
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 5130100
+        versionCode 5140200
         versionName stringVersion
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -34,10 +32,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:20.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.4.0'
     implementation 'androidx.annotation:annotation:1.2.0'
-
-    implementation 'com.my.target:mytarget-sdk:5.13.1'
+    implementation 'com.my.target:mytarget-sdk:5.14.2'
 }
 
 /**
@@ -124,7 +121,6 @@ task packageDistribution(type: Zip) {
         rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
         rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
     }
-
     archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
     destinationDirectory = file("${rootProject.projectDir}/build/distribution")
 }

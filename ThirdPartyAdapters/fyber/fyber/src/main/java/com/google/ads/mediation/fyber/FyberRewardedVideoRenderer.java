@@ -1,11 +1,9 @@
 package com.google.ads.mediation.fyber;
 
 import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.TAG;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.*;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -150,26 +148,13 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     // If the ad is a video ad, wait for the video completion event.
     final InneractiveFullscreenVideoContentController videoContentController =
         new InneractiveFullscreenVideoContentController();
-
-    videoContentController.setEventsListener(new VideoContentListenerAdapter() {
-      /**
-       * Called by inneractive when a rewarded video ad was played to the end.
-       * <br>Note: This event does not indicate that the rewarded video was closed.
-       */
-      @Override
-      public void onCompleted() {
-        // The video is completed. an end card is shown.
-        mRewardedAdCallback.onVideoComplete();
-      }
-    });
-
     controller.setEventsListener(adListener);
-
     // Official rewarded interface for both Video and display ads (Since Marketplace 7.6.0)
     controller.setRewardedListener(new InneractiveFullScreenAdRewardedListener() {
       @Override
       public void onAdRewarded(InneractiveAdSpot inneractiveAdSpot) {
         mRewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+        mRewardedAdCallback.onVideoComplete();
       }
     });
 
@@ -178,8 +163,20 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
 
   @Override
   public void showAd(@NonNull Context context) {
+    // We need an activity context to show rewarded ads.
+    if (!(context instanceof Activity)) {
+      AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
+          "Cannot show a rewarded ad without an activity context.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      if (mRewardedAdCallback != null) {
+        mRewardedAdCallback.onAdFailedToShow(error);
+      }
+      return;
+    }
+
     if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
-      mUnitController.show(context);
+      mUnitController.show((Activity) context);
     } else if (mRewardedAdCallback != null) {
       AdError error = new AdError(ERROR_AD_NOT_READY, "Fyber's rewarded spot is not ready.",
           ERROR_DOMAIN);

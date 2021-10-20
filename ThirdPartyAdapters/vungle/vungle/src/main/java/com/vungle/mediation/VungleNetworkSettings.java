@@ -1,5 +1,6 @@
 package com.vungle.mediation;
 
+import androidx.annotation.NonNull;
 import com.vungle.warren.VungleSettings;
 
 /**
@@ -46,7 +47,11 @@ public class VungleNetworkSettings {
     }
   }
 
+  @NonNull
   public static VungleSettings getVungleSettings() {
+    if (vungleSettings == null) {
+      vungleSettings = new VungleSettings.Builder().disableBannerRefresh().build();
+    }
     return vungleSettings;
   }
 
@@ -57,6 +62,6 @@ public class VungleNetworkSettings {
 
   public interface VungleSettingsChangedListener {
 
-    void onVungleSettingsChanged(VungleSettings vungleSettings);
+    void onVungleSettingsChanged(@NonNull VungleSettings vungleSettings);
   }
 }
