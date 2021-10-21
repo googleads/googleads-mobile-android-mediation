@@ -1,12 +1,12 @@
 package com.google.ads.mediation.verizon;
 
-import androidx.annotation.NonNull;
+import com.verizon.ads.DataPrivacy;
 import com.verizon.ads.VASAds;
-import java.util.Map;
+
 
 public class VerizonPrivacy {
 
-  private Map<String, Object> privacyData = null;
+  private DataPrivacy dataPrivacy = null;
 
   private static final VerizonPrivacy instance = new VerizonPrivacy();
 
@@ -17,14 +17,14 @@ public class VerizonPrivacy {
   private VerizonPrivacy() {
   }
 
-  public void setPrivacyData(@NonNull Map<String, Object> privacyData) {
-    this.privacyData = privacyData;
+  public void setDataPrivacy(final DataPrivacy dataPrivacy) {
+    this.dataPrivacy = dataPrivacy;
     if (VASAds.isInitialized()) {
-      VASAds.setPrivacyData(privacyData);
+      VASAds.setDataPrivacy(this.dataPrivacy);
     }
   }
 
-  public Map<String, Object> getPrivacyData() {
-    return privacyData;
+  public DataPrivacy getDataPrivacy() {
+    return dataPrivacy;
   }
 }

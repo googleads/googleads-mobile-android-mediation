@@ -248,7 +248,6 @@ public class VerizonMediationAdapter extends Adapter
 
     boolean success = true;
     if (!VASAds.isInitialized()) {
-
       if (!(context instanceof Activity)) {
         Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity" +
             " context.");
@@ -274,7 +273,7 @@ public class VerizonMediationAdapter extends Adapter
 
     VASAds.getActivityStateManager().setState((Activity) context,
         ActivityStateManager.ActivityState.RESUMED);
-    VASAds.setPrivacyData(VerizonPrivacy.getInstance().getPrivacyData());
+    VASAds.setDataPrivacy(VerizonPrivacy.getInstance().getDataPrivacy());
 
     return success;
   }

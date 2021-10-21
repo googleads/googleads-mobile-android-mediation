@@ -66,8 +66,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   void mapUnifiedNativeAd(final Context context) {
 
     if (!InMobiAdapterUtils.isValidNativeAd(mInMobiNative)) {
-      AdError error = new AdError(ERROR_MISSING_NATIVE_ASSETS, ERROR_DOMAIN,
-          "InMobi native ad returned with a missing asset.");
+      AdError error = new AdError(ERROR_MISSING_NATIVE_ASSETS,
+          "InMobi native ad returned with a missing asset.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
       return;
@@ -86,8 +86,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       iconURL = new URL(mInMobiNative.getAdIconUrl());
       iconUri = Uri.parse(iconURL.toURI().toString());
     } catch (MalformedURLException | URISyntaxException exception) {
-      AdError error = new AdError(ERROR_MALFORMED_IMAGE_URL, ERROR_DOMAIN,
-          exception.getLocalizedMessage());
+      AdError error = new AdError(ERROR_MALFORMED_IMAGE_URL, exception.getLocalizedMessage(),
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
       return;
@@ -180,8 +180,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                 mMediationNativeListener.onAdLoaded(
                     mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
               } else {
-                AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED, ERROR_DOMAIN,
-                    "Failed to download image assets.");
+                AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
+                    "Failed to download image assets.", ERROR_DOMAIN);
                 Log.w(TAG, error.getMessage());
                 mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
               }
@@ -189,8 +189,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
             @Override
             public void onDownloadFailure() {
-              AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED, ERROR_DOMAIN,
-                  "Failed to download image assets.");
+              AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
+                  "Failed to download image assets.", ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
               mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
             }

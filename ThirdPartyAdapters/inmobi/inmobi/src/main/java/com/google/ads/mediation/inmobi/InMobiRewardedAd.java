@@ -51,8 +51,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
     String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     if (TextUtils.isEmpty(accountID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Account ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mMediationAdLoadCallback.onFailure(error);
       return;
@@ -79,8 +79,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
   @Override
   public void showAd(Context context) {
     if (!mInMobiRewardedAd.isReady()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY, ERROR_DOMAIN,
-          "InMobi Rewarded ad is not yet ready to be shown.");
+      AdError error = new AdError(ERROR_AD_NOT_READY,
+          "InMobi Rewarded ad is not yet ready to be shown.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
 
       if (mRewardedAdCallback != null) {
@@ -99,8 +99,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
           mMediationAdLoadCallback) {
 
     if (placementId <= 0L) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Placement ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mMediationAdLoadCallback.onFailure(error);
       return;
@@ -146,8 +146,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
             @Override
             public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-              AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, ERROR_DOMAIN,
-                  "InMobi ad failed to show.");
+              AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.",
+                  ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
               if (mRewardedAdCallback != null) {
                 mRewardedAdCallback.onAdFailedToShow(error);
@@ -202,7 +202,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                 @NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
               AdError error = new AdError(
                   InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
-                  INMOBI_SDK_ERROR_DOMAIN, inMobiAdRequestStatus.getMessage());
+                  inMobiAdRequestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
               if (mMediationAdLoadCallback != null) {
                 mMediationAdLoadCallback.onFailure(error);
@@ -232,8 +232,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
             }
           });
     } catch (SdkNotInitializedException exception) {
-      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, ERROR_DOMAIN,
-          exception.getLocalizedMessage());
+      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mMediationAdLoadCallback.onFailure(error);
       return;

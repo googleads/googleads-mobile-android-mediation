@@ -1,19 +1,43 @@
 ## AdColony Android Mediation Adapter Changelog
 
-#### Version 4.5.0.0
-- Verified compatibility with AdColony SDK version 4.5.0
+#### Version 4.6.4.0 (In Progress)
+- Verified compatibility with AdColony SDK version 4.6.4.
 
 Built and tested with:
-- Google Mobile Ads SDK version 20.0.0.
-- AdColony SDK version 4.5.0.
+- Google Mobile Ads SDK version 20.4.0.
+- AdColony SDK version 4.6.4.
 
-#### Version 4.4.1.1
+#### Version 4.6.3.0
+- Verified compatibility with AdColony SDK version 4.6.3.
+- Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- AdColony SDK version 4.6.3.
+
+#### Version 4.6.2.0
+- Verified compatibility with AdColony SDK version 4.6.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- AdColony SDK version 4.6.2.
+
+#### Version 4.6.0.0
+- Verified compatibility with AdColony SDK version 4.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- AdColony SDK version 4.6.0.
+
+#### Version 4.5.0.0
 - Added support for banners advanced bidding.
+- Verified compatibility with AdColony SDK version 4.5.0.
 - Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.0.0.
-- AdColony SDK version 4.4.1.
+- AdColony SDK version 4.5.0.
 
 #### Version 4.4.1.0
 - Verified compatibility with AdColony SDK version 4.4.1.
@@ -24,7 +48,7 @@ Built and tested with:
 
 #### Version 4.4.0.0
 - Verified compatibility with AdColony SDK version 4.4.0.
-- Added support of AdColony's `collectSignals()` method for open bidding.
+- Added support of AdColony's `collectSignals()` method for bidding.
 - Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
 
 Built and tested with:
@@ -108,7 +132,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
 
 #### Version 3.3.10.1
-- Added open bidding capability to the adapter for interstitial
+- Added bidding capability to the adapter for interstitial
   and rewarded ads.
 
 #### Version 3.3.10.0
