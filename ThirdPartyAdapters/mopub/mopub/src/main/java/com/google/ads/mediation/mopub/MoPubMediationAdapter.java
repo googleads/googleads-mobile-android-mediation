@@ -216,6 +216,22 @@ public class MoPubMediationAdapter extends Adapter
         return 25;
       case VIDEO_PLAYBACK_ERROR:
         return 26;
+      case TOO_MANY_REQUESTS:
+        return 27;
+      case HTML_LOAD_ERROR:
+        return 28;
+      case INLINE_LOAD_ERROR:
+        return 29;
+      case FULLSCREEN_LOAD_ERROR:
+        return 30;
+      case INLINE_SHOW_ERROR:
+        return 31;
+      case FULLSCREEN_SHOW_ERROR:
+        return 32;
+      case AD_NOT_AVAILABLE:
+        return 33;
+      case AD_SHOW_ERROR:
+        return 34;
     }
     // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
     return 99;
@@ -255,6 +271,8 @@ public class MoPubMediationAdapter extends Adapter
         return 1014;
       case NATIVE_ADAPTER_NOT_FOUND:
         return 1015;
+      case TOO_MANY_REQUESTS:
+        return 1016;
     }
     // Error '1099' to indicate that the error is new and has not been supported by the adapter yet.
     return 1099;

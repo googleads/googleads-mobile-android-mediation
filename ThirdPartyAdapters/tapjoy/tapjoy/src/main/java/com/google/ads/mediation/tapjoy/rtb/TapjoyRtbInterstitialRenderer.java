@@ -76,8 +76,10 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
     if (TextUtils.isEmpty(interstitialPlacementName)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid Tapjoy placement name.", ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      callback.onFailure(error);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        callback.onFailure(error);
+      }
       return;
     }
 
@@ -86,8 +88,10 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
       String errorMessage = String
           .format("An ad has already been requested for placement: %s.", interstitialPlacementName);
       AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, errorMessage, ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      callback.onFailure(error);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        callback.onFailure(error);
+      }
       return;
     }
 
@@ -120,8 +124,10 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
 
                   AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE,
                       "Tapjoy request successful but no content was returned.", ERROR_DOMAIN);
-                  Log.e(TAG, error.getMessage());
-                  callback.onFailure(error);
+                  if (error != null) {
+                    Log.w(TAG, error.getMessage());
+                    callback.onFailure(error);
+                  }
                 }
               }
             });
@@ -134,9 +140,13 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               public void run() {
                 placementsInUse.remove(interstitialPlacementName);
 
-                AdError error = new AdError(tjError.code, tjError.message, TAPJOY_SDK_ERROR_DOMAIN);
-                Log.e(TAG, error.getMessage());
-                callback.onFailure(error);
+                String errorMessage =
+                    tjError.message == null ? "Tapjoy request failed." : tjError.message;
+                AdError error = new AdError(tjError.code, errorMessage, TAPJOY_SDK_ERROR_DOMAIN);
+                if (error != null) {
+                  Log.e(TAG, error.getMessage());
+                  callback.onFailure(error);
+                }
               }
             });
           }

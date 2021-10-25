@@ -1,5 +1,55 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 6.8.0.0 (In progress)
+- Verified compatibility with Facebook SDK v6.8.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- Facebook SDK version 6.8.0.
+
+#### 6.7.0.0
+- Verified compatibility with Facebook SDK v6.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Facebook SDK version 6.7.0.
+
+#### 6.6.0.0
+- Verified compatibility with Facebook SDK v6.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Facebook SDK version 6.6.0.
+
+#### 6.5.1.1
+- Fixed a bug introduced in 6.5.1.0 where test ads are returned instead of live ads.
+- Updated the adapter to use the new `AdError` API.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- Facebook SDK version 6.5.1.
+
+#### 6.5.1.0 (Deprecated)
+- An issue with version 6.5.1.0 has been detected and confirmed. It is
+  recommended to upgrade to version 6.5.1.1.
+- Verified compatibility with Facebook SDK v6.5.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- Facebook SDK version 6.5.1.
+
+#### 6.5.0.0
+- Verified compatibility with Facebook SDK v6.5.0.
+- Fixed an issue where native ads did not include Facebook's cover image.
+- Updated the minimum required Google Mobile Ads SDK version to 20.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.1.0.
+- Facebook SDK version 6.5.0.
+
 #### 6.4.0.0
 - Verified compatibility with Facebook SDK v6.4.0.
 - Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
@@ -93,7 +143,7 @@ Built and tested with:
 #### 5.9.0.2
 - Added support for rewarded interstitial ads.
 - Updated the adapter to support inline adaptive banner requests.
-- Fixed an issue where open-bidding banner ads always render full-width.
+- Fixed an issue where bidding banner ads always render full-width.
 - Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
 
 Built and tested with:
@@ -148,7 +198,7 @@ Built and tested with:
 
 #### 5.7.1.0
 - Verified compatibility with Facebook SDK v5.7.1.
-- Added support for Facebook Native Banner ads when using open bidding.
+- Added support for Facebook Native Banner ads when using bidding.
 - Native ads now use 'Drawable' for the icon asset.
 
 Built and tested with:
@@ -197,7 +247,7 @@ Built and tested with:
 - Verified compatibility with Facebook SDK v5.4.0.
 
 #### 5.3.1.2
-- Fixed a bug where Facebook open bidding failed to initialize due
+- Fixed a bug where Facebook bidding failed to initialize due
   to "No placement IDs found".
 
 #### 5.3.1.1
@@ -205,7 +255,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
 
 #### 5.3.1.0
-- Added open bidding capability to the adapter for banner, interstitial,
+- Added bidding capability to the adapter for banner, interstitial,
   rewarded and native ads.
 - Verified compatibility with Facebook SDK v5.3.1.
 

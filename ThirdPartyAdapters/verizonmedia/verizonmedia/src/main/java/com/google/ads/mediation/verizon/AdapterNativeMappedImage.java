@@ -2,6 +2,7 @@ package com.google.ads.mediation.verizon;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.formats.NativeAd;
 
 class AdapterNativeMappedImage extends NativeAd.Image {
@@ -29,12 +30,14 @@ class AdapterNativeMappedImage extends NativeAd.Image {
     this.scale = scale;
   }
 
+  @NonNull
   @Override
   public Drawable getDrawable() {
 
     return drawable;
   }
 
+  @NonNull
   @Override
   public Uri getUri() {
 

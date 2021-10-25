@@ -36,7 +36,7 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
   /**
    * The mediation banner adapter weak reference.
    */
-  private WeakReference<MediationBannerAdapter> bannerAdapterWeakRef;
+  private final WeakReference<MediationBannerAdapter> bannerAdapterWeakRef;
 
   /**
    * The mediation banner listener used to report banner ad event callbacks.

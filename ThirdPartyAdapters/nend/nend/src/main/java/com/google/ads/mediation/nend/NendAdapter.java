@@ -179,7 +179,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
 
     InterstitialType type = InterstitialType.TYPE_NORMAL;
     String userID = "";
-    if (mediationExtras != null)  {
+    if (mediationExtras != null) {
       try {
         type = (InterstitialType) mediationExtras.getSerializable(KEY_INTERSTITIAL_TYPE);
         userID = mediationExtras.getString(KEY_USER_ID);
@@ -206,7 +206,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
               String errorMessage = String
                   .format("Failed to load interstitial ad from nend: %s", status.toString());
               AdError error = new AdError(getMediationErrorCode(status), errorMessage,
-                  NEND_SDK_ERROR_DOMAIN);
+                  ERROR_DOMAIN);
               Log.e(TAG, error.getMessage());
               if (mListenerInterstitial != null) {
                 mListenerInterstitial.onAdFailedToLoad(NendAdapter.this, error);
@@ -374,8 +374,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
     if (result != NendAdInterstitialShowResult.AD_SHOW_SUCCESS) {
       String errorMessage = String
           .format("Failed to show interstitial ad from nend: %s", result.toString());
-      AdError error = new AdError(getMediationErrorCode(result), errorMessage,
-          NEND_SDK_ERROR_DOMAIN);
+      AdError error = new AdError(getMediationErrorCode(result), errorMessage, ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mListenerInterstitial.onAdOpened(NendAdapter.this);
       mListenerInterstitial.onAdClosed(NendAdapter.this);
@@ -530,8 +529,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
     if (mListener != null) {
       String errorMessage = String
           .format("Nend SDK returned an ad load failure callback: ", nendError.toString());
-      AdError error = new AdError(getMediationErrorCode(nendError), errorMessage,
-          NEND_SDK_ERROR_DOMAIN);
+      AdError error = new AdError(getMediationErrorCode(nendError), errorMessage, ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       if (mListener != null) {
         mListener.onAdFailedToLoad(NendAdapter.this, error);

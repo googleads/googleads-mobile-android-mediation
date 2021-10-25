@@ -23,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleAdSize;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
@@ -218,6 +219,7 @@ public class SampleAdapter extends Adapter
   }
 
   @Override
+  @NonNull
   public View getBannerView() {
     // Return the banner view that you created from requestBannerAd().
     return sampleAdView;
@@ -384,7 +386,7 @@ public class SampleAdapter extends Adapter
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

@@ -1,25 +1,27 @@
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_VUNGLE_BANNER_NULL;
+
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleBannerAd;
 import com.google.ads.mediation.vungle.VungleInitializer;
+import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.ads.mediation.vungle.VunglePlayAdCallback;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.vungle.warren.AdConfig;
+import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.Banners;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
-import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleBanner;
-import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.error.VungleException;
 
 public class VungleBannerAdapter implements PlayAdCallback {
@@ -145,13 +147,12 @@ public class VungleBannerAdapter implements PlayAdCallback {
               }
 
               @Override
-              public void onInitializeError(String errorMessage) {
-                Log.d(TAG, "SDK init failed: " + VungleBannerAdapter.this);
+              public void onInitializeError(AdError error) {
                 mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
                 if (mPendingRequestBanner && mediationAdapter != null
                     && mediationListener != null) {
-                  mediationListener
-                      .onAdFailedToLoad(mediationAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                  Log.w(TAG, error.getMessage());
+                  mediationListener.onAdFailedToLoad(mediationAdapter, error);
                 }
               }
             });
@@ -170,11 +171,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   }
 
   void preCache() {
-    if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-      Banners.loadBanner(placementId, mAdConfig.getAdSize(), null);
-    } else {
-      Vungle.loadAd(placementId, null);
-    }
+    Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), null);
   }
 
   void updateVisibility(boolean visible) {
@@ -185,9 +182,6 @@ public class VungleBannerAdapter implements PlayAdCallback {
     this.mVisibility = visible;
     if (vungleBannerAd.getVungleBanner() != null) {
       vungleBannerAd.getVungleBanner().setAdVisibility(visible);
-    }
-    if (vungleBannerAd.getVungleMRECBanner() != null) {
-      vungleBannerAd.getVungleMRECBanner().setAdVisibility(visible);
     }
   }
 
@@ -200,21 +194,19 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
         @Override
         public void onError(String id, VungleException exception) {
-          Log.d(TAG, "Ad load failed:" + VungleBannerAdapter.this);
           mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
+
           if (mPendingRequestBanner && mediationAdapter != null && mediationListener != null) {
-            mediationListener.onAdFailedToLoad(mediationAdapter, AdRequest.ERROR_CODE_NO_FILL);
+            AdError error = VungleMediationAdapter.getAdError(exception);
+            Log.w("TAG", error.getMessage());
+            mediationListener.onAdFailedToLoad(mediationAdapter, error);
           }
         }
       };
 
   private void loadBanner() {
     Log.d(TAG, "loadBanner: " + this);
-    if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-      Banners.loadBanner(placementId, mAdConfig.getAdSize(), mAdLoadCallback);
-    } else {
-      Vungle.loadAd(placementId, mAdLoadCallback);
-    }
+    Banners.loadBanner(placementId, new BannerAdConfig(mAdConfig), mAdLoadCallback);
   }
 
   private void createBanner() {
@@ -227,14 +219,13 @@ public class VungleBannerAdapter implements PlayAdCallback {
         RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
     adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-
     vungleBannerAd = mVungleManager.getVungleBannerAd(placementId);
     VunglePlayAdCallback playAdCallback = new VunglePlayAdCallback(VungleBannerAdapter.this,
         VungleBannerAdapter.this, vungleBannerAd);
 
     if (AdConfig.AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
       VungleBanner vungleBanner = Banners
-          .getBanner(placementId, mAdConfig.getAdSize(), playAdCallback);
+          .getBanner(placementId, new BannerAdConfig(mAdConfig), playAdCallback);
       if (vungleBanner != null) {
         Log.d(TAG, "display banner:" + vungleBanner.hashCode() + this);
         if (vungleBannerAd != null) {
@@ -248,35 +239,23 @@ public class VungleBannerAdapter implements PlayAdCallback {
           mediationListener.onAdLoaded(mediationAdapter);
         }
       } else {
-        // missing resources
+        AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+            "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+                + "Vungle.getNativeAd() returned null.",
+            ERROR_DOMAIN);
+        Log.d(TAG, error.getMessage());
         if (mediationAdapter != null && mediationListener != null) {
-          mediationListener.onAdFailedToLoad(mediationAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+          mediationListener.onAdFailedToLoad(mediationAdapter, error);
         }
       }
     } else {
-      View adView = null;
-      VungleNativeAd vungleMRECBanner = Vungle.getNativeAd(placementId, mAdConfig, playAdCallback);
-      if (vungleMRECBanner != null) {
-        adView = vungleMRECBanner.renderNativeView();
-      }
-
-      if (adView != null) {
-        Log.d(TAG, "display MREC:" + vungleMRECBanner.hashCode() + this);
-        if (vungleBannerAd != null) {
-          vungleBannerAd.setVungleMRECBanner(vungleMRECBanner);
-        }
-
-        updateVisibility(mVisibility);
-        adView.setLayoutParams(adParams);
-        // don't add to parent here
-        if (mediationAdapter != null && mediationListener != null) {
-          mediationListener.onAdLoaded(mediationAdapter);
-        }
-      } else {
-        // missing resources
-        if (mediationAdapter != null && mediationListener != null) {
-          mediationListener.onAdFailedToLoad(mediationAdapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        }
+      AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+          "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
+              + "Vungle.getNativeAd() returned null.",
+          ERROR_DOMAIN);
+      Log.d(TAG, error.getMessage());
+      if (mediationAdapter != null && mediationListener != null) {
+        mediationListener.onAdFailedToLoad(mediationAdapter, error);
       }
     }
   }
@@ -303,6 +282,11 @@ public class VungleBannerAdapter implements PlayAdCallback {
     if (vungleBannerAd != null) {
       vungleBannerAd.detach();
     }
+  }
+
+  @Override
+  public void creativeId(String creativeId) {
+    // no-op
   }
 
   /**
@@ -347,10 +331,10 @@ public class VungleBannerAdapter implements PlayAdCallback {
 
   @Override
   public void onError(String placementID, VungleException exception) {
-    Log.w(TAG, "Failed to load ad from Vungle: " + exception.getLocalizedMessage() + ";"
-        + VungleBannerAdapter.this);
+    AdError error = VungleMediationAdapter.getAdError(exception);
+    Log.w(TAG, error.getMessage());
     if (mediationAdapter != null && mediationListener != null) {
-      mediationListener.onAdFailedToLoad(mediationAdapter, exception.getExceptionCode());
+      mediationListener.onAdFailedToLoad(mediationAdapter, error);
     }
   }
 

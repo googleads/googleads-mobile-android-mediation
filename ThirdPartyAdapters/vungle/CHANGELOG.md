@@ -1,5 +1,30 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.10.2.0
+ - Verified compatibility with Vungle SDK 6.10.2.
+ - Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.2.
+
+#### Version 6.10.1.0
+- Verified compatibility with Vungle SDK 6.10.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+- MREC Ads are now supported with Vungle's banner API.
+- Updated standardized error codes and messages.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.1.
+
+#### Version 6.9.1.1
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- Vungle SDK version 6.9.1.
+
 #### Version 6.9.1.0
 - Verified compatibility with Vungle SDK 6.9.1.
 - Added support for OMSDK.
