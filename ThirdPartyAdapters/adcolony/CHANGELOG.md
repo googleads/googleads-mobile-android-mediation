@@ -1,6 +1,6 @@
 ## AdColony Android Mediation Adapter Changelog
 
-#### Version 4.6.4.0 (In Progress)
+#### Version 4.6.4.0
 - Verified compatibility with AdColony SDK version 4.6.4.
 
 Built and tested with:
