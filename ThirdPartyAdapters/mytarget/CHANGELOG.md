@@ -1,5 +1,12 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.14.3.0 (In progress)
+- Verified compatibility with myTarget SDK version 5.14.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- MyTarget SDK version 5.14.3.
+
 #### Version 5.14.2.0
 - Verified compatibility with myTarget SDK version 5.14.2.
 
