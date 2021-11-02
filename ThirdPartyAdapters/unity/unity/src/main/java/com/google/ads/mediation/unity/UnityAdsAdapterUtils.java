@@ -92,7 +92,7 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Creates a formatted SDK error message based on the specified .
+   * Creates a formatted SDK error message based on the specified error code.
    *
    * @param errorCode error object from Unity.
    * @param description   the error message.

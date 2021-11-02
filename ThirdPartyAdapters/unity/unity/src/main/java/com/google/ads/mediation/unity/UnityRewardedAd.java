@@ -37,7 +37,6 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 
-
 public class UnityRewardedAd implements MediationRewardedAd {
 
   /**
@@ -205,8 +204,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
       mMediationAdLoadCallback.onFailure(adError);
     }
   }
-
-
+  
   private void sendRewardedAdEvent(AdEvent adEvent) {
     if (mMediationRewardedAdCallback == null) {
       return;

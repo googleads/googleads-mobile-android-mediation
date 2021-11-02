@@ -85,10 +85,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
     @Override
     public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo bannerErrorInfo) {
-      String sdkError = createSDKError(bannerErrorInfo);
-      Log.w(TAG, "Unity Ads banner failed to load: " + sdkError);
-
-      sendBannerFailedToLoad(getMediationErrorCode(bannerErrorInfo), bannerErrorInfo.errorMessage);
+      sendBannerFailedToLoad(getMediationErrorCode(bannerErrorInfo), createSDKError(bannerErrorInfo));
     }
 
     @Override
@@ -187,6 +184,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     return mBannerView;
   }
 
+
   private void sendBannerAdEvent(AdEvent adEvent) {
     if (mMediationBannerListener == null) {
       return;
@@ -214,8 +212,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   }
 
   private void sendBannerFailedToLoad(int errorCode, String errorDescription) {
+    Log.e(TAG, "Failed to load banner ad: " + errorDescription);
+
     if (mMediationBannerListener != null) {
-      Log.e(TAG, "Failed to load banner ad: " + errorDescription);
       AdError adError = createAdError(errorCode, errorDescription);
       mMediationBannerListener
               .onAdFailedToLoad(UnityBannerAd.this, adError);

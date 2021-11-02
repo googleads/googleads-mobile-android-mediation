@@ -116,7 +116,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
     if (!areValidIds(gameId, mPlacementId)) {
-      sendAdFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.");
+      sendAdFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid server parameters.");
       return;
     }
 
@@ -158,7 +158,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   }
 
   private void sendAdFailedToLoad(int errorCode, String errorDescription) {
-    Log.e(TAG, "Failed to load Unity interstitial ad: " + errorDescription);
+    Log.e(TAG, "Failed to load interstitial ad: " + errorDescription);
     if (mMediationInterstitialListener != null) {
       AdError adError = createAdError(errorCode, errorDescription);
       mMediationInterstitialListener.onAdFailedToLoad(UnityAdapter.this, adError);
