@@ -18,6 +18,18 @@ import java.util.ArrayList;
  */
 public class UnityAdsAdapterUtils {
 
+  public enum AdEvent {
+    LOADED,
+    OPEN,
+    CLOSE,
+    IMPRESSION,
+    VIDEO_START,
+    CLICK,
+    LEFT_APPLICATION,
+    REWARD,
+    COMPLETE
+  }
+
   private static final String SDK_ERROR_DOMAIN = "com.unity3d.ads";
 
   /**
@@ -77,6 +89,19 @@ public class UnityAdsAdapterUtils {
   static AdError createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError,
       @NonNull String description) {
     return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+  }
+
+  /**
+   * Creates a formatted SDK error message based on the specified .
+   *
+   * @param errorCode error object from Unity.
+   * @param description   the error message.
+   * @return the error.
+   */
+  @NonNull
+  static AdError createAdError(@NonNull int errorCode,
+                                @NonNull String description) {
+    return new AdError(errorCode, description, SDK_ERROR_DOMAIN);
   }
 
   /**

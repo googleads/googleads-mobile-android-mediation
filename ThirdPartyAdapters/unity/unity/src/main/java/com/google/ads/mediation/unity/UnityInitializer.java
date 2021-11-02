@@ -67,6 +67,7 @@ public class UnityInitializer {
     mediationMetaData.set("adapter_version", UnityAds.getVersion());
     mediationMetaData.commit();
 
+    // TODO - Delete use of enablePerPlacementLoad after integrating 4.0
     UnityAds.initialize(context, gameId, false, true, initializationListener);
   }
 }
