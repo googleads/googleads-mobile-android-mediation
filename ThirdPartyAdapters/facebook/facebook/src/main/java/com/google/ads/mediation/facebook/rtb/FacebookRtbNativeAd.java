@@ -5,12 +5,12 @@ import static com.google.ads.mediation.facebook.FacebookAdapter.KEY_SOCIAL_CONTE
 import static com.google.ads.mediation.facebook.FacebookAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookAdapter.setMixedAudience;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_NULL_CONTEXT;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_WRONG_NATIVE_TYPE;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.ExtraHints;
@@ -32,6 +31,7 @@ import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -60,10 +60,11 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty.");
-      Log.e(TAG, errorMessage);
-      callback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.",
+          ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
       return;
     }
 
@@ -74,10 +75,10 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
       mNativeAdBase = NativeAdBase.fromBidPayload(adConfiguration.getContext(), placementID,
           adConfiguration.getBidResponse());
     } catch (Exception ex) {
-      String errorMessage = createAdapterError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
-          "Failed to create native ad from bid payload: " + ex.getMessage());
-      Log.w(TAG, errorMessage);
-      FacebookRtbNativeAd.this.callback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
+          "Failed to create native ad from bid payload: " + ex.getMessage(), ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      FacebookRtbNativeAd.this.callback.onFailure(error);
       return;
     }
 
@@ -130,18 +131,18 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     @Override
     public void onAdLoaded(Ad ad) {
       if (ad != mNativeAd) {
-        String errorMessage = createAdapterError(ERROR_WRONG_NATIVE_TYPE,
-            "Ad Loaded is not a Native Ad.");
-        Log.e(TAG, errorMessage);
-        FacebookRtbNativeAd.this.callback.onFailure(errorMessage);
+        AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad Loaded is not a Native Ad.",
+            ERROR_DOMAIN);
+        Log.e(TAG, error.getMessage());
+        FacebookRtbNativeAd.this.callback.onFailure(error);
         return;
       }
 
       Context context = mContext.get();
       if (context == null) {
-        String errorMessage = createAdapterError(ERROR_NULL_CONTEXT, "Context is null.");
-        Log.e(TAG, errorMessage);
-        FacebookRtbNativeAd.this.callback.onFailure(errorMessage);
+        AdError error = new AdError(ERROR_NULL_CONTEXT, "Context is null.", ERROR_DOMAIN);
+        Log.e(TAG, error.getMessage());
+        FacebookRtbNativeAd.this.callback.onFailure(error);
         return;
       }
 
@@ -152,19 +153,18 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         }
 
         @Override
-        public void onMappingFailed(String message) {
-          String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-          Log.w(TAG, errorMessage);
-          callback.onFailure(errorMessage);
+        public void onMappingFailed(AdError error) {
+          Log.w(TAG, error.getMessage());
+          callback.onFailure(error);
         }
       });
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      Log.w(TAG, errorMessage);
-      callback.onFailure(errorMessage);
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = getAdError(adError);
+      Log.w(TAG, error.getMessage());
+      callback.onFailure(error);
     }
 
     @Override
@@ -181,19 +181,22 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
    */
   public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
-      String message = "Ad from Facebook doesn't have all assets required for the app install"
-          + " format.";
-      Log.w(TAG, message);
-      mapperListener.onMappingFailed(message);
+      AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
+          "Ad from Facebook doesn't have all required assets.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mapperListener.onMappingFailed(error);
       return;
     }
 
     // Map all required assets (headline, one image, body, icon and call to
     // action).
     setHeadline(mNativeAdBase.getAdHeadline());
-    List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-    images.add(new FacebookAdapterNativeAdImage());
-    setImages(images);
+    if (mNativeAdBase.getAdCoverImage() != null) {
+      List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
+      images.add(
+          new FacebookAdapterNativeAdImage(Uri.parse(mNativeAdBase.getAdCoverImage().getUrl())));
+      setImages(images);
+    }
     setBody(mNativeAdBase.getAdBodyText());
     if (mNativeAdBase.getPreloadedIconViewDrawable() == null) {
       if (mNativeAdBase.getAdIcon() == null) {
@@ -417,7 +420,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     /**
      * This method will be called if the native ad mapping failed.
      */
-    void onMappingFailed(String message);
+    void onMappingFailed(AdError error);
   }
 
 }

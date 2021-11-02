@@ -90,7 +90,7 @@ public class InMobiInitializer {
               initializationStatus = UNINITIALIZED;
 
               AdError initializationError = new AdError(ERROR_INMOBI_FAILED_INITIALIZATION,
-                  ERROR_DOMAIN, error.getLocalizedMessage());
+                  error.getLocalizedMessage(), ERROR_DOMAIN);
               for (Listener initListener : mListeners) {
                 initListener.onInitializeError(initializationError);
               }

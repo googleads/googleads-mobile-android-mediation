@@ -159,6 +159,8 @@ public class NendMediationAdapter extends Adapter
         return 403;
       case AD_SIZE_DIFFERENCES:
         return 404;
+      case UNSUPPORTED_DEVICE:
+        return 405;
     }
     // Error '499' to indicate that the error is new and has not been supported by the adapter yet.
     return 499;

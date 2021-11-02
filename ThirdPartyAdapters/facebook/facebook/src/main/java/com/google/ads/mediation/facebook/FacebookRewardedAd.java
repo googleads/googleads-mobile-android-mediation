@@ -1,13 +1,12 @@
 package com.google.ads.mediation.facebook;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
+
 
 import android.content.Context;
 import android.os.Bundle;
@@ -15,11 +14,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdExperienceType;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -63,10 +62,10 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      String message = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty.");
-      Log.e(TAG, message);
-      mMediationAdLoadCallback.onFailure(message);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      mMediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -99,12 +98,10 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
             }
 
             @Override
-            public void onInitializeError(String message) {
-              String logMessage = "Failed to load ad from Facebook: " + message;
-              String errorMessage = createAdapterError(ERROR_FACEBOOK_INITIALIZATION, logMessage);
-              Log.w(TAG, errorMessage);
+            public void onInitializeError(AdError error) {
+              Log.w(TAG, error.getMessage());
               if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(errorMessage);
+                mMediationAdLoadCallback.onFailure(error);
               }
             }
           });
@@ -115,12 +112,11 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   public void showAd(Context context) {
     showAdCalled.set(true);
     if (!rewardedAd.show()) {
-      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
-          "Failed to present rewarded ad.");
-      Log.w(TAG, errorMessage);
-
+      AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present rewarded ad.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(errorMessage);
+        mRewardedAdCallback.onAdFailedToShow(error);
       }
       rewardedAd.destroy();
       return;
@@ -154,18 +150,18 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   }
 
   @Override
-  public void onError(Ad ad, AdError adError) {
-    String errorMessage = createSdkError(adError);
+  public void onError(Ad ad, com.facebook.ads.AdError adError) {
+    AdError error = FacebookMediationAdapter.getAdError(adError);
 
     if (showAdCalled.get()) {
-      Log.w(TAG, "Failed to present rewarded ad: " + errorMessage);
+      Log.w(TAG, error.getMessage());
       if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(errorMessage);
+        mRewardedAdCallback.onAdFailedToShow(error);
       }
     } else {
-      Log.w(TAG, "Failed to load rewarded ad: " + errorMessage);
+      Log.w(TAG, error.getMessage());
       if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback.onFailure(errorMessage);
+        mMediationAdLoadCallback.onFailure(error);
       }
     }
 

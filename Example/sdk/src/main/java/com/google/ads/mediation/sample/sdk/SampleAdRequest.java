@@ -57,6 +57,6 @@ public class SampleAdRequest {
   }
 
   public static String getSDKVersion() {
-    return BuildConfig.VERSION_NAME;
+    return BuildConfig.SDK_VERSION;
   }
 }

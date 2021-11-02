@@ -1,5 +1,72 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Version 7.1.12.0 (In progress)
+- Verified compatibility with ironSource SDK version 7.1.12.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- IronSource SDK version 7.1.12.
+
+#### Version 7.1.11.1.0
+- Verified compatibility with ironSource SDK version 7.1.11.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- IronSource SDK version 7.1.11.1.
+
+#### Version 7.1.11.0
+- Verified compatibility with ironSource SDK version 7.1.11.
+- Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- IronSource SDK version 7.1.11.
+
+#### Version 7.1.10.0
+- Verified compatibility with ironSource SDK version 7.1.10.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- IronSource SDK version 7.1.10.
+
+#### Version 7.1.9.0
+- Verified compatibility with ironSource SDK version 7.1.9.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- IronSource SDK version 7.1.9.
+
+#### Version 7.1.8.0
+- Verified compatibility with ironSource SDK version 7.1.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- IronSource SDK version 7.1.8.
+
+#### Version 7.1.7.0
+- Verified compatibility with ironSource SDK version 7.1.7.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- IronSource SDK version 7.1.7.
+
+#### Version 7.1.6.1.0
+- Verified compatibility with ironSource SDK version 7.1.6.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- IronSource SDK version 7.1.6.1.
+
+#### Version 7.1.6.0
+- Verified compatibility with ironSource SDK version 7.1.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.1.0.
+- IronSource SDK version 7.1.6.
+
 #### Version 7.1.5.1.0
 - Verified compatibility with ironSource SDK version 7.1.5.1.
 

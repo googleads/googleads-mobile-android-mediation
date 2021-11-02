@@ -116,9 +116,10 @@ public class InMobiMediationAdapter extends Adapter {
   /**
    * {@link Adapter} implementation
    */
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -135,6 +136,7 @@ public class InMobiMediationAdapter extends Adapter {
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = InMobiSdk.getVersion();
@@ -155,9 +157,9 @@ public class InMobiMediationAdapter extends Adapter {
   }
 
   @Override
-  public void initialize(Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      final @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     if (isSdkInitialized.get()) {
       initializationCompleteCallback.onInitializationSucceeded();
@@ -176,8 +178,8 @@ public class InMobiMediationAdapter extends Adapter {
 
     int count = accountIDs.size();
     if (count <= 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_DOMAIN,
-          "Missing or Invalid Account ID.");
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
+          ERROR_DOMAIN);
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
@@ -207,10 +209,10 @@ public class InMobiMediationAdapter extends Adapter {
   }
 
   @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      final MediationAdLoadCallback<MediationRewardedAd,
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      final @NonNull MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback) {
-
     mInMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     mInMobiRewarded.load();

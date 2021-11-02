@@ -25,51 +25,48 @@ import com.unity3d.ads.metadata.MediationMetaData;
  */
 public class UnityInitializer {
 
-    /**
-     * UnityInitializer instance.
-     */
-    private static UnityInitializer unityInitializerInstance;
+  /**
+   * UnityInitializer instance.
+   */
+  private static UnityInitializer unityInitializerInstance;
 
-    /**
-     * This method will return a
-     * {@link com.google.ads.mediation.unity.UnityInitializer} instance.
-     *
-     * @return the {@link #unityInitializerInstance}.
-     *
-     */
-    static synchronized UnityInitializer getInstance() {
-        if (unityInitializerInstance == null) {
-            unityInitializerInstance = new UnityInitializer();
-        }
-        return unityInitializerInstance;
+  /**
+   * This method will return a {@link com.google.ads.mediation.unity.UnityInitializer} instance.
+   *
+   * @return the {@link #unityInitializerInstance}.
+   */
+  static synchronized UnityInitializer getInstance() {
+    if (unityInitializerInstance == null) {
+      unityInitializerInstance = new UnityInitializer();
+    }
+    return unityInitializerInstance;
+  }
+
+  /**
+   * This method will initialize {@link UnityAds}.  In the case of multiple initialize calls
+   * UnityAds will call the appropriate functions provided in the IUnityAdsInitializationListener
+   * after initialization is complete.
+   *
+   * @param context                The context.
+   * @param gameId                 Unity Ads Game ID.
+   * @param initializationListener Unity Ads Initialization listener.
+   */
+  public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
+      initializationListener) {
+
+    if (UnityAds.isInitialized()) {
+      // Unity Ads is already initialized.
+      initializationListener.onInitializationComplete();
+      return;
     }
 
-    /**
-     * This method will initialize {@link UnityAds}.  In the case of multiple initialize calls
-     * UnityAds will call the appropriate functions provided in the IUnityAdsInitializationListener
-     * after initialization is complete.
-     *
-     * @param context    The context.
-     * @param gameId      Unity Ads Game ID.
-     * @param initializationListener   Unity Ads Initialization listener.
-     *
-     */
-    public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
-            initializationListener) {
+    // Set mediation meta data before initializing.
+    MediationMetaData mediationMetaData = new MediationMetaData(context);
+    mediationMetaData.setName("AdMob");
+    mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
+    mediationMetaData.set("adapter_version", UnityAds.getVersion());
+    mediationMetaData.commit();
 
-        if (UnityAds.isInitialized()) {
-            // Unity Ads is already initialized.
-            initializationListener.onInitializationComplete();
-            return;
-        }
-
-        // Set mediation meta data before initializing.
-        MediationMetaData mediationMetaData = new MediationMetaData(context);
-        mediationMetaData.setName("AdMob");
-        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.set("adapter_version", UnityAds.getVersion());
-        mediationMetaData.commit();
-
-        UnityAds.initialize(context, gameId, false, true, initializationListener);
-    }
+    UnityAds.initialize(context, gameId, false, true, initializationListener);
+  }
 }

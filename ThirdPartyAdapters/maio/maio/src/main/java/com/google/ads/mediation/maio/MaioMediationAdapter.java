@@ -5,10 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -19,12 +17,10 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
-
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.mediation.admob.adapter.BuildConfig;
@@ -71,9 +67,20 @@ public class MaioMediationAdapter extends Adapter
       case NETWORK_NOT_READY:
         code = 1;
         break;
+      case RESPONSE:
+        code = 2;
+        break;
+      case NETWORK:
+        code = 3;
+        break;
+      case UNKNOWN:
+        code = 4;
+        break;
+      case VIDEO:
+        code = 5;
+        break;
     }
-    return new AdError(code,
-        "Failed to request ad from Maio: " + reason.toString(),
+    return new AdError(code, "Failed to request ad from Maio: " + reason.toString(),
         MAIO_SDK_ERROR_DOMAIN);
   }
 

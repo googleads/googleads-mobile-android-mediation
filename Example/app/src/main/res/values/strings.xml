@@ -2,14 +2,20 @@
   <string name="app_name">Mediation Sample</string>
   <string name="ad_attribution">Ad</string>
 
-  <string name="customevent_banner_ad_unit_id">ca-app-pub-3448655774227075/9118987345</string>
-  <string name="customevent_interstitial_ad_unit_id">ca-app-pub-3448655774227075/1595720546
-    </string>
-  <string name="customevent_native_ad_unit_id">ca-app-pub-3940256099942544/9051804115</string>
-  <string name="customevent_rewarded_ad_unit_id">ca-app-pub-3940256099942544/6223236111
-    </string>
-  <string name="adapter_banner_ad_unit_id">ca-app-pub-3940256099942544/4049634119</string>
-  <string name="adapter_interstitial_ad_unit_id">ca-app-pub-3940256099942544/5526367317</string>
-  <string name="adapter_native_ad_unit_id">ca-app-pub-3940256099942544/9782828514</string>
-  <string name="adapter_rewarded_ad_unit_id">ca-app-pub-3940256099942544/9793981313</string>
+  <string name="customevent_banner_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/2336528657</string>
+  <string name="customevent_interstitial_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/4013406551</string>
+  <string name="customevent_native_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/9051804115</string>
+  <string name="customevent_rewarded_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/6223236111</string>
+  <string name="adapter_banner_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/4049634119</string>
+  <string name="adapter_interstitial_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/5526367317</string>
+  <string name="adapter_native_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/9782828514</string>
+  <string name="adapter_rewarded_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/9793981313</string>
 </resources>
