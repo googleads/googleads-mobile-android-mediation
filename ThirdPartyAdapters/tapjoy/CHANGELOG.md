@@ -1,5 +1,8 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where a crash could occur if Tapjoy's TJError.message field is null.
+
 #### Version 12.8.1.0
 - Verified compatibility with Tapjoy SDK version 12.8.1.
 - Fixed an issue where a `NullPointerException` is being logged when an error is logged by the adapter.

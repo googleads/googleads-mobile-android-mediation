@@ -140,7 +140,9 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
               public void run() {
                 placementsInUse.remove(interstitialPlacementName);
 
-                AdError error = new AdError(tjError.code, tjError.message, TAPJOY_SDK_ERROR_DOMAIN);
+                String errorMessage =
+                    tjError.message == null ? "Tapjoy request failed." : tjError.message;
+                AdError error = new AdError(tjError.code, errorMessage, TAPJOY_SDK_ERROR_DOMAIN);
                 if (error != null) {
                   Log.e(TAG, error.getMessage());
                   callback.onFailure(error);
