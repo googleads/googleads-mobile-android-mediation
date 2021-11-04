@@ -73,7 +73,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   private MediationBannerAdCallback mediationBannerAdCallback;
 
   /**
-   * bid response of Open Bidding unit.
+   * Bid response of Open Bidding unit.
    */
   private String mAdMarkup;
 

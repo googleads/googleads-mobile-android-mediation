@@ -87,19 +87,15 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
               @Override
               public void onInitializeError(AdError error) {
                 Log.w(TAG, error.getMessage());
-                if (mMediationAdLoadCallback != null) {
-                  mMediationAdLoadCallback.onFailure(error);
-                }
+                mMediationAdLoadCallback.onFailure(error);
               }
             });
   }
 
   private void loadAd() {
     if (Vungle.canPlayAd(mPlacementForPlay, mAdMarkup)) {
-      if (mMediationAdLoadCallback != null) {
-        mediationInterstitialAdCallback = mMediationAdLoadCallback
-            .onSuccess(VungleRtbInterstitialAd.this);
-      }
+      mediationInterstitialAdCallback = mMediationAdLoadCallback
+          .onSuccess(VungleRtbInterstitialAd.this);
       return;
     }
 
@@ -108,28 +104,22 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback.onFailure(error);
-      }
+      mMediationAdLoadCallback.onFailure(error);
       return;
     }
 
     Vungle.loadAd(mPlacementForPlay, mAdMarkup, mAdConfig, new LoadAdCallback() {
       @Override
       public void onAdLoad(String placementID) {
-        if (mMediationAdLoadCallback != null) {
-          mediationInterstitialAdCallback = mMediationAdLoadCallback
-              .onSuccess(VungleRtbInterstitialAd.this);
-        }
+        mediationInterstitialAdCallback = mMediationAdLoadCallback
+            .onSuccess(VungleRtbInterstitialAd.this);
       }
 
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
         Log.w("TAG", error.getMessage());
-        if (mMediationAdLoadCallback != null) {
-          mMediationAdLoadCallback.onFailure(error);
-        }
+        mMediationAdLoadCallback.onFailure(error);
       }
     });
   }

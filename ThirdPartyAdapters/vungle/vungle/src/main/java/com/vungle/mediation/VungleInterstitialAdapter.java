@@ -244,7 +244,6 @@ public class VungleInterstitialAdapter
         AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
             "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
         Log.w(TAG, error.getMessage());
-        mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
         mediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       }
       return;
