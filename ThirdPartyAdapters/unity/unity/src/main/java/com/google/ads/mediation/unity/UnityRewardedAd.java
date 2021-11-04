@@ -104,7 +104,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
         new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
-            Log.d(TAG, "Unity Ads successfully initialized, can now " +
+            Log.d(TAG, "Unity Ads is initialized, can now " +
                 "load rewarded ad for placement ID '" + placementId + "' in game " +
                 "'" + gameId + "'.");
           }
@@ -194,7 +194,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
   private void sendRewardedLoadSuccess() {
     if (mMediationAdLoadCallback != null) {
-      mMediationAdLoadCallback.onSuccess(UnityRewardedAd.this);
+      mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(UnityRewardedAd.this);
     }
   }
 
@@ -204,7 +204,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
       mMediationAdLoadCallback.onFailure(adError);
     }
   }
-  
+
   private void sendRewardedAdEvent(AdEvent adEvent) {
     if (mMediationRewardedAdCallback == null) {
       return;
@@ -220,6 +220,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
       case VIDEO_START:
         mMediationRewardedAdCallback.onVideoStart();
         break;
+      case CLICK:
+        mMediationRewardedAdCallback.reportAdClicked();
+        break;
       case REWARD:
         // Unity Ads doesn't provide a reward value. The publisher is expected to
         // override the reward in AdMob console.
@@ -232,6 +235,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
         mMediationRewardedAdCallback.onAdClosed();
         break;
       default:
+        Log.e(TAG, "Unknown ad event");
         break;
     }
   }

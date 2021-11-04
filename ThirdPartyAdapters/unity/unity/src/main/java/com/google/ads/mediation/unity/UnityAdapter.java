@@ -132,7 +132,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
-            Log.d(TAG, "Unity Ads successfully initialized, " +
+            Log.d(TAG, "Unity Ads is initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
             // TODO I feel like     UnityAds.load(mPlacementId, mUnityLoadListener); should be here ?
@@ -299,6 +299,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
         mMediationInterstitialListener.onAdLeftApplication(UnityAdapter.this);
         break;
       default:
+        Log.e(TAG, "Unknown ad event");
         break;
     }
   }

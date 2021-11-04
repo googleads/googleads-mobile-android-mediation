@@ -148,7 +148,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         .initializeUnityAds(context, gameId, new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
-            Log.d(TAG, "Unity Ads successfully initialized, can now load " +
+            Log.d(TAG, "Unity Ads is initialized, can now load " +
                 "banner ad for placement ID '" + bannerPlacementId + "' in game '" + gameId + "'.");
 
             // TODO do we need this null check? what if we want to load a banner for a different placement ID?
@@ -207,6 +207,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         mMediationBannerListener.onAdLeftApplication(UnityBannerAd.this);
         break;
       default:
+        Log.e(TAG, "Unknown ad event");
         break;
     }
   }

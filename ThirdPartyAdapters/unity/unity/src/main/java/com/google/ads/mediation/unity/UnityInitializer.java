@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.unity;
 
+import android.app.Activity;
 import android.content.Context;
 import com.unity3d.ads.BuildConfig;
 import com.unity3d.ads.IUnityAdsInitializationListener;
@@ -67,7 +68,6 @@ public class UnityInitializer {
     mediationMetaData.set("adapter_version", UnityAds.getVersion());
     mediationMetaData.commit();
 
-    // TODO - Delete use of enablePerPlacementLoad after integrating 4.0
-    UnityAds.initialize(context, gameId, false, true, initializationListener);
+    UnityAds.initialize(context, gameId, false, initializationListener);
   }
 }
