@@ -143,11 +143,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
       Log.w(TAG, "Unity Ads received call to show before successfully loading an ad");
     }
 
-    // TODO not sure if this is true
     // UnityAds can handle a null placement ID so show is always called here.
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
-    // TODO why would we not put onAdOpened inside of onShowStart?
     // Unity Ads does not have an ad opened callback.
     sendRewardedAdEvent(AdEvent.OPEN);
   }

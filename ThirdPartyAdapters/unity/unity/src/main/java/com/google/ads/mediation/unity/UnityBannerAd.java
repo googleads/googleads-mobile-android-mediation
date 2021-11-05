@@ -151,7 +151,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             Log.d(TAG, "Unity Ads is initialized, can now load " +
                 "banner ad for placement ID '" + bannerPlacementId + "' in game '" + gameId + "'.");
 
-            // TODO do we need this null check? what if we want to load a banner for a different placement ID?
             if (mBannerView == null) {
               mBannerView = new BannerView((Activity) context, bannerPlacementId, unityBannerSize);
             }

@@ -135,8 +135,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
             Log.d(TAG, "Unity Ads is initialized, " +
                 "can now load interstitial ad for placement ID '" + mPlacementId +
                 "' in game '" + gameId + "'.");
-            // TODO I feel like     UnityAds.load(mPlacementId, mUnityLoadListener); should be here ?
-            // we don't want to try to load an ad if init failed
           }
 
           @Override
@@ -188,10 +186,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           "Unity Ads received call to show before successfully loading an ad");
     }
 
-    // TODO - I checked our native code and I don't think this is true, especially if we are
-    // deleting default placement
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activityReference, mPlacementId, mUnityShowListener);
+    UnityAds.show(activityReference, null, mUnityShowListener);
   }
 
   /**
