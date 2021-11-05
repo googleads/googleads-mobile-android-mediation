@@ -187,7 +187,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activityReference, null, mUnityShowListener);
+    UnityAds.show(activityReference, mPlacementId, mUnityShowListener);
   }
 
   /**
