@@ -6,36 +6,36 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 public class UnityBannerEventListener implements IUnityEventListener {
 
     MediationBannerListener listener;
-    MediationBannerAdapter callingClass;
+    MediationBannerAdapter adapter;
 
-    public UnityBannerEventListener(MediationBannerListener listener, MediationBannerAdapter callingClass) {
+    public UnityBannerEventListener(MediationBannerListener listener, MediationBannerAdapter adapter) {
         this.listener = listener;
-        this.callingClass = callingClass;
+        this.adapter = adapter;
     }
 
     @Override
     public void onAdLoaded() {
-        listener.onAdLoaded(callingClass);
+        listener.onAdLoaded(adapter);
     }
 
     @Override
     public void onAdOpened() {
-        listener.onAdOpened(callingClass);
+        listener.onAdOpened(adapter);
     }
 
     @Override
     public void onAdClicked() {
-        listener.onAdClicked(callingClass);
+        listener.onAdClicked(adapter);
     }
 
     @Override
     public void onAdClosed() {
-        listener.onAdClosed(callingClass);
+        listener.onAdClosed(adapter);
     }
 
     @Override
     public void onAdLeftApplication() {
-    listener.onAdLeftApplication(callingClass);
+    listener.onAdLeftApplication(adapter);
     }
 
     @Override

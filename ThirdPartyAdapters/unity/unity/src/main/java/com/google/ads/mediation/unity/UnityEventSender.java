@@ -48,7 +48,7 @@ public class UnityEventSender {
                 eventListener.onAdClosed();
                 break;
             default:
-                Log.e(TAG, "Unknown ad event");
+                Log.e(TAG, "Cannot report unknown event");
                 break;
         }
     }
