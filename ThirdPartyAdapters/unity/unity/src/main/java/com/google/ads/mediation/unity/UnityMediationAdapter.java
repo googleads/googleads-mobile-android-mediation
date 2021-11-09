@@ -146,7 +146,7 @@ public class UnityMediationAdapter extends Adapter {
    */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = "306000";//BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

@@ -25,6 +25,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.google.ads.mediation.unity.eventlisteners.UnityRewardedEventListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -56,6 +58,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
    * Placement ID used to determine what type of ad to load.
    */
   private String mPlacementId;
+
+  /**
+   * UnityEventSender instance to send events from the mMediationRewardedAdCallback.
+   */
+  private UnityEventSender eventSender;
 
   /**
    * IUnityAdsLoadListener instance.
@@ -147,7 +154,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
     // Unity Ads does not have an ad opened callback.
-    sendRewardedAdEvent(AdEvent.OPEN);
+    sendAdEvent(AdEvent.OPEN);
   }
 
   /**
@@ -158,14 +165,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
       // video.
-      sendRewardedAdEvent(AdEvent.IMPRESSION);
-      sendRewardedAdEvent(AdEvent.VIDEO_START);
+      sendAdEvent(AdEvent.IMPRESSION);
+      sendAdEvent(AdEvent.VIDEO_START);
     }
 
     @Override
     public void onUnityAdsShowClick(String placementId) {
       // Unity Ads ad clicked.
-      sendRewardedAdEvent(AdEvent.CLICK);
+      sendAdEvent(AdEvent.CLICK);
     }
 
     @Override
@@ -174,10 +181,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
       // Unity Ads ad closed.
       // Reward is provided only if the ad is watched completely.
       if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-        sendRewardedAdEvent(AdEvent.COMPLETE);
-        sendRewardedAdEvent(AdEvent.REWARD);
+        sendAdEvent(AdEvent.COMPLETE);
+        sendAdEvent(AdEvent.REWARD);
       }
-      sendRewardedAdEvent(AdEvent.CLOSE);
+      sendAdEvent(AdEvent.CLOSE);
     }
 
     @Override
@@ -193,48 +200,22 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private void sendRewardedLoadSuccess() {
     if (mMediationAdLoadCallback != null) {
       mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(UnityRewardedAd.this);
+      eventSender = new UnityEventSender(new UnityRewardedEventListener(mMediationRewardedAdCallback));
     }
+  }
+
+  private void sendAdEvent(AdEvent adEvent) {
+    if (eventSender == null) {
+      Log.e(TAG, "Cannot report event: UnityEventSender is null");
+    }
+
+    eventSender.sendAdEvent(adEvent);
   }
 
   private void sendRewardedLoadFailure(AdError adError) {
     Log.e(TAG, "Failed to load rewarded ad: " + adError.toString());
     if (mMediationAdLoadCallback != null) {
       mMediationAdLoadCallback.onFailure(adError);
-    }
-  }
-
-  private void sendRewardedAdEvent(AdEvent adEvent) {
-    if (mMediationRewardedAdCallback == null) {
-      return;
-    }
-
-    switch (adEvent) {
-      case OPEN:
-        mMediationRewardedAdCallback.onAdOpened();
-        break;
-      case IMPRESSION:
-        mMediationRewardedAdCallback.reportAdImpression();
-        break;
-      case VIDEO_START:
-        mMediationRewardedAdCallback.onVideoStart();
-        break;
-      case CLICK:
-        mMediationRewardedAdCallback.reportAdClicked();
-        break;
-      case REWARD:
-        // Unity Ads doesn't provide a reward value. The publisher is expected to
-        // override the reward in AdMob console.
-        mMediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
-        break;
-      case COMPLETE:
-        mMediationRewardedAdCallback.onVideoComplete();
-        break;
-      case CLOSE:
-        mMediationRewardedAdCallback.onAdClosed();
-        break;
-      default:
-        Log.e(TAG, "Unknown ad event");
-        break;
     }
   }
 }

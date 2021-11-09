@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
+
+import com.google.ads.mediation.unity.eventlisteners.UnityInterstitialEventListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -69,6 +71,11 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   private UnityBannerAd bannerAd;
 
   /**
+   * UnityEventSender instance to send events from the mMediationInterstitialListener.
+   */
+  private UnityEventSender eventSender;
+
+  /**
    * IUnityAdsLoadListener instance.
    */
   private final IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
@@ -77,7 +84,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       Log.d(TAG, "Unity Ads interstitial ad successfully loaded for placement ID '"
           + placementId + "'.");
       mPlacementId = placementId;
-      sendInterstitialAdEvent(AdEvent.LOADED);
+      sendAdEvent(AdEvent.LOADED);
     }
 
     @Override
@@ -111,6 +118,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
     mMediationInterstitialListener = mediationInterstitialListener;
+    eventSender = new UnityEventSender(new UnityInterstitialEventListener(mMediationInterstitialListener, this));
 
     final String gameId = serverParameters.getString(KEY_GAME_ID);
     mPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
@@ -170,14 +178,14 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   public void showInterstitial() {
     // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
     // ad.
-    sendInterstitialAdEvent(AdEvent.OPEN);
+    sendAdEvent(AdEvent.OPEN);
 
     Activity activityReference =
         mActivityWeakReference == null ? null : mActivityWeakReference.get();
     if (activityReference == null) {
       Log.w(TAG, "Failed to show interstitial ad for placement ID '" + mPlacementId +
           "' from Unity Ads: Activity context is null.");
-      sendInterstitialAdEvent(AdEvent.CLOSE);
+      sendAdEvent(AdEvent.CLOSE);
       return;
     }
 
@@ -205,11 +213,11 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     public void onUnityAdsShowClick(String placementId) {
       Log.d(TAG, "Unity interstitial ad for placement ID '" + mPlacementId + "' was clicked.");
       // Unity Ads ad clicked.
-      sendInterstitialAdEvent(AdEvent.CLICK);
+      sendAdEvent(AdEvent.CLICK);
       // Unity Ads doesn't provide a "leaving application" event, so assuming that the
       // user is leaving the application when a click is received, forwarding an on ad
       // left application event.
-      sendInterstitialAdEvent(AdEvent.LEFT_APPLICATION);
+      sendAdEvent(AdEvent.LEFT_APPLICATION);
     }
 
     @Override
@@ -218,7 +226,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad closed.
       Log.v(TAG, "Unity interstitial ad for placement ID '" + mPlacementId +
           "' finished playing.");
-      sendInterstitialAdEvent(AdEvent.CLOSE);
+      sendAdEvent(AdEvent.CLOSE);
     }
 
     @Override
@@ -226,7 +234,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad failed to show.
       AdError adError = createSDKError(error, message);
       Log.w(TAG, adError.toString());
-      sendInterstitialAdEvent(AdEvent.CLOSE);
+      sendAdEvent(AdEvent.CLOSE);
     }
   };
 
@@ -273,30 +281,11 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     return null;
   }
 
-  private void sendInterstitialAdEvent(AdEvent adEvent) {
-    if (mMediationInterstitialListener == null) {
-      return;
+  private void sendAdEvent(AdEvent adEvent) {
+    if (eventSender == null) {
+      Log.e(TAG, "Cannot report event: UnityEventSender is null");
     }
 
-    switch (adEvent) {
-      case LOADED:
-        mMediationInterstitialListener.onAdLoaded(UnityAdapter.this);
-        break;
-      case OPEN:
-        mMediationInterstitialListener.onAdOpened(UnityAdapter.this);
-        break;
-      case CLICK:
-        mMediationInterstitialListener.onAdClicked(UnityAdapter.this);
-        break;
-      case CLOSE:
-        mMediationInterstitialListener.onAdClosed(UnityAdapter.this);
-        break;
-      case LEFT_APPLICATION:
-        mMediationInterstitialListener.onAdLeftApplication(UnityAdapter.this);
-        break;
-      default:
-        Log.e(TAG, "Unknown ad event");
-        break;
-    }
+    eventSender.sendAdEvent(adEvent);
   }
 }
