@@ -25,7 +25,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.ads.mediation.unity.eventlisteners.UnityRewardedEventListener;
+import com.google.ads.mediation.unity.eventadapters.UnityRewardedEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -59,9 +59,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private String mPlacementId;
 
   /**
-   * UnityRewardedEventListener instance to send events from the mMediationRewardedAdCallback.
+   * UnityRewardedEventAdapter instance to send events from the mMediationRewardedAdCallback.
    */
-  private UnityRewardedEventListener eventListener;
+  private UnityRewardedEventAdapter eventAdapter;
 
   /**
    * IUnityAdsLoadListener instance.
@@ -153,7 +153,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
     // Unity Ads does not have an ad opened callback.
-    eventListener.onAdOpened();
+    eventAdapter.onAdOpened();
   }
 
   /**
@@ -164,14 +164,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
       // video.
-      eventListener.reportAdImpression();
-      eventListener.onVideoStart();
+      eventAdapter.reportAdImpression();
+      eventAdapter.onVideoStart();
     }
 
     @Override
     public void onUnityAdsShowClick(String placementId) {
       // Unity Ads ad clicked.
-      eventListener.onAdClicked();
+      eventAdapter.onAdClicked();
     }
 
     @Override
@@ -180,10 +180,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
       // Unity Ads ad closed.
       // Reward is provided only if the ad is watched completely.
       if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-        eventListener.onVideoComplete();
-        eventListener.onUserEarnedReward();
+        eventAdapter.onVideoComplete();
+        eventAdapter.onUserEarnedReward();
       }
-      eventListener.onAdClosed();
+      eventAdapter.onAdClosed();
     }
 
     @Override
@@ -199,7 +199,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private void sendRewardedLoadSuccess() {
     if (mMediationAdLoadCallback != null) {
       mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(UnityRewardedAd.this);
-      eventListener = new UnityRewardedEventListener(mMediationRewardedAdCallback);
+      eventAdapter = new UnityRewardedEventAdapter(mMediationRewardedAdCallback);
     }
   }
 

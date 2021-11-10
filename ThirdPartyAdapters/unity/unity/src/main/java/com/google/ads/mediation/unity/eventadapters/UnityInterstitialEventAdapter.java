@@ -1,14 +1,15 @@
-package com.google.ads.mediation.unity.eventlisteners;
+package com.google.ads.mediation.unity.eventadapters;
 
-import com.google.android.gms.ads.mediation.MediationBannerAdapter;
-import com.google.android.gms.ads.mediation.MediationBannerListener;
 
-public class UnityBannerEventListener implements IUnityEventListener {
+import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
+import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
-    MediationBannerListener listener;
-    MediationBannerAdapter adapter;
+public class UnityInterstitialEventAdapter implements IUnityEventAdapter {
 
-    public UnityBannerEventListener(MediationBannerListener listener, MediationBannerAdapter adapter) {
+    MediationInterstitialListener listener;
+    MediationInterstitialAdapter adapter;
+
+    public UnityInterstitialEventAdapter(MediationInterstitialListener listener, MediationInterstitialAdapter adapter) {
         this.listener = listener;
         this.adapter = adapter;
     }
@@ -35,7 +36,7 @@ public class UnityBannerEventListener implements IUnityEventListener {
 
     @Override
     public void onAdLeftApplication() {
-    listener.onAdLeftApplication(adapter);
+        listener.onAdLeftApplication(adapter);
     }
 
     @Override

@@ -1,6 +1,6 @@
-package com.google.ads.mediation.unity.eventlisteners;
+package com.google.ads.mediation.unity.eventadapters;
 
-public interface IUnityEventListener {
+public interface IUnityEventAdapter {
         void onAdLoaded();
         void onAdOpened();
         void onAdClicked();

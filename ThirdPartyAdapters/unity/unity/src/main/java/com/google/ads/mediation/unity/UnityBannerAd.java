@@ -25,7 +25,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
 
-import com.google.ads.mediation.unity.eventlisteners.UnityBannerEventListener;
+import com.google.ads.mediation.unity.eventadapters.UnityBannerEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -65,9 +65,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   private MediationBannerListener mMediationBannerListener;
 
   /**
-   * UnityBannerEventListener instance to send events from the mMediationBannerListener.
+   * UnityBannerEventAdapter instance to send events from the mMediationBannerListener.
    */
-  private UnityBannerEventListener eventListener;
+  private UnityBannerEventAdapter eventAdapter;
 
   /**
    * BannerView.IListener instance.
@@ -78,15 +78,15 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.v(TAG,
           "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId()
               + "'.");
-      eventListener.onAdLoaded();
+      eventAdapter.onAdLoaded();
     }
 
     @Override
     public void onBannerClick(BannerView bannerView) {
       Log.v(TAG,
           "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' was clicked.");
-      eventListener.onAdClicked();
-      eventListener.onAdOpened();
+      eventAdapter.onAdClicked();
+      eventAdapter.onAdOpened();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     public void onBannerLeftApplication(BannerView bannerView) {
       Log.v(TAG, "Unity Ads banner for placement ID '" + mBannerView.getPlacementId()
           + "' has left the application.");
-      eventListener.onAdLeftApplication();
+      eventAdapter.onAdLeftApplication();
     }
   };
 
@@ -123,7 +123,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   public void requestBannerAd(final Context context, MediationBannerListener listener,
       Bundle serverParameters, final AdSize adSize, MediationAdRequest adRequest, Bundle mediationExtras) {
     mMediationBannerListener = listener;
-    eventListener = new UnityBannerEventListener(mMediationBannerListener, this);
+    eventAdapter = new UnityBannerEventAdapter(mMediationBannerListener, this);
 
     gameId = serverParameters.getString(KEY_GAME_ID);
     bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
