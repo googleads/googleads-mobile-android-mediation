@@ -18,18 +18,6 @@ import java.util.ArrayList;
  */
 public class UnityAdsAdapterUtils {
 
-  public enum AdEvent {
-    LOADED,
-    OPEN,
-    CLOSE,
-    IMPRESSION,
-    VIDEO_START,
-    CLICK,
-    LEFT_APPLICATION,
-    REWARD,
-    COMPLETE
-  }
-
   private static final String SDK_ERROR_DOMAIN = "com.unity3d.ads";
 
   /**

@@ -16,7 +16,6 @@ package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.TAG;
@@ -60,9 +59,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private String mPlacementId;
 
   /**
-   * UnityEventSender instance to send events from the mMediationRewardedAdCallback.
+   * UnityRewardedEventListener instance to send events from the mMediationRewardedAdCallback.
    */
-  private UnityEventSender eventSender;
+  private UnityRewardedEventListener eventListener;
 
   /**
    * IUnityAdsLoadListener instance.
@@ -154,7 +153,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
     // Unity Ads does not have an ad opened callback.
-    sendAdEvent(AdEvent.OPEN);
+    eventListener.onAdOpened();
   }
 
   /**
@@ -165,14 +164,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
       // video.
-      sendAdEvent(AdEvent.IMPRESSION);
-      sendAdEvent(AdEvent.VIDEO_START);
+      eventListener.reportAdImpression();
+      eventListener.onVideoStart();
     }
 
     @Override
     public void onUnityAdsShowClick(String placementId) {
       // Unity Ads ad clicked.
-      sendAdEvent(AdEvent.CLICK);
+      eventListener.onAdClicked();
     }
 
     @Override
@@ -181,10 +180,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
       // Unity Ads ad closed.
       // Reward is provided only if the ad is watched completely.
       if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-        sendAdEvent(AdEvent.COMPLETE);
-        sendAdEvent(AdEvent.REWARD);
+        eventListener.onVideoComplete();
+        eventListener.onUserEarnedReward();
       }
-      sendAdEvent(AdEvent.CLOSE);
+      eventListener.onAdClosed();
     }
 
     @Override
@@ -200,16 +199,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private void sendRewardedLoadSuccess() {
     if (mMediationAdLoadCallback != null) {
       mMediationRewardedAdCallback = mMediationAdLoadCallback.onSuccess(UnityRewardedAd.this);
-      eventSender = new UnityEventSender(new UnityRewardedEventListener(mMediationRewardedAdCallback));
+      eventListener = new UnityRewardedEventListener(mMediationRewardedAdCallback);
     }
-  }
-
-  private void sendAdEvent(AdEvent adEvent) {
-    if (eventSender == null) {
-      Log.e(TAG, "Cannot report event: UnityEventSender is null");
-    }
-
-    eventSender.sendAdEvent(adEvent);
   }
 
   private void sendRewardedLoadFailure(AdError adError) {
