@@ -1,6 +1,6 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
-#### Version 12.8.1.1 (In progress)
+#### Version 12.8.1.1
 - Verified compatibility with Tapjoy SDK version 12.8.1.
 - Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
 - Fixed an issue where a crash could occur if Tapjoy's TJError.message field is null.
