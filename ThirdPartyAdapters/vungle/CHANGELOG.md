@@ -1,5 +1,13 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.10.2.1
+ - Verified compatibility with Vungle SDK 6.10.2.
+ - Open Bidding supported.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.2.
+
 #### Version 6.10.2.0
  - Verified compatibility with Vungle SDK 6.10.2.
  - Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
