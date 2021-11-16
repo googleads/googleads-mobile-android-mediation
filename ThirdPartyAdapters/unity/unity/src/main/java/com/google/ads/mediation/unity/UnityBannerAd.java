@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
 
+import com.google.ads.mediation.unity.eventadapters.IUnityEventAdapter;
 import com.google.ads.mediation.unity.eventadapters.UnityBannerEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -67,7 +68,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   /**
    * UnityBannerEventAdapter instance to send events from the mMediationBannerListener.
    */
-  private UnityBannerEventAdapter eventAdapter;
+  private IUnityEventAdapter eventAdapter;
 
   /**
    * BannerView.IListener instance.

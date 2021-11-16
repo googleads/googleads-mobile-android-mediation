@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
 
+import com.google.ads.mediation.unity.eventadapters.IUnityEventAdapter;
 import com.google.ads.mediation.unity.eventadapters.UnityInterstitialEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -72,7 +73,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   /**
    * UnityInterstitialEventAdapter instance to send events from the mMediationInterstitialListener.
    */
-  private UnityInterstitialEventAdapter eventAdapter;
+  private IUnityEventAdapter eventAdapter;
 
   /**
    * IUnityAdsLoadListener instance.

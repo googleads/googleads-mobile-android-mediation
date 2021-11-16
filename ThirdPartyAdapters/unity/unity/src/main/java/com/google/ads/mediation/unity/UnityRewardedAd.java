@@ -25,6 +25,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.ads.mediation.unity.eventadapters.IUnityEventAdapter;
 import com.google.ads.mediation.unity.eventadapters.UnityRewardedEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -61,7 +62,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
   /**
    * UnityRewardedEventAdapter instance to send events from the mMediationRewardedAdCallback.
    */
-  private UnityRewardedEventAdapter eventAdapter;
+  private IUnityEventAdapter eventAdapter;
 
   /**
    * IUnityAdsLoadListener instance.
