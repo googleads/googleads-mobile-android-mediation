@@ -37,7 +37,7 @@ public class UnityAdsAdapterUtils {
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
@@ -62,7 +62,7 @@ public class UnityAdsAdapterUtils {
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
@@ -76,7 +76,19 @@ public class UnityAdsAdapterUtils {
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
+  }
+
+  /**
+   * Creates a formatted SDK error message based on the specified error code.
+   *
+   * @param errorCode error object from Unity.
+   * @param description   the error message.
+   * @return the error.
+   */
+  @NonNull
+  static AdError createAdError(@NonNull int errorCode, @NonNull String description) {
+    return new AdError(errorCode, description, SDK_ERROR_DOMAIN);
   }
 
   /**
