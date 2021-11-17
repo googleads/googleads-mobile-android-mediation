@@ -75,12 +75,12 @@ public class UnityMediationAdapter extends Adapter {
   static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * UnityAds returned a placement with no fill.
+   * UnityAds returned a placement with a {@link PlacementStateNO_FILL} state.
    */
   static final int ERROR_PLACEMENT_STATE_NO_FILL = 102;
 
   /**
-   * UnityAds returned a disabled placement.
+   * UnityAds returned a placement with a {@link PlacementState#DISABLED} state.
    */
   static final int ERROR_PLACEMENT_STATE_DISABLED = 103;
 
@@ -89,9 +89,6 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_NULL_CONTEXT = 104;
 
-  /**
-   * Tried to show an ad with a non-Activity context.
-   */
   static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
 
   /**
@@ -110,7 +107,7 @@ public class UnityMediationAdapter extends Adapter {
   static final int ERROR_AD_ALREADY_LOADING = 108;
 
   /**
-   * UnityAds finished with an error state.
+   * UnityAds finished with a {@link FinishState#ERROR} state.
    */
   static final int ERROR_FINISH = 109;
 
@@ -123,6 +120,7 @@ public class UnityMediationAdapter extends Adapter {
    * UnityAds returned an initialization error.
    */
   static final int INITIALIZATION_FAILURE = 111;
+  // endregion
 
   /**
    * Key to obtain Game ID, required for loading Unity Ads.
@@ -146,7 +144,7 @@ public class UnityMediationAdapter extends Adapter {
    */
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = "3600000";//BuildConfig.ADAPTER_VERSION;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

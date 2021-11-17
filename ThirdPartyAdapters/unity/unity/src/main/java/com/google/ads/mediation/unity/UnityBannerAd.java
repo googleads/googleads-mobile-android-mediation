@@ -14,7 +14,7 @@
 
 package com.google.ads.mediation.unity;
 
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdapterError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
 
@@ -24,9 +24,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
-
-import com.google.ads.mediation.unity.eventadapters.IUnityEventAdapter;
-import com.google.ads.mediation.unity.eventadapters.UnityBannerEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -66,11 +63,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   private MediationBannerListener mMediationBannerListener;
 
   /**
-   * UnityBannerEventAdapter instance to send events from the mMediationBannerListener.
-   */
-  private IUnityEventAdapter eventAdapter;
-
-  /**
    * BannerView.IListener instance.
    */
   private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
@@ -79,27 +71,40 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.v(TAG,
           "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId()
               + "'.");
-      eventAdapter.onAdLoaded();
+      if (mMediationBannerListener == null) {
+        return;
+      }
+      mMediationBannerListener.onAdLoaded(UnityBannerAd.this);
     }
 
     @Override
     public void onBannerClick(BannerView bannerView) {
       Log.v(TAG,
           "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' was clicked.");
-      eventAdapter.onAdClicked();
-      eventAdapter.onAdOpened();
+      if (mMediationBannerListener == null) {
+        return;
+      }
+
+      mMediationBannerListener.onAdClicked(UnityBannerAd.this);
+      mMediationBannerListener.onAdOpened(UnityBannerAd.this);
     }
 
     @Override
     public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo bannerErrorInfo) {
-      sendBannerFailedToLoad(getMediationErrorCode(bannerErrorInfo), createSDKError(bannerErrorInfo));
+      String sdkError = createSDKError(bannerErrorInfo);
+      Log.w(TAG, "Unity Ads banner failed to load: " + sdkError);
+
+      if (mMediationBannerListener != null) {
+        int errorCode = getMediationErrorCode(bannerErrorInfo);
+        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, errorCode);
+      }
     }
 
     @Override
     public void onBannerLeftApplication(BannerView bannerView) {
       Log.v(TAG, "Unity Ads banner for placement ID '" + mBannerView.getPlacementId()
           + "' has left the application.");
-      eventAdapter.onAdLeftApplication();
+      mMediationBannerListener.onAdLeftApplication(UnityBannerAd.this);
     }
   };
 
@@ -122,25 +127,46 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   }
 
   public void requestBannerAd(final Context context, MediationBannerListener listener,
-      Bundle serverParameters, final AdSize adSize, MediationAdRequest adRequest, Bundle mediationExtras) {
+      Bundle serverParameters,
+      final AdSize adSize, MediationAdRequest adRequest, Bundle mediationExtras) {
     mMediationBannerListener = listener;
-    eventAdapter = new UnityBannerEventAdapter(mMediationBannerListener, this);
 
     gameId = serverParameters.getString(KEY_GAME_ID);
     bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
-    if (!UnityAdapter.areValidIds(gameId, bannerPlacementId)) {
-      sendBannerFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid server parameters.");
+    if (!UnityAdapter.isValidIds(gameId, bannerPlacementId)) {
+      if (mMediationBannerListener == null) {
+        return;
+      }
+      String adapterError = createAdapterError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid server parameters.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      mMediationBannerListener
+          .onAdFailedToLoad(UnityBannerAd.this, ERROR_INVALID_SERVER_PARAMETERS);
       return;
     }
 
     if (context == null || !(context instanceof Activity)) {
-      sendBannerFailedToLoad(ERROR_CONTEXT_NOT_ACTIVITY, "Unity Ads requires an Activity context to load ads.");
+      String adapterError = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
+          "Unity Ads requires an Activity context to load ads.");
+      Log.e(TAG, "Failed to load ad: " + adapterError);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener
+            .onAdFailedToLoad(UnityBannerAd.this, ERROR_CONTEXT_NOT_ACTIVITY);
+      }
       return;
     }
 
     if (adSize == null) {
-      sendBannerFailedToLoad(ERROR_BANNER_SIZE_MISMATCH, "Unity banner ad failed to load: banner size is invalid.");
+      String adapterError = createAdapterError(
+          ERROR_BANNER_SIZE_MISMATCH,
+          "Unity banner ad failed to load : banner size is invalid.");
+      Log.e(TAG, adapterError);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener
+            .onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
+      }
       return;
     }
 
@@ -148,7 +174,13 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         .getUnityBannerSize(context, adSize);
 
     if (unityBannerSize == null) {
-      sendBannerFailedToLoad(ERROR_BANNER_SIZE_MISMATCH, "There is no matching UnityAds ad size for Google ad size: " + adSize);
+      String adapterError = createAdapterError(
+          ERROR_BANNER_SIZE_MISMATCH,
+          "There is no matching UnityAds ad size for Google ad size: " + adSize);
+      Log.w(TAG, adapterError);
+      if (mMediationBannerListener != null) {
+        mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, ERROR_BANNER_SIZE_MISMATCH);
+      }
       return;
     }
 
@@ -156,7 +188,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         .initializeUnityAds(context, gameId, new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
-            Log.d(TAG, "Unity Ads is initialized, can now load " +
+            Log.d(TAG, "Unity Ads successfully initialized, can now load " +
                 "banner ad for placement ID '" + bannerPlacementId + "' in game '" + gameId + "'.");
 
             if (mBannerView == null) {
@@ -179,7 +211,8 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
             Log.e(TAG, adError.toString());
 
             if (mMediationBannerListener != null) {
-              mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, adError);
+              mMediationBannerListener
+                  .onAdFailedToLoad(UnityBannerAd.this, adError);
             }
           }
         });
@@ -188,15 +221,6 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   @Override
   public View getBannerView() {
     return mBannerView;
-  }
-
-  private void sendBannerFailedToLoad(int errorCode, String errorDescription) {
-    Log.e(TAG, "Failed to load banner ad: " + errorDescription);
-
-    if (mMediationBannerListener != null) {
-      AdError adError = createAdError(errorCode, errorDescription);
-      mMediationBannerListener.onAdFailedToLoad(UnityBannerAd.this, adError);
-    }
   }
 
 }
