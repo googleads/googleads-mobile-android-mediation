@@ -58,7 +58,7 @@ public class SnapRewardedAd implements MediationRewardedAd {
         String bid = adConfiguration.getBidResponse();
         LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
                 .withPublisherSlotId(mSlotId).withBid(bid).build();
-        adsNetworkApi.loadInterstitial(loadAdConfig);
+        adsNetworkApi.loadRewarded(loadAdConfig);
     }
 
     @Override
