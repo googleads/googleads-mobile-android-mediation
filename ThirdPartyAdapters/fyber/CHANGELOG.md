@@ -1,6 +1,6 @@
 ## Fyber Android Mediation Adapter Changelog
 
-#### Version 8.1.0.0 (In Progress)
+#### Version 8.1.0.0
 - Verified compatibility with Fyber SDK 8.1.0.
 
 Built and tested with:
