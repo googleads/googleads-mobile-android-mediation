@@ -62,18 +62,18 @@ public class VungleBannerAdapter implements PlayAdCallback {
   private MediationBannerListener mediationListener;
 
   /**
-   * Mediation Banner Open Bidding Adapter instance.
+   * Mediation Banner Bidding Adapter instance.
    */
   private MediationBannerAd mediationBannerAd;
 
   /**
-   * Vungle listener class to forward to the open bidding adapter.
+   * Vungle listener class to forward to the bidding adapter.
    */
   private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback;
   private MediationBannerAdCallback mediationBannerAdCallback;
 
   /**
-   * Bid response of Open Bidding unit.
+   * Bid response of Bidding unit.
    */
   private String mAdMarkup;
 
@@ -246,17 +246,18 @@ public class VungleBannerAdapter implements PlayAdCallback {
           mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
 
           if (!mPendingRequestBanner) {
+            Log.w(TAG, "No banner request fired.");
             return;
           }
           if (mediationAdapter != null && mediationListener != null) {
             AdError error = VungleMediationAdapter.getAdError(exception);
-            Log.w("TAG", error.getMessage());
+            Log.w(TAG, error.getMessage());
             mediationListener.onAdFailedToLoad(mediationAdapter, error);
             return;
           }
           if (mediationAdLoadCallback != null) {
             AdError error = VungleMediationAdapter.getAdError(exception);
-            Log.w("TAG", error.getMessage());
+            Log.w(TAG, error.getMessage());
             mediationAdLoadCallback.onFailure(error);
           }
         }

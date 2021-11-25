@@ -130,7 +130,7 @@ public class VungleInterstitialAdapter
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w("TAG", error.getMessage());
+        Log.w(TAG, error.getMessage());
         if (mMediationInterstitialListener != null) {
           mMediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
         }
@@ -188,7 +188,7 @@ public class VungleInterstitialAdapter
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w("TAG", error.getMessage());
+        Log.w(TAG, error.getMessage());
         if (mMediationInterstitialListener != null) {
           mMediationInterstitialListener.onAdClosed(VungleInterstitialAdapter.this);
         }

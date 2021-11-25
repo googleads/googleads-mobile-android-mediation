@@ -2,7 +2,7 @@
 
 #### Version 6.10.2.1
  - Verified compatibility with Vungle SDK 6.10.2.
- - Open Bidding supported.
+ - Bidding supported.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.3.0.

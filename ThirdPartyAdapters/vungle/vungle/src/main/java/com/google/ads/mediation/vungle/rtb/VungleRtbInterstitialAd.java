@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -29,8 +30,11 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
 
   private static final String TAG = VungleRtbInterstitialAd.class.getSimpleName();
 
+  @NonNull
   private final MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
+  @NonNull
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mMediationAdLoadCallback;
+  @Nullable
   private MediationInterstitialAdCallback mediationInterstitialAdCallback;
 
   private AdConfig mAdConfig;
@@ -118,7 +122,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w("TAG", error.getMessage());
+        Log.w(TAG, error.getMessage());
         mMediationAdLoadCallback.onFailure(error);
       }
     });
@@ -174,7 +178,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w("TAG", error.getMessage());
+        Log.w(TAG, error.getMessage());
         if (mediationInterstitialAdCallback != null) {
           mediationInterstitialAdCallback.onAdClosed();
         }
