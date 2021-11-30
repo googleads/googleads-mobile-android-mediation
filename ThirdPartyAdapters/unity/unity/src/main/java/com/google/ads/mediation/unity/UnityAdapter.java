@@ -30,7 +30,6 @@ import com.google.ads.mediation.unity.eventadapters.IUnityEventAdapter;
 import com.google.ads.mediation.unity.eventadapters.UnityInterstitialEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -43,7 +42,6 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 
 /**
  * The {@link UnityAdapter} is used to load Unity ads and mediate the callbacks between Google
