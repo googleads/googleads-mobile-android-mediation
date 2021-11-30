@@ -38,10 +38,6 @@ dependencies {
     // TODO: Insert required dependencies here.
 }
 
-repositories {
-    mavenCentral()
-}
-
 /**
  * Jar task to make a sources jar.
  */

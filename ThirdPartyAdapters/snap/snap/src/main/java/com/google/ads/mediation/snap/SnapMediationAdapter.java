@@ -42,7 +42,9 @@ public class SnapMediationAdapter extends RtbAdapter {
 
   public static final String APP_ID_PARAMETER = "snapAppId";
 
-  private SnapInterstitialAd interstitial;
+  public static final String SLOT_ID_KEY = "adSlotId";
+
+  private SnapInterstitialAd interstitialAd;
   private SnapRewardedAd rewardedAd;
   private SnapBannerAd bannerAd;
 
@@ -61,7 +63,6 @@ public class SnapMediationAdapter extends RtbAdapter {
   public void initialize(@NonNull Context context,
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> configurations) {
-    // TODO: Initialize the ad-network's SDK and forward the success callback:
     if (context == null) {
       initializationCompleteCallback.onInitializationFailed(
               "Initialization Failed. Context is null.");
@@ -88,7 +89,7 @@ public class SnapMediationAdapter extends RtbAdapter {
     AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.init(initSettings);
     if (adsNetworkApi == null) {
       initializationCompleteCallback.onInitializationFailed(
-              "Initialization failed. Snap Audience AdNetwork init fail.");
+              "Initialization failed. Snap Audience Network init fail.");
       return;
     }
     initializationCompleteCallback.onInitializationSucceeded();
@@ -97,7 +98,7 @@ public class SnapMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = "2.3.0.0";
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -144,8 +145,8 @@ public class SnapMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    interstitial = new SnapInterstitialAd(adConfiguration, callback);
-    interstitial.loadAd();
+    interstitialAd = new SnapInterstitialAd(adConfiguration, callback);
+    interstitialAd.loadAd();
   }
 
   @Override

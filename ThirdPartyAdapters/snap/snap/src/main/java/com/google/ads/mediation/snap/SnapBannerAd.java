@@ -1,5 +1,7 @@
 package com.google.ads.mediation.snap;
 
+import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
+
 import android.os.Bundle;
 import android.view.View;
 
@@ -22,8 +24,6 @@ import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdSize;
 
 public class SnapBannerAd implements MediationBannerAd {
-    private static final String SLOT_ID_KEY = "adSlotId";
-
     private BannerView mBannerView;
 
     private MediationBannerAdConfiguration adConfiguration;
@@ -31,8 +31,8 @@ public class SnapBannerAd implements MediationBannerAd {
     private MediationBannerAdCallback mBannerAdCallback;
     private String mSlotId;
 
-    public SnapBannerAd(MediationBannerAdConfiguration adConfiguration,
-                               MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    public SnapBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+                        @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
         this.adConfiguration = adConfiguration;
         this.callback = callback;
     }
@@ -49,6 +49,10 @@ public class SnapBannerAd implements MediationBannerAd {
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
         String bid = adConfiguration.getBidResponse();
+        if (bid == null || bid.isEmpty()) {
+            callback.onFailure(new AdError(0, "fail to load banner ad, bid empty", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            return;
+        }
         LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
                 .withPublisherSlotId(mSlotId).withBid(bid).build();
         mBannerView.loadAd(loadAdConfig);
@@ -65,16 +69,24 @@ public class SnapBannerAd implements MediationBannerAd {
             if (callback != null) {
                 mBannerAdCallback = callback.onSuccess(this);
             }
-        } else if (snapAdKitEvent instanceof SnapAdLoadFailed) {
+            return;
+        }
+        if (snapAdKitEvent instanceof SnapAdLoadFailed) {
             if (callback!= null) {
                 callback.onFailure(
-                        new AdError(0, "ad load fail", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+                        new AdError(0,
+                                "ad load fail " + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
+                                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             }
-        } else if (snapAdKitEvent instanceof SnapAdClicked) {
-            if (mBannerView != null) {
+            return;
+        }
+        if (snapAdKitEvent instanceof SnapAdClicked) {
+            if (mBannerAdCallback != null) {
                 mBannerAdCallback.onAdOpened();
+                mBannerAdCallback.reportAdClicked();
                 mBannerAdCallback.onAdLeftApplication();
             }
+            return;
         }
     }
 }
