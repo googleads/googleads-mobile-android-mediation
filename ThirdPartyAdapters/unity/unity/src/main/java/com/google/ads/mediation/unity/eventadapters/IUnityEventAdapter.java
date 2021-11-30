@@ -1,13 +1,7 @@
 package com.google.ads.mediation.unity.eventadapters;
 
+import com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
+
 public interface IUnityEventAdapter {
-        void onAdLoaded();
-        void onAdOpened();
-        void onAdClicked();
-        void onAdClosed();
-        void onAdLeftApplication();
-        void reportAdImpression();
-        void onVideoStart();
-        void onUserEarnedReward();
-        void onVideoComplete();
+        void sendAdEvent(AdEvent adEvent);
 }

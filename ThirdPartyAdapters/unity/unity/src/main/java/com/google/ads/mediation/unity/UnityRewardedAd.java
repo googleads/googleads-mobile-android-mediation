@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
@@ -154,7 +155,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     UnityAds.show(activity, mPlacementId, mUnityShowListener);
 
     // Unity Ads does not have an ad opened callback.
-    eventAdapter.onAdOpened();
+    eventAdapter.sendAdEvent(AdEvent.OPENED);
   }
 
   /**
@@ -165,14 +166,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
       // video.
-      eventAdapter.reportAdImpression();
-      eventAdapter.onVideoStart();
+      eventAdapter.sendAdEvent(AdEvent.IMPRESSION);
+      eventAdapter.sendAdEvent(AdEvent.VIDEO_START);
     }
 
     @Override
     public void onUnityAdsShowClick(String placementId) {
       // Unity Ads ad clicked.
-      eventAdapter.onAdClicked();
+      eventAdapter.sendAdEvent(AdEvent.CLICKED);
     }
 
     @Override
@@ -181,10 +182,10 @@ public class UnityRewardedAd implements MediationRewardedAd {
       // Unity Ads ad closed.
       // Reward is provided only if the ad is watched completely.
       if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-        eventAdapter.onVideoComplete();
-        eventAdapter.onUserEarnedReward();
+        eventAdapter.sendAdEvent(AdEvent.VIDEO_COMPLETE);
+        eventAdapter.sendAdEvent(AdEvent.REWARD);
       }
-      eventAdapter.onAdClosed();
+      eventAdapter.sendAdEvent(AdEvent.CLOSED);
     }
 
     @Override

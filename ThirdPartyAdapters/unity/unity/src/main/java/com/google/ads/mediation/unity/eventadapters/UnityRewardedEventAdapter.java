@@ -1,5 +1,6 @@
 package com.google.ads.mediation.unity.eventadapters;
 
+import com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import com.google.ads.mediation.unity.UnityReward;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 
@@ -11,50 +12,37 @@ public class UnityRewardedEventAdapter implements IUnityEventAdapter {
         this.listener = listener;
     }
 
-    @Override
-    public void onAdLoaded() {
-        // no-op
-    }
+    public void sendAdEvent(AdEvent adEvent) {
+        if (listener == null) {
+            return;
+        }
 
-    @Override
-    public void onAdOpened() {
-        listener.onAdOpened();
-    }
-
-    @Override
-    public void onAdClicked() {
-        listener.reportAdClicked();
-    }
-
-    @Override
-    public void onAdClosed() {
-        listener.onAdClosed();
-    }
-
-    @Override
-    public void onAdLeftApplication() {
-        // no-op
-    }
-
-    @Override
-    public void reportAdImpression() {
-        listener.reportAdImpression();
-    }
-
-    @Override
-    public void onVideoStart() {
-        listener.onVideoStart();
-    }
-
-    @Override
-    public void onUserEarnedReward() {
-        // Unity Ads doesn't provide a reward value. The publisher is expected to
-        // override the reward in AdMob console.
-        listener.onUserEarnedReward(new UnityReward());
-    }
-
-    @Override
-    public void onVideoComplete() {
-        listener.onVideoComplete();
+        switch (adEvent) {
+            case OPENED:
+                listener.onAdOpened();
+                break;
+            case CLICKED:
+                listener.reportAdClicked();
+                break;
+            case CLOSED:
+                listener.onAdClosed();
+                break;
+            case IMPRESSION:
+                listener.reportAdImpression();
+                break;
+            case VIDEO_START:
+                listener.onVideoStart();
+                break;
+            case REWARD:
+                // Unity Ads doesn't provide a reward value. The publisher is expected to
+                // override the reward in AdMob console.
+                listener.onUserEarnedReward(new UnityReward());
+                break;
+            case VIDEO_COMPLETE:
+                listener.onVideoComplete();
+                break;
+            default:
+                break;
+        }
     }
 }

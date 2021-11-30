@@ -18,6 +18,21 @@ import java.util.ArrayList;
  */
 public class UnityAdsAdapterUtils {
 
+  /**
+   * Enumeration of ad events that get forwarded to AdMob
+   */
+  public enum AdEvent {
+    LOADED,
+    OPENED,
+    CLICKED,
+    CLOSED,
+    LEFT_APPLICATION,
+    IMPRESSION,
+    VIDEO_START,
+    REWARD,
+    VIDEO_COMPLETE
+  }
+
   private static final String SDK_ERROR_DOMAIN = "com.unity3d.ads";
 
   /**

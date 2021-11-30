@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
@@ -79,15 +80,15 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.v(TAG,
           "Unity Ads finished loading banner ad for placement ID '" + mBannerView.getPlacementId()
               + "'.");
-      eventAdapter.onAdLoaded();
+      eventAdapter.sendAdEvent(AdEvent.LOADED);
     }
 
     @Override
     public void onBannerClick(BannerView bannerView) {
       Log.v(TAG,
           "Unity Ads banner for placement ID '" + mBannerView.getPlacementId() + "' was clicked.");
-      eventAdapter.onAdClicked();
-      eventAdapter.onAdOpened();
+      eventAdapter.sendAdEvent(AdEvent.CLICKED);
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     public void onBannerLeftApplication(BannerView bannerView) {
       Log.v(TAG, "Unity Ads banner for placement ID '" + mBannerView.getPlacementId()
           + "' has left the application.");
-      eventAdapter.onAdLeftApplication();
+      eventAdapter.sendAdEvent(AdEvent.LEFT_APPLICATION);
     }
   };
 

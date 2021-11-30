@@ -1,6 +1,6 @@
 package com.google.ads.mediation.unity.eventadapters;
 
-
+import com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
@@ -15,47 +15,29 @@ public class UnityInterstitialEventAdapter implements IUnityEventAdapter {
     }
 
     @Override
-    public void onAdLoaded() {
-        listener.onAdLoaded(adapter);
-    }
+    public void sendAdEvent(AdEvent adEvent) {
+        if (listener == null) {
+            return;
+        }
 
-    @Override
-    public void onAdOpened() {
-        listener.onAdOpened(adapter);
-    }
-
-    @Override
-    public void onAdClicked() {
-        listener.onAdClicked(adapter);
-    }
-
-    @Override
-    public void onAdClosed() {
-        listener.onAdClosed(adapter);
-    }
-
-    @Override
-    public void onAdLeftApplication() {
-        listener.onAdLeftApplication(adapter);
-    }
-
-    @Override
-    public void reportAdImpression() {
-        // no-op
-    }
-
-    @Override
-    public void onVideoStart() {
-        // no-op
-    }
-
-    @Override
-    public void onUserEarnedReward() {
-        // no-op
-    }
-
-    @Override
-    public void onVideoComplete() {
-        // no-op
+        switch (adEvent) {
+            case LOADED:
+                listener.onAdLoaded(adapter);
+                break;
+            case OPENED:
+                listener.onAdOpened(adapter);
+                break;
+            case CLICKED:
+                listener.onAdClicked(adapter);
+                break;
+            case CLOSED:
+                listener.onAdClosed(adapter);
+                break;
+            case LEFT_APPLICATION:
+                listener.onAdLeftApplication(adapter);
+                break;
+            default:
+                break;
+        }
     }
 }
