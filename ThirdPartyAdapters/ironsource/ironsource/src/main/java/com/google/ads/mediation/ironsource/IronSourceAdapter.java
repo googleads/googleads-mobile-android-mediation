@@ -4,13 +4,15 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -35,9 +37,10 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
 
   // region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(Context context, final MediationInterstitialListener listener,
-      final Bundle serverParameters, MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestInterstitialAd(@NonNull Context context,
+      @NonNull final MediationInterstitialListener listener,
+      @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras) {
 
     String appKey = serverParameters.getString(KEY_APP_KEY);
     IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
@@ -53,11 +56,9 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
           }
 
           @Override
-          public void onInitializeError(@AdapterError int errorCode, @NonNull String errorMessage) {
-            String adapterError = IronSourceAdapterUtils
-                .createAdapterError(errorCode, errorMessage);
-            Log.e(TAG, adapterError);
-            listener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
+          public void onInitializeError(@NonNull AdError initializationError) {
+            Log.e(TAG, initializationError.getMessage());
+            listener.onAdFailedToLoad(IronSourceAdapter.this, initializationError);
           }
         });
   }
@@ -99,16 +100,19 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
   }
 
   public void onInterstitialAdLoadFailed(String instanceId, final IronSourceError ironSourceError) {
-    String sdkError = IronSourceAdapterUtils.createSDKError(ironSourceError);
-    Log.w(TAG, sdkError);
+    AdError loadError = new AdError(ironSourceError.getErrorCode(),
+        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+    String errorMessage = String
+        .format("IronSource failed to load interstitial ad for instance ID: %s. Error: %s",
+            instanceId, loadError.getMessage());
+    Log.e(TAG, errorMessage);
 
     IronSourceAdapterUtils.sendEventOnUIThread(
         new Runnable() {
           @Override
           public void run() {
             if (mInterstitialListener != null) {
-              mInterstitialListener.onAdFailedToLoad(
-                  IronSourceAdapter.this, ironSourceError.getErrorCode());
+              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
             }
           }
         });
@@ -143,8 +147,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
   }
 
   public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-    String sdkError = IronSourceAdapterUtils.createSDKError(ironSourceError);
-    Log.w(TAG, sdkError);
+    AdError showError = new AdError(ironSourceError.getErrorCode(),
+        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+    String errorMessage = String
+        .format("IronSource failed to show interstitial ad for instance ID: %s. Error: %s",
+            instanceId, showError.getMessage());
+    Log.e(TAG, errorMessage);
 
     IronSourceAdapterUtils.sendEventOnUIThread(
         new Runnable() {
@@ -176,26 +184,22 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
 
   // region IronSourceAdapterListener implementation.
   @Override
-  public void onAdFailedToLoad(@AdapterError final int errorCode, @NonNull String errorMessage) {
-    String adapterError = IronSourceAdapterUtils.createAdapterError(errorCode, errorMessage);
-    Log.w(TAG, adapterError);
-
+  public void onAdFailedToLoad(@NonNull AdError loadError) {
+    Log.e(TAG, loadError.getMessage());
     IronSourceAdapterUtils.sendEventOnUIThread(
         new Runnable() {
           @Override
           public void run() {
             if (mInterstitialListener != null) {
-              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, errorCode);
+              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
             }
           }
         });
   }
 
   @Override
-  public void onAdFailedToShow(@AdapterError int errorCode, @NonNull String errorMessage) {
-    String adapterError = IronSourceAdapterUtils.createAdapterError(errorCode, errorMessage);
-    Log.e(TAG, adapterError);
+  public void onAdFailedToShow(@NonNull AdError showError) {
+    Log.e(TAG, showError.getMessage());
   }
-
   // endregion
 }
