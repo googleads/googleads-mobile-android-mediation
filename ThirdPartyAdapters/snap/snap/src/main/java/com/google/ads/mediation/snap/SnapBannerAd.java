@@ -22,6 +22,7 @@ import com.snap.adkit.external.SnapAdKitEvent;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdSize;
+import com.snap.adkit.external.SnapBannerAdImpressionRecorded;
 
 public class SnapBannerAd implements MediationBannerAd {
     private BannerView mBannerView;
@@ -48,9 +49,15 @@ public class SnapBannerAd implements MediationBannerAd {
         });
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
+        if (mSlotId == null || mSlotId.isEmpty()) {
+            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap due to invalid slot id",
+                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            return;
+        }
         String bid = adConfiguration.getBidResponse();
         if (bid == null || bid.isEmpty()) {
-            callback.onFailure(new AdError(0, "fail to load banner ad, bid empty", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap due to invalid bid respnse",
+                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
         LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
@@ -75,7 +82,7 @@ public class SnapBannerAd implements MediationBannerAd {
             if (callback!= null) {
                 callback.onFailure(
                         new AdError(0,
-                                "ad load fail " + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
+                                "Failed to load banner ad from Snap." + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
                                 SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             }
             return;
@@ -87,6 +94,12 @@ public class SnapBannerAd implements MediationBannerAd {
                 mBannerAdCallback.onAdLeftApplication();
             }
             return;
+        }
+
+        if (snapAdKitEvent instanceof SnapBannerAdImpressionRecorded) {
+            if (mBannerAdCallback != null) {
+                mBannerAdCallback.reportAdImpression();
+            }
         }
     }
 }

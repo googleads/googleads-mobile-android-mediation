@@ -45,23 +45,28 @@ public class SnapRewardedAd implements MediationRewardedAd {
 
     public void loadAd() {
         if (adsNetworkApi == null) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "snap ad network not properly initialized", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            mMediationAdLoadCallback.onFailure(new AdError(0, "Snap Audience Network failed to initialize.", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
+        if (mSlotId == null || mSlotId.isEmpty()) {
+            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load Rewarded Ad from Snap due to invalid slot id",
+                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            return;
+        }
+        String bid = adConfiguration.getBidResponse();
+        if (bid == null || bid.isEmpty()) {
+            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load banner ad from Snap due to invalid bid respnse",
+                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            return;
+        }
         adsNetworkApi.setupListener(new SnapAdEventListener() {
             @Override
             public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
                 handleEvent(snapAdKitEvent);
             }
         });
-
-        String bid = adConfiguration.getBidResponse();
-        if (bid == null || bid.isEmpty()) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "fail to load reward ad, bid empty", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
         LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
                 .withPublisherSlotId(mSlotId).withBid(bid).build();
         adsNetworkApi.loadRewarded(loadAdConfig);
@@ -82,7 +87,9 @@ public class SnapRewardedAd implements MediationRewardedAd {
         if (snapAdKitEvent instanceof SnapAdLoadFailed) {
             if (mMediationAdLoadCallback != null) {
                 mMediationAdLoadCallback.onFailure(
-                        new AdError(0, "ad load fail", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+                        new AdError(0,
+                                "Failed to load rewarded ad from Snap." + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
+                                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             }
             return;
         }

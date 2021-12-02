@@ -53,7 +53,7 @@ public class SnapMediationAdapter extends RtbAdapter {
       @NonNull SignalCallbacks signalCallbacks) {
     String bidToken = AdKitAudienceAdsNetwork.getAdsNetwork().requestBidToken();
     if (TextUtils.isEmpty(bidToken)) {
-      signalCallbacks.onFailure(new AdError(0, "bid token generation fail", SNAP_AD_SDK_ERROR_DOMAIN));
+      signalCallbacks.onFailure(new AdError(0, "Failed to generate bid token.", SNAP_AD_SDK_ERROR_DOMAIN));
     } else {
       signalCallbacks.onSuccess(bidToken);
     }
@@ -89,7 +89,7 @@ public class SnapMediationAdapter extends RtbAdapter {
     AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.init(initSettings);
     if (adsNetworkApi == null) {
       initializationCompleteCallback.onInitializationFailed(
-              "Initialization failed. Snap Audience Network init fail.");
+              "Initialization failed. Snap Audience Network failed to initialize.");
       return;
     }
     initializationCompleteCallback.onInitializationSucceeded();
@@ -98,7 +98,7 @@ public class SnapMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = "2.3.0.0";
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
