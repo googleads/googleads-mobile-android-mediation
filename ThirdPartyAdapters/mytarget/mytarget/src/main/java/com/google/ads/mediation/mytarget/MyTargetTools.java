@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdSize;
 import com.my.target.ads.MyTargetView;
+import com.my.target.common.CustomParams;
 
 /**
  * A helper class for the myTarget adapter.
@@ -94,5 +95,61 @@ class MyTargetTools {
   static int toDips(int pixels, @NonNull Context context) {
     return Math.round(pixels / (((float) context.getResources().getDisplayMetrics().densityDpi)
         / DisplayMetrics.DENSITY_DEFAULT));
+  }
+
+  public static void handleMediationExtras(@NonNull String tag, @Nullable Bundle mediationExtras, @NonNull CustomParams customParams) {
+    if (mediationExtras == null) {
+      Log.d(tag, "Mediation extras is null");
+
+      return;
+    }
+
+    Log.d(tag, "Mediation extras size: " + mediationExtras.size());
+    for (String key : mediationExtras.keySet()) {
+      final Object object = mediationExtras.get(key);
+      if (object == null) {
+        customParams.setCustomParam(key, null);
+        Log.d(tag, "Add null custom param from mediation extra: " + key + ", " + "null");
+      } else if (object instanceof Boolean) {
+        final String value = (boolean) object ? "1" : "0";
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add boolean custom param from mediation extra: " + key + ", " + value);
+      } else if (object instanceof Byte) {
+        final String value = String.valueOf((byte) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add byte custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Short) {
+        final String value = String.valueOf((short) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add short custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Integer) {
+        final String value = String.valueOf((int) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add integer custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Long) {
+        final String value = String.valueOf((long) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add long custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Float) {
+        final String value = String.valueOf((float) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add float custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Double) {
+        final String value = String.valueOf((double) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add double custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof Character) {
+        final String value = String.valueOf((char) object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add character custom param from mediation extra: " + key + ", " + object);
+      } else if (object instanceof String) {
+        final String value = String.valueOf(object);
+        customParams.setCustomParam(key, value);
+        Log.d(tag, "Add string custom param from mediation extra: " + key + ", " + object);
+      }
+      else {
+        Log.d(tag, "Mediation extra has non-primitive extra that will not be added: " + key + ", " + object);
+      }
+    }
   }
 }
