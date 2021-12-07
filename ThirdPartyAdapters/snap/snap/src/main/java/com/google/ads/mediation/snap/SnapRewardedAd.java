@@ -4,6 +4,7 @@ import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,13 +51,13 @@ public class SnapRewardedAd implements MediationRewardedAd {
         }
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
-        if (mSlotId == null || mSlotId.isEmpty()) {
+        if (TextUtils.isEmpty(mSlotId)) {
             mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded Ad from Snap. Invalid Ad Slot ID.",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
         String bid = adConfiguration.getBidResponse();
-        if (bid == null || bid.isEmpty()) {
+        if (TextUtils.isEmpty(bid)) {
             mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded ad from Snap. Invalid bid response.",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
