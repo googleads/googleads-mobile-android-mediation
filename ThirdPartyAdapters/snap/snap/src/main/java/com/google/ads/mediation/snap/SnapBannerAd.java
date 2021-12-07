@@ -2,6 +2,7 @@ package com.google.ads.mediation.snap;
 
 import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 
@@ -26,6 +27,8 @@ import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdSize;
 import com.snap.adkit.external.SnapBannerAdImpressionRecorded;
 
+import java.util.ArrayList;
+
 public class SnapBannerAd implements MediationBannerAd {
     private BannerView mBannerView;
 
@@ -41,7 +44,7 @@ public class SnapBannerAd implements MediationBannerAd {
     }
 
     public void loadAd() {
-        SnapAdSize adSize = getBannerSize();
+        SnapAdSize adSize = getBannerSize(adConfiguration.getContext(), adConfiguration.getAdSize());
         if (adSize == SnapAdSize.INVALID) {
             callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid Ad Size.",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
@@ -111,12 +114,16 @@ public class SnapBannerAd implements MediationBannerAd {
         }
     }
 
-    private SnapAdSize getBannerSize() {
-        AdSize adSize = adConfiguration.getAdSize();
-        if (adSize.equals(AdSize.BANNER)) {
+    private SnapAdSize getBannerSize(@NonNull Context context,
+                                     @NonNull AdSize adSize) {
+        ArrayList<AdSize> potentials = new ArrayList<>();
+        potentials.add(AdSize.BANNER);
+        potentials.add(AdSize.MEDIUM_RECTANGLE);
+        AdSize matchedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
+        if (matchedAdSize.equals(AdSize.BANNER)) {
             return SnapAdSize.BANNER;
         }
-        if (adSize.equals(AdSize.MEDIUM_RECTANGLE)) {
+        if (matchedAdSize.equals(AdSize.MEDIUM_RECTANGLE)) {
             return SnapAdSize.MEDIUM_RECTANGLE;
         }
         return SnapAdSize.INVALID;

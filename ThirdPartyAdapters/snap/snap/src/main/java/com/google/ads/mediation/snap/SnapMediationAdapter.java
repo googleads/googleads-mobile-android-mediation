@@ -32,6 +32,7 @@ import com.snap.adkit.external.AudienceNetworkAdsApi;
 import com.snap.adkit.external.NetworkInitSettings;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class SnapMediationAdapter extends RtbAdapter {
@@ -69,7 +70,7 @@ public class SnapMediationAdapter extends RtbAdapter {
               "Failed to initialize. Context is null.");
       return;
     }
-    ArrayList<String> appIds = new ArrayList<>();
+    HashSet<String> appIds = new HashSet<>();
     for (MediationConfiguration configuration : configurations) {
       Bundle serverParameters = configuration.getServerParameters();
 
@@ -85,9 +86,11 @@ public class SnapMediationAdapter extends RtbAdapter {
     }
     String appId = appIds.iterator().next();
     if (appIds.size() > 1) {
-      initializationCompleteCallback.onInitializationFailed(
-              "Initialization failed. Multiple APP IDs found.");
-      return;
+      String logMessage =
+              String.format(
+                      "Multiple APP IDs found: %s. Using '%s' to initialize the Snap SDK.",
+                      appIds.toString(), appId);
+      Log.w(TAG, logMessage);
     }
     NetworkInitSettings initSettings =
             AdKitAudienceAdsNetwork.buildNetworkInitSettings(context)
