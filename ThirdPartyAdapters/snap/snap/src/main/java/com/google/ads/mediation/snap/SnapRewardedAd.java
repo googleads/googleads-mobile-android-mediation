@@ -51,13 +51,13 @@ public class SnapRewardedAd implements MediationRewardedAd {
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
         if (mSlotId == null || mSlotId.isEmpty()) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded Ad from Snap. Invalid Ad Slot ID",
+            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded Ad from Snap. Invalid Ad Slot ID.",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
         String bid = adConfiguration.getBidResponse();
         if (bid == null || bid.isEmpty()) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded ad from Snap. Invalid bid response",
+            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load rewarded ad from Snap. Invalid bid response.",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }

@@ -45,9 +45,9 @@ public class SnapMediationAdapter extends RtbAdapter {
 
   public static final String SLOT_ID_KEY = "adSlotId";
 
+  private SnapBannerAd bannerAd;
   private SnapInterstitialAd interstitialAd;
   private SnapRewardedAd rewardedAd;
-  private SnapBannerAd bannerAd;
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -66,12 +66,12 @@ public class SnapMediationAdapter extends RtbAdapter {
       @NonNull List<MediationConfiguration> configurations) {
     if (context == null) {
       initializationCompleteCallback.onInitializationFailed(
-              "Initialization Failed. Context is null.");
+              "Failed to initialize. Context is null.");
       return;
     }
     ArrayList<String> appIds = new ArrayList<>();
-    for (MediationConfiguration adConfiguration : configurations) {
-      Bundle serverParameters = adConfiguration.getServerParameters();
+    for (MediationConfiguration configuration : configurations) {
+      Bundle serverParameters = configuration.getServerParameters();
 
       String appIdConfig = getAppID(serverParameters);
       if (!TextUtils.isEmpty(appIdConfig)) {
@@ -85,13 +85,11 @@ public class SnapMediationAdapter extends RtbAdapter {
     }
     String appId = appIds.iterator().next();
     if (appIds.size() > 1) {
-      String message = String
-              .format("Multiple app id entries found: %s. Using '%s' to initialize the Snap SDK.",
-                       appIds.toString(), appId);
-      Log.w(TAG, message);
+      initializationCompleteCallback.onInitializationFailed(
+              "Initialization failed. Multiple APP IDs found.");
       return;
     }
-    final NetworkInitSettings initSettings =
+    NetworkInitSettings initSettings =
             AdKitAudienceAdsNetwork.buildNetworkInitSettings(context)
                     .withAppId(appId)
                     .build();
