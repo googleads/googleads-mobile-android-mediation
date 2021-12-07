@@ -8,22 +8,20 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "FyberMarketplace"
     // String property to store version name.
-    stringVersion = "7.8.4.1"
+    stringVersion = "8.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
     compileSdkVersion 30
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 7080401
+        versionCode 8010000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -33,11 +31,9 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
     implementation 'com.google.android.gms:play-services-ads:20.4.0'
-    implementation 'com.fyber.vamp:core-sdk:7.8.4'
-    implementation 'com.fyber.vamp:mraid-kit:7.8.4'
-    implementation 'com.fyber.vamp:video-kit:7.8.4'
+    implementation 'com.fyber:marketplace-sdk:8.1.0'
 }
 
 /**

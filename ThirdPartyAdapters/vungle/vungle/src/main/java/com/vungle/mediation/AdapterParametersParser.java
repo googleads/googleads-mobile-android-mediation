@@ -8,11 +8,11 @@ import androidx.annotation.Nullable;
  * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific
  * parameters.
  */
-class AdapterParametersParser {
+public class AdapterParametersParser {
 
   private static final String TAG = VungleManager.class.getSimpleName();
 
-  static class Config {
+  public static class Config {
 
     private String appId;
     private String requestUniqueId;
