@@ -31,6 +31,7 @@ import com.snap.adkit.external.AdKitAudienceAdsNetwork;
 import com.snap.adkit.external.AudienceNetworkAdsApi;
 import com.snap.adkit.external.NetworkInitSettings;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SnapMediationAdapter extends RtbAdapter {
@@ -68,18 +69,26 @@ public class SnapMediationAdapter extends RtbAdapter {
               "Initialization Failed. Context is null.");
       return;
     }
-    String appId = null;
+    ArrayList<String> appIds = new ArrayList<>();
     for (MediationConfiguration adConfiguration : configurations) {
       Bundle serverParameters = adConfiguration.getServerParameters();
 
       String appIdConfig = getAppID(serverParameters);
       if (!TextUtils.isEmpty(appIdConfig)) {
-        appId = appIdConfig;
+        appIds.add(appIdConfig);
       }
     }
-    if (TextUtils.isEmpty(appId)) {
+    if (appIds.isEmpty()) {
       initializationCompleteCallback.onInitializationFailed(
               "Initialization failed. No valid APP ID found.");
+      return;
+    }
+    String appId = appIds.iterator().next();
+    if (appIds.size() > 1) {
+      String message = String
+              .format("Multiple app id entries found: %s. Using '%s' to initialize the Snap SDK.",
+                       appIds.toString(), appId);
+      Log.w(TAG, message);
       return;
     }
     final NetworkInitSettings initSettings =
@@ -118,7 +127,7 @@ public class SnapMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = com.snap.adkit.BuildConfig.VERSION_NAME;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {

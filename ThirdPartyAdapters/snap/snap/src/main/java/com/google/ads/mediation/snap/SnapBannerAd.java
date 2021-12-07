@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -39,8 +41,14 @@ public class SnapBannerAd implements MediationBannerAd {
     }
 
     public void loadAd() {
+        SnapAdSize adSize = getBannerSize();
+        if (adSize == SnapAdSize.INVALID) {
+            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid Ad Size",
+                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
+            return;
+        }
         mBannerView = new BannerView(adConfiguration.getContext());
-        mBannerView.setAdSize(SnapAdSize.BANNER);
+        mBannerView.setAdSize(adSize);
         mBannerView.setupListener(new SnapAdEventListener() {
             @Override
             public void onEvent(SnapAdKitEvent snapAdKitEvent, @Nullable @org.jetbrains.annotations.Nullable String s) {
@@ -50,13 +58,13 @@ public class SnapBannerAd implements MediationBannerAd {
         Bundle serverParameters = adConfiguration.getServerParameters();
         mSlotId = serverParameters.getString(SLOT_ID_KEY);
         if (mSlotId == null || mSlotId.isEmpty()) {
-            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap due to invalid slot id",
+            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid Ad Slot ID",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
         String bid = adConfiguration.getBidResponse();
         if (bid == null || bid.isEmpty()) {
-            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap due to invalid bid respnse",
+            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid bid response",
                     SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
             return;
         }
@@ -101,5 +109,16 @@ public class SnapBannerAd implements MediationBannerAd {
                 mBannerAdCallback.reportAdImpression();
             }
         }
+    }
+
+    private SnapAdSize getBannerSize() {
+        AdSize adSize = adConfiguration.getAdSize();
+        if (adSize.equals(AdSize.BANNER)) {
+            return SnapAdSize.BANNER;
+        }
+        if (adSize.equals(AdSize.MEDIUM_RECTANGLE)) {
+            return SnapAdSize.MEDIUM_RECTANGLE;
+        }
+        return SnapAdSize.INVALID;
     }
 }
