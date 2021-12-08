@@ -1,29 +1,32 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
+import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
-import com.verizon.ads.Component;
-import com.verizon.ads.ErrorInfo;
-import com.verizon.ads.VASAds;
-import com.verizon.ads.nativeplacement.NativeAd;
-import com.verizon.ads.nativeplacement.NativeAdFactory;
-import com.verizon.ads.utils.TextUtils;
-import com.verizon.ads.utils.ThreadUtils;
+import com.yahoo.ads.ErrorInfo;
+import com.yahoo.ads.YASAds;
+import com.yahoo.ads.nativeplacement.NativeAd;
+import com.yahoo.ads.nativeplacement.NativePlacementConfig;
+import com.yahoo.ads.utils.TextUtils;
+import com.yahoo.ads.utils.ThreadUtils;
+import com.yahoo.ads.yahoonativecontroller.NativeComponent;
+
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
-    NativeAdFactory.NativeAdFactoryListener {
+final class YahooNativeRenderer implements NativeAd.NativeAdListener {
 
   /**
    * The mediation native adapter weak reference.
@@ -40,72 +43,69 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
    */
   private Context context;
   /**
-   * Verizon Media native ad.
+   * Yahoo native ad.
    */
   private NativeAd nativeAd;
 
-  public VerizonMediaNativeRenderer(MediationNativeAdapter adapter) {
+  public YahooNativeRenderer(MediationNativeAdapter adapter) {
     this.nativeAdapterWeakRef = new WeakReference<>(adapter);
   }
 
-  public void render(@NonNull Context context, MediationNativeListener listener,
+  public void render(@NonNull final Context context, MediationNativeListener listener,
       Bundle serverParameters, NativeMediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
     nativeListener = listener;
     this.context = context;
-    String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+    String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
 
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, error);
         return;
       }
     }
 
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        nativeListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
-    String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+    final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
-    VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
+    YahooAdapterUtils.setCoppaValue(mediationAdRequest);
+    YASAds.setLocationAccessMode((mediationAdRequest.getLocation() != null) ? YASAds.LocationAccessMode.IMPRECISE : YASAds.LocationAccessMode.DENIED);
     String[] adTypes = new String[] {"100", "simpleImage"};
-    NativeAdFactory nativeAdFactory = new NativeAdFactory(context, placementId, adTypes, this);
-    nativeAdFactory.setRequestMetaData(
-        VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
-    NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
-
-    if ((options == null) || (!options.shouldReturnUrlsForImageAssets())) {
-      nativeAdFactory.load(this);
-    } else {
-      nativeAdFactory.loadWithoutAssets(this);
-    }
+    NativeAd nativeAd = new NativeAd(context, placementId, this);
+    NativePlacementConfig nativePlacementConfig = new NativePlacementConfig(placementId, YahooAdapterUtils.getRequestMetadata(mediationAdRequest), adTypes);
+    nativePlacementConfig.skipAssets = true;
+    nativeAd.load(nativePlacementConfig);
   }
 
   @Override
   public void onError(final NativeAd nativeAd, final ErrorInfo errorInfo) {
     // This error callback is used if the native ad is loaded successfully, but an error
     // occurs while trying to display a component
-    Log.e(TAG, "Verizon Ads SDK native ad error: " + errorInfo);
+    Log.e(TAG, "Yahoo Ads SDK native ad error: " + errorInfo);
   }
 
   @Override
   public void onClosed(final NativeAd nativeAd) {
-    Log.i(TAG, "Verizon Ads SDK native ad closed.");
+    Log.i(TAG, "Yahoo Ads SDK native ad closed.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -118,8 +118,8 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
   }
 
   @Override
-  public void onClicked(final NativeAd nativeAd, final Component component) {
-    Log.i(TAG, "Verizon Ads SDK native ad clicked.");
+  public void onClicked(NativeAd nativeAd, NativeComponent nativeComponent) {
+    Log.i(TAG, "Yahoo Ads SDK native ad clicked.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -134,7 +134,7 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
 
   @Override
   public void onAdLeftApplication(final NativeAd nativeAd) {
-    Log.i(TAG, "Verizon Ads SDK native ad left application.");
+    Log.i(TAG, "Yahoo Ads SDK native ad left application.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -153,10 +153,9 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
     // no op.  events not supported in adapter
   }
 
-  @Override
-  public void onLoaded(final NativeAdFactory nativeAdFactory, final NativeAd nativeAd) {
+  public void onLoaded(final NativeAd nativeAd) {
     this.nativeAd = nativeAd;
-    Log.i(TAG, "Verizon Ads SDK native ad request succeeded: Loading succeeded.");
+    Log.i(TAG, "Yahoo Ads SDK native ad request succeeded: Loading succeeded.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -181,8 +180,8 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
             ThreadUtils.postOnUiThread(new Runnable() {
               @Override
               public void run() {
-                nativeListener.onAdFailedToLoad(adapter,
-                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Failed to load native ad.", ERROR_DOMAIN);
+                nativeListener.onAdFailedToLoad(adapter, error);
               }
             });
           }
@@ -191,31 +190,14 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
     });
   }
 
-
   @Override
-  public void onError(final NativeAdFactory nativeAdFactory, final ErrorInfo errorInfo) {
-    Log.i(TAG, "Verizon Ads SDK Native Ad request failed (" + errorInfo.getErrorCode() + "): " +
-        errorInfo.getDescription());
-    final int errorCode;
-    switch (errorInfo.getErrorCode()) {
-      case VASAds.ERROR_AD_REQUEST_FAILED:
-        errorCode = AdRequest.ERROR_CODE_INTERNAL_ERROR;
-        break;
-      case VASAds.ERROR_AD_REQUEST_TIMED_OUT:
-        errorCode = AdRequest.ERROR_CODE_NETWORK_ERROR;
-        break;
-      default:
-        errorCode = AdRequest.ERROR_CODE_NO_FILL;
+  public void onLoadFailed(NativeAd nativeAd, ErrorInfo errorInfo) {
+    AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to load native ad.", ERROR_DOMAIN);
+    Log.e(TAG, error.getMessage());
+    final MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
+    if (nativeListener != null && adapter != null) {
+      nativeListener.onAdFailedToLoad(adapter, error);
     }
-    ThreadUtils.postOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
-        if (nativeListener != null && adapter != null) {
-          nativeListener.onAdFailedToLoad(adapter, errorCode);
-        }
-      }
-    });
   }
 
   void destroy() {

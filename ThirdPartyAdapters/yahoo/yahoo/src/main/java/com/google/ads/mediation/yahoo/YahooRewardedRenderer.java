@@ -1,46 +1,52 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
+import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
-import com.verizon.ads.ErrorInfo;
-import com.verizon.ads.VASAds;
-import com.verizon.ads.interstitialplacement.InterstitialAd;
-import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
-import com.verizon.ads.utils.ThreadUtils;
+import com.yahoo.ads.ErrorInfo;
+import com.yahoo.ads.YASAds;
+import com.yahoo.ads.interstitialplacement.InterstitialAd;
+import com.yahoo.ads.interstitialplacement.InterstitialPlacementConfig;
+import com.yahoo.ads.utils.ThreadUtils;
+
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListener,
-    InterstitialAdFactory.InterstitialAdFactoryListener, MediationRewardedAd {
+
+class YahooRewardedRenderer implements InterstitialAd.InterstitialAdListener, MediationRewardedAd {
 
   private static final String VIDEO_COMPLETE_EVENT_ID = "onVideoComplete";
 
   /**
    * The mediation ad load callback.
    */
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
   /**
-   * Verizon Media rewarded ad.
+   * Yahoo rewarded ad.
    */
   private InterstitialAd rewardedAd;
 
   /**
    * Flag to check 'onEvent()' completion.
    */
-  private AtomicBoolean completionEventCalled = new AtomicBoolean();
+  private final AtomicBoolean completionEventCalled = new AtomicBoolean();
 
   /**
    * The mediation rewarded ad callback used to report ad event callbacks.
@@ -50,9 +56,9 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   /**
    * The mediation rewarded ad configuration.
    */
-  private MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
+  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
-  public VerizonMediaRewardedRenderer(@NonNull MediationAdLoadCallback<MediationRewardedAd,
+  public YahooRewardedRenderer(@NonNull MediationAdLoadCallback<MediationRewardedAd,
       MediationRewardedAdCallback> mediationAdLoadCallback, MediationRewardedAdConfiguration
       mediationRewardedAdConfiguration) {
     this.mediationAdLoadCallback = mediationAdLoadCallback;
@@ -61,39 +67,34 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
 
   public void render() {
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters,
+    String siteId = YahooAdapterUtils.getSiteId(serverParameters,
         mediationRewardedAdConfiguration);
-    Context context = mediationRewardedAdConfiguration.getContext();
+    final Context context = mediationRewardedAdConfiguration.getContext();
     if (!initializeSDK(context, siteId)) {
-      final String message = "Unable to initialize Verizon Ads SDK.";
+      final String message = "Unable to initialize Yahoo Ads SDK.";
       Log.e(TAG, message);
-      mediationAdLoadCallback.onFailure(message);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, ERROR_DOMAIN);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+    final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      mediationAdLoadCallback.onFailure(
-          "Verizon Ads SDK placement ID must be set in mediationRewardedAdConfiguration" +
-              " server params.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Yahoo Ads SDK placement ID must be set in mediationRewardedAdConfiguration" +
+              " server params.", ERROR_DOMAIN);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    VerizonMediaAdapterUtils.setCoppaValue(mediationRewardedAdConfiguration);
-    VASAds.setLocationEnabled((mediationRewardedAdConfiguration.getLocation() != null));
-    InterstitialAdFactory interstitialAdFactory =
-        new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(),
-            placementId, this);
-    interstitialAdFactory.setRequestMetaData(VerizonMediaAdapterUtils
-        .getRequestMetaData(mediationRewardedAdConfiguration));
-    interstitialAdFactory.load(this);
+    YahooAdapterUtils.setCoppaValue(mediationRewardedAdConfiguration);
+    YASAds.setLocationAccessMode((mediationRewardedAdConfiguration.getLocation() != null) ? YASAds.LocationAccessMode.IMPRECISE : YASAds.LocationAccessMode.DENIED);
+    InterstitialAd interstitialAd = new InterstitialAd(context, placementId, this);
+    interstitialAd.load(new InterstitialPlacementConfig(placementId, YahooAdapterUtils.getRequestMetaData()));
   }
 
-  @Override
-  public void onLoaded(final InterstitialAdFactory interstitialAdFactory,
-      final InterstitialAd interstitialAd) {
+  public void onLoaded(final InterstitialAd interstitialAd) {
 
-    Log.i(TAG, "Verizon Ads SDK incentivized video interstitial loaded.");
+    Log.i(TAG, "Yahoo Ads SDK incentivized video interstitial loaded.");
     this.rewardedAd = interstitialAd;
     // Reset the completion event with each new interstitial ad load.
     completionEventCalled.set(false);
@@ -102,33 +103,33 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
       public void run() {
         if (mediationAdLoadCallback != null) {
           mediationRewardedAdCallback =
-              mediationAdLoadCallback.onSuccess(VerizonMediaRewardedRenderer.this);
+              mediationAdLoadCallback.onSuccess(YahooRewardedRenderer.this);
         }
       }
     });
   }
 
-
   @Override
-  public void onError(final InterstitialAdFactory interstitialAdFactory,
-      final ErrorInfo errorInfo) {
-    final String message = "Verizon Ads SDK incentivized video interstitial request failed (" +
-        errorInfo.getErrorCode() + "): " + errorInfo.getDescription();
+  public void onLoadFailed(InterstitialAd interstitialAd, ErrorInfo errorInfo) {
+    final String message = "Yahoo Ads SDK incentivized video interstitial request failed (" +
+            errorInfo.getErrorCode() + "): " + errorInfo.getDescription();
     Log.w(TAG, message);
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(message);
+          AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, ERROR_DOMAIN);
+          mediationAdLoadCallback.onFailure(error);
         }
       }
     });
   }
 
+
   @Override
   public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
 
-    Log.e(TAG, "Verizon Ads SDK incentivized video interstitial error: " + errorInfo);
+    Log.e(TAG, "Yahoo Ads SDK incentivized video interstitial error: " + errorInfo);
 
     // This error callback is used if the interstitial ad is loaded successfully, but an
     // error occurs while trying to display
@@ -144,7 +145,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
 
   @Override
   public void onShown(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK incentivized video interstitial shown.");
+    Log.i(TAG, "Yahoo Ads SDK incentivized video interstitial shown.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -158,7 +159,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
 
   @Override
   public void onClosed(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK ad closed.");
+    Log.i(TAG, "Yahoo Ads SDK ad closed.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -171,7 +172,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
 
   @Override
   public void onClicked(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK incentivized video interstitial clicked.");
+    Log.i(TAG, "Yahoo Ads SDK incentivized video interstitial clicked.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -184,7 +185,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
 
   @Override
   public void onAdLeftApplication(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK incentivized video interstitial left application.");
+    Log.i(TAG, "Yahoo Ads SDK incentivized video interstitial left application.");
   }
 
   @Override
@@ -198,6 +199,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
           if (mediationRewardedAdCallback != null) {
             mediationRewardedAdCallback.onVideoComplete();
             mediationRewardedAdCallback.onUserEarnedReward(new RewardItem() {
+              @NonNull
               @Override
               public String getType() {
                 return "";
@@ -215,13 +217,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   }
 
   @Override
-  public void showAd(Context context) {
-    if (context == null) {
-      if (mediationRewardedAdCallback != null) {
-        mediationRewardedAdCallback.onAdFailedToShow("Failed to show: context is null.");
-      }
-      return;
-    }
+  public void showAd(@NonNull Context context) {
 
     if (rewardedAd == null) {
       if (mediationRewardedAdCallback != null) {

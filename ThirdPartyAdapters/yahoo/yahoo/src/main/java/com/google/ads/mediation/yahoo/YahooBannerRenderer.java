@@ -1,7 +1,8 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
+import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -9,24 +10,27 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
-import com.verizon.ads.ErrorInfo;
-import com.verizon.ads.VASAds;
-import com.verizon.ads.inlineplacement.InlineAdFactory;
-import com.verizon.ads.inlineplacement.InlineAdView;
-import com.verizon.ads.utils.TextUtils;
-import com.verizon.ads.utils.ThreadUtils;
+import com.yahoo.ads.ErrorInfo;
+import com.yahoo.ads.YASAds;
+import com.yahoo.ads.inlineplacement.InlineAdView;
+import com.yahoo.ads.inlineplacement.InlinePlacementConfig;
+import com.yahoo.ads.utils.TextUtils;
+import com.yahoo.ads.utils.ThreadUtils;
+
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
 
-final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
-    InlineAdFactory.InlineAdFactoryListener {
+final class YahooBannerRenderer implements InlineAdView.InlineAdListener {
 
   /**
    * The ad view's container.
@@ -44,59 +48,62 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
   private MediationBannerListener bannerListener;
 
   /**
-   * Verizon Media ad view.
+   * Yahoo ad view.
    */
   private InlineAdView inlineAdView;
 
-  public VerizonMediaBannerRenderer(MediationBannerAdapter adapter) {
+  public YahooBannerRenderer(MediationBannerAdapter adapter) {
     bannerAdapterWeakRef = new WeakReference<>(adapter);
   }
 
-  public void render(@NonNull Context context, MediationBannerListener listener,
+  public void render(@NonNull final Context context, MediationBannerListener listener,
       Bundle serverParameters, AdSize adSize, MediationAdRequest mediationAdRequest,
       Bundle mediationExtras) {
     bannerListener = listener;
-    String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+    String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter,
-            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
-    String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+    final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     if (adSize == null) {
-      Log.w(TAG, "Fail to request banner ad, adSize is null.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Fail to request banner ad, adSize is null.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
-    AdSize normalizedSize = VerizonMediaAdapterUtils.normalizeSize(context, adSize);
+    AdSize normalizedSize = YahooAdapterUtils.normalizeSize(context, adSize);
     if (normalizedSize == null) {
-      Log.w(TAG,
-          "The input ad size " + adSize.toString() + " is not currently supported.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "The input ad size " + adSize.toString() + " is not currently supported.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
@@ -106,31 +113,30 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
             LinearLayout.LayoutParams.WRAP_CONTENT);
     lp.gravity = Gravity.CENTER_HORIZONTAL;
     adContainer.setLayoutParams(lp);
-    com.verizon.ads.inlineplacement.AdSize verizonAdSize =
-        new com.verizon.ads.inlineplacement.AdSize(normalizedSize.getWidth(),
+    com.yahoo.ads.inlineplacement.AdSize yahooAdSize =
+        new com.yahoo.ads.inlineplacement.AdSize(normalizedSize.getWidth(),
             normalizedSize.getHeight());
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
-    VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
-    InlineAdFactory inlineAdFactory = new InlineAdFactory(context, placementId,
-        Collections.singletonList(verizonAdSize), this);
-    inlineAdFactory.setRequestMetaData(
-        VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
-    inlineAdFactory.load(this);
+    YASAds.setLocationAccessMode((mediationAdRequest.getLocation() != null) ? YASAds.LocationAccessMode.IMPRECISE : YASAds.LocationAccessMode.DENIED);
+    YahooAdapterUtils.setCoppaValue(mediationAdRequest);
+    InlinePlacementConfig placementConfig = new InlinePlacementConfig(placementId,
+        YahooAdapterUtils.getRequestMetadata(mediationAdRequest), Collections.singletonList(yahooAdSize));
+    InlineAdView inlineAd = new InlineAdView(context, placementId, this);
+    inlineAd.load(placementConfig);
   }
 
   @Override
   public void onError(final InlineAdView inlineAdView, final ErrorInfo errorInfo) {
-    Log.e(TAG, "Verizon Ads SDK inline ad error: " + errorInfo);
+    Log.e(TAG, "Yahoo Ads SDK inline ad error: " + errorInfo);
   }
 
   @Override
   public void onResized(final InlineAdView inlineAdView) {
-    Log.d(TAG, "Verizon Ads SDK on resized.");
+    Log.d(TAG, "Yahoo Ads SDK on resized.");
   }
 
   @Override
   public void onExpanded(final InlineAdView inlineAdView) {
-    Log.i(TAG, "Verizon Ads SDK inline ad expanded.");
+    Log.i(TAG, "Yahoo Ads SDK inline ad expanded.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -144,7 +150,7 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
 
   @Override
   public void onCollapsed(final InlineAdView inlineAdView) {
-    Log.i(TAG, "Verizon Ads SDK inline ad collapsed.");
+    Log.i(TAG, "Yahoo Ads SDK inline ad collapsed.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -158,7 +164,7 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
 
   @Override
   public void onClicked(final InlineAdView inlineAdView) {
-    Log.i(TAG, "Verizon Ads SDK inline ad clicked.");
+    Log.i(TAG, "Yahoo Ads SDK inline ad clicked.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -172,7 +178,7 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
 
   @Override
   public void onAdLeftApplication(final InlineAdView inlineAdView) {
-    Log.i(TAG, "Verizon Ads SDK inline ad left application.");
+    Log.i(TAG, "Yahoo Ads SDK inline ad left application.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -195,10 +201,9 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
     // no op.  events not supported in adapter
   }
 
-  @Override
-  public void onLoaded(final InlineAdFactory inlineAdFactory, final InlineAdView inlineAdView) {
+  public void onLoaded(final InlineAdView inlineAdView) {
     this.inlineAdView = inlineAdView;
-    Log.i(TAG, "Verizon Ads SDK inline ad request succeeded.");
+    Log.i(TAG, "Yahoo Ads SDK inline ad request succeeded.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -213,31 +218,20 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
 
 
   @Override
-  public void onError(final InlineAdFactory inlineAdFactory, final ErrorInfo errorInfo) {
-    Log.i(TAG, "Verizon Ads SDK Inline Ad request failed (" + errorInfo.getErrorCode() + "): " +
-        errorInfo.getDescription());
-
-    final int errorCode;
-    switch (errorInfo.getErrorCode()) {
-      case VASAds.ERROR_AD_REQUEST_FAILED:
-        errorCode = AdRequest.ERROR_CODE_INTERNAL_ERROR;
-        break;
-      case VASAds.ERROR_AD_REQUEST_TIMED_OUT:
-        errorCode = AdRequest.ERROR_CODE_NETWORK_ERROR;
-        break;
-      default:
-        errorCode = AdRequest.ERROR_CODE_NO_FILL;
-    }
+  public void onLoadFailed(InlineAdView inlineAdView, ErrorInfo errorInfo) {
+    final AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Yahoo Ads SDK inline request failed.", ERROR_DOMAIN);
+    Log.e(TAG, error.getMessage());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
         if (bannerListener != null && adapter != null) {
-          bannerListener.onAdFailedToLoad(adapter, errorCode);
+          bannerListener.onAdFailedToLoad(adapter, error);
         }
       }
     });
   }
+
 
   View getBannerView() {
     return adContainer;

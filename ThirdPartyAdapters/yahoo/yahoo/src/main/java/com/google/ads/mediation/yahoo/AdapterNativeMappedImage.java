@@ -1,4 +1,4 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;

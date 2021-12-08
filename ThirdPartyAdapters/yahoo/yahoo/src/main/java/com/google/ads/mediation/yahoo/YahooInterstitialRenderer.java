@@ -1,32 +1,37 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
+import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.verizon.ads.ErrorInfo;
-import com.verizon.ads.VASAds;
-import com.verizon.ads.interstitialplacement.InterstitialAd;
-import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
-import com.verizon.ads.utils.TextUtils;
-import com.verizon.ads.utils.ThreadUtils;
+import com.yahoo.ads.ErrorInfo;
+import com.yahoo.ads.YASAds;
+import com.yahoo.ads.interstitialplacement.InterstitialAd;
+import com.yahoo.ads.interstitialplacement.InterstitialPlacementConfig;
+import com.yahoo.ads.utils.TextUtils;
+import com.yahoo.ads.utils.ThreadUtils;
+
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-final class VerizonMediaInterstitialRenderer implements InterstitialAd.InterstitialAdListener,
-    InterstitialAdFactory.InterstitialAdFactoryListener {
+
+final class YahooInterstitialRenderer implements InterstitialAd.InterstitialAdListener {
 
   /**
    * The mediation interstitial adapter weak reference.
    */
-  private WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
+  private final WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
 
   /**
    * The mediation interstitial listener used to report interstitial ad event callbacks.
@@ -34,55 +39,54 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
   private MediationInterstitialListener interstitialListener;
 
   /**
-   * Verizon Media interstitial ad.
+   * Yahoo interstitial ad.
    */
   private InterstitialAd interstitialAd;
 
-  public VerizonMediaInterstitialRenderer(final MediationInterstitialAdapter adapter) {
+  public YahooInterstitialRenderer(final MediationInterstitialAdapter adapter) {
     interstitialAdapterWeakRef = new WeakReference<>(adapter);
   }
 
-  public void render(@NonNull Context context, MediationInterstitialListener listener,
+  public void render(@NonNull final Context context, MediationInterstitialListener listener,
       MediationAdRequest mediationAdRequest, Bundle serverParameters, Bundle mediationExtras) {
     interstitialListener = listener;
-    String siteId = VerizonMediaAdapterUtils.getSiteId(serverParameters, mediationExtras);
+    String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+        interstitialListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Verizon Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        interstitialListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
-    String placementId = VerizonMediaAdapterUtils.getPlacementId(serverParameters);
+    final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
-      interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      interstitialListener.onAdFailedToLoad(adapter, error);
       return;
     }
 
-    VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
-    InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, placementId
-        , this);
-    interstitialAdFactory.setRequestMetaData(VerizonMediaAdapterUtils
-        .getRequestMetadata(mediationAdRequest));
-    interstitialAdFactory.load(this);
+    YahooAdapterUtils.setCoppaValue(mediationAdRequest);
+    YASAds.setLocationAccessMode((mediationAdRequest.getLocation() != null) ? YASAds.LocationAccessMode.IMPRECISE : YASAds.LocationAccessMode.DENIED);
+    InterstitialAd interstitialAd = new InterstitialAd(context, placementId, this);
+    interstitialAd.load(new InterstitialPlacementConfig(placementId, YahooAdapterUtils.getRequestMetadata(mediationAdRequest)));
   }
 
   @Override
   public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-    Log.e(TAG, "Verizon Ads SDK interstitial error: " + errorInfo);
+    Log.e(TAG, "Yahoo Ads SDK interstitial error: " + errorInfo);
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -97,7 +101,7 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
 
   @Override
   public void onShown(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK interstitial shown.");
+    Log.i(TAG, "Yahoo Ads SDK interstitial shown.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -111,7 +115,7 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
 
   @Override
   public void onClosed(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK ad closed");
+    Log.i(TAG, "Yahoo Ads SDK ad closed");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -125,7 +129,7 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
 
   @Override
   public void onClicked(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK interstitial clicked.");
+    Log.i(TAG, "Yahoo Ads SDK interstitial clicked.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -139,7 +143,7 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
 
   @Override
   public void onAdLeftApplication(final InterstitialAd interstitialAd) {
-    Log.i(TAG, "Verizon Ads SDK interstitial left application.");
+    Log.i(TAG, "Yahoo Ads SDK interstitial left application.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -158,11 +162,10 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
   }
 
   @Override
-  public void onLoaded(final InterstitialAdFactory interstitialAdFactory,
-      final InterstitialAd interstitialAd) {
+  public void onLoaded(final InterstitialAd interstitialAd) {
 
     this.interstitialAd = interstitialAd;
-    Log.i(TAG, "Verizon Ads SDK interstitial loaded.");
+    Log.i(TAG, "Yahoo Ads SDK interstitial loaded.");
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -174,30 +177,17 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
     });
   }
 
-
   @Override
-  public void onError(final InterstitialAdFactory interstitialAdFactory,
-      final ErrorInfo errorInfo) {
-    Log.w(TAG, "Verizon Ads SDK interstitial request failed (" + errorInfo.getErrorCode()
-        + "): " + errorInfo.getDescription());
-    final int errorCode;
-    switch (errorInfo.getErrorCode()) {
-      case VASAds.ERROR_AD_REQUEST_FAILED:
-        errorCode = AdRequest.ERROR_CODE_INTERNAL_ERROR;
-        break;
-      case VASAds.ERROR_AD_REQUEST_TIMED_OUT:
-        errorCode = AdRequest.ERROR_CODE_NETWORK_ERROR;
-        break;
-      default:
-        errorCode = AdRequest.ERROR_CODE_NO_FILL;
-    }
+  public void onLoadFailed(InterstitialAd interstitialAd, ErrorInfo errorInfo) {
+    final AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Yahoo Ads SDK interstitial request failed.", ERROR_DOMAIN);
+    Log.w(TAG, error.getMessage());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
         if (adapter != null && interstitialListener != null) {
-          interstitialListener.onAdFailedToLoad(adapter, errorCode);
+          interstitialListener.onAdFailedToLoad(adapter, error);
         }
       }
     });
