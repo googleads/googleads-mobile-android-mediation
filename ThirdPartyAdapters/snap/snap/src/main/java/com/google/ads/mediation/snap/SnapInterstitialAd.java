@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -30,93 +31,130 @@ import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdVisible;
 
 public class SnapInterstitialAd implements MediationInterstitialAd {
-    private MediationInterstitialAdConfiguration adConfiguration;
-    private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mMediationAdLoadCallback;
-    private MediationInterstitialAdCallback mInterstitialAdCallback;
-    private String mSlotId;
 
-    @Nullable
-    private final AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.getAdsNetwork();
+  private static final String TAG = SnapInterstitialAd.class.getSimpleName();
 
-    public SnapInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-                              @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-        this.adConfiguration = adConfiguration;
-        this.mMediationAdLoadCallback = callback;
+  private MediationInterstitialAdConfiguration adConfiguration;
+  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      mediationAdLoadCallback;
+  private MediationInterstitialAdCallback interstitialAdCallback;
+  private String slotId;
+
+  @Nullable
+  private final AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.getAdsNetwork();
+
+  public SnapInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    this.adConfiguration = adConfiguration;
+    this.mediationAdLoadCallback = callback;
+  }
+
+  public void loadAd() {
+    if (adsNetworkApi == null) {
+      AdError error =
+          new AdError(
+              0,
+              "Snap Audience Network failed to initialize.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
     }
 
-    public void loadAd() {
-        if (adsNetworkApi == null) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "Snap Audience Network failed to initialize.", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        mSlotId = serverParameters.getString(SLOT_ID_KEY);
-        if (TextUtils.isEmpty(mSlotId)) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load interstitial Ad from Snap. Invalid Ad Slot ID.",
-                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        String bid = adConfiguration.getBidResponse();
-        if (TextUtils.isEmpty(bid)) {
-            mMediationAdLoadCallback.onFailure(new AdError(0, "Failed to load interstitial Ad from Snap. Invalid bid response.",
-                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        adsNetworkApi.setupListener(new SnapAdEventListener() {
-            @Override
-            public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
-                handleEvent(snapAdKitEvent);
-            }
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    slotId = serverParameters.getString(SLOT_ID_KEY);
+    if (TextUtils.isEmpty(slotId)) {
+      AdError error =
+          new AdError(
+              0,
+              "Failed to load interstitial Ad from Snap. Missing or invalid Ad Slot ID.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    String bid = adConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(bid)) {
+      AdError error =
+          new AdError(
+              0,
+              "Failed to load interstitial Ad from Snap. Missing or invalid bid response.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    adsNetworkApi.setupListener(
+        new SnapAdEventListener() {
+          @Override
+          public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
+            handleEvent(snapAdKitEvent);
+          }
         });
-        LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
-                .withPublisherSlotId(mSlotId).withBid(bid).build();
-        adsNetworkApi.loadInterstitial(loadAdConfig);
+
+    LoadAdConfig loadAdConfig =
+        new LoadAdConfigBuilder().withPublisherSlotId(slotId).withBid(bid).build();
+    adsNetworkApi.loadInterstitial(loadAdConfig);
+  }
+
+  @Override
+  public void showAd(Context context) {
+    adsNetworkApi.playAd(new SnapAdKitSlot(slotId, AdKitSlotType.INTERSTITIAL));
+  }
+
+  private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
+    if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
+      if (mediationAdLoadCallback != null) {
+        interstitialAdCallback = mediationAdLoadCallback.onSuccess(this);
+      }
+      return;
     }
 
-    @Override
-    public void showAd(Context context) {
-        adsNetworkApi.playAd(new SnapAdKitSlot(mSlotId, AdKitSlotType.INTERSTITIAL));
+    if (snapAdKitEvent instanceof SnapAdLoadFailed) {
+      if (mediationAdLoadCallback != null) {
+        AdError error =
+            new AdError(
+                0,
+                "Failed to load interstitial ad from Snap."
+                    + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
+                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+        Log.w(TAG, error.getMessage());
+        mediationAdLoadCallback.onFailure(error);
+      }
+      return;
     }
 
-    private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
-        if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
-            if (mMediationAdLoadCallback != null) {
-                mInterstitialAdCallback = mMediationAdLoadCallback.onSuccess(this);
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-            if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(
-                        new AdError(0,
-                                "Failed to load interstitial ad from Snap." + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
-                                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdVisible) {
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.onAdOpened();
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdClicked) {
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.reportAdClicked();
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdImpressionHappened) {
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.reportAdImpression();
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdDismissed) {
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.onAdClosed();
-            }
-            return;
-        }
+    if (snapAdKitEvent instanceof SnapAdVisible) {
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.onAdOpened();
+      }
+      return;
     }
+
+    if (snapAdKitEvent instanceof SnapAdClicked) {
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.reportAdClicked();
+      }
+      return;
+    }
+
+    if (snapAdKitEvent instanceof SnapAdImpressionHappened) {
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.reportAdImpression();
+      }
+      return;
+    }
+
+    if (snapAdKitEvent instanceof SnapAdDismissed) {
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.onAdClosed();
+      }
+      return;
+    }
+  }
 }

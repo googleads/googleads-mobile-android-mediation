@@ -5,6 +5,7 @@ import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -31,102 +32,136 @@ import com.snap.adkit.external.SnapBannerAdImpressionRecorded;
 import java.util.ArrayList;
 
 public class SnapBannerAd implements MediationBannerAd {
-    private BannerView mBannerView;
 
-    private MediationBannerAdConfiguration adConfiguration;
-    private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
-    private MediationBannerAdCallback mBannerAdCallback;
-    private String mSlotId;
+  private static final String TAG = SnapBannerAd.class.getSimpleName();
 
-    public SnapBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
-                        @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        this.adConfiguration = adConfiguration;
-        this.callback = callback;
+  private BannerView bannerView;
+
+  private MediationBannerAdConfiguration adConfiguration;
+  private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
+  private MediationBannerAdCallback bannerAdCallback;
+  private String slotID;
+
+  public SnapBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    this.adConfiguration = adConfiguration;
+    this.callback = callback;
+  }
+
+  public void loadAd() {
+    SnapAdSize adSize = getBannerSize(adConfiguration.getContext(), adConfiguration.getAdSize());
+    if (adSize == SnapAdSize.INVALID) {
+      AdError error =
+          new AdError(
+              0,
+              "Failed to load banner ad from Snap. Invalid Ad Size.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      callback.onFailure(error);
+      return;
     }
 
-    public void loadAd() {
-        SnapAdSize adSize = getBannerSize(adConfiguration.getContext(), adConfiguration.getAdSize());
-        if (adSize == SnapAdSize.INVALID) {
-            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid Ad Size.",
-                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        mBannerView = new BannerView(adConfiguration.getContext());
-        mBannerView.setAdSize(adSize);
-        mBannerView.setupListener(new SnapAdEventListener() {
-            @Override
-            public void onEvent(SnapAdKitEvent snapAdKitEvent, @Nullable @org.jetbrains.annotations.Nullable String s) {
-                handleEvent(snapAdKitEvent);
-            }
+    bannerView = new BannerView(adConfiguration.getContext());
+    bannerView.setAdSize(adSize);
+    bannerView.setupListener(
+        new SnapAdEventListener() {
+          @Override
+          public void onEvent(
+              SnapAdKitEvent snapAdKitEvent,
+              @Nullable @org.jetbrains.annotations.Nullable String s) {
+            handleEvent(snapAdKitEvent);
+          }
         });
-        Bundle serverParameters = adConfiguration.getServerParameters();
-        mSlotId = serverParameters.getString(SLOT_ID_KEY);
-        if (TextUtils.isEmpty(mSlotId)) {
-            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid Ad Slot ID.",
-                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        String bid = adConfiguration.getBidResponse();
-        if (TextUtils.isEmpty(bid)) {
-            callback.onFailure(new AdError(0, "Failed to load banner ad from Snap. Invalid bid response.",
-                    SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            return;
-        }
-        LoadAdConfig loadAdConfig = new LoadAdConfigBuilder()
-                .withPublisherSlotId(mSlotId).withBid(bid).build();
-        mBannerView.loadAd(loadAdConfig);
+
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    slotID = serverParameters.getString(SLOT_ID_KEY);
+    if (TextUtils.isEmpty(slotID)) {
+      AdError error =
+          new AdError(
+              0,
+              "Failed to load banner ad from Snap. Missing or invalid Ad Slot ID.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      callback.onFailure(error);
+      return;
     }
 
-    @NonNull
-    @Override
-    public View getView() {
-        return mBannerView.view();
+    String bid = adConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(bid)) {
+      AdError error =
+          new AdError(
+              0,
+              "Failed to load banner ad from Snap. Missing or invalid bid response.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      callback.onFailure(error);
+      return;
     }
 
-    private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
-        if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
-            if (callback != null) {
-                mBannerAdCallback = callback.onSuccess(this);
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-            if (callback!= null) {
-                callback.onFailure(
-                        new AdError(0,
-                                "Failed to load banner ad from Snap." + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
-                                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN));
-            }
-            return;
-        }
-        if (snapAdKitEvent instanceof SnapAdClicked) {
-            if (mBannerAdCallback != null) {
-                mBannerAdCallback.onAdOpened();
-                mBannerAdCallback.reportAdClicked();
-                mBannerAdCallback.onAdLeftApplication();
-            }
-            return;
-        }
+    LoadAdConfig loadAdConfig =
+        new LoadAdConfigBuilder().withPublisherSlotId(slotID).withBid(bid).build();
+    bannerView.loadAd(loadAdConfig);
+  }
 
-        if (snapAdKitEvent instanceof SnapBannerAdImpressionRecorded) {
-            if (mBannerAdCallback != null) {
-                mBannerAdCallback.reportAdImpression();
-            }
-        }
+  @Override
+  @NonNull
+  public View getView() {
+    return bannerView.view();
+  }
+
+  private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
+    if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
+      if (callback != null) {
+        bannerAdCallback = callback.onSuccess(this);
+      }
+      return;
     }
 
-    private SnapAdSize getBannerSize(@NonNull Context context,
-                                     @NonNull AdSize adSize) {
-        ArrayList<AdSize> potentials = new ArrayList<>();
-        potentials.add(AdSize.BANNER);
-        potentials.add(AdSize.MEDIUM_RECTANGLE);
-        AdSize matchedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
-        if (matchedAdSize.equals(AdSize.BANNER)) {
-            return SnapAdSize.BANNER;
-        }
-        if (matchedAdSize.equals(AdSize.MEDIUM_RECTANGLE)) {
-            return SnapAdSize.MEDIUM_RECTANGLE;
-        }
-        return SnapAdSize.INVALID;
+    if (snapAdKitEvent instanceof SnapAdLoadFailed) {
+      if (callback != null) {
+        AdError error =
+            new AdError(
+                0,
+                "Failed to load banner ad from Snap."
+                    + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
+                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+        Log.w(TAG, error.getMessage());
+        callback.onFailure(error);
+      }
+      return;
     }
+
+    if (snapAdKitEvent instanceof SnapAdClicked) {
+      if (bannerAdCallback != null) {
+        bannerAdCallback.onAdOpened();
+        bannerAdCallback.reportAdClicked();
+        bannerAdCallback.onAdLeftApplication();
+      }
+      return;
+    }
+
+    if (snapAdKitEvent instanceof SnapBannerAdImpressionRecorded) {
+      if (bannerAdCallback != null) {
+        bannerAdCallback.reportAdImpression();
+      }
+    }
+  }
+
+  private SnapAdSize getBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
+    AdSize matchedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
+
+    if (matchedAdSize.equals(AdSize.BANNER)) {
+      return SnapAdSize.BANNER;
+    }
+
+    if (matchedAdSize.equals(AdSize.MEDIUM_RECTANGLE)) {
+      return SnapAdSize.MEDIUM_RECTANGLE;
+    }
+
+    return SnapAdSize.INVALID;
+  }
 }

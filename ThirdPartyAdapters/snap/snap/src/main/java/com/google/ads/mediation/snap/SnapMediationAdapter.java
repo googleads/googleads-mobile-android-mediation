@@ -27,6 +27,7 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import com.snap.adkit.BuildConfig;
 import com.snap.adkit.external.AdKitAudienceAdsNetwork;
 import com.snap.adkit.external.AudienceNetworkAdsApi;
 import com.snap.adkit.external.NetworkInitSettings;
@@ -37,7 +38,7 @@ import java.util.List;
 
 public class SnapMediationAdapter extends RtbAdapter {
 
-  final static String TAG = SnapMediationAdapter.class.getSimpleName();
+  static final String TAG = SnapMediationAdapter.class.getSimpleName();
 
   // Snap SDK error domain.
   public static final String SNAP_AD_SDK_ERROR_DOMAIN = "com.snap.ads";
@@ -51,25 +52,37 @@ public class SnapMediationAdapter extends RtbAdapter {
   private SnapRewardedAd rewardedAd;
 
   @Override
-  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
-      @NonNull SignalCallbacks signalCallbacks) {
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     String bidToken = AdKitAudienceAdsNetwork.getAdsNetwork().requestBidToken();
     if (TextUtils.isEmpty(bidToken)) {
-      signalCallbacks.onFailure(new AdError(0, "Failed to generate bid token.", SNAP_AD_SDK_ERROR_DOMAIN));
-    } else {
-      signalCallbacks.onSuccess(bidToken);
+      AdError error =
+          new AdError(
+              0, "Failed to generate bid token.", SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      signalCallbacks.onFailure(error);
+      return;
     }
+
+    signalCallbacks.onSuccess(bidToken);
   }
 
   @Override
-  public void initialize(@NonNull Context context,
+  public void initialize(
+      @NonNull Context context,
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> configurations) {
     if (context == null) {
-      initializationCompleteCallback.onInitializationFailed(
-              "Failed to initialize. Context is null.");
+      AdError error =
+          new AdError(
+              0,
+              "Failed to initialize. Context is null.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
+
     HashSet<String> appIds = new HashSet<>();
     for (MediationConfiguration configuration : configurations) {
       Bundle serverParameters = configuration.getServerParameters();
@@ -79,29 +92,40 @@ public class SnapMediationAdapter extends RtbAdapter {
         appIds.add(appIdConfig);
       }
     }
+
     if (appIds.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(
-              "Initialization failed. No valid APP ID found.");
+      AdError error =
+          new AdError(
+              0,
+              "Initialization failed. Missing or invalid App ID.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
+
     String appId = appIds.iterator().next();
     if (appIds.size() > 1) {
       String logMessage =
-              String.format(
-                      "Multiple APP IDs found: %s. Using '%s' to initialize the Snap SDK.",
-                      appIds.toString(), appId);
+          String.format(
+              "Multiple App IDs found: %s. Using '%s' to initialize the Snap SDK.",
+              appIds.toString(), appId);
       Log.w(TAG, logMessage);
     }
     NetworkInitSettings initSettings =
-            AdKitAudienceAdsNetwork.buildNetworkInitSettings(context)
-                    .withAppId(appId)
-                    .build();
+        AdKitAudienceAdsNetwork.buildNetworkInitSettings(context).withAppId(appId).build();
     AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.init(initSettings);
     if (adsNetworkApi == null) {
-      initializationCompleteCallback.onInitializationFailed(
-              "Initialization failed. Snap Audience Network failed to initialize.");
+      AdError error =
+          new AdError(
+              0,
+              "Initialization failed. Snap Audience Network failed to initialize.",
+              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
+
     initializationCompleteCallback.onInitializationSucceeded();
   }
 
@@ -118,8 +142,9 @@ public class SnapMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
             versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
@@ -138,43 +163,53 @@ public class SnapMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-            versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
-  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-      bannerAd = new SnapBannerAd(adConfiguration, callback);
-      bannerAd.loadAd();
+    bannerAd = new SnapBannerAd(adConfiguration, callback);
+    bannerAd.loadAd();
   }
 
   @Override
-  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
     interstitialAd = new SnapInterstitialAd(adConfiguration, callback);
     interstitialAd.loadAd();
   }
 
   @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
+  public void loadRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-      callback.onFailure(new AdError(0,
-              "Native Ad not supported in Snap Ad Network", SNAP_AD_SDK_ERROR_DOMAIN));
+    AdError error =
+        new AdError(
+            0,
+            "Native Ad is not supported in Snap Ad Network.",
+            SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
+    Log.w(TAG, error.getMessage());
+    callback.onFailure(error);
   }
 
   @Override
-  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                                @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedAd = new SnapRewardedAd(adConfiguration, callback);
     rewardedAd.loadAd();
   }
 
-  public static @Nullable
-  String getAppID(@NonNull Bundle serverParameters) {
+  public static @Nullable String getAppID(@NonNull Bundle serverParameters) {
     return serverParameters.getString(APP_ID_PARAMETER);
   }
 }
