@@ -69,7 +69,7 @@ public class SnapBannerAd implements MediationBannerAd {
           @Override
           public void onEvent(
               SnapAdKitEvent snapAdKitEvent,
-              @Nullable @org.jetbrains.annotations.Nullable String s) {
+              @Nullable String s) {
             handleEvent(snapAdKitEvent);
           }
         });
