@@ -1,8 +1,15 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.10.3.0
+- Verified compatibility with Vungle SDK 6.10.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Vungle SDK version 6.10.3.
+
 #### Version 6.10.2.1
 - Verified compatibility with Vungle SDK 6.10.2.
-- Added bidding support for banner, interstitial and rewarded ad formats.
+- Added bidding support for interstitial and rewarded ad formats.
 - Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
 
 Built and tested with:
@@ -10,8 +17,8 @@ Built and tested with:
 - Vungle SDK version 6.10.2.
 
 #### Version 6.10.2.0
- - Verified compatibility with Vungle SDK 6.10.2.
- - Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
+- Verified compatibility with Vungle SDK 6.10.2.
+- Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.3.0.
@@ -135,10 +142,10 @@ Built and tested with:
 - Verified compatibility with Vungle SDK 5.3.2.
 - Updated the Adpater project for Android Studio 3.0.
 - Added the following methods to Bundle builder class.
-   - `setOrdinalViewCount` : This field is used to pass the mediation ordinal,
-   whenever Publisher receives the ordinal data reports from Vungle.
-   - `setFlexViewCloseTimeInSec` : This option is used to make flex view ads
-   dismiss on their own after the specified number of seconds.
+    - `setOrdinalViewCount` : This field is used to pass the mediation ordinal,
+      whenever Publisher receives the ordinal data reports from Vungle.
+    - `setFlexViewCloseTimeInSec` : This option is used to make flex view ads
+      dismiss on their own after the specified number of seconds.
 
 #### Version 5.3.0.0
 - Verified compatibility with Vungle SDK 5.3.0.
