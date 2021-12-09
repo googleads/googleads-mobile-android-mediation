@@ -2,7 +2,7 @@
 
 #### Version 6.10.2.1
 - Verified compatibility with Vungle SDK 6.10.2.
-- Added bidding support for banner, interstitial and rewarded ad formats.
+- Added bidding support for interstitial and rewarded ad formats.
 - Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
 
 Built and tested with:
