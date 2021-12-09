@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -27,12 +26,9 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.snap.adkit.BuildConfig;
 import com.snap.adkit.external.AdKitAudienceAdsNetwork;
 import com.snap.adkit.external.AudienceNetworkAdsApi;
 import com.snap.adkit.external.NetworkInitSettings;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -183,7 +179,7 @@ public class SnapMediationAdapter extends RtbAdapter {
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-              callback) {
+          callback) {
     interstitialAd = new SnapInterstitialAd(adConfiguration, callback);
     interstitialAd.loadAd();
   }
@@ -209,7 +205,8 @@ public class SnapMediationAdapter extends RtbAdapter {
     rewardedAd.loadAd();
   }
 
-  public static @Nullable String getAppID(@NonNull Bundle serverParameters) {
+  public static @Nullable
+  String getAppID(@NonNull Bundle serverParameters) {
     return serverParameters.getString(APP_ID_PARAMETER);
   }
 }
