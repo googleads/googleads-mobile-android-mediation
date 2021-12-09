@@ -31,11 +31,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:20.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
     implementation 'androidx.annotation:annotation:1.2.0'
     implementation 'com.snap.adkit:adkit:2.3.1'
-
-    // TODO: Insert required dependencies here.
 }
 
 /**
