@@ -10,8 +10,11 @@ import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
-class ZucksInterstitialAdapterTest {
+@RunWith(RobolectricTestRunner::class)
+class ZucksInterstitialAdapterTest_Robolectric {
 
     /**
      * Returns error if passed Context is not Activity.
