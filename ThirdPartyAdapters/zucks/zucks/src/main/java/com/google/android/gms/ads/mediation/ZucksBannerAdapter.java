@@ -159,9 +159,8 @@ class ZucksBannerAdapter implements MediationBannerAd {
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(
           ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE, "It is not a supported size. size=" + adSize);
-    } else {
-      return null;
     }
+    return null;
   }
 
   // region Notify and logging errors
