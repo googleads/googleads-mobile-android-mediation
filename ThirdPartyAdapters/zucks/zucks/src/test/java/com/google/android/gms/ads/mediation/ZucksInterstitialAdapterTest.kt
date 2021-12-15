@@ -21,15 +21,15 @@ class ZucksInterstitialAdapterTest_Robolectric {
      */
     @Test
     fun testConfigureInterstitialAd_nonActivityContext() {
-        val context: Context = mockk()
-        assertThat(context, `is`(not(instanceOf(Activity::class.java))))
+        val adConfiguration: MediationInterstitialAdConfiguration = mockk {
+            every { context } returns mockk()
+        }
+        assertThat(adConfiguration.context, `is`(not(instanceOf(Activity::class.java))))
 
         val callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mockk(relaxed = true)
 
         ZucksInterstitialAdapter(
-            context,
-            mockk(),
-            mockk(),
+            adConfiguration,
             callback
         ).loadInterstitialAd()
 

@@ -28,9 +28,7 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
      */
     private static final String TAG = "ZucksISAdapter";
 
-  @NonNull private final Context context;
-  @NonNull private final Bundle serverParameters;
-  @NonNull private final Bundle mediationExtras;
+  @NonNull private final MediationInterstitialAdConfiguration adConfiguration;
   @NonNull private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback;
 
   @Nullable private MediationInterstitialAdCallback adCallback = null;
@@ -85,28 +83,12 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
           @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
           @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
   ) {
-    this(
-            mediationInterstitialAdConfiguration.getContext(),
-            mediationInterstitialAdConfiguration.getServerParameters(),
-            mediationInterstitialAdConfiguration.getMediationExtras(),
-             mediationAdLoadCallback
-    );
-  }
-
-  @VisibleForTesting
-  ZucksInterstitialAdapter(
-          @NonNull Context context,
-          @NonNull Bundle serverParameters,
-          @NonNull Bundle mediationExtras,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback
-  ) {
-    this.context = context;
-    this.serverParameters = serverParameters;
-    this.mediationExtras = mediationExtras;
-    this.loadCallback = loadCallback;
+    this.adConfiguration = mediationInterstitialAdConfiguration;
+    this.loadCallback = mediationAdLoadCallback;
   }
 
   void loadInterstitialAd() {
+    Context context = adConfiguration.getContext();
     String adFrameId;
 
     // Check a supported context.
@@ -118,7 +100,7 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
       return;
     }
 
-    if ((adFrameId = AdMobUtil.getFrameId(serverParameters)) == null) {
+    if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
         notifyAdapterLoadFailure(
                 ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
                 "FrameID not contained in serverParameters."
@@ -126,7 +108,7 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
       return;
     }
 
-    if (isFullscreenInterstitial(mediationExtras)) {
+    if (isFullscreenInterstitial(adConfiguration.getMediationExtras())) {
       zucksInterstitial =
               new AdFullscreenInterstitial(
                       context,

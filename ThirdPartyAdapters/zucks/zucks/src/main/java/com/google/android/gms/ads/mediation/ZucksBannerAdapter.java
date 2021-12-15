@@ -27,14 +27,9 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   private static final String TAG = "ZucksBannerAdapter";
 
-  @NonNull private final Context context;
+  @NonNull private final MediationBannerAdConfiguration adConfiguration;
 
-  @Nullable private final AdSize adSize;
-
-  @NonNull private final Bundle serverParams;
-
-  @NonNull
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback;
+  @NonNull private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback;
 
   @Nullable private MediationBannerAdCallback adCallback = null;
 
@@ -75,34 +70,18 @@ class ZucksBannerAdapter implements MediationBannerAd {
           };
 
   ZucksBannerAdapter(
-          @NonNull MediationBannerAdConfiguration configuration,
+          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
-    this(
-            configuration.getContext(),
-            configuration.getAdSize(),
-            configuration.getServerParameters(),
-            mediationAdLoadCallback
-    );
-  }
-
-  @VisibleForTesting
-  ZucksBannerAdapter(
-          @NonNull Context context,
-          @Nullable AdSize adSize,
-          @NonNull Bundle serverParams,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback
-  ) {
-    this.context = context;
-    this.adSize = adSize;
-    this.serverParams = serverParams;
-    this.loadCallback = loadCallback;
+    this.adConfiguration = mediationBannerAdConfiguration;
+    this.loadCallback = mediationAdLoadCallback;
   }
 
   public void loadBannerAd() {
+    AdSize adSize = adConfiguration.getAdSize();
     String adFrameId;
 
-    if (!isSizeSupported(context, adSize)) {
+    if (!isSizeSupported(adConfiguration.getContext(), adSize)) {
       notifyAdapterLoadFailure(
               ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
               "It is not a supported size. size=" + adSize
@@ -110,7 +89,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
       return;
     }
 
-    if ((adFrameId = AdMobUtil.getFrameId(serverParams)) == null) {
+    if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
       notifyAdapterLoadFailure(
               ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
               "FrameID not contained in serverParameters."
@@ -118,7 +97,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
       return;
     }
 
-    zucksBanner = new AdBanner(context, adFrameId, listener);
+    zucksBanner = new AdBanner(adConfiguration.getContext(), adFrameId, listener);
     AdMobUtil.configurePlatform(zucksBanner);
     zucksBanner.load();
   }
@@ -148,7 +127,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   @Nullable
   private AdError isValidAdSize(@NonNull AdBanner banner) {
-    return isValidAdSize(adSize, banner);
+    return isValidAdSize(adConfiguration.getAdSize(), banner);
   }
 
   /** For internal assertion. Validate passed size and actual size are equals. */
