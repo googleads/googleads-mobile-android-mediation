@@ -50,10 +50,10 @@ class ZucksBannerAdapter implements MediationBannerAd {
               AdError error = isValidAdSize(banner);
               if (error != null) {
                 notifySdkLoadFailure(error);
-              } else {
-                adCallback = loadCallback.onSuccess(ZucksBannerAdapter.this);
-                adCallback.reportAdImpression();
+                return;
               }
+              adCallback = loadCallback.onSuccess(ZucksBannerAdapter.this);
+              adCallback.reportAdImpression();
             }
 
             @Override
