@@ -3,6 +3,7 @@ package com.google.android.gms.ads.mediation;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +19,14 @@ import net.zucks.view.AdFullscreenInterstitial;
 import net.zucks.view.AdInterstitial;
 import net.zucks.view.IZucksInterstitial;
 
+import java.util.Locale;
+
 class ZucksInterstitialAdapter implements MediationInterstitialAd {
+
+    /**
+     * {@link Log} is not acceptable >23 length string as tag.
+     */
+    private static final String TAG = "ZucksISAdapter";
 
   @NonNull private final Context context;
   @NonNull private final Bundle serverParameters;
@@ -60,12 +68,12 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
             @Override
             public void onLoadFailure(Exception exception) {
-              loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+              notifySdkLoadFailure(exception);
             }
 
             @Override
             public void onShowFailure(Exception exception) {
-              adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
+                notifySdkFailedToShow(exception);
             }
 
           };
@@ -103,21 +111,18 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
     // Check a supported context.
     if (!(context instanceof Activity)) {
-      loadCallback.onFailure(
-              ErrorMapper.createAdapterError(
-                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity."
-              )
+      notifyAdapterLoadFailure(
+              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
+              "Context not an Activity."
       );
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(serverParameters)) == null) {
-      loadCallback.onFailure(
-              ErrorMapper.createAdapterError(
-                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-                      "FrameID not contained in serverParameters."
-              )
-      );
+        notifyAdapterLoadFailure(
+                ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
+                "FrameID not contained in serverParameters."
+        );
       return;
     }
 
@@ -171,5 +176,23 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
             .build());
     return builder;
   }
+
+    // region Notify and logging errors
+    // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+    private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
+        Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
+        loadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+    }
+
+    private void notifySdkLoadFailure(@NonNull Exception exception) {
+        Log.w(TAG, exception);
+        loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+    }
+
+    private void notifySdkFailedToShow(@NonNull Exception exception) {
+        Log.w(TAG, exception);
+        adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
+    }
+    // endregion
 
 }

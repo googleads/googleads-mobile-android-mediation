@@ -2,6 +2,7 @@ package com.google.android.gms.ads.mediation;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -20,8 +21,11 @@ import net.zucks.view.AdBanner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 class ZucksBannerAdapter implements MediationBannerAd {
+
+  private static final String TAG = "ZucksBannerAdapter";
 
   @NonNull private final Context context;
 
@@ -45,7 +49,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
             public void onReceiveAd(AdBanner banner) {
               AdError error = isValidAdSize(banner);
               if (error != null) {
-                loadCallback.onFailure(error);
+                notifySdkLoadFailure(error);
               } else {
                 adCallback = loadCallback.onSuccess(ZucksBannerAdapter.this);
                 adCallback.reportAdImpression();
@@ -54,7 +58,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
             @Override
             public void onFailure(AdBanner banner, Exception e) {
-              loadCallback.onFailure(ErrorMapper.convertSdkError(e));
+              notifySdkLoadFailure(e);
             }
 
             @Override
@@ -99,19 +103,17 @@ class ZucksBannerAdapter implements MediationBannerAd {
     String adFrameId;
 
     if (!isSizeSupported(context, adSize)) {
-      loadCallback.onFailure(
-              ErrorMapper.createAdapterError(
-                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-                      "It is not a supported size. size=" + adSize)
+      notifyAdapterLoadFailure(
+              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
+              "It is not a supported size. size=" + adSize
       );
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(serverParams)) == null) {
-      loadCallback.onFailure(
-              ErrorMapper.createAdapterError(
-                      ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-                      "FrameID not contained in serverParameters.")
+      notifyAdapterLoadFailure(
+              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
+              "FrameID not contained in serverParameters."
       );
       return;
     }
@@ -161,5 +163,23 @@ class ZucksBannerAdapter implements MediationBannerAd {
       return null;
     }
   }
+
+  // region Notify and logging errors
+  // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+  private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
+    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
+    loadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+  }
+
+  private void notifySdkLoadFailure(@NonNull Exception exception) {
+    Log.w(TAG, exception);
+    loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+  }
+
+  private void notifySdkLoadFailure(@NonNull AdError error) {
+    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", error.getCode(), error.getMessage()));
+    loadCallback.onFailure(error);
+  }
+  // endregion
 
 }
