@@ -1,7 +1,6 @@
 package com.google.android.gms.ads.mediation;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
@@ -9,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -29,9 +27,9 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   @NonNull private final MediationBannerAdConfiguration adConfiguration;
 
-  @NonNull private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> loadCallback;
+  @NonNull private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
 
-  @Nullable private MediationBannerAdCallback adCallback = null;
+  @Nullable private MediationBannerAdCallback bannerAdCallback = null;
 
   /** Banner instance of Zucks Ad Network SDK. */
   @Nullable private AdBanner zucksBanner = null;
@@ -47,8 +45,8 @@ class ZucksBannerAdapter implements MediationBannerAd {
                 notifySdkLoadFailure(error);
                 return;
               }
-              adCallback = loadCallback.onSuccess(ZucksBannerAdapter.this);
-              adCallback.reportAdImpression();
+              bannerAdCallback = adLoadCallback.onSuccess(ZucksBannerAdapter.this);
+              bannerAdCallback.reportAdImpression();
             }
 
             @Override
@@ -58,14 +56,14 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
             @Override
             public void onTapAd(AdBanner banner) {
-              adCallback.reportAdClicked();
-              adCallback.onAdOpened();
-              adCallback.onAdLeftApplication();
+              bannerAdCallback.reportAdClicked();
+              bannerAdCallback.onAdOpened();
+              bannerAdCallback.onAdLeftApplication();
             }
 
             @Override
             public void onBackApplication(AdBanner banner) {
-              adCallback.onAdClosed();
+              bannerAdCallback.onAdClosed();
             }
           };
 
@@ -74,7 +72,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
   ) {
     this.adConfiguration = mediationBannerAdConfiguration;
-    this.loadCallback = mediationAdLoadCallback;
+    this.adLoadCallback = mediationAdLoadCallback;
   }
 
   public void loadBannerAd() {
@@ -146,17 +144,17 @@ class ZucksBannerAdapter implements MediationBannerAd {
   // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
   private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
     Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
-    loadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+    adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
   }
 
   private void notifySdkLoadFailure(@NonNull Exception exception) {
     Log.w(TAG, exception);
-    loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+    adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
   }
 
   private void notifySdkLoadFailure(@NonNull AdError error) {
     Log.w(TAG, String.format(Locale.ROOT, "%d: %s", error.getCode(), error.getMessage()));
-    loadCallback.onFailure(error);
+    adLoadCallback.onFailure(error);
   }
   // endregion
 

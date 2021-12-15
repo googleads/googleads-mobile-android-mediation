@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
@@ -29,9 +28,9 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     private static final String TAG = "ZucksISAdapter";
 
   @NonNull private final MediationInterstitialAdConfiguration adConfiguration;
-  @NonNull private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> loadCallback;
+  @NonNull private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
 
-  @Nullable private MediationInterstitialAdCallback adCallback = null;
+  @Nullable private MediationInterstitialAdCallback interstitialAdCallback = null;
 
   @NonNull
   private final UniversalInterstitialListener.Callback callback =
@@ -39,13 +38,13 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
             @Override
             public void onReceiveAd() {
-              adCallback = loadCallback.onSuccess(ZucksInterstitialAdapter.this);
+              interstitialAdCallback = adLoadCallback.onSuccess(ZucksInterstitialAdapter.this);
             }
 
             @Override
             public void onShowAd() {
-              adCallback.onAdOpened();
-              adCallback.reportAdImpression();
+              interstitialAdCallback.onAdOpened();
+              interstitialAdCallback.reportAdImpression();
             }
 
             @Override
@@ -55,13 +54,13 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
             @Override
             public void onTapAd() {
-              adCallback.reportAdClicked();
-              adCallback.onAdLeftApplication();
+              interstitialAdCallback.reportAdClicked();
+              interstitialAdCallback.onAdLeftApplication();
             }
 
             @Override
             public void onCloseAd() {
-              adCallback.onAdClosed();
+              interstitialAdCallback.onAdClosed();
             }
 
             @Override
@@ -84,7 +83,7 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
           @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
   ) {
     this.adConfiguration = mediationInterstitialAdConfiguration;
-    this.loadCallback = mediationAdLoadCallback;
+    this.adLoadCallback = mediationAdLoadCallback;
   }
 
   void loadInterstitialAd() {
@@ -163,17 +162,17 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
     private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
         Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
-        loadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+        adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
     }
 
     private void notifySdkLoadFailure(@NonNull Exception exception) {
         Log.w(TAG, exception);
-        loadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+        adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
     }
 
     private void notifySdkFailedToShow(@NonNull Exception exception) {
         Log.w(TAG, exception);
-        adCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
+        interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
     }
     // endregion
 
