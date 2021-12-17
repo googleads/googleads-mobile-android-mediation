@@ -5,6 +5,7 @@ import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
 import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
@@ -15,6 +16,7 @@ import com.google.android.gms.ads.AdError;
  * Utility class for the Fyber adapter.
  */
 class FyberAdapterUtils {
+
   /**
    * Private constructor
    */
@@ -122,20 +124,21 @@ class FyberAdapterUtils {
   }
 
   /**
-   * Extract age from mediation extras and add it to user params ad request.
+   * Extract age from mediation extras and add it to Fyber SDK's global user params setting.
    *
-   * @param mediationExtras mediation extra bundle
+   * @param mediationExtras mediation extras bundle
    */
-  static InneractiveUserConfig generateUserConfig(@Nullable Bundle mediationExtras) {
-    InneractiveUserConfig userConfig = new InneractiveUserConfig();
+  static void updateFyberUserParams(@Nullable Bundle mediationExtras) {
     if (mediationExtras == null) {
-      return userConfig;
+      return;
     }
 
+    InneractiveUserConfig userParams = new InneractiveUserConfig();
     if (mediationExtras.containsKey(InneractiveMediationDefs.KEY_AGE)) {
       int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
-      userConfig.setAge(age);
+      userParams.setAge(age);
     }
-    return userConfig;
+
+    InneractiveAdManager.setUserParams(userParams);
   }
 }
