@@ -1,6 +1,6 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Version 5.14.4.0 (In Progress)
+#### Version 5.14.4.0
 - Verified compatibility with myTarget SDK version 5.14.4.
 - Added mediation extras handling for `CustomParams`.
 - Fixed an issue where the native ad `MediaView` was not properly registered as a clickable asset.
