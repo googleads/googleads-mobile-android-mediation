@@ -250,7 +250,7 @@ public class YahooAdapter extends Adapter
     boolean success = true;
     if (!YASAds.isInitialized()) {
       if (!(context instanceof Activity)) {
-        Log.e(TAG, "StandardEdition.initialize must be explicitly called with an Activity" +
+        Log.e(TAG, "YASAds.initialize must be explicitly called with an Activity" +
             " context.");
 
         return false;
