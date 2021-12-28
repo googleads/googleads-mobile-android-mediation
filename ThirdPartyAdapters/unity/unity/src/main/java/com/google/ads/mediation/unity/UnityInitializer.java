@@ -67,6 +67,6 @@ public class UnityInitializer {
     mediationMetaData.set("adapter_version", UnityAds.getVersion());
     mediationMetaData.commit();
 
-    UnityAds.initialize(context, gameId, false, true, initializationListener);
+    UnityAds.initialize(context, gameId, false, initializationListener);
   }
 }
