@@ -2,22 +2,21 @@ package com.google.ads.mediation.ironsource;
 
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
+import com.google.android.gms.ads.AdError;
 
 public interface IronSourceAdapterListener {
 
   /**
    * Called when the adapter fails to load an ad.
    *
-   * @param errorCode    The error code.
-   * @param errorMessage A message describing the error.
+   * @param loadError the {@link AdError} object.
    */
-  void onAdFailedToLoad(@AdapterError int errorCode, @NonNull String errorMessage);
+  void onAdFailedToLoad(@NonNull AdError loadError);
 
   /**
    * Called when the adapter fails to show an ad.
    *
-   * @param errorCode    The error code.
-   * @param errorMessage A message describing the error.
+   * @param showError the {@link AdError} object.
    */
-  void onAdFailedToShow(@AdapterError int errorCode, @NonNull String errorMessage);
+  void onAdFailedToShow(@NonNull AdError showError);
 }

@@ -75,12 +75,12 @@ public class UnityMediationAdapter extends Adapter {
   static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * UnityAds returned a placement with a {@link PlacementStateNO_FILL} state.
+   * UnityAds returned a placement with no fill.
    */
   static final int ERROR_PLACEMENT_STATE_NO_FILL = 102;
 
   /**
-   * UnityAds returned a placement with a {@link PlacementState#DISABLED} state.
+   * UnityAds returned a disabled placement.
    */
   static final int ERROR_PLACEMENT_STATE_DISABLED = 103;
 
@@ -89,6 +89,9 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_NULL_CONTEXT = 104;
 
+  /**
+   * Tried to show an ad with a non-Activity context.
+   */
   static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
 
   /**
@@ -107,7 +110,7 @@ public class UnityMediationAdapter extends Adapter {
   static final int ERROR_AD_ALREADY_LOADING = 108;
 
   /**
-   * UnityAds finished with a {@link FinishState#ERROR} state.
+   * UnityAds finished with an error state.
    */
   static final int ERROR_FINISH = 109;
 
@@ -120,7 +123,6 @@ public class UnityMediationAdapter extends Adapter {
    * UnityAds returned an initialization error.
    */
   static final int INITIALIZATION_FAILURE = 111;
-  // endregion
 
   /**
    * Key to obtain Game ID, required for loading Unity Ads.

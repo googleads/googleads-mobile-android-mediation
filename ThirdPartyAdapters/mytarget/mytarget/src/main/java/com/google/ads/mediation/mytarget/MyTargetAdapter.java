@@ -1,5 +1,7 @@
 package com.google.ads.mediation.mytarget;
 
+import static com.google.ads.mediation.mytarget.MyTargetTools.handleMediationExtras;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -72,7 +74,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
         .format("Loading myTarget banner with size: %dx%d.", myTargetSize.getWidth(),
             myTargetSize.getHeight());
     Log.d(TAG, logMessage);
-    loadBanner(bannerListener, mediationAdRequest, slotId, myTargetSize, context);
+    loadBanner(bannerListener, mediationAdRequest, slotId, myTargetSize, context, mediationExtras);
   }
 
   @Override
@@ -106,8 +108,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
 
     mInterstitial = new InterstitialAd(slotId, context);
     CustomParams params = mInterstitial.getCustomParams();
-    params.setCustomParam(
-        MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
+    handleMediationExtras(TAG, mediationExtras, params);
+    params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
     if (mediationAdRequest != null) {
       int gender = mediationAdRequest.getGender();
       Log.d(TAG, "Set gender to " + gender);
@@ -168,7 +170,8 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       @Nullable MediationAdRequest mediationAdRequest,
       int slotId,
       @NonNull MyTargetView.AdSize adSize,
-      @NonNull Context context) {
+      @NonNull Context context,
+      @Nullable Bundle mediationExtras) {
     if (mMyTargetView != null) {
       mMyTargetView.destroy();
     }
@@ -179,6 +182,7 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     mMyTargetView.setRefreshAd(false);
 
     CustomParams params = mMyTargetView.getCustomParams();
+    handleMediationExtras(TAG, mediationExtras, params);
     if (mediationAdRequest != null) {
       int gender = mediationAdRequest.getGender();
       params.setGender(gender);
