@@ -1,12 +1,14 @@
 package com.google.ads.mediation.mopub;
 
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_DOMAIN;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -68,8 +70,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     }
   }
 
-  public void initializeMoPubSDK(
-      Context context, SdkConfiguration configuration, SdkInitializationListener listener) {
+  public void initializeMoPubSDK(Context context, SdkConfiguration configuration,
+      SdkInitializationListener listener) {
     if (MoPub.isSdkInitialized()) {
       MoPubRewardedVideos.setRewardedVideoListener(MoPubSingleton.this);
       listener.onInitializationFinished();
@@ -95,15 +97,14 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
     }
   }
 
-  public void loadRewardedAd(
-      Context context,
-      final String adUnitID,
+  public void loadRewardedAd(Context context, final String adUnitID,
       final MoPubRewardedVideoManager.RequestParameters requestParameters,
       final MoPubAdapterRewardedListener adapterRewardedListener) {
     if (hasListener(adUnitID)) {
-      String errorMessage =
-          "An ad has already been requested for the MoPub Ad Unit ID: " + adUnitID;
-      adapterRewardedListener.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
+      String errorMessage = String
+          .format("An ad has already been requested for the MoPub Ad Unit ID: %s.", adUnitID);
+      AdError concurrencyError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
+      adapterRewardedListener.onAdFailedToLoad(concurrencyError);
       return;
     }
 
@@ -149,8 +150,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoLoadFailure(
-      @NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
+  public void onRewardedVideoLoadFailure(@NonNull String adUnitId,
+      @NonNull MoPubErrorCode errorCode) {
     if (hasListener(adUnitId)) {
       mListeners.get(adUnitId).get().onRewardedVideoLoadFailure(adUnitId, errorCode);
     }
@@ -165,8 +166,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoPlaybackError(
-      @NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
+  public void onRewardedVideoPlaybackError(@NonNull String adUnitId,
+      @NonNull MoPubErrorCode errorCode) {
     if (hasListener(adUnitId)) {
       mListeners.get(adUnitId).get().onRewardedVideoPlaybackError(adUnitId, errorCode);
     }
@@ -181,8 +182,8 @@ public class MoPubSingleton implements MoPubRewardedVideoListener {
   }
 
   @Override
-  public void onRewardedVideoCompleted(
-      @NonNull Set<String> adUnitIds, @NonNull MoPubReward reward) {
+  public void onRewardedVideoCompleted(@NonNull Set<String> adUnitIds,
+      @NonNull MoPubReward reward) {
     for (String adUnitId : adUnitIds) {
       if (hasListener(adUnitId)) {
         HashSet<String> set = new HashSet<>();
