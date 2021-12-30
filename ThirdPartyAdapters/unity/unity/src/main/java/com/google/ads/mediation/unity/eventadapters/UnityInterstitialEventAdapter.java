@@ -6,38 +6,39 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 public class UnityInterstitialEventAdapter implements IUnityEventAdapter {
 
-    MediationInterstitialListener listener;
-    MediationInterstitialAdapter adapter;
+  MediationInterstitialListener listener;
+  MediationInterstitialAdapter adapter;
 
-    public UnityInterstitialEventAdapter(MediationInterstitialListener listener, MediationInterstitialAdapter adapter) {
-        this.listener = listener;
-        this.adapter = adapter;
+  public UnityInterstitialEventAdapter(MediationInterstitialListener listener,
+      MediationInterstitialAdapter adapter) {
+    this.listener = listener;
+    this.adapter = adapter;
+  }
+
+  @Override
+  public void sendAdEvent(AdEvent adEvent) {
+    if (listener == null) {
+      return;
     }
 
-    @Override
-    public void sendAdEvent(AdEvent adEvent) {
-        if (listener == null) {
-            return;
-        }
-
-        switch (adEvent) {
-            case LOADED:
-                listener.onAdLoaded(adapter);
-                break;
-            case OPENED:
-                listener.onAdOpened(adapter);
-                break;
-            case CLICKED:
-                listener.onAdClicked(adapter);
-                break;
-            case CLOSED:
-                listener.onAdClosed(adapter);
-                break;
-            case LEFT_APPLICATION:
-                listener.onAdLeftApplication(adapter);
-                break;
-            default:
-                break;
-        }
+    switch (adEvent) {
+      case LOADED:
+        listener.onAdLoaded(adapter);
+        break;
+      case OPENED:
+        listener.onAdOpened(adapter);
+        break;
+      case CLICKED:
+        listener.onAdClicked(adapter);
+        break;
+      case CLOSED:
+        listener.onAdClosed(adapter);
+        break;
+      case LEFT_APPLICATION:
+        listener.onAdLeftApplication(adapter);
+        break;
+      default:
+        break;
     }
+  }
 }

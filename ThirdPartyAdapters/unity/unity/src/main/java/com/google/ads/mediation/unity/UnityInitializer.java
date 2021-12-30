@@ -15,7 +15,6 @@
 package com.google.ads.mediation.unity;
 
 import android.content.Context;
-import com.unity3d.ads.BuildConfig;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -31,7 +30,7 @@ public class UnityInitializer {
   private static UnityInitializer unityInitializerInstance;
 
   /**
-   * This method will return a {@link com.google.ads.mediation.unity.UnityInitializer} instance.
+   * Returns a {@link com.google.ads.mediation.unity.UnityInitializer} instance.
    *
    * @return the {@link #unityInitializerInstance}.
    */
@@ -43,9 +42,9 @@ public class UnityInitializer {
   }
 
   /**
-   * This method will initialize {@link UnityAds}.  In the case of multiple initialize calls
-   * UnityAds will call the appropriate functions provided in the IUnityAdsInitializationListener
-   * after initialization is complete.
+   * Initializes {@link UnityAds}. In the case of multiple initialize calls UnityAds will call the
+   * appropriate functions provided in the IUnityAdsInitializationListener after initialization is
+   * complete.
    *
    * @param context                The context.
    * @param gameId                 Unity Ads Game ID.
@@ -63,8 +62,8 @@ public class UnityInitializer {
     // Set mediation meta data before initializing.
     MediationMetaData mediationMetaData = new MediationMetaData(context);
     mediationMetaData.setName("AdMob");
-    mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-    mediationMetaData.set("adapter_version", UnityAds.getVersion());
+    mediationMetaData.setVersion(UnityAds.getVersion());
+    mediationMetaData.set("adapter_version", BuildConfig.ADAPTER_VERSION);
     mediationMetaData.commit();
 
     UnityAds.initialize(context, gameId, false, initializationListener);
