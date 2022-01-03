@@ -1,5 +1,6 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
 import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
@@ -51,26 +53,28 @@ final class YahooInterstitialRenderer implements InterstitialAd.InterstitialAdLi
     String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter,
-            AdRequest.ERROR_CODE_INVALID_REQUEST);
+        interstitialListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Yahoo Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        interstitialListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
-      interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      interstitialListener.onAdFailedToLoad(adapter, error);
       return;
     }
 
@@ -201,8 +205,6 @@ final class YahooInterstitialRenderer implements InterstitialAd.InterstitialAdLi
 
 
   public void onError(final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Ads SDK interstitial request failed (" + errorInfo.getErrorCode()
-        + "): " + errorInfo.getDescription());
     final int errorCode;
     switch (errorInfo.getErrorCode()) {
       case YASAds.ERROR_AD_REQUEST_FAILED:
@@ -214,13 +216,17 @@ final class YahooInterstitialRenderer implements InterstitialAd.InterstitialAdLi
       default:
         errorCode = AdRequest.ERROR_CODE_NO_FILL;
     }
+
+    final AdError error = new AdError(errorCode, "Yahoo Ads SDK interstitial request failed (" + errorInfo.getErrorCode()
+            + "): " + errorInfo.getDescription(), ERROR_DOMAIN);
+    Log.w(TAG, error.getMessage());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
 
         if (adapter != null && interstitialListener != null) {
-          interstitialListener.onAdFailedToLoad(adapter, errorCode);
+          interstitialListener.onAdFailedToLoad(adapter, error);
         }
       }
     });

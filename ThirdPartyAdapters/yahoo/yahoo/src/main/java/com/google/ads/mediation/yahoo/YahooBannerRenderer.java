@@ -1,5 +1,6 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
 import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -62,44 +64,47 @@ final class YahooBannerRenderer implements InlineAdView.InlineAdListener {
     String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Yahoo Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter,
-            AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     if (adSize == null) {
-      Log.w(TAG, "Fail to request banner ad, adSize is null.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Fail to request banner ad, adSize is null.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     AdSize normalizedSize = YahooAdapterUtils.normalizeSize(context, adSize);
     if (normalizedSize == null) {
-      Log.w(TAG,
-          "The input ad size " + adSize.toString() + " is not currently supported.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "The input ad size " + adSize.toString() + " is not currently supported.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
@@ -239,8 +244,6 @@ final class YahooBannerRenderer implements InlineAdView.InlineAdListener {
 
 
   public void onError(final ErrorInfo errorInfo) {
-    Log.i(TAG, "Yahoo Ads SDK Inline Ad request failed (" + errorInfo.getErrorCode() + "): " +
-        errorInfo.getDescription());
 
     final int errorCode;
     switch (errorInfo.getErrorCode()) {
@@ -253,12 +256,16 @@ final class YahooBannerRenderer implements InlineAdView.InlineAdListener {
       default:
         errorCode = AdRequest.ERROR_CODE_NO_FILL;
     }
+
+    final AdError error = new AdError(errorCode, "Yahoo Ads SDK Inline Ad request failed (" + errorInfo.getErrorCode() + "): " +
+            errorInfo.getDescription(), ERROR_DOMAIN);
+    Log.i(TAG, error.getMessage());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
         if (bannerListener != null && adapter != null) {
-          bannerListener.onAdFailedToLoad(adapter, errorCode);
+          bannerListener.onAdFailedToLoad(adapter, error);
         }
       }
     });

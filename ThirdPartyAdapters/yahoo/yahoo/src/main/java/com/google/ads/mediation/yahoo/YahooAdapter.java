@@ -68,6 +68,11 @@ public class YahooAdapter extends Adapter
    */
   private YahooNativeRenderer yahooNativeRenderer;
 
+  /**
+   * Yahoo error domain.
+   */
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.yahoo";
+
   @Override
   public VersionInfo getVersionInfo() {
 
@@ -262,6 +267,9 @@ public class YahooAdapter extends Adapter
         return false;
       }
       try {
+        // The actual YASAds.initialize call here needs an application context. However, the call further down:
+        // YASAds.getActivityStateManager().setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
+        // requires an Activity and is also needed for initialization.
         Application application = ((Activity) context).getApplication();
         Log.d(TAG, "Initializing using site ID: " + siteId);
         success = YASAds.initialize(application, siteId);

@@ -1,5 +1,6 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
 import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
@@ -7,10 +8,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import androidx.annotation.NonNull;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -22,8 +24,12 @@ import com.yahoo.ads.interstitialplacement.InterstitialAd;
 import com.yahoo.ads.interstitialplacement.InterstitialPlacementConfig;
 import com.yahoo.ads.placementcache.UnifiedAdManager;
 import com.yahoo.ads.utils.ThreadUtils;
+
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 class YahooRewardedRenderer implements InterstitialAd.InterstitialAdListener, MediationRewardedAd {
 
@@ -70,15 +76,16 @@ class YahooRewardedRenderer implements InterstitialAd.InterstitialAdListener, Me
     if (!initializeSDK(context, siteId)) {
       final String message = "Unable to initialize Yahoo Ads SDK.";
       Log.e(TAG, message);
-      mediationAdLoadCallback.onFailure(message);
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, ERROR_DOMAIN);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      mediationAdLoadCallback.onFailure(
-          "Yahoo Ads SDK placement ID must be set in mediationRewardedAdConfiguration" +
-              " server params.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Yahoo Ads SDK placement ID must be set in mediationRewardedAdConfiguration" +
+              " server params.", ERROR_DOMAIN);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -141,6 +148,7 @@ class YahooRewardedRenderer implements InterstitialAd.InterstitialAdListener, Me
       @Override
       public void run() {
         if (mediationAdLoadCallback != null) {
+          AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, message, ERROR_DOMAIN);
           mediationAdLoadCallback.onFailure(message);
         }
       }

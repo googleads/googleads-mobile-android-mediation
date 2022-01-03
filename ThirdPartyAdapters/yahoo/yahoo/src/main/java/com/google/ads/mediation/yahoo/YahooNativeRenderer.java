@@ -1,5 +1,6 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.yahoo.YahooAdapter.TAG;
 import static com.google.ads.mediation.yahoo.YahooAdapter.initializeSDK;
 
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
@@ -60,26 +62,29 @@ final class YahooNativeRenderer implements NativeAd.NativeAdListener {
     MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
 
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: siteID is null.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, error);
         return;
       }
     }
 
     if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize Yahoo Ads SDK.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Unable to initialize Yahoo Ads SDK.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        nativeListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
 
     final String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError error = new AdError(AdRequest.ERROR_CODE_INVALID_REQUEST, "Failed to request ad: placementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, error);
       }
       return;
     }
@@ -204,8 +209,8 @@ final class YahooNativeRenderer implements NativeAd.NativeAdListener {
             ThreadUtils.postOnUiThread(new Runnable() {
               @Override
               public void run() {
-                nativeListener.onAdFailedToLoad(adapter,
-                    AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                AdError error = new AdError(AdRequest.ERROR_CODE_INTERNAL_ERROR, "Failed to load native ad.", ERROR_DOMAIN);
+                nativeListener.onAdFailedToLoad(adapter, error);
               }
             });
           }
@@ -215,8 +220,6 @@ final class YahooNativeRenderer implements NativeAd.NativeAdListener {
   }
 
   public void onError(final ErrorInfo errorInfo) {
-    Log.i(TAG, "Yahoo Ads SDK Native Ad request failed (" + errorInfo.getErrorCode() + "): " +
-        errorInfo.getDescription());
     final int errorCode;
     switch (errorInfo.getErrorCode()) {
       case YASAds.ERROR_AD_REQUEST_FAILED:
@@ -228,12 +231,15 @@ final class YahooNativeRenderer implements NativeAd.NativeAdListener {
       default:
         errorCode = AdRequest.ERROR_CODE_NO_FILL;
     }
+    final AdError error = new AdError(errorCode, "Yahoo Ads SDK Native Ad request failed (" + errorInfo.getErrorCode() + "): " +
+            errorInfo.getDescription(), ERROR_DOMAIN);
+    Log.i(TAG, error.getMessage());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
         if (nativeListener != null && adapter != null) {
-          nativeListener.onAdFailedToLoad(adapter, errorCode);
+          nativeListener.onAdFailedToLoad(adapter, error);
         }
       }
     });
