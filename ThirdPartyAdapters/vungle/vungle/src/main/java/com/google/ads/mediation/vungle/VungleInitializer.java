@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.mediation.VungleConsent;
 import com.vungle.mediation.VungleNetworkSettings;
 import com.vungle.warren.InitCallback;
@@ -59,9 +61,12 @@ public class VungleInitializer implements InitCallback {
             }
 
             // Pass new settings to SDK.
+            updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
             Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
           }
         });
+
+    updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
 
     VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
     Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
@@ -107,6 +112,21 @@ public class VungleInitializer implements InitCallback {
   @Override
   public void onAutoCacheAdAvailable(String placementId) {
     // Unused
+  }
+
+  public void updateCoppaStatus(int configuration) {
+    switch (configuration) {
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE :
+        Vungle.updateUserCoppaStatus(true);
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE :
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED :
+        Vungle.updateUserCoppaStatus(false);
+        break;
+      default:
+        //ignore
+        break;
+    }
   }
 
   public interface VungleInitializationListener {
