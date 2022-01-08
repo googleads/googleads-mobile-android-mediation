@@ -120,13 +120,34 @@ class NativeAdLoader {
     }
 
     NendNativeMappedImage adImage = null;
+
+    String imageUrlStr = ad.getAdImageUrl();
+    Uri imageUri;
+    if (imageUrlStr != null && !imageUrlStr.isEmpty()) {
+      imageUri = Uri.parse(imageUrlStr);
+    } else {
+      // sometimes logoUrlStr is null.
+      // so, null check for imageUri just in case.
+      imageUri = Uri.EMPTY;
+    }
+
     if (shouldReturnUrlsForImageAssets || nendAdImage != null) {
-      adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getAdImageUrl()));
+      adImage = new NendNativeMappedImage(context, nendAdImage, imageUri));
     }
 
     NendNativeMappedImage logoImage = null;
+
+    String logoUrlStr = ad.getLogoImageUrl();
+    Uri logoUri;
+    if (logoUrlStr != null && !logoUrlStr.isEmpty()) {
+      logoUri = Uri.parse(logoUrlStr);
+    } else {
+      // sometimes logoUrlStr is null.
+      logoUri = Uri.EMPTY;
+    }
+
     if (shouldReturnUrlsForImageAssets || nendLogoImage != null) {
-      logoImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getLogoImageUrl()));
+      logoImage = new NendNativeMappedImage(context, nendLogoImage, logoUri);
     }
 
     return new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);
