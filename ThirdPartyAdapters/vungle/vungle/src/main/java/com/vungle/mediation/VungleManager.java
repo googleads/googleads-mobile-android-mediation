@@ -30,6 +30,7 @@ public class VungleManager {
   private static VungleManager sInstance;
 
   private final ConcurrentHashMap<String, VungleBannerAd> mVungleBanners;
+  private final ConcurrentHashMap<String, VungleNativeAd> mVungleNativeAds;
 
   public static synchronized VungleManager getInstance() {
     if (sInstance == null) {
@@ -40,6 +41,7 @@ public class VungleManager {
 
   private VungleManager() {
     mVungleBanners = new ConcurrentHashMap<>();
+    mVungleNativeAds = new ConcurrentHashMap<>();
   }
 
   @Nullable
@@ -143,6 +145,25 @@ public class VungleManager {
   @Nullable
   public VungleBannerAd getVungleBannerAd(@NonNull String placementId) {
     return mVungleBanners.get(placementId);
+  }
+
+  public void removeActiveNativeAd(@NonNull String placementId,
+      @Nullable VungleNativeAd activeNativeAd) {
+    Log.d(TAG, "try to removeActiveNativeAd: " + placementId);
+
+    boolean didRemove = mVungleNativeAds.remove(placementId, activeNativeAd);
+    if (didRemove && activeNativeAd != null) {
+      Log.d(TAG, "removeActiveNativeAd: " + activeNativeAd + "; size=" + mVungleNativeAds.size());
+      activeNativeAd.destroyAd();
+    }
+  }
+
+  public void registerNativeAd(@NonNull String placementId, @NonNull VungleNativeAd instance) {
+    removeActiveNativeAd(placementId, mVungleNativeAds.get(placementId));
+    if (!mVungleNativeAds.containsKey(placementId)) {
+      mVungleNativeAds.put(placementId, instance);
+      Log.d(TAG, "registerNativeAd: " + instance + "; size=" + mVungleNativeAds.size());
+    }
   }
 
   public boolean hasBannerSizeAd(Context context, AdSize adSize, AdConfig adConfig) {

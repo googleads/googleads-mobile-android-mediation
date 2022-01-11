@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.vungle.warren.AdConfig;
 import java.util.UUID;
 
@@ -78,6 +79,38 @@ public final class VungleExtrasBuilder {
       adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
       adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
+    return adConfig;
+  }
+
+  public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras,
+      NativeAdOptions options, boolean defaultMuteState) {
+    AdConfig adConfig = adConfigWithNetworkExtras(networkExtras, defaultMuteState);
+
+    int privacyIconPlacement;
+    if (options != null) {
+      privacyIconPlacement = options.getAdChoicesPlacement();
+    } else {
+      privacyIconPlacement = NativeAdOptions.ADCHOICES_TOP_RIGHT;
+    }
+
+    int adOptionsPosition;
+    switch (privacyIconPlacement) {
+      case NativeAdOptions.ADCHOICES_TOP_LEFT:
+        adOptionsPosition = AdConfig.TOP_LEFT;
+        break;
+      case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+        adOptionsPosition = AdConfig.BOTTOM_LEFT;
+        break;
+      case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+        adOptionsPosition = AdConfig.BOTTOM_RIGHT;
+        break;
+      case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+      default:
+        adOptionsPosition = AdConfig.TOP_RIGHT;
+        break;
+    }
+    adConfig.setAdOptionsPosition(adOptionsPosition);
+
     return adConfig;
   }
 }

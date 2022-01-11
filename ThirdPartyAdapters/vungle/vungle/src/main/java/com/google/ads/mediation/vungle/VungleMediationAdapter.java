@@ -18,12 +18,15 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
@@ -32,6 +35,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.VungleExtrasBuilder;
 import com.vungle.mediation.VungleManager;
+import com.vungle.mediation.VungleNativeAdapter;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -475,6 +479,14 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
+  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    Log.d(TAG, "loadNativeAd()...");
+    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(mediationNativeAdConfiguration,
+        callback);
+    nativeAdapter.render();
+  }
+
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
