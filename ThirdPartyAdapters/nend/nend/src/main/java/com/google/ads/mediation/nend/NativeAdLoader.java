@@ -126,7 +126,7 @@ class NativeAdLoader {
 
     NendNativeMappedImage logoImage = null;
     if (shouldReturnUrlsForImageAssets || nendLogoImage != null) {
-      logoImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getLogoImageUrl()));
+      logoImage = new NendNativeMappedImage(context, nendLogoImage, Uri.parse(ad.getLogoImageUrl()));
     }
 
     return new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);
