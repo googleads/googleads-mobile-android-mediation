@@ -292,6 +292,10 @@ public class VungleMediationAdapter extends RtbAdapter
 
     // Unmute full-screen ads by default.
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
+
+    VungleInitializer.getInstance()
+            .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+
     VungleInitializer.getInstance()
         .initialize(
             appID,
@@ -474,7 +478,9 @@ public class VungleMediationAdapter extends RtbAdapter
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
-    loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+      VungleInitializer.getInstance()
+              .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+      loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
@@ -482,6 +488,8 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbInterstitialAd()...");
+    VungleInitializer.getInstance()
+            .updateCoppaStatus(mediationInterstitialAdConfiguration.taggedForChildDirectedTreatment());
     VungleRtbInterstitialAd rtbInterstitialAd = new VungleRtbInterstitialAd(
         mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     rtbInterstitialAd.render();
@@ -492,6 +500,8 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbBannerAd()...");
+    VungleInitializer.getInstance()
+            .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
     VungleRtbBannerAd rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
         mediationAdLoadCallback);
     rtbBannerAd.render();

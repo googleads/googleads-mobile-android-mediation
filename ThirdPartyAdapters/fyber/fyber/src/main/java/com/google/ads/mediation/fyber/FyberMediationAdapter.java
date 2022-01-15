@@ -347,10 +347,9 @@ public class FyberMediationAdapter extends Adapter
         mBannerSpot.setRequestListener(requestListener);
 
         requestedAdSize = adSize;
+
+        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils
-            .generateUserConfig(mediationExtras);
-        request.setUserParams(inneractiveUserConfig);
         mBannerSpot.requestAd(request);
       }
     });
@@ -553,10 +552,8 @@ public class FyberMediationAdapter extends Adapter
         InneractiveAdSpot.RequestListener requestListener = createFyberInterstitialAdListener();
         mInterstitialSpot.setRequestListener(requestListener);
 
+        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        final InneractiveUserConfig inneractiveUserConfig = FyberAdapterUtils
-            .generateUserConfig(mediationExtras);
-        request.setUserParams(inneractiveUserConfig);
         mInterstitialSpot.requestAd(request);
       }
     });
