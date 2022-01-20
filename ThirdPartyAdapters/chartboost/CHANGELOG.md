@@ -1,7 +1,12 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.3.1.0 (In Progress)
+- Verified compatibility with Chartboost SDK 8.3.1.
 - Updated the adapter to use new `AdError` API.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Chartboost SDK version 8.3.1.
 
 #### Version 8.3.0.0
 - Verified compatibility with Chartboost SDK 8.3.0.

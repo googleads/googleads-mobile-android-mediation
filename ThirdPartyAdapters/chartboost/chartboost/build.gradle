@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Chartboost"
     // String property to store version name.
-    stringVersion = "8.3.0.0"
+    stringVersion = "8.3.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 8030000
+        versionCode 8030100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -31,8 +31,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.chartboost:chartboost-sdk:8.3.0'
-
+    implementation 'com.chartboost:chartboost-sdk:8.3.1'
     implementation 'androidx.annotation:annotation:1.2.0'
     implementation 'com.google.android.gms:play-services-ads:20.5.0'
 }
