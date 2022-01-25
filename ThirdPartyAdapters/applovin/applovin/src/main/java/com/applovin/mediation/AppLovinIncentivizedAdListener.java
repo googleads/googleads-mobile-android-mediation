@@ -101,11 +101,6 @@ public class AppLovinIncentivizedAdListener
   }
 
   @Override
-  public void userDeclinedToViewAd(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "User declined to view rewarded video.");
-  }
-
-  @Override
   public void userRewardVerified(AppLovinAd ad, Map<String, String> response) {
     final String currency = response.get("currency");
     final String amountStr = response.get("amount");
