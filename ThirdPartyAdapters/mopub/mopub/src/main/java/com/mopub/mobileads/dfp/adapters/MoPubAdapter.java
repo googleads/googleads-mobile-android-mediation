@@ -1,14 +1,14 @@
 package com.mopub.mobileads.dfp.adapters;
 
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_DOWNLOADING_NATIVE_ASSETS;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_MINIMUM_BANNER_SIZE;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_REQUIRES_UNIFIED_NATIVE_ADS;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.ERROR_WRONG_NATIVE_TYPE;
-import static com.google.ads.mediation.mopub.MoPubMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.mopub.MoPubMediationAdapter.createSDKError;
+import static com.google.ads.mediation.mopub.MoPubMediationAdapter.MOPUB_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.mopub.MoPubMediationAdapter.getMediationErrorCode;
 import static com.google.android.gms.ads.AdRequest.GENDER_FEMALE;
 import static com.google.android.gms.ads.AdRequest.GENDER_MALE;
@@ -23,7 +23,9 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.mopub.MoPubSingleton;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -108,25 +110,25 @@ public class MoPubAdapter
   }
 
   @Override
-  public void requestNativeAd(final Context context, final MediationNativeListener listener,
-      Bundle serverParameters, final NativeMediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestNativeAd(@NonNull final Context context,
+      @NonNull final MediationNativeListener listener, @NonNull Bundle serverParameters,
+      @NonNull final NativeMediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras) {
 
     String adUnit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
     if (TextUtils.isEmpty(adUnit)) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid MoPub Ad Unit ID.");
-      Log.e(TAG, errorMessage);
-      listener.onAdFailedToLoad(MoPubAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid MoPub Ad Unit ID.", ERROR_DOMAIN);
+      Log.e(TAG, loadError.toString());
+      listener.onAdFailedToLoad(MoPubAdapter.this, loadError);
       return;
     }
 
     if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
-      String errorMessage = createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-          "Failed to request native ad: Unified Native Ad should be requested.");
-      Log.e(TAG, errorMessage);
-      listener.onAdFailedToLoad(this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
+      AdError requestError = new AdError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          "Unified Native Ad should be requested.", ERROR_DOMAIN);
+      Log.e(TAG, requestError.toString());
+      listener.onAdFailedToLoad(this, requestError);
       return;
     }
 
@@ -159,12 +161,10 @@ public class MoPubAdapter
             nativeAd.setMoPubNativeEventListener(mMoPubNativeEventListener);
             BaseNativeAd adData = nativeAd.getBaseNativeAd();
             if (!(adData instanceof StaticNativeAd)) {
-              String errorMessage =
-                  createAdapterError(
-                      ERROR_WRONG_NATIVE_TYPE,
-                      "Loaded native ad is not an instance of StaticNativeAd.");
-              Log.w(TAG, errorMessage);
-              listener.onAdFailedToLoad(MoPubAdapter.this, ERROR_WRONG_NATIVE_TYPE);
+              AdError adTypeError = new AdError(ERROR_WRONG_NATIVE_TYPE,
+                  "Loaded native ad is not an instance of StaticNativeAd.", ERROR_DOMAIN);
+              Log.i(TAG, adTypeError.toString());
+              listener.onAdFailedToLoad(MoPubAdapter.this, adTypeError);
               return;
             }
 
@@ -175,12 +175,11 @@ public class MoPubAdapter
               map.put(DownloadDrawablesAsync.KEY_ICON, new URL(staticNativeAd.getIconImageUrl()));
               map.put(KEY_IMAGE, new URL(staticNativeAd.getMainImageUrl()));
             } catch (MalformedURLException e) {
-              String errorMessage =
-                  createAdapterError(
-                      ERROR_DOWNLOADING_NATIVE_ASSETS,
-                      "Invalid ad response received from MoPub. Image URLs are malformed.");
-              Log.i(TAG, errorMessage);
-              listener.onAdFailedToLoad(MoPubAdapter.this, ERROR_DOWNLOADING_NATIVE_ASSETS);
+              AdError urlError = new AdError(ERROR_DOWNLOADING_NATIVE_ASSETS,
+                  "Invalid ad response received from MoPub. Image URLs are malformed.",
+                  ERROR_DOMAIN);
+              Log.i(TAG, urlError.toString());
+              listener.onAdFailedToLoad(MoPubAdapter.this, urlError);
             }
 
             new DownloadDrawablesAsync(
@@ -198,12 +197,10 @@ public class MoPubAdapter
                   @Override
                   public void onDownloadFailure() {
                     // Failed to download images, send failure callback.
-                    String errorMessage =
-                        createAdapterError(
-                            ERROR_DOWNLOADING_NATIVE_ASSETS, "Failed to download images.");
-                    Log.w(TAG, errorMessage);
-                    listener.onAdFailedToLoad(
-                        MoPubAdapter.this, ERROR_DOWNLOADING_NATIVE_ASSETS);
+                    AdError downloadError = new AdError(ERROR_DOWNLOADING_NATIVE_ASSETS,
+                        "Failed to download images.", ERROR_DOMAIN);
+                    Log.i(TAG, downloadError.toString());
+                    listener.onAdFailedToLoad(MoPubAdapter.this, downloadError);
                   }
                 })
                 .execute(map);
@@ -211,9 +208,10 @@ public class MoPubAdapter
 
           @Override
           public void onNativeFail(NativeErrorCode errorCode) {
-            String errorSDKMessage = createSDKError(errorCode);
-            Log.w(TAG, errorSDKMessage);
-            listener.onAdFailedToLoad(MoPubAdapter.this, getMediationErrorCode(errorCode));
+            AdError loadError = new AdError(getMediationErrorCode(errorCode), errorCode.toString(),
+                ERROR_DOMAIN);
+            Log.i(TAG, loadError.toString());
+            listener.onAdFailedToLoad(MoPubAdapter.this, loadError);
           }
         };
 
@@ -272,20 +270,20 @@ public class MoPubAdapter
   }
 
   @Override
-  public void requestBannerAd(final Context context,
-      MediationBannerListener mediationBannerListener, Bundle bundle, final AdSize adSize,
-      MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull MediationBannerListener mediationBannerListener, @NonNull Bundle serverParameters,
+      @NonNull final AdSize adSize, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
     mContext = context;
     mAdSize = adSize;
     mExtras = mediationExtras;
 
-    String adUnit = bundle.getString(MOPUB_AD_UNIT_KEY);
+    String adUnit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
     if (TextUtils.isEmpty(adUnit)) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid MoPub Ad Unit ID.");
-      Log.w(TAG, errorMessage);
-      mediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid MoPub Ad Unit ID.", ERROR_DOMAIN);
+      Log.e(TAG, loadError.toString());
+      mediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, loadError);
       return;
     }
 
@@ -319,6 +317,7 @@ public class MoPubAdapter
             });
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
     return mMoPubView;
@@ -409,10 +408,10 @@ public class MoPubAdapter
 
     @Override
     public void onBannerFailed(MoPubView moPubView, MoPubErrorCode moPubErrorCode) {
-      String errorSDKMessage = createSDKError(moPubErrorCode);
-      Log.w(TAG, errorSDKMessage);
-      mMediationBannerListener.onAdFailedToLoad(
-          MoPubAdapter.this, getMediationErrorCode(moPubErrorCode));
+      AdError loadError = new AdError(getMediationErrorCode(moPubErrorCode),
+          moPubErrorCode.toString(), ERROR_DOMAIN);
+      Log.i(TAG, loadError.toString());
+      mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, loadError);
     }
 
     @Override
@@ -431,9 +430,9 @@ public class MoPubAdapter
                   "The loaded ad was smaller than the minimum required banner size. "
                       + "Loaded size: %dx%d, minimum size: %dx%d",
                   moPubView.getAdWidth(), moPubView.getAdHeight(), minimumWidth, minimumHeight);
-          String logMessage = createAdapterError(ERROR_MINIMUM_BANNER_SIZE, errorMessage);
-          Log.e(TAG, logMessage);
-          mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, ERROR_MINIMUM_BANNER_SIZE);
+          AdError sizeError = new AdError(ERROR_MINIMUM_BANNER_SIZE, errorMessage, ERROR_DOMAIN);
+          Log.e(TAG, sizeError.toString());
+          mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, sizeError);
           return;
         }
       }
@@ -461,9 +460,9 @@ public class MoPubAdapter
                 moPubView.getAdHeight(),
                 requestedAdWidth,
                 requestedAdHeight);
-        String logMessage = createAdapterError(ERROR_BANNER_SIZE_MISMATCH, errorMessage);
-        Log.w(TAG, logMessage);
-        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, ERROR_BANNER_SIZE_MISMATCH);
+        AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
+        Log.e(TAG, sizeError.toString());
+        mMediationBannerListener.onAdFailedToLoad(MoPubAdapter.this, sizeError);
         return;
       }
 
@@ -472,29 +471,25 @@ public class MoPubAdapter
   }
 
   @Override
-  public void requestInterstitialAd(Context context,
-      MediationInterstitialListener mediationInterstitialListener, Bundle bundle,
-      MediationAdRequest mediationAdRequest, Bundle bundle1) {
+  public void requestInterstitialAd(@NonNull Context context,
+      @NonNull MediationInterstitialListener mediationInterstitialListener,
+      @NonNull Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable Bundle networkExtras) {
 
     if (!(context instanceof Activity)) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "MoPub SDK requires an Activity context to load interstitial ads.");
-      Log.e(TAG, errorMessage);
-      mediationInterstitialListener.onAdFailedToLoad(
-          MoPubAdapter.this, ERROR_REQUIRES_ACTIVITY_CONTEXT);
+      AdError loadError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "MoPub SDK requires an Activity context to load interstitial ads.", ERROR_DOMAIN);
+      Log.e(TAG, loadError.toString());
+      mediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this, loadError);
       return;
     }
 
-    String adUnit = bundle.getString(MOPUB_AD_UNIT_KEY);
+    String adUnit = serverParameters.getString(MOPUB_AD_UNIT_KEY);
     if (TextUtils.isEmpty(adUnit)) {
-      String errorMessage =
-          createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid MoPub Ad Unit ID.");
-      Log.e(TAG, errorMessage);
-      mediationInterstitialListener.onAdFailedToLoad(
-          MoPubAdapter.this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid MoPub Ad Unit ID.", ERROR_DOMAIN);
+      Log.e(TAG, loadError.toString());
+      mediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this, loadError);
       return;
     }
 
@@ -560,10 +555,10 @@ public class MoPubAdapter
     @Override
     public void onInterstitialFailed(
         MoPubInterstitial moPubInterstitial, MoPubErrorCode moPubErrorCode) {
-      String errorSDKMessage = createSDKError(moPubErrorCode);
-      Log.w(TAG, errorSDKMessage);
-      mMediationInterstitialListener.onAdFailedToLoad(
-          MoPubAdapter.this, getMediationErrorCode(moPubErrorCode));
+      AdError loadError = new AdError(getMediationErrorCode(moPubErrorCode),
+          moPubErrorCode.toString(), ERROR_DOMAIN);
+      Log.i(TAG, loadError.toString());
+      mMediationInterstitialListener.onAdFailedToLoad(MoPubAdapter.this, loadError);
     }
 
     @Override

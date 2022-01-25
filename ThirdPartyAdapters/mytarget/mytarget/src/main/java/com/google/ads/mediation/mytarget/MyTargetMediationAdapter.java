@@ -1,5 +1,7 @@
 package com.google.ads.mediation.mytarget;
 
+import static com.google.ads.mediation.mytarget.MyTargetTools.handleMediationExtras;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -144,6 +146,7 @@ public class MyTargetMediationAdapter extends Adapter
 
     mRewardedAd = new RewardedAd(slotId, context);
     CustomParams params = mRewardedAd.getCustomParams();
+    handleMediationExtras(TAG, mediationRewardedAdConfiguration.getMediationExtras(), params);
     params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY,
         MyTargetTools.PARAM_MEDIATION_VALUE);
     mRewardedAd.setListener(MyTargetMediationAdapter.this);

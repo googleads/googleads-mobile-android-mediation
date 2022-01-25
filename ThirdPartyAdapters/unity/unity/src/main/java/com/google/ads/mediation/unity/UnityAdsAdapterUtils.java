@@ -1,9 +1,10 @@
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.ads.mediation.unity.UnityMediationAdapter.AdapterError;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -18,7 +19,20 @@ import java.util.ArrayList;
  */
 public class UnityAdsAdapterUtils {
 
-  private static final String SDK_ERROR_DOMAIN = "com.unity3d.ads";
+  /**
+   * Enumeration of ad events that get forwarded to AdMob
+   */
+  public enum AdEvent {
+    LOADED,
+    OPENED,
+    CLICKED,
+    CLOSED,
+    LEFT_APPLICATION,
+    IMPRESSION,
+    VIDEO_START,
+    REWARD,
+    VIDEO_COMPLETE
+  }
 
   /**
    * Private constructor
@@ -27,75 +41,62 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Creates a formatted SDK error message based on the specified {@link
-   * UnityAds.UnityAdsInitializationError}.
+   * Creates an {@link AdError} object based on the specified
+   * {@link UnityAds.UnityAdsInitializationError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description   the error message.
-   * @return the error.
+   * @return the {@link AdError} object.
    */
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
-   * Creates a formatted SDK error message based on the specified {@link BannerErrorInfo}.
-   *
-   * @param errorInfo error object from Unity.
-   * @return the error message.
-   */
-  @NonNull
-  static String createSDKError(@NonNull BannerErrorInfo errorInfo) {
-    return String.format("%d: %s", getMediationErrorCode(errorInfo), errorInfo.errorMessage);
-  }
-
-  /**
-   * Creates a formatted SDK error message based on the specified {@link
-   * UnityAds.UnityAdsLoadError}.
+   * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsLoadError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description   the error message.
-   * @return the error.
+   * @return the {@link AdError} object.
    */
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
-   * Creates a formatted SDK error message based on the specified {@link
-   * UnityAds.UnityAdsShowError}.
+   * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsShowError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description   the error message.
-   * @return the error.
+   * @return the {@link AdError} object.
    */
   @NonNull
   static AdError createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError,
       @NonNull String description) {
-    return new AdError(getMediationErrorCode(unityAdsError), description, SDK_ERROR_DOMAIN);
+    return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
-   * Creates a formatted adapter error string given a code and description.
+   * Creates an {@link AdError} object based on the specified error code and description
    *
-   * @param code        the error code.
+   * @param errorCode   the mediation error code.
    * @param description the error message.
-   * @return the error message.
+   * @return the error.
    */
   @NonNull
-  static String createAdapterError(@AdapterError int code, String description) {
-    return String.format("%d: %s", code, description);
+  static AdError createAdError(int errorCode, @NonNull String description) {
+    return new AdError(errorCode, description, SDK_ERROR_DOMAIN);
   }
 
   /**
    * Gets the mediation specific error code for the specified {@link BannerErrorInfo}.
    *
    * @param errorInfo error object from Unity.
-   * @return mediation specific error code.
+   * @return mediation specific banner error code.
    */
   static int getMediationErrorCode(@NonNull BannerErrorInfo errorInfo) {
     int errorCode = 200;
@@ -117,10 +118,11 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsInitializationError}.
+   * Gets the mediation specific error code for the specified
+   * {@link UnityAds.UnityAdsInitializationError}.
    *
    * @param unityAdsError error object from Unity.
-   * @return mediation specific show error code.
+   * @return mediation specific initialization error code.
    */
   static int getMediationErrorCode(@NonNull UnityAdsInitializationError unityAdsError) {
     switch (unityAdsError) {
@@ -140,7 +142,7 @@ public class UnityAdsAdapterUtils {
    * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsLoadError}.
    *
    * @param unityAdsError error object from Unity.
-   * @return mediation specific show error code.
+   * @return mediation specific load error code.
    */
   static int getMediationErrorCode(@NonNull UnityAds.UnityAdsLoadError unityAdsError) {
     switch (unityAdsError) {
