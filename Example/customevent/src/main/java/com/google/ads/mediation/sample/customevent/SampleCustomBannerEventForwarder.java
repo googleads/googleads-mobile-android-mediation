@@ -19,7 +19,7 @@ package com.google.ads.mediation.sample.customevent;
 import com.google.ads.mediation.sample.sdk.SampleAdListener;
 import com.google.ads.mediation.sample.sdk.SampleAdView;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
 
 /**
@@ -50,20 +50,8 @@ public class SampleCustomBannerEventForwarder extends SampleAdListener {
 
   @Override
   public void onAdFetchFailed(SampleErrorCode errorCode) {
-    switch (errorCode) {
-      case UNKNOWN:
-        bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-        break;
-      case BAD_REQUEST:
-        bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
-        break;
-      case NETWORK_ERROR:
-        bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NETWORK_ERROR);
-        break;
-      case NO_INVENTORY:
-        bannerListener.onAdFailedToLoad(AdRequest.ERROR_CODE_NO_FILL);
-        break;
-    }
+    AdError error = SampleCustomEventError.createSampleSdkError(errorCode);
+    bannerListener.onAdFailedToLoad(error);
   }
 
   @Override
