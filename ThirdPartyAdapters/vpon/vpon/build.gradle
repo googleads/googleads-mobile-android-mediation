@@ -1,11 +1,10 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 30
     defaultConfig {
-        applicationId "com.google.ads.mediation.vpon"
-        minSdkVersion 14
-        targetSdkVersion 27
+        minSdkVersion 16
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
@@ -18,7 +17,6 @@ android {
 }
 
 dependencies {
-
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.google.android.gms:play-services-ads:17.2.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
 }
