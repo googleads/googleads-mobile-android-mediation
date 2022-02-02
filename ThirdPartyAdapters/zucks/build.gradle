@@ -2,7 +2,7 @@ buildscript {
     ext {
         buildToolsVersion = '30.0.3'
         externalVersions = [
-                'gradle': '4.1.2',
+                'gradle': '4.2.0',
                 'kotlin': '1.6.10',
                 'admob': [
                         'strictly': '[19.8.0,)',
