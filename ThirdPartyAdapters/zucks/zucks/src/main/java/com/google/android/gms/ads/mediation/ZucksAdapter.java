@@ -12,11 +12,11 @@ import com.google.android.gms.ads.AdSize;
 import com.google.ads.mediation.zucks.ZucksMediationAdapter;
 
 /**
- * The {@link ZucksAdapter} class is used to load Zucks banner and interstitial ads using Google Mobile Ads SDK mediation.
+ * The {@link ZucksAdapter} class is used to load Zucks banner and interstitial ads using Google
+ * Mobile Ads SDK mediation.
  */
 public class ZucksAdapter extends ZucksMediationAdapter
-    implements MediationBannerAd,
-        MediationInterstitialAd {
+    implements MediationBannerAd, MediationInterstitialAd {
 
   @Nullable private ZucksBannerAdapter bannerAdapter = null;
   @Nullable private ZucksInterstitialAdapter interstitialAdapter = null;
@@ -24,8 +24,9 @@ public class ZucksAdapter extends ZucksMediationAdapter
   @Override
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
-  ) {
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     bannerAdapter = new ZucksBannerAdapter(mediationBannerAdConfiguration, mediationAdLoadCallback);
     bannerAdapter.loadBannerAd();
   }
@@ -39,9 +40,11 @@ public class ZucksAdapter extends ZucksMediationAdapter
   @Override
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
-  ) {
-    interstitialAdapter = new ZucksInterstitialAdapter(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback) {
+    interstitialAdapter =
+        new ZucksInterstitialAdapter(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     interstitialAdapter.loadInterstitialAd();
   }
 

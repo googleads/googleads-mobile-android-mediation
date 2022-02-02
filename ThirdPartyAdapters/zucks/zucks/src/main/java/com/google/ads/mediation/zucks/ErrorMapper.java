@@ -16,7 +16,10 @@ public class ErrorMapper {
 
   /**
    * Adapter's error code(s) is always greater than 100.
-   * @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation #337</a>
+   *
+   * @see <a
+   *     href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation
+   *     #337</a>
    */
   private static final int ADAPTER_ERROR_BASE = 100;
 
@@ -25,8 +28,8 @@ public class ErrorMapper {
 
   @IntDef(
       value = {
-              ADAPTER_ERROR_INVALID_REQUEST,
-              ADAPTER_ERROR_ILLEGAL_STATE,
+        ADAPTER_ERROR_INVALID_REQUEST,
+        ADAPTER_ERROR_ILLEGAL_STATE,
       })
   public @interface AdapterError {}
 

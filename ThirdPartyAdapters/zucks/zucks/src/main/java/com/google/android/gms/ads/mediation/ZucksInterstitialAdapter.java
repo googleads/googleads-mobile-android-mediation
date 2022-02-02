@@ -22,66 +22,67 @@ import java.util.Locale;
 
 class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
-    /**
-     * {@link Log} is not acceptable >23 length string as tag.
-     */
-    private static final String TAG = "ZucksISAdapter";
+  /** {@link Log} is not acceptable >23 length string as tag. */
+  private static final String TAG = "ZucksISAdapter";
 
   @NonNull private final MediationInterstitialAdConfiguration adConfiguration;
-  @NonNull private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+
+  @NonNull
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      adLoadCallback;
 
   @Nullable private MediationInterstitialAdCallback interstitialAdCallback = null;
 
   @NonNull
   private final UniversalInterstitialListener.Callback callback =
-          new UniversalInterstitialListener.Callback() {
+      new UniversalInterstitialListener.Callback() {
 
-            @Override
-            public void onReceiveAd() {
-              interstitialAdCallback = adLoadCallback.onSuccess(ZucksInterstitialAdapter.this);
-            }
+        @Override
+        public void onReceiveAd() {
+          interstitialAdCallback = adLoadCallback.onSuccess(ZucksInterstitialAdapter.this);
+        }
 
-            @Override
-            public void onShowAd() {
-              interstitialAdCallback.onAdOpened();
-              interstitialAdCallback.reportAdImpression();
-            }
+        @Override
+        public void onShowAd() {
+          interstitialAdCallback.onAdOpened();
+          interstitialAdCallback.reportAdImpression();
+        }
 
-            @Override
-            public void onCancelDisplayRate() {
-              // no-op
-            }
+        @Override
+        public void onCancelDisplayRate() {
+          // no-op
+        }
 
-            @Override
-            public void onTapAd() {
-              interstitialAdCallback.reportAdClicked();
-              interstitialAdCallback.onAdLeftApplication();
-            }
+        @Override
+        public void onTapAd() {
+          interstitialAdCallback.reportAdClicked();
+          interstitialAdCallback.onAdLeftApplication();
+        }
 
-            @Override
-            public void onCloseAd() {
-              interstitialAdCallback.onAdClosed();
-            }
+        @Override
+        public void onCloseAd() {
+          interstitialAdCallback.onAdClosed();
+        }
 
-            @Override
-            public void onLoadFailure(Exception exception) {
-              notifySdkLoadFailure(exception);
-            }
+        @Override
+        public void onLoadFailure(Exception exception) {
+          notifySdkLoadFailure(exception);
+        }
 
-            @Override
-            public void onShowFailure(Exception exception) {
-                notifySdkFailedToShow(exception);
-            }
-
-          };
+        @Override
+        public void onShowFailure(Exception exception) {
+          notifySdkFailedToShow(exception);
+        }
+      };
 
   /** Interstitial instance of Zucks Ad Network SDK. */
   private IZucksInterstitial zucksInterstitial = null;
 
   public ZucksInterstitialAdapter(
-          @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
-  ) {
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback) {
     this.adConfiguration = mediationInterstitialAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
@@ -93,34 +94,26 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     // Check a supported context.
     if (!(context instanceof Activity)) {
       notifyAdapterLoadFailure(
-              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-              "Context not an Activity."
-      );
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity.");
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
-        notifyAdapterLoadFailure(
-                ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-                "FrameID not contained in serverParameters."
-        );
+      notifyAdapterLoadFailure(
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
       return;
     }
 
     if (isFullscreenInterstitial(adConfiguration.getMediationExtras())) {
       zucksInterstitial =
-              new AdFullscreenInterstitial(
-                      context,
-                      adFrameId,
-                      new UniversalInterstitialListener.FullscreenInterstitial(callback).use()
-              );
+          new AdFullscreenInterstitial(
+              context,
+              adFrameId,
+              new UniversalInterstitialListener.FullscreenInterstitial(callback).use());
     } else {
       zucksInterstitial =
-              new AdInterstitial(
-                      context,
-                      adFrameId,
-                      new UniversalInterstitialListener.Interstitial(callback).use()
-              );
+          new AdInterstitial(
+              context, adFrameId, new UniversalInterstitialListener.Interstitial(callback).use());
     }
 
     AdMobUtil.configurePlatform(zucksInterstitial);
@@ -158,22 +151,23 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     return builder;
   }
 
-    // region Notify and logging errors
-    // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
-    private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
-        Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
-        adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
-    }
+  // region Notify and logging errors
+  // @see <a
+  // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+  private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
+    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
+    adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+  }
 
-    private void notifySdkLoadFailure(@NonNull Exception exception) {
-        Log.w(TAG, exception);
-        adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
-    }
+  private void notifySdkLoadFailure(@NonNull Exception exception) {
+    Log.w(TAG, exception);
+    adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
+  }
 
-    private void notifySdkFailedToShow(@NonNull Exception exception) {
-        Log.w(TAG, exception);
-        interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
-    }
-    // endregion
+  private void notifySdkFailedToShow(@NonNull Exception exception) {
+    Log.w(TAG, exception);
+    interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
+  }
+  // endregion
 
 }

@@ -27,7 +27,9 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   @NonNull private final MediationBannerAdConfiguration adConfiguration;
 
-  @NonNull private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  @NonNull
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
 
   @Nullable private MediationBannerAdCallback bannerAdCallback = null;
 
@@ -36,41 +38,42 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   @VisibleForTesting @NonNull
   final AdBannerListener listener =
-          new AdBannerListener() {
+      new AdBannerListener() {
 
-            @Override
-            public void onReceiveAd(AdBanner banner) {
-              AdError error = isValidAdSize(banner);
-              if (error != null) {
-                notifySdkLoadFailure(error);
-                return;
-              }
-              bannerAdCallback = adLoadCallback.onSuccess(ZucksBannerAdapter.this);
-              bannerAdCallback.reportAdImpression();
-            }
+        @Override
+        public void onReceiveAd(AdBanner banner) {
+          AdError error = isValidAdSize(banner);
+          if (error != null) {
+            notifySdkLoadFailure(error);
+            return;
+          }
+          bannerAdCallback = adLoadCallback.onSuccess(ZucksBannerAdapter.this);
+          bannerAdCallback.reportAdImpression();
+        }
 
-            @Override
-            public void onFailure(AdBanner banner, Exception e) {
-              notifySdkLoadFailure(e);
-            }
+        @Override
+        public void onFailure(AdBanner banner, Exception e) {
+          notifySdkLoadFailure(e);
+        }
 
-            @Override
-            public void onTapAd(AdBanner banner) {
-              bannerAdCallback.reportAdClicked();
-              bannerAdCallback.onAdOpened();
-              bannerAdCallback.onAdLeftApplication();
-            }
+        @Override
+        public void onTapAd(AdBanner banner) {
+          bannerAdCallback.reportAdClicked();
+          bannerAdCallback.onAdOpened();
+          bannerAdCallback.onAdLeftApplication();
+        }
 
-            @Override
-            public void onBackApplication(AdBanner banner) {
-              bannerAdCallback.onAdClosed();
-            }
-          };
+        @Override
+        public void onBackApplication(AdBanner banner) {
+          bannerAdCallback.onAdClosed();
+        }
+      };
 
   ZucksBannerAdapter(
-          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
-  ) {
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
@@ -81,17 +84,13 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
     if (!isSizeSupported(adConfiguration.getContext(), adSize)) {
       notifyAdapterLoadFailure(
-              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-              "It is not a supported size. size=" + adSize
-      );
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
       notifyAdapterLoadFailure(
-              ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST,
-              "FrameID not contained in serverParameters."
-      );
+          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
       return;
     }
 
@@ -132,7 +131,8 @@ class ZucksBannerAdapter implements MediationBannerAd {
   @VisibleForTesting
   @Nullable
   static AdError isValidAdSize(@Nullable AdSize adSize, @NonNull AdBanner banner) {
-    if (adSize == null || adSize.getWidth() != banner.getWidthInDp()
+    if (adSize == null
+        || adSize.getWidth() != banner.getWidthInDp()
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(
           ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE, "It is not a supported size. size=" + adSize);
@@ -141,7 +141,8 @@ class ZucksBannerAdapter implements MediationBannerAd {
   }
 
   // region Notify and logging errors
-  // @see <a href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+  // @see <a
+  // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
   private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
     Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
     adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));

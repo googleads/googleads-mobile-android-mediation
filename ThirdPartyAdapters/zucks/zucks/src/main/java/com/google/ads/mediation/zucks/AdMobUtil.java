@@ -45,18 +45,16 @@ public final class AdMobUtil {
   public static void configurePlatform(@NonNull AdBanner adBanner) {
     adBanner.setPlatform(
         Platform.ADMOB,
-            String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
-            com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION
-    );
+        String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
+        com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION);
   }
 
   /** Configure mediation platform flags for Interstitial. */
   public static void configurePlatform(@NonNull IZucksInterstitial zucksInterstitial) {
     zucksInterstitial.setPlatform(
         Platform.ADMOB,
-            String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
-            com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION
-    );
+        String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
+        com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION);
   }
   // endregion
 

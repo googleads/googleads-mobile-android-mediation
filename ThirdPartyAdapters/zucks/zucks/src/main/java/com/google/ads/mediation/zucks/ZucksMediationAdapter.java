@@ -13,8 +13,9 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import java.util.List;
 
 /**
- * The {@link ZucksMediationAdapter} class is used to load Zucks rewarded ads using Google Mobile Ads SDK mediation.
- * For compatibility, Banner/Interstitial Ad is implemented in {@link com.google.android.gms.ads.mediation.ZucksAdapter}.
+ * The {@link ZucksMediationAdapter} class is used to load Zucks rewarded ads using Google Mobile
+ * Ads SDK mediation. For compatibility, Banner/Interstitial Ad is implemented in {@link
+ * com.google.android.gms.ads.mediation.ZucksAdapter}.
  */
 public class ZucksMediationAdapter extends Adapter {
 
@@ -35,9 +36,9 @@ public class ZucksMediationAdapter extends Adapter {
 
   @Override
   public void initialize(
-          Context context,
-          InitializationCompleteCallback initializationCompleteCallback,
-          List<MediationConfiguration> list) {
+      Context context,
+      InitializationCompleteCallback initializationCompleteCallback,
+      List<MediationConfiguration> list) {
     // Initialization is not needed in Zucks Ad Network SDK.
     initializationCompleteCallback.onInitializationSucceeded();
   }
@@ -51,26 +52,23 @@ public class ZucksMediationAdapter extends Adapter {
    */
   @Override
   public VersionInfo getVersionInfo() {
-    int sdkPatch =
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH)
-                    * 100;
+    int sdkPatch = Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH) * 100;
 
-    int adapterPatch =
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_ADAPTER_PATCH);
+    int adapterPatch = Integer.parseInt(BuildConfig.ADAPTER_VERSION_ADAPTER_PATCH);
 
     return new VersionInfo(
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
-            sdkPatch + adapterPatch);
+        Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
+        Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
+        sdkPatch + adapterPatch);
   }
 
   /** Version object of Zucks Ad Network SDK. */
   @Override
   public VersionInfo getSDKVersionInfo() {
     return new VersionInfo(
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
-            Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH));
+        Integer.parseInt(BuildConfig.ADAPTER_VERSION_MAJOR),
+        Integer.parseInt(BuildConfig.ADAPTER_VERSION_MINOR),
+        Integer.parseInt(BuildConfig.ADAPTER_VERSION_SDK_PATCH));
   }
   // endregion
 
@@ -100,5 +98,4 @@ public class ZucksMediationAdapter extends Adapter {
       return extras;
     }
   }
-
 }
