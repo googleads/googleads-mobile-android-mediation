@@ -1,6 +1,7 @@
 package com.mopub.mobileads.dfp.adapters;
 
-import com.google.ads.mediation.mopub.MoPubMediationAdapter.AdapterError;
+import androidx.annotation.NonNull;
+import com.google.android.gms.ads.AdError;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 
 public interface MoPubAdapterRewardedListener extends MoPubRewardedVideoListener {
@@ -9,8 +10,7 @@ public interface MoPubAdapterRewardedListener extends MoPubRewardedVideoListener
    * Called when the adapter fails to load an ad for a reason that is different than a MoPub SDK
    * failure callback.
    *
-   * @param errorCode The error code.
-   * @param errorMessage A message describing the error.
+   * @param loadError The {@link AdError} object.
    */
-  void onAdFailedToLoad(@AdapterError int errorCode, String errorMessage);
+  void onAdFailedToLoad(@NonNull AdError loadError);
 }

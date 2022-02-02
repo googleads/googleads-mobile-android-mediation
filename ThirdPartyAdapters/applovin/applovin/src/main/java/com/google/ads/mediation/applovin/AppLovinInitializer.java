@@ -11,6 +11,7 @@ import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdk.SdkInitializationListener;
 import com.applovin.sdk.AppLovinSdkConfiguration;
+import com.applovin.sdk.AppLovinSdkSettings;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -81,8 +82,8 @@ public class AppLovinInitializer {
     String logMessage = String.format("Attempting to initialize SDK with SDK Key: %s", sdkKey);
     log(DEBUG, logMessage);
 
-    AppLovinSdk sdk = AppLovinSdk
-        .getInstance(sdkKey, AppLovinMediationAdapter.getSdkSettings(), context);
+    AppLovinSdkSettings sdkSettings = AppLovinMediationAdapter.getSdkSettings(context);
+    AppLovinSdk sdk = AppLovinSdk.getInstance(sdkKey, sdkSettings, context);
     sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
     sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
     sdk.initializeSdk(new SdkInitializationListener() {

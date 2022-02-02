@@ -49,7 +49,7 @@ public class SampleCustomEventRewardedAdLoader extends SampleRewardedAdListener 
     String adUnitId = mediationRewardedAdConfiguration.getServerParameters().getString(
         "ad_unit");
     if (TextUtils.isEmpty(adUnitId)) {
-      mediationAdLoadCallBack.onFailure("Ad Unit ID is empty.");
+      mediationAdLoadCallBack.onFailure(SampleCustomEventError.createCustomEventNoAdIdError());
       return;
     }
     SampleAdRequest request = new SampleAdRequest();
@@ -64,20 +64,21 @@ public class SampleCustomEventRewardedAdLoader extends SampleRewardedAdListener 
 
   @Override
   public void onRewardedAdFailedToLoad(SampleErrorCode error) {
-    mediationAdLoadCallBack.onFailure(error.toString());
+    mediationAdLoadCallBack.onFailure(SampleCustomEventError.createSampleSdkError(error));
   }
 
   @Override
   public void showAd(Context context) {
     if (!(context instanceof Activity)) {
       rewardedAdCallback.onAdFailedToShow(
-          "An activity context is required to show Sample rewarded ad.");
+          SampleCustomEventError.createCustomEventNoActivityContextError());
       return;
     }
     Activity activity = (Activity) context;
 
     if (!sampleRewardedAd.isAdAvailable()) {
-      rewardedAdCallback.onAdFailedToShow("No ads to show.");
+      rewardedAdCallback.onAdFailedToShow(
+          SampleCustomEventError.createCustomEventAdNotAvailableError());
       return;
     }
     sampleRewardedAd.showAd(activity);

@@ -76,6 +76,9 @@ public class VungleInterstitialAdapter
       return;
     }
 
+    VungleInitializer.getInstance()
+            .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
+
     AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
     // Unmute full-screen ads by default.
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
@@ -248,6 +251,10 @@ public class VungleInterstitialAdapter
       }
       return;
     }
+
+    VungleInitializer.getInstance()
+            .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
+
     mVungleManager = VungleManager.getInstance();
 
     String placementForPlay = mVungleManager.findPlacement(mediationExtras, serverParameters);

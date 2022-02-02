@@ -13,6 +13,7 @@ import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -48,10 +49,11 @@ public class AppLovinUtils {
         (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
     final AppLovinSdk sdk;
 
+    AppLovinSdkSettings sdkSettings = AppLovinMediationAdapter.getSdkSettings(context);
     if (!TextUtils.isEmpty(sdkKey)) {
-      sdk = AppLovinSdk.getInstance(sdkKey, AppLovinMediationAdapter.getSdkSettings(), context);
+      sdk = AppLovinSdk.getInstance(sdkKey, sdkSettings, context);
     } else {
-      sdk = AppLovinSdk.getInstance(AppLovinMediationAdapter.getSdkSettings(), context);
+      sdk = AppLovinSdk.getInstance(sdkSettings, context);
     }
 
     sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
