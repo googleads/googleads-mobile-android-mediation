@@ -1,5 +1,6 @@
 buildscript {
     ext {
+        buildToolsVersion = '30.0.3'
         externalVersions = [
                 'gradle': '4.1.2',
                 'kotlin': '1.6.10',

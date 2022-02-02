@@ -20,6 +20,7 @@ ext {
 
 android {
     compileSdkVersion 30
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 16
