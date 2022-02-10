@@ -120,11 +120,14 @@ public class VungleInitializer implements InitCallback {
         Vungle.updateUserCoppaStatus(true);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE :
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED :
         Vungle.updateUserCoppaStatus(false);
         break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:
-        //ignore
+        //Vungle's SDK only supports setting COPPA_ENABLED or COPPA_NOT_ENABLED status
+        //For Unspecified case Publishers will have to enable COPPA  on Vungle's dashboard
+        //and then Vungle will accordingly treat any user whose COPPA status is not known
+        //according to the compliance requirements
         break;
     }
   }
