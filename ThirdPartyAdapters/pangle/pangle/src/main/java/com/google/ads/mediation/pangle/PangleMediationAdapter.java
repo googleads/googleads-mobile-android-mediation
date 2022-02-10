@@ -12,10 +12,10 @@ import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.TTAdConfig;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
-import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAdapter;
+import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
-import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAdapter;
-import com.google.ads.mediation.pangle.rtb.PangleRtbRewardAdapter;
+import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
+import com.google.ads.mediation.pangle.rtb.PangleRtbRewardAd;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -44,6 +44,10 @@ import java.util.List;
 public class PangleMediationAdapter extends RtbAdapter {
 
     final static String TAG = PangleMediationAdapter.class.getSimpleName();
+    private PangleRtbBannerAd bannerRenderer;
+    private PangleRtbInterstitialAd interstitialRenderer;
+    private PangleRtbNativeAd nativeRenderer;
+    private PangleRtbRewardAd rewardRenderer;
 
     @Override
     public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -56,8 +60,6 @@ public class PangleMediationAdapter extends RtbAdapter {
     public void initialize(@NonNull Context context,
                            @NonNull final InitializationCompleteCallback initializationCompleteCallback,
                            @NonNull List<MediationConfiguration> list) {
-        Log.d(TAG, "custom event  AdmobRewardVideoAdapter  initialize");
-
         HashSet<String> appIds = new HashSet<>();
         for (MediationConfiguration mediationConfiguration : list) {
             Bundle serverParameters = mediationConfiguration.getServerParameters();
@@ -77,7 +79,7 @@ public class PangleMediationAdapter extends RtbAdapter {
 
         if (count > 1) {
             String message = String.format("Find multiple appids in %s. " +
-                    ", use %s to initialize Pangle SDK", appIds, appId);
+                    ", using %s to initialize Pangle SDK", appIds.toString(), appId);
             Log.w(TAG, message);
         }
 
@@ -98,6 +100,7 @@ public class PangleMediationAdapter extends RtbAdapter {
 
             @Override
             public void fail(int errorCode, String errorMessage) {
+                Log.w(TAG, errorMessage);
                 initializationCompleteCallback.onInitializationFailed(errorMessage);
             }
         });
@@ -146,28 +149,28 @@ public class PangleMediationAdapter extends RtbAdapter {
     @Override
     public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
                                 @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        PangleRtbBannerAdapter bannerRenderer = new PangleRtbBannerAdapter(adConfiguration, callback);
+        bannerRenderer = new PangleRtbBannerAd(adConfiguration, callback);
         bannerRenderer.render();
     }
 
     @Override
     public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
                                       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-        PangleRtbInterstitialAd interstitialRenderer = new PangleRtbInterstitialAd(adConfiguration, callback);
+        interstitialRenderer = new PangleRtbInterstitialAd(adConfiguration, callback);
         interstitialRenderer.render();
     }
 
     @Override
     public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
                                 @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-        PangleRtbNativeAdapter nativeRenderer = new PangleRtbNativeAdapter(adConfiguration, callback);
+        nativeRenderer = new PangleRtbNativeAd(adConfiguration, callback);
         nativeRenderer.render();
     }
 
     @Override
     public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
                                   @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-        PangleRtbRewardAdapter rewardRenderer = new PangleRtbRewardAdapter(adConfiguration, callback);
+        rewardRenderer = new PangleRtbRewardAd(adConfiguration, callback);
         rewardRenderer.render();
     }
 
@@ -179,8 +182,8 @@ public class PangleMediationAdapter extends RtbAdapter {
             String[] requestedPermissions = packageInfo.requestedPermissions;
             String wakeLockPermission = Manifest.permission.WAKE_LOCK;
             if (requestedPermissions != null && requestedPermissions.length > 0) {
-                for (String per : requestedPermissions) {
-                    if (wakeLockPermission.equalsIgnoreCase(per)) {
+                for (String requestedPermission : requestedPermissions) {
+                    if (wakeLockPermission.equalsIgnoreCase(requestedPermission)) {
                         return true;
                     }
                 }
@@ -197,10 +200,12 @@ public class PangleMediationAdapter extends RtbAdapter {
     public static void setCoppa(@NonNull MediationAdConfiguration mediationAdConfiguration) {
         if (mediationAdConfiguration.taggedForChildDirectedTreatment() == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
             TTAdSdk.setCoppa(1);
-        } else if (mediationAdConfiguration.taggedForChildDirectedTreatment() == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
-            TTAdSdk.setCoppa(0);
-        } else {
-            TTAdSdk.setCoppa(-1);
+            return;
         }
+        if (mediationAdConfiguration.taggedForChildDirectedTreatment() == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+            TTAdSdk.setCoppa(0);
+            return;
+        }
+        TTAdSdk.setCoppa(-1);
     }
 }

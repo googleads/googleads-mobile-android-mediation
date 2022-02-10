@@ -1,7 +1,7 @@
 package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SHOW_FAIL;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SHOW_AD_NOT_LOADED;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,36 +23,36 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
 public class PangleRtbInterstitialAd implements MediationInterstitialAd {
-    private static final String TAG = "PangleRtbInterstitialAd";
 
-    private final MediationInterstitialAdConfiguration mAdConfiguration;
-    private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
-    private MediationInterstitialAdCallback mInterstitialAdCallback;
-    private TTFullScreenVideoAd mTTFullVideoAd;
+    private static final String TAG = PangleRtbInterstitialAd.class.getSimpleName();
+    private final MediationInterstitialAdConfiguration adConfiguration;
+    private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+    private MediationInterstitialAdCallback interstitialAdCallback;
+    private TTFullScreenVideoAd ttFullVideoAd;
 
-    public PangleRtbInterstitialAd(MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-                                   MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-        mAdConfiguration = mediationInterstitialAdConfiguration;
-        mAdLoadCallback = mediationAdLoadCallback;
+    public PangleRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+                                   @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+        adConfiguration = mediationInterstitialAdConfiguration;
+        adLoadCallback = mediationAdLoadCallback;
     }
 
     public void render() {
-        PangleMediationAdapter.setCoppa(mAdConfiguration);
-        String placementId = mAdConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
+        PangleMediationAdapter.setCoppa(adConfiguration);
+        String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
 
         if (TextUtils.isEmpty(placementId)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
                     "Failed to request ad. PlacementID is null or empty.");
             Log.e(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
+            adLoadCallback.onFailure(error);
             return;
         }
 
-        String bidResponse = mAdConfiguration.getBidResponse();
+        String bidResponse = adConfiguration.getBidResponse();
 
         //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
-        TTAdNative mTTAdNative = mTTAdManager.createAdNative(mAdConfiguration.getContext().getApplicationContext());
+        TTAdNative mTTAdNative = mTTAdManager.createAdNative(adConfiguration.getContext().getApplicationContext());
 
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(placementId)
@@ -62,13 +62,13 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
         mTTAdNative.loadFullScreenVideoAd(adSlot, new TTAdNative.FullScreenVideoAdListener() {
             @Override
             public void onError(int errorCode, String errorMessage) {
-                mAdLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
+                adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
             }
 
             @Override
             public void onFullScreenVideoAdLoad(TTFullScreenVideoAd ttFullScreenVideoAd) {
-                mInterstitialAdCallback = mAdLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
-                mTTFullVideoAd = ttFullScreenVideoAd;
+                interstitialAdCallback = adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
+                ttFullVideoAd = ttFullScreenVideoAd;
             }
 
             @Override
@@ -80,60 +80,47 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     @Override
     public void showAd(@NonNull Context context) {
-        try {
-            if (mTTFullVideoAd != null) {
-                mTTFullVideoAd.setFullScreenVideoAdInteractionListener(new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
-                    @Override
-                    public void onAdShow() {
-                        if (mInterstitialAdCallback != null) {
-                            mInterstitialAdCallback.onAdOpened();
-                            mInterstitialAdCallback.reportAdImpression();
-                        }
-                    }
-
-                    @Override
-                    public void onAdVideoBarClick() {
-                        if (mInterstitialAdCallback != null) {
-                            mInterstitialAdCallback.reportAdClicked();
-                        }
-                    }
-
-                    @Override
-                    public void onAdClose() {
-                        if (mInterstitialAdCallback != null) {
-                            mInterstitialAdCallback.onAdClosed();
-                        }
-                    }
-
-                    @Override
-                    public void onVideoComplete() {
-
-                    }
-
-                    @Override
-                    public void onSkippedVideo() {
-
-                    }
-                });
-                if (context instanceof Activity) {
-                    mTTFullVideoAd.showFullScreenVideoAd((Activity) context);
-                } else {
-                    mTTFullVideoAd.showFullScreenVideoAd(null);
-                }
-            } else {
-                if (mInterstitialAdCallback != null) {
-                    mInterstitialAdCallback.onAdFailedToShow(PangleConstant.createAdapterError(ERROR_SHOW_FAIL, "interstitial ad object is null"));
-                } else {
-                    mAdLoadCallback.onFailure(PangleConstant.createAdapterError(ERROR_SHOW_FAIL, "interstitial ad object is null"));
+        if (ttFullVideoAd == null){
+            interstitialAdCallback.onAdFailedToShow(PangleConstant.createAdapterError(ERROR_SHOW_AD_NOT_LOADED, "interstitial ad object is null"));
+            return;
+        }
+        ttFullVideoAd.setFullScreenVideoAdInteractionListener(new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
+            @Override
+            public void onAdShow() {
+                if (interstitialAdCallback != null) {
+                    interstitialAdCallback.onAdOpened();
+                    interstitialAdCallback.reportAdImpression();
                 }
             }
-        } catch (Throwable error) {
-            Log.w(TAG, error.getMessage());
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.onAdFailedToShow(PangleConstant.createSdkError(ERROR_SHOW_FAIL, "interstitialAd failed to show"));
-            } else {
-                mAdLoadCallback.onFailure(PangleConstant.createSdkError(ERROR_SHOW_FAIL, "interstitialAd failed to show"));
+
+            @Override
+            public void onAdVideoBarClick() {
+                if (interstitialAdCallback != null) {
+                    interstitialAdCallback.reportAdClicked();
+                }
             }
+
+            @Override
+            public void onAdClose() {
+                if (interstitialAdCallback != null) {
+                    interstitialAdCallback.onAdClosed();
+                }
+            }
+
+            @Override
+            public void onVideoComplete() {
+
+            }
+
+            @Override
+            public void onSkippedVideo() {
+
+            }
+        });
+        if (context instanceof Activity) {
+            ttFullVideoAd.showFullScreenVideoAd((Activity) context);
+        } else {
+            ttFullVideoAd.showFullScreenVideoAd(null);
         }
     }
 

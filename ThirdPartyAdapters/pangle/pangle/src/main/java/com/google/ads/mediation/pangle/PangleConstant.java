@@ -17,8 +17,8 @@ public class PangleConstant {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
             value = {ERROR_INVALID_PLACEMENT,
-                    ERROR_SHOW_FAIL,
-                    ERROR_BANNER_AD_SIZE_IS_NULL,
+                    ERROR_SHOW_AD_NOT_LOADED,
+                    ERROR_BANNER_AD_SIZE_IS_INVALID,
             })
     public @interface AdapterError {
 
@@ -29,10 +29,20 @@ public class PangleConstant {
      */
     public static final int ERROR_INVALID_PLACEMENT = 101;
 
-    public static final int ERROR_SHOW_FAIL = 102;
+    /**
+     * Ads are not loaded[RewardAd、InterstitialAd]
+     */
+    public static final int ERROR_SHOW_AD_NOT_LOADED = 102;
 
-    public static final int ERROR_BANNER_AD_SIZE_IS_NULL = 103;
+    /**
+     * The ad size could not be obtained, or the ad size is illegal
+     */
+    public static final int ERROR_BANNER_AD_SIZE_IS_INVALID = 103;
 
+    /**
+     * The returned ad object is null
+     */
+    public static final int ERROR_AD_NOT_FILL = 104;
 
     @NonNull
     public static AdError createAdapterError(@AdapterError int error, @NonNull String errorMessage) {

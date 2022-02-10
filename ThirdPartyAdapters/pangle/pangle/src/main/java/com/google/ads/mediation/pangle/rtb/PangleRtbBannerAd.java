@@ -1,6 +1,6 @@
 package com.google.ads.mediation.pangle.rtb;
 
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BANNER_AD_SIZE_IS_NULL;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BANNER_AD_SIZE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
 
 import android.content.Context;
@@ -27,44 +27,43 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 import java.util.List;
 
-public class PangleRtbBannerAdapter implements MediationBannerAd, TTNativeExpressAd.ExpressAdInteractionListener {
-    private static final String TAG = "PangleRtbBannerAdapter";
+public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.ExpressAdInteractionListener {
 
+    private static final String TAG = PangleRtbBannerAd.class.getSimpleName();
+    private final MediationBannerAdConfiguration adConfiguration;
+    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+    private MediationBannerAdCallback bannerAdCallback;
+    private FrameLayout wrappedAdView;
 
-    private MediationBannerAdConfiguration mAdConfiguration;
-    private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mAdLoadCallback;
-    private MediationBannerAdCallback mBannerAdCallback;
-    private FrameLayout mWrappedAdView;
-
-    public PangleRtbBannerAdapter(MediationBannerAdConfiguration mediationBannerAdConfiguration,
-                                  MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-        this.mAdConfiguration = mediationBannerAdConfiguration;
-        this.mAdLoadCallback = mediationAdLoadCallback;
+    public PangleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+                             @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+        this.adConfiguration = mediationBannerAdConfiguration;
+        this.adLoadCallback = mediationAdLoadCallback;
     }
 
     public void render() {
-        PangleMediationAdapter.setCoppa(mAdConfiguration);
-        String placementId = mAdConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
+        PangleMediationAdapter.setCoppa(adConfiguration);
+        String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
                     "Failed to request ad. PlacementID is null or empty.");
             Log.e(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
+            adLoadCallback.onFailure(error);
             return;
         }
 
-        AdSize adSize = mAdConfiguration.getAdSize();
-        if (adSize == null) {
-            AdError error = PangleConstant.createAdapterError(ERROR_BANNER_AD_SIZE_IS_NULL,
-                    "MediationBannerAdConfiguration getAdSize get null");
-            mAdLoadCallback.onFailure(error);
+        AdSize adSize = adConfiguration.getAdSize();
+        if (adSize == null || adSize.getWidth() < 0 || adSize.getHeight() < 0) {
+            AdError error = PangleConstant.createAdapterError(ERROR_BANNER_AD_SIZE_IS_INVALID,
+                    "MediationBannerAdConfiguration getAdSize is invalid");
+            adLoadCallback.onFailure(error);
             return;
         }
 
-        Context context = mAdConfiguration.getContext();
-        mWrappedAdView = new FrameLayout(context);
+        Context context = adConfiguration.getContext();
+        wrappedAdView = new FrameLayout(context);
 
-        String bidResponse = mAdConfiguration.getBidResponse();
+        String bidResponse = adConfiguration.getBidResponse();
 
         //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
@@ -79,22 +78,22 @@ public class PangleRtbBannerAdapter implements MediationBannerAd, TTNativeExpres
         mTTAdNative.loadBannerExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
             @Override
             public void onError(int errorCode, String errorMessage) {
-                if (mAdLoadCallback != null) {
-                    mAdLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
+                if (adLoadCallback != null) {
+                    adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
                 }
             }
 
             @Override
             public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
                 if (ads == null || ads.size() == 0) {
-                    if (mAdLoadCallback != null) {
-                        mAdLoadCallback.onFailure(PangleConstant.createSdkError(AdRequest.ERROR_CODE_NO_FILL,
+                    if (adLoadCallback != null) {
+                        adLoadCallback.onFailure(PangleConstant.createSdkError(PangleConstant.ERROR_AD_NOT_FILL,
                                 "banner loaded success. but ad no fill "));
                     }
                     return;
                 }
                 TTNativeExpressAd mBannerExpressAd = ads.get(0);
-                mBannerExpressAd.setExpressInteractionListener(PangleRtbBannerAdapter.this);
+                mBannerExpressAd.setExpressInteractionListener(PangleRtbBannerAd.this);
                 mBannerExpressAd.render();
             }
         });
@@ -103,17 +102,16 @@ public class PangleRtbBannerAdapter implements MediationBannerAd, TTNativeExpres
     @NonNull
     @Override
     public View getView() {
-        return mWrappedAdView;
+        return wrappedAdView;
     }
-
 
     /**
      * BannerInteractionListener onAdClicked
      */
     @Override
-    public void onAdClicked(View view, int i) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.reportAdClicked();
+    public void onAdClicked(View view, int type) {
+        if (bannerAdCallback != null) {
+            bannerAdCallback.reportAdClicked();
         }
     }
 
@@ -121,9 +119,9 @@ public class PangleRtbBannerAdapter implements MediationBannerAd, TTNativeExpres
      * BannerInteractionListener onAdShow
      */
     @Override
-    public void onAdShow(View view, int i) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.reportAdImpression();
+    public void onAdShow(View view, int type) {
+        if (bannerAdCallback != null) {
+            bannerAdCallback.reportAdImpression();
         }
     }
 
@@ -132,15 +130,15 @@ public class PangleRtbBannerAdapter implements MediationBannerAd, TTNativeExpres
      */
     @Override
     public void onRenderFail(View view, String errorMessage, int errorCode) {
-        mAdLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
+        adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
     }
 
     /**
      * BannerInteractionListener onRenderSuccess
      */
     @Override
-    public void onRenderSuccess(View view, float v, float v1) {
-        mBannerAdCallback = mAdLoadCallback.onSuccess(PangleRtbBannerAdapter.this);
-        mWrappedAdView.addView(view);
+    public void onRenderSuccess(View view, float width, float height) {
+        wrappedAdView.addView(view);
+        bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
     }
 }

@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
@@ -40,40 +42,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
-    private static final String TAG = "PangleRtbNativeAdapter";
+public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
+
+    private static final String TAG = PangleRtbNativeAd.class.getSimpleName();
     private static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
-    private final MediationNativeAdConfiguration mAdConfiguration;
-    private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mAdLoadCallback;
-    private final Context mContext;
-    private NativeAdOptions mNativeAdOptions;
+    private final MediationNativeAdConfiguration adConfiguration;
+    private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+    private final Context context;
+    private NativeAdOptions nativeAdOptions;
     private MediationNativeAdCallback callback;
 
-    public PangleRtbNativeAdapter(MediationNativeAdConfiguration mediationNativeAdConfiguration, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
-        mAdConfiguration = mediationNativeAdConfiguration;
-        mAdLoadCallback = mediationAdLoadCallback;
-        mContext = mediationNativeAdConfiguration.getContext();
+    public PangleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+                             @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+        adConfiguration = mediationNativeAdConfiguration;
+        adLoadCallback = mediationAdLoadCallback;
+        context = mediationNativeAdConfiguration.getContext();
     }
 
     public void render() {
-        PangleMediationAdapter.setCoppa(mAdConfiguration);
-        String placementID = mAdConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
+        PangleMediationAdapter.setCoppa(adConfiguration);
+        String placementID = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
 
         if (TextUtils.isEmpty(placementID)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
                     "Failed to request ad. PlacementID is null or empty.");
             Log.e(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
+            adLoadCallback.onFailure(error);
             return;
         }
 
-        String bidResponse = mAdConfiguration.getBidResponse();
+        String bidResponse = adConfiguration.getBidResponse();
 
-        mNativeAdOptions = mAdConfiguration.getNativeAdOptions();
+        nativeAdOptions = adConfiguration.getNativeAdOptions();
 
         //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
-        TTAdNative mTTAdNative = mTTAdManager.createAdNative(mAdConfiguration.getContext().getApplicationContext());
+        TTAdNative mTTAdNative = mTTAdManager.createAdNative(adConfiguration.getContext().getApplicationContext());
 
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(placementID)
@@ -85,22 +89,22 @@ public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
             @Override
             public void onError(int errorCode, String message) {
                 Log.e(TAG, "feedAdListener loaded fail .code=" + errorCode + ",message=" + message);
-                if (mAdLoadCallback != null) {
-                    mAdLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, message));
+                if (adLoadCallback != null) {
+                    adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, message));
                 }
             }
 
             @Override
             public void onFeedAdLoad(List<TTFeedAd> ads) {
                 if (ads == null || ads.size() == 0) {
-                    if (mAdLoadCallback != null) {
-                        mAdLoadCallback.onFailure(PangleConstant.createSdkError(AdRequest.ERROR_CODE_NO_FILL,
+                    if (adLoadCallback != null) {
+                        adLoadCallback.onFailure(PangleConstant.createSdkError(PangleConstant.ERROR_AD_NOT_FILL,
                                 "feedAdListener loaded success. but ad no fill "));
                     }
                     Log.d(TAG, "feedAdListener loaded success. but ad no fill ");
                     return;
                 }
-                callback = mAdLoadCallback.onSuccess(new PangleNativeAd(ads.get(0)));
+                callback = adLoadCallback.onSuccess(new PangleNativeAd(ads.get(0)));
             }
         });
 
@@ -130,19 +134,17 @@ public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
                 setImages(imagesList);
             }
 
-            Bundle extras = new Bundle();
-            this.setExtras(extras);
-
             /**Pangle does its own show event handling and click event handling*/
             setOverrideImpressionRecording(true);
             setOverrideClickHandling(true);
 
-
             /** add Native Feed Main View */
-            MediaView mediaView = new MediaView(mContext);
-            MediationAdapterUtil.addNativeFeedMainView(mContext, ad.getImageMode(), mediaView, ad.getAdView(), ad.getImageList());
+            MediaView mediaView = new MediaView(context);
+            MediationAdapterUtil.addNativeFeedMainView(context, ad.getImageMode(), mediaView, ad.getAdView(), ad.getImageList());
             setMediaView(mediaView);
 
+            // set logo
+            setAdChoicesContent(mPangleAd.getAdLogoView());
 
             if (mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
                     mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
@@ -157,6 +159,9 @@ public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
                     @Override
                     public void onVideoError(int errorCode, int extraCode) {
                         // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                        String errorMessage = String.format("Native ad video playback error," +
+                                " errorCode: %s, extraCode: %s.", errorCode, extraCode);
+                        Log.w(TAG, errorMessage);
                     }
 
                     @Override
@@ -204,9 +209,6 @@ public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
 
                     @Override
                     public void onAdClicked(View view, TTNativeAd ad) {
-                        if (callback != null) {
-                            callback.reportAdClicked();
-                        }
 
                     }
 
@@ -224,67 +226,6 @@ public class PangleRtbNativeAdapter extends UnifiedNativeAdMapper {
                         }
                     }
                 });
-            }
-
-
-            // set logo
-            ViewGroup adView = (ViewGroup) view;
-
-            View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-            if (overlayView instanceof FrameLayout) {
-                int privacyIconPlacement = NativeAdOptions.ADCHOICES_TOP_RIGHT;
-                if (mNativeAdOptions != null) {
-                    privacyIconPlacement = mNativeAdOptions.getAdChoicesPlacement();
-                }
-                final Context context = view.getContext();
-                if (context == null) {
-                    return;
-                }
-
-                ImageView privacyInformationIconImageView = null;
-                if (mPangleAd != null) {
-                    privacyInformationIconImageView = (ImageView) mPangleAd.getAdLogoView();
-                }
-
-                if (privacyInformationIconImageView != null) {
-                    privacyInformationIconImageView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // jump to privacy
-                            mPangleAd.showPrivacyActivity();
-                            Log.d(TAG, "privacyInformationIconImageView--》click");
-                        }
-                    });
-
-                    privacyInformationIconImageView.setVisibility(View.VISIBLE);
-                    ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
-
-                    float scale = context.getResources().getDisplayMetrics().density;
-                    int iconSizePx = (int) ((10 * scale + 0.5f) * scale + 0.5);
-
-                    FrameLayout.LayoutParams params =
-                            new FrameLayout.LayoutParams(iconSizePx, iconSizePx);
-
-                    switch (privacyIconPlacement) {
-                        case NativeAdOptions.ADCHOICES_TOP_LEFT:
-                            params.gravity = Gravity.TOP | Gravity.START;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-                            params.gravity = Gravity.BOTTOM | Gravity.END;
-                            break;
-                        case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-                            params.gravity = Gravity.BOTTOM | Gravity.START;
-                            break;
-                        case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-                            params.gravity = Gravity.TOP | Gravity.END;
-                            break;
-                        default:
-                            params.gravity = Gravity.TOP | Gravity.END;
-                    }
-                    privacyInformationIconImageView.setLayoutParams(params);
-                }
-                adView.requestLayout();
-
             }
         }
     }
