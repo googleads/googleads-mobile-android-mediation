@@ -1,19 +1,17 @@
 package com.google.ads.mediation.pangle.rtb;
 
 
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BID_RESPONSE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SDK_NOT_INIT;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 
@@ -21,6 +19,7 @@ import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
+import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFeedAd;
 import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
@@ -29,7 +28,6 @@ import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
 import com.google.ads.mediation.pangle.PangleConstant;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -51,6 +49,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     private final Context context;
     private NativeAdOptions nativeAdOptions;
     private MediationNativeAdCallback callback;
+    private TTFeedAd mPangleAd;
 
     public PangleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
                              @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
@@ -61,21 +60,35 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
     public void render() {
         PangleMediationAdapter.setCoppa(adConfiguration);
-        String placementID = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
 
+        if (!TTAdSdk.isInitSuccess()) {
+            AdError error = PangleConstant.createSdkError(ERROR_SDK_NOT_INIT,
+                    "Pangle SDK not initialized, or initialization error.");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
+
+        String placementID = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
         if (TextUtils.isEmpty(placementID)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
-                    "Failed to request ad. PlacementID is null or empty.");
-            Log.e(TAG, error.getMessage());
+                    "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+            Log.w(TAG, error.getMessage());
             adLoadCallback.onFailure(error);
             return;
         }
 
         String bidResponse = adConfiguration.getBidResponse();
+        if (TextUtils.isEmpty(bidResponse)) {
+            AdError error = PangleConstant.createAdapterError(ERROR_BID_RESPONSE_IS_INVALID,
+                    "Failed to load ad from Pangle. Missing or invalid bidResponse");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
 
         nativeAdOptions = adConfiguration.getNativeAdOptions();
 
-        //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
         TTAdNative mTTAdNative = mTTAdManager.createAdNative(adConfiguration.getContext().getApplicationContext());
 
@@ -88,145 +101,130 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
         mTTAdNative.loadFeedAd(adSlot, new TTAdNative.FeedAdListener() {
             @Override
             public void onError(int errorCode, String message) {
-                Log.e(TAG, "feedAdListener loaded fail .code=" + errorCode + ",message=" + message);
+                AdError error = PangleConstant.createSdkError(errorCode, message);
+                Log.w(TAG, error.getMessage());
                 if (adLoadCallback != null) {
-                    adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, message));
+                    adLoadCallback.onFailure(error);
                 }
             }
 
             @Override
             public void onFeedAdLoad(List<TTFeedAd> ads) {
-                if (ads == null || ads.size() == 0) {
-                    if (adLoadCallback != null) {
-                        adLoadCallback.onFailure(PangleConstant.createSdkError(PangleConstant.ERROR_AD_NOT_FILL,
-                                "feedAdListener loaded success. but ad no fill "));
-                    }
-                    Log.d(TAG, "feedAdListener loaded success. but ad no fill ");
-                    return;
-                }
-                callback = adLoadCallback.onSuccess(new PangleNativeAd(ads.get(0)));
+                mapNativeAd(ads.get(0));
+                callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
             }
         });
-
     }
 
-    class PangleNativeAd extends UnifiedNativeAdMapper {
-        private TTFeedAd mPangleAd;
-
-        private PangleNativeAd(TTFeedAd ad) {
-            this.mPangleAd = ad;
-            //set data
-            setHeadline(mPangleAd.getTitle());
-            setBody(mPangleAd.getDescription());
-            setCallToAction(mPangleAd.getButtonText());
-            if (mPangleAd.getIcon() != null && mPangleAd.getIcon().isValid()) {
-                setIcon(new PangleNativeMappedImage(null, Uri.parse(mPangleAd.getIcon().getImageUrl()), PANGLE_SDK_IMAGE_SCALE));
-            }
-            //set ad image
-            if (mPangleAd.getImageList() != null && mPangleAd.getImageList().size() != 0) {
-                List<NativeAd.Image> imagesList = new ArrayList<>();
-                for (TTImage ttImage : mPangleAd.getImageList()) {
-                    if (ttImage.isValid()) {
-                        imagesList.add(new PangleNativeMappedImage(null, Uri.parse(ttImage.getImageUrl()),
-                                PANGLE_SDK_IMAGE_SCALE));
-                    }
+    private void mapNativeAd(TTFeedAd ad) {
+        this.mPangleAd = ad;
+        //set data
+        setHeadline(mPangleAd.getTitle());
+        setBody(mPangleAd.getDescription());
+        setCallToAction(mPangleAd.getButtonText());
+        if (mPangleAd.getIcon() != null && mPangleAd.getIcon().isValid()) {
+            setIcon(new PangleNativeMappedImage(null, Uri.parse(mPangleAd.getIcon().getImageUrl()), PANGLE_SDK_IMAGE_SCALE));
+        }
+        //set ad image
+        if (mPangleAd.getImageList() != null && mPangleAd.getImageList().size() != 0) {
+            List<NativeAd.Image> imagesList = new ArrayList<>();
+            for (TTImage ttImage : mPangleAd.getImageList()) {
+                if (ttImage.isValid()) {
+                    imagesList.add(new PangleNativeMappedImage(null, Uri.parse(ttImage.getImageUrl()),
+                            PANGLE_SDK_IMAGE_SCALE));
                 }
-                setImages(imagesList);
             }
-
-            /**Pangle does its own show event handling and click event handling*/
-            setOverrideImpressionRecording(true);
-            setOverrideClickHandling(true);
-
-            /** add Native Feed Main View */
-            MediaView mediaView = new MediaView(context);
-            MediationAdapterUtil.addNativeFeedMainView(context, ad.getImageMode(), mediaView, ad.getAdView(), ad.getImageList());
-            setMediaView(mediaView);
-
-            // set logo
-            setAdChoicesContent(mPangleAd.getAdLogoView());
-
-            if (mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
-                    mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
-                    mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
-                setHasVideoContent(true);
-                mPangleAd.setVideoAdListener(new TTFeedAd.VideoAdListener() {
-                    @Override
-                    public void onVideoLoad(TTFeedAd ad) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-
-                    @Override
-                    public void onVideoError(int errorCode, int extraCode) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                        String errorMessage = String.format("Native ad video playback error," +
-                                " errorCode: %s, extraCode: %s.", errorCode, extraCode);
-                        Log.w(TAG, errorMessage);
-                    }
-
-                    @Override
-                    public void onVideoAdStartPlay(TTFeedAd ad) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-
-                    @Override
-                    public void onVideoAdPaused(TTFeedAd ad) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-
-                    @Override
-                    public void onVideoAdContinuePlay(TTFeedAd ad) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-
-                    @Override
-                    public void onProgressUpdate(long current, long duration) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-
-                    @Override
-                    public void onVideoAdComplete(TTFeedAd ad) {
-                        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-                    }
-                });
-            }
+            setImages(imagesList);
         }
 
-        @Override
-        public void trackViews(View view,
-                               Map<String, View> clickableAssetViews,
-                               Map<String, View> nonClickableAssetViews) {
+        /**Pangle does its own show event handling and click event handling*/
+        setOverrideImpressionRecording(true);
+        setOverrideClickHandling(true);
 
-            //set click interaction
-            ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
-            View creativeBtn = clickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
-            ArrayList<View> creativeViews = new ArrayList<>();
-            if (creativeBtn != null) {
-                creativeViews.add(creativeBtn);
-            }
-            if (mPangleAd != null) {
-                mPangleAd.registerViewForInteraction((ViewGroup) view, assetViews, creativeViews, new TTNativeAd.AdInteractionListener() {
+        /** add Native Feed Main View */
+        MediaView mediaView = new MediaView(context);
+        MediationAdapterUtil.addNativeFeedMainView(context, ad.getImageMode(), mediaView, ad.getAdView(), ad.getImageList());
+        setMediaView(mediaView);
 
-                    @Override
-                    public void onAdClicked(View view, TTNativeAd ad) {
+        // set logo
+        setAdChoicesContent(mPangleAd.getAdLogoView());
 
+        if (mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
+                mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
+                mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
+            setHasVideoContent(true);
+            mPangleAd.setVideoAdListener(new TTFeedAd.VideoAdListener() {
+                @Override
+                public void onVideoLoad(TTFeedAd ad) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+
+                @Override
+                public void onVideoError(int errorCode, int extraCode) {
+                    String errorMessage = String.format("Native ad video playback error," +
+                            " errorCode: %s, extraCode: %s.", errorCode, extraCode);
+                    Log.d(TAG, errorMessage);
+                }
+
+                @Override
+                public void onVideoAdStartPlay(TTFeedAd ad) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+
+                @Override
+                public void onVideoAdPaused(TTFeedAd ad) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+
+                @Override
+                public void onVideoAdContinuePlay(TTFeedAd ad) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+
+                @Override
+                public void onProgressUpdate(long current, long duration) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+
+                @Override
+                public void onVideoAdComplete(TTFeedAd ad) {
+                    // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+                }
+            });
+        }
+    }
+
+
+    @Override
+    public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews, @NonNull Map<String, View> nonClickableAssetViews) {
+        //set click interaction
+        ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
+        View creativeBtn = clickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
+        ArrayList<View> creativeViews = new ArrayList<>();
+        if (creativeBtn != null) {
+            creativeViews.add(creativeBtn);
+        }
+        if (mPangleAd != null) {
+            mPangleAd.registerViewForInteraction((ViewGroup) view, assetViews, creativeViews, new TTNativeAd.AdInteractionListener() {
+                @Override
+                public void onAdClicked(View view, TTNativeAd ad) {
+
+                }
+
+                @Override
+                public void onAdCreativeClick(View view, TTNativeAd ad) {
+                    if (callback != null) {
+                        callback.reportAdClicked();
                     }
+                }
 
-                    @Override
-                    public void onAdCreativeClick(View view, TTNativeAd ad) {
-                        if (callback != null) {
-                            callback.reportAdClicked();
-                        }
+                @Override
+                public void onAdShow(TTNativeAd ad) {
+                    if (callback != null) {
+                        callback.reportAdImpression();
                     }
-
-                    @Override
-                    public void onAdShow(TTNativeAd ad) {
-                        if (callback != null) {
-                            callback.reportAdImpression();
-                        }
-                    }
-                });
-            }
+                }
+            });
         }
     }
 

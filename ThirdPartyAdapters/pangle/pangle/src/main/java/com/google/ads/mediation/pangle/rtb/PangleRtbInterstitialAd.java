@@ -1,7 +1,8 @@
 package com.google.ads.mediation.pangle.rtb;
 
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BID_RESPONSE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SHOW_AD_NOT_LOADED;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SDK_NOT_INIT;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
+import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.google.ads.mediation.pangle.PangleConstant;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
@@ -38,19 +40,33 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     public void render() {
         PangleMediationAdapter.setCoppa(adConfiguration);
-        String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
 
+        if (!TTAdSdk.isInitSuccess()) {
+            AdError error = PangleConstant.createSdkError(ERROR_SDK_NOT_INIT,
+                    "Pangle SDK not initialized, or initialization error.");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
+
+        String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
-                    "Failed to request ad. PlacementID is null or empty.");
-            Log.e(TAG, error.getMessage());
+                    "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+            Log.w(TAG, error.getMessage());
             adLoadCallback.onFailure(error);
             return;
         }
 
         String bidResponse = adConfiguration.getBidResponse();
+        if (TextUtils.isEmpty(bidResponse)) {
+            AdError error = PangleConstant.createAdapterError(ERROR_BID_RESPONSE_IS_INVALID,
+                    "Failed to load ad from Pangle. Missing or invalid bidResponse");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
 
-        //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
         TTAdNative mTTAdNative = mTTAdManager.createAdNative(adConfiguration.getContext().getApplicationContext());
 
@@ -80,10 +96,6 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     @Override
     public void showAd(@NonNull Context context) {
-        if (ttFullVideoAd == null){
-            interstitialAdCallback.onAdFailedToShow(PangleConstant.createAdapterError(ERROR_SHOW_AD_NOT_LOADED, "interstitial ad object is null"));
-            return;
-        }
         ttFullVideoAd.setFullScreenVideoAdInteractionListener(new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
             @Override
             public void onAdShow() {
@@ -119,10 +131,8 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
         });
         if (context instanceof Activity) {
             ttFullVideoAd.showFullScreenVideoAd((Activity) context);
-        } else {
-            ttFullVideoAd.showFullScreenVideoAd(null);
+            return;
         }
+        ttFullVideoAd.showFullScreenVideoAd(null);
     }
-
-
 }

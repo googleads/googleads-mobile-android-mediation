@@ -1,7 +1,9 @@
 package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BANNER_AD_SIZE_IS_INVALID;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BID_RESPONSE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
+import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SDK_NOT_INIT;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -14,11 +16,11 @@ import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
+import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.google.ads.mediation.pangle.PangleConstant;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -43,11 +45,29 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
 
     public void render() {
         PangleMediationAdapter.setCoppa(adConfiguration);
+
+        if (!TTAdSdk.isInitSuccess()) {
+            AdError error = PangleConstant.createSdkError(ERROR_SDK_NOT_INIT,
+                    "Pangle SDK not initialized, or initialization error.");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
+
         String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {
             AdError error = PangleConstant.createAdapterError(ERROR_INVALID_PLACEMENT,
-                    "Failed to request ad. PlacementID is null or empty.");
-            Log.e(TAG, error.getMessage());
+                    "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+            Log.w(TAG, error.getMessage());
+            adLoadCallback.onFailure(error);
+            return;
+        }
+
+        String bidResponse = adConfiguration.getBidResponse();
+        if (TextUtils.isEmpty(bidResponse)) {
+            AdError error = PangleConstant.createAdapterError(ERROR_BID_RESPONSE_IS_INVALID,
+                    "Failed to load ad from Pangle. Missing or invalid bidResponse");
+            Log.w(TAG, error.getMessage());
             adLoadCallback.onFailure(error);
             return;
         }
@@ -55,7 +75,8 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         AdSize adSize = adConfiguration.getAdSize();
         if (adSize == null || adSize.getWidth() < 0 || adSize.getHeight() < 0) {
             AdError error = PangleConstant.createAdapterError(ERROR_BANNER_AD_SIZE_IS_INVALID,
-                    "MediationBannerAdConfiguration getAdSize is invalid");
+                    "Failed to request ad from Pangle. Invalid banner size.");
+            Log.w(TAG, error.getMessage());
             adLoadCallback.onFailure(error);
             return;
         }
@@ -63,9 +84,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         Context context = adConfiguration.getContext();
         wrappedAdView = new FrameLayout(context);
 
-        String bidResponse = adConfiguration.getBidResponse();
-
-        //(notice : make sure the Pangle sdk had been initialized) obtain Pangle ad manager
         TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
         TTAdNative mTTAdNative = mTTAdManager.createAdNative(context.getApplicationContext());
 
@@ -85,13 +103,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
 
             @Override
             public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
-                if (ads == null || ads.size() == 0) {
-                    if (adLoadCallback != null) {
-                        adLoadCallback.onFailure(PangleConstant.createSdkError(PangleConstant.ERROR_AD_NOT_FILL,
-                                "banner loaded success. but ad no fill "));
-                    }
-                    return;
-                }
                 TTNativeExpressAd mBannerExpressAd = ads.get(0);
                 mBannerExpressAd.setExpressInteractionListener(PangleRtbBannerAd.this);
                 mBannerExpressAd.render();

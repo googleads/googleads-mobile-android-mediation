@@ -17,8 +17,8 @@ public class PangleConstant {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
             value = {ERROR_INVALID_PLACEMENT,
-                    ERROR_SHOW_AD_NOT_LOADED,
                     ERROR_BANNER_AD_SIZE_IS_INVALID,
+                    ERROR_BID_RESPONSE_IS_INVALID,
             })
     public @interface AdapterError {
 
@@ -30,27 +30,27 @@ public class PangleConstant {
     public static final int ERROR_INVALID_PLACEMENT = 101;
 
     /**
-     * Ads are not loaded[RewardAd、InterstitialAd]
-     */
-    public static final int ERROR_SHOW_AD_NOT_LOADED = 102;
-
-    /**
      * The ad size could not be obtained, or the ad size is illegal
      */
-    public static final int ERROR_BANNER_AD_SIZE_IS_INVALID = 103;
+    public static final int ERROR_BANNER_AD_SIZE_IS_INVALID = 102;
 
     /**
-     * The returned ad object is null
+     * Missing or invalid bidResponse
      */
-    public static final int ERROR_AD_NOT_FILL = 104;
+    public static final int ERROR_BID_RESPONSE_IS_INVALID = 103;
+
+    /**
+     * Pangle SDK not initialized, or initialization error.
+     */
+    public static final int ERROR_SDK_NOT_INIT = 201;
 
     @NonNull
-    public static AdError createAdapterError(@AdapterError int error, @NonNull String errorMessage) {
-        return new AdError(error, errorMessage, ERROR_DOMAIN);
+    public static AdError createAdapterError(@AdapterError int errorCode, @NonNull String errorMessage) {
+        return new AdError(errorCode, errorMessage, ERROR_DOMAIN);
     }
 
     @NonNull
-    public static AdError createSdkError(int error, @NonNull String errorMessage) {
-        return new AdError(error, errorMessage, PANGLE_SDK_ERROR_DOMAIN);
+    public static AdError createSdkError(int errorCode, @NonNull String errorMessage) {
+        return new AdError(errorCode, errorMessage, PANGLE_SDK_ERROR_DOMAIN);
     }
 }

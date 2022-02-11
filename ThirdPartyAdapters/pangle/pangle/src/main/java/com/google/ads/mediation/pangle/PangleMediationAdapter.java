@@ -44,10 +44,10 @@ import java.util.List;
 public class PangleMediationAdapter extends RtbAdapter {
 
     final static String TAG = PangleMediationAdapter.class.getSimpleName();
-    private PangleRtbBannerAd bannerRenderer;
-    private PangleRtbInterstitialAd interstitialRenderer;
-    private PangleRtbNativeAd nativeRenderer;
-    private PangleRtbRewardAd rewardRenderer;
+    private PangleRtbBannerAd bannerAd;
+    private PangleRtbInterstitialAd interstitialAd;
+    private PangleRtbNativeAd nativeAd;
+    private PangleRtbRewardAd rewardAd;
 
     @Override
     public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -149,29 +149,29 @@ public class PangleMediationAdapter extends RtbAdapter {
     @Override
     public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
                                 @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-        bannerRenderer = new PangleRtbBannerAd(adConfiguration, callback);
-        bannerRenderer.render();
+        bannerAd = new PangleRtbBannerAd(adConfiguration, callback);
+        bannerAd.render();
     }
 
     @Override
     public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
                                       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-        interstitialRenderer = new PangleRtbInterstitialAd(adConfiguration, callback);
-        interstitialRenderer.render();
+        interstitialAd = new PangleRtbInterstitialAd(adConfiguration, callback);
+        interstitialAd.render();
     }
 
     @Override
     public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
                                 @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-        nativeRenderer = new PangleRtbNativeAd(adConfiguration, callback);
-        nativeRenderer.render();
+        nativeAd = new PangleRtbNativeAd(adConfiguration, callback);
+        nativeAd.render();
     }
 
     @Override
     public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
                                   @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-        rewardRenderer = new PangleRtbRewardAd(adConfiguration, callback);
-        rewardRenderer.render();
+        rewardAd = new PangleRtbRewardAd(adConfiguration, callback);
+        rewardAd.render();
     }
 
     private static boolean hasWakeLockPermission(Context context) {
