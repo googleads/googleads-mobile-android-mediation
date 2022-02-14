@@ -55,13 +55,14 @@ public class VungleInitializer implements InitCallback {
         new VungleNetworkSettings.VungleSettingsChangedListener() {
           @Override
           public void onVungleSettingsChanged(@NonNull VungleSettings settings) {
-            // Ignore if sdk is yet to initialize, it will get considered while init
+            // Ignore if sdk is yet to initialize, it will get considered while init.
             if (!Vungle.isInitialized()) {
               return;
             }
 
             // Pass new settings to SDK.
-            updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+            updateCoppaStatus(
+                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
             Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
           }
         });
@@ -116,18 +117,18 @@ public class VungleInitializer implements InitCallback {
 
   public void updateCoppaStatus(int configuration) {
     switch (configuration) {
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE :
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
         Vungle.updateUserCoppaStatus(true);
         break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE :
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
         Vungle.updateUserCoppaStatus(false);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:
-        //Vungle's SDK only supports setting COPPA_ENABLED or COPPA_NOT_ENABLED status
-        //For Unspecified case Publishers will have to enable COPPA  on Vungle's dashboard
-        //and then Vungle will accordingly treat any user whose COPPA status is not known
-        //according to the compliance requirements
+        // Vungle's SDK only supports updating a user's COPPA status with true and false
+        // values. If you haven't specified how you would like your content treated with
+        // respect to COPPA in ad requests, you must indicate in the Vungle Publisher
+        // Dashboard whether your app is directed toward children under age 13.
         break;
     }
   }
