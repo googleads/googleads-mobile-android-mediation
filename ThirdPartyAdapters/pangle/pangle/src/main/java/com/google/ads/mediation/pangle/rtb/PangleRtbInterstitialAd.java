@@ -78,7 +78,9 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
         mTTAdNative.loadFullScreenVideoAd(adSlot, new TTAdNative.FullScreenVideoAdListener() {
             @Override
             public void onError(int errorCode, String errorMessage) {
-                adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
+                AdError error = PangleConstant.createSdkError(errorCode, errorMessage);
+                Log.w(TAG, error.getMessage());
+                adLoadCallback.onFailure(error);
             }
 
             @Override

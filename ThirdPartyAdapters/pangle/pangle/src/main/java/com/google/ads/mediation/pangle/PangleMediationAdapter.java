@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -64,7 +65,7 @@ public class PangleMediationAdapter extends RtbAdapter {
         for (MediationConfiguration mediationConfiguration : list) {
             Bundle serverParameters = mediationConfiguration.getServerParameters();
             String appId = serverParameters.getString(PangleConstant.APP_ID);
-            if (appId != null) {
+            if (!TextUtils.isEmpty(appId)) {
                 appIds.add(appId);
             }
         }

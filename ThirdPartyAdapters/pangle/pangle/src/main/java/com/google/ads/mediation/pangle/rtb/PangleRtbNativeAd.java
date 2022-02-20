@@ -103,9 +103,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             public void onError(int errorCode, String message) {
                 AdError error = PangleConstant.createSdkError(errorCode, message);
                 Log.w(TAG, error.getMessage());
-                if (adLoadCallback != null) {
-                    adLoadCallback.onFailure(error);
-                }
+                adLoadCallback.onFailure(error);
             }
 
             @Override
@@ -137,11 +135,11 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             setImages(imagesList);
         }
 
-        /**Pangle does its own show event handling and click event handling*/
+        // Pangle does its own show event handling and click event handling
         setOverrideImpressionRecording(true);
         setOverrideClickHandling(true);
 
-        /** add Native Feed Main View */
+        // add Native Feed Main View
         MediaView mediaView = new MediaView(context);
         MediationAdapterUtil.addNativeFeedMainView(context, ad.getImageMode(), mediaView, ad.getAdView(), ad.getImageList());
         setMediaView(mediaView);

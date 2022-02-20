@@ -96,9 +96,9 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         mTTAdNative.loadBannerExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
             @Override
             public void onError(int errorCode, String errorMessage) {
-                if (adLoadCallback != null) {
-                    adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
-                }
+                AdError error = PangleConstant.createSdkError(errorCode, errorMessage);
+                Log.w(TAG, error.getMessage());
+                adLoadCallback.onFailure(error);
             }
 
             @Override
@@ -116,9 +116,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         return wrappedAdView;
     }
 
-    /**
-     * BannerInteractionListener onAdClicked
-     */
     @Override
     public void onAdClicked(View view, int type) {
         if (bannerAdCallback != null) {
@@ -126,9 +123,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         }
     }
 
-    /**
-     * BannerInteractionListener onAdShow
-     */
     @Override
     public void onAdShow(View view, int type) {
         if (bannerAdCallback != null) {
@@ -136,17 +130,11 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
         }
     }
 
-    /**
-     * BannerInteractionListener onRenderFail
-     */
     @Override
     public void onRenderFail(View view, String errorMessage, int errorCode) {
         adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
     }
 
-    /**
-     * BannerInteractionListener onRenderSuccess
-     */
     @Override
     public void onRenderSuccess(View view, float width, float height) {
         wrappedAdView.addView(view);

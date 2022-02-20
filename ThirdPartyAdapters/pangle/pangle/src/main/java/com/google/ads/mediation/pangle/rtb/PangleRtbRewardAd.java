@@ -80,7 +80,9 @@ public class PangleRtbRewardAd implements MediationRewardedAd {
         mTTAdNative.loadRewardVideoAd(adSlot, new TTAdNative.RewardVideoAdListener() {
             @Override
             public void onError(int errorCode, String errorMessage) {
-                adLoadCallback.onFailure(PangleConstant.createSdkError(errorCode, errorMessage));
+                AdError error = PangleConstant.createSdkError(errorCode, errorMessage);
+                Log.w(TAG, error.getMessage());
+                adLoadCallback.onFailure(error);
             }
 
             @Override
@@ -101,8 +103,10 @@ public class PangleRtbRewardAd implements MediationRewardedAd {
         ttRewardVideoAd.setRewardAdInteractionListener(new TTRewardVideoAd.RewardAdInteractionListener() {
             @Override
             public void onAdShow() {
-                rewardAdCallback.onAdOpened();
-                rewardAdCallback.reportAdImpression();
+                if (rewardAdCallback != null) {
+                    rewardAdCallback.onAdOpened();
+                    rewardAdCallback.reportAdImpression();
+                }
             }
 
             @Override
