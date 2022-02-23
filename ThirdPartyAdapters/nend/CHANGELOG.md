@@ -1,6 +1,6 @@
 ## nend Android Mediation Adapter Changelog
 
-#### Version 8.1.0.0 (In Progress)
+#### Version 8.1.0.0
 - Verified compatibility with nend SDK 8.1.0.
 - Fixed a `NullPointerException` crash when nend returns a `null` ad image or logo URL.
 - Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
