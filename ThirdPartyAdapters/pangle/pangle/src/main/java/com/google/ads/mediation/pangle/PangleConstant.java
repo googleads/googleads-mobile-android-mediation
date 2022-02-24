@@ -39,11 +39,6 @@ public class PangleConstant {
      */
     public static final int ERROR_BID_RESPONSE_IS_INVALID = 103;
 
-    /**
-     * Pangle SDK not initialized, or initialization error.
-     */
-    public static final int ERROR_SDK_NOT_INIT = 201;
-
     @NonNull
     public static AdError createAdapterError(@AdapterError int errorCode, @NonNull String errorMessage) {
         return new AdError(errorCode, errorMessage, ERROR_DOMAIN);

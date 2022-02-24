@@ -3,7 +3,6 @@ package com.google.ads.mediation.pangle.rtb;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BANNER_AD_SIZE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_BID_RESPONSE_IS_INVALID;
 import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_PLACEMENT;
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_SDK_NOT_INIT;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -16,7 +15,6 @@ import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.google.ads.mediation.pangle.PangleConstant;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
@@ -45,14 +43,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, TTNativeExpressAd.E
 
     public void render() {
         PangleMediationAdapter.setCoppa(adConfiguration);
-
-        if (!TTAdSdk.isInitSuccess()) {
-            AdError error = PangleConstant.createSdkError(ERROR_SDK_NOT_INIT,
-                    "Pangle SDK not initialized, or initialization error.");
-            Log.w(TAG, error.getMessage());
-            adLoadCallback.onFailure(error);
-            return;
-        }
 
         String placementId = adConfiguration.getServerParameters().getString(PangleConstant.PLACEMENT_ID);
         if (TextUtils.isEmpty(placementId)) {

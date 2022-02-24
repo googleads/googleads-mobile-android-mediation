@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 1050000
+        versionCode 4020503
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -31,10 +31,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+    implementation 'com.google.android.gms:play-services-ads:20.6.0'
     implementation 'androidx.annotation:annotation:1.2.0'
 
-    implementation 'com.pangle.global:ads-sdk:4.1.1.6'
+    implementation 'com.pangle.global:ads-sdk:4.2.5.3'
 }
 
 /**

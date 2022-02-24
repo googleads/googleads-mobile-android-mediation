@@ -15,8 +15,8 @@ import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
-import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -47,7 +47,6 @@ public class PangleMediationAdapter extends RtbAdapter {
     final static String TAG = PangleMediationAdapter.class.getSimpleName();
     private PangleRtbBannerAd bannerAd;
     private PangleRtbInterstitialAd interstitialAd;
-    private PangleRtbNativeAd nativeAd;
     private PangleRtbRewardAd rewardAd;
 
     @Override
@@ -164,8 +163,13 @@ public class PangleMediationAdapter extends RtbAdapter {
     @Override
     public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
                                 @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-        nativeAd = new PangleRtbNativeAd(adConfiguration, callback);
-        nativeAd.render();
+        AdError error =
+                new AdError(
+                        0,
+                        "Native Ad is not supported in Pangle.",
+                        PangleConstant.ERROR_DOMAIN);
+        Log.w(TAG, error.getMessage());
+        callback.onFailure(error);
     }
 
     @Override
