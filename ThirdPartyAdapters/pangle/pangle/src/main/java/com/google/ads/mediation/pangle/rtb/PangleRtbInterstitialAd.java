@@ -1,7 +1,7 @@
 package com.google.ads.mediation.pangle.rtb;
 
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_BID_RESPONSE;
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
+import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,7 +12,7 @@ import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
-import com.google.ads.mediation.pangle.PangleConstant;
+import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -39,9 +39,9 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
     PangleMediationAdapter.setCoppa(adConfiguration);
 
     String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstant.PLACEMENT_ID);
+        .getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      AdError error = PangleConstant.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
@@ -50,8 +50,8 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstant.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid Response");
+      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
+          "Failed to load ad from Pangle. Missing or invalid bid response");
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;
@@ -69,7 +69,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
     mTTAdNative.loadFullScreenVideoAd(adSlot, new TTAdNative.FullScreenVideoAdListener() {
       @Override
       public void onError(int errorCode, String errorMessage) {
-        AdError error = PangleConstant.createSdkError(errorCode, errorMessage);
+        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
         Log.w(TAG, error.getMessage());
         adLoadCallback.onFailure(error);
       }

@@ -6,7 +6,7 @@ import com.google.android.gms.ads.AdError;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class PangleConstant {
+public class PangleConstants {
 
   public static final String PLACEMENT_ID = "placementid";
   public static final String APP_ID = "appid";

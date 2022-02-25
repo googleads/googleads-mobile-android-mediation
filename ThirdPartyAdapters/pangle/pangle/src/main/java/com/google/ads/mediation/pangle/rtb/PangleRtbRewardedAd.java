@@ -1,8 +1,8 @@
 package com.google.ads.mediation.pangle.rtb;
 
 
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_BID_RESPONSE;
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
+import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,7 +13,7 @@ import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
-import com.google.ads.mediation.pangle.PangleConstant;
+import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -41,9 +41,9 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
     PangleMediationAdapter.setCoppa(adConfiguration);
 
     String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstant.PLACEMENT_ID);
+        .getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      AdError error = PangleConstant.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
@@ -52,8 +52,8 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstant.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid Response");
+      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
+          "Failed to load ad from Pangle. Missing or invalid bid response");
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;
@@ -71,7 +71,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
     mTTAdNative.loadRewardVideoAd(adSlot, new TTAdNative.RewardVideoAdListener() {
       @Override
       public void onError(int errorCode, String errorMessage) {
-        AdError error = PangleConstant.createSdkError(errorCode, errorMessage);
+        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
         Log.w(TAG, error.getMessage());
         adLoadCallback.onFailure(error);
       }
@@ -126,29 +126,27 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName,
+          public void onRewardVerify(boolean rewardVerify, final int rewardAmount, final String rewardName,
               int errorCode, String errorMsg) {
             if (!rewardVerify) {
               String newErrorMsg = String
                   .format("Failed to request rewarded ad from Pangle. The reward isn't valid. " +
                       "The specific reason is: %s", errorMsg);
-              AdError error = PangleConstant.createSdkError(errorCode, newErrorMsg);
+              AdError error = PangleConstants.createSdkError(errorCode, newErrorMsg);
               Log.d(TAG, error.getMessage());
               return;
             }
-            final String rewardType = rewardName;
-            final int amount = rewardAmount;
 
             RewardItem rewardItem = new RewardItem() {
               @NonNull
               @Override
               public String getType() {
-                return rewardType;
+                return rewardName;
               }
 
               @Override
               public int getAmount() {
-                return amount;
+                return rewardAmount;
               }
             };
             if (rewardedAdCallback != null) {

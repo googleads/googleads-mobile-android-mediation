@@ -1,6 +1,6 @@
 package com.google.ads.mediation.pangle;
 
-import static com.google.ads.mediation.pangle.PangleConstant.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -59,7 +59,7 @@ public class PangleMediationAdapter extends RtbAdapter {
     HashSet<String> appIds = new HashSet<>();
     for (MediationConfiguration mediationConfiguration : list) {
       Bundle serverParameters = mediationConfiguration.getServerParameters();
-      String appId = serverParameters.getString(PangleConstant.APP_ID);
+      String appId = serverParameters.getString(PangleConstants.APP_ID);
       if (!TextUtils.isEmpty(appId)) {
         appIds.add(appId);
       }
@@ -67,10 +67,10 @@ public class PangleMediationAdapter extends RtbAdapter {
 
     int count = appIds.size();
     if (count <= 0) {
-      AdError error = PangleConstant.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid App ID.");
       Log.w(TAG, error.getMessage());
-      initializationCompleteCallback.onInitializationFailed("Missing or Invalid AppID.");
+      initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
 
@@ -104,11 +104,13 @@ public class PangleMediationAdapter extends RtbAdapter {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
-    if (splits.length >= 5) {
+    if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
       int minor = Integer.parseInt(splits[1]);
-      int micro = Integer.parseInt(splits[2]) * 10000 + Integer.parseInt(splits[3]) * 100 + Integer
-          .parseInt(splits[4]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      if (splits.length >= 5) {
+        micro = micro * 100 + Integer.parseInt(splits[4]);
+      }
       return new VersionInfo(major, minor, micro);
     }
 
@@ -125,10 +127,13 @@ public class PangleMediationAdapter extends RtbAdapter {
     String versionString = TTAdSdk.getAdManager().getSDKVersion();
     String[] splits = versionString.split("\\.");
 
-    if (splits.length >= 4) {
+    if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
       int minor = Integer.parseInt(splits[1]);
-      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      int micro = Integer.parseInt(splits[2]);
+      if (splits.length >= 4) {
+        micro = micro * 100 + Integer.parseInt(splits[3]);
+      }
       return new VersionInfo(major, minor, micro);
     }
 
@@ -159,8 +164,8 @@ public class PangleMediationAdapter extends RtbAdapter {
     AdError error =
         new AdError(
             0,
-            "Native Ad is not supported in Pangle.",
-            PangleConstant.ERROR_DOMAIN);
+            "Native ad is not supported in Pangle.",
+            PangleConstants.ERROR_DOMAIN);
     Log.w(TAG, error.getMessage());
     callback.onFailure(error);
   }
@@ -176,6 +181,9 @@ public class PangleMediationAdapter extends RtbAdapter {
     return TTAdSdk.getAdManager();
   }
 
+  /**
+   * Sets the Pangle coppa settings.
+   */
   public static void setCoppa(@NonNull MediationAdConfiguration mediationAdConfiguration) {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
