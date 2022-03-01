@@ -77,7 +77,7 @@ public class PangleMediationAdapter extends RtbAdapter {
     String appId = appIds.iterator().next();
 
     if (count > 1) {
-      String message = String.format("Find multiple app IDs in %s. " +
+      String message = String.format("Found multiple app IDs in %s. " +
           ", using %s to initialize Pangle SDK", appIds.toString(), appId);
       Log.w(TAG, message);
     }
@@ -185,16 +185,15 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Sets the Pangle coppa settings.
    */
   public static void setCoppa(@NonNull MediationAdConfiguration mediationAdConfiguration) {
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      TTAdSdk.setCoppa(1);
-      return;
+    switch (mediationAdConfiguration.taggedForChildDirectedTreatment()) {
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
+        TTAdSdk.setCoppa(1);
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
+        TTAdSdk.setCoppa(0);
+        break;
+      default:
+        TTAdSdk.setCoppa(-1);
     }
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
-      TTAdSdk.setCoppa(0);
-      return;
-    }
-    TTAdSdk.setCoppa(-1);
   }
 }

@@ -55,7 +55,7 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid response");
+          "Failed to load ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;
