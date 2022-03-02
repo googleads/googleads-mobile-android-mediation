@@ -32,6 +32,8 @@ public class PangleRtbBannerAd implements MediationBannerAd,
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
+  private static final int MINIMUM_BANNER_WIDTH = 300;
+  private static final int MINIMUM_BANNER_HEIGHT = 50;
 
   public PangleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
@@ -62,7 +64,8 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     }
 
     AdSize adSize = adConfiguration.getAdSize();
-    if (adSize == null || adSize.getWidth() < 0 || adSize.getHeight() < 0) {
+    if (adSize == null || adSize.getWidth() < MINIMUM_BANNER_WIDTH
+        || adSize.getHeight() < MINIMUM_BANNER_HEIGHT) {
       AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
           "Failed to request ad from Pangle. Invalid banner size.");
       Log.w(TAG, error.getMessage());
