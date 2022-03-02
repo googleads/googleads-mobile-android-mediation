@@ -44,6 +44,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
+  private static int coppa = -1;
+  private static int gdpr = -1;
+  private static int ccpa = -1;
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -84,6 +87,9 @@ public class PangleMediationAdapter extends RtbAdapter {
 
     TTAdSdk.init(context, new TTAdConfig.Builder()
         .appId(appId)
+        .coppa(coppa)
+        .setGDPR(gdpr)
+        .setCCPA(ccpa)
         .build(), new TTAdSdk.InitCallback() {
       @Override
       public void success() {
@@ -195,5 +201,26 @@ public class PangleMediationAdapter extends RtbAdapter {
       default:
         TTAdSdk.setCoppa(-1);
     }
+  }
+
+  /**
+   * Set this COPPA option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   */
+  public static void setCoppaBeforeInitialize(int coppa) {
+    PangleMediationAdapter.coppa = coppa;
+  }
+
+  /**
+   * Set this GDPR option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   */
+  public static void setGdprBeforeInitialize(int gdpr) {
+    PangleMediationAdapter.gdpr = gdpr;
+  }
+
+  /**
+   * Set this CCPA option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   */
+  public static void setCcpaBeforeInitialize(int ccpa) {
+    PangleMediationAdapter.ccpa = ccpa;
   }
 }
