@@ -200,6 +200,7 @@ public class PangleMediationAdapter extends RtbAdapter {
         break;
       default:
         TTAdSdk.setCoppa(-1);
+        break;
     }
   }
 
@@ -208,7 +209,19 @@ public class PangleMediationAdapter extends RtbAdapter {
    * forwarded to Pangle SDK.
    */
   public static void setCoppaBeforeInitialize(int coppa) {
-    PangleMediationAdapter.coppa = coppa;
+    switch (coppa) {
+      // The app should be treated as child-directed for purposes of COPPA.
+      case 1:
+      // The app should not be treated as child-directed for purposes of COPPA.
+      case 0:
+        PangleMediationAdapter.coppa = coppa;
+        break;
+      // The publisher has not specified whether the app should be treated as
+      // child-directed for purposes of COPPA.
+      default:
+        PangleMediationAdapter.coppa = -1;
+        break;
+    }
   }
 
   /**
@@ -216,7 +229,19 @@ public class PangleMediationAdapter extends RtbAdapter {
    * forwarded to Pangle SDK.
    */
   public static void setGdprBeforeInitialize(int gdpr) {
-    PangleMediationAdapter.gdpr = gdpr;
+    switch (gdpr) {
+      // The app is allowed to process user's personal data for purposes of GDPR.
+      case 1:
+      // The app is not allowd to process user's personal data for purposes of GDPR.
+      case 0:
+        PangleMediationAdapter.gdpr = gdpr;
+        break;
+      // User has not specified whether the app is allowed to process his/her
+      // personal data for purposes of GDPR.
+      default:
+        PangleMediationAdapter.gdpr = -1;
+        break;
+    }
   }
 
   /**
@@ -224,6 +249,18 @@ public class PangleMediationAdapter extends RtbAdapter {
    * forwarded to Pangle SDK.
    */
   public static void setCcpaBeforeInitialize(int ccpa) {
-    PangleMediationAdapter.ccpa = ccpa;
+    switch (ccpa) {
+      // The app is allowed to 'sale' personal information for purposes of CCPA.
+      case 1:
+      // The app is not allowed to 'sale' personal information for purposes of CCPA.
+      case 0:
+        PangleMediationAdapter.ccpa = ccpa;
+        break;
+      // The publisher has not specified whether the app is authorized to 'sale' his/her
+      // personal information for purposes of CCPA.
+      default:
+        PangleMediationAdapter.ccpa = -1;
+        break;
+    }
   }
 }
