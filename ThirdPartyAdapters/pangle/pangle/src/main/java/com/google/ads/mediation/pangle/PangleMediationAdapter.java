@@ -204,21 +204,24 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set this COPPA option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   * Set this COPPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
+   * forwarded to Pangle SDK.
    */
   public static void setCoppaBeforeInitialize(int coppa) {
     PangleMediationAdapter.coppa = coppa;
   }
 
   /**
-   * Set this GDPR option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   * Set this GDPR option before initializing the Google Mobile Ads SDK to ensure it is correctly
+   * forwarded to Pangle SDK.
    */
   public static void setGdprBeforeInitialize(int gdpr) {
     PangleMediationAdapter.gdpr = gdpr;
   }
 
   /**
-   * Set this CCPA option before initializing mobile ads to ensure they are correctly forwarded to Pangle's SDK.
+   * Set this CCPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
+   * forwarded to Pangle SDK.
    */
   public static void setCcpaBeforeInitialize(int ccpa) {
     PangleMediationAdapter.ccpa = ccpa;

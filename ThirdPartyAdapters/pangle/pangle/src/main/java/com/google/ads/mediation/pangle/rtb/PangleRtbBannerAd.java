@@ -34,16 +34,6 @@ public class PangleRtbBannerAd implements MediationBannerAd,
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
-  private static final int MINIMUM_BANNER_WIDTH = 300;
-  private static final int MINIMUM_BANNER_HEIGHT = 50;
-  private static final ArrayList<AdSize> supportedSizes;
-
-  static {
-    supportedSizes = new ArrayList<>(3);
-    supportedSizes.add(new AdSize(320, 50));
-    supportedSizes.add(new AdSize(300, 250));
-    supportedSizes.add(new AdSize(728, 90));
-  }
 
   public PangleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
@@ -74,16 +64,11 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     }
 
     Context context = adConfiguration.getContext();
-    AdSize adSize = adConfiguration.getAdSize();
-    if (adSize == null || adSize.getWidth() < MINIMUM_BANNER_WIDTH
-        || adSize.getHeight() < MINIMUM_BANNER_HEIGHT) {
-      AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request ad from Pangle. Invalid banner size.");
-      Log.w(TAG, error.toString());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
+    ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
+    supportedSizes.add(new AdSize(320, 50));
+    supportedSizes.add(new AdSize(300, 250));
+    supportedSizes.add(new AdSize(728, 90));
+    AdSize closestSize = MediationUtils.findClosestSize(context, adConfiguration.getAdSize(), supportedSizes);
     if (closestSize == null) {
       AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
           "Failed to request ad from Pangle. Invalid banner size.");
