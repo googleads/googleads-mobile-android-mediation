@@ -72,8 +72,8 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (count <= 0) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid App ID.");
-      Log.w(TAG, error.getMessage());
-      initializationCompleteCallback.onInitializationFailed(error.getMessage());
+      Log.w(TAG, error.toString());
+      initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
 
@@ -172,7 +172,7 @@ public class PangleMediationAdapter extends RtbAdapter {
             0,
             "Native ad is not supported in Pangle.",
             PangleConstants.ERROR_DOMAIN);
-    Log.w(TAG, error.getMessage());
+    Log.w(TAG, error.toString());
     callback.onFailure(error);
   }
 

@@ -18,10 +18,12 @@ import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PangleRtbBannerAd implements MediationBannerAd,
@@ -34,6 +36,14 @@ public class PangleRtbBannerAd implements MediationBannerAd,
   private FrameLayout wrappedAdView;
   private static final int MINIMUM_BANNER_WIDTH = 300;
   private static final int MINIMUM_BANNER_HEIGHT = 50;
+  private static final ArrayList<AdSize> supportedSizes;
+
+  static {
+    supportedSizes = new ArrayList<>(3);
+    supportedSizes.add(new AdSize(320, 50));
+    supportedSizes.add(new AdSize(300, 250));
+    supportedSizes.add(new AdSize(728, 90));
+  }
 
   public PangleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
@@ -49,7 +59,7 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     if (TextUtils.isEmpty(placementId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Pangle. Missing or invalid Placement ID.");
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
@@ -58,22 +68,30 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     if (TextUtils.isEmpty(bidResponse)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
           "Failed to load ad from Pangle. Missing or invalid bid response.");
-      Log.w(TAG, error.getMessage());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
-    AdSize adSize = adConfiguration.getAdSize();
-    if (adSize == null || adSize.getWidth() < MINIMUM_BANNER_WIDTH
-        || adSize.getHeight() < MINIMUM_BANNER_HEIGHT) {
-      AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request ad from Pangle. Invalid banner size.");
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
 
     Context context = adConfiguration.getContext();
+    AdSize adSize = adConfiguration.getAdSize();
+    if (adSize == null || adSize.getWidth() < MINIMUM_BANNER_WIDTH
+        || adSize.getHeight() < MINIMUM_BANNER_HEIGHT) {
+      AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request ad from Pangle. Invalid banner size.");
+      Log.w(TAG, error.toString());
+      adLoadCallback.onFailure(error);
+      return;
+    }
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
+    if (closestSize == null) {
+      AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request ad from Pangle. Invalid banner size.");
+      Log.w(TAG, error.toString());
+      adLoadCallback.onFailure(error);
+      return;
+    }
+
     wrappedAdView = new FrameLayout(context);
 
     TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
@@ -82,14 +100,14 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     AdSlot adSlot = new AdSlot.Builder()
         .setCodeId(placementId)
         .setAdCount(1)
-        .setExpressViewAcceptedSize(adSize.getWidth(), adSize.getHeight())
+        .setExpressViewAcceptedSize(closestSize.getWidth(), closestSize.getHeight())
         .withBid(bidResponse)
         .build();
     mTTAdNative.loadBannerExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
       @Override
       public void onError(int errorCode, String errorMessage) {
         AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         adLoadCallback.onFailure(error);
       }
 

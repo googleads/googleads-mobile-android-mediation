@@ -43,7 +43,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
     if (TextUtils.isEmpty(placementId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Pangle. Missing or invalid Placement ID.");
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
@@ -52,7 +52,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
     if (TextUtils.isEmpty(bidResponse)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
           "Failed to load ad from Pangle. Missing or invalid bid response.");
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
@@ -70,7 +70,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       @Override
       public void onError(int errorCode, String errorMessage) {
         AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         adLoadCallback.onFailure(error);
       }
 
@@ -127,6 +127,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       ttFullVideoAd.showFullScreenVideoAd((Activity) context);
       return;
     }
+    // If the context is not an Activity, the application context will be used to render the ad.
     ttFullVideoAd.showFullScreenVideoAd(null);
   }
 }
