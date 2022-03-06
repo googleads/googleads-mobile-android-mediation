@@ -14,6 +14,7 @@ import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -44,7 +45,6 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
-  private static int coppa = -1;
   private static int gdpr = -1;
   private static int ccpa = -1;
 
@@ -87,7 +87,7 @@ public class PangleMediationAdapter extends RtbAdapter {
 
     TTAdSdk.init(context, new TTAdConfig.Builder()
         .appId(appId)
-        .coppa(coppa)
+        .coppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment())
         .setGDPR(gdpr)
         .setCCPA(ccpa)
         .build(), new TTAdSdk.InitCallback() {
@@ -205,62 +205,38 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set this COPPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
-   */
-  public static void setCoppaBeforeInitialize(int coppa) {
-    switch (coppa) {
-      // The app should be treated as child-directed for purposes of COPPA.
-      case 1:
-      // The app should not be treated as child-directed for purposes of COPPA.
-      case 0:
-        PangleMediationAdapter.coppa = coppa;
-        break;
-      // The publisher has not specified whether the app should be treated as
-      // child-directed for purposes of COPPA.
-      default:
-        PangleMediationAdapter.coppa = -1;
-        break;
-    }
-  }
-
-  /**
    * Set this GDPR option before initializing the Google Mobile Ads SDK to ensure it is correctly
    * forwarded to Pangle SDK.
+   *
+   * @param gdpr Whether to allow the app to process the user's personal data for GDPR purposes. A
+   *             value of 0 is allowed, and a value of 1 is not allowed.
    */
-  public static void setGdprBeforeInitialize(int gdpr) {
-    switch (gdpr) {
-      // The app is allowed to process user's personal data for purposes of GDPR.
-      case 1:
-      // The app is not allowd to process user's personal data for purposes of GDPR.
-      case 0:
-        PangleMediationAdapter.gdpr = gdpr;
-        break;
-      // User has not specified whether the app is allowed to process his/her
-      // personal data for purposes of GDPR.
-      default:
-        PangleMediationAdapter.gdpr = -1;
-        break;
+  public static void setGdpr(int gdpr) {
+    if (gdpr != 0 && gdpr != 1) {
+      return;
     }
+    if (TTAdSdk.isInitSuccess()) {
+      TTAdSdk.setGdpr(gdpr);
+      return;
+    }
+    PangleMediationAdapter.gdpr = gdpr;
   }
 
   /**
    * Set this CCPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
    * forwarded to Pangle SDK.
+   *
+   * @param ccpa Whether to allow the app to 'sale' personal information for purposes of CCPA. A
+   *             value of 0 is allowed, and a value of 1 is not allowed.
    */
-  public static void setCcpaBeforeInitialize(int ccpa) {
-    switch (ccpa) {
-      // The app is allowed to 'sale' personal information for purposes of CCPA.
-      case 1:
-      // The app is not allowed to 'sale' personal information for purposes of CCPA.
-      case 0:
-        PangleMediationAdapter.ccpa = ccpa;
-        break;
-      // The publisher has not specified whether the app is authorized to 'sale' his/her
-      // personal information for purposes of CCPA.
-      default:
-        PangleMediationAdapter.ccpa = -1;
-        break;
+  public static void setCcpa(int ccpa) {
+    if (ccpa != 0 && ccpa != 1) {
+      return;
     }
+    if (TTAdSdk.isInitSuccess()) {
+      TTAdSdk.setCCPA(ccpa);
+      return;
+    }
+    PangleMediationAdapter.ccpa = ccpa;
   }
 }
