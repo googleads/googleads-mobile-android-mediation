@@ -225,8 +225,8 @@ public class PangleMediationAdapter extends RtbAdapter {
    *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
    */
   public static void setGdpr(int gdpr) {
-    if (gdpr != 0 && gdpr != 1) {
-      gdpr = -1;
+    if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
+      return;
     }
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setGdpr(gdpr);
@@ -241,8 +241,8 @@ public class PangleMediationAdapter extends RtbAdapter {
    *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
    */
   public static void setCcpa(int ccpa) {
-    if (ccpa != 0 && ccpa != 1) {
-      ccpa = -1;
+    if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
+      return;
     }
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setCCPA(ccpa);
