@@ -188,12 +188,13 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set the Pangle coppa settings.
+   * Set the COPPA setting in Pangle SDK.
    *
-   * @param coppa Whether the publisher specifies that the app is considered COPPA for children.see
-   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE}, {@link
-   *              RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} And {@link
-   *              RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED}
+   * @param coppa an {@code Integer} value that indicates whether the app should be treated as
+   *              child-directed for purposes of the COPPA.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
    */
   public static void setCoppa(int coppa) {
     switch (coppa) {
@@ -219,10 +220,11 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set the Pangle GDPR settings.
+   * Set the GDPR setting in Pangle SDK.
    *
-   * @param gdpr Whether to allow the app to process the user's personal data for GDPR purposes. A
-   *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
+   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
+   *             personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1}
+   *             means the user does not consent. {@code -1} means the user hasn't specified.
    */
   public static void setGdpr(int gdpr) {
     if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
@@ -235,10 +237,11 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set the Pangle CCPA settings.
+   * Set the CCPA setting in Pangle SDK.
    *
-   * @param ccpa Whether to allow the app to 'sale' personal information for purposes of CCPA. A
-   *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
+   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
+   *             the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1}
+   *             means the user opts out. {@code -1} means the user hasn't specified.
    */
   public static void setCcpa(int ccpa) {
     if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
