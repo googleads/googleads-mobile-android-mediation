@@ -17,7 +17,6 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
-import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -189,7 +188,12 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Sets the Pangle coppa settings.
+   * Set the Pangle coppa settings.
+   *
+   * @param coppa Whether the publisher specifies that the app is considered COPPA for children.see
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE}, {@link
+   *              RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} And {@link
+   *              RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED}
    */
   public static void setCoppa(int coppa) {
     switch (coppa) {
@@ -215,15 +219,14 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set this GDPR option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
+   * Set the Pangle GDPR settings.
    *
    * @param gdpr Whether to allow the app to process the user's personal data for GDPR purposes. A
-   *             value of 0 is allowed, and a value of 1 is not allowed.
+   *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
    */
   public static void setGdpr(int gdpr) {
     if (gdpr != 0 && gdpr != 1) {
-      return;
+      gdpr = -1;
     }
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setGdpr(gdpr);
@@ -232,15 +235,14 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set this CCPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
+   * Set the Pangle CCPA settings.
    *
    * @param ccpa Whether to allow the app to 'sale' personal information for purposes of CCPA. A
-   *             value of 0 is allowed, and a value of 1 is not allowed.
+   *             value of 0 is allowed, 1 is not allowed, and -1 is not specified.
    */
   public static void setCcpa(int ccpa) {
     if (ccpa != 0 && ccpa != 1) {
-      return;
+      ccpa = -1;
     }
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setCCPA(ccpa);
