@@ -38,7 +38,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration);
+    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);

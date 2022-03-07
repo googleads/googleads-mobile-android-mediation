@@ -14,9 +14,9 @@ import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
-import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -84,7 +84,7 @@ public class PangleMediationAdapter extends RtbAdapter {
           ", using %s to initialize Pangle SDK", appIds.toString(), appId);
       Log.w(TAG, message);
     }
-
+    setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
     TTAdSdk.init(context, new TTAdConfig.Builder()
         .appId(appId)
         .coppa(coppa)
@@ -188,79 +188,68 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Sets the Pangle coppa settings.
+   * Set the COPPA setting in Pangle SDK.
+   *
+   * @param coppa an {@code Integer} value that indicates whether the app should be treated as
+   *              child-directed for purposes of the COPPA.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
    */
-  public static void setCoppa(@NonNull MediationAdConfiguration mediationAdConfiguration) {
-    switch (mediationAdConfiguration.taggedForChildDirectedTreatment()) {
+  public static void setCoppa(int coppa) {
+    switch (coppa) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        TTAdSdk.setCoppa(1);
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(1);
+        }
+        PangleMediationAdapter.coppa = 1;
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        TTAdSdk.setCoppa(0);
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(0);
+        }
+        PangleMediationAdapter.coppa = 0;
         break;
       default:
-        TTAdSdk.setCoppa(-1);
-        break;
-    }
-  }
-
-  /**
-   * Set this COPPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
-   */
-  public static void setCoppaBeforeInitialize(int coppa) {
-    switch (coppa) {
-      // The app should be treated as child-directed for purposes of COPPA.
-      case 1:
-      // The app should not be treated as child-directed for purposes of COPPA.
-      case 0:
-        PangleMediationAdapter.coppa = coppa;
-        break;
-      // The publisher has not specified whether the app should be treated as
-      // child-directed for purposes of COPPA.
-      default:
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(-1);
+        }
         PangleMediationAdapter.coppa = -1;
         break;
     }
   }
 
   /**
-   * Set this GDPR option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
+   * Set the GDPR setting in Pangle SDK.
+   *
+   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
+   *             personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1}
+   *             means the user does not consent. {@code -1} means the user hasn't specified.
    */
-  public static void setGdprBeforeInitialize(int gdpr) {
-    switch (gdpr) {
-      // The app is allowed to process user's personal data for purposes of GDPR.
-      case 1:
-      // The app is not allowd to process user's personal data for purposes of GDPR.
-      case 0:
-        PangleMediationAdapter.gdpr = gdpr;
-        break;
-      // User has not specified whether the app is allowed to process his/her
-      // personal data for purposes of GDPR.
-      default:
-        PangleMediationAdapter.gdpr = -1;
-        break;
+  public static void setGdpr(int gdpr) {
+    if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
+      return;
     }
+    if (TTAdSdk.isInitSuccess()) {
+      TTAdSdk.setGdpr(gdpr);
+    }
+    PangleMediationAdapter.gdpr = gdpr;
   }
 
   /**
-   * Set this CCPA option before initializing the Google Mobile Ads SDK to ensure it is correctly
-   * forwarded to Pangle SDK.
+   * Set the CCPA setting in Pangle SDK.
+   *
+   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
+   *             the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1}
+   *             means the user opts out. {@code -1} means the user hasn't specified.
    */
-  public static void setCcpaBeforeInitialize(int ccpa) {
-    switch (ccpa) {
-      // The app is allowed to 'sale' personal information for purposes of CCPA.
-      case 1:
-      // The app is not allowed to 'sale' personal information for purposes of CCPA.
-      case 0:
-        PangleMediationAdapter.ccpa = ccpa;
-        break;
-      // The publisher has not specified whether the app is authorized to 'sale' his/her
-      // personal information for purposes of CCPA.
-      default:
-        PangleMediationAdapter.ccpa = -1;
-        break;
+  public static void setCcpa(int ccpa) {
+    if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
+      return;
     }
+    if (TTAdSdk.isInitSuccess()) {
+      TTAdSdk.setCCPA(ccpa);
+    }
+    PangleMediationAdapter.ccpa = ccpa;
   }
 }
