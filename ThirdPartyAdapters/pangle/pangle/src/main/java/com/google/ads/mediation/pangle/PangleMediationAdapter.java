@@ -45,6 +45,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
+  private static int coppa = -1;
   private static int gdpr = -1;
   private static int ccpa = -1;
 
@@ -84,10 +85,10 @@ public class PangleMediationAdapter extends RtbAdapter {
           ", using %s to initialize Pangle SDK", appIds.toString(), appId);
       Log.w(TAG, message);
     }
-
+    setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
     TTAdSdk.init(context, new TTAdConfig.Builder()
         .appId(appId)
-        .coppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment())
+        .coppa(coppa)
         .setGDPR(gdpr)
         .setCCPA(ccpa)
         .build(), new TTAdSdk.InitCallback() {
@@ -190,16 +191,25 @@ public class PangleMediationAdapter extends RtbAdapter {
   /**
    * Sets the Pangle coppa settings.
    */
-  public static void setCoppa(@NonNull MediationAdConfiguration mediationAdConfiguration) {
-    switch (mediationAdConfiguration.taggedForChildDirectedTreatment()) {
+  public static void setCoppa(int coppa) {
+    switch (coppa) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        TTAdSdk.setCoppa(1);
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(1);
+        }
+        PangleMediationAdapter.coppa = 1;
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        TTAdSdk.setCoppa(0);
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(0);
+        }
+        PangleMediationAdapter.coppa = 0;
         break;
       default:
-        TTAdSdk.setCoppa(-1);
+        if (TTAdSdk.isInitSuccess()) {
+          TTAdSdk.setCoppa(-1);
+        }
+        PangleMediationAdapter.coppa = -1;
         break;
     }
   }
@@ -215,11 +225,10 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (gdpr != 0 && gdpr != 1) {
       return;
     }
-    PangleMediationAdapter.gdpr = gdpr;
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setGdpr(gdpr);
-      return;
     }
+    PangleMediationAdapter.gdpr = gdpr;
   }
 
   /**
@@ -233,10 +242,9 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (ccpa != 0 && ccpa != 1) {
       return;
     }
-    PangleMediationAdapter.ccpa = ccpa;
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setCCPA(ccpa);
-      return;
     }
+    PangleMediationAdapter.ccpa = ccpa;
   }
 }
