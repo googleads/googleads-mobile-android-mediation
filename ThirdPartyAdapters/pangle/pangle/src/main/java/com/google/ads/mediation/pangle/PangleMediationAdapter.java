@@ -215,11 +215,11 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (gdpr != 0 && gdpr != 1) {
       return;
     }
+    PangleMediationAdapter.gdpr = gdpr;
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setGdpr(gdpr);
       return;
     }
-    PangleMediationAdapter.gdpr = gdpr;
   }
 
   /**
@@ -233,10 +233,10 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (ccpa != 0 && ccpa != 1) {
       return;
     }
+    PangleMediationAdapter.ccpa = ccpa;
     if (TTAdSdk.isInitSuccess()) {
       TTAdSdk.setCCPA(ccpa);
       return;
     }
-    PangleMediationAdapter.ccpa = ccpa;
   }
 }
