@@ -3,6 +3,7 @@ package com.google.ads.mediation.sample.customevent;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
@@ -37,6 +38,9 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
    */
   private MediationRewardedAdCallback rewardedAdCallback;
 
+  /** Tag used for log statements */
+  private static final String TAG = "RewardedCustomEvent";
+
   public SampleRewardedCustomEventLoader(
       MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
@@ -48,26 +52,31 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
   public void loadAd() {
     // All custom events have a server parameter named "parameter" that returns back the parameter
     // entered into the AdMob UI when defining the custom event.
+    Log.i(TAG, "Begin loading rewarded ad.");
     String serverParameter =
         mediationRewardedAdConfiguration.getServerParameters().getString("parameter");
     if (TextUtils.isEmpty(serverParameter)) {
       mediationAdLoadCallback.onFailure(SampleCustomEventError.createCustomEventNoAdIdError());
       return;
     }
+    Log.d(TAG, "Received server parameter.");
 
     SampleAdRequest request = new SampleAdRequest();
     sampleRewardedAd = new SampleRewardedAd(serverParameter);
     sampleRewardedAd.setListener(this);
+    Log.i(TAG, "Start fetching rewarded ad.");
     sampleRewardedAd.loadAd(request);
   }
 
   @Override
   public void onRewardedAdLoaded() {
+    Log.d(TAG, "Received the rewarded ad.");
     rewardedAdCallback = mediationAdLoadCallback.onSuccess(this);
   }
 
   @Override
   public void onRewardedAdFailedToLoad(SampleErrorCode errorCode) {
+    Log.e(TAG, "Failed to fetch the rewarded ad.");
     mediationAdLoadCallback.onFailure(SampleCustomEventError.createSampleSdkError(errorCode));
   }
 
@@ -76,6 +85,7 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
     if (!(context instanceof Activity)) {
       rewardedAdCallback.onAdFailedToShow(
           SampleCustomEventError.createCustomEventNoActivityContextError());
+      Log.d(TAG, "The rewarded ad failed to show.");
       return;
     }
     Activity activity = (Activity) context;
@@ -86,6 +96,7 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
       return;
     }
     sampleRewardedAd.showAd(activity);
+    Log.d(TAG, "The rewarded ad was shown.");
   }
 
   @Override
@@ -102,16 +113,19 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
             return amount;
           }
         };
+    Log.d(TAG, "The user earned a reward.");
     rewardedAdCallback.onUserEarnedReward(rewardItem);
   }
 
   @Override
   public void onAdClicked() {
+    Log.d(TAG, "The rewarded ad was clicked.");
     rewardedAdCallback.reportAdClicked();
   }
 
   @Override
   public void onAdFullScreen() {
+    Log.d(TAG, "The rewarded ad was shown fullscreen.");
     rewardedAdCallback.onAdOpened();
     rewardedAdCallback.onVideoStart();
     rewardedAdCallback.reportAdImpression();
@@ -119,11 +133,13 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
 
   @Override
   public void onAdClosed() {
+    Log.d(TAG, "The rewarded ad was closed.");
     rewardedAdCallback.onAdClosed();
   }
 
   @Override
   public void onAdCompleted() {
+    Log.d(TAG, "The rewarded ad video was completed.");
     rewardedAdCallback.onVideoComplete();
   }
 }

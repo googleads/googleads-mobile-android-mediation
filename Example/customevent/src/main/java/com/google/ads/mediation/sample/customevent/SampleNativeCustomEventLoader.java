@@ -17,6 +17,7 @@
 package com.google.ads.mediation.sample.customevent;
 
 import android.text.TextUtils;
+import android.util.Log;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
@@ -38,6 +39,9 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       mediationAdLoadCallback;
 
+  /** Tag used for log statements */
+  private static final String TAG = "NativeCustomEvent";
+
   /**
    * Callback for native ad events. The usual link/click tracking handled through callback methods
    * are handled through the GMA SDK, described here:
@@ -46,9 +50,18 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
   @SuppressWarnings("unused")
   private MediationNativeAdCallback mediationNativeAdCallback;
 
+  public SampleNativeCustomEventLoader(
+      MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+          mediationAdLoadCallback) {
+    this.mediationNativeAdConfiguration = mediationNativeAdConfiguration;
+    this.mediationAdLoadCallback = mediationAdLoadCallback;
+  }
+
   /** Loads the native ad from the third party ad network. */
   public void loadAd() {
     // Create one of the Sample SDK's ad loaders to request ads.
+    Log.i(TAG, "Begin loading native ad.");
     SampleNativeAdLoader loader =
         new SampleNativeAdLoader(mediationNativeAdConfiguration.getContext());
 
@@ -60,6 +73,7 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
       mediationAdLoadCallback.onFailure(SampleCustomEventError.createCustomEventNoAdIdError());
       return;
     }
+    Log.d(TAG, "Received server parameter.");
 
     loader.setAdUnit(serverParameter);
 
@@ -92,15 +106,8 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
     loader.setNativeAdListener(this);
 
     // Begin a request.
+    Log.i(TAG, "Start fetching native ad.");
     loader.fetchAd(request);
-  }
-
-  public SampleNativeCustomEventLoader(
-      MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-          mediationAdLoadCallback) {
-    this.mediationNativeAdConfiguration = mediationNativeAdConfiguration;
-    this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
   /** Called when a native ad is successfully fetched. */
@@ -127,12 +134,14 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
     // image downloading are respected, and that any additional downloads take place *before*
     // the mapped native ad object is returned to the Google Mobile Ads SDK via the
     // onAdLoaded method.
+    Log.d(TAG, "Received the native ad.");
     SampleUnifiedNativeAdMapper mapper = new SampleUnifiedNativeAdMapper(ad);
     mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(mapper);
   }
 
   @Override
   public void onAdFetchFailed(SampleErrorCode errorCode) {
+    Log.e(TAG, "Failed to fetch the native ad.");
     mediationAdLoadCallback.onFailure(SampleCustomEventError.createSampleSdkError(errorCode));
   }
 

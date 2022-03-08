@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleAdListener;
@@ -49,6 +50,9 @@ public class SampleBannerCustomEventLoader extends SampleAdListener implements M
   /** Callback for banner ad events. */
   private MediationBannerAdCallback bannerAdCallback;
 
+  /** Tag used for log statements */
+  private static final String TAG = "BannerCustomEvent";
+
   public SampleBannerCustomEventLoader(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
@@ -62,12 +66,14 @@ public class SampleBannerCustomEventLoader extends SampleAdListener implements M
   public void loadAd() {
     // All custom events have a server parameter named "parameter" that returns back the parameter
     // entered into the AdMob UI when defining the custom event.
+    Log.i(TAG, "Begin loading banner ad.");
     String serverParameter =
         mediationBannerAdConfiguration.getServerParameters().getString("parameter");
     if (TextUtils.isEmpty(serverParameter)) {
       mediationAdLoadCallback.onFailure(SampleCustomEventError.createCustomEventNoAdIdError());
       return;
     }
+    Log.d(TAG, "Received server parameter.");
 
     Context context = mediationBannerAdConfiguration.getContext();
     sampleAdView = new SampleAdView(context);
@@ -90,17 +96,20 @@ public class SampleBannerCustomEventLoader extends SampleAdListener implements M
     sampleAdView.setAdListener(this);
 
     SampleAdRequest request = SampleCustomEvent.createSampleRequest(mediationBannerAdConfiguration);
+    Log.i(TAG, "Start fetching banner ad.");
     sampleAdView.fetchAd(request);
   }
 
   @Override
   public void onAdFetchSucceeded() {
+    Log.d(TAG, "Received the banner ad.");
     bannerAdCallback = mediationAdLoadCallback.onSuccess(this);
     bannerAdCallback.reportAdImpression();
   }
 
   @Override
   public void onAdFetchFailed(SampleErrorCode errorCode) {
+    Log.e(TAG, "Failed to fetch the banner ad.");
     mediationAdLoadCallback.onFailure(SampleCustomEventError.createSampleSdkError(errorCode));
   }
 
@@ -112,6 +121,7 @@ public class SampleBannerCustomEventLoader extends SampleAdListener implements M
 
   @Override
   public void onAdFullScreen() {
+    Log.d(TAG, "The banner ad was clicked.");
     bannerAdCallback.onAdOpened();
     bannerAdCallback.onAdLeftApplication();
     bannerAdCallback.reportAdClicked();
@@ -119,6 +129,7 @@ public class SampleBannerCustomEventLoader extends SampleAdListener implements M
 
   @Override
   public void onAdClosed() {
+    Log.d(TAG, "The banner ad was closed.");
     bannerAdCallback.onAdClosed();
   }
 }

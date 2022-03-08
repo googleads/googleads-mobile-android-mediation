@@ -18,6 +18,7 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleAdListener;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
@@ -44,6 +45,9 @@ public class SampleInterstitialCustomEventLoader extends SampleAdListener
   /** Callback for interstitial ad events. */
   private MediationInterstitialAdCallback interstitialAdCallback;
 
+  /** Tag used for log statements */
+  private static final String TAG = "InterstitialCustomEvent";
+
   public SampleInterstitialCustomEventLoader(
       MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -56,12 +60,14 @@ public class SampleInterstitialCustomEventLoader extends SampleAdListener
   public void loadAd() {
     // All custom events have a server parameter named "parameter" that returns back the parameter
     // entered into the AdMob UI when defining the custom event.
+    Log.i(TAG, "Begin loading interstitial ad.");
     String serverParameter =
         mediationInterstitialAdConfiguration.getServerParameters().getString("parameter");
     if (TextUtils.isEmpty(serverParameter)) {
       mediationAdLoadCallback.onFailure(SampleCustomEventError.createCustomEventNoAdIdError());
       return;
     }
+    Log.d(TAG, "Received server parameter.");
 
     sampleInterstitialAd =
         new SampleInterstitial(mediationInterstitialAdConfiguration.getContext());
@@ -71,32 +77,39 @@ public class SampleInterstitialCustomEventLoader extends SampleAdListener
     sampleInterstitialAd.setAdListener(this);
 
     // Make an ad request.
+    Log.i(TAG, "start fetching interstitial ad.");
     sampleInterstitialAd.fetchAd(
         SampleCustomEvent.createSampleRequest(mediationInterstitialAdConfiguration));
   }
 
   @Override
   public void onAdFetchSucceeded() {
+    Log.d(TAG, "Received the interstitial ad.");
     interstitialAdCallback = mediationAdLoadCallback.onSuccess(this);
   }
 
   @Override
   public void onAdFetchFailed(SampleErrorCode errorCode) {
+    Log.e(TAG, "Failed to fetch the interstitial ad.");
     mediationAdLoadCallback.onFailure(SampleCustomEventError.createSampleSdkError(errorCode));
   }
 
   @Override
   public void onAdFullScreen() {
+    Log.d(TAG, "The interstitial ad was shown fullscreen.");
+    interstitialAdCallback.reportAdImpression();
     interstitialAdCallback.onAdOpened();
   }
 
   @Override
   public void onAdClosed() {
+    Log.d(TAG, "The interstitial ad was closed.");
     interstitialAdCallback.onAdClosed();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
+    Log.d(TAG, "The interstitial ad was shown.");
     sampleInterstitialAd.show();
   }
 }
