@@ -2,7 +2,6 @@ import com.google.googlejavaformat.java.JavaFormatterOptions
 import java.nio.charset.Charset
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 /**
@@ -80,13 +79,6 @@ dependencies {
         }
     }
     // endregion
-
-    testImplementation "androidx.test:core:${rootProject.ext.externalVersions.androidTest}"
-    testImplementation "junit:junit:${rootProject.ext.externalVersions.junit}"
-    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.externalVersions.kotlin}"
-    testImplementation "org.hamcrest:hamcrest-core:${rootProject.ext.externalVersions.hamcrest}"
-    testImplementation "io.mockk:mockk:${rootProject.ext.externalVersions.mockk}"
-    testImplementation "org.robolectric:robolectric:${rootProject.ext.externalVersions.robolectric}"
 }
 
 task format() {
