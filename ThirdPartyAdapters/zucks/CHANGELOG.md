@@ -4,7 +4,6 @@
 
 - Initial release!
 - Supports banner and interstitial ads.
-- **DOES NOT** supports rewarded ads. This feature will be supports in next release.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.3.0.
