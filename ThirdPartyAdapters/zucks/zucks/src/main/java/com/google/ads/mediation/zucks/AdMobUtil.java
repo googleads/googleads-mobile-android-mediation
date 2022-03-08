@@ -18,14 +18,6 @@ import net.zucks.view.IZucksInterstitial;
 /** Format-wide logic and constants. */
 public final class AdMobUtil {
 
-  /** Get (this) adapter's package name. */
-  @NonNull
-  public static final String ADAPTER_DOMAIN =
-      com.google.ads.mediation.zucks.BuildConfig.LIBRARY_PACKAGE_NAME;
-
-  /** Get Zucks Ad Network SDK's package name (from its module). */
-  @NonNull public static final String SDK_DOMAIN = net.zucks.BuildConfig.LIBRARY_PACKAGE_NAME;
-
   @NonNull public static final ZucksLog ZUCKS_LOG = new ZucksLog(ZucksAdapter.class);
 
   /** Frame ID key in serverParams. */

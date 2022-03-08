@@ -11,8 +11,11 @@ import net.zucks.exception.NetworkNotFoundException;
 
 public class ErrorMapper {
 
-  private static final String ERROR_ADAPTER_DOMAIN = AdMobUtil.ADAPTER_DOMAIN;
-  private static final String ERROR_SDK_DOMAIN = AdMobUtil.SDK_DOMAIN;
+  /** Get (this) adapter's package name. */
+  private static final String ERROR_ADAPTER_DOMAIN = BuildConfig.LIBRARY_PACKAGE_NAME;
+
+  /** Get Zucks Ad Network SDK's package name (from its module). */
+  private static final String ERROR_SDK_DOMAIN = net.zucks.BuildConfig.LIBRARY_PACKAGE_NAME;
 
   /**
    * Adapter's error code(s) is always greater than 100.
