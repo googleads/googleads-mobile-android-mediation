@@ -1,6 +1,6 @@
 ## Fyber Android Mediation Adapter Changelog
 
-#### Version 8.1.3.0 (In Progress)
+#### Version 8.1.3.0
 - Verified compatibility with Fyber SDK 8.1.3.
 - Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
 
