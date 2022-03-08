@@ -140,9 +140,9 @@ class ZucksBannerAdapter implements MediationBannerAd {
   // region Notify and logging errors
   // @see <a
   // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
-  private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int code, @NonNull String msg) {
-    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", code, msg));
-    adLoadCallback.onFailure(ErrorMapper.createAdapterError(code, msg));
+  private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int errorCode, @NonNull String errorMessage) {
+    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
+    adLoadCallback.onFailure(ErrorMapper.createAdapterError(errorCode, errorMessage));
   }
 
   private void notifySdkLoadFailure(@NonNull Exception exception) {

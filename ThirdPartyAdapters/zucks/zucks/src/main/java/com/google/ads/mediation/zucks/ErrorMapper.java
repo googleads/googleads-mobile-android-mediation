@@ -60,7 +60,7 @@ public class ErrorMapper {
    * Ad Network SDK's integer-based error code (e.g. convertSdkErrorCode result).
    */
   @NonNull
-  public static AdError createAdapterError(@AdapterError int code, @NonNull String msg) {
-    return new AdError(code, msg, ERROR_ADAPTER_DOMAIN);
+  public static AdError createAdapterError(@AdapterError int errorCode, @NonNull String errorMessage) {
+    return new AdError(errorCode, errorMessage, ERROR_ADAPTER_DOMAIN);
   }
 }
