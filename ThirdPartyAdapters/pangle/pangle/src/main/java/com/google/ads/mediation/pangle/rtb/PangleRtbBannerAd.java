@@ -3,6 +3,7 @@ package com.google.ads.mediation.pangle.rtb;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -26,17 +27,20 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PangleRtbBannerAd implements MediationBannerAd,
-    TTNativeExpressAd.ExpressAdInteractionListener {
+public class PangleRtbBannerAd
+    implements MediationBannerAd, TTNativeExpressAd.ExpressAdInteractionListener {
 
-  private static final String TAG = PangleRtbBannerAd.class.getSimpleName();
   private final MediationBannerAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
 
-  public PangleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+  public PangleRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
@@ -44,11 +48,13 @@ public class PangleRtbBannerAd implements MediationBannerAd,
   public void render() {
     PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstants.PLACEMENT_ID);
+    String placementId =
+        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load banner ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -56,8 +62,10 @@ public class PangleRtbBannerAd implements MediationBannerAd,
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid response.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_BID_RESPONSE,
+              "Failed to load banner ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -68,10 +76,13 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     supportedSizes.add(new AdSize(320, 50));
     supportedSizes.add(new AdSize(300, 250));
     supportedSizes.add(new AdSize(728, 90));
-    AdSize closestSize = MediationUtils.findClosestSize(context, adConfiguration.getAdSize(), supportedSizes);
+    AdSize closestSize =
+        MediationUtils.findClosestSize(context, adConfiguration.getAdSize(), supportedSizes);
     if (closestSize == null) {
-      AdError error = PangleConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request ad from Pangle. Invalid banner size.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              "Failed to request banner ad from Pangle. Invalid banner size.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -82,27 +93,30 @@ public class PangleRtbBannerAd implements MediationBannerAd,
     TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
     TTAdNative mTTAdNative = mTTAdManager.createAdNative(context.getApplicationContext());
 
-    AdSlot adSlot = new AdSlot.Builder()
-        .setCodeId(placementId)
-        .setAdCount(1)
-        .setExpressViewAcceptedSize(closestSize.getWidth(), closestSize.getHeight())
-        .withBid(bidResponse)
-        .build();
-    mTTAdNative.loadBannerExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
-      @Override
-      public void onError(int errorCode, String errorMessage) {
-        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-        Log.w(TAG, error.toString());
-        adLoadCallback.onFailure(error);
-      }
+    AdSlot adSlot =
+        new AdSlot.Builder()
+            .setCodeId(placementId)
+            .setAdCount(1)
+            .setExpressViewAcceptedSize(closestSize.getWidth(), closestSize.getHeight())
+            .withBid(bidResponse)
+            .build();
+    mTTAdNative.loadBannerExpressAd(
+        adSlot,
+        new TTAdNative.NativeExpressAdListener() {
+          @Override
+          public void onError(int errorCode, String errorMessage) {
+            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
 
-      @Override
-      public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
-        TTNativeExpressAd bannerExpressAd = ads.get(0);
-        bannerExpressAd.setExpressInteractionListener(PangleRtbBannerAd.this);
-        bannerExpressAd.render();
-      }
-    });
+          @Override
+          public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
+            TTNativeExpressAd bannerExpressAd = ads.get(0);
+            bannerExpressAd.setExpressInteractionListener(PangleRtbBannerAd.this);
+            bannerExpressAd.render();
+          }
+        });
   }
 
   @NonNull

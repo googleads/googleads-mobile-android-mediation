@@ -3,6 +3,7 @@ package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,7 +25,6 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 
 public class PangleRtbRewardedAd implements MediationRewardedAd {
 
-  private static final String TAG = PangleRtbRewardedAd.class.getSimpleName();
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
@@ -44,7 +44,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
         .getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+          "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -53,7 +53,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid response.");
+          "Failed to load rewarded ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;

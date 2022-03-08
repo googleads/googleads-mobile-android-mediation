@@ -2,6 +2,7 @@ package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,7 +23,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 
 public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
-  private static final String TAG = PangleRtbInterstitialAd.class.getSimpleName();
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
@@ -42,7 +42,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
         .getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Pangle. Missing or invalid Placement ID.");
+          "Failed to load interstitial ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -51,7 +51,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load ad from Pangle. Missing or invalid bid response.");
+          "Failed to load interstitial ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;

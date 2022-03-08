@@ -24,7 +24,7 @@ public class PangleConstants {
   }
 
   /**
-   * Server parameters, such as app ID or placement ID, are invalid.
+   * Invalid server parameters (e.g. Missing app ID or placement ID).
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
