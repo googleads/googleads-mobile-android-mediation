@@ -6,5 +6,5 @@
 - Supports banner and interstitial ads.
 
 Built and tested with:
-- Google Mobile Ads SDK version 20.3.0.
+- Google Mobile Ads SDK version 20.6.0.
 - Zucks Ad Network SDK version 4.8.6.
