@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 
 import net.zucks.exception.FrameIdNotFoundException;
-import net.zucks.exception.NetworkNotFoundException;
 
 public class ErrorMapper {
 
@@ -18,27 +17,51 @@ public class ErrorMapper {
   private static final String ERROR_SDK_DOMAIN = net.zucks.BuildConfig.LIBRARY_PACKAGE_NAME;
 
   /**
+   * Server parameters, such as Frame ID, are invalid.
    * Adapter's error code(s) is always greater than 100.
    *
    * @see <a
    *     href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation
    *     #337</a>
    */
-  public static final int ADAPTER_ERROR_INVALID_REQUEST = 101;
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
+   * The requested ad size does not match a Zucks supported banner size.
    * Adapter's error code(s) is always greater than 100.
    *
    * @see <a
    *     href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation
    *     #337</a>
    */
-  public static final int ADAPTER_ERROR_ILLEGAL_STATE = 102;
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+
+  /**
+   * Invalid parameter type.
+   * Adapter's error code(s) is always greater than 100.
+   *
+   * @see <a
+   *     href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation
+   *     #337</a>
+   */
+  public static final int ERROR_CONTEXT_NOT_ACTIVITY = 103;
+
+  /**
+   * Other internal errors.
+   * Adapter's error code(s) is always greater than 100.
+   *
+   * @see <a
+   *     href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r653153767">googleads/googleads-mobile-android-mediation
+   *     #337</a>
+   */
+  public static final int ERROR_INTERNAL = 104;
 
   @IntDef(
       value = {
-        ADAPTER_ERROR_INVALID_REQUEST,
-        ADAPTER_ERROR_ILLEGAL_STATE,
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_BANNER_SIZE_MISMATCH,
+        ERROR_CONTEXT_NOT_ACTIVITY,
+        ERROR_INTERNAL,
       })
   public @interface AdapterError {}
 
@@ -55,9 +78,9 @@ public class ErrorMapper {
   @AdapterError
   public static int convertSdkErrorCode(@Nullable Exception e) {
     if (e instanceof FrameIdNotFoundException) {
-      return ADAPTER_ERROR_INVALID_REQUEST;
+      return ERROR_INVALID_SERVER_PARAMETERS;
     } else {
-      return ADAPTER_ERROR_ILLEGAL_STATE;
+      return ERROR_INTERNAL;
     }
   }
 

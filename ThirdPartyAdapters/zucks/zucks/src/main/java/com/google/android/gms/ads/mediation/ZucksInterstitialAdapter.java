@@ -94,13 +94,13 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     // Check a supported context.
     if (!(context instanceof Activity)) {
       notifyAdapterLoadFailure(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "Context not an Activity.");
+          ErrorMapper.ERROR_CONTEXT_NOT_ACTIVITY, "Context not an Activity.");
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
       notifyAdapterLoadFailure(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
+          ErrorMapper.ERROR_INVALID_SERVER_PARAMETERS, "FrameID not contained in serverParameters.");
       return;
     }
 

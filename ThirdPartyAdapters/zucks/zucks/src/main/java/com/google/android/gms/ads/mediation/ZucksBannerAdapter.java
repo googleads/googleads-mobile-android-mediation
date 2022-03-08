@@ -83,13 +83,13 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
     if (!isSizeSupported(adConfiguration.getContext(), adSize)) {
       notifyAdapterLoadFailure(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "It is not a supported size. size=" + adSize);
+          ErrorMapper.ERROR_BANNER_SIZE_MISMATCH, "It is not a supported size. size=" + adSize);
       return;
     }
 
     if ((adFrameId = AdMobUtil.getFrameId(adConfiguration.getServerParameters())) == null) {
       notifyAdapterLoadFailure(
-          ErrorMapper.ADAPTER_ERROR_INVALID_REQUEST, "FrameID not contained in serverParameters.");
+          ErrorMapper.ERROR_INVALID_SERVER_PARAMETERS, "FrameID not contained in serverParameters.");
       return;
     }
 
@@ -132,7 +132,7 @@ class ZucksBannerAdapter implements MediationBannerAd {
         || adSize.getWidth() != banner.getWidthInDp()
         || adSize.getHeight() != banner.getHeightInDp()) {
       return ErrorMapper.createAdapterError(
-          ErrorMapper.ADAPTER_ERROR_ILLEGAL_STATE, "It is not a supported size. size=" + adSize);
+          ErrorMapper.ERROR_BANNER_SIZE_MISMATCH, "It is not a supported size. size=" + adSize);
     }
     return null;
   }
