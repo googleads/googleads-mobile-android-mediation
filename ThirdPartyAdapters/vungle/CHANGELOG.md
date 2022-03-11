@@ -1,5 +1,10 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.10.5.0
+- Verified compatibility with Vungle SDK 6.10.5
+  SDK V6.10.5 includes fix for crash related to synchronization
+  issue handling gson lib JsonObject
+
 #### Version 6.10.4.0
 - Verified compatibility with Vungle SDK 6.10.4.
 
