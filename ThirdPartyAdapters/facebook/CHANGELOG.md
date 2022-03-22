@@ -1,5 +1,9 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for forwarding click and impression callbacks in bidding ads.
+- Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
+
 #### 6.8.0.0
 - Verified compatibility with Facebook SDK v6.8.0.
 - Updated the minimum required Google Mobile Ads SDK version to 20.4.0.

@@ -70,9 +70,9 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   public void showAd(Context context) {
     showAdCalled.set(true);
     if (!interstitialAd.show()) {
-      AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present interstitial ad.",
-          ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError showError = new AdError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.", ERROR_DOMAIN);
+      Log.w(TAG, showError.getMessage());
 
       // TODO: Call onAdFailedToShow() once API becomes available.
       if (mInterstitalAdCallback != null) {
@@ -118,8 +118,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onAdClicked(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdClicked();
+      mInterstitalAdCallback.reportAdClicked();
       mInterstitalAdCallback.onAdLeftApplication();
     }
   }
@@ -127,8 +126,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdImpression();
+      mInterstitalAdCallback.reportAdImpression();
     }
   }
 
