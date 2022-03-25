@@ -2,6 +2,7 @@
 
 #### Next Version
 - Added support for forwarding click and impression callbacks in bidding ads.
+- Added support for forwarding the `onAdFailedToShow()` callback when interstitial bidding ads fail to present.
 - Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
 
 #### 6.8.0.0

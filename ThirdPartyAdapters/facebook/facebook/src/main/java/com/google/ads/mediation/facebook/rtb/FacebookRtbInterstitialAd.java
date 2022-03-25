@@ -11,6 +11,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.InterstitialAd;
@@ -67,17 +68,15 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     showAdCalled.set(true);
     if (!interstitialAd.show()) {
       AdError showError = new AdError(ERROR_FAILED_TO_PRESENT_AD,
           "Failed to present interstitial ad.", ERROR_DOMAIN);
-      Log.w(TAG, showError.getMessage());
+      Log.w(TAG, showError.toString());
 
-      // TODO: Call onAdFailedToShow() once API becomes available.
       if (mInterstitalAdCallback != null) {
-        mInterstitalAdCallback.onAdOpened();
-        mInterstitalAdCallback.onAdClosed();
+        mInterstitalAdCallback.onAdFailedToShow(showError);
       }
     }
   }
