@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Pangle"
     // String property to store version name.
-    stringVersion = "4.3.0.4.0"
+    stringVersion = "4.3.0.6.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 403000400
+        versionCode 403000600
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -34,7 +34,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:20.6.0'
     implementation 'androidx.annotation:annotation:1.3.0'
 
-    implementation 'com.pangle.global:ads-sdk:4.3.0.4'
+    implementation 'com.pangle.global:ads-sdk:4.3.0.6'
 }
 
 /**
