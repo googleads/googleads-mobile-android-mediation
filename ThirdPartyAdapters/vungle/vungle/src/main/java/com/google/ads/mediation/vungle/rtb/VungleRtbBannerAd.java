@@ -95,6 +95,9 @@ public class VungleRtbBannerAd implements MediationBannerAd {
     }
 
     String adMarkup = mediationBannerAdConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(adMarkup)) {
+      adMarkup = null;
+    }
     Log.d(TAG, "Render banner mAdMarkup=" + adMarkup);
 
     vungleBannerAdapter = new VungleBannerAdapter(placementForPlay, uniqueRequestId, adConfig,
