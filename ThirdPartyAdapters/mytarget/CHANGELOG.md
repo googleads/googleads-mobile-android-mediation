@@ -2,6 +2,7 @@
 
 #### Version 5.15.1.0 (In Progress)
 - Verified compatibility with myTarget SDK version 5.15.1.
+- Updated 'compileSdkVersion' and 'targetSdkVersion' to API 31
 - Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
 
 Built and tested with:
