@@ -10,10 +10,10 @@ import net.zucks.exception.FrameIdNotFoundException;
 
 public class ErrorMapper {
 
-  /** Get (this) adapter's package name. */
+  /** Adapter error domain */
   private static final String ERROR_ADAPTER_DOMAIN = BuildConfig.LIBRARY_PACKAGE_NAME;
 
-  /** Get Zucks Ad Network SDK's package name (from its module). */
+  /** Zucks Ad Network SDK error domain */
   private static final String ERROR_SDK_DOMAIN = net.zucks.BuildConfig.LIBRARY_PACKAGE_NAME;
 
   /**
