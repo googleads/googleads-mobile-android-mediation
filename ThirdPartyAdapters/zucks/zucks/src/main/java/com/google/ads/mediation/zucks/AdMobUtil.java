@@ -35,6 +35,10 @@ public final class AdMobUtil {
   }
 
   // region configurePlatform
+  // This flag(s) will be used by Zucks Ad Network SDK internally.
+  // Specifically, runtime information collection for investigating bugs, and
+  // switching internal logic for improving performance.
+
   /** Configure mediation platform flags for Banner. */
   public static void configurePlatform(@NonNull AdBanner adBanner) {
     adBanner.setPlatform(
@@ -50,6 +54,7 @@ public final class AdMobUtil {
         String.valueOf(GoogleApiAvailabilityLight.GOOGLE_PLAY_SERVICES_VERSION_CODE),
         com.google.ads.mediation.zucks.BuildConfig.ADAPTER_VERSION);
   }
+
   // endregion
 
 }
