@@ -61,12 +61,14 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
         @Override
         public void onLoadFailure(Exception exception) {
-          notifySdkLoadFailure(exception);
+          Log.w(AdMobUtil.TAG, exception);
+          adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
         }
 
         @Override
         public void onShowFailure(Exception exception) {
-          notifySdkFailedToShow(exception);
+          Log.w(AdMobUtil.TAG, exception);
+          interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
         }
       };
 
@@ -146,23 +148,13 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
     return builder;
   }
 
-  // region Notify and logging errors
-  // @see <a
-  // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+  /**
+   * @see <a
+   * href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
+   */
   private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int errorCode, @NonNull String errorMessage) {
     Log.w(AdMobUtil.TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
     adLoadCallback.onFailure(ErrorMapper.createAdapterError(errorCode, errorMessage));
   }
-
-  private void notifySdkLoadFailure(@NonNull Exception exception) {
-    Log.w(AdMobUtil.TAG, exception);
-    adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
-  }
-
-  private void notifySdkFailedToShow(@NonNull Exception exception) {
-    Log.w(AdMobUtil.TAG, exception);
-    interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
-  }
-  // endregion
 
 }
