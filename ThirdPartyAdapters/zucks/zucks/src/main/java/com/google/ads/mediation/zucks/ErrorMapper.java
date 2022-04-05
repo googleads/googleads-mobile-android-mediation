@@ -79,9 +79,8 @@ public class ErrorMapper {
   public static int convertSdkErrorCode(@Nullable Exception e) {
     if (e instanceof FrameIdNotFoundException) {
       return ERROR_INVALID_SERVER_PARAMETERS;
-    } else {
-      return ERROR_INTERNAL;
     }
+    return ERROR_INTERNAL;
   }
 
   /**
