@@ -22,9 +22,6 @@ import java.util.Locale;
 
 class ZucksInterstitialAdapter implements MediationInterstitialAd {
 
-  /** {@link Log} is not acceptable >23 length string as tag. */
-  private static final String TAG = "ZucksISAdapter";
-
   private final MediationInterstitialAdConfiguration adConfiguration;
 
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -153,17 +150,17 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
   // @see <a
   // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
   private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int errorCode, @NonNull String errorMessage) {
-    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
+    Log.w(AdMobUtil.TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
     adLoadCallback.onFailure(ErrorMapper.createAdapterError(errorCode, errorMessage));
   }
 
   private void notifySdkLoadFailure(@NonNull Exception exception) {
-    Log.w(TAG, exception);
+    Log.w(AdMobUtil.TAG, exception);
     adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
   }
 
   private void notifySdkFailedToShow(@NonNull Exception exception) {
-    Log.w(TAG, exception);
+    Log.w(AdMobUtil.TAG, exception);
     interstitialAdCallback.onAdFailedToShow(ErrorMapper.convertSdkError(exception));
   }
   // endregion

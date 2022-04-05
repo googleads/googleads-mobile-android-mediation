@@ -22,8 +22,6 @@ import java.util.Locale;
 
 class ZucksBannerAdapter implements MediationBannerAd {
 
-  private static final String TAG = "ZucksBannerAdapter";
-
   private final MediationBannerAdConfiguration adConfiguration;
 
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -139,17 +137,17 @@ class ZucksBannerAdapter implements MediationBannerAd {
   // @see <a
   // href="https://github.com/googleads/googleads-mobile-android-mediation/pull/337#discussion_r764662057">GitHub review</a>
   private void notifyAdapterLoadFailure(@ErrorMapper.AdapterError int errorCode, @NonNull String errorMessage) {
-    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
+    Log.w(AdMobUtil.TAG, String.format(Locale.ROOT, "%d: %s", errorCode, errorMessage));
     adLoadCallback.onFailure(ErrorMapper.createAdapterError(errorCode, errorMessage));
   }
 
   private void notifySdkLoadFailure(@NonNull Exception exception) {
-    Log.w(TAG, exception);
+    Log.w(AdMobUtil.TAG, exception);
     adLoadCallback.onFailure(ErrorMapper.convertSdkError(exception));
   }
 
   private void notifySdkLoadFailure(@NonNull AdError error) {
-    Log.w(TAG, String.format(Locale.ROOT, "%d: %s", error.getCode(), error.getMessage()));
+    Log.w(AdMobUtil.TAG, String.format(Locale.ROOT, "%d: %s", error.getCode(), error.getMessage()));
     adLoadCallback.onFailure(error);
   }
   // endregion

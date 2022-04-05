@@ -18,6 +18,8 @@ import net.zucks.view.IZucksInterstitial;
 /** Format-wide logic and constants. */
 public final class AdMobUtil {
 
+  public static final String TAG = "ZucksMediationAdapter";
+
   public static final ZucksLog ZUCKS_LOG = new ZucksLog(ZucksAdapter.class);
 
   /** Frame ID key in serverParams. */
