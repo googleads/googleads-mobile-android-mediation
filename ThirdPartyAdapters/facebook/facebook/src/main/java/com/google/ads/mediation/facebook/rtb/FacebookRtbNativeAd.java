@@ -117,8 +117,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
     @Override
     public void onAdClicked(Ad ad) {
-      // TODO: Upon approval, add this callback back in.
-      // mNativeAdCallback.reportAdClicked();
+      mNativeAdCallback.reportAdClicked();
       mNativeAdCallback.onAdOpened();
       mNativeAdCallback.onAdLeftApplication();
     }

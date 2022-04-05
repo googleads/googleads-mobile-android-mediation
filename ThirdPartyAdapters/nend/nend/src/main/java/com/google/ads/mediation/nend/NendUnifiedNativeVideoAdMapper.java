@@ -23,11 +23,10 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   private NendAdNativeVideo nativeVideo;
   private NendNativeAdForwarder forwarder;
 
-  NendUnifiedNativeVideoAdMapper(
-      Context context, NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
-    super(
-        new NendNativeMappedImage(
-            context, ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
+  NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder,
+      NendAdNativeVideo ad) {
+    super(new NendNativeMappedImage(context, ad.getLogoImageBitmap(),
+        Uri.parse(ad.getLogoImageUrl())));
     this.forwarder = forwarder;
 
     // Note: NendAdNativeMediaView handles Click Event for changing action by VideoClickOption.
