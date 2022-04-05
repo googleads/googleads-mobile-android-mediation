@@ -24,9 +24,8 @@ class ZucksBannerAdapter implements MediationBannerAd {
 
   private static final String TAG = "ZucksBannerAdapter";
 
-  @NonNull private final MediationBannerAdConfiguration adConfiguration;
+  private final MediationBannerAdConfiguration adConfiguration;
 
-  @NonNull
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
 
@@ -35,7 +34,6 @@ class ZucksBannerAdapter implements MediationBannerAd {
   /** Banner instance of Zucks Ad Network SDK. */
   @Nullable private AdBanner zucksBanner = null;
 
-  @NonNull
   private final AdBannerListener listener =
       new AdBannerListener() {
 

@@ -25,15 +25,13 @@ class ZucksInterstitialAdapter implements MediationInterstitialAd {
   /** {@link Log} is not acceptable >23 length string as tag. */
   private static final String TAG = "ZucksISAdapter";
 
-  @NonNull private final MediationInterstitialAdConfiguration adConfiguration;
+  private final MediationInterstitialAdConfiguration adConfiguration;
 
-  @NonNull
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
 
   @Nullable private MediationInterstitialAdCallback interstitialAdCallback = null;
 
-  @NonNull
   private final UniversalInterstitialListener.Callback callback =
       new UniversalInterstitialListener.Callback() {
 

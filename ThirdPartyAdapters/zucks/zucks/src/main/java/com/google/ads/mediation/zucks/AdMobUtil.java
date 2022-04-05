@@ -18,10 +18,10 @@ import net.zucks.view.IZucksInterstitial;
 /** Format-wide logic and constants. */
 public final class AdMobUtil {
 
-  @NonNull public static final ZucksLog ZUCKS_LOG = new ZucksLog(ZucksAdapter.class);
+  public static final ZucksLog ZUCKS_LOG = new ZucksLog(ZucksAdapter.class);
 
   /** Frame ID key in serverParams. */
-  @NonNull private static final String AD_FRAME_ID = "frame_id";
+  private static final String AD_FRAME_ID = "frame_id";
 
   /** Get FrameID from serverParams. */
   @Nullable

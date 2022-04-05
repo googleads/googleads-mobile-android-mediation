@@ -8,7 +8,7 @@ import net.zucks.listener.AdInterstitialListener;
 /** Utility for unifies Zucks Interstitial format's event listener. */
 public abstract class UniversalInterstitialListener<T> {
 
-  @NonNull protected final Callback callback;
+  protected final Callback callback;
 
   private UniversalInterstitialListener(@NonNull Callback callback) {
     this.callback = callback;
