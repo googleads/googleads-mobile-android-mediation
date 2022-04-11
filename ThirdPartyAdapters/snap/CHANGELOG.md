@@ -1,6 +1,6 @@
 ## Snap Android Mediation Adapter Changelog
 
-#### Version 2.3.3.0 (In Progress)
+#### Version 2.3.3.0
 - Verified compatibility with Snap Ad Kit SDK 2.3.3.
 - Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
 
