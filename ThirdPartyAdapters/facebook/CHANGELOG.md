@@ -1,5 +1,12 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 6.10.0.0 (In Progress)
+- Verified compatibility with Facebook SDK v6.10.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- Facebook SDK version 6.10.0.
+
 #### 6.8.0.1
 - Added support for forwarding click and impression callbacks in bidding ads.
 - Added support for forwarding the `onAdFailedToShow()` callback when interstitial bidding ads fail to present.
