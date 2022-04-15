@@ -107,7 +107,7 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
   /**
-   * Vungle requires an {@link Activity} context to request ads.
+   * Vungle requires an {@link android.app.Activity} context to request ads.
    */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
@@ -255,6 +255,9 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
@@ -485,6 +488,8 @@ public class VungleMediationAdapter extends RtbAdapter
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     Log.d(TAG, "loadNativeAd()...");
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
     VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(mediationNativeAdConfiguration,
         callback);
     nativeAdapter.render();
@@ -493,8 +498,6 @@ public class VungleMediationAdapter extends RtbAdapter
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
-      VungleInitializer.getInstance()
-              .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
       loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
