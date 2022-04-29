@@ -72,7 +72,7 @@ publishing {
                 licenses {
                     license {
                         name = 'Apache-2.0'
-                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/master/LICENSE'
+                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/main/LICENSE'
                         distribution = 'repo'
                     }
                 }

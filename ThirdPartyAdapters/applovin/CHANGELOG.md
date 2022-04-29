@@ -255,7 +255,7 @@ Built and tested with:
 - AppLovin SDK version 9.12.7.
 
 #### Version 9.12.6.1
-- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/master/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where bidding banner ads timeout.
+- Fixed bug introduced in [9.11.4.1](https://github.com/googleads/googleads-mobile-android-mediation/blob/main/ThirdPartyAdapters/applovin/CHANGELOG.md#version-91141) where bidding banner ads timeout.
 
 Built and tested with:
 - Google Mobile Ads SDK version 19.1.0.
