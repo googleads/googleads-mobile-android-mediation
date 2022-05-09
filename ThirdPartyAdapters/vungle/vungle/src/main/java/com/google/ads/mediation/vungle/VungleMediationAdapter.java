@@ -255,9 +255,6 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
-
     mMediationAdLoadCallback = mediationAdLoadCallback;
 
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();

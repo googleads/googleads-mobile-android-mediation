@@ -1,7 +1,8 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.11.0.0 (In Progress)
+#### Version 6.11.0.0
 - Verified compatibility with Vungle SDK 6.11.0.
+- Added Support for Vungle Native Ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.6.0.
