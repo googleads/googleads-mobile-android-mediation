@@ -1,0 +1,132 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+/**
+ * Extra properties used by the project.
+ */
+ext {
+    // String property to store the proper name of the mediation network adapter.
+    adapterName = "Pangle"
+    // String property to store version name.
+    stringVersion = "4.3.0.8.0"
+    // String property to store group id.
+    stringGroupId = "com.google.ads.mediation"
+}
+
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 30
+        versionCode 403000800
+        versionName stringVersion
+        buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-ads:20.6.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+
+    implementation 'com.pangle.global:ads-sdk:4.3.0.8'
+}
+
+/**
+ * Jar task to make a sources jar.
+ */
+task sourcesJar (type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+ * Publish closure consisting of maven publications.
+ */
+publishing {
+    publications {
+        adapterPublications(MavenPublication) {
+            groupId = stringGroupId
+            artifactId = project.name
+            version = stringVersion
+
+            // Add the aar artifact to publication.
+            artifact("$buildDir/outputs/aar/${project.name}-release.aar") {
+                builtBy build
+            }
+
+            // Add the sources jar artifact to the publication.
+            artifact(sourcesJar)
+
+            // Generate the pom file.
+            pom {
+                name = "${adapterName} mediation adapter for the Google Mobile Ads SDK"
+                description = "The ${adapterName} mediation adapter is a library that handles " +
+                        "communication between the Google Mobile Ads SDK and the ${adapterName} " +
+                        "SDK. It enables you to load ads from ${adapterName} using the mediation " +
+                        "feature in the Google Mobile Ads SDK."
+                url = "https://developers.google.com/admob/android/mediation/${project.name}"
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/master/LICENSE'
+                        distribution = 'repo'
+                    }
+                }
+            }
+
+            // Add the required dependencies to the generated `pom.xml` file.
+            pom.withXml {
+                final dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each {
+                    // Exclude filetree dependencies.
+                    if (it.name != 'unspecified') {
+                        println("Adding dependency: " + it.group + ":" + it.name + ":" + it.version)
+
+                        final dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                        if (it.artifacts.size() > 0) {
+                            dependencyNode.appendNode('type', it.artifacts[0].type)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Copy artifacts into a single directory for redistribution.
+ */
+task copyArtifactsForDistribution(type: Copy) {
+    from "$buildDir/outputs/aar/${project.name}-release.aar",
+            "$buildDir/libs/${project.name}-sources.jar",
+            "$buildDir/publications/adapterPublications/pom-default.xml"
+    into "$buildDir/distribution"
+}
+
+/**
+ * Create `zip` file for redistribution under `build/distribution` directory.
+ */
+task packageDistribution(type: Zip) {
+    from("$buildDir/distribution") {
+        rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
+        rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
+        rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+    }
+
+    archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
+    destinationDirectory = file("${rootProject.projectDir}/build/distribution")
+}
+
+build.dependsOn clean
+build.mustRunAfter clean
+copyArtifactsForDistribution.dependsOn(build, sourcesJar, generatePomFileForAdapterPublicationsPublication)
+packageDistribution.dependsOn copyArtifactsForDistribution

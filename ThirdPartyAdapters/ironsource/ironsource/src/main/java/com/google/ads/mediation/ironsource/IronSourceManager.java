@@ -5,6 +5,7 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.MEDIATI
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_SHOW_UNAUTHORIZED;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
@@ -14,7 +15,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
+import com.google.android.gms.ads.AdError;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
@@ -58,14 +59,17 @@ class IronSourceManager
     }
 
     if (!(context instanceof Activity)) {
-      listener.onInitializeError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "IronSource SDK requires an Activity context to initialize.");
+      AdError initializationError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "IronSource SDK requires an Activity context to initialize.", ERROR_DOMAIN);
+      listener.onInitializeError(initializationError);
       return;
     }
     Activity activity = (Activity) context;
 
     if (TextUtils.isEmpty(appKey)) {
-      listener.onInitializeError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.");
+      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid app key.", ERROR_DOMAIN);
+      listener.onInitializeError(initializationError);
       return;
     }
 
@@ -80,15 +84,17 @@ class IronSourceManager
 
   void loadInterstitial(@NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
     if (TextUtils.isEmpty(instanceId)) {
-      adapter.onAdFailedToLoad(
-          ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid instance ID.", ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadInterstitialInstance(instanceId)) {
-      String errorMessage =
-          String.format("An ad is already loading for instance ID: %s", instanceId);
-      adapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
+      String errorMessage = String
+          .format("An ad is already loading for instance ID: %s", instanceId);
+      AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(concurrentError);
       return;
     }
 
@@ -98,15 +104,17 @@ class IronSourceManager
 
   void loadRewardedVideo(@NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
     if (TextUtils.isEmpty(instanceId)) {
-      adapter.onAdFailedToLoad(
-          ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid instance ID.", ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadRewardedVideoInstance(instanceId)) {
-      String errorMessage =
-          String.format("An ad is already loading for instance ID: %s", instanceId);
-      adapter.onAdFailedToLoad(ERROR_AD_ALREADY_LOADED, errorMessage);
+      String errorMessage = String
+          .format("An ad is already loading for instance ID: %s", instanceId);
+      AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(concurrentError);
       return;
     }
 
@@ -136,8 +144,9 @@ class IronSourceManager
     WeakReference<IronSourceMediationAdapter> adapterReference = availableInstances.get(instanceId);
     if (adapterReference == null || adapterReference.get() == null || !adapter
         .equals(adapterReference.get())) {
-      adapter.onAdFailedToShow(ERROR_AD_SHOW_UNAUTHORIZED,
-          "IronSource adapter does not have authority to show this instance.");
+      AdError showError = new AdError(ERROR_AD_SHOW_UNAUTHORIZED,
+          "IronSource adapter does not have authority to show this instance.", ERROR_DOMAIN);
+      adapter.onAdFailedToShow(showError);
       return;
     }
 
@@ -306,7 +315,7 @@ class IronSourceManager
 
     void onInitializeSuccess();
 
-    void onInitializeError(@AdapterError int errorCode, @NonNull String errorMessage);
+    void onInitializeError(@NonNull AdError initializationError);
   }
 
 }

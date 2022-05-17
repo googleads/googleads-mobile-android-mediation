@@ -56,7 +56,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
   private static boolean isRtbAd = true;
 
   // AppLovin SDK settings.
-  public static AppLovinSdkSettings appLovinSdkSettings = new AppLovinSdkSettings();
+  public static AppLovinSdkSettings appLovinSdkSettings;
 
   // AppLovin open-bidding banner ad renderer.
   private AppLovinRtbBannerRenderer mRtbBannerRenderer;
@@ -137,7 +137,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
 
   @NonNull
-  public static AppLovinSdkSettings getSdkSettings() {
+  public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
+    if (appLovinSdkSettings == null) {
+      appLovinSdkSettings = new AppLovinSdkSettings(context);
+    }
     return appLovinSdkSettings;
   }
 

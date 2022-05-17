@@ -19,7 +19,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/** An {@link AsyncTask} used to load native ad images. */
+/**
+ * An {@link AsyncTask} used to load native ad images.
+ */
 public class DownloadDrawablesAsync extends AsyncTask<Object, Void, HashMap<String, Drawable>> {
 
   public static final String KEY_IMAGE = "image_key";

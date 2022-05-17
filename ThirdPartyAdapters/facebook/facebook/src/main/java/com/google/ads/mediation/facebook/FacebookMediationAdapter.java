@@ -255,6 +255,10 @@ public class FacebookMediationAdapter extends RtbAdapter {
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     rewardedInterstitialAd.render();
@@ -266,6 +270,16 @@ public class FacebookMediationAdapter extends RtbAdapter {
           mediationAdLoadCallback) {
     nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
     nativeAd.render();
+  }
+
+  @Override
+  public void loadRtbRewardedInterstitialAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    rewardedInterstitialAd.render();
   }
 
   /**

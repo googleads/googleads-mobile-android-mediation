@@ -7,6 +7,7 @@ import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_M
 import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MY_TARGET_SDK;
 import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_NON_UNIFIED_NATIVE_REQUEST;
 import static com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.mytarget.MyTargetTools.handleMediationExtras;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -18,10 +19,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
@@ -61,8 +62,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       @NonNull MediaAdView mediaAdView) {
     for (int i = 0; i < clickableViews.size(); i++) {
       View view = clickableViews.get(i);
-      if (view instanceof MediaView) {
-        MediaView mediaView = (MediaView) view;
+      if (view instanceof com.google.android.gms.ads.nativead.MediaView || view instanceof com.google.android.gms.ads.formats.MediaView) {
+        FrameLayout mediaView = (FrameLayout) view;
         int childCount = mediaView.getChildCount();
         for (int j = 0; j < childCount; j++) {
           View innerView = mediaView.getChildAt(j);
@@ -120,6 +121,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     nativeAd.setCachePolicy(cachePolicy);
 
     CustomParams params = nativeAd.getCustomParams();
+    handleMediationExtras(TAG, customEventExtras, params);
     Log.d(TAG, "Set gender to " + gender);
     params.setGender(gender);
 
