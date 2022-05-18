@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "maio"
     // String property to store version name.
-    stringVersion = "1.1.15.0"
+    stringVersion = "1.1.16.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 1011500
+        versionCode 1011600
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -31,8 +31,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:20.1.0'
-    implementation 'com.maio:android-sdk:1.1.15'
+    implementation 'com.google.android.gms:play-services-ads:20.4.0'
+    implementation 'com.maio:android-sdk:1.1.16'
 }
 
 /**

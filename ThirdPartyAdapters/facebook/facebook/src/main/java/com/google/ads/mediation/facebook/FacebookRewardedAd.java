@@ -7,7 +7,6 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -178,24 +177,14 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   @Override
   public void onAdClicked(Ad ad) {
     if (mRewardedAdCallback != null) {
-      if (isRtbAd) {
-        // TODO: Upon approval, add this callback back in.
-        // mRewardedAdCallback.reportAdClicked();
-      } else {
-        mRewardedAdCallback.reportAdClicked();
-      }
+      mRewardedAdCallback.reportAdClicked();
     }
   }
 
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mRewardedAdCallback != null) {
-      if (isRtbAd) {
-        // TODO: Upon approval, add this callback back in.
-        // mRewardedAdCallback.reportAdImpression();
-      } else {
-        mRewardedAdCallback.reportAdImpression();
-      }
+      mRewardedAdCallback.reportAdImpression();
     }
   }
 

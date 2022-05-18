@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +29,20 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
   private NendNativeAdForwarder forwarder;
   private NendNativeAdConnector connector;
 
-  NendUnifiedNativeNormalAdMapper(
-      Context context,
-      NendNativeAdForwarder forwarder,
-      NendAdNative ad,
-      NendNativeMappedImage adImage,
-      NendNativeMappedImage logoImage) {
+  /**
+   * Creates a {@link UnifiedNativeAdMapper} for nend's non-video native ads.
+   *
+   * @param context   the context used for native ads.
+   * @param forwarder the forwarder for native ad events.
+   * @param ad        nend's native ad object.
+   * @param adImage   the native ad image. nend's "text-only" native ad format supports a {@code
+   *                  null} ad image.
+   * @param logoImage the native ad logo image. nend's "text-only" native ad format supports a
+   *                  {@code null} logo image.
+   */
+  NendUnifiedNativeNormalAdMapper(@NonNull Context context,
+      @NonNull NendNativeAdForwarder forwarder, @NonNull NendAdNative ad,
+      @Nullable NendNativeMappedImage adImage, @Nullable NendNativeMappedImage logoImage) {
     super(logoImage);
     this.forwarder = forwarder;
     nendAd = ad;

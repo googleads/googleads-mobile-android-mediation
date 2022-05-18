@@ -8,6 +8,7 @@ import static com.google.ads.mediation.nend.NendMediationAdapter.TAG;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -114,19 +115,20 @@ class NativeAdLoader {
   @NonNull
   private NendUnifiedNativeNormalAdMapper createUnifiedNativeAdMapper(@NonNull Context context,
       @NonNull NendAdNative ad) {
-    boolean shouldReturnUrlsForImageAssets = false;
-    if (nativeAdOptions != null) {
-      shouldReturnUrlsForImageAssets = nativeAdOptions.shouldReturnUrlsForImageAssets();
-    }
-
     NendNativeMappedImage adImage = null;
-    if (shouldReturnUrlsForImageAssets || nendAdImage != null) {
-      adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getAdImageUrl()));
+    if (nendAdImage != null) {
+      String adImageUrl = ad.getAdImageUrl();
+      if (!TextUtils.isEmpty(adImageUrl)) {
+        adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(adImageUrl));
+      }
     }
 
     NendNativeMappedImage logoImage = null;
-    if (shouldReturnUrlsForImageAssets || nendLogoImage != null) {
-      logoImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getLogoImageUrl()));
+    if (nendLogoImage != null) {
+      String logoImageUrl = ad.getLogoImageUrl();
+      if (!TextUtils.isEmpty(logoImageUrl)) {
+        logoImage = new NendNativeMappedImage(context, nendLogoImage, Uri.parse(logoImageUrl));
+      }
     }
 
     return new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);

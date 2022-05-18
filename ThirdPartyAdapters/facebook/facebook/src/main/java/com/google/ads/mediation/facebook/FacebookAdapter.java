@@ -47,6 +47,7 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -54,6 +55,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.lang.ref.WeakReference;
@@ -159,6 +163,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       final AdSize adSize,
       final MediationAdRequest adRequest,
       Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mBannerListener = listener;
 
     final String placementID = getPlacementID(serverParameters);
@@ -223,6 +232,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       Bundle serverParameters,
       final MediationAdRequest adRequest,
       Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mInterstitialListener = listener;
     final String placementID = getPlacementID(serverParameters);
 
@@ -268,6 +282,16 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   }
   //endregion
 
+  @Override
+  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
+    super.loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+  }
+
   //region MediationNativeAdapter implementation.
   @Override
   public void requestNativeAd(final Context context,
@@ -275,6 +299,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       Bundle serverParameters,
       final NativeMediationAdRequest mediationAdRequest,
       final Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mNativeListener = listener;
     final String placementID = getPlacementID(serverParameters);
 

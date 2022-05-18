@@ -1,5 +1,8 @@
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.CHARTBOOST_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_DOMAIN;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,21 +15,29 @@ import com.chartboost.sdk.Events.ChartboostCacheError;
 import com.chartboost.sdk.Events.ChartboostClickError;
 import com.chartboost.sdk.Events.ChartboostShowError;
 import com.chartboost.sdk.Model.CBError.CBImpressionError;
-import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.AdapterError;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import java.util.ArrayList;
 
-/** Utility methods for the Chartboost Adapter. */
+/**
+ * Utility methods for the Chartboost Adapter.
+ */
 class ChartboostAdapterUtils {
 
-  /** Key to obtain App ID, required for initializing Chartboost SDK. */
+  /**
+   * Key to obtain App ID, required for initializing Chartboost SDK.
+   */
   static final String KEY_APP_ID = "appId";
 
-  /** Key to obtain App Signature, required for initializing Charboost SDK. */
+  /**
+   * Key to obtain App Signature, required for initializing Charboost SDK.
+   */
   static final String KEY_APP_SIGNATURE = "appSignature";
 
-  /** Key to obtain Ad Location. This is added in adapter version 1.1.0. */
+  /**
+   * Key to obtain Ad Location. This is added in adapter version 1.1.0.
+   */
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
@@ -34,13 +45,14 @@ class ChartboostAdapterUtils {
    * from the server parameters and network extras bundles.
    *
    * @param serverParameters a {@link Bundle} containing server parameters used to initialize
-   *     Chartboost.
-   * @param networkExtras a {@link Bundle} containing optional information to be used by the
-   *     adapter.
+   *                         Chartboost.
+   * @param networkExtras    a {@link Bundle} containing optional information to be used by the
+   *                         adapter.
    * @return a {@link ChartboostParams} object populated with the params obtained from the bundles
-   *     provided.
+   * provided.
    */
-  static ChartboostParams createChartboostParams(Bundle serverParameters, Bundle networkExtras) {
+  static ChartboostParams createChartboostParams(@NonNull Bundle serverParameters,
+      @Nullable Bundle networkExtras) {
     ChartboostParams params = new ChartboostParams();
     String appId = serverParameters.getString(KEY_APP_ID);
     String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
@@ -65,7 +77,7 @@ class ChartboostAdapterUtils {
     if (networkExtras != null) {
       if (networkExtras.containsKey(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK)
           && networkExtras.containsKey(
-              ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
+          ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
         params.setFramework(
             (Chartboost.CBFramework)
                 networkExtras.getSerializable(
@@ -83,7 +95,7 @@ class ChartboostAdapterUtils {
    *
    * @param params Chartboost params to be examined.
    * @return {@code true} if the given ChartboostParams' appId and appSignature are valid, false
-   *     otherwise.
+   * otherwise.
    */
   static boolean isValidChartboostParams(ChartboostParams params) {
     String appId = params.getAppId();
@@ -93,7 +105,7 @@ class ChartboostAdapterUtils {
           !isValidParam(appId)
               ? (!isValidParam(appSignature) ? "App ID and App Signature" : "App ID")
               : "App Signature";
-      Log.w(ChartboostMediationAdapter.TAG, log + " cannot be empty.");
+      Log.e(ChartboostMediationAdapter.TAG, log + " cannot be empty.");
       return false;
     }
     return true;
@@ -104,7 +116,7 @@ class ChartboostAdapterUtils {
    *
    * @param string the string to be examined.
    * @return {@code true} if the param string is not null and length when trimmed is not zero,
-   *     {@code false} otherwise.
+   * {@code false} otherwise.
    */
   static boolean isValidParam(String string) {
     return !(string == null || string.trim().length() == 0);
@@ -188,73 +200,64 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Creates a formatted SDK error string given Chartboost's {@link CBImpressionError}.
+   * Creates an {@link AdError} object given Chartboost's {@link CBImpressionError}.
    *
    * @param impressionError Chartboost's error.
-   * @return the error message.
+   * @return the {@link AdError} object.
    */
   @NonNull
-  static String createSDKError(@NonNull CBImpressionError impressionError) {
-    return String.format(
-        "%d: %s", getMediationErrorCode(impressionError), impressionError.toString());
+  static AdError createSDKError(@NonNull CBImpressionError impressionError) {
+    return new AdError(getMediationErrorCode(impressionError), impressionError.toString(),
+        ERROR_DOMAIN);
   }
 
   /**
-   * Creates a formatted SDK error string given Chartboost's {@link ChartboostCacheError}.
+   * Creates an {@link AdError} object given Chartboost's {@link ChartboostCacheError}.
    *
    * @param cacheError Chartboost's error.
-   * @return the error message.
+   * @return the {@link AdError} object.
    */
   @NonNull
-  static String createSDKError(@NonNull ChartboostCacheError cacheError) {
+  static AdError createSDKError(@NonNull ChartboostCacheError cacheError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an enum for cache errors.
-    return String.format("%d: %s", cacheError.code.getErrorCode(), cacheError.toString());
+    // having an organized enum for cache errors.
+    return new AdError(cacheError.code.getErrorCode(), cacheError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
-   * Creates a formatted SDK error string given Chartboost's {@link ChartboostShowError}.
+   * Creates an {@link AdError} object given Chartboost's {@link ChartboostShowError}.
    *
    * @param showError Chartboost's error.
-   * @return the error message.
+   * @return the {@link AdError} object.
    */
   @NonNull
-  static String createSDKError(@NonNull ChartboostShowError showError) {
+  static AdError createSDKError(@NonNull ChartboostShowError showError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an enum for show errors.
-    return String.format("%d: %s", showError.code.getErrorCode(), showError.toString());
+    // having an organized enum for show errors.
+    return new AdError(showError.code.getErrorCode(), showError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
-   * Creates a formatted SDK error string given Chartboost's {@link ChartboostClickError}.
+   * Creates an {@link AdError} object given Chartboost's {@link ChartboostClickError}.
    *
    * @param clickError Chartboost's error.
-   * @return the error message.
+   * @return the {@link AdError} object.
    */
   @NonNull
-  static String createSDKError(@NonNull ChartboostClickError clickError) {
+  static AdError createSDKError(@NonNull ChartboostClickError clickError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an enum for click errors.
-    return String.format("%d: %s", clickError.code.getErrorCode(), clickError.toString());
-  }
-
-  /**
-   * Creates a formatted adapter error string given a code and description.
-   *
-   * @param code the error code.
-   * @param description the error message.
-   * @return the error message.
-   */
-  @NonNull
-  static String createAdapterError(@AdapterError int code, @NonNull String description) {
-    return String.format("%d: %s", code, description);
+    // having an organized enum for click errors.
+    return new AdError(clickError.code.getErrorCode(), clickError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
    * Find the closest possible {@link BannerSize} format based on the provided {@link AdSize}.
    *
    * @param context the context of requesting banner ad.
-   * @param adSize the requested banner ad size.
+   * @param adSize  the requested banner ad size.
    * @return Chartboost {@link BannerSize} object.
    */
   @Nullable

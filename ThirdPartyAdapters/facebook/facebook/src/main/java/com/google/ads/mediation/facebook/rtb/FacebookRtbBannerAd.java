@@ -103,8 +103,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @Override
   public void onAdClicked(Ad ad) {
     if (mBannerAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      //mBannerAdCallback.reportAdClicked();
+      mBannerAdCallback.reportAdClicked();
       mBannerAdCallback.onAdOpened();
       mBannerAdCallback.onAdLeftApplication();
     }
@@ -113,8 +112,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mBannerAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      //mBannerAdCallback.reportAdImpression();
+      mBannerAdCallback.reportAdImpression();
     }
   }
 }
