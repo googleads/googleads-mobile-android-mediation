@@ -1,7 +1,12 @@
 ## Facebook Android Mediation Adapter Changelog
 
-#### Next Version
+#### 6.11.0.0
+- Verified compatibility with Facebook SDK v6.11.0.
 - Added warning messages for waterfall mediation deprecation. See [Meta's blog](https://fb.me/bNFn7qt6Z0sKtF) for more information.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- Facebook SDK version 6.11.0.
 
 #### 6.10.0.0
 - Verified compatibility with Facebook SDK v6.10.0.
