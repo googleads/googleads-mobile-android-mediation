@@ -15,4 +15,11 @@ public class VungleConsent {
     Vungle.updateConsentStatus(consentStatus, consentMessageVersion);
   }
 
+  public static Vungle.Consent getCurrentVungleConsent() {
+    return Vungle.getConsentStatus();
+  }
+
+  public static String getCurrentVungleConsentMessageVersion() {
+    return Vungle.getConsentMessageVersion();
+  }
 }
