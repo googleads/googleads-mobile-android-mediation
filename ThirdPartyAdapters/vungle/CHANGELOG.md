@@ -1,5 +1,12 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for loading multiple ads for the same placement ID in bidding rewarded ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- Vungle SDK version 6.11.0.
+
 #### Version 6.11.0.0
 - Verified compatibility with Vungle SDK 6.11.0.
 

@@ -9,7 +9,6 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
-import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -269,8 +268,12 @@ public class VungleMediationAdapter extends RtbAdapter
       return;
     }
 
+    mAdMarkup = mediationRewardedAdConfiguration.getBidResponse();
+    Log.d(TAG, "Render rewarded mAdMarkup=" + mAdMarkup);
+
     if (mPlacementsInUse.containsKey(mPlacement)
-        && mPlacementsInUse.get(mPlacement).get() != null) {
+        && mPlacementsInUse.get(mPlacement).get() != null
+        && !TextUtils.isEmpty(mAdMarkup)) {
       AdError error = new AdError(ERROR_AD_ALREADY_LOADED,
           "Only a maximum of one ad can be loaded per placement.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
@@ -286,9 +289,6 @@ public class VungleMediationAdapter extends RtbAdapter
       mediationAdLoadCallback.onFailure(error);
       return;
     }
-
-    mAdMarkup = mediationRewardedAdConfiguration.getBidResponse();
-    Log.d(TAG, "Render rewarded mAdMarkup=" + mAdMarkup);
 
     // Unmute full-screen ads by default.
     mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
@@ -499,11 +499,8 @@ public class VungleMediationAdapter extends RtbAdapter
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    Log.d(TAG, "loadRtbBannerAd()...");
-    VungleInitializer.getInstance()
-            .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
-    VungleRtbBannerAd rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
-        mediationAdLoadCallback);
-    rtbBannerAd.render();
+    AdError error = new AdError(0, "Bidding banner ad is not supported in Vungle.", ERROR_DOMAIN);
+    Log.w(TAG, error.toString());
+    mediationAdLoadCallback.onFailure(error);
   }
 }
