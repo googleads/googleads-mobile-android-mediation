@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Version 10.0.6.0 (In Progress)
+#### Version 10.0.6.0
 - Verified compatibility with InMobi SDK version 10.0.6.
 
 Built and tested with:
