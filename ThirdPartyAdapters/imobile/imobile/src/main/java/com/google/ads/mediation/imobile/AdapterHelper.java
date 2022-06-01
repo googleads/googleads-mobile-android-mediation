@@ -2,6 +2,7 @@ package com.google.ads.mediation.imobile;
 
 import static com.google.ads.mediation.imobile.IMobileMediationAdapter.IMOBILE_SDK_ERROR_DOMAIN;
 
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
 
@@ -16,6 +17,7 @@ public final class AdapterHelper {
    * @param reason i-mobile fail reason
    * @return error code
    */
+  @NonNull
   public static AdError getAdError(FailNotificationReason reason) {
     // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
     int code = 99;
@@ -47,9 +49,11 @@ public final class AdapterHelper {
       case SHOW_TIMEOUT:
         code = 8;
         break;
+      case UNKNOWN:
+        code = 9;
+        break;
     }
-    return new AdError(code,
-        "Failed to request ad from Imobile: " + reason.toString(),
+    return new AdError(code, "Failed to request ad from Imobile: " + reason,
         IMOBILE_SDK_ERROR_DOMAIN);
   }
 }
