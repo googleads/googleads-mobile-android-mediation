@@ -19,9 +19,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   private static final float RATIO_9_TO_16 = 9.0f / 16.0f;
   private static final float RATIO_16_TO_9 = 16.0f / 9.0f;
 
-  private NendAdNativeMediaView mediaView;
   private NendAdNativeVideo nativeVideo;
-  private NendNativeAdForwarder forwarder;
+  private final NendAdNativeMediaView mediaView;
+  private final NendNativeAdForwarder forwarder;
 
   NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder,
       NendAdNativeVideo ad) {
@@ -100,17 +100,16 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   }
 
   @Override
-  public void trackViews(
-      View containerView,
-      Map<String, View> clickableAssetViews,
-      Map<String, View> nonClickableAssetViews) {
+  public void trackViews(@NonNull View containerView,
+      @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> nonClickableAssetViews) {
     super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
     nativeVideo.registerInteractionViews(new ArrayList<>(clickableAssetViews.values()));
     layoutMediaView(containerView);
   }
 
   @Override
-  public void untrackView(View view) {
+  public void untrackView(@NonNull View view) {
     if (nativeVideo != null) {
       nativeVideo.unregisterInteractionViews();
     }

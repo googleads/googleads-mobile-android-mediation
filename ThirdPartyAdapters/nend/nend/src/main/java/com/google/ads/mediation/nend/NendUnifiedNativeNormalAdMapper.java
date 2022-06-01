@@ -25,9 +25,9 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
     implements NendAdNativeListener {
 
   private final NendAdNative nendAd;
-  private TextView adChoicesMappingView;
-  private NendNativeAdForwarder forwarder;
-  private NendNativeAdConnector connector;
+  private final TextView adChoicesMappingView;
+  private final NendNativeAdForwarder forwarder;
+  private final NendNativeAdConnector connector;
 
   /**
    * Creates a {@link UnifiedNativeAdMapper} for nend's non-video native ads.
@@ -76,16 +76,15 @@ public class NendUnifiedNativeNormalAdMapper extends NendUnifiedNativeAdMapper
   }
 
   @Override
-  public void trackViews(
-      View containerView,
-      Map<String, View> clickableAssetViews,
-      Map<String, View> nonClickableAssetViews) {
+  public void trackViews(@NonNull View containerView,
+      @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> nonClickableAssetViews) {
     super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
     nendAd.activate(containerView, adChoicesMappingView);
   }
 
   @Override
-  public void handleClick(View view) {
+  public void handleClick(@NonNull View view) {
     super.handleClick(view);
     Context context = forwarder.getContextFromWeakReference();
     if (context instanceof Activity) {
