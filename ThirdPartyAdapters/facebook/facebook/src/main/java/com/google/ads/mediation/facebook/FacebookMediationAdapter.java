@@ -144,6 +144,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
+  @NonNull
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
@@ -162,6 +163,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
+  @NonNull
   public VersionInfo getSDKVersionInfo() {
     String versionString = com.facebook.ads.BuildConfig.VERSION_NAME;
     String[] splits = versionString.split("\\.");
@@ -180,15 +182,9 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void initialize(final Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
-
-    if (context == null) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Initialization Failed. Context is null.");
-      return;
-    }
+  public void initialize(@NonNull final Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     ArrayList<String> placements = new ArrayList<>();
     for (MediationConfiguration adConfiguration : mediationConfigurations) {
@@ -227,24 +223,25 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadBannerAd(MediationBannerAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
     banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
     banner.render();
   }
 
   @Override
-  public void loadInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
     interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
     interstitial.render();
   }
 
   @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
     rewardedAd.render();
@@ -252,8 +249,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadRewardedInterstitialAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
         + "adapter version. Please update to serve bidding ads instead. See "
@@ -265,8 +262,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadNativeAd(MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
     nativeAd.render();

@@ -94,12 +94,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   /**
    * Flag to determine whether the interstitial ad has been presented.
    */
-  private AtomicBoolean showInterstitialCalled = new AtomicBoolean();
+  private final AtomicBoolean showInterstitialCalled = new AtomicBoolean();
 
   /**
    * Flag to determine whether the interstitial ad has been closed.
    */
-  private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
+  private final AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   /**
    * Facebook native ad instance.
@@ -157,12 +157,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   //region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(final Context context,
-      MediationBannerListener listener,
-      Bundle serverParameters,
-      final AdSize adSize,
-      final MediationAdRequest adRequest,
-      Bundle mediationExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull MediationBannerListener listener, @NonNull Bundle serverParameters,
+      @NonNull final AdSize adSize, @NonNull final MediationAdRequest adRequest,
+      @Nullable Bundle mediationExtras) {
 
     Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
         + "adapter version. Please update to serve bidding ads instead. See "
@@ -220,6 +218,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   }
 
   @Override
+  @NonNull
   public View getBannerView() {
     return mWrappedAdView;
   }
@@ -227,11 +226,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   //region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(final Context context,
-      MediationInterstitialListener listener,
-      Bundle serverParameters,
-      final MediationAdRequest adRequest,
-      Bundle mediationExtras) {
+  public void requestInterstitialAd(@NonNull final Context context,
+      @NonNull MediationInterstitialListener listener, @NonNull Bundle serverParameters,
+      @NonNull final MediationAdRequest adRequest, @Nullable Bundle mediationExtras) {
 
     Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
         + "adapter version. Please update to serve bidding ads instead. See "
@@ -283,8 +280,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   //endregion
 
   @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
         + "adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
@@ -294,11 +293,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
   //region MediationNativeAdapter implementation.
   @Override
-  public void requestNativeAd(final Context context,
-      MediationNativeListener listener,
-      Bundle serverParameters,
-      final NativeMediationAdRequest mediationAdRequest,
-      final Bundle mediationExtras) {
+  public void requestNativeAd(@NonNull final Context context,
+      @NonNull MediationNativeListener listener, @NonNull Bundle serverParameters,
+      @NonNull final NativeMediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
 
     Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
         + "adapter version. Please update to serve bidding ads instead. See "
@@ -521,12 +519,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * Context required to create AdOptions View.
      */
-    private WeakReference<Context> mContext;
+    private final WeakReference<Context> mContext;
 
     /**
      * Facebook native banner ad instance.
      */
-    private NativeBannerAd mNativeBannerAd;
+    private final NativeBannerAd mNativeBannerAd;
 
     private NativeBannerListener(Context context, NativeBannerAd nativeBannerAd) {
       mContext = new WeakReference<>(context);
@@ -609,12 +607,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * Context required to create AdOptions View.
      */
-    private WeakReference<Context> mContext;
+    private final WeakReference<Context> mContext;
 
     /**
      * Facebook native banner ad instance.
      */
-    private NativeAd mNativeAd;
+    private final NativeAd mNativeAd;
 
     private NativeListener(Context context, NativeAd nativeAd) {
       mContext = new WeakReference<>(context);
@@ -711,12 +709,12 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     potentials.add(0, new AdSize(width, 50));
     potentials.add(1, new AdSize(width, 90));
     potentials.add(2, new AdSize(width, 250));
-    Log.i(TAG, "Potential ad sizes: " + potentials.toString());
+    Log.i(TAG, "Potential ad sizes: " + potentials);
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize == null) {
       return null;
     }
-    Log.i(TAG, "Found closest ad size: " + closestSize.toString());
+    Log.i(TAG, "Found closest ad size: " + closestSize);
 
     int adHeight = closestSize.getHeight();
     if (adHeight == com.facebook.ads.AdSize.BANNER_HEIGHT_50.getHeight()) {
@@ -940,8 +938,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
 
     @Override
-    public void trackViews(View view, Map<String, View> clickableAssetViews,
-        Map<String, View> nonClickableAssetViews) {
+    public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
+        @NonNull Map<String, View> nonClickableAssetViews) {
 
       // Facebook does its own impression tracking.
       setOverrideImpressionRecording(true);
@@ -991,7 +989,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
 
     @Override
-    public void untrackView(View view) {
+    public void untrackView(@NonNull View view) {
       if (isNativeBanner && mNativeBannerAd != null) {
         mNativeBannerAd.unregisterView();
       } else if (mNativeAd != null) {
@@ -1061,11 +1059,13 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
+    @NonNull
     public Drawable getDrawable() {
       return mDrawable;
     }
 
     @Override
+    @NonNull
     public Uri getUri() {
       return mUri;
     }

@@ -16,7 +16,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
   private boolean mIsInitializing = false;
   private boolean mIsInitialized = false;
 
-  private ArrayList<Listener> mListeners;
+  private final ArrayList<Listener> mListeners;
 
   static FacebookInitializer getInstance() {
     if (instance == null) {

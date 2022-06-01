@@ -4,7 +4,7 @@ import android.os.Bundle;
 
 public class FacebookExtras {
 
-  public static String NATIVE_BANNER = "native_banner";
+  public static final String NATIVE_BANNER = "native_banner";
   private static boolean _nativeBanner;
 
   public FacebookExtras setNativeBanner(boolean nativeBanner) {

@@ -28,8 +28,8 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
-  private MediationBannerAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
+  private final MediationBannerAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
   private AdView adView;
   private FrameLayout mWrappedAdView;
   private MediationBannerAdCallback mBannerAdCallback;

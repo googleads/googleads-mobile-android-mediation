@@ -27,13 +27,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     InterstitialAdExtendedListener {
 
-  private MediationInterstitialAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+  private final MediationInterstitialAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       callback;
   private InterstitialAd interstitialAd;
   private MediationInterstitialAdCallback mInterstitalAdCallback;
-  private AtomicBoolean showAdCalled = new AtomicBoolean();
-  private AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
+  private final AtomicBoolean showAdCalled = new AtomicBoolean();
+  private final AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>

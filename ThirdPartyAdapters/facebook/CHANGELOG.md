@@ -1,5 +1,14 @@
 ## Facebook Android Mediation Adapter Changelog
 
+#### 6.11.0.1 (In Progress)
+- Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
+- Updated the minimum required Google Mobile Ads SDK version to 21.0.0.
+- Updated the minimum required Android API level to 19.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.0.0.
+- Facebook SDK version 6.11.0.
+
 #### 6.11.0.0
 - Verified compatibility with Facebook SDK v6.11.0.
 - Added warning messages for waterfall mediation deprecation. See [Meta's blog](https://fb.me/bNFn7qt6Z0sKtF) for more information.

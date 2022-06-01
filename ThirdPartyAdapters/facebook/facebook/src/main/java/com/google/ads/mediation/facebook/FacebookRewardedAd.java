@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdExtendedListener {
 
-  private MediationRewardedAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationRewardedAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mMediationAdLoadCallback;
 
   /**
@@ -38,7 +38,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   /**
    * Flag to determine whether the rewarded ad has been presented.
    */
-  private AtomicBoolean showAdCalled = new AtomicBoolean();
+  private final AtomicBoolean showAdCalled = new AtomicBoolean();
 
   /**
    * Mediation rewarded video ad listener used to forward rewarded video ad events from the Facebook
@@ -47,7 +47,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   private MediationRewardedAdCallback mRewardedAdCallback;
 
   private boolean isRtbAd = false;
-  private AtomicBoolean didRewardedAdClose = new AtomicBoolean();
+  private final AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
   public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
@@ -108,7 +108,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     showAdCalled.set(true);
     if (!rewardedAd.show()) {
       AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present rewarded ad.",

@@ -20,6 +20,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
@@ -44,8 +45,8 @@ import java.util.Map;
 
 public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
-  private MediationNativeAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
+  private final MediationNativeAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
   private NativeAdBase mNativeAdBase;
   private MediationNativeAdCallback mNativeAdCallback;
   private MediaView mMediaView;
@@ -103,12 +104,12 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     /**
      * Context required to create AdOptions View.
      */
-    private WeakReference<Context> mContext;
+    private final WeakReference<Context> mContext;
 
     /**
      * Facebook native ad instance.
      */
-    private NativeAdBase mNativeAd;
+    private final NativeAdBase mNativeAd;
 
     NativeListener(Context mContext, NativeAdBase mNativeAd) {
       this.mNativeAd = mNativeAd;
@@ -295,8 +296,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(View view, Map<String, View> clickableAssetViews,
-      Map<String, View> nonClickableAssetViews) {
+  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> nonClickableAssetViews) {
 
     // Facebook does its own click handling.
     setOverrideClickHandling(true);
@@ -341,7 +342,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
 
   @Override
-  public void untrackView(View view) {
+  public void untrackView(@NonNull View view) {
     if (mNativeAdBase != null) {
       mNativeAdBase.unregisterView();
     }
@@ -393,11 +394,13 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     @Override
+    @NonNull
     public Drawable getDrawable() {
       return mDrawable;
     }
 
     @Override
+    @NonNull
     public Uri getUri() {
       return mUri;
     }
