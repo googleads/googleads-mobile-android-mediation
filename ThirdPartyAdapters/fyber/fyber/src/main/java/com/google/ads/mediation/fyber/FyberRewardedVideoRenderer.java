@@ -1,7 +1,11 @@
 package com.google.ads.mediation.fyber;
 
 import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.*;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.fyber.FyberMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,7 +21,6 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerA
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
-import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -33,12 +36,12 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
   /**
    * AdMob's Rewarded ad configuration object.
    */
-  private MediationRewardedAdConfiguration mAdConfiguration;
+  private final MediationRewardedAdConfiguration mAdConfiguration;
 
   /**
    * AdMob's callback object.
    */
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mAdLoadCallback;
 
   /**
