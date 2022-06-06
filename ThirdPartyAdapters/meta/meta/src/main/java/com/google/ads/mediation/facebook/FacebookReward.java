@@ -8,13 +8,13 @@ public class FacebookReward implements RewardItem {
   @Override
   @NonNull
   public String getType() {
-    // Facebook SDK does not provide a reward type.
+    // Meta Audience Network SDK does not provide a reward type.
     return "";
   }
 
   @Override
   public int getAmount() {
-    // Facebook SDK does not provide reward amount, default to 1.
+    // Meta Audience Network SDK does not provide reward amount, default to 1.
     return 1;
   }
 }

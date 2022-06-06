@@ -1,4 +1,7 @@
-## Facebook Android Mediation Adapter Changelog
+## Meta Audience Network Android Mediation Adapter Changelog
+
+#### Next Version
+- Rebranded adapter name to "Meta Audience Network".
 
 #### 6.11.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.

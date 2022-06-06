@@ -53,7 +53,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public static final String RTB_PLACEMENT_PARAMETER = "placement_id";
 
   /**
-   * Facebook Audience Network adapter errors.
+   * Meta Audience Network adapter errors.
    */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
@@ -80,7 +80,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * The requested ad size does not match a Facebook supported banner size.
+   * The requested ad size does not match a Meta Audience Network supported banner size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
@@ -90,7 +90,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
   /**
-   * The Facebook SDK failed to initialize.
+   * The Meta Audience Network SDK failed to initialize.
    */
   public static final int ERROR_FACEBOOK_INITIALIZATION = 104;
 
@@ -120,23 +120,23 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public static final int ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD = 109;
 
   /**
-   * Facebook failed to present their interstitial/rewarded ad.
+   * Meta Audience Network failed to present their interstitial/rewarded ad.
    */
   public static final int ERROR_FAILED_TO_PRESENT_AD = 110;
 
   /**
-   * Exception thrown when creating a Facebook {@link com.facebook.ads.AdView} object.
+   * Exception thrown when creating a Meta Audience Network {@link com.facebook.ads.AdView} object.
    */
   public static final int ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION = 111;
 
-  // Facebook adapter error domain.
+  // Meta Audience Network adapter error domain.
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.facebook";
 
-  // Facebook SDK error domain.
+  // Meta Audience Network SDK error domain.
   public static final String FACEBOOK_SDK_ERROR_DOMAIN = "com.facebook.ads";
 
   /**
-   * Converts Facebook SDK error codes to admob error codes {@link AdError}.
+   * Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}.
    */
   @NonNull
   public static AdError getAdError(com.facebook.ads.AdError error) {
@@ -252,8 +252,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
-        + "adapter version. Please update to serve bidding ads instead. See "
+    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
+        + "future adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
 
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
@@ -280,7 +280,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Gets the Facebook placement ID.
+   * Gets the Meta Audience Network placement ID.
    */
   public static @Nullable
   String getPlacementID(@NonNull Bundle serverParameters) {
@@ -295,7 +295,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Sets the Facebook mixed audience settings.
+   * Sets the Meta Audience Network mixed audience settings.
    */
   public static void setMixedAudience(@NonNull MediationAdConfiguration mediationAdConfiguration) {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()

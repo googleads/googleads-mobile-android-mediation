@@ -31,7 +31,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
       mMediationAdLoadCallback;
 
   /**
-   * Facebook rewarded video ad instance.
+   * Meta Audience Network rewarded video ad instance.
    */
   private RewardedVideoAd rewardedAd;
 
@@ -41,7 +41,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   private final AtomicBoolean showAdCalled = new AtomicBoolean();
 
   /**
-   * Mediation rewarded video ad listener used to forward rewarded video ad events from the Facebook
+   * Mediation rewarded video ad listener used to forward rewarded video ad events from the Meta
    * Audience Network SDK to the Google Mobile Ads SDK.
    */
   private MediationRewardedAdCallback mRewardedAdCallback;

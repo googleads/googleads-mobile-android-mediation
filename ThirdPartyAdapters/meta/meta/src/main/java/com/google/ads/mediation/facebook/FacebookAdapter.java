@@ -67,7 +67,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Mediation adapter for Facebook Audience Network.
+ * Mediation adapter for Meta Audience Network.
  */
 @Keep
 public final class FacebookAdapter extends FacebookMediationAdapter
@@ -87,7 +87,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   private boolean isNativeBanner;
 
   /**
-   * Facebook interstitial ad instance.
+   * Meta Audience Network interstitial ad instance.
    */
   private InterstitialAd mInterstitialAd;
 
@@ -102,23 +102,23 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   private final AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
   /**
-   * Facebook native ad instance.
+   * Meta Audience Network native ad instance.
    */
   private NativeAd mNativeAd;
 
   /**
-   * Facebook native banner ad instance.
+   * Meta Audience Network native banner ad instance.
    */
   private NativeBannerAd mNativeBannerAd;
 
   /**
-   * Flag to determine whether or not an impression callback from Facebook SDK has already been sent
-   * to the Google Mobile Ads SDK.
+   * Flag to determine whether or not an impression callback from Meta Audience Network SDK has
+   * already been sent to the Google Mobile Ads SDK.
    */
   private boolean mIsImpressionRecorded;
 
   /**
-   * A Facebook {@link MediaView} used to show native ad media content.
+   * A Meta Audience Network {@link MediaView} used to show native ad media content.
    */
   private MediaView mMediaView;
 
@@ -162,8 +162,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       @NonNull final AdSize adSize, @NonNull final MediationAdRequest adRequest,
       @Nullable Bundle mediationExtras) {
 
-    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
-        + "adapter version. Please update to serve bidding ads instead. See "
+    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
+        + "future adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
 
     mBannerListener = listener;
@@ -180,7 +180,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     final com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
     if (facebookAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-          "There is no matching Facebook ad size for Google ad size.", ERROR_DOMAIN);
+          "There is no matching Meta Audience Network ad size for Google ad size.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mBannerListener.onAdFailedToLoad(this, error);
       return;
@@ -230,8 +230,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       @NonNull MediationInterstitialListener listener, @NonNull Bundle serverParameters,
       @NonNull final MediationAdRequest adRequest, @Nullable Bundle mediationExtras) {
 
-    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
-        + "adapter version. Please update to serve bidding ads instead. See "
+    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
+        + "future adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
 
     mInterstitialListener = listener;
@@ -284,8 +284,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
-        + "adapter version. Please update to serve bidding ads instead. See "
+    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
+        + "future adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
 
     super.loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
@@ -298,8 +298,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       @NonNull final NativeMediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
 
-    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
-        + "adapter version. Please update to serve bidding ads instead. See "
+    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
+        + "future adapter version. Please update to serve bidding ads instead. See "
         + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
 
     mNativeListener = listener;
@@ -366,8 +366,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     public void onAdClicked(Ad ad) {
       FacebookAdapter.this.mBannerListener.onAdClicked(FacebookAdapter.this);
       FacebookAdapter.this.mBannerListener.onAdOpened(FacebookAdapter.this);
-      // The test Facebook ads leave the application when the ad is clicked. Assuming all
-      // the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
+      // The test Meta Audience Network ads leave the application when the ad is clicked. Assuming
+      // all the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
       FacebookAdapter.this.mBannerListener.onAdLeftApplication(FacebookAdapter.this);
     }
 
@@ -411,8 +411,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onAdClicked(Ad ad) {
       FacebookAdapter.this.mInterstitialListener.onAdClicked(FacebookAdapter.this);
-      // The test Facebook ads leave the application when the ad is clicked. Assuming all
-      // the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
+      // The test Meta Audience network ads leave the application when the ad is clicked. Assuming
+      // all the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
       FacebookAdapter.this.mInterstitialListener.onAdLeftApplication(FacebookAdapter.this);
     }
 
@@ -522,7 +522,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private final WeakReference<Context> mContext;
 
     /**
-     * Facebook native banner ad instance.
+     * Meta Audience Network native banner ad instance.
      */
     private final NativeBannerAd mNativeBannerAd;
 
@@ -583,8 +583,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     public void onAdClicked(Ad ad) {
       FacebookAdapter.this.mNativeListener.onAdClicked(FacebookAdapter.this);
       FacebookAdapter.this.mNativeListener.onAdOpened(FacebookAdapter.this);
-      // The test Facebook ads leave the application when the ad is clicked. Assuming all
-      // the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
+      // The test Meta Audience Network ads leave the application when the ad is clicked. Assuming
+      // all the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
       FacebookAdapter.this.mNativeListener.onAdLeftApplication(FacebookAdapter.this);
 
     }
@@ -610,7 +610,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private final WeakReference<Context> mContext;
 
     /**
-     * Facebook native banner ad instance.
+     * Meta Audience Network native banner ad instance.
      */
     private final NativeAd mNativeAd;
 
@@ -623,8 +623,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     public void onAdClicked(Ad ad) {
       FacebookAdapter.this.mNativeListener.onAdClicked(FacebookAdapter.this);
       FacebookAdapter.this.mNativeListener.onAdOpened(FacebookAdapter.this);
-      // The test Facebook ads leave the application when the ad is clicked. Assuming all
-      // the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
+      // The test Meta Audience Network ads leave the application when the ad is clicked. Assuming
+      // all the ads do the same, sending onAdLeftApplication callback when the ad is clicked.
       FacebookAdapter.this.mNativeListener.onAdLeftApplication(FacebookAdapter.this);
     }
 
@@ -732,25 +732,25 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   }
 
   /**
-   * The {@link UnifiedAdMapper} class is used to map Facebook native ads to Google unified native
-   * ads.
+   * The {@link UnifiedAdMapper} class is used to map Meta Audience Network native ads to Google
+   * unified native ads.
    */
   class UnifiedAdMapper extends UnifiedNativeAdMapper {
 
     /**
-     * The Facebook native ad to be mapped.
+     * The Meta Audience Network native ad to be mapped.
      */
     private NativeAd mNativeAd;
 
     /**
-     * The Facebook native banner ad to be mapped.
+     * The Meta Audience Network native banner ad to be mapped.
      */
     private NativeBannerAd mNativeBannerAd;
 
     /**
      * Default constructor for {@link UnifiedAdMapper}.
      *
-     * @param nativeAd The Facebook native ad to be mapped.
+     * @param nativeAd The Meta Audience Network native ad to be mapped.
      */
     public UnifiedAdMapper(NativeAd nativeAd) {
       UnifiedAdMapper.this.mNativeAd = nativeAd;
@@ -759,15 +759,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * Constructor for {@link UnifiedAdMapper}.
      *
-     * @param nativeBannerAd The Facebook native banner ad to be mapped.
+     * @param nativeBannerAd The Meta Audience Network  native banner ad to be mapped.
      */
     public UnifiedAdMapper(NativeBannerAd nativeBannerAd) {
       UnifiedAdMapper.this.mNativeBannerAd = nativeBannerAd;
     }
 
     /**
-     * This method will map the Facebook {@link #mNativeAd} to this mapper and send a success
-     * callback if the mapping was successful or a failure callback if the mapping was
+     * This method will map the Meta Audience Network  {@link #mNativeAd} to this mapper and send a
+     * success callback if the mapping was successful or a failure callback if the mapping was
      * unsuccessful.
      *
      * @param mapperListener used to send success/failure callbacks when mapping is done.
@@ -777,8 +777,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       if (isNativeBanner) {
         if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
           AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
-              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
-              ERROR_DOMAIN);
+              "Ad from Meta Audience Network doesn't have all assets required for the "
+                  + "Native Banner Ad format.", ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
           mapperListener.onMappingFailed(error);
           return;
@@ -808,8 +808,8 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       } else {
         if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
           AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
-              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
-              ERROR_DOMAIN);
+              "Ad from Meta Audience Network doesn't have all assets required for the "
+                  + "Native Banner Ad format.", ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
           mapperListener.onMappingFailed(error);
           return;
@@ -909,10 +909,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     /**
-     * This method will check whether or not the given Facebook native ad contains all the necessary
-     * fields for it to be mapped to Google Mobile Ads' Unified install ad.
+     * This method will check whether or not the given Meta Audience Network native ad contains
+     * all the necessary fields for it to be mapped to Google Mobile Ads' Unified install ad.
      *
-     * @param nativeAd Facebook native ad.
+     * @param nativeAd Meta Audience Network native ad.
      * @return {@code true} if the given ad contains all the necessary fields, {@link false}
      * otherwise.
      */
@@ -923,10 +923,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     /**
-     * This method will check whether or not the given Facebook native ad contains all the necessary
-     * fields for it to be mapped to Google Mobile Ads' Unified install ad.
+     * This method will check whether or not the given Meta Audience Network native ad contains all
+     * the necessary fields for it to be mapped to Google Mobile Ads' Unified install ad.
      *
-     * @param nativeBannerAd Facebook native ad.
+     * @param nativeBannerAd Meta Audience Network native ad.
      * @return {@code true} if the given ad contains all the necessary fields, {@link false}
      * otherwise.
      */
@@ -941,10 +941,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
         @NonNull Map<String, View> nonClickableAssetViews) {
 
-      // Facebook does its own impression tracking.
+      // Meta Audience Network does its own impression tracking.
       setOverrideImpressionRecording(true);
 
-      // Facebook does its own click handling.
+      // Meta Audience Network does its own click handling.
       setOverrideClickHandling(true);
       View iconView = null;
 
@@ -961,15 +961,15 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
         // too late.
         if (iconView == null) {
-          Log.w(TAG, "Missing or invalid native ad icon asset. Facebook impression "
+          Log.w(TAG, "Missing or invalid native ad icon asset. Meta Audience Network impression "
               + "recording might be impacted for this ad.");
           return;
         }
 
         if (!(iconView instanceof ImageView)) {
           String errorMessage = String.format("Native ad icon asset is rendered with an "
-              + "incompatible class type. Facebook impression recording might be impacted "
-              + "for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
+              + "incompatible class type. Meta Audience Network impression recording might be "
+              + "impacted for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
           Log.w(TAG, errorMessage);
           return;
         }

@@ -6,7 +6,7 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store the proper name of the mediation network adapter.
-    adapterName = "Facebook"
+    adapterName = "Meta Audience Network"
     // String property to store version name.
     stringVersion = "6.11.0.1"
     // String property to store group id.
@@ -51,7 +51,8 @@ publishing {
     publications {
         adapterPublications(MavenPublication) {
             groupId = stringGroupId
-            artifactId = project.name
+            // Keep the artifact name as 'facebook' to avoid needing a new maven artifact.
+            artifactId = "facebook"
             version = stringVersion
 
             // Add the aar artifact to publication.
@@ -121,7 +122,8 @@ task packageDistribution(type: Zip) {
         rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
     }
 
-    archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
+    def trimmedAdapterName = adapterName.replace(' ', '')
+    archiveFileName = "${trimmedAdapterName}AndroidAdapter-${stringVersion}.zip"
     destinationDirectory = file("${rootProject.projectDir}/build/distribution")
 }
 

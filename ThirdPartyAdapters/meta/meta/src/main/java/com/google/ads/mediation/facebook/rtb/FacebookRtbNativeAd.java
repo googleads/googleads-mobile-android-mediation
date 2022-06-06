@@ -107,7 +107,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     private final WeakReference<Context> mContext;
 
     /**
-     * Facebook native ad instance.
+     * Meta Audience Network native ad instance.
      */
     private final NativeAdBase mNativeAd;
 
@@ -174,15 +174,16 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   /**
-   * This method will map the Facebook {@link #mNativeAdBase} to this mapper and send a success
-   * callback if the mapping was successful or a failure callback if the mapping was unsuccessful.
+   * This method will map the Meta Audience Network {@link #mNativeAdBase} to this mapper and send
+   * a success callback if the mapping was successful or a failure callback if the mapping was
+   * unsuccessful.
    *
    * @param mapperListener used to send success/failure callbacks when mapping is done.
    */
   public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
       AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
-          "Ad from Facebook doesn't have all required assets.", ERROR_DOMAIN);
+          "Ad from Meta Audience Network doesn't have all required assets.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mapperListener.onMappingFailed(error);
       return;
@@ -278,10 +279,10 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   /**
-   * This method will check whether or not the given Facebook native ad contains all the necessary
-   * fields for it to be mapped to Google Mobile Ads' native app install ad.
+   * This method will check whether or not the given Meta Audience Network native ad contains all
+   * the necessary fields for it to be mapped to Google Mobile Ads' native app install ad.
    *
-   * @param nativeAd Facebook native ad.
+   * @param nativeAd Meta Audience Network native ad.
    * @return {@code true} if the given ad contains all the necessary fields, {@link false}
    * otherwise.
    */
@@ -299,7 +300,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
 
-    // Facebook does its own click handling.
+    // Meta Audience Network does its own click handling.
     setOverrideClickHandling(true);
 
     ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
@@ -309,15 +310,15 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
       // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
       // too late.
       if (iconView == null) {
-        Log.w(TAG, "Missing or invalid native ad icon asset. Facebook impression "
+        Log.w(TAG, "Missing or invalid native ad icon asset. Meta Audience Network impression "
             + "recording might be impacted for this ad.");
         return;
       }
 
       if (!(iconView instanceof ImageView)) {
         String errorMessage = String.format("Native ad icon asset is rendered with an "
-            + "incompatible class type. Facebook impression recording might be impacted "
-            + "for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
+            + "incompatible class type. Meta Audience Network impression recording might be "
+            + "impacted for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
         Log.w(TAG, errorMessage);
         return;
       }
@@ -335,8 +336,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
       }
     } else {
       Log.w(TAG, "Native ad type is not of type NativeAd or NativeBannerAd. "
-          + "It is not currently supported by the Facebook Adapter. Facebook impression "
-          + "recording might be impacted for this ad.");
+          + "It is not currently supported by the Meta Audience Network Adapter. "
+          + "Meta Audience Network impression recording might be impacted for this ad.");
     }
   }
 
