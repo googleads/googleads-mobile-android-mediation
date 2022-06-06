@@ -37,8 +37,6 @@ import com.my.target.nativeads.NativeAd;
 import com.my.target.nativeads.banners.NativePromoBanner;
 import com.my.target.nativeads.views.MediaAdView;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +60,8 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       @NonNull MediaAdView mediaAdView) {
     for (int i = 0; i < clickableViews.size(); i++) {
       View view = clickableViews.get(i);
-      if (view instanceof com.google.android.gms.ads.nativead.MediaView || view instanceof com.google.android.gms.ads.formats.MediaView) {
+      if (view instanceof com.google.android.gms.ads.nativead.MediaView
+          || view instanceof com.google.android.gms.ads.formats.MediaView) {
         FrameLayout mediaView = (FrameLayout) view;
         int childCount = mediaView.getChildCount();
         for (int j = 0; j < childCount; j++) {
@@ -78,9 +77,10 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
   }
 
   @Override
-  public void requestNativeAd(Context context, MediationNativeListener mediationNativeListener,
-      Bundle serverParameter, NativeMediationAdRequest nativeMediationAdRequest,
-      Bundle customEventExtras) {
+  public void requestNativeAd(@NonNull Context context,
+      @NonNull MediationNativeListener mediationNativeListener, @NonNull Bundle serverParameter,
+      @NonNull NativeMediationAdRequest nativeMediationAdRequest,
+      @Nullable Bundle customEventExtras) {
     this.nativeListener = mediationNativeListener;
 
     if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
@@ -100,44 +100,20 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       return;
     }
 
-    NativeAdOptions options = null;
-    int gender = 0;
-    Date birthday = null;
-    if (nativeMediationAdRequest != null) {
-      options = nativeMediationAdRequest.getNativeAdOptions();
-      gender = nativeMediationAdRequest.getGender();
-      birthday = nativeMediationAdRequest.getBirthday();
-    }
-
+    NativeAdOptions options = nativeMediationAdRequest.getNativeAdOptions();
     NativeAd nativeAd = new NativeAd(slotId, context);
 
     int cachePolicy = CachePolicy.IMAGE;
-    if (options != null) {
-      if (options.shouldReturnUrlsForImageAssets()) {
-        cachePolicy = CachePolicy.NONE;
-      }
-      Log.d(TAG, "Set cache policy to " + cachePolicy);
+    if (options.shouldReturnUrlsForImageAssets()) {
+      cachePolicy = CachePolicy.NONE;
     }
+    Log.d(TAG, "Set cache policy to " + cachePolicy);
     nativeAd.setCachePolicy(cachePolicy);
 
     CustomParams params = nativeAd.getCustomParams();
     handleMediationExtras(TAG, customEventExtras, params);
-    Log.d(TAG, "Set gender to " + gender);
-    params.setGender(gender);
-
-    if (birthday != null && birthday.getTime() != -1) {
-      GregorianCalendar calendar = new GregorianCalendar();
-      GregorianCalendar calendarNow = new GregorianCalendar();
-
-      calendar.setTimeInMillis(birthday.getTime());
-      int age = calendarNow.get(GregorianCalendar.YEAR) - calendar.get(GregorianCalendar.YEAR);
-      if (age >= 0) {
-        params.setAge(age);
-      }
-    }
 
     MyTargetNativeAdListener nativeAdListener = new MyTargetNativeAdListener(nativeAd, context);
-
     params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY, MyTargetTools.PARAM_MEDIATION_VALUE);
     nativeAd.setListener(nativeAdListener);
     nativeAd.load();
@@ -161,10 +137,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
    */
   private static class MyTargetAdmobNativeImage extends Image {
 
-    @NonNull
     private final Uri uri;
-
-    @Nullable
     private Drawable drawable;
 
     MyTargetAdmobNativeImage(@NonNull ImageData imageData, @NonNull Resources resources) {
@@ -175,7 +148,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
       uri = Uri.parse(imageData.getUrl());
     }
 
-    @Nullable
+    @NonNull
     @Override
     public Drawable getDrawable() {
       return drawable;
@@ -263,7 +236,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
 
     @Override
     public void trackViews(final View containerView, final Map<String, View> clickables,
-        Map<String, View> nonclickables) {
+        @NonNull Map<String, View> nonclickables) {
       final ArrayList<View> clickableViews = new ArrayList<>(clickables.values());
       containerView.post(new Runnable() {
         @Override
@@ -279,7 +252,7 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     }
 
     @Override
-    public void untrackView(View view) {
+    public void untrackView(@NonNull View view) {
       nativeAd.unregisterView();
     }
   }
