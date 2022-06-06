@@ -38,9 +38,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
   // region MediationInterstitialAdapter implementation.
   @Override
   public void requestInterstitialAd(@NonNull Context context,
-      @NonNull final MediationInterstitialListener listener,
-      @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
-      @Nullable Bundle mediationExtras) {
+      @NonNull final MediationInterstitialListener listener, @NonNull final Bundle serverParameters,
+      @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
 
     String appKey = serverParameters.getString(KEY_APP_KEY);
     IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
@@ -65,8 +64,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
 
   @Override
   public void showInterstitial() {
-    Log.d(
-        TAG,
+    Log.d(TAG,
         String.format("Showing IronSource interstitial ad for instance ID: %s", this.mInstanceID));
     IronSourceManager.getInstance().showInterstitial(mInstanceID);
   }
