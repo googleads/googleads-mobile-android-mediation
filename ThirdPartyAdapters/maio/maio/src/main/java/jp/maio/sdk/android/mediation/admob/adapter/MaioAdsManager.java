@@ -7,16 +7,12 @@ import static com.google.ads.mediation.maio.MaioMediationAdapter.TAG;
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.maio.MaioAdsManagerListener;
-
 import com.google.android.gms.ads.AdError;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.MaioAdsInstance;
@@ -29,10 +25,10 @@ import jp.maio.sdk.android.MaioAdsListenerInterface;
 public class MaioAdsManager implements MaioAdsListenerInterface {
 
   private static final HashMap<String, MaioAdsManager> mInstances = new HashMap<>();
-  private ArrayList<InitializationListener> mInitListeners = new ArrayList<>();
+  private final ArrayList<InitializationListener> mInitListeners = new ArrayList<>();
 
   private MaioAdsInstance mMaioInstance;
-  private String mMediaID;
+  private final String mMediaID;
 
   private enum InitializationStatus {
     UNINITIALIZED,
@@ -42,7 +38,7 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
 
   private InitializationStatus mInitState;
 
-  private HashMap<String, WeakReference<MaioAdsManagerListener>> mListeners;
+  private final HashMap<String, WeakReference<MaioAdsManagerListener>> mListeners;
 
   public static final String KEY_MEDIA_ID = "mediaId";
   public static final String KEY_ZONE_ID = "zoneId";
