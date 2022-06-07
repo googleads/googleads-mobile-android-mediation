@@ -6,7 +6,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 
 public class UnityRewardedEventAdapter implements IUnityEventAdapter {
 
-  MediationRewardedAdCallback listener;
+  final MediationRewardedAdCallback listener;
 
   public UnityRewardedEventAdapter(MediationRewardedAdCallback listener) {
     this.listener = listener;

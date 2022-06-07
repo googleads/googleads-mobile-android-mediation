@@ -6,8 +6,8 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
 
 public class UnityBannerEventAdapter implements IUnityEventAdapter {
 
-  MediationBannerListener listener;
-  MediationBannerAdapter adapter;
+  final MediationBannerListener listener;
+  final MediationBannerAdapter adapter;
 
   public UnityBannerEventAdapter(MediationBannerListener listener, MediationBannerAdapter adapter) {
     this.listener = listener;
