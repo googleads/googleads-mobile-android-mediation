@@ -55,7 +55,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
   private InMobiInterstitial mAdInterstitial;
   private FrameLayout mWrappedAdView;
 
-  private static Boolean sDisableHardwareFlag = false;
+  private static final Boolean sDisableHardwareFlag = false;
 
   private NativeMediationAdRequest mNativeMedAdReq;
   private InMobiNative mAdNative;
@@ -76,15 +76,16 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
   // region MediationBannerAdapter implementation.
   @Override
-  public void requestBannerAd(final Context context, final MediationBannerListener listener,
-      Bundle serverParameters, AdSize mediationAdSize, final MediationAdRequest mediationAdRequest,
-      final Bundle mediationExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull final MediationBannerListener listener, @NonNull Bundle serverParameters,
+      @NonNull AdSize mediationAdSize, @NonNull final MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
 
     final AdSize inMobiMediationAdSize = getSupportedAdSize(context, mediationAdSize);
     if (inMobiMediationAdSize == null) {
       String errorMessage = String
           .format("InMobi SDK supported banner sizes are not valid for the requested size: %s",
-              mediationAdSize.toString());
+              mediationAdSize);
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.w(TAG, errorMessage);
       listener.onAdFailedToLoad(InMobiAdapter.this, error);
@@ -135,6 +136,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
     return mWrappedAdView;
@@ -143,9 +145,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
   // region MediationInterstitialAdapter implementation.
   @Override
-  public void requestInterstitialAd(final Context context,
-      final MediationInterstitialListener listener, Bundle serverParameters,
-      final MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+  public void requestInterstitialAd(@NonNull final Context context,
+      @NonNull final MediationInterstitialListener listener, Bundle serverParameters,
+      @NonNull final MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
 
     final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     if (TextUtils.isEmpty(accountID)) {
@@ -189,9 +192,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
   // region MediationNativeAdapter implementation.
   @Override
-  public void requestNativeAd(final Context context, final MediationNativeListener listener,
-      Bundle serverParameters, final NativeMediationAdRequest mediationAdRequest,
-      final Bundle mediationExtras) {
+  public void requestNativeAd(@NonNull final Context context,
+      @NonNull final MediationNativeListener listener, @NonNull Bundle serverParameters,
+      @NonNull final NativeMediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
 
     if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
       AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST,
@@ -259,10 +263,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     adView.setEnableAutoRefresh(false);
     // Turn off the animation.
     adView.setAnimationType(AnimationType.ANIMATION_OFF);
-
-    if (mediationAdRequest.getKeywords() != null) {
-      adView.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
-    }
+    adView.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -340,9 +341,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mediationAdSize.getWidthInPixels(context),
             mediationAdSize.getHeightInPixels(context)));
     mWrappedAdView.addView(adView);
-    InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
+    InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
 
-    Log.d(TAG, "Requesting banner with ad size: " + mediationAdSize.toString());
+    Log.d(TAG, "Requesting banner with ad size: " + mediationAdSize);
     adView.load();
   }
 
@@ -439,9 +440,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       return;
     }
 
-    if (mediationAdRequest.getKeywords() != null) {
-      mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
-    }
+    mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -452,7 +451,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       mAdInterstitial.disableHardwareAcceleration();
     }
 
-    InMobiAdapterUtils.setGlobalTargeting(mediationAdRequest, mediationExtras);
+    InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
     mAdInterstitial.load();
   }
 
@@ -478,11 +477,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
           // This setting decides whether to download images or not.
           NativeAdOptions nativeAdOptions = InMobiAdapter.this.mNativeMedAdReq
               .getNativeAdRequestOptions();
-          boolean mIsOnlyUrl = false;
-
-          if (null != nativeAdOptions) {
-            mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
-          }
+          boolean mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
 
           InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
               new InMobiUnifiedNativeAdMapper(InMobiAdapter.this, imNativeAd, mIsOnlyUrl,
@@ -564,9 +559,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
     // Setting mediation key words to native ad object
     Set<String> mediationKeyWords = mNativeMedAdReq.getKeywords();
-    if (null != mediationKeyWords) {
-      mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
-    }
+    mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
 
     /*
      *  Extra request params : Add any other extra request params here
@@ -577,7 +570,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         InMobiAdapterUtils.createInMobiParameterMap(mNativeMedAdReq);
     mAdNative.setExtras(paramMap);
 
-    InMobiAdapterUtils.setGlobalTargeting(mNativeMedAdReq, mediationExtras);
+    InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
     mAdNative.load();
   }
 }

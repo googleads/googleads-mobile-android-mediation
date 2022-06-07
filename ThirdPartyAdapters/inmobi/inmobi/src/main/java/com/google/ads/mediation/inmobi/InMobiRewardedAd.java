@@ -32,8 +32,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
   private InMobiInterstitial mInMobiRewardedAd;
 
-  private MediationRewardedAdConfiguration mRewardedAdConfiguration;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationRewardedAdConfiguration mRewardedAdConfiguration;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mMediationAdLoadCallback;
   private MediationRewardedAdCallback mRewardedAdCallback;
 
@@ -77,7 +77,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
   // region MediationRewardedAd implementation.
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     if (!mInMobiRewardedAd.isReady()) {
       AdError error = new AdError(ERROR_AD_NOT_READY,
           "InMobi Rewarded ad is not yet ready to be shown.", ERROR_DOMAIN);
@@ -243,7 +243,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
     HashMap<String, String> paramMap =
         InMobiAdapterUtils.createInMobiParameterMap(mRewardedAdConfiguration);
     mInMobiRewardedAd.setExtras(paramMap);
-    InMobiAdapterUtils.setGlobalTargeting(mRewardedAdConfiguration, extras);
+    InMobiAdapterUtils.configureGlobalTargeting(extras);
     mInMobiRewardedAd.load();
   }
   // endregion
@@ -252,14 +252,15 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
 class InMobiReward implements RewardItem {
 
-  private String type;
-  private int amount;
+  private final String type;
+  private final int amount;
 
   InMobiReward(String type, int amount) {
     this.type = type;
     this.amount = amount;
   }
 
+  @NonNull
   @Override
   public String getType() {
     return type;

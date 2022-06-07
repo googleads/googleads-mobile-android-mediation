@@ -47,7 +47,7 @@ public class InMobiInitializer {
   private @InitializationStatus
   int initializationStatus;
 
-  private ArrayList<Listener> mListeners = new ArrayList<>();
+  private final ArrayList<Listener> mListeners = new ArrayList<>();
 
   private InMobiInitializer() {
     initializationStatus = UNINITIALIZED;
