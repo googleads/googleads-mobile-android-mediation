@@ -103,7 +103,7 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
   /**
-   * Vungle requires an {@link Activity} context to request ads.
+   * Vungle requires an {@link android.app.Activity} context to request ads.
    */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
@@ -187,8 +187,7 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void initialize(
-      @NonNull Context context,
+  public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
@@ -223,7 +222,7 @@ public class VungleMediationAdapter extends RtbAdapter
       String logMessage =
           String.format(
               "Multiple '%s' entries found: %s. Using '%s' to initialize the Vungle SDK.",
-              KEY_APP_ID, appIDs.toString(), appID);
+              KEY_APP_ID, appIDs, appID);
       Log.w(TAG, logMessage);
     }
 

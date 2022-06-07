@@ -233,8 +233,7 @@ public class VungleInterstitialAdapter
   @Override
   public void requestBannerAd(@NonNull Context context,
       @NonNull final MediationBannerListener mediationBannerListener,
-      @NonNull Bundle serverParameters,
-      @NonNull AdSize adSize,
+      @NonNull Bundle serverParameters, @NonNull AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
     mMediationBannerListener = mediationBannerListener;
     String appID = serverParameters.getString(KEY_APP_ID);

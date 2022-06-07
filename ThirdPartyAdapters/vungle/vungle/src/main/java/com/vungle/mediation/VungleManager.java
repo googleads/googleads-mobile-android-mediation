@@ -157,9 +157,7 @@ public class VungleManager {
       Log.i(TAG, "Not found closest ad size: " + adSize);
       return false;
     }
-    Log.i(
-        TAG,
-        "Found closest ad size: " + closestSize.toString() + " for requested ad size: " + adSize);
+    Log.i(TAG, "Found closest ad size: " + closestSize + " for requested ad size: " + adSize);
 
     if (closestSize.getWidth() == BANNER_SHORT.getWidth()
         && closestSize.getHeight() == BANNER_SHORT.getHeight()) {
