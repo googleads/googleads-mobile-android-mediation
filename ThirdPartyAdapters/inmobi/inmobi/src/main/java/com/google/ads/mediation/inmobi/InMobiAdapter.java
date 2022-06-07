@@ -263,7 +263,11 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     adView.setEnableAutoRefresh(false);
     // Turn off the animation.
     adView.setAnimationType(AnimationType.ANIMATION_OFF);
-    adView.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
+
+    Set<String> keywords = mediationAdRequest.getKeywords();
+    if (keywords != null) {
+      adView.setKeywords(TextUtils.join(", ", keywords));
+    }
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -440,7 +444,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       return;
     }
 
-    mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
+    Set<String> keywords = mediationAdRequest.getKeywords();
+    if (keywords != null) {
+      mAdInterstitial.setKeywords(TextUtils.join(", ", keywords));
+    }
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -557,9 +564,11 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       }
     });
 
-    // Setting mediation key words to native ad object
-    Set<String> mediationKeyWords = mNativeMedAdReq.getKeywords();
-    mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
+    // Setting mediation keywords to native ad object
+    Set<String> keywords = mNativeMedAdReq.getKeywords();
+    if (keywords != null) {
+      mAdNative.setKeywords(TextUtils.join(", ", keywords));
+    }
 
     /*
      *  Extra request params : Add any other extra request params here

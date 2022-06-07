@@ -14,6 +14,7 @@ import com.verizon.ads.DataPrivacy;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
 import java.util.ArrayList;
+import java.util.Set;
 
 class VerizonMediaAdapterUtils {
 
@@ -29,8 +30,12 @@ class VerizonMediaAdapterUtils {
    */
   public static RequestMetadata getRequestMetadata(final MediationAdRequest mediationAdRequest) {
     RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder();
-    requestMetadataBuilder.putExtra("keywords", new ArrayList<>(mediationAdRequest.getKeywords()));
     requestMetadataBuilder.setMediator(MEDIATOR_ID);
+
+    Set<String> keywords = mediationAdRequest.getKeywords();
+    if (keywords!= null) {
+      requestMetadataBuilder.putExtra("keywords", new ArrayList<>(keywords));
+    }
 
     return requestMetadataBuilder.build();
   }
