@@ -1,6 +1,6 @@
 ## Snap Android Mediation Adapter Changelog
 
-#### Version 2.3.4.1 (In Progress)
+#### Version 2.3.4.1
 - Added descriptive error codes and reasons for adapter load and show failures.
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
 - Updated the minimum required Google Mobile Ads SDK version to 21.0.0.
