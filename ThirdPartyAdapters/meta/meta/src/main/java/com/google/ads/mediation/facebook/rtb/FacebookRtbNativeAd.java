@@ -1,9 +1,9 @@
 package com.google.ads.mediation.facebook.rtb;
 
-import static com.google.ads.mediation.facebook.FacebookAdapter.KEY_ID;
-import static com.google.ads.mediation.facebook.FacebookAdapter.KEY_SOCIAL_CONTEXT_ASSET;
-import static com.google.ads.mediation.facebook.FacebookAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookAdapter.setMixedAudience;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -257,7 +257,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
       }
     });
 
-    // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
+    // Because the Meta Audience Network SDK doesn't offer a way to determine whether a native ad contains
     // a video asset or not, the adapter always returns a MediaView and claims to have
     // video content.
     FacebookRtbNativeAd.this.setHasVideoContent(true);

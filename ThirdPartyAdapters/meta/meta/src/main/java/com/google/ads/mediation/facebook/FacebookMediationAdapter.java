@@ -41,7 +41,10 @@ import java.util.List;
 
 public class FacebookMediationAdapter extends RtbAdapter {
 
-  public static final String TAG = FacebookAdapter.class.getSimpleName();
+  public static final String TAG = FacebookMediationAdapter.class.getSimpleName();
+
+  public static final String KEY_ID = "id";
+  public static final String KEY_SOCIAL_CONTEXT_ASSET = "social_context";
 
   private FacebookRtbBannerAd banner;
   private FacebookRtbInterstitialAd interstitial;
@@ -223,7 +226,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
     banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
@@ -231,7 +234,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
     interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
@@ -239,7 +242,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRewardedAd(
+  public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
@@ -248,21 +251,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRewardedInterstitialAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
-    Log.w(TAG, "Meta Audience Network waterfall mediation is deprecated and will be removed in a "
-        + "future adapter version. Please update to serve bidding ads instead. See "
-        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
-
-    rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    rewardedInterstitialAd.render();
-  }
-
-  @Override
-  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);

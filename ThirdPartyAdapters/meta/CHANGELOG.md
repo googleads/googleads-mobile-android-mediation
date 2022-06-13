@@ -2,6 +2,7 @@
 
 #### Next Version
 - Rebranded adapter name to "Meta Audience Network".
+- Removed waterfall integration.
 
 #### 6.11.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.

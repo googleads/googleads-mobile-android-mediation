@@ -45,8 +45,6 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
    * Audience Network SDK to the Google Mobile Ads SDK.
    */
   private MediationRewardedAdCallback mRewardedAdCallback;
-
-  private boolean isRtbAd = false;
   private final AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
   public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
@@ -68,43 +66,20 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
       return;
     }
 
-    String decodedBid = adConfiguration.getBidResponse();
-    if (!TextUtils.isEmpty(decodedBid)) {
-      isRtbAd = true;
-    }
-
     setMixedAudience(adConfiguration);
 
-    if (isRtbAd) {
-      rewardedAd = new RewardedVideoAd(context, placementID);
-      if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
-        rewardedAd.setExtraHints(new ExtraHints.Builder()
-            .mediationData(adConfiguration.getWatermark()).build());
-      }
-      rewardedAd.loadAd(
-          rewardedAd.buildLoadAdConfig()
-              .withAdListener(this)
-              .withBid(decodedBid)
-              .withAdExperience(getAdExperienceType())
-              .build()
-      );
-    } else {
-      FacebookInitializer.getInstance().initialize(context, placementID,
-          new FacebookInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-              createAndLoadRewardedVideo(context, placementID);
-            }
-
-            @Override
-            public void onInitializeError(AdError error) {
-              Log.w(TAG, error.getMessage());
-              if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(error);
-              }
-            }
-          });
+    rewardedAd = new RewardedVideoAd(context, placementID);
+    if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
+      rewardedAd.setExtraHints(new ExtraHints.Builder()
+              .mediationData(adConfiguration.getWatermark()).build());
     }
+    rewardedAd.loadAd(
+            rewardedAd.buildLoadAdConfig()
+                    .withAdListener(this)
+                    .withBid(adConfiguration.getBidResponse())
+                    .withAdExperience(getAdExperienceType())
+                    .build()
+    );
   }
 
   @Override
@@ -130,16 +105,6 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   @NonNull
   AdExperienceType getAdExperienceType() {
     return AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED;
-  }
-
-  private void createAndLoadRewardedVideo(Context context, String placementID) {
-    rewardedAd = new RewardedVideoAd(context, placementID);
-    rewardedAd.loadAd(
-        rewardedAd.buildLoadAdConfig()
-            .withAdListener(this)
-            .withAdExperience(getAdExperienceType())
-            .build()
-    );
   }
 
   @Override
