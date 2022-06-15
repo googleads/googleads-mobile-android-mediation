@@ -55,6 +55,8 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
    */
   private AdConfig adConfig;
 
+  private String adMarkup;
+
   /**
    * Wrapper object for Vungle native ads.
    */
@@ -90,6 +92,12 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       return;
     }
 
+    adMarkup = adConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(adMarkup)) {
+      adMarkup = null;
+    }
+    Log.d(TAG, "Render native adMarkup=" + adMarkup);
+
     adConfig = VungleExtrasBuilder
         .adConfigWithNetworkExtras(mediationExtras, nativeAdOptions, true);
 
@@ -119,7 +127,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
   }
 
   private void loadNativeAd() {
-    vungleNativeAd.loadNativeAd(adConfig, new NativeListener());
+    vungleNativeAd.loadNativeAd(adConfig, adMarkup, new NativeListener());
   }
 
   private class NativeListener implements NativeAdListener {

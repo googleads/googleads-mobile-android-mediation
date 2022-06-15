@@ -248,8 +248,18 @@ public class VungleMediationAdapter extends RtbAdapter {
     nativeAdapter.render();
   }
 
-  public void loadRtbRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+  @Override
+  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    Log.d(TAG, "loadRtbNativeAd()...");
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
+    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(mediationNativeAdConfiguration,
+        callback);
+    nativeAdapter.render();
+  }
+
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
     VungleRewardedAd vungleRewardedAd = new VungleRewardedAd(mediationRewardedAdConfiguration,

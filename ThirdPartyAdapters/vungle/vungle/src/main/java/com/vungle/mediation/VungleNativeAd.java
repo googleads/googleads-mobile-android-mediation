@@ -41,8 +41,8 @@ public class VungleNativeAd {
     return placementId;
   }
 
-  public void loadNativeAd(@Nullable AdConfig adConfig, @Nullable NativeAdListener listener) {
-    nativeAd.loadAd(adConfig, listener);
+  public void loadNativeAd(@Nullable AdConfig adConfig, @Nullable String adMarkup, @Nullable NativeAdListener listener) {
+    nativeAd.loadAd(adConfig, adMarkup, listener);
   }
 
   @Nullable
