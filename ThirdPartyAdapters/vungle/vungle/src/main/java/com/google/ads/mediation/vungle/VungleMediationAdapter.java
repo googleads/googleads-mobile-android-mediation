@@ -287,6 +287,9 @@ public class VungleMediationAdapter extends RtbAdapter
     }
 
     mAdMarkup = mediationRewardedAdConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(mAdMarkup)) {
+      mAdMarkup = null; // We use null to avoid ""
+    }
     Log.d(TAG, "Render rewarded mAdMarkup=" + mAdMarkup);
 
     // Unmute full-screen ads by default.

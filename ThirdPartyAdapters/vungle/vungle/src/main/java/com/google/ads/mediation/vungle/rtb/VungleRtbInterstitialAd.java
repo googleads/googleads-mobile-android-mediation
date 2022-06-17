@@ -73,6 +73,9 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
     }
 
     mAdMarkup = mediationInterstitialAdConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(mAdMarkup)) {
+      mAdMarkup = null; // We use null to avoid ""
+    }
     Log.d(TAG, "Render interstitial mAdMarkup=" + mAdMarkup);
 
     AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
