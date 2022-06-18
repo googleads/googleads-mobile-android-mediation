@@ -2,8 +2,8 @@ package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -22,33 +22,28 @@ import com.bytedance.sdk.openadsdk.adapter.MediaView;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
-import com.google.android.gms.ads.nativead.NativeAdOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
-  private static final String TAG = PangleRtbNativeAd.class.getSimpleName();
   private static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
-  private final Context context;
-  private NativeAdOptions nativeAdOptions;
   private MediationNativeAdCallback callback;
-  private TTFeedAd mPangleAd;
+  private TTFeedAd ttFeedAd;
 
   public PangleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
-    context = mediationNativeAdConfiguration.getContext();
   }
 
   public void render() {
@@ -57,8 +52,10 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     String placementID = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementID)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load native ad from Pangle. Missing or invalid Placement ID.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load native ad from Pangle. Missing or invalid Placement ID.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -66,8 +63,10 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load native ad from Pangle. Missing or invalid bid response.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_BID_RESPONSE,
+              "Failed to load native ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -87,7 +86,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       @Override
       public void onError(int errorCode, String message) {
         AdError error = PangleConstants.createSdkError(errorCode, message);
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         adLoadCallback.onFailure(error);
       }
 
@@ -100,19 +99,19 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   private void mapNativeAd(TTFeedAd ad) {
-    this.mPangleAd = ad;
-    //set data
-    setHeadline(mPangleAd.getTitle());
-    setBody(mPangleAd.getDescription());
-    setCallToAction(mPangleAd.getButtonText());
-    if (mPangleAd.getIcon() != null && mPangleAd.getIcon().isValid()) {
-      setIcon(new PangleNativeMappedImage(null, Uri.parse(mPangleAd.getIcon().getImageUrl()),
+    this.ttFeedAd = ad;
+    // Set data.
+    setHeadline(ttFeedAd.getTitle());
+    setBody(ttFeedAd.getDescription());
+    setCallToAction(ttFeedAd.getButtonText());
+    if (ttFeedAd.getIcon() != null && ttFeedAd.getIcon().isValid()) {
+      setIcon(new PangleNativeMappedImage(null, Uri.parse(ttFeedAd.getIcon().getImageUrl()),
           PANGLE_SDK_IMAGE_SCALE));
     }
-    //set ad image
-    if (mPangleAd.getImageList() != null && mPangleAd.getImageList().size() != 0) {
-      List<NativeAd.Image> imagesList = new ArrayList<>();
-      for (TTImage ttImage : mPangleAd.getImageList()) {
+    // Set ad image.
+    if (ttFeedAd.getImageList() != null && ttFeedAd.getImageList().size() != 0) {
+      List<Image> imagesList = new ArrayList<>();
+      for (TTImage ttImage : ttFeedAd.getImageList()) {
         if (ttImage.isValid()) {
           imagesList.add(new PangleNativeMappedImage(null, Uri.parse(ttImage.getImageUrl()),
               PANGLE_SDK_IMAGE_SCALE));
@@ -121,25 +120,25 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       setImages(imagesList);
     }
 
-    // Pangle does its own show event handling and click event handling
+    // Pangle does its own show event handling and click event handling.
     setOverrideImpressionRecording(true);
     setOverrideClickHandling(true);
 
-    // add Native Feed Main View
-    MediaView mediaView = new MediaView(context);
+    // Add Native Feed Main View.
+    MediaView mediaView = new MediaView(adConfiguration.getContext());
     setMediaView(mediaView);
 
-    // set logo
-    setAdChoicesContent(mPangleAd.getAdLogoView());
+    // Set logo.
+    setAdChoicesContent(ttFeedAd.getAdLogoView());
 
-    if (mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
-        mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
-        mPangleAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
+    if (ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
+        ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
+        ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
       setHasVideoContent(true);
-      mPangleAd.setVideoAdListener(new TTFeedAd.VideoAdListener() {
+      ttFeedAd.setVideoAdListener(new TTFeedAd.VideoAdListener() {
         @Override
         public void onVideoLoad(TTFeedAd ad) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
 
         @Override
@@ -151,27 +150,27 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
         @Override
         public void onVideoAdStartPlay(TTFeedAd ad) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
 
         @Override
         public void onVideoAdPaused(TTFeedAd ad) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
 
         @Override
         public void onVideoAdContinuePlay(TTFeedAd ad) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
 
         @Override
         public void onProgressUpdate(long current, long duration) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
 
         @Override
         public void onVideoAdComplete(TTFeedAd ad) {
-          // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          // Not available externally, subsequent versions will be deprecated.
         }
       });
     }
@@ -182,15 +181,15 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void trackViews(@NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
-    //set click interaction
+    // Set click interaction.
     ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
     View creativeBtn = clickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
     ArrayList<View> creativeViews = new ArrayList<>();
     if (creativeBtn != null) {
       creativeViews.add(creativeBtn);
     }
-    if (mPangleAd != null) {
-      mPangleAd.registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
+    if (ttFeedAd != null) {
+      ttFeedAd.registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
           new TTNativeAd.AdInteractionListener() {
             @Override
             public void onAdClicked(View view, TTNativeAd ad) {
@@ -214,7 +213,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     }
   }
 
-  public class PangleNativeMappedImage extends NativeAd.Image {
+  public class PangleNativeMappedImage extends Image {
 
     private final Drawable drawable;
     private final Uri imageUri;
@@ -226,11 +225,13 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       this.scale = scale;
     }
 
+    @NonNull
     @Override
     public Drawable getDrawable() {
       return drawable;
     }
 
+    @NonNull
     @Override
     public Uri getUri() {
       return imageUri;
