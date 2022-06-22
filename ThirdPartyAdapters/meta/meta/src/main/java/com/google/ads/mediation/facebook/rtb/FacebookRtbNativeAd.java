@@ -263,9 +263,6 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     FacebookRtbNativeAd.this.setHasVideoContent(true);
     FacebookRtbNativeAd.this.setMediaView(mMediaView);
 
-    // Map the optional assets.
-    setStarRating(null);
-
     // Pass all the assets not supported by Google as extras.
     Bundle extras = new Bundle();
     extras.putCharSequence(KEY_ID, mNativeAdBase.getId());
