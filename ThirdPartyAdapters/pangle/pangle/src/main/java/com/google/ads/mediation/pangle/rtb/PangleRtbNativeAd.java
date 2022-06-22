@@ -8,8 +8,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -19,6 +23,7 @@ import com.bytedance.sdk.openadsdk.TTFeedAd;
 import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.bytedance.sdk.openadsdk.adapter.MediaView;
+import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -28,6 +33,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,9 +55,9 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void render() {
     PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementID = adConfiguration.getServerParameters()
+    String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
-    if (TextUtils.isEmpty(placementID)) {
+    if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
@@ -77,7 +83,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
         .createAdNative(adConfiguration.getContext().getApplicationContext());
 
     AdSlot adSlot = new AdSlot.Builder()
-        .setCodeId(placementID)
+        .setCodeId(placementId)
         .setAdCount(1)
         .withBid(bidResponse)
         .build();
@@ -126,6 +132,9 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
     // Add Native Feed Main View.
     MediaView mediaView = new MediaView(adConfiguration.getContext());
+    MediationAdapterUtil
+        .addNativeFeedMainView(adConfiguration.getContext(), ttFeedAd.getImageMode(), mediaView,
+            ttFeedAd.getAdView(), ttFeedAd.getImageList());
     setMediaView(mediaView);
 
     // Set logo.
@@ -189,27 +198,69 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       creativeViews.add(creativeBtn);
     }
     if (ttFeedAd != null) {
-      ttFeedAd.registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
-          new TTNativeAd.AdInteractionListener() {
-            @Override
-            public void onAdClicked(View view, TTNativeAd ad) {
+      ttFeedAd
+          .registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
+              new TTNativeAd.AdInteractionListener() {
+                @Override
+                public void onAdClicked(View view, TTNativeAd ad) {
 
-            }
+                }
 
-            @Override
-            public void onAdCreativeClick(View view, TTNativeAd ad) {
-              if (callback != null) {
-                callback.reportAdClicked();
-              }
-            }
+                @Override
+                public void onAdCreativeClick(View view, TTNativeAd ad) {
+                  if (callback != null) {
+                    callback.reportAdClicked();
+                  }
+                }
 
-            @Override
-            public void onAdShow(TTNativeAd ad) {
-              if (callback != null) {
-                callback.reportAdImpression();
-              }
-            }
-          });
+                @Override
+                public void onAdShow(TTNativeAd ad) {
+                  if (callback != null) {
+                    callback.reportAdImpression();
+                  }
+                }
+              });
+    }
+
+    // Set logo.
+    NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
+    ViewGroup adView = (ViewGroup) containerView;
+    View overlayView = adView.getChildAt(adView.getChildCount() - 1);
+    if (overlayView instanceof FrameLayout) {
+      int privacyIconPlacement = nativeAdOptions.getAdChoicesPlacement();
+
+      ImageView privacyInformationIconImageView = null;
+      if (ttFeedAd != null) {
+        privacyInformationIconImageView = (ImageView) ttFeedAd.getAdLogoView();
+      }
+
+      if (privacyInformationIconImageView != null) {
+        privacyInformationIconImageView.setVisibility(View.VISIBLE);
+        ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
+
+        FrameLayout.LayoutParams params =
+            new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT);
+
+        switch (privacyIconPlacement) {
+          case NativeAdOptions.ADCHOICES_TOP_LEFT:
+            params.gravity = Gravity.TOP | Gravity.START;
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+            params.gravity = Gravity.BOTTOM | Gravity.END;
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+            params.gravity = Gravity.BOTTOM | Gravity.START;
+            break;
+          case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+            params.gravity = Gravity.TOP | Gravity.END;
+            break;
+          default:
+            params.gravity = Gravity.TOP | Gravity.END;
+        }
+        privacyInformationIconImageView.setLayoutParams(params);
+      }
+      adView.requestLayout();
     }
   }
 
