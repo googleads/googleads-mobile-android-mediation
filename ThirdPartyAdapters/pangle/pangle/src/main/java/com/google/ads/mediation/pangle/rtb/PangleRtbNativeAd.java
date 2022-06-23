@@ -137,9 +137,6 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             ttFeedAd.getAdView(), ttFeedAd.getImageList());
     setMediaView(mediaView);
 
-    // Set logo.
-    setAdChoicesContent(ttFeedAd.getAdLogoView());
-
     if (ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
         ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
         ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
@@ -190,6 +187,9 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void trackViews(@NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
+    if (ttFeedAd == null) {
+      return;
+    }
     // Set click interaction.
     ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
     View creativeBtn = clickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
@@ -197,30 +197,27 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     if (creativeBtn != null) {
       creativeViews.add(creativeBtn);
     }
-    if (ttFeedAd != null) {
-      ttFeedAd
-          .registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
-              new TTNativeAd.AdInteractionListener() {
-                @Override
-                public void onAdClicked(View view, TTNativeAd ad) {
+    ttFeedAd.registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
+        new TTNativeAd.AdInteractionListener() {
+          @Override
+          public void onAdClicked(View view, TTNativeAd ad) {
 
-                }
+          }
 
-                @Override
-                public void onAdCreativeClick(View view, TTNativeAd ad) {
-                  if (callback != null) {
-                    callback.reportAdClicked();
-                  }
-                }
+          @Override
+          public void onAdCreativeClick(View view, TTNativeAd ad) {
+            if (callback != null) {
+              callback.reportAdClicked();
+            }
+          }
 
-                @Override
-                public void onAdShow(TTNativeAd ad) {
-                  if (callback != null) {
-                    callback.reportAdImpression();
-                  }
-                }
-              });
-    }
+          @Override
+          public void onAdShow(TTNativeAd ad) {
+            if (callback != null) {
+              callback.reportAdImpression();
+            }
+          }
+        });
 
     // Set logo.
     NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
@@ -230,9 +227,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       int privacyIconPlacement = nativeAdOptions.getAdChoicesPlacement();
 
       ImageView privacyInformationIconImageView = null;
-      if (ttFeedAd != null) {
-        privacyInformationIconImageView = (ImageView) ttFeedAd.getAdLogoView();
-      }
+      privacyInformationIconImageView = (ImageView) ttFeedAd.getAdLogoView();
 
       if (privacyInformationIconImageView != null) {
         privacyInformationIconImageView.setVisibility(View.VISIBLE);
