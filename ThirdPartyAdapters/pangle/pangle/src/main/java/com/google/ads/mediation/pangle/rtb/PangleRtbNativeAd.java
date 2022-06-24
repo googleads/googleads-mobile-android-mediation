@@ -201,7 +201,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
         new TTNativeAd.AdInteractionListener() {
           @Override
           public void onAdClicked(View view, TTNativeAd ad) {
-
+            // No-op.
           }
 
           @Override
