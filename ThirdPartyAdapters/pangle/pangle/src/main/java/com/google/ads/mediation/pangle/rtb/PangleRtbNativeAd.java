@@ -144,7 +144,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       ttFeedAd.setVideoAdListener(new TTFeedAd.VideoAdListener() {
         @Override
         public void onVideoLoad(TTFeedAd ad) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
 
         @Override
@@ -156,27 +156,27 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
         @Override
         public void onVideoAdStartPlay(TTFeedAd ad) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
 
         @Override
         public void onVideoAdPaused(TTFeedAd ad) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
 
         @Override
         public void onVideoAdContinuePlay(TTFeedAd ad) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
 
         @Override
         public void onProgressUpdate(long current, long duration) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
 
         @Override
         public void onVideoAdComplete(TTFeedAd ad) {
-          // Not available externally, subsequent versions will be deprecated.
+          // No-op, will be deprecated in the next version.
         }
       });
     }
