@@ -8,12 +8,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
-import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -33,8 +30,8 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
-import com.google.android.gms.ads.nativead.NativeAdOptions;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -137,6 +134,9 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             ttFeedAd.getAdView(), ttFeedAd.getImageList());
     setMediaView(mediaView);
 
+    // Set logo.
+    setAdChoicesContent(ttFeedAd.getAdLogoView());
+
     if (ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO ||
         ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_VERTICAL ||
         ttFeedAd.getImageMode() == TTAdConstant.IMAGE_MODE_VIDEO_SQUARE) {
@@ -188,11 +188,16 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
     if (ttFeedAd == null) {
+      Log.d(TAG, "The native ad object is null, stop the trackViews process");
       return;
     }
     // Set click interaction.
-    ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
-    View creativeBtn = clickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
+    HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
+    copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
+    // Exclude fragments view containing ad choices to avoid ad choices click listener failure.
+    copyClickableAssetViews.remove("3012");
+    ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
+    View creativeBtn = copyClickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
     ArrayList<View> creativeViews = new ArrayList<>();
     if (creativeBtn != null) {
       creativeViews.add(creativeBtn);
@@ -218,45 +223,13 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             }
           }
         });
-
-    // Set logo.
-    NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
-    ViewGroup adView = (ViewGroup) containerView;
-    View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-    if (overlayView instanceof FrameLayout) {
-      int privacyIconPlacement = nativeAdOptions.getAdChoicesPlacement();
-
-      ImageView privacyInformationIconImageView = null;
-      privacyInformationIconImageView = (ImageView) ttFeedAd.getAdLogoView();
-
-      if (privacyInformationIconImageView != null) {
-        privacyInformationIconImageView.setVisibility(View.VISIBLE);
-        ((ViewGroup) overlayView).addView(privacyInformationIconImageView);
-
-        FrameLayout.LayoutParams params =
-            new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT);
-
-        switch (privacyIconPlacement) {
-          case NativeAdOptions.ADCHOICES_TOP_LEFT:
-            params.gravity = Gravity.TOP | Gravity.START;
-            break;
-          case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
-            params.gravity = Gravity.BOTTOM | Gravity.END;
-            break;
-          case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
-            params.gravity = Gravity.BOTTOM | Gravity.START;
-            break;
-          case NativeAdOptions.ADCHOICES_TOP_RIGHT:
-            params.gravity = Gravity.TOP | Gravity.END;
-            break;
-          default:
-            params.gravity = Gravity.TOP | Gravity.END;
-        }
-        privacyInformationIconImageView.setLayoutParams(params);
+    // Set ad choices click listener.
+    getAdChoicesContent().setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        ttFeedAd.showPrivacyActivity();
       }
-      adView.requestLayout();
-    }
+    });
   }
 
   public class PangleNativeMappedImage extends Image {
