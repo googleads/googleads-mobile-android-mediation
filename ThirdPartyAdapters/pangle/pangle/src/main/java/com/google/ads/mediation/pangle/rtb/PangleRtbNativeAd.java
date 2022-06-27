@@ -187,10 +187,6 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void trackViews(@NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
-    if (ttFeedAd == null) {
-      Log.d(TAG, "The native ad object is null, stop the trackViews process");
-      return;
-    }
     // Set click interaction.
     HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
     copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
