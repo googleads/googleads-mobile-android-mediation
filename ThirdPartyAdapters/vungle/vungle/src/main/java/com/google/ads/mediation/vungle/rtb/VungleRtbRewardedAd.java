@@ -41,7 +41,6 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
   private String mAdMarkup;
   private String mUserID;
 
-
   public VungleRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
