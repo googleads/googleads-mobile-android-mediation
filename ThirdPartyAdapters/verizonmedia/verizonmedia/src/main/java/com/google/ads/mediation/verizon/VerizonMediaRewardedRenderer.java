@@ -14,7 +14,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.verizon.ads.ErrorInfo;
-import com.verizon.ads.VASAds;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 import com.verizon.ads.utils.ThreadUtils;
@@ -29,7 +28,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   /**
    * The mediation ad load callback.
    */
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
   /**
@@ -40,7 +39,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   /**
    * Flag to check 'onEvent()' completion.
    */
-  private AtomicBoolean completionEventCalled = new AtomicBoolean();
+  private final AtomicBoolean completionEventCalled = new AtomicBoolean();
 
   /**
    * The mediation rewarded ad callback used to report ad event callbacks.
@@ -50,7 +49,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   /**
    * The mediation rewarded ad configuration.
    */
-  private MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
+  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
   public VerizonMediaRewardedRenderer(@NonNull MediationAdLoadCallback<MediationRewardedAd,
       MediationRewardedAdCallback> mediationAdLoadCallback, MediationRewardedAdConfiguration
@@ -80,7 +79,6 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
     }
 
     VerizonMediaAdapterUtils.setCoppaValue(mediationRewardedAdConfiguration);
-    VASAds.setLocationEnabled((mediationRewardedAdConfiguration.getLocation() != null));
     InterstitialAdFactory interstitialAdFactory =
         new InterstitialAdFactory(mediationRewardedAdConfiguration.getContext(),
             placementId, this);
@@ -198,6 +196,7 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
           if (mediationRewardedAdCallback != null) {
             mediationRewardedAdCallback.onVideoComplete();
             mediationRewardedAdCallback.onUserEarnedReward(new RewardItem() {
+              @NonNull
               @Override
               public String getType() {
                 return "";
@@ -215,21 +214,13 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
   }
 
   @Override
-  public void showAd(Context context) {
-    if (context == null) {
-      if (mediationRewardedAdCallback != null) {
-        mediationRewardedAdCallback.onAdFailedToShow("Failed to show: context is null.");
-      }
-      return;
-    }
-
+  public void showAd(@NonNull Context context) {
     if (rewardedAd == null) {
       if (mediationRewardedAdCallback != null) {
         mediationRewardedAdCallback.onAdFailedToShow("No ads to show.");
       }
       return;
     }
-
     rewardedAd.show(context);
   }
 

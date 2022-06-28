@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -14,9 +13,7 @@ import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
-import com.inmobi.sdk.InMobiSdk.Gender;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
@@ -45,23 +42,7 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void setGlobalTargeting(MediationAdRequest mediationAdRequest, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (mediationAdRequest.getLocation() != null) {
-      InMobiSdk.setLocation(mediationAdRequest.getLocation());
-    }
-  }
-
-  static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (configuration.getLocation() != null) {
-      InMobiSdk.setLocation(configuration.getLocation());
-    }
-  }
-
-  private static void configureGlobalTargeting(Bundle extras) {
+  static void configureGlobalTargeting(Bundle extras) {
     if (extras == null) {
       Log.d(InMobiMediationAdapter.TAG, "Bundle extras are null");
       extras = new Bundle();
@@ -201,9 +182,6 @@ class InMobiAdapterUtils {
     }
     if (value.equals(InMobiNetworkValues.LOGLEVEL_ERROR)) {
       return LogLevel.ERROR;
-    }
-    if (value.equals(InMobiNetworkValues.LOGLEVEL_NONE)) {
-      return LogLevel.NONE;
     }
     return LogLevel.NONE;
   }

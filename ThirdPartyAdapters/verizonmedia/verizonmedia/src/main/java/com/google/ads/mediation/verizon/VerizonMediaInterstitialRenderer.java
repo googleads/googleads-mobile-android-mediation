@@ -26,7 +26,7 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
   /**
    * The mediation interstitial adapter weak reference.
    */
-  private WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
+  private final WeakReference<MediationInterstitialAdapter> interstitialAdapterWeakRef;
 
   /**
    * The mediation interstitial listener used to report interstitial ad event callbacks.
@@ -72,7 +72,6 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
     }
 
     VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
     InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, placementId
         , this);
     interstitialAdFactory.setRequestMetaData(VerizonMediaAdapterUtils

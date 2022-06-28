@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -33,7 +34,7 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
   /**
    * Data used to render an RTB interstitial ad.
    */
-  private MediationAdConfiguration adConfiguration;
+  private final MediationAdConfiguration adConfiguration;
 
   /**
    * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
@@ -47,8 +48,8 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
   private static final String MEDIATION_AGENT = "admob";
   private static final String TAPJOY_INTERNAL_ADAPTER_VERSION = "2.0.0";
 
-  private static HashMap<String, WeakReference<TapjoyRtbInterstitialRenderer>> placementsInUse =
-      new HashMap<>();
+  private static final HashMap<String, WeakReference<TapjoyRtbInterstitialRenderer>>
+      placementsInUse = new HashMap<>();
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
   /**
@@ -61,9 +62,9 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
    */
   private MediationInterstitialAdCallback listener;
 
-  public TapjoyRtbInterstitialRenderer(
-      MediationAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public TapjoyRtbInterstitialRenderer(@NonNull MediationAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     this.adConfiguration = adConfiguration;
     this.callback = callback;
   }
@@ -101,7 +102,7 @@ public class TapjoyRtbInterstitialRenderer implements MediationInterstitialAd {
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     Log.i(TAG, "Show interstitial content for Tapjoy-AdMob adapter.");
     if (interstitialPlacement != null && interstitialPlacement.isContentAvailable()) {
       interstitialPlacement.showContent();

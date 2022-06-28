@@ -233,9 +233,18 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
   private void mapNativeAd() {
     NativeAd nativeAd = vungleNativeAd.getNativeAd();
-    setHeadline("" + nativeAd.getAdTitle());
-    setBody("" + nativeAd.getAdBodyText());
-    setCallToAction("" + nativeAd.getAdCallToActionText());
+    String title = nativeAd.getAdTitle();
+    if (title != null) {
+      setHeadline(title);
+    }
+    String body = nativeAd.getAdBodyText();
+    if (body != null) {
+      setBody(body);
+    }
+    String cta = nativeAd.getAdCallToActionText();
+    if (cta != null) {
+      setCallToAction(cta);
+    }
     Double starRating = nativeAd.getAdStarRating();
     if (starRating != null) {
       setStarRating(starRating);

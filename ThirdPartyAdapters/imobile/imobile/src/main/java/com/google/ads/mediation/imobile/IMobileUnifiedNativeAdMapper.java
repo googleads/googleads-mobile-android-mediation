@@ -20,7 +20,7 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   /**
    * Called when clicked.
    */
-  private Runnable clickEvent;
+  private final Runnable clickEvent;
 
   public IMobileUnifiedNativeAdMapper(
       @NonNull ImobileSdkAdsNativeAdData adData, @NonNull Drawable adImage) {
@@ -47,7 +47,7 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void handleClick(View view) {
+  public void handleClick(@NonNull View view) {
     // Run click event.
     clickEvent.run();
   }

@@ -39,11 +39,11 @@ public final class ChartboostSingleton {
    * Synchronized HashMaps of {@link AbstractChartboostAdapterDelegate} weak references keyed by
    * their Chartboost location.
    */
-  private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
+  private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
       mInterstitialDelegates = new HashMap<>();
-  private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
+  private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
       mRewardedDelegates = new HashMap<>();
-  private static HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
+  private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
       mBannerDelegates = new HashMap<>();
 
   /**

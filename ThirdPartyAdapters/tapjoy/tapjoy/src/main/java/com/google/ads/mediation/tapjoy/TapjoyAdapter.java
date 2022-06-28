@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
@@ -32,17 +34,18 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
   /**
    * Represents a {@link TJPlacement}.
    */
-  private String sdkKey = null;
   private String interstitialPlacementName = null;
 
-  private static HashMap<String, WeakReference<TapjoyAdapter>> placementsInUse = new HashMap<>();
+  private static final HashMap<String, WeakReference<TapjoyAdapter>> placementsInUse =
+      new HashMap<>();
 
   private TJPlacement interstitialPlacement;
   private MediationInterstitialListener mediationInterstitialListener;
 
   @Override
-  public void requestInterstitialAd(Context context, MediationInterstitialListener listener,
-      final Bundle serverParameters, MediationAdRequest mediationAdRequest, Bundle networkExtras) {
+  public void requestInterstitialAd(@NonNull Context context,
+      @NonNull MediationInterstitialListener listener, @NonNull final Bundle serverParameters,
+      @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle networkExtras) {
     mediationInterstitialListener = listener;
 
     if (!(context instanceof Activity)) {
@@ -56,7 +59,7 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
     }
     Activity activity = (Activity) context;
 
-    sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
+    String sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
           ERROR_DOMAIN);
@@ -269,11 +272,13 @@ public class TapjoyAdapter extends TapjoyMediationAdapter
 
     private boolean debugEnabled = false;
 
+    @NonNull
     public TapjoyExtrasBundleBuilder setDebug(boolean debug) {
       this.debugEnabled = debug;
       return this;
     }
 
+    @NonNull
     public Bundle build() {
       Bundle bundle = new Bundle();
       bundle.putBoolean(DEBUG, debugEnabled);

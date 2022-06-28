@@ -21,7 +21,6 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -41,13 +40,9 @@ public class AdColonyManager {
     return instance;
   }
 
-  public void configureAdColony(
-          @NonNull Context context,
-          @NonNull AdColonyAppOptions options,
-          @NonNull String appID,
-          @NonNull ArrayList<String> zones,
-          @NonNull InitializationListener listener
-  ) {
+  public void configureAdColony(@NonNull Context context, @NonNull AdColonyAppOptions options,
+      @NonNull String appID, @NonNull ArrayList<String> zones,
+      @NonNull InitializationListener listener) {
     if (!(context instanceof Activity || context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
               "AdColony SDK requires an Activity context to initialize");
@@ -57,14 +52,14 @@ public class AdColonyManager {
 
     if (TextUtils.isEmpty(appID)) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid AdColony app ID.");
+          "Missing or invalid AdColony app ID.");
       listener.onInitializeFailed(error);
       return;
     }
 
     if (zones.isEmpty()) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "No zones provided to initialize the AdColony SDK.");
+          "No zones provided to initialize the AdColony SDK.");
       listener.onInitializeFailed(error);
       return;
     }
@@ -93,29 +88,23 @@ public class AdColonyManager {
 
     if (!isConfigured) {
       AdError error = createAdapterError(ERROR_ADCOLONY_NOT_INITIALIZED,
-              "AdColony SDK failed to initialize.");
+          "AdColony SDK failed to initialize.");
       listener.onInitializeFailed(error);
       return;
     }
     listener.onInitializeSuccess();
   }
 
-  void configureAdColony(
-          @NonNull Context context,
-          @NonNull Bundle serverParams,
-          @NonNull MediationAdRequest adRequest,
-          @NonNull InitializationListener listener
-  ) {
+  void configureAdColony(@NonNull Context context, @NonNull Bundle serverParams,
+      @NonNull MediationAdRequest adRequest, @NonNull InitializationListener listener) {
     String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
     ArrayList<String> newZoneList = parseZoneList(serverParams);
     AdColonyAppOptions appOptions = buildAppOptions(adRequest);
     configureAdColony(context, appOptions, appId, newZoneList, listener);
   }
 
-  public void configureAdColony(
-          @NonNull MediationRewardedAdConfiguration adConfiguration,
-          @NonNull InitializationListener listener
-  ) {
+  public void configureAdColony(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull InitializationListener listener) {
     Context context = adConfiguration.getContext();
     Bundle serverParams = adConfiguration.getServerParameters();
     String appId = serverParams.getString(AdColonyAdapterUtils.KEY_APP_ID);
@@ -125,28 +114,29 @@ public class AdColonyManager {
   }
 
   /**
-   * Places user_id, age, location, and gender into AdColonyAppOptions.
+   * Configure AdColony app options from the provided ad request object.
    *
-   * @param adRequest request received from AdMob.
-   * @return a valid AppOptions object.
+   * @param adRequest ad request object.
+   * @return a valid {@link AdColonyAppOptions} object.
    */
-  private AdColonyAppOptions buildAppOptions(MediationAdRequest adRequest) {
+  private AdColonyAppOptions buildAppOptions(@NonNull MediationAdRequest adRequest) {
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
-    if (adRequest != null && adRequest.isTesting()) {
-      // Enable test ads from AdColony when a Test Ad Request was sent.
-        options.setTestModeEnabled(true);
+    // Enable test ads from AdColony when a Test Ad Request was sent.
+    if (adRequest.isTesting()) {
+      options.setTestModeEnabled(true);
     }
     return options;
   }
 
   /**
-   * Places user_id, age, location, and gender into AdColonyAppOptions.
+   * Configure AdColony app options from the provided ad configuration.
    *
-   * @param adConfiguration rewarded ad configuration received from AdMob.
-   * @return a valid AppOptions object.
+   * @param adConfiguration rewarded ad configuration object.
+   * @return a valid {@link AdColonyAppOptions} object.
    */
-  private AdColonyAppOptions buildAppOptions(MediationRewardedAdConfiguration adConfiguration) {
+  private AdColonyAppOptions buildAppOptions(
+      @NonNull MediationRewardedAdConfiguration adConfiguration) {
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.

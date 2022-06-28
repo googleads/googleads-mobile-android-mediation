@@ -12,7 +12,7 @@ public class TapjoyInitializer implements TJConnectListener {
   private static TapjoyInitializer instance;
   private InitStatus status;
 
-  private ArrayList<Listener> initListeners;
+  private final ArrayList<Listener> initListeners;
 
   private enum InitStatus {
     UNINITIALIZED,

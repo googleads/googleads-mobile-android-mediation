@@ -108,7 +108,7 @@ public class InMobiMediationAdapter extends Adapter {
   // endregion
 
   // Flag to check whether the InMobi SDK has been initialized or not.
-  static AtomicBoolean isSdkInitialized = new AtomicBoolean();
+  static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
 
   // Callback listener
   private InMobiRewardedAd mInMobiRewarded;

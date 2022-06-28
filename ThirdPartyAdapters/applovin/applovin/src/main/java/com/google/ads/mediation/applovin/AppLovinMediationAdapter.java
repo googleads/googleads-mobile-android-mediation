@@ -232,7 +232,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
   @Override
   public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
 
@@ -330,7 +330,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void collectSignals(RtbSignalData rtbSignalData,
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
     final MediationConfiguration config = rtbSignalData.getConfiguration();
 
@@ -345,10 +345,7 @@ public class AppLovinMediationAdapter extends RtbAdapter
     }
 
     // Check if the publisher provided extra parameters
-    if (rtbSignalData.getNetworkExtras() != null) {
-      log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
-    }
-
+    log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
     AppLovinSdk sdk =
         AppLovinUtils.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();

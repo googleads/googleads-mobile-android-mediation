@@ -6,8 +6,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 
 public class UnityInterstitialEventAdapter implements IUnityEventAdapter {
 
-  MediationInterstitialListener listener;
-  MediationInterstitialAdapter adapter;
+  final MediationInterstitialListener listener;
+  final MediationInterstitialAdapter adapter;
 
   public UnityInterstitialEventAdapter(MediationInterstitialListener listener,
       MediationInterstitialAdapter adapter) {
