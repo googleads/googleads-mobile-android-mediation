@@ -1,16 +1,16 @@
 package com.google.ads.mediation.facebook.rtb;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_NULL_CONTEXT;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_WRONG_NATIVE_TYPE;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
@@ -51,8 +52,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private MediationNativeAdCallback mNativeAdCallback;
   private MediaView mMediaView;
 
-  public FacebookRtbNativeAd(MediationNativeAdConfiguration adConfiguration,
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  public FacebookRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     this.callback = callback;
     this.adConfiguration = adConfiguration;
   }
@@ -180,7 +181,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
    *
    * @param mapperListener used to send success/failure callbacks when mapping is done.
    */
-  public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
+  public void mapNativeAd(@NonNull Context context,
+      @NonNull NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
       AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
           "Ad from Meta Audience Network doesn't have all required assets.", ERROR_DOMAIN);
@@ -385,14 +387,16 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     /**
-     * @param drawable set to {@link #mDrawable}.
+     * Returns the native ad image drawable. This is purposefully set as {@link Nullable} even if
+     * the overridden method is {@link NonNull}. The Google Mobile Ads SDK only supports loading
+     * native ads of type {@link com.google.android.gms.ads.nativead.NativeAd}, which expose image
+     * assets of type {@link com.google.android.gms.ads.nativead.NativeAd.Image}, which allows a
+     * {@code null} drawable.
+     *
+     * @return the image drawable.
      */
-    protected void setDrawable(Drawable drawable) {
-      this.mDrawable = drawable;
-    }
-
     @Override
-    @NonNull
+    @Nullable
     public Drawable getDrawable() {
       return mDrawable;
     }
