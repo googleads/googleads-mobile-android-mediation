@@ -1,8 +1,15 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.11.0.2
+#### Version 6.11.0.3
 - Native ads support.
 - COPPA support.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.0.0.
+- Vungle SDK version 6.11.0.
+
+#### Version 6.11.0.2 (In Progress)
+- Added support for loading multiple ads for the same placement ID in rewarded bidding ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.0.0.
