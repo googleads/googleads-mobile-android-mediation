@@ -1,5 +1,70 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
+#### Version 12.9.1.0
+- Verified compatibility with Tapjoy SDK version 12.9.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- Tapjoy SDK version 12.9.1.
+
+#### Version 12.9.0.0
+- Verified compatibility with Tapjoy SDK version 12.9.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Tapjoy SDK version 12.9.0.
+
+#### Version 12.8.1.1
+- Verified compatibility with Tapjoy SDK version 12.8.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
+- Fixed an issue where a crash could occur if Tapjoy's TJError.message field is null.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- Tapjoy SDK version 12.8.1.
+
+#### Version 12.8.1.0
+- Verified compatibility with Tapjoy SDK version 12.8.1.
+- Fixed an issue where a `NullPointerException` is being logged when an error is logged by the adapter.
+- Updated the minimum required Google Mobile Ads SDK version to 20.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.2.0.
+- Tapjoy SDK version 12.8.1.
+
+#### Version 12.8.0.1
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- Tapjoy SDK version 12.8.0.
+
+#### Version 12.8.0.0
+- Fixed incorrect error messages.
+- Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- Tapjoy SDK version 12.8.0.
+
+#### Version 12.7.1.0
+- Verified compatibility with Tapjoy SDK version 12.7.1.
+- Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- Tapjoy SDK version 12.7.1.
+
+#### Version 12.7.0.0
+- Fixed an issue where the adapter returns an incorrect version string.
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- Tapjoy SDK version 12.7.0.
+
 #### Version 12.6.1.0
 - Verified compatibility with Tapjoy SDK version 12.6.1.
 - Loading multiple interstitial ads with the same Tapjoy placement name at once now results in a load error for the second request. This behavior now matches existing behavior for rewarded ads.
@@ -69,7 +134,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 17.2.1.
 
 #### Version 12.2.1.1
-- Added open bidding capability to the adapter for interstitial and
+- Added bidding capability to the adapter for interstitial and
   rewarded ads.
 
 #### Version 12.2.1.0

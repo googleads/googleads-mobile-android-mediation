@@ -5,11 +5,12 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.inmobi.ads.InMobiAdRequestStatus;
+import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
@@ -49,27 +50,6 @@ class InMobiAdapterUtils {
 
     if (mediationAdRequest.getLocation() != null) {
       InMobiSdk.setLocation(mediationAdRequest.getLocation());
-    }
-
-    // Date Of Birth
-    if (mediationAdRequest.getBirthday() != null) {
-      Calendar dob = Calendar.getInstance();
-      dob.setTime(mediationAdRequest.getBirthday());
-      InMobiSdk.setYearOfBirth(dob.get(Calendar.YEAR));
-    }
-
-    // Gender
-    if (mediationAdRequest.getGender() != -1) {
-      switch (mediationAdRequest.getGender()) {
-        case AdRequest.GENDER_MALE:
-          InMobiSdk.setGender(Gender.MALE);
-          break;
-        case AdRequest.GENDER_FEMALE:
-          InMobiSdk.setGender(Gender.FEMALE);
-          break;
-        default:
-          break;
-      }
     }
   }
 
@@ -228,10 +208,73 @@ class InMobiAdapterUtils {
     return LogLevel.NONE;
   }
 
-  static <T> T mandatoryChecking(@Nullable T x, String param) throws MandatoryParamException {
-    if (x == null || x.toString().isEmpty()) {
-      throw new MandatoryParamException("Mandatory param " + param + " not present");
-    }
-    return x;
+  /**
+   * Checks whether or not the InMobi native ad has all the required assets.
+   *
+   * @param nativeAd the InMobi native ad object.
+   * @return {@code true} if the native ad has all the required assets.
+   */
+  public static boolean isValidNativeAd(InMobiNative nativeAd) {
+    return nativeAd.getAdCtaText() != null
+        && nativeAd.getAdDescription() != null
+        && nativeAd.getAdIconUrl() != null
+        && nativeAd.getAdLandingPageUrl() != null
+        && nativeAd.getAdTitle() != null;
   }
+
+  /**
+   * Returns an error code from the corresponding {@link InMobiAdRequestStatus}
+   *
+   * @param status the InMobi ad request status object.
+   * @return the error code.
+   */
+  public static int getMediationErrorCode(@NonNull InMobiAdRequestStatus status) {
+    switch (status.getStatusCode()) {
+      case NO_ERROR:
+        return 0;
+      case NETWORK_UNREACHABLE:
+        return 1;
+      case NO_FILL:
+        return 2;
+      case REQUEST_INVALID:
+        return 3;
+      case REQUEST_PENDING:
+        return 4;
+      case REQUEST_TIMED_OUT:
+        return 5;
+      case INTERNAL_ERROR:
+        return 6;
+      case SERVER_ERROR:
+        return 7;
+      case AD_ACTIVE:
+        return 8;
+      case EARLY_REFRESH_REQUEST:
+        return 9;
+      case AD_NO_LONGER_AVAILABLE:
+        return 10;
+      case MISSING_REQUIRED_DEPENDENCIES:
+        return 11;
+      case REPETITIVE_LOAD:
+        return 12;
+      case GDPR_COMPLIANCE_ENFORCED:
+        return 13;
+      case GET_SIGNALS_CALLED_WHILE_LOADING:
+        return 14;
+      case LOAD_WITH_RESPONSE_CALLED_WHILE_LOADING:
+        return 15;
+      case INVALID_RESPONSE_IN_LOAD:
+        return 16;
+      case MONETIZATION_DISABLED:
+        return 17;
+      case CALLED_FROM_WRONG_THREAD:
+        return 18;
+      case CONFIGURATION_ERROR:
+        return 19;
+      case LOW_MEMORY:
+        return 20;
+    }
+    // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
+    return 99;
+  }
+
 }

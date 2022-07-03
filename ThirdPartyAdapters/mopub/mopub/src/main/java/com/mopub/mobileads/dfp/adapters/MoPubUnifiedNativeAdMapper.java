@@ -25,13 +25,21 @@ import java.util.Map;
 
 public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /** MoPub StaticNativeAd instance. */
+  /**
+   * MoPub StaticNativeAd instance.
+   */
   private StaticNativeAd mMoPubNativeAdData;
-  /** Holds privacy icon placement. */
+  /**
+   * Holds privacy icon placement.
+   */
   private int privacyIconPlacement;
-  /** Holds MoPub privacy information icon. */
+  /**
+   * Holds MoPub privacy information icon.
+   */
   private ImageView privacyInformationIconImageView;
-  /** The size of MoPub's privacy icon. */
+  /**
+   * The size of MoPub's privacy icon.
+   */
   private int mPrivacyIconSize;
 
   public MoPubUnifiedNativeAdMapper(
@@ -66,8 +74,9 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     imagesList.add(mainImage);
     setImages(imagesList);
 
-    int height = mainImage.getHeight();
-    int width = mainImage.getWidth();
+    int height = nativeAdMainImage.getIntrinsicHeight();
+    int width = nativeAdMainImage.getIntrinsicWidth();
+
     float aspectRatio = 0.0f;
     if (height > 0) {
       aspectRatio = (float) (width / height);
@@ -179,8 +188,10 @@ public class MoPubUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void recordImpression() {}
+  public void recordImpression() {
+  }
 
   @Override
-  public void handleClick(View view) {}
+  public void handleClick(View view) {
+  }
 }

@@ -174,17 +174,6 @@ final class VerizonMediaInterstitialRenderer implements InterstitialAd.Interstit
     });
   }
 
-  @Override
-  public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory,
-      final int numRequested, final int numReceived) {
-    // no op.  caching not supported in adapter
-  }
-
-  @Override
-  public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory,
-      final int cacheSize) {
-    // no op.  caching not supported in adapter
-  }
 
   @Override
   public void onError(final InterstitialAdFactory interstitialAdFactory,

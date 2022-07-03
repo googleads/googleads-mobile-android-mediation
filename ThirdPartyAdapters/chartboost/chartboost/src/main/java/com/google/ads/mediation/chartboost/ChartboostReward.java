@@ -16,10 +16,14 @@ package com.google.ads.mediation.chartboost;
 
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-/** The {@link ChartboostReward} class is used to create rewards for users. */
+/**
+ * The {@link ChartboostReward} class is used to create rewards for users.
+ */
 public class ChartboostReward implements RewardItem {
 
-  /** Reward item amount to be rewarded. */
+  /**
+   * Reward item amount to be rewarded.
+   */
   private final int mAmount;
 
   public ChartboostReward(int amount) {

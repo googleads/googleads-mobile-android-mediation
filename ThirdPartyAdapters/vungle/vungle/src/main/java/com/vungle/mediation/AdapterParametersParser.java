@@ -1,16 +1,18 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
- * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific parameters.
+ * The {@link AdapterParametersParser} class helps in creating a Vungle network-specific
+ * parameters.
  */
-class AdapterParametersParser {
+public class AdapterParametersParser {
 
   private static final String TAG = VungleManager.class.getSimpleName();
 
-  static class Config {
+  public static class Config {
 
     private String appId;
     private String requestUniqueId;
@@ -24,14 +26,8 @@ class AdapterParametersParser {
     }
   }
 
-  public static Config parse(Bundle networkExtras, Bundle serverParameters)
-      throws IllegalArgumentException {
-    String appId = serverParameters.getString("appid");
-    if (appId == null || appId.isEmpty()) {
-      Log.e(TAG, "Vungle app ID should be specified!");
-      throw new IllegalArgumentException();
-    }
-
+  @NonNull
+  public static Config parse(@NonNull String appId, @Nullable Bundle networkExtras) {
     String uuid = null;
     if (networkExtras != null && networkExtras.containsKey(VungleExtrasBuilder.UUID_KEY)) {
       uuid = networkExtras.getString(VungleExtrasBuilder.UUID_KEY);

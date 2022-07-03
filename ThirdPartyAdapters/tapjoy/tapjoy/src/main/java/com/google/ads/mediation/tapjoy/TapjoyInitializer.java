@@ -32,9 +32,7 @@ public class TapjoyInitializer implements TJConnectListener {
     status = InitStatus.UNINITIALIZED;
   }
 
-  void initialize(Activity activity,
-      String sdkKey,
-      Hashtable<String, Object> connectFlags,
+  void initialize(Activity activity, String sdkKey, Hashtable<String, Object> connectFlags,
       Listener listener) {
     if (status.equals(InitStatus.INITIALIZED) || Tapjoy.isConnected()) {
       listener.onInitializeSucceeded();
@@ -45,7 +43,7 @@ public class TapjoyInitializer implements TJConnectListener {
     if (!status.equals(InitStatus.INITIALIZING)) {
       status = InitStatus.INITIALIZING;
 
-      Log.i(TapjoyMediationAdapter.TAG, "Connecting to Tapjoy for Tapjoy-AdMob adapter");
+      Log.i(TapjoyMediationAdapter.TAG, "Connecting to Tapjoy for Tapjoy-AdMob adapter.");
       Tapjoy.connect(activity, sdkKey, connectFlags, TapjoyInitializer.this);
     }
   }

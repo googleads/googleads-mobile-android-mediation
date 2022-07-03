@@ -1,38 +1,57 @@
 package com.google.ads.mediation.nend;
 
+import static com.google.ads.mediation.nend.NendMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.nend.NendMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import java.lang.ref.WeakReference;
 import net.nend.android.NendAdNativeClient;
 
-/** The {@link NendNativeAdForwarder} to load and show Nend native ads, Nend native video ads. */
+/**
+ * The {@link NendNativeAdForwarder} to load and show Nend native ads, Nend native video ads.
+ */
 class NendNativeAdForwarder {
 
   private static final String TAG = NendNativeAdForwarder.class.getSimpleName();
 
   static final String KEY_NATIVE_ADS_FORMAT_TYPE = "key_native_ads_format_type";
 
-  /** The adapter owning this instance. */
-  private NendMediationAdapter adapter;
+  /**
+   * The adapter owning this instance.
+   */
+  private final NendMediationAdapter adapter;
 
-  /** The native ad listener from the Google Mobile Ads SDK. */
-  private MediationNativeListener mediationNativeListener;
+  /**
+   * The native ad listener from the Google Mobile Ads SDK.
+   */
+  private MediationNativeListener nativeListener;
 
-  /** Weak reference to the {@link Context} used by Nend native ads. */
+  /**
+   * Weak reference to the {@link Context} used by Nend native ads.
+   */
   private WeakReference<Context> contextWeakReference;
 
-  /** Nend ad loader for native image and text ads. */
+  /**
+   * Nend ad loader for native image and text ads.
+   */
   private NativeAdLoader normalAdLoader;
 
-  /** Nend ad loader for native video ads. */
+  /**
+   * Nend ad loader for native video ads.
+   */
   private NativeVideoAdLoader videoAdLoader;
 
-  /** Nend native ad mapper for unified native ads. */
+  /**
+   * Nend native ad mapper for unified native ads.
+   */
   private NendUnifiedNativeAdMapper unifiedNativeAdMapper;
 
   NendNativeAdForwarder(NendMediationAdapter adapter) {
@@ -41,51 +60,49 @@ class NendNativeAdForwarder {
 
   void adLoaded() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdLoaded(adapter, unifiedNativeAdMapper);
+      nativeListener.onAdLoaded(adapter, unifiedNativeAdMapper);
     }
   }
 
-  void failedToLoad(int nendErrorCode) {
-    int errorCode = ErrorUtil.convertErrorCodeFromNendVideoToAdMob(nendErrorCode);
-    Log.w(TAG, "Failed to request ad from Nend, Error Code: " + errorCode);
+  void failedToLoad(AdError error) {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdFailedToLoad(adapter, errorCode);
+      nativeListener.onAdFailedToLoad(adapter, error);
     }
   }
 
   void adImpression() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdImpression(adapter);
+      nativeListener.onAdImpression(adapter);
     }
   }
 
   void adClicked() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdClicked(adapter);
+      nativeListener.onAdClicked(adapter);
     }
   }
 
   void adOpened() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdOpened(adapter);
+      nativeListener.onAdOpened(adapter);
     }
   }
 
   void adClosed() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdClosed(adapter);
+      nativeListener.onAdClosed(adapter);
     }
   }
 
   void leftApplication() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onAdLeftApplication(adapter);
+      nativeListener.onAdLeftApplication(adapter);
     }
   }
 
   void endVideo() {
     if (canInvokeListenerEvent()) {
-      mediationNativeListener.onVideoEnd(adapter);
+      nativeListener.onVideoEnd(adapter);
     }
   }
 
@@ -98,7 +115,7 @@ class NendNativeAdForwarder {
   }
 
   void onDestroy() {
-    mediationNativeListener = null;
+    nativeListener = null;
     normalAdLoader = null;
     if (unifiedNativeAdMapper instanceof NendUnifiedNativeVideoAdMapper) {
       ((NendUnifiedNativeVideoAdMapper) unifiedNativeAdMapper).deactivate();
@@ -111,42 +128,43 @@ class NendNativeAdForwarder {
     contextWeakReference = null;
   }
 
-  void requestNativeAd(
-      Context context,
-      MediationNativeListener mediationNativeListener,
-      Bundle serverParameters,
-      NativeMediationAdRequest nativeMediationAdRequest,
-      Bundle mediationExtras) {
-    if (!nativeMediationAdRequest.isUnifiedNativeAdRequested()) {
-      Log.e(TAG, "Failed to load ad. Request must be for unified native ads.");
-      if (canInvokeListenerEvent()) {
-        mediationNativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+  void requestNativeAd(@NonNull Context context,
+      @NonNull MediationNativeListener mediationNativeListener, @NonNull Bundle serverParameters,
+      @NonNull NativeMediationAdRequest nativeMediationAdRequest,
+      @Nullable Bundle mediationExtras) {
+    String apiKey = serverParameters.getString(NendMediationAdapter.KEY_API_KEY);
+    if (TextUtils.isEmpty(apiKey)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid API key.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationNativeListener.onAdFailedToLoad(adapter, error);
       return;
     }
 
-    AdUnitMapper mapper = AdUnitMapper.createAdUnitMapper(serverParameters);
-    if (mapper == null) {
-      if (canInvokeListenerEvent()) {
-        mediationNativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+    int spotID = Integer
+        .parseInt(serverParameters.getString(NendMediationAdapter.KEY_SPOT_ID, "0"));
+    if (spotID <= 0) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid spot ID.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationNativeListener.onAdFailedToLoad(adapter, error);
       return;
     }
+
     contextWeakReference = new WeakReference<>(context);
-    this.mediationNativeListener = mediationNativeListener;
+    nativeListener = mediationNativeListener;
 
-    if (mediationExtras != null
-        && NendMediationAdapter.FormatType.TYPE_VIDEO
-            == mediationExtras.getSerializable(KEY_NATIVE_ADS_FORMAT_TYPE)) {
-      videoAdLoader =
-          new NativeVideoAdLoader(this, mapper, nativeMediationAdRequest, mediationExtras);
+    if (mediationExtras != null &&
+        NendMediationAdapter.FormatType.TYPE_VIDEO == mediationExtras
+            .getSerializable(KEY_NATIVE_ADS_FORMAT_TYPE)) {
+      String userID = mediationExtras.getString(NendMediationAdapter.KEY_USER_ID, "");
+      videoAdLoader = new NativeVideoAdLoader(NendNativeAdForwarder.this, spotID, apiKey,
+          nativeMediationAdRequest, userID);
       videoAdLoader.loadAd();
     } else {
-      normalAdLoader =
-          new NativeAdLoader(
-              this,
-              new NendAdNativeClient(context, mapper.spotId, mapper.apiKey),
-              nativeMediationAdRequest.getNativeAdOptions());
+      normalAdLoader = new NativeAdLoader(NendNativeAdForwarder.this,
+          new NendAdNativeClient(context, spotID, apiKey),
+          nativeMediationAdRequest.getNativeAdOptions());
       normalAdLoader.loadAd();
     }
   }
@@ -164,6 +182,6 @@ class NendNativeAdForwarder {
   }
 
   private boolean canInvokeListenerEvent() {
-    return (mediationNativeListener != null && adapter != null);
+    return (nativeListener != null && adapter != null);
   }
 }

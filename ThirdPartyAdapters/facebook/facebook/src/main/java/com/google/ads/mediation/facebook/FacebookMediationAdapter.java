@@ -7,12 +7,12 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -129,25 +129,23 @@ public class FacebookMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION = 111;
 
-  /**
-   * Creates a formatted adapter error string given a code and description.
-   */
-  @NonNull
-  public static String createAdapterError(@AdapterError int code, String description) {
-    return String.format("%d: %s", code, description);
-  }
+  // Facebook adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.facebook";
+
+  // Facebook SDK error domain.
+  public static final String FACEBOOK_SDK_ERROR_DOMAIN = "com.facebook.ads";
 
   /**
-   * Creates a formatted SDK error string from a given {@link AdError}.
+   * Converts Facebook SDK error codes to admob error codes {@link AdError}.
    */
   @NonNull
-  public static String createSdkError(@NonNull AdError error) {
-    return String.format("%d: %s", error.getErrorCode(), error.getErrorMessage());
+  public static AdError getAdError(com.facebook.ads.AdError error) {
+    return new AdError(error.getErrorCode(), error.getErrorMessage(), FACEBOOK_SDK_ERROR_DOMAIN);
   }
 
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.VERSION_NAME;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -188,7 +186,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     if (context == null) {
       initializationCompleteCallback.onInitializationFailed(
-          "Initialization Failed: Context is null.");
+          "Initialization Failed. Context is null.");
       return;
     }
 
@@ -204,7 +202,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
 
     if (placements.isEmpty()) {
       initializationCompleteCallback.onInitializationFailed(
-          "Initialization failed: No placement IDs found.");
+          "Initialization failed. No placement IDs found.");
       return;
     }
 
@@ -216,9 +214,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
           }
 
           @Override
-          public void onInitializeError(String message) {
-            initializationCompleteCallback.onInitializationFailed(
-                "Initialization failed: " + message);
+          public void onInitializeError(AdError error) {
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
         });
   }
@@ -258,6 +255,10 @@ public class FacebookMediationAdapter extends RtbAdapter {
       MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     rewardedInterstitialAd.render();
@@ -271,16 +272,26 @@ public class FacebookMediationAdapter extends RtbAdapter {
     nativeAd.render();
   }
 
+  @Override
+  public void loadRtbRewardedInterstitialAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    rewardedInterstitialAd.render();
+  }
+
   /**
    * Gets the Facebook placement ID.
    */
   public static @Nullable
   String getPlacementID(@NonNull Bundle serverParameters) {
-    // Open bidding uses a different key for Placement ID than non-open bidding. Try the open
+    // Bidding uses a different key for Placement ID than waterfall mediation. Try the
     // bidding key first.
     String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);
     if (placementId == null) {
-      // Fall back to checking the non-open bidding key.
+      // Fall back to checking the waterfall mediation key.
       placementId = serverParameters.getString(PLACEMENT_PARAMETER);
     }
     return placementId;

@@ -1,6 +1,7 @@
 package com.google.ads.mediation.nend;
 
 import android.os.Bundle;
+import androidx.annotation.NonNull;
 
 /**
  * The {@link NendExtrasBundleBuilder} class builds a {@link Bundle} containing mediation extras for
@@ -9,22 +10,22 @@ import android.os.Bundle;
  */
 public class NendExtrasBundleBuilder {
 
-  /*
+  /**
    * The nend User ID.
    */
   private String userId;
 
-  /*
+  /**
    * Type of interstitial ad to be loaded.
    */
   private NendAdapter.InterstitialType interstitialType;
 
-  /*
+  /**
    * Type of native ad to be loaded.
    */
   private NendMediationAdapter.FormatType nativeAdsType;
 
-  public NendExtrasBundleBuilder setUserId(String userId) {
+  public NendExtrasBundleBuilder setUserId(@NonNull String userId) {
     this.userId = userId;
     return this;
   }

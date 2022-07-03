@@ -23,11 +23,10 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
   private NendAdNativeVideo nativeVideo;
   private NendNativeAdForwarder forwarder;
 
-  NendUnifiedNativeVideoAdMapper(
-      Context context, NendNativeAdForwarder forwarder, NendAdNativeVideo ad) {
-    super(
-        new NendNativeMappedImage(
-            context, ad.getLogoImageBitmap(), Uri.parse(ad.getLogoImageUrl())));
+  NendUnifiedNativeVideoAdMapper(Context context, NendNativeAdForwarder forwarder,
+      NendAdNativeVideo ad) {
+    super(new NendNativeMappedImage(context, ad.getLogoImageBitmap(),
+        Uri.parse(ad.getLogoImageUrl())));
     this.forwarder = forwarder;
 
     // Note: NendAdNativeMediaView handles Click Event for changing action by VideoClickOption.
@@ -118,7 +117,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     super.untrackView(view);
   }
 
-  /** {@link NendAdNativeVideoListener} implementation */
+  /**
+   * {@link NendAdNativeVideoListener} implementation
+   */
   @Override
   public void onImpression(@NonNull NendAdNativeVideo nendAdNativeVideo) {
     forwarder.adImpression();
@@ -135,7 +136,9 @@ public class NendUnifiedNativeVideoAdMapper extends NendUnifiedNativeAdMapper
     forwarder.leftApplication();
   }
 
-  /** {@link NendAdNativeMediaStateListener} implementation */
+  /**
+   * {@link NendAdNativeMediaStateListener} implementation
+   */
   @Override
   public void onStartPlay(@NonNull NendAdNativeMediaView nendAdNativeMediaView) {
     // Do nothing here

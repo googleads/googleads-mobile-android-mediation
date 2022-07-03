@@ -1,7 +1,7 @@
 package com.applovin.mediation;
 
 import static android.util.Log.DEBUG;
-import static android.util.Log.ERROR;
+import static android.util.Log.WARN;
 
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinAdViewDisplayErrorCode;
@@ -11,6 +11,7 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinSdkUtils;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 
 /**
@@ -18,10 +19,8 @@ import com.google.android.gms.ads.mediation.MediationBannerListener;
  * SDK to the Google Mobile Ads SDK.
  */
 class AppLovinBannerAdListener
-    implements AppLovinAdLoadListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdViewEventListener {
+    implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener,
+    AppLovinAdViewEventListener {
 
   private final ApplovinAdapter mAdapter;
   private final MediationBannerListener mMediationBannerListener;
@@ -44,9 +43,7 @@ class AppLovinBannerAdListener
   public void adReceived(final AppLovinAd ad) {
     ApplovinAdapter.log(
         DEBUG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: " + mZoneId);
-
     mAdView.renderAd(ad);
-
     AppLovinSdkUtils.runOnUiThread(
         new Runnable() {
           @Override
@@ -58,14 +55,13 @@ class AppLovinBannerAdListener
 
   @Override
   public void failedToReceiveAd(final int code) {
-    ApplovinAdapter.log(ERROR, "Failed to load banner ad with error: " + code);
-
+    AdError error = AppLovinUtils.getAdError(code);
+    ApplovinAdapter.log(WARN, "Failed to load banner ad with error: " + code);
     AppLovinSdkUtils.runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
-            mMediationBannerListener.onAdFailedToLoad(
-                mAdapter, AppLovinUtils.toAdMobErrorCode(code));
+            mMediationBannerListener.onAdFailedToLoad(mAdapter, error);
           }
         });
   }
@@ -110,6 +106,6 @@ class AppLovinBannerAdListener
   @Override
   public void adFailedToDisplay(
       AppLovinAd ad, AppLovinAdView adView, AppLovinAdViewDisplayErrorCode code) {
-    ApplovinAdapter.log(ERROR, "Banner failed to display: " + code);
+    ApplovinAdapter.log(WARN, "Banner failed to display: " + code);
   }
 }

@@ -1,5 +1,7 @@
 package com.google.ads.mediation.adcolony;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.rewarded.RewardItem;
 
 /**
@@ -7,15 +9,16 @@ import com.google.android.gms.ads.rewarded.RewardItem;
  */
 class AdColonyReward implements RewardItem {
 
-  private String rewardType;
-  private int rewardAmount;
+  private final String rewardType;
+  private final int rewardAmount;
 
-  public AdColonyReward(String type, int amount) {
+  public AdColonyReward(@NonNull String type, int amount) {
     rewardType = type;
     rewardAmount = amount;
   }
 
   @Override
+  @NonNull
   public String getType() {
     return rewardType;
   }

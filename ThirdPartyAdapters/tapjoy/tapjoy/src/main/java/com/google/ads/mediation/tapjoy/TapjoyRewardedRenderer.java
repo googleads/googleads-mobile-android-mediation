@@ -1,6 +1,7 @@
 package com.google.ads.mediation.tapjoy;
 
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_NO_CONTENT_AVAILABLE;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.ERROR_PRESENTATION_VIDEO_PLAYBACK;
@@ -11,8 +12,7 @@ import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.PLACEMENT_N
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.SDK_KEY_SERVER_PARAMETER_KEY;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.TAG;
 import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.TAPJOY_INTERNAL_ADAPTER_VERSION;
-import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.createSDKError;
+import static com.google.ads.mediation.tapjoy.TapjoyMediationAdapter.TAPJOY_SDK_ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -47,7 +48,6 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
 
   private static boolean isRtbAd = false;
 
-
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mAdLoadCallback;
   private MediationRewardedAdCallback mMediationRewardedAdCallback;
@@ -69,59 +69,64 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
     if (!adConfiguration.getBidResponse().equals("")) {
       isRtbAd = true;
     }
-    Bundle serverParameters = adConfiguration.getServerParameters();
-    final String placementName =
-        serverParameters.getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
-
-    if (TextUtils.isEmpty(placementName)) {
-      String logMessage = "No placement name given for Tapjoy-AdMob adapter";
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, logMessage);
-      Log.w(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
-      return;
-    }
-
-    Log.i(TAG, "Loading ad for Tapjoy-AdMob adapter");
-    Bundle networkExtras = adConfiguration.getMediationExtras();
 
     Context context = adConfiguration.getContext();
     if (!(context instanceof Activity)) {
-      String logMessage = "Tapjoy SDK requires an Activity context to request ads";
-      String errorMessage = createAdapterError(ERROR_REQUIRES_ACTIVITY_CONTEXT, logMessage);
-      Log.e(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Tapjoy SDK requires an Activity context to request ads.", ERROR_DOMAIN);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        mAdLoadCallback.onFailure(error);
+      }
       return;
     }
     Activity activity = (Activity) context;
-    String sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
 
+    final Bundle serverParameters = adConfiguration.getServerParameters();
+    String sdkKey = serverParameters.getString(SDK_KEY_SERVER_PARAMETER_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
-      String logMessage = "Failed to request ad from Tapjoy: Missing or Invalid SDK Key.";
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, logMessage);
-      Log.w(TAG, errorMessage);
-      mAdLoadCallback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK key.",
+          ERROR_DOMAIN);
+      if (error != null) {
+        Log.e(TAG, error.getMessage());
+        mAdLoadCallback.onFailure(error);
+      }
       return;
     }
 
-    Tapjoy.setActivity(activity);
-
+    Bundle networkExtras = adConfiguration.getMediationExtras();
     Hashtable<String, Object> connectFlags = new Hashtable<>();
     if (networkExtras != null && networkExtras.containsKey(TAPJOY_DEBUG_FLAG_KEY)) {
       connectFlags.put("TJC_OPTION_ENABLE_LOGGING",
           networkExtras.getBoolean(TAPJOY_DEBUG_FLAG_KEY, false));
     }
 
+    Log.i(TAG, "Loading ad for Tapjoy-AdMob adapter");
+    Tapjoy.setActivity(activity);
     TapjoyInitializer.getInstance().initialize(activity, sdkKey, connectFlags,
         new TapjoyInitializer.Listener() {
           @Override
           public void onInitializeSucceeded() {
+            String placementName = serverParameters.getString(PLACEMENT_NAME_SERVER_PARAMETER_KEY);
+            if (TextUtils.isEmpty(placementName)) {
+              AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+                  "Missing or invalid Tapjoy placement name.", ERROR_DOMAIN);
+              if (error != null) {
+                Log.e(TAG, error.getMessage());
+                mAdLoadCallback.onFailure(error);
+              }
+              return;
+            }
+
             if (mPlacementsInUse.containsKey(placementName) &&
                 mPlacementsInUse.get(placementName).get() != null) {
-              String logMessage =
-                  "An ad has already been requested for placement: " + placementName;
-              String errorMessage = createAdapterError(ERROR_AD_ALREADY_REQUESTED, logMessage);
-              Log.w(TAG, errorMessage);
-              mAdLoadCallback.onFailure(errorMessage);
+              String errorMessage = String
+                  .format("An ad has already been requested for placement: %s.", placementName);
+              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED, errorMessage, ERROR_DOMAIN);
+              if (error != null) {
+                Log.e(TAG, error.getMessage());
+                mAdLoadCallback.onFailure(error);
+              }
               return;
             }
 
@@ -132,16 +137,17 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
 
           @Override
           public void onInitializeFailed(String message) {
-            String logMessage = "Failed to request ad from Tapjoy: " + message;
-            String errorMessage = createAdapterError(ERROR_TAPJOY_INITIALIZATION, logMessage);
-            Log.w(TAG, errorMessage);
-            mAdLoadCallback.onFailure(errorMessage);
+            AdError error = new AdError(ERROR_TAPJOY_INITIALIZATION, message, ERROR_DOMAIN);
+            if (error != null) {
+              Log.e(TAG, error.getMessage());
+              mAdLoadCallback.onFailure(error);
+            }
           }
         });
   }
 
   private void createVideoPlacementAndRequestContent(final String placementName) {
-    Log.i(TAG, "Creating video placement for AdMob adapter");
+    Log.i(TAG, "Creating video placement for AdMob adapter.");
 
     videoPlacement = Tapjoy.getPlacement(placementName, new TJPlacementListener() {
       // Placement Callbacks
@@ -153,11 +159,13 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
             if (!videoPlacement.isContentAvailable()) {
               mPlacementsInUse.remove(placementName);
 
-              String logMessage = "Failed to request rewarded ad from Tapjoy: No Fill.";
-              String errorMessage = createAdapterError(ERROR_NO_CONTENT_AVAILABLE, logMessage);
-              Log.w(TAG, errorMessage);
-              if (mAdLoadCallback != null) {
-                mAdLoadCallback.onFailure(errorMessage);
+              AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE,
+                  "Tapjoy request successful but no content was returned.", ERROR_DOMAIN);
+              if (error != null) {
+                Log.w(TAG, error.getMessage());
+                if (mAdLoadCallback != null) {
+                  mAdLoadCallback.onFailure(error);
+                }
               }
             }
           }
@@ -170,12 +178,15 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
           @Override
           public void run() {
             mPlacementsInUse.remove(placementName);
-            String logMessage =
-                "Failed to request rewarded ad from Tapjoy: " + tjError.message;
-            String errorMessage = createSDKError(tjError);
-            Log.w(TAG, logMessage);
-            if (mAdLoadCallback != null) {
-              mAdLoadCallback.onFailure(errorMessage);
+
+            String errorMessage =
+                tjError.message == null ? "Tapjoy request failed." : tjError.message;
+            AdError error = new AdError(tjError.code, errorMessage, TAPJOY_SDK_ERROR_DOMAIN);
+            if (error != null) {
+              Log.e(TAG, error.getMessage());
+              if (mAdLoadCallback != null) {
+                mAdLoadCallback.onFailure(error);
+              }
             }
           }
         });
@@ -274,13 +285,16 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
 
   @Override
   public void showAd(Context context) {
-    Log.i(TAG, "Show video content for Tapjoy-AdMob adapter");
+    Log.i(TAG, "Show video content for Tapjoy-AdMob adapter.");
     if (videoPlacement != null && videoPlacement.isContentAvailable()) {
       videoPlacement.showContent();
     } else if (mMediationRewardedAdCallback != null) {
-      String errorMessage = createAdapterError(ERROR_NO_CONTENT_AVAILABLE,
-          "Has no content available.");
-      mMediationRewardedAdCallback.onAdFailedToShow(errorMessage);
+      AdError error = new AdError(ERROR_NO_CONTENT_AVAILABLE, "Tapjoy content not available.",
+          ERROR_DOMAIN);
+      if (error != null) {
+        Log.w(TAG, error.getMessage());
+        mMediationRewardedAdCallback.onAdFailedToShow(error);
+      }
     }
   }
 
@@ -308,11 +322,13 @@ public class TapjoyRewardedRenderer implements MediationRewardedAd, TJPlacementV
       @Override
       public void run() {
         mPlacementsInUse.remove(tjPlacement.getName());
-        String videoErrorMessage = createAdapterError(ERROR_PRESENTATION_VIDEO_PLAYBACK,
-            "Tapjoy Rewarded Ad has failed to play: " + errorMessage);
-        Log.w(TAG, videoErrorMessage);
-        if (mMediationRewardedAdCallback != null) {
-          mMediationRewardedAdCallback.onAdFailedToShow(videoErrorMessage);
+
+        AdError error = new AdError(ERROR_PRESENTATION_VIDEO_PLAYBACK, errorMessage, ERROR_DOMAIN);
+        if (error != null) {
+          Log.w(TAG, error.getMessage());
+          if (mMediationRewardedAdCallback != null) {
+            mMediationRewardedAdCallback.onAdFailedToShow(error);
+          }
         }
       }
     });

@@ -1,5 +1,97 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.10.5.0
+- Verified compatibility with Vungle SDK 6.10.5.
+- Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- Vungle SDK version 6.10.5.
+
+#### Version 6.10.4.0
+- Verified compatibility with Vungle SDK 6.10.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Vungle SDK version 6.10.4.
+
+#### Version 6.10.3.0
+- Verified compatibility with Vungle SDK 6.10.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Vungle SDK version 6.10.3.
+
+#### Version 6.10.2.1
+- Verified compatibility with Vungle SDK 6.10.2.
+- Added bidding support for interstitial and rewarded ad formats.
+- Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- Vungle SDK version 6.10.2.
+
+#### Version 6.10.2.0
+- Verified compatibility with Vungle SDK 6.10.2.
+- Fixed an adapter issue by replacing parameter `serverParameters`, with `mediationExtras` to obtain Vungle network-specific parameters, when requesting Banner and Interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.2.
+
+#### Version 6.10.1.0
+- Verified compatibility with Vungle SDK 6.10.1.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+- MREC Ads are now supported with Vungle's banner API.
+- Updated standardized error codes and messages.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- Vungle SDK version 6.10.1.
+
+#### Version 6.9.1.1
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- Vungle SDK version 6.9.1.
+
+#### Version 6.9.1.0
+- Verified compatibility with Vungle SDK 6.9.1.
+- Added support for OMSDK.
+- Various bug fixes.
+- Rewarded Ad Support for Vungle onAdViewed callback.
+- Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- Vungle SDK version 6.9.1.
+
+#### Version 6.8.1.1
+- Updated the minimum required Google Mobile Ads SDK version to 19.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.6.0.
+- Vungle SDK version 6.8.1.
+
+#### Version 6.8.1.0
+- Verified compatibility with Vungle SDK 6.8.1.
+- Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- Vungle SDK version 6.8.1.
+
+#### Version 6.8.0.0
+- Verified compatibility with Vungle SDK 6.8.0.
+- Updated the adapter to not forward `onAdClosed()` when banner ads are refreshed or destroyed.
+- Remove `FlexFeed` and `FlexView` (deprecated in Vungle 6.8.0).
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- Vungle SDK version 6.8.0.
+
 #### Version 6.7.1.0
 - Verified compatibility with Vungle SDK 6.7.1.
 - Fixed a bug where ads wouldn't load if an ad was loaded using an application context.
@@ -65,10 +157,10 @@ Built and tested with:
 - Verified compatibility with Vungle SDK 5.3.2.
 - Updated the Adpater project for Android Studio 3.0.
 - Added the following methods to Bundle builder class.
-   - `setOrdinalViewCount` : This field is used to pass the mediation ordinal,
-   whenever Publisher receives the ordinal data reports from Vungle.
-   - `setFlexViewCloseTimeInSec` : This option is used to make flex view ads
-   dismiss on their own after the specified number of seconds.
+    - `setOrdinalViewCount` : This field is used to pass the mediation ordinal,
+      whenever Publisher receives the ordinal data reports from Vungle.
+    - `setFlexViewCloseTimeInSec` : This option is used to make flex view ads
+      dismiss on their own after the specified number of seconds.
 
 #### Version 5.3.0.0
 - Verified compatibility with Vungle SDK 5.3.0.

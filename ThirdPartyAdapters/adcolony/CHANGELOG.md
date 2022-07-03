@@ -1,11 +1,105 @@
 ## AdColony Android Mediation Adapter Changelog
 
+#### Version 4.7.1.0
+- Verified compatibility with AdColony SDK version 4.7.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AdColony SDK version 4.7.1.
+
+#### Version 4.7.0.0
+- Verified compatibility with AdColony SDK version 4.7.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AdColony SDK version 4.7.0.
+
+#### Version 4.6.5.0
+- Verified compatibility with AdColony SDK version 4.6.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- AdColony SDK version 4.6.5.
+
+#### Version 4.6.4.0
+- Verified compatibility with AdColony SDK version 4.6.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- AdColony SDK version 4.6.4.
+
+#### Version 4.6.3.0
+- Verified compatibility with AdColony SDK version 4.6.3.
+- Updated the minimum required Google Mobile Ads SDK version to 20.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.4.0.
+- AdColony SDK version 4.6.3.
+
+#### Version 4.6.2.0
+- Verified compatibility with AdColony SDK version 4.6.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- AdColony SDK version 4.6.2.
+
+#### Version 4.6.0.0
+- Verified compatibility with AdColony SDK version 4.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.3.0.
+- AdColony SDK version 4.6.0.
+
+#### Version 4.5.0.0
+- Added support for banners advanced bidding.
+- Verified compatibility with AdColony SDK version 4.5.0.
+- Updated the minimum required Google Mobile Ads SDK version to 20.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.0.0.
+- AdColony SDK version 4.5.0.
+
+#### Version 4.4.1.0
+- Verified compatibility with AdColony SDK version 4.4.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- AdColony SDK version 4.4.1.
+
+#### Version 4.4.0.0
+- Verified compatibility with AdColony SDK version 4.4.0.
+- Added support of AdColony's `collectSignals()` method for bidding.
+- Updated the minimum required Google Mobile Ads SDK version to 19.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.7.0.
+- AdColony SDK version 4.4.0.
+
+#### Version 4.3.0.0
+- Verified compatibility with AdColony SDK version 4.3.0.
+- Updated the minimum required Google Mobile Ads SDK version to 19.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.5.0.
+- AdColony SDK version 4.3.0.
+
+#### Version 4.2.4.0
+- Fixed a bug where `onUserEarnedReward()` was not forwarded for rewarded ads.
+- Added additional error codes for AdColony SDK initialization errors.
+- Updated the minimum required Google Mobile Ads SDK version to 19.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 19.4.0.
+- AdColony SDK version 4.2.4.
+
 #### Version 4.2.0.0
 - Verified compatibility with AdColony SDK version 4.2.0.
 - Updated the adapter to support inline adaptive banner requests.
 - Updated the minimum required Google Mobile Ads SDK version to 19.2.0.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.2.0.
 - AdColony SDK version 4.2.0.
 
@@ -13,7 +107,7 @@ Built and test with:
 - Added descriptive error codes and reasons for adapter load/show failures.
 - Updated the minimum required Google Mobile Ads SDK version to 19.0.1.
 
-Built and test with:
+Built and tested with:
 - Google Mobile Ads SDK version 19.0.1.
 - AdColony SDK version 4.1.4.
 
@@ -60,7 +154,7 @@ Built and tested with:
 - Updated the minimum required Google Mobile Ads SDK version to 18.1.1.
 
 #### Version 3.3.10.1
-- Added open bidding capability to the adapter for interstitial
+- Added bidding capability to the adapter for interstitial
   and rewarded ads.
 
 #### Version 3.3.10.0

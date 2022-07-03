@@ -30,7 +30,6 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
@@ -44,12 +43,11 @@ import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
-import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -57,7 +55,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
-import com.google.android.gms.ads.mediation.NativeAppInstallAdMapper;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import java.lang.ref.WeakReference;
@@ -163,21 +163,28 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       final AdSize adSize,
       final MediationAdRequest adRequest,
       Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mBannerListener = listener;
 
     final String placementID = getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad: placementID is null or empty."));
-      mBannerListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
     final com.facebook.ads.AdSize facebookAdSize = getAdSize(context, adSize);
     if (facebookAdSize == null) {
-      Log.w(TAG, createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "There is no matching Facebook ad size for Google ad size: " + adSize.toString()));
-      mBannerListener.onAdFailedToLoad(this, ERROR_BANNER_SIZE_MISMATCH);
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "There is no matching Facebook ad size for Google ad size.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mBannerListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -204,11 +211,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
                 if (mBannerListener != null) {
-                  mBannerListener.onAdFailedToLoad(FacebookAdapter.this,
-                      ERROR_FACEBOOK_INITIALIZATION);
+                  mBannerListener.onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -227,13 +232,18 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       Bundle serverParameters,
       final MediationAdRequest adRequest,
       Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mInterstitialListener = listener;
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty."));
-      mInterstitialListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      mInterstitialListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -248,11 +258,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
                 if (mInterstitialListener != null) {
-                  mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this,
-                      ERROR_FACEBOOK_INITIALIZATION);
+                  mInterstitialListener.onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -262,9 +270,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   public void showInterstitial() {
     showInterstitialCalled.set(true);
     if (!mInterstitialAd.show()) {
-      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
-          "Failed to present interstitial ad.");
-      Log.w(TAG, errorMessage);
+      AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present interstitial ad.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
 
       if (mInterstitialListener != null) {
         mInterstitialListener.onAdOpened(FacebookAdapter.this);
@@ -274,6 +282,16 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   }
   //endregion
 
+  @Override
+  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
+    super.loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+  }
+
   //region MediationNativeAdapter implementation.
   @Override
   public void requestNativeAd(final Context context,
@@ -281,26 +299,27 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       Bundle serverParameters,
       final NativeMediationAdRequest mediationAdRequest,
       final Bundle mediationExtras) {
+
+    Log.w(TAG, "Facebook waterfall mediation is deprecated and will be removed in a future "
+        + "adapter version. Please update to serve bidding ads instead. See "
+        + "https://fb.me/bNFn7qt6Z0sKtF for more information.");
+
     mNativeListener = listener;
     final String placementID = getPlacementID(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
-      Log.e(TAG, createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty."));
-      mNativeListener.onAdFailedToLoad(this, ERROR_INVALID_SERVER_PARAMETERS);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mNativeListener.onAdFailedToLoad(this, error);
       return;
     }
 
-    // Verify that the request is either unified native ads or
-    // both app install and content ads.
-    boolean isNativeAppInstallAndContentAdRequested =
-        mediationAdRequest.isAppInstallAdRequested() && mediationAdRequest.isContentAdRequested();
-    if (!(mediationAdRequest.isUnifiedNativeAdRequested()
-        || isNativeAppInstallAndContentAdRequested)) {
-      Log.w(TAG, createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-          "Either unified native ads or both app install and content ads "
-              + "must be requested."));
-      mNativeListener.onAdFailedToLoad(this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
+    if (!mediationAdRequest.isUnifiedNativeAdRequested()) {
+      AdError error = new AdError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
+          "Unified Native Ads should be requested.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mNativeListener.onAdFailedToLoad(this, error);
       return;
     }
 
@@ -315,11 +334,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
               }
 
               @Override
-              public void onInitializeError(String message) {
-                Log.w(TAG, createAdapterError(ERROR_FACEBOOK_INITIALIZATION, message));
+              public void onInitializeError(AdError error) {
+                Log.w(TAG, error.getMessage());
                 if (mNativeListener != null) {
                   mNativeListener
-                      .onAdFailedToLoad(FacebookAdapter.this, ERROR_FACEBOOK_INITIALIZATION);
+                      .onAdFailedToLoad(FacebookAdapter.this, error);
                 }
               }
             });
@@ -365,11 +384,10 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      Log.w(TAG, errorMessage);
-      FacebookAdapter.this.mBannerListener
-          .onAdFailedToLoad(FacebookAdapter.this, adError.getErrorCode());
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
+      FacebookAdapter.this.mBannerListener.onAdFailedToLoad(FacebookAdapter.this, error);
     }
   }
   //endregion
@@ -411,10 +429,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      Log.w(TAG, errorMessage);
-
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
       if (showInterstitialCalled.get()) {
         FacebookAdapter.this.mInterstitialListener.onAdOpened(FacebookAdapter.this);
         FacebookAdapter.this.mInterstitialListener.onAdClosed(FacebookAdapter.this);
@@ -477,7 +494,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       mNativeBannerAd.loadAd(
           mNativeBannerAd
               .buildLoadAdConfig()
-              .withAdListener(new NativeBannerListener(context, mNativeBannerAd, adRequest))
+              .withAdListener(new NativeBannerListener(context, mNativeBannerAd))
               .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
               .withPreloadedIconView(
                   NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
@@ -490,7 +507,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
       mNativeAd.loadAd(
           mNativeAd
               .buildLoadAdConfig()
-              .withAdListener(new NativeListener(context, mNativeAd, adRequest))
+              .withAdListener(new NativeListener(context, mNativeAd))
               .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
               .withPreloadedIconView(
                   NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
@@ -511,16 +528,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
      */
     private NativeBannerAd mNativeBannerAd;
 
-    /**
-     * NativeMediationAdRequest instance.
-     */
-    private NativeMediationAdRequest mMediationAdRequest;
-
-    private NativeBannerListener(Context context, NativeBannerAd nativeBannerAd,
-        NativeMediationAdRequest mediationAdRequest) {
+    private NativeBannerListener(Context context, NativeBannerAd nativeBannerAd) {
       mContext = new WeakReference<>(context);
       mNativeBannerAd = nativeBannerAd;
-      mMediationAdRequest = mediationAdRequest;
     }
 
     @Override
@@ -529,72 +539,46 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
-      if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
-      }
-      FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-          FacebookAdapter.this, adError.getErrorCode());
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = FacebookMediationAdapter.getAdError(adError);
+      Log.w(TAG, error.getMessage());
+      FacebookAdapter.this.mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
     }
 
     @Override
     public void onAdLoaded(Ad ad) {
       if (ad != mNativeBannerAd) {
-        Log.w(TAG, createAdapterError(ERROR_WRONG_NATIVE_TYPE,
-            "Ad loaded is not a native banner ad."));
-        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, ERROR_WRONG_NATIVE_TYPE);
+
+        AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad loaded is not a native banner ad.",
+            ERROR_DOMAIN);
+
+        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
       Context context = mContext.get();
       if (context == null) {
-        Log.w(TAG, createAdapterError(ERROR_NULL_CONTEXT,
-            "Failed to create ad options view, Context is null."));
-        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, ERROR_NULL_CONTEXT);
+
+        AdError error = new AdError(ERROR_NULL_CONTEXT,
+            "Failed to create ad options view. Context is null.", ERROR_DOMAIN);
+
+        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
-      NativeAdOptions options = mMediationAdRequest.getNativeAdOptions();
-      if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
-        final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeBannerAd, options);
-        mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
-          @Override
-          public void onMappingSuccess() {
-            mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
-          }
+      final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeBannerAd);
+      mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
+        @Override
+        public void onMappingSuccess() {
+          mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
+        }
 
-          @Override
-          public void onMappingFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-            Log.w(TAG, errorMessage);
-            mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-                ERROR_MAPPING_NATIVE_ASSETS);
-          }
-        });
-      } else if (mMediationAdRequest.isAppInstallAdRequested()) {
-        // We always convert the ad into an app install ad.
-        final AppInstallMapper mapper = new AppInstallMapper(mNativeBannerAd, options);
-        mapper.mapNativeAd(context, new NativeAdMapperListener() {
-          @Override
-          public void onMappingSuccess() {
-            mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
-          }
-
-          @Override
-          public void onMappingFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-            Log.w(TAG, errorMessage);
-            mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-                ERROR_MAPPING_NATIVE_ASSETS);
-          }
-        });
-      } else {
-        Log.e(TAG, "Content Ads are not supported.");
-        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, AdRequest.ERROR_CODE_INVALID_REQUEST);
-      }
+        @Override
+        public void onMappingFailed(AdError error) {
+          Log.w(TAG, error.getMessage());
+          mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
+        }
+      });
     }
 
     @Override
@@ -632,16 +616,9 @@ public final class FacebookAdapter extends FacebookMediationAdapter
      */
     private NativeAd mNativeAd;
 
-    /**
-     * NativeMediationAdRequest instance.
-     */
-    private NativeMediationAdRequest mMediationAdRequest;
-
-    private NativeListener(Context context, NativeAd nativeAd,
-        NativeMediationAdRequest mediationAdRequest) {
+    private NativeListener(Context context, NativeAd nativeAd) {
       mContext = new WeakReference<>(context);
       mNativeAd = nativeAd;
-      mMediationAdRequest = mediationAdRequest;
     }
 
     @Override
@@ -667,72 +644,47 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     @Override
     public void onAdLoaded(Ad ad) {
       if (ad != mNativeAd) {
-        String errorMessage = createAdapterError(ERROR_WRONG_NATIVE_TYPE,
-            "Ad loaded is not a native ad.");
-        Log.w(TAG, errorMessage);
+
+        AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad loaded is not a native ad.",
+            ERROR_DOMAIN);
+
+        Log.w(TAG, error.getMessage());
         FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, ERROR_WRONG_NATIVE_TYPE);
+            FacebookAdapter.this, error);
         return;
       }
 
       Context context = mContext.get();
       if (context == null) {
-        String errorMessage = createAdapterError(ERROR_NULL_CONTEXT,
-            "Failed to create ad options view, Context is null.");
-        Log.w(TAG, errorMessage);
-        mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-            ERROR_NULL_CONTEXT);
+
+        AdError error = new AdError(ERROR_NULL_CONTEXT,
+            "Failed to create ad options view. Context is null", ERROR_DOMAIN);
+
+        Log.w(TAG, error.getMessage());
+        mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
         return;
       }
 
-      NativeAdOptions options = mMediationAdRequest.getNativeAdOptions();
-      if (mMediationAdRequest.isUnifiedNativeAdRequested()) {
-        final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeAd, options);
-        mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
-          @Override
-          public void onMappingSuccess() {
-            mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
-          }
+      final UnifiedAdMapper mapper = new UnifiedAdMapper(mNativeAd);
+      mapper.mapUnifiedNativeAd(context, new NativeAdMapperListener() {
+        @Override
+        public void onMappingSuccess() {
+          mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
+        }
 
-          @Override
-          public void onMappingFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-            Log.w(TAG, errorMessage);
-            mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-                ERROR_MAPPING_NATIVE_ASSETS);
-          }
-        });
-      } else if (mMediationAdRequest.isAppInstallAdRequested()) {
-        // We always convert the ad into an app install ad.
-        final AppInstallMapper mapper = new AppInstallMapper(mNativeAd, options);
-        mapper.mapNativeAd(context, new NativeAdMapperListener() {
-          @Override
-          public void onMappingSuccess() {
-            mNativeListener.onAdLoaded(FacebookAdapter.this, mapper);
-          }
-
-          @Override
-          public void onMappingFailed(String message) {
-            String errorMessage = createAdapterError(ERROR_MAPPING_NATIVE_ASSETS, message);
-            Log.w(TAG, errorMessage);
-            mNativeListener.onAdFailedToLoad(FacebookAdapter.this,
-                ERROR_MAPPING_NATIVE_ASSETS);
-          }
-        });
-      } else {
-        String errorMessage = createAdapterError(ERROR_REQUIRES_UNIFIED_NATIVE_ADS,
-            "App did not request Unified Native Ads");
-        Log.e(TAG, errorMessage);
-        FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
-            FacebookAdapter.this, ERROR_REQUIRES_UNIFIED_NATIVE_ADS);
-      }
+        @Override
+        public void onMappingFailed(AdError error) {
+          Log.w(TAG, error.getMessage());
+          mNativeListener.onAdFailedToLoad(FacebookAdapter.this, error);
+        }
+      });
     }
 
     @Override
-    public void onError(Ad ad, AdError adError) {
-      String errorMessage = createSdkError(adError);
+    public void onError(Ad ad, com.facebook.ads.AdError adError) {
+      AdError error = getAdError(adError);
       if (!TextUtils.isEmpty(adError.getErrorMessage())) {
-        Log.w(TAG, errorMessage);
+        Log.w(TAG, error.getMessage());
       }
       FacebookAdapter.this.mNativeListener.onAdFailedToLoad(
           FacebookAdapter.this, adError.getErrorCode());
@@ -782,254 +734,6 @@ public final class FacebookAdapter extends FacebookMediationAdapter
   }
 
   /**
-   * The {@link AppInstallMapper} class is used to map Facebook native ads to Google Mobile Ads'
-   * native app install ads.
-   */
-  class AppInstallMapper extends NativeAppInstallAdMapper {
-
-    /**
-     * The Facebook native ad to be mapped.
-     */
-    private NativeAd mNativeAd;
-
-    /**
-     * The Facebook native banner ad to be mapped.
-     */
-    private NativeBannerAd mNativeBannerAd;
-
-    /**
-     * Google Mobile Ads native ad options.
-     */
-    private NativeAdOptions mNativeAdOptions;
-
-    /**
-     * Default constructor for {@link AppInstallMapper}.
-     *
-     * @param nativeAd  The Facebook native ad to be mapped.
-     * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     *                  the native ad.
-     */
-    public AppInstallMapper(NativeAd nativeAd, NativeAdOptions adOptions) {
-      AppInstallMapper.this.mNativeAd = nativeAd;
-      AppInstallMapper.this.mNativeAdOptions = adOptions;
-    }
-
-    /**
-     * Constructor for {@link AppInstallMapper}.
-     *
-     * @param nativeBannerAd The Facebook native banner ad to be mapped.
-     * @param adOptions      {@link NativeAdOptions} containing the preferences to be used when
-     *                       mapping the native ad.
-     */
-    public AppInstallMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions) {
-      AppInstallMapper.this.mNativeBannerAd = nativeBannerAd;
-      AppInstallMapper.this.mNativeAdOptions = adOptions;
-    }
-
-    /**
-     * This method will map the Facebook {@link #mNativeAd} to this mapper and send a success
-     * callback if the mapping was successful or a failure callback if the mapping was
-     * unsuccessful.
-     *
-     * @param mapperListener used to send success/failure callbacks when mapping is done.
-     */
-    public void mapNativeAd(Context context, NativeAdMapperListener mapperListener) {
-      if (isNativeBanner) {
-        if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the Native " +
-              "Banner Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
-          return;
-        }
-
-        setHeadline(mNativeBannerAd.getAdHeadline());
-        setBody(mNativeBannerAd.getAdBodyText());
-        if (mNativeBannerAd.getPreloadedIconViewDrawable() == null) {
-          if (mNativeBannerAd.getAdIcon() == null) {
-            setIcon(new FacebookAdapterNativeAdImage());
-          } else {
-            setIcon(
-                new FacebookAdapterNativeAdImage(Uri.parse(mNativeBannerAd.getAdIcon().getUrl())));
-          }
-        } else {
-          Drawable iconDrawable = mNativeBannerAd.getPreloadedIconViewDrawable();
-          FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
-          setIcon(iconImage);
-        }
-        setCallToAction(mNativeBannerAd.getAdCallToAction());
-        Bundle extras = new Bundle();
-        extras.putCharSequence(KEY_ID, mNativeBannerAd.getId());
-        extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeBannerAd.getAdSocialContext());
-        setExtras(extras);
-      } else {
-        if (!containsRequiredFieldsForNativeAppInstallAd(mNativeAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the Native " +
-              "Banner Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
-          return;
-        }
-
-        // Map all required assets (headline, one image, body, icon and call to
-        // action).
-        setHeadline(mNativeAd.getAdHeadline());
-        List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
-        images.add(
-            new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().toString())));
-        setImages(images);
-        setBody(mNativeAd.getAdBodyText());
-        if (mNativeAd.getAdIcon() == null) {
-          setIcon(new FacebookAdapterNativeAdImage());
-        } else {
-          setIcon(
-              new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdIcon().getUrl())));
-        }
-        setCallToAction(mNativeAd.getAdCallToAction());
-
-        mMediaView.setListener(new MediaViewListener() {
-          @Override
-          public void onPlay(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onVolumeChange(MediaView mediaView, float v) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onPause(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onComplete(MediaView mediaView) {
-            if (FacebookAdapter.this.mNativeListener != null) {
-              FacebookAdapter.this.mNativeListener.onVideoEnd(FacebookAdapter.this);
-            }
-          }
-
-          @Override
-          public void onEnterFullscreen(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onExitFullscreen(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onFullscreenBackground(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-
-          @Override
-          public void onFullscreenForeground(MediaView mediaView) {
-            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-          }
-        });
-
-        // Because the FAN SDK doesn't offer a way to determine whether a native ad contains
-        // a video asset or not, the adapter always returns a MediaView and claims to have
-        // video content.
-        setMediaView(mMediaView);
-        setHasVideoContent(true);
-
-        // Map the optional assets.
-        Double starRating = getRating(mNativeAd.getAdStarRating());
-        if (starRating != null) {
-          setStarRating(starRating);
-        }
-
-        // Pass all the assets not supported by Google as extras.
-        Bundle extras = new Bundle();
-        extras.putCharSequence(KEY_ID, mNativeAd.getId());
-        extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET, mNativeAd.getAdSocialContext());
-        setExtras(extras);
-      }
-      NativeAdLayout nativeAdLayout = new NativeAdLayout(context);
-      AdOptionsView adOptionsView;
-      if (isNativeBanner) {
-        adOptionsView = new AdOptionsView(context, mNativeBannerAd, nativeAdLayout);
-      } else {
-        adOptionsView = new AdOptionsView(context, mNativeAd, nativeAdLayout);
-      }
-      setAdChoicesContent(adOptionsView);
-      mapperListener.onMappingSuccess();
-    }
-
-    /**
-     * This method will check whether or not the given Facebook native ad contains all the necessary
-     * fields for it to be mapped to Google Mobile Ads' native app install ad.
-     *
-     * @param nativeAd Facebook native ad.
-     * @return {@code true} if the given ad contains all the necessary fields, {@link false}
-     * otherwise.
-     */
-    private boolean containsRequiredFieldsForNativeAppInstallAd(NativeAd nativeAd) {
-      return ((nativeAd.getAdHeadline() != null) && (nativeAd.getAdCoverImage() != null)
-          && (nativeAd.getAdBodyText() != null) && (nativeAd.getAdIcon() != null)
-          && (nativeAd.getAdCallToAction() != null) && (mMediaView != null));
-    }
-
-    /**
-     * This method will check whether or not the given Facebook native banner ad contains all the
-     * necessary fields for it to be mapped to Google Mobile Ads' native app install ad.
-     *
-     * @param nativeBannerAd Facebook native banner ad.
-     * @return {@code true} if the given ad contains all the necessary fields, {@link false}
-     * otherwise.
-     */
-    private boolean containsRequiredFieldsForNativeBannerAd(NativeBannerAd nativeBannerAd) {
-      return ((nativeBannerAd.getAdHeadline() != null)
-          && (nativeBannerAd.getAdBodyText() != null) && (nativeBannerAd.getAdIcon() != null)
-          && (nativeBannerAd.getAdCallToAction() != null));
-    }
-
-    @Override
-    public void trackViews(View view,
-        Map<String, View> clickableAssetViews,
-        Map<String, View> nonClickableAssetViews) {
-      // Facebook does its own impression tracking.
-      setOverrideImpressionRecording(true);
-
-      // Facebook does its own click handling.
-      setOverrideClickHandling(true);
-
-      ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
-      ImageView iconView = (ImageView) clickableAssetViews
-          .get(UnifiedNativeAdAssetNames.ASSET_ICON);
-      if (iconView == null) {
-        iconView = (ImageView) clickableAssetViews.get(NativeAppInstallAd.ASSET_ICON);
-      }
-
-      if (isNativeBanner) {
-        mNativeBannerAd.registerViewForInteraction(view, iconView);
-      } else {
-        mNativeAd.registerViewForInteraction(view, mMediaView, iconView, assetViews);
-      }
-    }
-
-
-    @Override
-    public void untrackView(View view) {
-      super.untrackView(view);
-    }
-
-    /**
-     * Convert rating to a scale of 1 to 5.
-     */
-    private Double getRating(NativeAd.Rating rating) {
-      if (rating == null) {
-        return null;
-      }
-      return (MAX_STAR_RATING * rating.getValue()) / rating.getScale();
-    }
-  }
-
-  /**
    * The {@link UnifiedAdMapper} class is used to map Facebook native ads to Google unified native
    * ads.
    */
@@ -1046,32 +750,21 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     private NativeBannerAd mNativeBannerAd;
 
     /**
-     * Google Mobile Ads native ad options.
-     */
-    private NativeAdOptions mNativeAdOptions;
-
-    /**
      * Default constructor for {@link UnifiedAdMapper}.
      *
-     * @param nativeAd  The Facebook native ad to be mapped.
-     * @param adOptions {@link NativeAdOptions} containing the preferences to be used when mapping
-     *                  the native ad.
+     * @param nativeAd The Facebook native ad to be mapped.
      */
-    public UnifiedAdMapper(NativeAd nativeAd, NativeAdOptions adOptions) {
+    public UnifiedAdMapper(NativeAd nativeAd) {
       UnifiedAdMapper.this.mNativeAd = nativeAd;
-      UnifiedAdMapper.this.mNativeAdOptions = adOptions;
     }
 
     /**
      * Constructor for {@link UnifiedAdMapper}.
      *
      * @param nativeBannerAd The Facebook native banner ad to be mapped.
-     * @param adOptions      {@link NativeAdOptions} containing the preferences to be used when
-     *                       mapping the native ad.
      */
-    public UnifiedAdMapper(NativeBannerAd nativeBannerAd, NativeAdOptions adOptions) {
+    public UnifiedAdMapper(NativeBannerAd nativeBannerAd) {
       UnifiedAdMapper.this.mNativeBannerAd = nativeBannerAd;
-      UnifiedAdMapper.this.mNativeAdOptions = adOptions;
     }
 
     /**
@@ -1085,10 +778,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
       if (isNativeBanner) {
         if (!containsRequiredFieldsForNativeBannerAd(mNativeBannerAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the " +
-              "Native Banner Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
+          AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
+              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
+              ERROR_DOMAIN);
+          Log.w(TAG, error.getMessage());
+          mapperListener.onMappingFailed(error);
           return;
         }
 
@@ -1115,10 +809,11 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         setExtras(extras);
       } else {
         if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAd)) {
-          String message = "Ad from Facebook doesn't have all assets required for the" +
-              " Native Ad format.";
-          Log.w(TAG, message);
-          mapperListener.onMappingFailed(message);
+          AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
+              "Ad from Facebook doesn't have all assets required for the Native Banner Ad format.",
+              ERROR_DOMAIN);
+          Log.w(TAG, error.getMessage());
+          mapperListener.onMappingFailed(error);
           return;
         }
         // Map all required assets (headline, one image, body, icon and call to
@@ -1126,7 +821,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
         setHeadline(mNativeAd.getAdHeadline());
         List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
         images.add(
-            new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().toString())));
+            new FacebookAdapterNativeAdImage(Uri.parse(mNativeAd.getAdCoverImage().getUrl())));
         setImages(images);
         setBody(mNativeAd.getAdBodyText());
         if (mNativeAd.getPreloadedIconViewDrawable() == null) {
@@ -1253,22 +948,44 @@ public final class FacebookAdapter extends FacebookMediationAdapter
 
       // Facebook does its own click handling.
       setOverrideClickHandling(true);
-      ImageView iconView = null;
+      View iconView = null;
 
       ArrayList<View> assetViews = new ArrayList<>();
       for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
         assetViews.add(clickableAssets.getValue());
 
-        if (clickableAssets.getKey().equals(NativeAppInstallAd.ASSET_ICON)
-            || clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-          iconView = (ImageView) clickableAssets.getValue();
+        if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
+          iconView = clickableAssets.getValue();
         }
       }
 
       if (isNativeBanner) {
-        mNativeBannerAd.registerViewForInteraction(view, iconView);
+        // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
+        // too late.
+        if (iconView == null) {
+          Log.w(TAG, "Missing or invalid native ad icon asset. Facebook impression "
+              + "recording might be impacted for this ad.");
+          return;
+        }
+
+        if (!(iconView instanceof ImageView)) {
+          String errorMessage = String.format("Native ad icon asset is rendered with an "
+              + "incompatible class type. Facebook impression recording might be impacted "
+              + "for this ad. Expected: ImageView, actual: %s.", iconView.getClass());
+          Log.w(TAG, errorMessage);
+          return;
+        }
+
+        mNativeBannerAd.registerViewForInteraction(view, (ImageView) iconView);
+        return;
+      }
+
+      if (iconView instanceof ImageView) {
+        mNativeAd.registerViewForInteraction(view, mMediaView, (ImageView) iconView, assetViews);
       } else {
-        mNativeAd.registerViewForInteraction(view, mMediaView, iconView, assetViews);
+        Log.w(TAG, "Native icon asset is not of type ImageView."
+            + "Calling registerViewForInteraction() without a reference to the icon view.");
+        mNativeAd.registerViewForInteraction(view, mMediaView, assetViews);
       }
     }
 
@@ -1374,7 +1091,7 @@ public final class FacebookAdapter extends FacebookMediationAdapter
     /**
      * This method will be called if the native ad mapping failed.
      */
-    void onMappingFailed(String message);
+    void onMappingFailed(AdError error);
   }
   // endregion
 }

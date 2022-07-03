@@ -1,7 +1,12 @@
 package com.google.ads.mediation.facebook;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
+
 import android.content.Context;
 import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.AudienceNetworkAds.InitResult;
+import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
 
 
@@ -46,14 +51,14 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
     getInstance().mListeners.add(listener);
     AudienceNetworkAds.buildInitSettings(context)
-        .withMediationService("GOOGLE:" + BuildConfig.VERSION_NAME)
+        .withMediationService("GOOGLE:" + BuildConfig.ADAPTER_VERSION)
         .withPlacementIds(placements)
         .withInitListener(FacebookInitializer.this)
         .initialize();
   }
 
   @Override
-  public void onInitialized(AudienceNetworkAds.InitResult initResult) {
+  public void onInitialized(InitResult initResult) {
     mIsInitializing = false;
     mIsInitialized = initResult.isSuccess();
 
@@ -61,7 +66,9 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
       if (initResult.isSuccess()) {
         listener.onInitializeSuccess();
       } else {
-        listener.onInitializeError(initResult.getMessage());
+        AdError error = new AdError(ERROR_FACEBOOK_INITIALIZATION, initResult.getMessage(),
+            ERROR_DOMAIN);
+        listener.onInitializeError(error);
       }
     }
     mListeners.clear();
@@ -71,7 +78,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
     void onInitializeSuccess();
 
-    void onInitializeError(String message);
+    void onInitializeError(AdError error);
   }
 
 }

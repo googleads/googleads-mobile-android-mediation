@@ -5,36 +5,51 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 
 import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.jirbo.adcolony.AdColonyManager;
+
+import java.util.ArrayList;
 
 public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener implements
     MediationInterstitialAd {
 
-  private String zoneID;
   private MediationInterstitialAdCallback mInterstitialAdCallback;
-  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-      mAdLoadCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
+  private final MediationInterstitialAdConfiguration adConfiguration;
 
-  AdColonyInterstitialRenderer(String zoneID) {
-    this.zoneID = zoneID;
+  AdColonyInterstitialRenderer(
+          @NonNull MediationInterstitialAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
+  ) {
+    this.mAdLoadCallback = callback;
+    this.adConfiguration = adConfiguration;
   }
 
-  public void requestInterstitial(
-      final MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> callback) {
-    this.mAdLoadCallback = callback;
-    AdColony.requestInterstitial(zoneID, this);
+  public void render() {
+    AdColonyAdOptions adOptions = AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
+    ArrayList<String> listFromServerParams =
+            AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
+    String requestedZone = AdColonyManager
+            .getInstance()
+            .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+    AdColony.requestInterstitial(requestedZone, this, adOptions);
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     adColonyInterstitial.show();
   }
 
@@ -46,9 +61,9 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
-    String errorMessage = createSdkError();
-    Log.w(TAG, errorMessage);
-    mAdLoadCallback.onFailure(errorMessage);
+    AdError error = createSdkError();
+    Log.w(TAG, error.getMessage());
+    mAdLoadCallback.onFailure(error);
   }
 
   @Override
@@ -81,4 +96,3 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
     AdColony.requestInterstitial(ad.getZoneID(), this);
   }
 }
-

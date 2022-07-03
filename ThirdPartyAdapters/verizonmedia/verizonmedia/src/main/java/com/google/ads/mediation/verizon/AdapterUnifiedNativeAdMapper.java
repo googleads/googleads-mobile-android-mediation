@@ -88,6 +88,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           input.close();
         }
       } catch (Exception e) {
+        Log.w(TAG, "Caught an error closing InputStream.", e);
       }
 
       if (connection != null) {
@@ -100,7 +101,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   @Override
   public void recordImpression() {
-    verizonAd.fireImpression();
+    verizonAd.fireImpression(context);
   }
 
   @Override

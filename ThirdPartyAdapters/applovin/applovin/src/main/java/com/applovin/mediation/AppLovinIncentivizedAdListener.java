@@ -20,9 +20,9 @@ import java.util.Map;
  */
 public class AppLovinIncentivizedAdListener
     implements AppLovinAdRewardListener,
-        AppLovinAdDisplayListener,
-        AppLovinAdClickListener,
-        AppLovinAdVideoPlaybackListener {
+    AppLovinAdDisplayListener,
+    AppLovinAdClickListener,
+    AppLovinAdVideoPlaybackListener {
 
   private MediationRewardedAdCallback mRewardedAdCallback;
 
@@ -98,11 +98,6 @@ public class AppLovinIncentivizedAdListener
   public void userRewardRejected(AppLovinAd ad, Map<String, String> response) {
     ApplovinAdapter.log(
         ERROR, "Rewarded video validation request was rejected with response: " + response);
-  }
-
-  @Override
-  public void userDeclinedToViewAd(AppLovinAd ad) {
-    ApplovinAdapter.log(DEBUG, "User declined to view rewarded video.");
   }
 
   @Override

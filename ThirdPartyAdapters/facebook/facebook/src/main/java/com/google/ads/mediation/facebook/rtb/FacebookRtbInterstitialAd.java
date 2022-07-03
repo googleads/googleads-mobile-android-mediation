@@ -1,22 +1,23 @@
 package com.google.ads.mediation.facebook.rtb;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdExtendedListener;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -45,10 +46,10 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      String ErrorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty.");
-      Log.e(TAG, ErrorMessage);
-      callback.onFailure(ErrorMessage);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty. ", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
       return;
     }
 
@@ -67,17 +68,15 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     showAdCalled.set(true);
     if (!interstitialAd.show()) {
-      String errorMessage = createAdapterError(ERROR_FAILED_TO_PRESENT_AD,
-          "Failed to present interstitial ad.");
-      Log.w(TAG, errorMessage);
+      AdError showError = new AdError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.", ERROR_DOMAIN);
+      Log.w(TAG, showError.toString());
 
-      // TODO: Call onAdFailedToShow() once API becomes available.
       if (mInterstitalAdCallback != null) {
-        mInterstitalAdCallback.onAdOpened();
-        mInterstitalAdCallback.onAdClosed();
+        mInterstitalAdCallback.onAdFailedToShow(showError);
       }
     }
   }
@@ -97,10 +96,9 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   }
 
   @Override
-  public void onError(Ad ad, AdError adError) {
-    String errorMessage = createSdkError(adError);
-    Log.w(TAG, errorMessage);
-
+  public void onError(Ad ad, com.facebook.ads.AdError adError) {
+    AdError error = getAdError(adError);
+    Log.w(TAG, error.getMessage());
     if (showAdCalled.get()) {
       if (mInterstitalAdCallback != null) {
         mInterstitalAdCallback.onAdOpened();
@@ -108,8 +106,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
       }
       return;
     }
-
-    callback.onFailure(errorMessage);
+    callback.onFailure(error);
   }
 
   @Override
@@ -120,8 +117,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onAdClicked(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdClicked();
+      mInterstitalAdCallback.reportAdClicked();
       mInterstitalAdCallback.onAdLeftApplication();
     }
   }
@@ -129,8 +125,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdImpression();
+      mInterstitalAdCallback.reportAdImpression();
     }
   }
 

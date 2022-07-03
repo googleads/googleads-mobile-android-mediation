@@ -1,14 +1,18 @@
 package com.google.ads.mediation.nend;
 
+import static com.google.ads.mediation.nend.NendMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.nend.NendMediationAdapter.ERROR_NULL_CONTEXT;
+import static com.google.ads.mediation.nend.NendMediationAdapter.NEND_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.nend.NendMediationAdapter.TAG;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import net.nend.android.NendAdNative;
 import net.nend.android.NendAdNative.Callback;
@@ -16,14 +20,20 @@ import net.nend.android.NendAdNativeClient;
 
 class NativeAdLoader {
 
-  /** Listener class to forward Nend native ad events to the Google Mobile Ads SDK. */
-  private NendNativeAdForwarder forwarder;
+  /**
+   * Listener class to forward Nend native ad events to the Google Mobile Ads SDK.
+   */
+  private final NendNativeAdForwarder forwarder;
 
-  /** Nend native ad client. */
-  private NendAdNativeClient client;
+  /**
+   * Nend native ad client.
+   */
+  private final NendAdNativeClient client;
 
-  /** Custom options for requesting Nend native ads. */
-  private NativeAdOptions nativeAdOptions;
+  /**
+   * Custom options for requesting Nend native ads.
+   */
+  private final NativeAdOptions nativeAdOptions;
 
   /**
    * Indicates whether Nend has attempted to download their ad image bitmap. This is {@code true} if
@@ -31,7 +41,9 @@ class NativeAdLoader {
    */
   private boolean isAdImageDownloadComplete;
 
-  /** Nend's native ad image. */
+  /**
+   * Nend's native ad image.
+   */
   private Bitmap nendAdImage = null;
 
   /**
@@ -40,7 +52,9 @@ class NativeAdLoader {
    */
   private boolean isLogoImageDownloadComplete;
 
-  /** Nend's native ad logo */
+  /**
+   * Nend's native ad logo
+   */
   private Bitmap nendLogoImage = null;
 
   NativeAdLoader(
@@ -57,8 +71,10 @@ class NativeAdLoader {
           public void onSuccess(final NendAdNative nendAdNative) {
             Context context = forwarder.getContextFromWeakReference();
             if (context == null) {
-              Log.e(TAG, "Your context may be released...");
-              forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+              AdError error = new AdError(ERROR_NULL_CONTEXT, "The context object is null.",
+                  ERROR_DOMAIN);
+              Log.e(TAG, error.getMessage());
+              forwarder.failedToLoad(error);
               return;
             }
 
@@ -68,14 +84,17 @@ class NativeAdLoader {
                   @Override
                   public void onImagesDownloaded(
                       @Nullable Bitmap adImage, @Nullable Bitmap logoImage) {
-                    NendUnifiedNativeNormalAdMapper adMapper =
-                        createUnifiedNativeAdMapper(nendAdNative);
-                    if (adMapper == null) {
-                      Log.e(TAG, "Failed to create unified native ad mapper.");
-                      forwarder.failedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                    Context context = forwarder.getContextFromWeakReference();
+                    if (context == null) {
+                      AdError error = new AdError(ERROR_NULL_CONTEXT, "The context object is null.",
+                          ERROR_DOMAIN);
+                      Log.e(TAG, error.getMessage());
+                      forwarder.failedToLoad(error);
                       return;
                     }
 
+                    NendUnifiedNativeNormalAdMapper adMapper = createUnifiedNativeAdMapper(context,
+                        nendAdNative);
                     forwarder.setUnifiedNativeAdMapper(adMapper);
                     forwarder.adLoaded();
                   }
@@ -84,35 +103,32 @@ class NativeAdLoader {
 
           @Override
           public void onFailure(NendAdNativeClient.NendError nendError) {
-            Log.e(TAG, "Failed to request Nend native ad: " + nendError.getMessage());
             forwarder.setUnifiedNativeAdMapper(null);
-            forwarder.failedToLoad(nendError.getCode());
+            AdError error = new AdError(nendError.getCode(), nendError.getMessage(),
+                NEND_SDK_ERROR_DOMAIN);
+            Log.e(TAG, error.getMessage());
+            forwarder.failedToLoad(error);
           }
         });
   }
 
-  @Nullable
-  private NendUnifiedNativeNormalAdMapper createUnifiedNativeAdMapper(@NonNull NendAdNative ad) {
-    Context context = forwarder.getContextFromWeakReference();
-    if (context == null) {
-      Log.e(TAG, "Your context may be released...");
-      forwarder.failedToLoad(AdRequest.ERROR_CODE_INTERNAL_ERROR);
-      return null;
-    }
-
-    boolean shouldReturnUrlsForImageAssets = false;
-    if (nativeAdOptions != null) {
-      shouldReturnUrlsForImageAssets = nativeAdOptions.shouldReturnUrlsForImageAssets();
-    }
-
+  @NonNull
+  private NendUnifiedNativeNormalAdMapper createUnifiedNativeAdMapper(@NonNull Context context,
+      @NonNull NendAdNative ad) {
     NendNativeMappedImage adImage = null;
-    if (shouldReturnUrlsForImageAssets || nendAdImage != null) {
-      adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getAdImageUrl()));
+    if (nendAdImage != null) {
+      String adImageUrl = ad.getAdImageUrl();
+      if (!TextUtils.isEmpty(adImageUrl)) {
+        adImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(adImageUrl));
+      }
     }
 
     NendNativeMappedImage logoImage = null;
-    if (shouldReturnUrlsForImageAssets || nendLogoImage != null) {
-      logoImage = new NendNativeMappedImage(context, nendAdImage, Uri.parse(ad.getLogoImageUrl()));
+    if (nendLogoImage != null) {
+      String logoImageUrl = ad.getLogoImageUrl();
+      if (!TextUtils.isEmpty(logoImageUrl)) {
+        logoImage = new NendNativeMappedImage(context, nendLogoImage, Uri.parse(logoImageUrl));
+      }
     }
 
     return new NendUnifiedNativeNormalAdMapper(context, forwarder, ad, adImage, logoImage);
@@ -123,8 +139,9 @@ class NativeAdLoader {
       @NonNull final OnNendImagesDownloadedListener listener) {
     final Context context = forwarder.getContextFromWeakReference();
     if (context == null) {
-      Log.e(TAG, "Your context may be released...");
-      forwarder.failedToLoad(AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError error = new AdError(ERROR_NULL_CONTEXT, "The context object is null.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      forwarder.failedToLoad(error);
       return;
     }
 
@@ -184,7 +201,7 @@ class NativeAdLoader {
     /**
      * Invoked when nend has finished attempting to download all image assets.
      *
-     * @param adImage nend's ad image bitmap asset
+     * @param adImage   nend's ad image bitmap asset
      * @param logoImage nend's logo image bitmap asset
      */
     void onImagesDownloaded(@Nullable Bitmap adImage, @Nullable Bitmap logoImage);

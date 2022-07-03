@@ -1,10 +1,10 @@
 package com.google.ads.mediation.facebook.rtb;
 
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createAdapterError;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.createSdkError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.content.Context;
@@ -16,11 +16,11 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdView;
 import com.facebook.ads.ExtraHints;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -44,10 +44,10 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
-      String errorMessage = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to request ad, placementID is null or empty.");
-      Log.e(TAG, errorMessage);
-      callback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
       return;
     }
 
@@ -56,10 +56,10 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
       adView = new AdView(adConfiguration.getContext(), placementID,
           adConfiguration.getBidResponse());
     } catch (Exception exception) {
-      String errorMessage = createAdapterError(ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
-          "Failed to create banner ad: " + exception.getMessage());
-      Log.e(TAG, errorMessage);
-      callback.onFailure(errorMessage);
+      AdError error = new AdError(ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
+          "Failed to create banner ad: " + exception.getMessage(), ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+      callback.onFailure(error);
       return;
     }
 
@@ -89,10 +89,10 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   }
 
   @Override
-  public void onError(Ad ad, AdError adError) {
-    String errorMessage = createSdkError(adError);
-    Log.w(TAG, errorMessage);
-    callback.onFailure(errorMessage);
+  public void onError(Ad ad, com.facebook.ads.AdError adError) {
+    AdError error = getAdError(adError);
+    Log.w(TAG, error.getMessage());
+    callback.onFailure(error);
   }
 
   @Override
@@ -103,8 +103,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @Override
   public void onAdClicked(Ad ad) {
     if (mBannerAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      //mBannerAdCallback.reportAdClicked();
+      mBannerAdCallback.reportAdClicked();
       mBannerAdCallback.onAdOpened();
       mBannerAdCallback.onAdLeftApplication();
     }
@@ -113,8 +112,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mBannerAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      //mBannerAdCallback.reportAdImpression();
+      mBannerAdCallback.reportAdImpression();
     }
   }
 }

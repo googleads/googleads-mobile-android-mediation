@@ -12,10 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/** Mapper for UnifiedNativeAd. */
+/**
+ * Mapper for UnifiedNativeAd.
+ */
 public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
-  /** Called when clicked. */
+  /**
+   * Called when clicked.
+   */
   private Runnable clickEvent;
 
   public IMobileUnifiedNativeAdMapper(
@@ -60,11 +64,13 @@ public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       this.scale = scale;
     }
 
+    @NonNull
     @Override
     public Drawable getDrawable() {
       return drawable;
     }
 
+    @NonNull
     @Override
     public Uri getUri() {
       return imageUri;
