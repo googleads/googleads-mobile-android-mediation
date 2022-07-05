@@ -3,6 +3,7 @@ package com.vungle.mediation;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -35,10 +36,14 @@ import java.util.Map;
 
 public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
-  private static final String TAG = VungleNativeAdapter.class.getSimpleName();
-
+  /**
+   * Native ad sponsoredBy text key.
+   */
   public static final String KEY_SPONSORED_CONTEXT_ASSET = "sponsoredBy";
 
+  /**
+   * Would be only used in RecyclerView scenario.
+   */
   public static final String EXTRA_DISABLE_FEED_MANAGEMENT = "disableFeedLifecycleManagement";
 
   private final MediationNativeAdConfiguration adConfiguration;
@@ -76,7 +81,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.d(TAG, error.getMessage());
       callback.onFailure(error);
       return;
     }
@@ -85,7 +90,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     if (TextUtils.isEmpty(placementId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.d(TAG, error.getMessage());
       callback.onFailure(error);
       return;
     }
@@ -95,8 +100,8 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
     Log.d(TAG, "start to render native ads...");
 
-    boolean disabled = mediationExtras.getBoolean(EXTRA_DISABLE_FEED_MANAGEMENT, false);
-    vungleNativeAd = new VungleNativeAd(context, placementId, disabled);
+    vungleNativeAd = new VungleNativeAd(context, placementId,
+        mediationExtras.getBoolean(EXTRA_DISABLE_FEED_MANAGEMENT, false));
     VungleManager.getInstance().registerNativeAd(placementId, vungleNativeAd);
 
     VungleInitializer.getInstance()
@@ -112,7 +117,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
               @Override
               public void onInitializeError(AdError error) {
                 VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
-                Log.w(TAG, error.getMessage());
+                Log.d(TAG, error.getMessage());
                 callback.onFailure(error);
               }
             });
@@ -134,7 +139,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     public void onAdLoadError(String placementId, VungleException exception) {
       VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
       AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.w(TAG, error.getMessage());
+      Log.d(TAG, error.getMessage());
       callback.onFailure(error);
     }
 
@@ -143,7 +148,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
 
       AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.w(TAG, error.getMessage());
+      Log.d(TAG, error.getMessage());
       callback.onFailure(error);
     }
 
@@ -186,38 +191,40 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
     ViewGroup adView = (ViewGroup) view;
 
-    View overlayView = adView.getChildAt(adView.getChildCount() - 1);
-
     if (vungleNativeAd.getNativeAd() == null || !vungleNativeAd.getNativeAd().canPlayAd()) {
       return;
     }
 
-    if (overlayView instanceof FrameLayout) {
-      // We will render our privacy icon as a child of containerView and place at one of the four corners.
-      vungleNativeAd.getNativeAd().setAdOptionsRootView((FrameLayout) overlayView);
+    View overlayView = adView.getChildAt(adView.getChildCount() - 1);
 
-      View iconView = null;
-
-      ArrayList<View> assetViews = new ArrayList<>();
-      for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
-        assetViews.add(clickableAssets.getValue());
-
-        if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
-          iconView = clickableAssets.getValue();
-        }
-      }
-
-      if (iconView instanceof ImageView) {
-        vungleNativeAd.getNativeAd()
-            .registerViewForInteraction(vungleNativeAd.getNativeAdLayout(),
-                vungleNativeAd.getMediaView(), (ImageView) iconView,
-                assetViews);
-      } else {
-        Log.w(TAG, "Native app icon asset is not of type ImageView!");
-      }
-    } else {
-      Log.w(TAG, "We need FrameLayout to render vungle adOptionsView!");
+    if (!(overlayView instanceof FrameLayout)) {
+      Log.d(TAG, "We need FrameLayout to render vungle adOptionsView!");
+      return;
     }
+
+    // We will render our privacy icon as a child of containerView
+    // and place at one of the four corners.
+    vungleNativeAd.getNativeAd().setAdOptionsRootView((FrameLayout) overlayView);
+
+    View iconView = null;
+    ArrayList<View> assetViews = new ArrayList<>();
+    for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
+      assetViews.add(clickableAssets.getValue());
+
+      if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
+        iconView = clickableAssets.getValue();
+      }
+    }
+
+    if (!(iconView instanceof ImageView)) {
+      Log.d(TAG, "Native app icon asset is not of type ImageView!");
+      return;
+    }
+
+    vungleNativeAd.getNativeAd()
+        .registerViewForInteraction(vungleNativeAd.getNativeAdLayout(),
+            vungleNativeAd.getMediaView(), (ImageView) iconView,
+            assetViews);
   }
 
   @Override
@@ -250,9 +257,12 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       setStarRating(starRating);
     }
 
-    Bundle extras = new Bundle();
-    extras.putCharSequence(KEY_SPONSORED_CONTEXT_ASSET, "" + nativeAd.getAdSponsoredText());
-    setExtras(extras);
+    String sponsored = nativeAd.getAdSponsoredText();
+    if (sponsored != null) {
+      Bundle extras = new Bundle();
+      extras.putString(KEY_SPONSORED_CONTEXT_ASSET, sponsored);
+      setExtras(extras);
+    }
 
     NativeAdLayout nativeAdLayout = vungleNativeAd.getNativeAdLayout();
     MediaView mediaView = vungleNativeAd.getMediaView();
@@ -273,25 +283,25 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
   private static class VungleNativeMappedImage extends
       com.google.android.gms.ads.formats.NativeAd.Image {
 
-    private Drawable mDrawable;
-    private Uri mImageUri;
+    private Drawable drawable;
+    private Uri imageUri;
 
     public VungleNativeMappedImage(Drawable drawable) {
-      mDrawable = drawable;
+      this.drawable = drawable;
     }
 
     public VungleNativeMappedImage(Uri imageUrl) {
-      mImageUri = imageUrl;
+      this.imageUri = imageUrl;
     }
 
     @Override
     public Drawable getDrawable() {
-      return mDrawable;
+      return drawable;
     }
 
     @Override
     public Uri getUri() {
-      return mImageUri;
+      return imageUri;
     }
 
     @Override

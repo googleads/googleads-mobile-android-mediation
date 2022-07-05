@@ -1,5 +1,7 @@
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -16,8 +18,6 @@ import com.vungle.warren.ui.view.MediaView;
  */
 public class VungleNativeAd {
 
-  private static final String TAG = VungleNativeAd.class.getSimpleName();
-
   private final String placementId;
 
   private final NativeAdLayout nativeAdLayout;
@@ -27,18 +27,14 @@ public class VungleNativeAd {
   /**
    * Vungle ad object for native ads.
    */
-  private NativeAd nativeAd;
+  private final NativeAd nativeAd;
 
-  public VungleNativeAd(@NonNull Context context, @NonNull String placementId, boolean disabled) {
+  public VungleNativeAd(@NonNull Context context, @NonNull String placementId, boolean isLifeCycleManagementDisabled) {
     this.placementId = placementId;
     this.nativeAd = new NativeAd(context, placementId);
     this.nativeAdLayout = new NativeAdLayout(context);
-    this.nativeAdLayout.disableLifeCycleManagement(disabled);
+    this.nativeAdLayout.disableLifeCycleManagement(isLifeCycleManagementDisabled);
     this.mediaView = new MediaView(context);
-  }
-
-  public String getPlacementId() {
-    return placementId;
   }
 
   public void loadNativeAd(@Nullable AdConfig adConfig, @Nullable NativeAdListener listener) {

@@ -2,7 +2,6 @@
 
 #### Version 6.11.0.3
 - Native ads support.
-- COPPA support.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.0.0.
@@ -26,7 +25,6 @@ Built and tested with:
 
 #### Version 6.11.0.0
 - Verified compatibility with Vungle SDK 6.11.0.
-- Added Support for Vungle Native Ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.6.0.
