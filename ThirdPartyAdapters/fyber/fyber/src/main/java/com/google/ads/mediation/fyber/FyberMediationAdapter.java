@@ -26,7 +26,6 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerA
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
 import com.fyber.inneractive.sdk.external.InneractiveUnitController;
-import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -173,8 +172,9 @@ public class FyberMediationAdapter extends Adapter
   /**
    * Only rewarded ads are implemented using the new Adapter interface.
    */
-  public void loadRewardedAd(final MediationRewardedAdConfiguration configuration,
-      @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+  public void loadRewardedAd(@NonNull final MediationRewardedAdConfiguration configuration,
+      @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          callback) {
     // Sometimes loadRewardedAd is called before initialize.
     String keyAppID = configuration.getServerParameters().getString(KEY_APP_ID);
     if (TextUtils.isEmpty(keyAppID)) {
@@ -214,10 +214,6 @@ public class FyberMediationAdapter extends Adapter
     Set<String> configuredAppIds = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle serverParameters = configuration.getServerParameters();
-      if (serverParameters == null) {
-        continue;
-      }
-
       String appId = serverParameters.getString(KEY_APP_ID);
       if (!TextUtils.isEmpty(appId)) {
         configuredAppIds.add(appId);
@@ -225,13 +221,11 @@ public class FyberMediationAdapter extends Adapter
     }
 
     if (configuredAppIds.isEmpty()) {
-      if (completionCallback != null) {
-        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-            "Failed to initialize. Fyber SDK requires an appId to be configured on the AdMob UI.",
-            ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        completionCallback.onInitializationFailed(error.getMessage());
-      }
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Fyber Marketplace SDK requires an appId to be configured on the AdMob UI.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      completionCallback.onInitializationFailed(error.getMessage());
       return;
     }
 
@@ -239,8 +233,8 @@ public class FyberMediationAdapter extends Adapter
     String appIdForInitialization = configuredAppIds.iterator().next();
     if (configuredAppIds.size() > 1) {
       String logMessage = String.format("Multiple '%s' entries found: %s. "
-              + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID,
-          configuredAppIds.toString(), appIdForInitialization);
+              + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID, configuredAppIds,
+          appIdForInitialization);
       Log.w(TAG, logMessage);
     }
 
@@ -301,7 +295,7 @@ public class FyberMediationAdapter extends Adapter
   @Override
   public void requestBannerAd(@NonNull final Context context,
       @NonNull final MediationBannerListener mediationBannerListener,
-      final Bundle serverParameters, @NonNull final AdSize adSize,
+      @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable final Bundle mediationExtras) {
     mMediationBannerListener = mediationBannerListener;
     String keyAppId = serverParameters.getString(KEY_APP_ID);
@@ -489,9 +483,8 @@ public class FyberMediationAdapter extends Adapter
   @Override
   public void requestInterstitialAd(@NonNull final Context context,
       @NonNull final MediationInterstitialListener mediationInterstitialListener,
-      final Bundle serverParameters,
-      @NonNull MediationAdRequest mediationAdRequest,
-      @NonNull final Bundle mediationExtras) {
+      @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
 
     mMediationInterstitialListener = mediationInterstitialListener;
 

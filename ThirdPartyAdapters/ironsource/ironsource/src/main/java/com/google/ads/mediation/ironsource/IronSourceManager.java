@@ -32,10 +32,11 @@ class IronSourceManager
     implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener {
 
   private static final IronSourceManager instance = new IronSourceManager();
-  private AtomicBoolean isInitialized = new AtomicBoolean(false);
+  private final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
-  private ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>> availableInstances;
-  private ConcurrentHashMap<String, WeakReference<IronSourceAdapter>>
+  private final ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>>
+      availableInstances;
+  private final ConcurrentHashMap<String, WeakReference<IronSourceAdapter>>
       availableInterstitialInstances;
 
   private WeakReference<IronSourceMediationAdapter> currentlyShowingRewardedAdapter;

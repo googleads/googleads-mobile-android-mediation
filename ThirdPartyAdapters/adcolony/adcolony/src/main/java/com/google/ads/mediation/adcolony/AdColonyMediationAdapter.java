@@ -41,7 +41,7 @@ import java.util.List;
 public class AdColonyMediationAdapter extends RtbAdapter {
 
   public static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
-  private static AdColonyAppOptions appOptions = new AdColonyAppOptions();
+  private static final AdColonyAppOptions appOptions = new AdColonyAppOptions();
 
   // Keeps a strong reference to the banner ad renderer, which loads ads asynchronously.
   private AdColonyBannerRenderer adColonyBannerRenderer;
@@ -70,6 +70,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   })
   @Retention(RetentionPolicy.SOURCE)
   public @interface AdapterError {
+
   }
 
   /**
@@ -167,13 +168,13 @@ public class AdColonyMediationAdapter extends RtbAdapter {
 
   @Override
   public void initialize(
-          @NonNull Context context,
-          @NonNull final InitializationCompleteCallback initializationCompleteCallback,
-          @NonNull List<MediationConfiguration> mediationConfigurations
+      @NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations
   ) {
     if (!(context instanceof Activity) && !(context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
-              "AdColony SDK requires an Activity or Application context to initialize.");
+          "AdColony SDK requires an Activity or Application context to initialize.");
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
@@ -201,19 +202,16 @@ public class AdColonyMediationAdapter extends RtbAdapter {
     int count = appIDs.size();
     if (count <= 0) {
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid AdColony app ID.");
+          "Missing or invalid AdColony app ID.");
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
 
     appID = appIDs.iterator().next();
     if (count > 1) {
-      String logMessage = String.format(
-              "Multiple '%s' entries found: %s. Using '%s' to initialize the AdColony SDK.",
-              AdColonyAdapterUtils.KEY_APP_ID,
-              appIDs.toString(),
-              appID
-      );
+      String logMessage = String
+          .format("Multiple '%s' entries found: %s. Using '%s' to initialize the AdColony SDK.",
+              AdColonyAdapterUtils.KEY_APP_ID, appIDs, appID);
       Log.w(TAG, logMessage);
     }
 
@@ -235,37 +233,37 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbBannerAd(
-          @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
-  ) {
-    adColonyBannerRenderer = new AdColonyBannerRenderer(bannerAdConfiguration, mediationAdLoadCallback);
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration bannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
+    adColonyBannerRenderer = new AdColonyBannerRenderer(bannerAdConfiguration,
+        mediationAdLoadCallback);
     adColonyBannerRenderer.render();
   }
 
   @Override
   public void loadRtbInterstitialAd(
-          @NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback
-  ) {
-    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration, mediationAdLoadCallback);
+      @NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          mediationAdLoadCallback) {
+    adColonyInterstitialRenderer = new AdColonyInterstitialRenderer(interstitialAdConfiguration,
+        mediationAdLoadCallback);
     adColonyInterstitialRenderer.render();
   }
 
   @Override
-  public void loadRtbRewardedAd(
-          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
-  ) {
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     loadRewardedAd(rewardedAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
-  public void loadRewardedAd(
-          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback
-  ) {
-    adColonyRewardedRenderer = new AdColonyRewardedRenderer(rewardedAdConfiguration, mediationAdLoadCallback);
+  public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    adColonyRewardedRenderer = new AdColonyRewardedRenderer(rewardedAdConfiguration,
+        mediationAdLoadCallback);
     adColonyRewardedRenderer.render();
   }
 
@@ -274,7 +272,8 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull final SignalCallbacks signalCallbacks) {
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
+      @NonNull final SignalCallbacks signalCallbacks) {
     AdColony.collectSignals(new AdColonySignalsListener() {
       @Override
       public void onSuccess(String signals) {
@@ -284,7 +283,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
       @Override
       public void onFailure() {
         AdError error = createSdkError(ERROR_ADCOLONY_SDK,
-                "Failed to get signals from AdColony.");
+            "Failed to get signals from AdColony.");
         Log.e(TAG, error.getMessage());
         signalCallbacks.onFailure(error);
       }

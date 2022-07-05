@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.tapjoy.rtb.TapjoyRtbInterstitialRenderer;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -108,6 +109,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   /**
    * {@link Adapter} implementation
    */
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
@@ -127,6 +129,7 @@ public class TapjoyMediationAdapter extends RtbAdapter {
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = Tapjoy.getVersion();
@@ -147,9 +150,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void initialize(Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
       AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
@@ -180,9 +183,9 @@ public class TapjoyMediationAdapter extends RtbAdapter {
 
     sdkKey = sdkKeys.iterator().next();
     if (count > 1) {
-      String message = String.format("Multiple '%s' entries found: %s. " +
-              "Using '%s' to initialize the Tapjoy SDK.",
-          SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys.toString(), sdkKey);
+      String message = String
+          .format("Multiple '%s' entries found: %s. Using '%s' to initialize the Tapjoy SDK.",
+              SDK_KEY_SERVER_PARAMETER_KEY, sdkKeys, sdkKey);
       Log.w(TAG, message);
     }
 
@@ -208,24 +211,26 @@ public class TapjoyMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
+      @NonNull SignalCallbacks signalCallbacks) {
     signalCallbacks.onSuccess(Tapjoy.getUserToken());
   }
 
   @Override
   public void loadInterstitialAd(
-      MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> mediationAdLoadCallback) {
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          mediationAdLoadCallback) {
     TapjoyRtbInterstitialRenderer interstitialRenderer = new TapjoyRtbInterstitialRenderer(
         mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     interstitialRenderer.render();
   }
 
   @Override
-  public void loadRewardedAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     TapjoyRewardedRenderer rewardedRenderer = new TapjoyRewardedRenderer(
         mediationRewardedAdConfiguration, mediationAdLoadCallback);
     rewardedRenderer.render();

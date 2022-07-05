@@ -8,17 +8,17 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "IMobile"
     // String property to store version name.
-    stringVersion = "2.0.23.0"
+    stringVersion = "2.0.23.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 30
-        versionCode 2002300
+        minSdkVersion 19
+        targetSdkVersion 31
+        versionCode 2002301
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -32,9 +32,8 @@ android {
 
 dependencies {
     implementation 'jp.co.imobile:adnw-sdk-android:2.0.23'
-
-    implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'com.google.android.gms:play-services-ads:21.0.0'
 }
 
 /**
@@ -74,7 +73,7 @@ publishing {
                 licenses {
                     license {
                         name = 'Apache-2.0'
-                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/master/LICENSE'
+                        url = 'https://github.com/googleads/googleads-mobile-android-mediation/blob/main/LICENSE'
                         distribution = 'repo'
                     }
                 }

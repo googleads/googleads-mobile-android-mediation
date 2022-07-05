@@ -46,9 +46,7 @@ class FyberAdapterUtils {
         code = 203;
         break;
     }
-    return new AdError(code,
-        "Fyber failed to initialize with reason: " + initStatus.toString(),
-        ERROR_DOMAIN);
+    return new AdError(code, "Fyber failed to initialize with reason: " + initStatus, ERROR_DOMAIN);
   }
 
   /**
@@ -119,8 +117,8 @@ class FyberAdapterUtils {
       case ERROR_CODE_NATIVE_VIDEO_NOT_SUPPORTED:
         break;
     }
-    return new AdError(code,
-        "Fyber failed to request ad with reason: " + inneractiveErrorCode.toString(), ERROR_DOMAIN);
+    return new AdError(code, "Fyber failed to request ad with reason: " + inneractiveErrorCode,
+        ERROR_DOMAIN);
   }
 
   /**

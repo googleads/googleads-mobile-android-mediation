@@ -97,10 +97,10 @@ class MyTargetTools {
         / DisplayMetrics.DENSITY_DEFAULT));
   }
 
-  public static void handleMediationExtras(@NonNull String tag, @Nullable Bundle mediationExtras, @NonNull CustomParams customParams) {
+  public static void handleMediationExtras(@NonNull String tag, @Nullable Bundle mediationExtras,
+      @NonNull CustomParams customParams) {
     if (mediationExtras == null) {
       Log.d(tag, "Mediation extras is null");
-
       return;
     }
 
@@ -146,9 +146,9 @@ class MyTargetTools {
         final String value = String.valueOf(object);
         customParams.setCustomParam(key, value);
         Log.d(tag, "Add string custom param from mediation extra: " + key + ", " + object);
-      }
-      else {
-        Log.d(tag, "Mediation extra has non-primitive extra that will not be added: " + key + ", " + object);
+      } else {
+        Log.d(tag, "Mediation extra has non-primitive extra that will not be added: " + key + ", "
+            + object);
       }
     }
   }

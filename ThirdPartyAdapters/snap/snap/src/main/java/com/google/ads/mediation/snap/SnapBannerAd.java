@@ -1,5 +1,10 @@
 package com.google.ads.mediation.snap;
 
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_INVALID_BID_RESPONSE;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_SNAP_SDK_LOAD_FAILURE;
 import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
 
 import android.content.Context;
@@ -7,10 +12,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -28,7 +31,6 @@ import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdSize;
 import com.snap.adkit.external.SnapBannerAdImpressionRecorded;
-
 import java.util.ArrayList;
 
 public class SnapBannerAd implements MediationBannerAd {
@@ -37,13 +39,11 @@ public class SnapBannerAd implements MediationBannerAd {
 
   private BannerView bannerView;
 
-  private MediationBannerAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
+  private final MediationBannerAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
   private MediationBannerAdCallback bannerAdCallback;
-  private String slotID;
 
-  public SnapBannerAd(
-      @NonNull MediationBannerAdConfiguration adConfiguration,
+  public SnapBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.callback = callback;
@@ -52,12 +52,11 @@ public class SnapBannerAd implements MediationBannerAd {
   public void loadAd() {
     SnapAdSize adSize = getBannerSize(adConfiguration.getContext(), adConfiguration.getAdSize());
     if (adSize == SnapAdSize.INVALID) {
-      AdError error =
-          new AdError(
-              0,
-              "Failed to load banner ad from Snap. Invalid Ad Size.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      String errorMessage = String
+          .format("Failed to load banner ad from Snap: %s is not a supported ad size.",
+              adConfiguration.getAdSize());
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
+      Log.e(TAG, error.toString());
       callback.onFailure(error);
       return;
     }
@@ -67,34 +66,26 @@ public class SnapBannerAd implements MediationBannerAd {
     bannerView.setupListener(
         new SnapAdEventListener() {
           @Override
-          public void onEvent(
-              SnapAdKitEvent snapAdKitEvent,
-              @Nullable String s) {
+          public void onEvent(SnapAdKitEvent snapAdKitEvent, @Nullable String s) {
             handleEvent(snapAdKitEvent);
           }
         });
 
     Bundle serverParameters = adConfiguration.getServerParameters();
-    slotID = serverParameters.getString(SLOT_ID_KEY);
+    String slotID = serverParameters.getString(SLOT_ID_KEY);
     if (TextUtils.isEmpty(slotID)) {
-      AdError error =
-          new AdError(
-              0,
-              "Failed to load banner ad from Snap. Missing or invalid Ad Slot ID.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to load banner ad from Snap: Missing or invalid Ad Slot ID.", ERROR_DOMAIN);
+      Log.e(TAG, error.toString());
       callback.onFailure(error);
       return;
     }
 
     String bid = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bid)) {
-      AdError error =
-          new AdError(
-              0,
-              "Failed to load banner ad from Snap. Missing or invalid bid response.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = new AdError(ERROR_INVALID_BID_RESPONSE,
+          "Failed to load banner ad from Snap: Missing or invalid bid response.", ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
       callback.onFailure(error);
       return;
     }
@@ -110,25 +101,21 @@ public class SnapBannerAd implements MediationBannerAd {
     return bannerView.view();
   }
 
+  // TODO: This method is only called once and should be inlined.
   private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
     if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
-      if (callback != null) {
-        bannerAdCallback = callback.onSuccess(this);
-      }
+      bannerAdCallback = callback.onSuccess(SnapBannerAd.this);
       return;
     }
 
     if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-      if (callback != null) {
-        AdError error =
-            new AdError(
-                0,
-                "Failed to load banner ad from Snap."
-                    + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
-                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        callback.onFailure(error);
-      }
+      SnapAdLoadFailed snapAdLoadFailedEvent = (SnapAdLoadFailed) snapAdKitEvent;
+      String errorMessage = String
+          .format("Snap SDK returned a banner ad load failed event with message: %s",
+              snapAdLoadFailedEvent.getThrowable().getMessage());
+      AdError error = new AdError(ERROR_SNAP_SDK_LOAD_FAILURE, errorMessage, ERROR_DOMAIN);
+      Log.i(TAG, error.toString());
+      callback.onFailure(error);
       return;
     }
 
@@ -148,6 +135,7 @@ public class SnapBannerAd implements MediationBannerAd {
     }
   }
 
+  @NonNull
   private SnapAdSize getBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);

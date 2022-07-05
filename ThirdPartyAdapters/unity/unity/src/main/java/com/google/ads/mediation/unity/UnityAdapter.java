@@ -282,11 +282,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
-    if (bannerAd != null) {
-      return bannerAd.getBannerView();
-    }
-    return null;
+    return bannerAd.getBannerView();
   }
 }

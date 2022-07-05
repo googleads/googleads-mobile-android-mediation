@@ -4,6 +4,7 @@ import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
 import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -24,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class VungleManager {
 
-  private static final String TAG = VungleManager.class.getSimpleName();
   private static final String PLAYING_PLACEMENT = "placementID";
 
   private static VungleManager sInstance;
@@ -62,15 +62,6 @@ public class VungleManager {
       Log.e(TAG, "placementID not provided from serverParameters.");
     }
     return placement;
-  }
-
-  /**
-   * Checks and returns if the passed Placement ID is a valid placement for App ID
-   *
-   * @param placementId placement identifier
-   */
-  public boolean isValidPlacement(String placementId) {
-    return Vungle.isInitialized() && Vungle.getValidPlacements().contains(placementId);
   }
 
   /**
@@ -157,9 +148,7 @@ public class VungleManager {
       Log.i(TAG, "Not found closest ad size: " + adSize);
       return false;
     }
-    Log.i(
-        TAG,
-        "Found closest ad size: " + closestSize.toString() + " for requested ad size: " + adSize);
+    Log.i(TAG, "Found closest ad size: " + closestSize + " for requested ad size: " + adSize);
 
     if (closestSize.getWidth() == BANNER_SHORT.getWidth()
         && closestSize.getHeight() == BANNER_SHORT.getHeight()) {

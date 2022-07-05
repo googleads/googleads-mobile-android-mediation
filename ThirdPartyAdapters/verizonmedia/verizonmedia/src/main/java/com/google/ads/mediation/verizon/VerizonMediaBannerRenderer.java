@@ -93,8 +93,7 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
 
     AdSize normalizedSize = VerizonMediaAdapterUtils.normalizeSize(context, adSize);
     if (normalizedSize == null) {
-      Log.w(TAG,
-          "The input ad size " + adSize.toString() + " is not currently supported.");
+      Log.w(TAG, "The input ad size " + adSize + " is not currently supported.");
       if (bannerListener != null && adapter != null) {
         bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
       }
@@ -109,7 +108,6 @@ final class VerizonMediaBannerRenderer implements InlineAdView.InlineAdListener,
     com.verizon.ads.inlineplacement.AdSize verizonAdSize =
         new com.verizon.ads.inlineplacement.AdSize(normalizedSize.getWidth(),
             normalizedSize.getHeight());
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
     VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
     InlineAdFactory inlineAdFactory = new InlineAdFactory(context, placementId,
         Collections.singletonList(verizonAdSize), this);

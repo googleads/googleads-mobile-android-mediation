@@ -105,7 +105,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void handleClick(final View view) {
+  public void handleClick(@NonNull final View view) {
     verizonAd.invokeDefaultAction(context);
   }
 

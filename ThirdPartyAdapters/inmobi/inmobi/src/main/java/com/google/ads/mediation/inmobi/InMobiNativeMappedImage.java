@@ -2,6 +2,7 @@ package com.google.ads.mediation.inmobi;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.formats.NativeAd;
 
 /**
@@ -20,11 +21,13 @@ class InMobiNativeMappedImage extends NativeAd.Image {
     mInMobiScale = scale;
   }
 
+  @NonNull
   @Override
   public Drawable getDrawable() {
     return mInMobiDrawable;
   }
 
+  @NonNull
   @Override
   public Uri getUri() {
     return mInmobiImageUri;

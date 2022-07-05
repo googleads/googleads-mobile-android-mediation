@@ -82,14 +82,13 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
     }
 
     VerizonMediaAdapterUtils.setCoppaValue(mediationAdRequest);
-    VASAds.setLocationEnabled((mediationAdRequest.getLocation() != null));
-    String[] adTypes = new String[] {"100", "simpleImage"};
+    String[] adTypes = new String[]{"100", "simpleImage"};
     NativeAdFactory nativeAdFactory = new NativeAdFactory(context, placementId, adTypes, this);
     nativeAdFactory.setRequestMetaData(
         VerizonMediaAdapterUtils.getRequestMetadata(mediationAdRequest));
     NativeAdOptions options = mediationAdRequest.getNativeAdOptions();
 
-    if ((options == null) || (!options.shouldReturnUrlsForImageAssets())) {
+    if (!options.shouldReturnUrlsForImageAssets()) {
       nativeAdFactory.load(this);
     } else {
       nativeAdFactory.loadWithoutAssets(this);

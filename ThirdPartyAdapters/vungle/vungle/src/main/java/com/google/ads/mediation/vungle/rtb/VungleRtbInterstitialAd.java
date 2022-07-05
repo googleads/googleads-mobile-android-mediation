@@ -3,6 +3,7 @@ package com.google.ads.mediation.vungle.rtb;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -28,8 +29,6 @@ import com.vungle.warren.error.VungleException;
 
 public class VungleRtbInterstitialAd implements MediationInterstitialAd {
 
-  private static final String TAG = VungleRtbInterstitialAd.class.getSimpleName();
-
   @NonNull
   private final MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
   @NonNull
@@ -38,7 +37,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
   private MediationInterstitialAdCallback mediationInterstitialAdCallback;
 
   private AdConfig mAdConfig;
-  private String mPlacementForPlay;
+  private String mPlacement;
   private String mAdMarkup;
 
   public VungleRtbInterstitialAd(
@@ -62,9 +61,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       return;
     }
 
-    mPlacementForPlay = VungleManager.getInstance()
-        .findPlacement(mediationExtras, serverParameters);
-    if (TextUtils.isEmpty(mPlacementForPlay)) {
+    mPlacement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
+    if (TextUtils.isEmpty(mPlacement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
@@ -97,22 +95,13 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
   }
 
   private void loadAd() {
-    if (Vungle.canPlayAd(mPlacementForPlay, mAdMarkup)) {
+    if (Vungle.canPlayAd(mPlacement, mAdMarkup)) {
       mediationInterstitialAdCallback = mMediationAdLoadCallback
           .onSuccess(VungleRtbInterstitialAd.this);
       return;
     }
 
-    // Placement ID is not what Vungle's SDK gets back after init/config.
-    if (!VungleManager.getInstance().isValidPlacement(mPlacementForPlay)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      mMediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    Vungle.loadAd(mPlacementForPlay, mAdMarkup, mAdConfig, new LoadAdCallback() {
+    Vungle.loadAd(mPlacement, mAdMarkup, mAdConfig, new LoadAdCallback() {
       @Override
       public void onAdLoad(String placementID) {
         mediationInterstitialAdCallback = mMediationAdLoadCallback
@@ -130,7 +119,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    Vungle.playAd(mPlacementForPlay, mAdMarkup, mAdConfig, new PlayAdCallback() {
+    Vungle.playAd(mPlacement, mAdMarkup, mAdConfig, new PlayAdCallback() {
 
       @Override
       public void creativeId(String creativeId) {

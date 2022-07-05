@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdSize;
 import com.adcolony.sdk.AdColonyAdView;
@@ -144,7 +143,7 @@ public class AdColonyAdapter extends AdColonyMediationAdapter
         .adColonyAdSizeFromAdMobAdSize(context, adSize);
     if (adColonyAdSize == null) {
       AdError error = createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to request banner with unsupported size: " + adSize.toString());
+          "Failed to request banner with unsupported size: " + adSize);
       Log.e(TAG, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(this, error);
       return;

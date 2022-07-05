@@ -1,15 +1,18 @@
 package com.google.ads.mediation.snap;
 
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_INVALID_BID_RESPONSE;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_SNAP_SDK_LOAD_FAILURE;
+import static com.google.ads.mediation.snap.SnapMediationAdapter.ERROR_SNAP_SDK_NOT_INITIALIZED;
 import static com.google.ads.mediation.snap.SnapMediationAdapter.SLOT_ID_KEY;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
-
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -34,30 +37,28 @@ public class SnapRewardedAd implements MediationRewardedAd {
 
   private static final String TAG = SnapRewardedAd.class.getSimpleName();
 
-  private MediationRewardedAdConfiguration adConfiguration;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  private final MediationRewardedAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   private MediationRewardedAdCallback rewardAdCallback;
   private String slotId;
 
   @Nullable
-  private final AudienceNetworkAdsApi adsNetworkApi = AdKitAudienceAdsNetwork.getAdsNetwork();
+  private AudienceNetworkAdsApi adsNetworkApi;
 
-  public SnapRewardedAd(
-      @NonNull MediationRewardedAdConfiguration adConfiguration,
+  public SnapRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.mediationAdLoadCallback = callback;
   }
 
   public void loadAd() {
+    adsNetworkApi = AdKitAudienceAdsNetwork.getAdsNetwork();
     if (adsNetworkApi == null) {
-      AdError error =
-          new AdError(
-              0,
-              "Snap Audience Network failed to initialize.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = new AdError(ERROR_SNAP_SDK_NOT_INITIALIZED,
+          "Failed to load rewarded ad from Snap: Snap Audience Network failed to initialize.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -65,24 +66,19 @@ public class SnapRewardedAd implements MediationRewardedAd {
     Bundle serverParameters = adConfiguration.getServerParameters();
     slotId = serverParameters.getString(SLOT_ID_KEY);
     if (TextUtils.isEmpty(slotId)) {
-      AdError error =
-          new AdError(
-              0,
-              "Failed to load rewarded Ad from Snap. Missing or invalid Ad Slot ID.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to load rewarded ad from Snap: Missing or invalid Ad Slot ID.", ERROR_DOMAIN);
+      Log.e(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     String bid = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bid)) {
-      AdError error =
-          new AdError(
-              0,
-              "Failed to load rewarded ad from Snap. Missing or invalid bid response.",
-              SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = new AdError(ERROR_INVALID_BID_RESPONSE,
+          "Failed to load rewarded ad from Snap: Missing or invalid bid response.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -94,35 +90,32 @@ public class SnapRewardedAd implements MediationRewardedAd {
             handleEvent(snapAdKitEvent);
           }
         });
+
     LoadAdConfig loadAdConfig =
         new LoadAdConfigBuilder().withPublisherSlotId(slotId).withBid(bid).build();
     adsNetworkApi.loadRewarded(loadAdConfig);
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     adsNetworkApi.playAd(new SnapAdKitSlot(slotId, AdKitSlotType.REWARDED));
   }
 
+  // TODO: This method is only called once and should be inlined.
   private void handleEvent(SnapAdKitEvent snapAdKitEvent) {
     if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
-      if (mediationAdLoadCallback != null) {
-        rewardAdCallback = mediationAdLoadCallback.onSuccess(this);
-      }
+      rewardAdCallback = mediationAdLoadCallback.onSuccess(this);
       return;
     }
 
     if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-      if (mediationAdLoadCallback != null) {
-        AdError error =
-            new AdError(
-                0,
-                "Failed to load rewarded ad from Snap."
-                    + ((SnapAdLoadFailed) snapAdKitEvent).getThrowable().getMessage(),
-                SnapMediationAdapter.SNAP_AD_SDK_ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        mediationAdLoadCallback.onFailure(error);
-      }
+      SnapAdLoadFailed snapAdLoadFailedEvent = (SnapAdLoadFailed) snapAdKitEvent;
+      String errorMessage = String
+          .format("Snap SDK returned a rewarded ad load failed event with message: %s",
+              snapAdLoadFailedEvent.getThrowable().getMessage());
+      AdError error = new AdError(ERROR_SNAP_SDK_LOAD_FAILURE, errorMessage, ERROR_DOMAIN);
+      Log.i(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -151,7 +144,6 @@ public class SnapRewardedAd implements MediationRewardedAd {
       if (rewardAdCallback != null) {
         rewardAdCallback.onAdClosed();
       }
-      return;
     }
   }
 }

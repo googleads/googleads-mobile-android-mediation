@@ -1,9 +1,6 @@
 package com.google.ads.mediation.maio;
 
 import androidx.annotation.NonNull;
-
-import com.google.ads.mediation.maio.MaioMediationAdapter.AdapterError;
-
 import com.google.android.gms.ads.AdError;
 import jp.maio.sdk.android.MaioAdsListenerInterface;
 

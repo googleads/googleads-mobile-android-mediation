@@ -5,6 +5,7 @@ import static android.util.Log.WARN;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.mediation.AppLovinUtils;
@@ -71,7 +72,7 @@ public final class AppLovinRtbInterstitialRenderer
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     // Update mute state
     boolean muted = AppLovinUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     sdk.getSettings().setMuted(muted);

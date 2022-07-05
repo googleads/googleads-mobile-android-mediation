@@ -171,7 +171,7 @@ public class IronSourceMediationAdapter extends Adapter
     if (count > 1) {
       String message = String
           .format("Multiple '%s' entries found: %s. Using '%s' to initialize the IronSource SDK.",
-              KEY_APP_KEY, appKeys.toString(), appKey);
+              KEY_APP_KEY, appKeys, appKey);
       Log.w(TAG, message);
     }
 

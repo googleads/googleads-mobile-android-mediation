@@ -258,7 +258,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
 
     BannerSize supportedAdSize = ChartboostAdapterUtils.findClosestBannerSize(context, adSize);
     if (supportedAdSize == null) {
-      String errorMessage = String.format("Unsupported size: %s", adSize.toString());
+      String errorMessage = String.format("Unsupported size: %s", adSize);
       AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.e(TAG, sizeError.toString());
       mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, sizeError);
@@ -323,7 +323,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
 
           if (chartboostCacheError != null) {
             AdError cacheError = ChartboostAdapterUtils.createSDKError(chartboostCacheError);
-            Log.i(TAG, "Failed to load banner ad: " + cacheError.toString());
+            Log.i(TAG, "Failed to load banner ad: " + cacheError);
             mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, cacheError);
             ChartboostSingleton.removeBannerDelegate(mChartboostBannerDelegate);
             return;
@@ -338,7 +338,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
             ChartboostShowError chartboostShowError) {
           if (chartboostShowError != null) {
             AdError showError = ChartboostAdapterUtils.createSDKError(chartboostShowError);
-            Log.i(TAG, "Failed to show banner ad: " + showError.toString());
+            Log.i(TAG, "Failed to show banner ad: " + showError);
           }
         }
 
@@ -351,7 +351,7 @@ public class ChartboostAdapter extends ChartboostMediationAdapter
 
           if (chartboostClickError != null) {
             AdError clickError = ChartboostAdapterUtils.createSDKError(chartboostClickError);
-            Log.i(TAG, "Chartboost click event had an error: " + clickError.toString());
+            Log.i(TAG, "Chartboost click event had an error: " + clickError);
             return;
           }
 
