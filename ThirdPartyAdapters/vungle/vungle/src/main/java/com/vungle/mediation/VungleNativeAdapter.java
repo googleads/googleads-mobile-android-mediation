@@ -19,11 +19,11 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.NativeAd;
@@ -37,12 +37,8 @@ import java.util.Map;
 public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
   /**
-   * Native ad sponsoredBy text key.
-   */
-  public static final String KEY_SPONSORED_CONTEXT_ASSET = "sponsoredBy";
-
-  /**
-   * Would be only used in RecyclerView scenario.
+   * Key to disable automatic management of native ad. Required when displaying Vungle native ad in
+   * a RecyclerView.
    */
   public static final String EXTRA_DISABLE_FEED_MANAGEMENT = "disableFeedLifecycleManagement";
 
@@ -211,20 +207,21 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     for (Map.Entry<String, View> clickableAssets : clickableAssetViews.entrySet()) {
       assetViews.add(clickableAssets.getValue());
 
-      if (clickableAssets.getKey().equals(UnifiedNativeAdAssetNames.ASSET_ICON)) {
+      if (clickableAssets.getKey().equals(NativeAdAssetNames.ASSET_ICON)) {
         iconView = clickableAssets.getValue();
       }
     }
 
-    if (!(iconView instanceof ImageView)) {
+    ImageView iconIV = null;
+    if (iconView instanceof ImageView) {
+      iconIV = (ImageView) iconView;
+    } else {
       Log.d(TAG, "Native app icon asset is not of type ImageView!");
-      return;
     }
 
     vungleNativeAd.getNativeAd()
         .registerViewForInteraction(vungleNativeAd.getNativeAdLayout(),
-            vungleNativeAd.getMediaView(), (ImageView) iconView,
-            assetViews);
+            vungleNativeAd.getMediaView(), iconIV, assetViews);
   }
 
   @Override
@@ -259,9 +256,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
     String sponsored = nativeAd.getAdSponsoredText();
     if (sponsored != null) {
-      Bundle extras = new Bundle();
-      extras.putString(KEY_SPONSORED_CONTEXT_ASSET, sponsored);
-      setExtras(extras);
+      setAdvertiser(sponsored);
     }
 
     NativeAdLayout nativeAdLayout = vungleNativeAd.getNativeAdLayout();
@@ -271,10 +266,9 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     setMediaView(nativeAdLayout);
 
     String iconUrl = nativeAd.getAppIcon();
-    if (iconUrl != null && iconUrl.startsWith("file://")) {
-      iconUrl = iconUrl.substring("file://".length());
+    if (iconUrl != null) {
+      setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
-    setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
 
     setOverrideImpressionRecording(true);
     setOverrideClickHandling(true);
@@ -283,12 +277,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
   private static class VungleNativeMappedImage extends
       com.google.android.gms.ads.formats.NativeAd.Image {
 
-    private Drawable drawable;
     private Uri imageUri;
-
-    public VungleNativeMappedImage(Drawable drawable) {
-      this.drawable = drawable;
-    }
 
     public VungleNativeMappedImage(Uri imageUrl) {
       this.imageUri = imageUrl;
@@ -296,7 +285,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
     @Override
     public Drawable getDrawable() {
-      return drawable;
+      return null;
     }
 
     @Override
