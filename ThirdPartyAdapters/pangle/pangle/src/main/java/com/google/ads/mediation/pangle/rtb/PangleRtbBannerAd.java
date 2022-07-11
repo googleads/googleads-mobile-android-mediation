@@ -54,7 +54,7 @@ public class PangleRtbBannerAd
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
               "Failed to load banner ad from Pangle. Missing or invalid Placement ID.");
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }

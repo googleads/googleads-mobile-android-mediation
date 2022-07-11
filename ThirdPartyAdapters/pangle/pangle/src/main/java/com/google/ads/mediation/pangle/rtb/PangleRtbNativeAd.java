@@ -59,7 +59,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
               "Failed to load native ad from Pangle. Missing or invalid Placement ID.");
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
@@ -95,6 +95,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
       @Override
       public void onFeedAdLoad(List<TTFeedAd> ads) {
+        // For bidding, only one native ad object will always be returned.
         mapNativeAd(ads.get(0));
         callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
       }
