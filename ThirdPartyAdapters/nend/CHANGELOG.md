@@ -1,6 +1,6 @@
 ## nend Android Mediation Adapter Changelog
 
-#### Version 8.2.0.0 (In progress)
+#### Version 8.2.0.0
 - Verified compatibility with nend SDK 8.2.0.
 
 Built and tested with
