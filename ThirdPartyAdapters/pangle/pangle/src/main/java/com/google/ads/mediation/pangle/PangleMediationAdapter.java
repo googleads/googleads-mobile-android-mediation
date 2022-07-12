@@ -196,9 +196,10 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the COPPA setting in Pangle SDK.
    *
    * @param coppa an {@code Integer} value that indicates whether the app should be treated as
-   *     child-directed for purposes of the COPPA. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   *     child-directed for purposes of the COPPA. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
    */
   public static void setCoppa(@TagForChildDirectedTreatment int coppa) {
     switch (coppa) {
@@ -227,9 +228,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *     personal data to serve ads under GDPR. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   *     personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1} means
+   *     the user does not consent. {@code -1} means the user hasn't specified. Any value outside of
+   *     -1, 0, or 1 will result in this method being a no-op.
    */
   public static void setGdpr(int gdpr) {
     if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
@@ -247,9 +248,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *     the "personal information" under CCPA. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   *     the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1} means
+   *     the user opts out. {@code -1} means the user hasn't specified. Any value outside of -1, 0,
+   *     or 1 will result in this method being a no-op.
    */
   public static void setCcpa(int ccpa) {
     if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
