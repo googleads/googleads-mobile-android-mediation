@@ -259,6 +259,10 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       setAdvertiser(sponsored);
     }
 
+    // Basically, we recommend using NativeAdLayout as the root native ad view,
+    // and in this adapter, we are not allowed to replace the native ad root view (NativeAdView).
+    // But this class is very important because our impression tracker observe this view visibility
+    // and fire impression event. So here's a workaround to integrate our native ad.
     NativeAdLayout nativeAdLayout = vungleNativeAd.getNativeAdLayout();
     MediaView mediaView = vungleNativeAd.getMediaView();
     nativeAdLayout.removeAllViews();
@@ -266,7 +270,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     setMediaView(nativeAdLayout);
 
     String iconUrl = nativeAd.getAppIcon();
-    if (iconUrl != null) {
+    if (iconUrl != null && iconUrl.startsWith("file://")) {
       setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
 
