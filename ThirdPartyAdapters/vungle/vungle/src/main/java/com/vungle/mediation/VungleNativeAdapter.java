@@ -37,8 +37,8 @@ import java.util.Map;
 public class VungleNativeAdapter extends UnifiedNativeAdMapper {
 
   /**
-   * Key to disable automatic management of native ad. Required when displaying Vungle native ad in
-   * a RecyclerView.
+   * Key to disable automatic management of native ad.
+   * Required when displaying Vungle native ad in a RecyclerView.
    */
   public static final String EXTRA_DISABLE_FEED_MANAGEMENT = "disableFeedLifecycleManagement";
 
@@ -190,12 +190,12 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     View overlayView = adView.getChildAt(adView.getChildCount() - 1);
 
     if (!(overlayView instanceof FrameLayout)) {
-      Log.d(TAG, "We need FrameLayout to render vungle adOptionsView!");
+      Log.d(TAG, "Vungle requires a FrameLayout to render the native ad.");
       return;
     }
 
-    // We will render our privacy icon as a child of containerView
-    // and place at one of the four corners.
+    // Vungle will render the privacy icon as a child of NativeAdView,
+    // and place it at one of the four corners.
     vungleNativeAd.getNativeAd().setAdOptionsRootView((FrameLayout) overlayView);
 
     View iconView = null;
