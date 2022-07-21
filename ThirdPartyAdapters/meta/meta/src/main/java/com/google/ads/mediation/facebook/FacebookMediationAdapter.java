@@ -217,6 +217,10 @@ public class FacebookMediationAdapter extends RtbAdapter {
             initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
         });
+
+    // The first call to getBidderToken takes longer than subsequent.
+    // Call it here during initialization so that it returns faster at ad request time.
+    BidderTokenProvider.getBidderToken(context);
   }
 
   @Override
@@ -251,7 +255,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+  public void loadRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);

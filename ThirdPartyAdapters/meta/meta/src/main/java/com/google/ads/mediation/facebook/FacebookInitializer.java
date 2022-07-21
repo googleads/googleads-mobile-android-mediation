@@ -4,11 +4,11 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_D
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.AudienceNetworkAds.InitResult;
 import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
-
 
 class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
@@ -36,7 +36,8 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
     getInstance().initialize(context, placements, listener);
   }
 
-  void initialize(Context context, ArrayList<String> placements, Listener listener) {
+  void initialize(@NonNull Context context, @NonNull ArrayList<String> placements,
+      @NonNull Listener listener) {
     if (mIsInitializing) {
       mListeners.add(listener);
       return;
@@ -48,7 +49,6 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
     }
 
     mIsInitializing = true;
-
     getInstance().mListeners.add(listener);
     AudienceNetworkAds.buildInitSettings(context)
         .withMediationService("GOOGLE:" + BuildConfig.ADAPTER_VERSION)

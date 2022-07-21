@@ -3,6 +3,7 @@
 #### Next Version
 - Rebranded adapter name to "Meta Audience Network".
 - Removed waterfall integration.
+- Fixed an `Error calling adapter: com.google.ads.mediation.facebook.FacebookMediationAdapter` error that sometimes happens on the first ad request of a session.
 
 #### 6.11.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
