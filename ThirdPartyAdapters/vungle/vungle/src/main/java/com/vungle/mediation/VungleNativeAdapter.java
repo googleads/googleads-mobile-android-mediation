@@ -107,7 +107,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                loadNativeAd();
+                vungleNativeAd.loadNativeAd(adConfig, new NativeListener());
               }
 
               @Override
@@ -117,10 +117,6 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
                 callback.onFailure(error);
               }
             });
-  }
-
-  private void loadNativeAd() {
-    vungleNativeAd.loadNativeAd(adConfig, new NativeListener());
   }
 
   private class NativeListener implements NativeAdListener {
@@ -212,16 +208,17 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       }
     }
 
-    ImageView iconIV = null;
+    ImageView iconImageView = null;
     if (iconView instanceof ImageView) {
-      iconIV = (ImageView) iconView;
+      iconImageView = (ImageView) iconView;
     } else {
-      Log.d(TAG, "Native app icon asset is not of type ImageView!");
+      Log.d(TAG, "The view to display a Vungle native icon image is not a type of ImageView, "
+          + "so it can't be registered for click events.");
     }
 
     vungleNativeAd.getNativeAd()
         .registerViewForInteraction(vungleNativeAd.getNativeAdLayout(),
-            vungleNativeAd.getMediaView(), iconIV, assetViews);
+            vungleNativeAd.getMediaView(), iconImageView, assetViews);
   }
 
   @Override
@@ -259,10 +256,9 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       setAdvertiser(sponsored);
     }
 
-    // Basically, we recommend using NativeAdLayout as the root native ad view,
-    // and in this adapter, we are not allowed to replace the native ad root view (NativeAdView).
-    // But this class is very important because our impression tracker observe this view visibility
-    // and fire impression event. So here's a workaround to integrate our native ad.
+    // Since NativeAdView from GMA SDK (instead of Vungle SDK's NativeAdLayout) will be used as
+    // the root view to render Vungle native ad, below is the workaround to set the media view to
+    // ensure impression events will be fired.
     NativeAdLayout nativeAdLayout = vungleNativeAd.getNativeAdLayout();
     MediaView mediaView = vungleNativeAd.getMediaView();
     nativeAdLayout.removeAllViews();
