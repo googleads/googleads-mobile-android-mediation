@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
@@ -194,8 +195,8 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       return;
     }
 
-    // Vungle will render the privacy icon as a child of NativeAdView,
-    // and place it at one of the four corners.
+    // Since NativeAdView from GMA SDK will be used to render the ad options view,
+    // we need to pass it to the Vungle SDK.
     vungleNativeAd.getNativeAd().setAdOptionsRootView((FrameLayout) overlayView);
 
     View iconView = null;
@@ -274,8 +275,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     setOverrideClickHandling(true);
   }
 
-  private static class VungleNativeMappedImage extends
-      com.google.android.gms.ads.formats.NativeAd.Image {
+  private static class VungleNativeMappedImage extends Image {
 
     private Uri imageUri;
 
