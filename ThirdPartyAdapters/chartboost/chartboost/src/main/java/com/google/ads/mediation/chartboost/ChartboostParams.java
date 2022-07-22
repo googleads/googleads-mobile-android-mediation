@@ -14,14 +14,11 @@
 
 package com.google.ads.mediation.chartboost;
 
-import com.chartboost.sdk.Banner.BannerSize;
-import com.chartboost.sdk.CBLocation;
-import com.chartboost.sdk.Chartboost.CBFramework;
+import com.chartboost.sdk.ads.Banner;
 
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
- * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter} to {@link
- * ChartboostSingleton}.
+ * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter}
  */
 public class ChartboostParams {
 
@@ -41,25 +38,15 @@ public class ChartboostParams {
   private String cbLocation;
 
   /**
-   * Chartboost readable framework.
-   */
-  private CBFramework cbFramework;
-
-  /**
-   * The version name for {@link #cbFramework}.
-   */
-  private String cbFrameworkVersion;
-
-  /**
    * Size of the Chartboost banner required to create a banner
    */
-  private BannerSize cbBannerSize;
+  private Banner.BannerSize cbBannerSize;
 
   /**
    * Default constructor, sets a default value for {@link #cbLocation}.
    */
   public ChartboostParams() {
-    this.cbLocation = CBLocation.LOCATION_DEFAULT;
+    this.cbLocation = "Default";
   }
 
   /**
@@ -105,44 +92,16 @@ public class ChartboostParams {
   }
 
   /**
-   * @return {@link #cbFramework}.
-   */
-  public CBFramework getFramework() {
-    return cbFramework;
-  }
-
-  /**
-   * @param framework set to {@link #cbFramework}.
-   */
-  public void setFramework(CBFramework framework) {
-    this.cbFramework = framework;
-  }
-
-  /**
-   * @return {@link #cbFrameworkVersion}.
-   */
-  public String getFrameworkVersion() {
-    return cbFrameworkVersion;
-  }
-
-  /**
-   * @param version set to {@link #cbFrameworkVersion}.
-   */
-  public void setFrameworkVersion(String version) {
-    this.cbFrameworkVersion = version;
-  }
-
-  /**
    * @return {@link #cbBannerSize}.
    */
-  public BannerSize getBannerSize() {
+  public Banner.BannerSize getBannerSize() {
     return cbBannerSize;
   }
 
   /**
    * @param bannerSize {@link #cbBannerSize}.
    */
-  public void setBannerSize(BannerSize bannerSize) {
+  public void setBannerSize(Banner.BannerSize bannerSize) {
     this.cbBannerSize = bannerSize;
   }
 }

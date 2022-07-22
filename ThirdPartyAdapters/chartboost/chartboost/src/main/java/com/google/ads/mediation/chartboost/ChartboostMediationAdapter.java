@@ -7,7 +7,6 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -21,8 +20,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ChartboostMediationAdapter extends Adapter implements MediationRewardedAd {
+public class ChartboostMediationAdapter extends Adapter {
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
 
@@ -61,21 +61,15 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
    * Invalid server parameters (e.g. Chartboost App ID is missing).
    */
   static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
+
+  /**
+   * Chartboost ad is not ready to be shown.
+   */
+  static final int ERROR_AD_NOT_READY = 102;
   // endregion
 
-  /**
-   * A Chartboost extras object used to store optional information used when loading ads.
-   */
-  private ChartboostParams mChartboostParams = new ChartboostParams();
-
-  /**
-   * Flag to keep track of whether or not this {@link ChartboostMediationAdapter} is loading ads.
-   */
-  private boolean mIsLoading;
-
-  private InitializationCompleteCallback mInitializationCallback;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  // Flag to check whether the Chartboost SDK has been initialized or not.
+  static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
 
   /**
    * {@link Adapter} implementation
@@ -123,9 +117,8 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
 
   @Override
   public void initialize(@NonNull Context context,
-      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
-
     HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle params = configuration.getServerParameters();
@@ -158,8 +151,19 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       Log.w(TAG, logMessage);
     }
 
-    mInitializationCallback = initializationCompleteCallback;
-    mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
+    if (serverParameters == null) {
+      // Invalid server parameters, send initialization failed event.
+      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Invalid server parameters.", ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
+      return;
+    }
+
+    /*
+      A Chartboost extras object used to store optional information used when loading ads.
+     */
+    ChartboostParams mChartboostParams = ChartboostAdapterUtils.createChartboostParams(
+        serverParameters, null);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
       // Invalid server parameters, send initialization failed event.
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
@@ -167,7 +171,20 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       initializationCompleteCallback.onInitializationFailed(initializationError.toString());
       return;
     }
-    ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
+    ChartboostInitializer.getInstance()
+        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
+          @Override
+          public void onInitializationSucceeded() {
+            isSdkInitialized.set(true);
+            initializationCompleteCallback.onInitializationSucceeded();
+
+          }
+
+          @Override
+          public void onInitializationFailed(@NonNull AdError error) {
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+          }
+        });
   }
 
   @Override
@@ -175,132 +192,10 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-
-    mAdLoadCallback = mediationAdLoadCallback;
-    final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    final Bundle extras = mediationRewardedAdConfiguration.getMediationExtras();
-
-    mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, extras);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
-      // Invalid server parameters, send initialization failed event.
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Invalid server parameters.", ERROR_DOMAIN);
-      Log.e(TAG, error.toString());
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    Context context = mediationRewardedAdConfiguration.getContext();
-    ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
+    // Callback listener
+    ChartboostRewardedAd mChartboostRewarded = new ChartboostRewardedAd(
+        mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    mChartboostRewarded.load();
   }
-
-  @Override
-  public void showAd(@NonNull Context context) {
-    ChartboostSingleton.showRewardedVideoAd(mChartboostRewardedVideoDelegate);
-  }
-
-  /**
-   * The Abstract Chartboost adapter delegate used to forward events received from {@link
-   * ChartboostSingleton} to Google Mobile Ads SDK for rewarded video ads.
-   */
-  private final AbstractChartboostAdapterDelegate mChartboostRewardedVideoDelegate =
-      new AbstractChartboostAdapterDelegate() {
-
-        @Override
-        public ChartboostParams getChartboostParams() {
-          return mChartboostParams;
-        }
-
-        @Override
-        public void didInitialize() {
-          super.didInitialize();
-          if (mInitializationCallback != null) {
-            mInitializationCallback.onInitializationSucceeded();
-          }
-
-          // If 'mAdLoadCallback' is not null, then it means an Ad request is pending
-          // to be sent after initializing.
-          if (mAdLoadCallback != null) {
-            mIsLoading = true;
-            ChartboostSingleton.loadRewardedVideoAd(mChartboostRewardedVideoDelegate);
-          }
-        }
-
-        @Override
-        public void didCacheRewardedVideo(String location) {
-          super.didCacheRewardedVideo(location);
-          if (mAdLoadCallback != null
-              && mIsLoading
-              && location.equals(mChartboostParams.getLocation())) {
-            mIsLoading = false;
-            mRewardedAdCallback = mAdLoadCallback.onSuccess(ChartboostMediationAdapter.this);
-          }
-        }
-
-        @Override
-        public void didFailToLoadRewardedVideo(String location, CBError.CBImpressionError error) {
-          super.didFailToLoadRewardedVideo(location, error);
-          AdError loadError = ChartboostAdapterUtils.createSDKError(error);
-          Log.i(TAG, loadError.toString());
-
-          if (mAdLoadCallback != null && location.equals(mChartboostParams.getLocation())) {
-            if (mIsLoading) {
-              mAdLoadCallback.onFailure(loadError);
-              mIsLoading = false;
-            } else if (error == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
-              // Chartboost sends the CBErrorInternetUnavailableAtShow error when
-              // the Chartboost SDK fails to show an ad because no network connection
-              // is available.
-              if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdFailedToShow(loadError);
-              }
-            }
-          }
-        }
-
-        @Override
-        public void onAdFailedToLoad(@NonNull AdError loadError) {
-          Log.e(TAG, loadError.toString());
-          if (mAdLoadCallback != null) {
-            mAdLoadCallback.onFailure(loadError);
-          }
-        }
-
-        @Override
-        public void didDismissRewardedVideo(String location) {
-          super.didDismissRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onAdClosed();
-          }
-        }
-
-        @Override
-        public void didClickRewardedVideo(String location) {
-          super.didClickRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.reportAdClicked();
-          }
-        }
-
-        @Override
-        public void didCompleteRewardedVideo(String location, int reward) {
-          super.didCompleteRewardedVideo(location, reward);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onVideoComplete();
-            mRewardedAdCallback.onUserEarnedReward(new ChartboostReward(reward));
-          }
-        }
-
-        @Override
-        public void didDisplayRewardedVideo(String location) {
-          super.didDisplayRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
-            // Charboost doesn't have a video started callback. We assume that the video
-            // started once the ad has been displayed.
-            mRewardedAdCallback.onAdOpened();
-            mRewardedAdCallback.onVideoStart();
-            mRewardedAdCallback.reportAdImpression();
-          }
-        }
-      };
 }

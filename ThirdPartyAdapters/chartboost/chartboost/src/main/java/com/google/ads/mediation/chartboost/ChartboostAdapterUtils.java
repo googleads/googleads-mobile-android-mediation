@@ -1,20 +1,19 @@
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.CHARTBOOST_SDK_ERROR_DOMAIN;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_DOMAIN;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.chartboost.sdk.Banner.BannerSize;
-import com.chartboost.sdk.CBLocation;
 import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.Events.ChartboostCacheError;
-import com.chartboost.sdk.Events.ChartboostClickError;
-import com.chartboost.sdk.Events.ChartboostShowError;
-import com.chartboost.sdk.Model.CBError.CBImpressionError;
+import com.chartboost.sdk.Mediation;
+import com.chartboost.sdk.ads.Banner;
+import com.chartboost.sdk.events.CacheError;
+import com.chartboost.sdk.events.ClickError;
+import com.chartboost.sdk.events.ShowError;
+import com.chartboost.sdk.events.StartError;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -39,6 +38,11 @@ class ChartboostAdapterUtils {
    * Key to obtain Ad Location. This is added in adapter version 1.1.0.
    */
   static final String KEY_AD_LOCATION = "adLocation";
+
+  /**
+   * Chartboost mediation object.
+   */
+  private static Mediation sMediation;
 
   /**
    * Creates and return a new {@link ChartboostParams} object populated with the parameters obtained
@@ -68,25 +72,11 @@ class ChartboostAdapterUtils {
           String.format(
               "Chartboost ad location is empty, defaulting to %s. "
                   + "Please set the Ad Location parameter in the AdMob UI.",
-              CBLocation.LOCATION_DEFAULT);
+              "Default");
       Log.w(ChartboostMediationAdapter.TAG, logMessage);
-      adLocation = CBLocation.LOCATION_DEFAULT;
+      adLocation = "Default";
     }
     params.setLocation(adLocation.trim());
-
-    if (networkExtras != null) {
-      if (networkExtras.containsKey(ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK)
-          && networkExtras.containsKey(
-          ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION)) {
-        params.setFramework(
-            (Chartboost.CBFramework)
-                networkExtras.getSerializable(
-                    ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK));
-        params.setFrameworkVersion(
-            networkExtras.getString(
-                ChartboostAdapter.ChartboostExtrasBundleBuilder.KEY_FRAMEWORK_VERSION));
-      }
-    }
     return params;
   }
 
@@ -98,6 +88,10 @@ class ChartboostAdapterUtils {
    * otherwise.
    */
   static boolean isValidChartboostParams(ChartboostParams params) {
+    if (params == null) {
+      return false;
+    }
+
     String appId = params.getAppId();
     String appSignature = params.getAppSignature();
     if (!isValidParam(appId) || !isValidParam(appSignature)) {
@@ -123,154 +117,80 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Convert Chartboost's {@link CBImpressionError} to a mediation specific error code.
-   *
-   * @param impressionError Chartboost's error.
-   * @return the mediation specific error code.
-   */
-  public static int getMediationErrorCode(@NonNull CBImpressionError impressionError) {
-    switch (impressionError) {
-      case INTERNAL:
-        return 0;
-      case INTERNET_UNAVAILABLE:
-        return 1;
-      case TOO_MANY_CONNECTIONS:
-        return 2;
-      case WRONG_ORIENTATION:
-        return 3;
-      case FIRST_SESSION_INTERSTITIALS_DISABLED:
-        return 4;
-      case NETWORK_FAILURE:
-        return 5;
-      case NO_AD_FOUND:
-        return 6;
-      case SESSION_NOT_STARTED:
-        return 7;
-      case IMPRESSION_ALREADY_VISIBLE:
-        return 8;
-      case NO_HOST_ACTIVITY:
-        return 9;
-      case USER_CANCELLATION:
-        return 10;
-      case INVALID_LOCATION:
-        return 11;
-      case VIDEO_UNAVAILABLE:
-        return 12;
-      case VIDEO_ID_MISSING:
-        return 13;
-      case ERROR_PLAYING_VIDEO:
-        return 14;
-      case INVALID_RESPONSE:
-        return 15;
-      case ASSETS_DOWNLOAD_FAILURE:
-        return 16;
-      case ERROR_CREATING_VIEW:
-        return 17;
-      case ERROR_DISPLAYING_VIEW:
-        return 18;
-      case INCOMPATIBLE_API_VERSION:
-        return 19;
-      case ERROR_LOADING_WEB_VIEW:
-        return 20;
-      case ASSET_PREFETCH_IN_PROGRESS:
-        return 21;
-      case ACTIVITY_MISSING_IN_MANIFEST:
-        return 22;
-      case EMPTY_LOCAL_VIDEO_LIST:
-        return 23;
-      case END_POINT_DISABLED:
-        return 24;
-      case HARDWARE_ACCELERATION_DISABLED:
-        return 25;
-      case PENDING_IMPRESSION_ERROR:
-        return 26;
-      case VIDEO_UNAVAILABLE_FOR_CURRENT_ORIENTATION:
-        return 27;
-      case ASSET_MISSING:
-        return 28;
-      case WEB_VIEW_PAGE_LOAD_TIMEOUT:
-        return 29;
-      case WEB_VIEW_CLIENT_RECEIVED_ERROR:
-        return 30;
-      case INTERNET_UNAVAILABLE_AT_SHOW:
-        return 31;
-    }
-    // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
-    return 99;
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link CBImpressionError}.
-   *
-   * @param impressionError Chartboost's error.
-   * @return the {@link AdError} object.
-   */
-  @NonNull
-  static AdError createSDKError(@NonNull CBImpressionError impressionError) {
-    return new AdError(getMediationErrorCode(impressionError), impressionError.toString(),
-        ERROR_DOMAIN);
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link ChartboostCacheError}.
+   * Creates an {@link AdError} object given Chartboost's {@link CacheError}.
    *
    * @param cacheError Chartboost's error.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull ChartboostCacheError cacheError) {
+  static AdError createSDKError(@NonNull CacheError cacheError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an organized enum for cache errors.
-    return new AdError(cacheError.code.getErrorCode(), cacheError.toString(),
+    return new AdError(cacheError.getCode().getErrorCode(), cacheError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
-   * Creates an {@link AdError} object given Chartboost's {@link ChartboostShowError}.
+   * Creates an {@link AdError} object given Chartboost's {@link ShowError}.
    *
    * @param showError Chartboost's error.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull ChartboostShowError showError) {
+  static AdError createSDKError(@NonNull ShowError showError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an organized enum for show errors.
-    return new AdError(showError.code.getErrorCode(), showError.toString(),
+    return new AdError(showError.getCode().getErrorCode(), showError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
-   * Creates an {@link AdError} object given Chartboost's {@link ChartboostClickError}.
+   * Creates an {@link AdError} object given Chartboost's {@link ClickError}.
    *
    * @param clickError Chartboost's error.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull ChartboostClickError clickError) {
+  static AdError createSDKError(@NonNull ClickError clickError) {
     // Use the error's code as opposed to getting the mediation error code due to Chartboost not
     // having an organized enum for click errors.
-    return new AdError(clickError.code.getErrorCode(), clickError.toString(),
+    return new AdError(clickError.getCode().getErrorCode(), clickError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
-   * Find the closest possible {@link BannerSize} format based on the provided {@link AdSize}.
+   * Creates an {@link AdError} object given Chartboost's {@link StartError}.
+   *
+   * @param startError Chartboost's error.
+   * @return the {@link AdError} object.
+   */
+  @NonNull
+  static AdError createSDKError(@NonNull StartError startError) {
+    // Use the error's code as opposed to getting the mediation error code due to Chartboost not
+    // having an organized enum for click errors.
+    return new AdError(startError.getCode().getErrorCode(), startError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
+  }
+
+  /**
+   * Find the closest possible {@link Banner.BannerSize} format based on the provided {@link
+   * AdSize}.
    *
    * @param context the context of requesting banner ad.
    * @param adSize  the requested banner ad size.
-   * @return Chartboost {@link BannerSize} object.
+   * @return Chartboost {@link Banner.BannerSize} object.
    */
   @Nullable
-  static BannerSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
+  static Banner.BannerSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
     AdSize standardSize =
         new AdSize(
-            BannerSize.getWidth(BannerSize.STANDARD), BannerSize.getHeight(BannerSize.STANDARD));
+            Banner.BannerSize.STANDARD.getWidth(), Banner.BannerSize.STANDARD.getHeight());
     AdSize mediumSize =
-        new AdSize(BannerSize.getWidth(BannerSize.MEDIUM), BannerSize.getHeight(BannerSize.MEDIUM));
+        new AdSize(Banner.BannerSize.MEDIUM.getWidth(), Banner.BannerSize.MEDIUM.getHeight());
     AdSize leaderboardSize =
         new AdSize(
-            BannerSize.getWidth(BannerSize.LEADERBOARD),
-            BannerSize.getHeight(BannerSize.LEADERBOARD));
+            Banner.BannerSize.LEADERBOARD.getWidth(),
+            Banner.BannerSize.LEADERBOARD.getHeight());
 
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(standardSize);
@@ -283,12 +203,20 @@ class ChartboostAdapterUtils {
     }
 
     if (supportedAdSize.equals(standardSize)) {
-      return BannerSize.STANDARD;
+      return Banner.BannerSize.STANDARD;
     } else if (supportedAdSize.equals(mediumSize)) {
-      return BannerSize.MEDIUM;
+      return Banner.BannerSize.MEDIUM;
     } else if (supportedAdSize.equals(leaderboardSize)) {
-      return BannerSize.LEADERBOARD;
+      return Banner.BannerSize.LEADERBOARD;
     }
     return null;
+  }
+
+  static Mediation getChartboostMediation() {
+    if (sMediation == null) {
+      sMediation = new Mediation("AdMob", Chartboost.getSDKVersion(),
+          BuildConfig.ADAPTER_VERSION);
+    }
+    return sMediation;
   }
 }
