@@ -24,11 +24,11 @@ public class AppLovinIncentivizedAdListener
     AppLovinAdClickListener,
     AppLovinAdVideoPlaybackListener {
 
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  private final MediationRewardedAdCallback mRewardedAdCallback;
 
   private boolean mFullyWatched;
   private AppLovinRewardItem mRewardItem;
-  private String mZoneId;
+  private final String mZoneId;
 
   public AppLovinIncentivizedAdListener(
       MediationRewardedAdConfiguration adConfiguration,

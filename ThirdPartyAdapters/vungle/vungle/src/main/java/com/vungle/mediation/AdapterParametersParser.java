@@ -10,8 +10,6 @@ import androidx.annotation.Nullable;
  */
 public class AdapterParametersParser {
 
-  private static final String TAG = VungleManager.class.getSimpleName();
-
   public static class Config {
 
     private String appId;

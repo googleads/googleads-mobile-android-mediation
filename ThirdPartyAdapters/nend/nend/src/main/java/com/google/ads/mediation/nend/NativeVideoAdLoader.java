@@ -23,7 +23,7 @@ class NativeVideoAdLoader {
   private final NendAdNativeVideoLoader.Callback videoLoaderCallback =
       new NendAdNativeVideoLoader.Callback() {
         @Override
-        public void onSuccess(NendAdNativeVideo nendAdNativeVideo) {
+        public void onSuccess(@NonNull NendAdNativeVideo nendAdNativeVideo) {
           Context context = forwarder.getContextFromWeakReference();
           if (context == null) {
             AdError error = new AdError(ERROR_NULL_CONTEXT, "The context object is null.",
@@ -51,7 +51,7 @@ class NativeVideoAdLoader {
         }
       };
 
-  NativeVideoAdLoader(@NonNull NendNativeAdForwarder forwarder, @NonNull int spotID,
+  NativeVideoAdLoader(@NonNull NendNativeAdForwarder forwarder, int spotID,
       @NonNull String apiKey, @NonNull NativeMediationAdRequest nativeMediationAdRequest,
       @NonNull String userID) {
 

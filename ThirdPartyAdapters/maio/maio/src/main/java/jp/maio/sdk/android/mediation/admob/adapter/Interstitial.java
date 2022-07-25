@@ -5,14 +5,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.maio.MaioAdsManagerListener;
 import com.google.ads.mediation.maio.MaioMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
 
@@ -38,42 +38,33 @@ public class Interstitial extends MaioMediationAdapter
   }
 
   @Override
-  public void requestInterstitialAd(
-      Context context,
-      MediationInterstitialListener listener,
-      Bundle serverParameters,
-      MediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestInterstitialAd(@NonNull Context context,
+      @NonNull MediationInterstitialListener listener, @NonNull Bundle serverParameters,
+      @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
     this.mMediationInterstitialListener = listener;
     if (!(context instanceof Activity)) {
       AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
           "Maio SDK requires an Activity context to load ads.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (this.mMediationInterstitialListener != null) {
-        this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
-      }
+      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
     this.mMediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
     if (TextUtils.isEmpty(mMediaID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid Media ID.", ERROR_DOMAIN);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (this.mMediationInterstitialListener != null) {
-        this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
-      }
+      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
     this.mZoneID = serverParameters.getString(MaioAdsManager.KEY_ZONE_ID);
     if (TextUtils.isEmpty(mZoneID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid Zone ID.", ERROR_DOMAIN);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (this.mMediationInterstitialListener != null) {
-        this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
-      }
+      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
@@ -113,7 +104,7 @@ public class Interstitial extends MaioMediationAdapter
   }
 
   @Override
-  public void onAdFailedToShow(AdError error) {
+  public void onAdFailedToShow(@NonNull AdError error) {
     Log.w(TAG, error.getMessage());
     if (this.mMediationInterstitialListener != null) {
       this.mMediationInterstitialListener.onAdOpened(Interstitial.this);
@@ -122,7 +113,7 @@ public class Interstitial extends MaioMediationAdapter
   }
 
   @Override
-  public void onAdFailedToLoad(AdError error) {
+  public void onAdFailedToLoad(@NonNull AdError error) {
     Log.w(TAG, error.getMessage());
     if (this.mMediationInterstitialListener != null) {
       this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);

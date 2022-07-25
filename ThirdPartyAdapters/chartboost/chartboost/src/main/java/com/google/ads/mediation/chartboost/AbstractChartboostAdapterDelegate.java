@@ -16,7 +16,6 @@ package com.google.ads.mediation.chartboost;
 
 import androidx.annotation.NonNull;
 import com.chartboost.sdk.ChartboostDelegate;
-import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.AdapterError;
 import com.google.android.gms.ads.AdError;
 
 /**

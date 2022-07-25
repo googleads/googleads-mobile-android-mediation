@@ -24,7 +24,6 @@ class NendMediationRewardItem implements RewardItem {
   }
 
   @Override
-  @NonNull
   public int getAmount() {
     return mRewardAmount;
   }

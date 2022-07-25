@@ -90,9 +90,6 @@ public class VungleRewardedAd implements MediationRewardedAd, LoadAdCallback, Pl
     }
 
     mAdMarkup = mAdConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(mAdMarkup)) {
-      mAdMarkup = null;
-    }
     Log.d(TAG, "Render rewarded mAdMarkup=" + mAdMarkup);
 
     // Unmute full-screen ads by default.

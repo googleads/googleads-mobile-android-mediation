@@ -75,6 +75,7 @@ public class MyTargetMediationAdapter extends Adapter
   /**
    * {@link Adapter} implementation
    */
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
@@ -94,6 +95,7 @@ public class MyTargetMediationAdapter extends Adapter
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = MyTargetVersion.VERSION;
@@ -114,9 +116,9 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     // MyTarget SDK does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
@@ -124,9 +126,9 @@ public class MyTargetMediationAdapter extends Adapter
 
   @Override
   public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
 
     Context context = mediationRewardedAdConfiguration.getContext();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
@@ -154,7 +156,7 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     Log.d(TAG, "Showing video.");
     if (mRewardedAd != null) {
       mRewardedAd.show();
@@ -230,8 +232,8 @@ public class MyTargetMediationAdapter extends Adapter
     }
 
     @Override
-    public @NonNull
-    String getType() {
+    @NonNull
+    public String getType() {
       return type;
     }
 

@@ -80,8 +80,7 @@ public class MaioMediationAdapter extends Adapter
         code = 5;
         break;
     }
-    return new AdError(code, "Failed to request ad from Maio: " + reason.toString(),
-        MAIO_SDK_ERROR_DOMAIN);
+    return new AdError(code, "Failed to request ad from Maio: " + reason, MAIO_SDK_ERROR_DOMAIN);
   }
 
   /**
@@ -103,6 +102,7 @@ public class MaioMediationAdapter extends Adapter
   /**
    * {@link Adapter} implementation
    */
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
@@ -122,6 +122,7 @@ public class MaioMediationAdapter extends Adapter
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = MaioAds.getSdkVersion();
@@ -142,10 +143,9 @@ public class MaioMediationAdapter extends Adapter
   }
 
   @Override
-  public void initialize(
-      Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
       initializationCompleteCallback.onInitializationFailed(
@@ -164,37 +164,38 @@ public class MaioMediationAdapter extends Adapter
     }
 
     int count = mediaIDs.size();
-    if (count > 0) {
-      String mediaID = mediaIDs.iterator().next();
-
-      if (count > 1) {
-        String logMessage =
-            String.format(
-                "Multiple '%s' entries found: %s. Using '%s' to initialize the Maio SDK",
-                MaioAdsManager.KEY_MEDIA_ID, mediaIDs, mediaID);
-        Log.w(TAG, logMessage);
-      }
-
-      MaioAdsManager.getManager(mediaID)
-          .initialize(
-              (Activity) context,
-              new MaioAdsManager.InitializationListener() {
-                @Override
-                public void onMaioInitialized() {
-                  initializationCompleteCallback.onInitializationSucceeded();
-                }
-              });
-    } else {
-      initializationCompleteCallback.onInitializationFailed(
-          "Initialization Failed: Missing or Invalid Media ID.");
+    if (count <= 0) {
+      initializationCompleteCallback
+          .onInitializationFailed("Initialization Failed: Missing or Invalid Media ID.");
+      return;
     }
+
+    String mediaID = mediaIDs.iterator().next();
+    if (count > 1) {
+      String logMessage =
+          String.format(
+              "Multiple '%s' entries found: %s. Using '%s' to initialize the Maio SDK.",
+              MaioAdsManager.KEY_MEDIA_ID, mediaIDs, mediaID);
+      Log.w(TAG, logMessage);
+    }
+
+    MaioAdsManager.getManager(mediaID)
+        .initialize(
+            (Activity) context,
+            new MaioAdsManager.InitializationListener() {
+              @Override
+              public void onMaioInitialized() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
+            });
   }
 
   @Override
   public void loadRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    mAdLoadCallback = mediationAdLoadCallback;
 
     Context context = mediationRewardedAdConfiguration.getContext();
     if (!(context instanceof Activity)) {
@@ -202,19 +203,16 @@ public class MaioMediationAdapter extends Adapter
           "Maio SDK requires an Activity context to load ads.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);
-
       return;
     }
 
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-
     mMediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
     if (TextUtils.isEmpty(mMediaID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid Media ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);
-
       return;
     }
 
@@ -224,11 +222,9 @@ public class MaioMediationAdapter extends Adapter
           "Missing or Invalid Zone ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       mAdLoadCallback.onFailure(error);
-
       return;
     }
 
-    mAdLoadCallback = mediationAdLoadCallback;
     MaioAds.setAdTestMode(mediationRewardedAdConfiguration.isTestRequest());
     MaioAdsManager.getManager(mMediaID)
         .initialize(
@@ -242,7 +238,7 @@ public class MaioMediationAdapter extends Adapter
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     MaioAdsManager.getManager(mMediaID).showAd(mZoneID, MaioMediationAdapter.this);
   }
 
@@ -338,6 +334,7 @@ public class MaioMediationAdapter extends Adapter
       return 1;
     }
 
+    @NonNull
     @Override
     public String getType() {
       return "";

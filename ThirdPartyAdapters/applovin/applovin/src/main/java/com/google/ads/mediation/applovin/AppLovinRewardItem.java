@@ -1,5 +1,6 @@
 package com.google.ads.mediation.applovin;
 
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
 public final class AppLovinRewardItem implements RewardItem {
@@ -13,6 +14,7 @@ public final class AppLovinRewardItem implements RewardItem {
   }
 
   @Override
+  @NonNull
   public String getType() {
     return mType;
   }

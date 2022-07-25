@@ -188,6 +188,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
         });
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
     return bannerView;

@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
@@ -202,19 +203,20 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void handleClick(View view) {
+  public void handleClick(@NonNull View view) {
     // Handle click.
     mInMobiNative.reportAdClickAndOpenLandingPage();
   }
 
   @Override
-  public void untrackView(View view) {
+  public void untrackView(@NonNull View view) {
     mInMobiNative.pause();
   }
 
   @Override
-  public void trackViews(View containerView, Map<String, View> clickableAssetViews,
-      Map<String, View> nonclickableAssetViews) {
+  public void trackViews(@NonNull View containerView,
+      @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> nonclickableAssetViews) {
     mInMobiNative.resume();
   }
 }

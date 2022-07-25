@@ -150,6 +150,7 @@ public class UnityMediationAdapter extends Adapter {
   /**
    * {@link Adapter} implementation
    */
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
@@ -169,6 +170,7 @@ public class UnityMediationAdapter extends Adapter {
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = UnityAds.getVersion();
@@ -189,9 +191,9 @@ public class UnityMediationAdapter extends Adapter {
   }
 
   @Override
-  public void initialize(Context context,
-      final InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
     HashSet<String> gameIDs = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
       Bundle serverParameters = configuration.getServerParameters();
@@ -208,9 +210,9 @@ public class UnityMediationAdapter extends Adapter {
       gameID = gameIDs.iterator().next();
 
       if (count > 1) {
-        String message = String.format("Multiple '%s' entries found: %s. " +
-                "Using '%s' to initialize the UnityAds SDK",
-            KEY_GAME_ID, gameIDs.toString(), gameID);
+        String message = String
+            .format("Multiple '%s' entries found: %s. Using '%s' to initialize the UnityAds SDK",
+                KEY_GAME_ID, gameIDs, gameID);
         Log.w(TAG, message);
       }
     }

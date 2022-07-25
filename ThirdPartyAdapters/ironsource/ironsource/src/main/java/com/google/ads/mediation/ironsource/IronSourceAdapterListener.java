@@ -1,7 +1,6 @@
 package com.google.ads.mediation.ironsource;
 
 import androidx.annotation.NonNull;
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.AdapterError;
 import com.google.android.gms.ads.AdError;
 
 public interface IronSourceAdapterListener {

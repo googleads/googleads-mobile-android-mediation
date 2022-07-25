@@ -101,7 +101,6 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
    * @param stringDrawableHashMap The result of the operation computed by {@link #doInBackground}.
    * @see #onPreExecute
    * @see #doInBackground
-   * @see #onCancelled(Object)
    */
   @Override
   protected void onPostExecute(HashMap<String, Drawable> stringDrawableHashMap) {

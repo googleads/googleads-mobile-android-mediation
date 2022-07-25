@@ -3,7 +3,6 @@ package com.google.ads.mediation.verizon;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -68,6 +67,7 @@ public class VerizonMediationAdapter extends Adapter
    */
   private VerizonMediaNativeRenderer verizonMediaNativeRenderer;
 
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = com.google.ads.mediation.verizon.BuildConfig.ADAPTER_VERSION;
@@ -87,6 +87,7 @@ public class VerizonMediationAdapter extends Adapter
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     String versionString = Configuration.getString("com.verizon.ads", "editionVersion", null);
@@ -110,9 +111,9 @@ public class VerizonMediationAdapter extends Adapter
   }
 
   @Override
-  public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> mediationConfigurations) {
+  public void initialize(@NonNull Context context,
+      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
     if (!(context instanceof Activity)) {
       initializationCompleteCallback.onInitializationFailed(
@@ -151,23 +152,27 @@ public class VerizonMediationAdapter extends Adapter
   }
 
   @Override
-  public void requestBannerAd(final Context context, final MediationBannerListener listener,
-      final Bundle serverParameters, com.google.android.gms.ads.AdSize adSize,
-      final MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+  public void requestBannerAd(@NonNull final Context context,
+      @NonNull final MediationBannerListener listener, @NonNull final Bundle serverParameters,
+      @NonNull com.google.android.gms.ads.AdSize adSize,
+      @NonNull final MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
     mBannerRenderer = new VerizonMediaBannerRenderer(this);
     mBannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
         mediationExtras);
   }
 
+  @NonNull
   @Override
   public View getBannerView() {
     return mBannerRenderer.getBannerView();
   }
 
   @Override
-  public void requestInterstitialAd(final Context context,
-      final MediationInterstitialListener listener, final Bundle serverParameters,
-      final MediationAdRequest mediationAdRequest, final Bundle mediationExtras) {
+  public void requestInterstitialAd(@NonNull final Context context,
+      @NonNull final MediationInterstitialListener listener, @NonNull final Bundle serverParameters,
+      @NonNull final MediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
     setContext(context);
     verizonMediaInterstitialRenderer = new VerizonMediaInterstitialRenderer(this);
     verizonMediaInterstitialRenderer.render(context, listener, mediationAdRequest,
@@ -185,9 +190,10 @@ public class VerizonMediationAdapter extends Adapter
   }
 
   @Override
-  public void loadRewardedAd(final MediationRewardedAdConfiguration
-      mediationRewardedAdConfiguration, final MediationAdLoadCallback<MediationRewardedAd,
-      MediationRewardedAdCallback> mediationAdLoadCallback) {
+  public void loadRewardedAd(
+      @NonNull final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     verizonMediaRewardedRenderer =
         new VerizonMediaRewardedRenderer(mediationAdLoadCallback,
             mediationRewardedAdConfiguration);
@@ -195,9 +201,10 @@ public class VerizonMediationAdapter extends Adapter
   }
 
   @Override
-  public void requestNativeAd(final Context context, final MediationNativeListener listener,
-      final Bundle serverParameters, final NativeMediationAdRequest mediationAdRequest,
-      final Bundle mediationExtras) {
+  public void requestNativeAd(@NonNull final Context context,
+      @NonNull final MediationNativeListener listener, @NonNull final Bundle serverParameters,
+      @NonNull final NativeMediationAdRequest mediationAdRequest,
+      @Nullable final Bundle mediationExtras) {
     verizonMediaNativeRenderer = new VerizonMediaNativeRenderer(this);
     verizonMediaNativeRenderer.render(context, listener, serverParameters, mediationAdRequest,
         mediationExtras);
@@ -205,21 +212,16 @@ public class VerizonMediationAdapter extends Adapter
 
   @Override
   public void onDestroy() {
-
     Log.i(TAG, "Aborting.");
-
     if (verizonMediaInterstitialRenderer != null) {
       verizonMediaInterstitialRenderer.destroy();
     }
-
     if (mBannerRenderer != null) {
       mBannerRenderer.destroy();
     }
-
     if (verizonMediaNativeRenderer != null) {
       verizonMediaNativeRenderer.destroy();
     }
-
     if (verizonMediaRewardedRenderer != null) {
       verizonMediaRewardedRenderer.destroy();
     }
@@ -227,37 +229,25 @@ public class VerizonMediationAdapter extends Adapter
 
   @Override
   public void onPause() {
-
   }
 
   @Override
   public void onResume() {
-
   }
 
   /**
    * Checks whether Verizon Media SDK is initialized, if not initializes Verizon Media SDK.
    */
-  protected static boolean initializeSDK(final Context context, final String siteId) {
-
-    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-      Log.e(TAG, "Verizon Ads SDK minimum supported API is 16");
-
-      return false;
-    }
-
+  protected static boolean initializeSDK(@NonNull final Context context,
+      @NonNull final String siteId) {
     boolean success = true;
     if (!VASAds.isInitialized()) {
       if (!(context instanceof Activity)) {
-        Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity" +
-            " context.");
-
+        Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity context.");
         return false;
       }
       if (TextUtils.isEmpty(siteId)) {
-        Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or "
-            + "server parameters");
-
+        Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or server parameters");
         return false;
       }
       try {
@@ -265,8 +255,7 @@ public class VerizonMediationAdapter extends Adapter
         Log.d(TAG, "Initializing using site ID: " + siteId);
         success = VASAds.initialize(application, siteId);
       } catch (Exception e) {
-        Log.e(TAG, "Error occurred initializing Verizon Ads SDK, ", e);
-
+        Log.w(TAG, "Error occurred initializing Verizon Ads SDK.", e);
         return false;
       }
     }

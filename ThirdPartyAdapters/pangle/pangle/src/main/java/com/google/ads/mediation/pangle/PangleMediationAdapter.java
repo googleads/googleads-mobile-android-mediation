@@ -83,10 +83,8 @@ public class PangleMediationAdapter extends RtbAdapter {
     String appId = appIds.iterator().next();
 
     if (count > 1) {
-      String message =
-          String.format(
-              "Found multiple app IDs in %s. " + ", using %s to initialize Pangle SDK",
-              appIds.toString(), appId);
+      String message = String.format(
+          "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
       Log.w(TAG, message);
     }
     setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());

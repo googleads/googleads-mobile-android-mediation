@@ -1,5 +1,7 @@
 package com.google.ads.mediation.vungle;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
+
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -13,8 +15,6 @@ import java.lang.ref.WeakReference;
  * This class is used to represent a Vungle Banner ad.
  */
 public class VungleBannerAd {
-
-  private static final String TAG = VungleBannerAd.class.getSimpleName();
 
   /**
    * Weak reference to the adapter owning this Vungle banner ad.

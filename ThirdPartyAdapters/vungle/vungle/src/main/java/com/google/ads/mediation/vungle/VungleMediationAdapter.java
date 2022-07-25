@@ -7,20 +7,17 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
-import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
+import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAd;
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
-import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -29,22 +26,45 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.mediation.BuildConfig;
+import com.vungle.mediation.VungleExtrasBuilder;
+import com.vungle.mediation.VungleManager;
 import com.vungle.mediation.VungleNativeAdapter;
+import com.vungle.warren.AdConfig;
+import com.vungle.warren.LoadAdCallback;
+import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.error.VungleException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 /**
  * Mediation network adapter for Vungle.
  */
-public class VungleMediationAdapter extends RtbAdapter {
+public class VungleMediationAdapter extends RtbAdapter
+    implements MediationRewardedAd, LoadAdCallback, PlayAdCallback {
 
-  private static final String TAG = VungleMediationAdapter.class.getSimpleName();
+  public static final String TAG = VungleMediationAdapter.class.getSimpleName();
   public static final String KEY_APP_ID = "appid";
+
+  private VungleRtbInterstitialAd rtbInterstitialAd;
+  private VungleRtbRewardedAd rtbRewardedAd;
+
+  private AdConfig mAdConfig;
+  private String mUserID;
+  private String mPlacement;
+
+  private static final HashMap<String, WeakReference<VungleMediationAdapter>> mPlacementsInUse =
+      new HashMap<>();
+
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      mMediationAdLoadCallback;
+  private MediationRewardedAdCallback mMediationRewardedAdCallback;
 
   /**
    * Vungle adapter error domain.
@@ -98,7 +118,7 @@ public class VungleMediationAdapter extends RtbAdapter {
   public static final int ERROR_INITIALIZATION_FAILURE = 105;
 
   /**
-   * Vungle SDk returned a successful load callback, but Banners.getBanner() or Vungle.getNativeAd()
+   * Vungle SDK returned a successful load callback, but Banners.getBanner() or Vungle.getNativeAd()
    * returned null.
    */
   public static final int ERROR_VUNGLE_BANNER_NULL = 106;
@@ -167,8 +187,7 @@ public class VungleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void initialize(
-      @NonNull Context context,
+  public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
@@ -203,7 +222,7 @@ public class VungleMediationAdapter extends RtbAdapter {
       String logMessage =
           String.format(
               "Multiple '%s' entries found: %s. Using '%s' to initialize the Vungle SDK.",
-              KEY_APP_ID, appIDs.toString(), appID);
+              KEY_APP_ID, appIDs, appID);
       Log.w(TAG, logMessage);
     }
 
@@ -231,10 +250,185 @@ public class VungleMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    Log.d(TAG, "loadRewardedAd()...");
-    VungleRewardedAd vungleRewardedAd = new VungleRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    vungleRewardedAd.render();
+    mMediationAdLoadCallback = mediationAdLoadCallback;
+
+    Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
+    Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
+
+    if (mediationExtras != null) {
+      mUserID = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+    }
+
+    mPlacement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
+    if (TextUtils.isEmpty(mPlacement)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to load ad from Vungle. Missing or invalid Placement ID.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    if (mPlacementsInUse.containsKey(mPlacement)
+        && mPlacementsInUse.get(mPlacement).get() != null) {
+      AdError error = new AdError(ERROR_AD_ALREADY_LOADED,
+          "Only a maximum of one ad can be loaded per placement.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    String appID = serverParameters.getString(KEY_APP_ID);
+    if (TextUtils.isEmpty(appID)) {
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Failed to load ad from Vungle. Missing or Invalid App ID.", ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    // Unmute full-screen ads by default.
+    mAdConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
+
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+
+    VungleInitializer.getInstance()
+        .initialize(
+            appID,
+            mediationRewardedAdConfiguration.getContext(),
+            new VungleInitializationListener() {
+              @Override
+              public void onInitializeSuccess() {
+                Vungle.setIncentivizedFields(mUserID, null, null, null, null);
+                mPlacementsInUse.put(mPlacement, new WeakReference<>(VungleMediationAdapter.this));
+
+                if (Vungle.canPlayAd(mPlacement)) {
+                  mMediationRewardedAdCallback =
+                      mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
+                  return;
+                }
+
+                Vungle.loadAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
+              }
+
+              @Override
+              public void onInitializeError(AdError error) {
+                Log.w(TAG, error.getMessage());
+                mMediationAdLoadCallback.onFailure(error);
+                mPlacementsInUse.remove(mPlacement);
+              }
+            });
+  }
+
+  @Override
+  public void showAd(@NonNull Context context) {
+    Vungle.playAd(mPlacement, mAdConfig, VungleMediationAdapter.this);
+  }
+
+  /**
+   * {@link LoadAdCallback} implementation from Vungle.
+   */
+  @Override
+  public void onAdLoad(final String placementId) {
+    if (mMediationAdLoadCallback != null) {
+      mMediationRewardedAdCallback =
+          mMediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
+    }
+    mPlacementsInUse.put(mPlacement, new WeakReference<>(VungleMediationAdapter.this));
+  }
+
+  @Override
+  public void creativeId(String creativeId) {
+    // no-op
+  }
+
+  /**
+   * {@link PlayAdCallback} implementation from Vungle
+   */
+  @Override
+  public void onAdStart(final String placementId) {
+    if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.onAdOpened();
+    }
+  }
+
+  @Override
+  @Deprecated
+  public void onAdEnd(final String placementId, final boolean wasSuccessfulView,
+      final boolean wasCallToActionClicked) {
+  }
+
+  @Override
+  public void onAdEnd(final String placementId) {
+    if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.onAdClosed();
+    }
+    mPlacementsInUse.remove(placementId);
+  }
+
+  @Override
+  public void onAdClick(String placementId) {
+    if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.reportAdClicked();
+    }
+  }
+
+  @Override
+  public void onAdRewarded(String placementId) {
+    if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.onVideoComplete();
+      mMediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
+    }
+  }
+
+  @Override
+  public void onAdLeftApplication(String placementId) {
+    // no op
+  }
+
+  // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
+  // ad request to Vungle fails, and when an ad fails to play.
+  @Override
+  public void onError(final String placementId, final VungleException throwable) {
+    AdError error = getAdError(throwable);
+    Log.w(TAG, error.getMessage());
+    if (mMediationRewardedAdCallback != null) {
+      mMediationRewardedAdCallback.onAdFailedToShow(error);
+    } else if (mMediationAdLoadCallback != null) {
+      mMediationAdLoadCallback.onFailure(error);
+    }
+    mPlacementsInUse.remove(placementId);
+  }
+
+  @Override
+  public void onAdViewed(String placementId) {
+    mMediationRewardedAdCallback.onVideoStart();
+    mMediationRewardedAdCallback.reportAdImpression();
+  }
+
+  /**
+   * This class is used to map Vungle rewarded video ad rewards to Google Mobile Ads SDK rewards.
+   */
+  public static class VungleReward implements RewardItem {
+
+    private final String mType;
+    private final int mAmount;
+
+    public VungleReward(String type, int amount) {
+      mType = type;
+      mAmount = amount;
+    }
+
+    @Override
+    public int getAmount() {
+      return mAmount;
+    }
+
+    @NonNull
+    @Override
+    public String getType() {
+      return mType;
+    }
   }
 
   @Override
@@ -248,23 +442,14 @@ public class VungleMediationAdapter extends RtbAdapter {
     nativeAdapter.render();
   }
 
-  @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    Log.d(TAG, "loadRtbNativeAd()...");
-    VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
-    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(mediationNativeAdConfiguration,
-        callback);
-    nativeAdapter.render();
-  }
-
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
-    VungleRewardedAd vungleRewardedAd = new VungleRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    vungleRewardedAd.render();
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+    rtbRewardedAd = new VungleRtbRewardedAd(
+        mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rtbRewardedAd.render();
   }
 
   @Override
@@ -273,32 +458,20 @@ public class VungleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbInterstitialAd()...");
     VungleInitializer.getInstance()
-            .updateCoppaStatus(mediationInterstitialAdConfiguration.taggedForChildDirectedTreatment());
-    VungleRtbInterstitialAd rtbInterstitialAd = new VungleRtbInterstitialAd(
+        .updateCoppaStatus(mediationInterstitialAdConfiguration.taggedForChildDirectedTreatment());
+    rtbInterstitialAd = new VungleRtbInterstitialAd(
         mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     rtbInterstitialAd.render();
   }
 
   @Override
-  public void loadRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    Log.d(TAG, "loadRtbBannerAd()...");
+  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    Log.d(TAG, "loadRtbNativeAd()...");
     VungleInitializer.getInstance()
-            .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
-    VungleRtbBannerAd rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
-        mediationAdLoadCallback);
-    rtbBannerAd.render();
-  }
-
-  @Override
-  public void loadRewardedInterstitialAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-    Log.d(TAG, "loadRewardedInterstitialAd()...");
-    VungleRewardedAd vungleRewardedAd = new VungleRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    vungleRewardedAd.render();
+        .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
+    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(adConfiguration, callback);
+    nativeAdapter.render();
   }
 
   @Override
@@ -306,7 +479,14 @@ public class VungleMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRtbRewardedInterstitialAd()...");
-    VungleRewardedAd vungleRewardedAd = new VungleRewardedAd(adConfiguration, callback);
-    vungleRewardedAd.render();
+    loadRtbRewardedAd(adConfiguration, callback);
+  }
+
+  @Override
+  public void loadRewardedInterstitialAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    Log.d(TAG, "loadRewardedInterstitialAd()...");
+    loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
 }

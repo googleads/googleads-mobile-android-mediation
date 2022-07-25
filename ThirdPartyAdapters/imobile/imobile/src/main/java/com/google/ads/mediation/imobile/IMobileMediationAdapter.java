@@ -8,6 +8,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -80,12 +82,14 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   public static final int ERROR_EMPTY_NATIVE_ADS_LIST = 104;
 
   // region - Adapter interface
+  @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
     // i-mobile does not have any API to retrieve their SDK version.
     return new VersionInfo(0, 0, 0);
   }
 
+  @NonNull
   @Override
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
@@ -107,10 +111,9 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   }
 
   @Override
-  public void initialize(
-      Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> list) {
+  public void initialize(@NonNull Context context,
+      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> list) {
 
     // i-mobile does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
@@ -126,12 +129,9 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
 
   // region - Methods for native ads.
   @Override
-  public void requestNativeAd(
-      Context context,
-      MediationNativeListener listener,
-      Bundle serverParameters,
-      NativeMediationAdRequest mediationAdRequest,
-      Bundle mediationExtras) {
+  public void requestNativeAd(@NonNull Context context, @NonNull MediationNativeListener listener,
+      @NonNull Bundle serverParameters, @NonNull NativeMediationAdRequest mediationAdRequest,
+      @Nullable Bundle mediationExtras) {
 
     // Validate Context.
     if (!(context instanceof Activity)) {

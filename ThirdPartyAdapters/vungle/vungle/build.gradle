@@ -14,10 +14,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 30
+        minSdkVersion 19
+        targetSdkVersion 31
         versionCode 6120000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
@@ -31,12 +31,12 @@ android {
 }
 
 dependencies {
-    implementation ('com.github.vungle:vungle-android-sdk:6.12.0-QA1') {
+    implementation ('com.github.vungle:vungle-android-sdk:6.12.0-QA3') {
         transitive=true
     }
 
-    implementation 'androidx.annotation:annotation:1.3.0'
-    implementation 'com.google.android.gms:play-services-ads:20.6.0'
+    implementation 'androidx.annotation:annotation:1.4.0'
+    implementation 'com.google.android.gms:play-services-ads:21.1.0'
 }
 
 /**

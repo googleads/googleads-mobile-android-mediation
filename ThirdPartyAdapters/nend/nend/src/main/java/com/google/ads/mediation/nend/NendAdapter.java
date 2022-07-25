@@ -410,7 +410,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
 
     final AdSize supportedAdSize = getSupportedAdSize(context, adSize);
     if (supportedAdSize == null) {
-      String errorMessage = String.format("Unsupported ad size: %s", adSize.toString());
+      String errorMessage = String.format("Unsupported ad size: %s", adSize);
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       listener.onAdFailedToLoad(NendAdapter.this, error);
@@ -528,7 +528,7 @@ public class NendAdapter extends NendMediationAdapter implements MediationBanner
     NendError nendError = adView.getNendError();
     if (mListener != null) {
       String errorMessage = String
-          .format("Nend SDK returned an ad load failure callback: ", nendError.toString());
+          .format("Nend SDK returned an ad load failure callback: %s", nendError.toString());
       AdError error = new AdError(getMediationErrorCode(nendError), errorMessage, ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       if (mListener != null) {

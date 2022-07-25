@@ -38,9 +38,8 @@ public class PangleRtbBannerAd
 
   public PangleRtbBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull
-          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
