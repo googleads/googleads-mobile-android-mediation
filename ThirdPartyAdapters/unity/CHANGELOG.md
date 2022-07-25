@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- The `onAdOpened()` callback is now forwarded when interstitial and rewarded ads start playing.
+
 #### Version 4.2.1.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
 - Updated the minimum required Google Mobile Ads SDK version to 21.0.0.
