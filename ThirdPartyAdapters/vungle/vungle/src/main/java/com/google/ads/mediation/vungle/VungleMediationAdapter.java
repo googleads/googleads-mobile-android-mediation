@@ -54,6 +54,7 @@ public class VungleMediationAdapter extends RtbAdapter
 
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
+  private VungleRtbRewardedAd rtbRewardedInterstitialAd;
 
   private AdConfig mAdConfig;
   private String mUserID;
@@ -479,7 +480,10 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRtbRewardedInterstitialAd()...");
-    loadRtbRewardedAd(adConfiguration, callback);
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
+    rtbRewardedInterstitialAd = new VungleRtbRewardedAd(adConfiguration, callback);
+    rtbRewardedInterstitialAd.render();
   }
 
   @Override
