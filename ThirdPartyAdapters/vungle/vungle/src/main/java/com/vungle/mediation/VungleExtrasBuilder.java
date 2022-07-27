@@ -109,6 +109,7 @@ public final class VungleExtrasBuilder {
         adOptionsPosition = AdConfig.TOP_RIGHT;
         break;
     }
+
     adConfig.setAdOptionsPosition(adOptionsPosition);
 
     return adConfig;
