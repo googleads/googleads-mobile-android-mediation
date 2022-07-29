@@ -12,6 +12,7 @@ import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
+import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
@@ -45,6 +46,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
+  private PangleRtbNativeAd nativeAd;
   private static int coppa = -1;
   private static int gdpr = -1;
   private static int ccpa = -1;
@@ -174,10 +176,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRtbNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    AdError error =
-        new AdError(0, "Native ad is not supported in Pangle.", PangleConstants.ERROR_DOMAIN);
-    Log.w(TAG, error.toString());
-    callback.onFailure(error);
+    nativeAd = new PangleRtbNativeAd(adConfiguration, callback);
+    nativeAd.render();
   }
 
   @Override
