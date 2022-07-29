@@ -125,7 +125,6 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     // Pangle does its own show event handling and click event handling.
-    setOverrideImpressionRecording(true);
     setOverrideClickHandling(true);
 
     // Add Native Feed Main View.
