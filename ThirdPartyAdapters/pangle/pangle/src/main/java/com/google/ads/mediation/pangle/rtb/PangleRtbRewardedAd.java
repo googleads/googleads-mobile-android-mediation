@@ -127,7 +127,8 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onRewardVerify(boolean rewardVerify, final int rewardAmount, final String rewardName,
+          public void onRewardVerify(boolean rewardVerify, final int rewardAmount,
+              final String rewardName,
               int errorCode, String errorMsg) {
             if (!rewardVerify) {
               String newErrorMsg = String

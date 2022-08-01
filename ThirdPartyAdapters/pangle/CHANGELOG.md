@@ -1,5 +1,8 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Added bidding support for native ad format.
+
 #### Version 4.5.0.6.0
 - Verified compatibility with Pangle SDK version 4.5.0.6.
 

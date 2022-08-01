@@ -124,7 +124,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       setImages(imagesList);
     }
 
-    // Pangle does its own show event handling and click event handling.
+    // Pangle does its own click event handling.
     setOverrideClickHandling(true);
 
     // Add Native Feed Main View.
@@ -189,8 +189,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       @NonNull Map<String, View> nonClickableAssetViews) {
     // Set click interaction.
     HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
+    // Exclude Pangle's Privacy Information Icon image and text from click events.
     copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
-    // Exclude fragments view containing ad choices to avoid ad choices click listener failure.
     copyClickableAssetViews.remove("3012");
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
     View creativeBtn = copyClickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
@@ -202,7 +202,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
         new TTNativeAd.AdInteractionListener() {
           @Override
           public void onAdClicked(View view, TTNativeAd ad) {
-            // No-op.
+            // No-op, legacy call back.
           }
 
           @Override
@@ -219,7 +219,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
             }
           }
         });
-    // Set ad choices click listener.
+
+    //Set ad choices click listener to show Pangle's Privacy Policy page.
     getAdChoicesContent().setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
