@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    implementation ('com.github.vungle:vungle-android-sdk:6.12.0-RC2') {
+    implementation ('com.vungle:publisher-sdk-android:6.12.0') {
         transitive=true
     }
 
