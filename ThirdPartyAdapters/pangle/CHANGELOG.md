@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 4.5.0.6.1 (In progress)
+#### Version 4.5.0.6.1
 - Added bidding support for native ad format.
 - Updated the minimum required Google Mobile Ads SDK version to 21.1.0.
 
