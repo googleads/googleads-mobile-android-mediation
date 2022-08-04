@@ -121,6 +121,12 @@ class InMobiAdapterUtils {
         }
       } else if (key.equals(InMobiNetworkKeys.INTERESTS)) {
         InMobiSdk.setInterests(value);
+      } else if (key.equals(InMobiNetworkKeys.AGE_RESTRICTED)) {
+        if (value != null) {
+          InMobiSdk.setIsAgeRestricted(value);
+        } else {
+          InMobiSdk.setIsAgeRestricted("1");
+        }
       }
     }
 

@@ -230,6 +230,12 @@ public class InMobiRewardedAd implements MediationRewardedAd {
             public void onRequestPayloadCreationFailed(@NonNull InMobiAdRequestStatus status) {
               // No op.
             }
+
+            @Override
+            public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
+                Log.d(TAG, "InMobi interstitial ad has logged an impression.");
+                mInterstitialListener.onAdImpression(InMobiAdapter.this);
+            }
           });
     } catch (SdkNotInitializedException exception) {
       AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),

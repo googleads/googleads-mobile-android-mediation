@@ -12,6 +12,7 @@ public interface InMobiNetworkKeys {
   String ETHNICITY = "ETHNICITY";
   String INCOME = "INCOME";
   String AGE = "AGE";
+  String AGE_RESTRICTED = "AGE_RESTRICTED";
   String INTERESTS = "INTERESTS";
   String POSTAL_CODE = "POSTAL_CODE";
   String LANGUAGE = "LANGUAGE";

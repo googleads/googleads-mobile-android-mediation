@@ -320,6 +320,12 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         Log.d(TAG, "InMobi banner has been clicked.");
         mBannerListener.onAdClicked(InMobiAdapter.this);
       }
+      
+      @Override
+      public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
+        Log.d(TAG, "InMobi banner has logged an impression.");
+        mBannerListener.onAdImpression(InMobiAdapter.this);
+      }
     });
 
     if (InMobiAdapter.sDisableHardwareFlag) {
@@ -430,6 +436,12 @@ public final class InMobiAdapter extends InMobiMediationAdapter
               Log.d(TAG, "InMobi interstitial ad has been clicked.");
               mInterstitialListener.onAdClicked(InMobiAdapter.this);
             }
+
+            @Override
+            public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
+              Log.d(TAG, "InMobi interstitial ad has logged an impression.");
+              mInterstitialListener.onAdImpression(InMobiAdapter.this);
+            }
           });
     } catch (SdkNotInitializedException exception) {
       AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
@@ -523,15 +535,15 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         }
 
         @Override
-        public void onAdImpressed(@NonNull InMobiNative inMobiNative) {
-          Log.d(TAG, "InMobi native ad impression occurred.");
-          mNativeListener.onAdImpression(InMobiAdapter.this);
-        }
-
-        @Override
         public void onAdClicked(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad has been clicked.");
           mNativeListener.onAdClicked(InMobiAdapter.this);
+        }
+        
+        @Override
+        public void onAdImpression(@NonNull InMobiNative inMobiNative) {
+          Log.d(TAG, "InMobi native ad has logged an impression.");
+          mNativeListener.onAdImpression(InMobiAdapter.this);
         }
 
         @Override
