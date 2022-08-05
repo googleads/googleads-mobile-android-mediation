@@ -11,10 +11,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -25,10 +26,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
-import java.util.List;
 
 public class PangleRtbBannerAd
-    implements MediationBannerAd, TTNativeExpressAd.ExpressAdInteractionListener {
+    implements MediationBannerAd, PAGBannerAdInteractionListener {
 
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -46,6 +46,7 @@ public class PangleRtbBannerAd
 
   public void render() {
     PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleMediationAdapter.setUserData(adConfiguration.getMediationExtras());
 
     String placementId =
         adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
@@ -89,19 +90,13 @@ public class PangleRtbBannerAd
 
     wrappedAdView = new FrameLayout(context);
 
-    TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
-    TTAdNative mTTAdNative = mTTAdManager.createAdNative(context.getApplicationContext());
-
-    AdSlot adSlot =
-        new AdSlot.Builder()
-            .setCodeId(placementId)
-            .setAdCount(1)
-            .setExpressViewAcceptedSize(closestSize.getWidth(), closestSize.getHeight())
-            .withBid(bidResponse)
-            .build();
-    mTTAdNative.loadBannerExpressAd(
-        adSlot,
-        new TTAdNative.NativeExpressAdListener() {
+    PAGBannerRequest request = new PAGBannerRequest(
+        new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
+    request.setAdString(bidResponse);
+    PAGBannerAd.loadAd(
+        placementId,
+        request,
+        new PAGBannerAdLoadListener() {
           @Override
           public void onError(int errorCode, String errorMessage) {
             AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
@@ -110,10 +105,10 @@ public class PangleRtbBannerAd
           }
 
           @Override
-          public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
-            TTNativeExpressAd bannerExpressAd = ads.get(0);
-            bannerExpressAd.setExpressInteractionListener(PangleRtbBannerAd.this);
-            bannerExpressAd.render();
+          public void onAdLoaded(PAGBannerAd pagBannerAd) {
+            pagBannerAd.setAdInteractionListener(PangleRtbBannerAd.this);
+            wrappedAdView.addView(pagBannerAd.getBannerView());
+            bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
           }
         });
   }
@@ -125,27 +120,21 @@ public class PangleRtbBannerAd
   }
 
   @Override
-  public void onAdClicked(View view, int type) {
-    if (bannerAdCallback != null) {
-      bannerAdCallback.reportAdClicked();
-    }
-  }
-
-  @Override
-  public void onAdShow(View view, int type) {
+  public void onAdShowed() {
     if (bannerAdCallback != null) {
       bannerAdCallback.reportAdImpression();
     }
   }
 
   @Override
-  public void onRenderFail(View view, String errorMessage, int errorCode) {
-    adLoadCallback.onFailure(PangleConstants.createSdkError(errorCode, errorMessage));
+  public void onAdClicked() {
+    if (bannerAdCallback != null) {
+      bannerAdCallback.reportAdClicked();
+    }
   }
 
   @Override
-  public void onRenderSuccess(View view, float width, float height) {
-    wrappedAdView.addView(view);
-    bannerAdCallback = adLoadCallback.onSuccess(this);
+  public void onAdDismissed() {
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 }

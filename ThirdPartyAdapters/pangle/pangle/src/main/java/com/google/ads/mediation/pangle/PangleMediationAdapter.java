@@ -7,9 +7,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdSdk;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
+import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
@@ -54,7 +56,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
-    String biddingToken = getPangleSdkManager().getBiddingToken();
+    String biddingToken = PAGSdk.getBiddingToken();
     signalCallbacks.onSuccess(biddingToken);
   }
 
@@ -90,10 +92,10 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, message);
     }
     setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
-    TTAdSdk.init(
+    PAGSdk.init(
         context,
-        new TTAdConfig.Builder().appId(appId).coppa(coppa).setGDPR(gdpr).setCCPA(ccpa).build(),
-        new TTAdSdk.InitCallback() {
+        new PAGConfig.Builder().appId(appId).setChildDirected(coppa).setGDPRConsent(gdpr).setDoNotSell(ccpa).build(),
+        new PAGSdk.PAGInitCallback() {
           @Override
           public void success() {
             initializationCompleteCallback.onInitializationSucceeded();
@@ -134,7 +136,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = TTAdSdk.getAdManager().getSDKVersion();
+    String versionString = PAGSdk.getSDKVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -187,10 +189,6 @@ public class PangleMediationAdapter extends RtbAdapter {
     rewardedAd.render();
   }
 
-  public static TTAdManager getPangleSdkManager() {
-    return TTAdSdk.getAdManager();
-  }
-
   /**
    * Set the COPPA setting in Pangle SDK.
    *
@@ -203,20 +201,20 @@ public class PangleMediationAdapter extends RtbAdapter {
   public static void setCoppa(@TagForChildDirectedTreatment int coppa) {
     switch (coppa) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(1);
+        if (PAGSdk.isInitSuccess()) {
+          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_CHILD);
         }
         PangleMediationAdapter.coppa = 1;
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(0);
+        if (PAGSdk.isInitSuccess()) {
+          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_NON_CHILD);
         }
         PangleMediationAdapter.coppa = 0;
         break;
       default:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(-1);
+        if (PAGSdk.isInitSuccess()) {
+          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_DEFAULT);
         }
         PangleMediationAdapter.coppa = -1;
         break;
@@ -227,18 +225,21 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *             personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1}
-   *             means the user does not consent. {@code -1} means the user hasn't specified. Any
-   *             value outside of -1, 0, or 1 will result in this method being a no-op.
+   *             personal data to serve ads under GDPR. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_CONSENT
+   *             = 1} means the user consents. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_NO_CONSENT
+   *             = 0} means the user does not consent. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_DEFAULT
+   *             = -1} means the user hasn't specified.
    */
-  public static void setGdpr(int gdpr) {
-    if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
+  public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
+    if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
       // no-op
       Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (TTAdSdk.isInitSuccess()) {
-      TTAdSdk.setGdpr(gdpr);
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setGDPRConsent(gdpr);
     }
     PangleMediationAdapter.gdpr = gdpr;
   }
@@ -247,19 +248,32 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *             the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1}
-   *             means the user opts out. {@code -1} means the user hasn't specified. Any value
-   *             outside of -1, 0, or 1 will result in this method being a no-op.
+   *             the "personal information" under CCPA. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_SELL = 0}
+   *             means the user opts in. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_NOT_SELL = 1}
+   *             means the user opts out. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_DEFAULT = -1}
+   *             means the user hasn't specified.
    */
-  public static void setCcpa(int ccpa) {
-    if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
+  public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
+    if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT) {
       // no-op
       Log.w(TAG, "Invalid CCPA value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (TTAdSdk.isInitSuccess()) {
-      TTAdSdk.setCCPA(ccpa);
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setDoNotSell(ccpa);
     }
     PangleMediationAdapter.ccpa = ccpa;
+  }
+
+  public static void setUserData(Bundle networkExtras) {
+    if (networkExtras == null) {
+      return;
+    }
+    if (networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
+      String userData = networkExtras.getString(PangleExtras.Keys.USER_DATA, "");
+      PAGConfig.setUserData(userData);
+    }
   }
 }
