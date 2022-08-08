@@ -225,10 +225,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *             personal data to serve ads under GDPR. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_CONSENT
-   *             = 1} means the user consents. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_NO_CONSENT
-   *             = 0} means the user does not consent. {@link PAGGDPRConsentType#PAG_GDPR_CONSENT_TYPE_DEFAULT
-   *             = -1} means the user hasn't specified.
+   *     personal data to serve ads under GDPR. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
   public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
     if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
@@ -248,10 +247,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *             the "personal information" under CCPA. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_SELL = 0}
-   *             means the user opts in. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_NOT_SELL = 1}
-   *             means the user opts out. {@link PAGDoNotSellType#PAG_DO_NOT_SELL_TYPE_DEFAULT = -1}
-   *             means the user hasn't specified.
+   *     the "personal information" under CCPA. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
   public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
     if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL

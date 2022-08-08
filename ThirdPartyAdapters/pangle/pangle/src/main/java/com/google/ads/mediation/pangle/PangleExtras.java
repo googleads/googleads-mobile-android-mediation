@@ -31,7 +31,7 @@ public class PangleExtras {
      * Builds a {@link Bundle} object with the given inputs.
      */
     public Bundle build() {
-      final Bundle extras = new Bundle(1);
+      final Bundle extras = new Bundle();
       extras.putString(Keys.USER_DATA, mUserData);
       return extras;
     }
