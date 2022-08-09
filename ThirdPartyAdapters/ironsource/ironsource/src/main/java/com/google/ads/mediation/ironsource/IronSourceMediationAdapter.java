@@ -10,8 +10,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+
 import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -25,6 +27,7 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
@@ -47,15 +50,21 @@ public class IronSourceMediationAdapter extends Adapter
           ERROR_REQUIRES_ACTIVITY_CONTEXT,
           ERROR_AD_ALREADY_LOADED,
           ERROR_AD_SHOW_UNAUTHORIZED,
+          ERROR_BANNER_SIZE_MISMATCH,
       })
   public @interface AdapterError {
 
   }
 
+    /**
+     * Banner size mismatch.
+     */
+    public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
+
   /**
    * Server parameters (e.g. placement ID) are nil.
    */
-  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
 
   /**
    * IronSource requires an {@link Activity} context to initialize their SDK.
@@ -176,7 +185,7 @@ public class IronSourceMediationAdapter extends Adapter
     }
 
     IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
-        new IronSourceManager.InitializationCallback() {
+        new InitializationCallback() {
           @Override
           public void onInitializeSuccess() {
             initializationCompleteCallback.onInitializationSucceeded();
@@ -208,7 +217,7 @@ public class IronSourceMediationAdapter extends Adapter
             Log.d(TAG,
                 String.format("Loading IronSource rewarded ad with instance ID: %s", mInstanceID));
             IronSourceManager.getInstance()
-                .loadRewardedVideo(mInstanceID, IronSourceMediationAdapter.this);
+                .loadRewardedVideo(context,mInstanceID, IronSourceMediationAdapter.this);
           }
 
           @Override
