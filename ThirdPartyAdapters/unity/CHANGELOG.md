@@ -1,6 +1,6 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Version 4.3.0.0 (In progress)
+#### Version 4.3.0.0
 - Verified compatibility with Unity Ads SDK 4.3.0.
 - The `onAdOpened()` callback is now forwarded when interstitial and rewarded ads start playing.
 
