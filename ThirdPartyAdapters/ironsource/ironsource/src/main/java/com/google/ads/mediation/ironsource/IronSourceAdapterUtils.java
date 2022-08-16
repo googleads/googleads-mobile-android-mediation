@@ -1,7 +1,21 @@
 package com.google.ads.mediation.ironsource;
 
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
+
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
+import com.ironsource.mediationsdk.ISBannerSize;
+import com.ironsource.mediationsdk.logger.IronSourceError;
+
+import java.util.ArrayList;
 
 /**
  * The {@link IronSourceAdapterUtils} class provides the publisher an ability to pass Activity to
@@ -37,7 +51,7 @@ public class IronSourceAdapterUtils {
   /**
    * Constant used for IronSource adapter version internal reporting
    */
-  static final String ADAPTER_VERSION_NAME = "310";
+  static final String ADAPTER_VERSION_NAME = "400";
 
   /**
    * UI thread handler used to send callbacks with AdMob interface.
@@ -49,5 +63,39 @@ public class IronSourceAdapterUtils {
       uiHandler = new Handler(Looper.getMainLooper());
     }
     uiHandler.post(runnable);
+  }
+
+  @Nullable
+  public static ISBannerSize getISBannerSize(@NonNull Context context,
+                                             @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(AdSize.BANNER);
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
+    potentials.add(AdSize.LARGE_BANNER);
+
+
+
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    if (closestSize != null) {
+        if (AdSize.BANNER.equals(closestSize)){
+          return ISBannerSize.BANNER;
+        }else if(AdSize.MEDIUM_RECTANGLE.equals(closestSize)){
+          return ISBannerSize.RECTANGLE;
+        }
+        else if(AdSize.LARGE_BANNER.equals(closestSize)){
+          return ISBannerSize.LARGE;
+        }
+
+      return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
+    }
+
+    return null;
+  }
+
+  @NonNull
+  static final AdError createAdError(int errorCode, @NonNull String description) {
+    IronSourceError ISError = null;
+    assert ISError != null;
+    return new AdError(ISError.getErrorCode(), ISError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
   }
 }
