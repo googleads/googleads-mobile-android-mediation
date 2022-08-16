@@ -180,10 +180,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
    */
   @Override
   public void showInterstitial() {
-    // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
-    // ad.
-    eventAdapter.sendAdEvent(AdEvent.OPENED);
-
     Activity activityReference = activityWeakReference == null ? null : activityWeakReference.get();
     if (activityReference == null) {
       Log.w(TAG, "Failed to show interstitial ad for placement ID '" + placementId +
@@ -210,8 +206,9 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           UnityAdapter.this.placementId);
       Log.d(TAG, logMessage);
 
-      // Unity Ads video ad started playing. Google Mobile Ads SDK does not support
-      // callbacks for Interstitial ads when they start playing.
+      // Unity Ads does not have an "ad opened" callback.
+      // Sending Ad Opened event when the video ad starts playing.
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
     }
 
     @Override
@@ -247,6 +244,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad failed to show.
       AdError adError = createSDKError(error, message);
       Log.w(TAG, adError.toString());
+
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
       eventAdapter.sendAdEvent(AdEvent.CLOSED);
     }
   };

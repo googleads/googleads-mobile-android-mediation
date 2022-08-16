@@ -153,9 +153,6 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
     // UnityAds can handle a null placement ID so show is always called here.
     UnityAds.show(activity, placementId, mUnityShowListener);
-
-    // Unity Ads does not have an ad opened callback.
-    eventAdapter.sendAdEvent(AdEvent.OPENED);
   }
 
   /**
@@ -166,6 +163,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded
       // video.
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
       eventAdapter.sendAdEvent(AdEvent.IMPRESSION);
       eventAdapter.sendAdEvent(AdEvent.VIDEO_START);
     }

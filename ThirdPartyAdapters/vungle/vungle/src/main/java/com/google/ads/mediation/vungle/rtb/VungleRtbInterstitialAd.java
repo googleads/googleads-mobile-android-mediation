@@ -56,7 +56,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid App ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mMediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -65,7 +65,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
     if (TextUtils.isEmpty(mPlacement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mMediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -88,7 +88,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
 
               @Override
               public void onInitializeError(AdError error) {
-                Log.w(TAG, error.getMessage());
+                Log.w(TAG, error.toString());
                 mMediationAdLoadCallback.onFailure(error);
               }
             });
@@ -111,7 +111,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         mMediationAdLoadCallback.onFailure(error);
       }
     });
@@ -167,7 +167,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd {
       @Override
       public void onError(String placementID, VungleException exception) {
         AdError error = VungleMediationAdapter.getAdError(exception);
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         if (mediationInterstitialAdCallback != null) {
           mediationInterstitialAdCallback.onAdClosed();
         }

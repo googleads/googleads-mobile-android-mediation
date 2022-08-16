@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.vungle.mediation.VungleConsent;
 import com.vungle.mediation.VungleNetworkSettings;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.Plugin;
@@ -80,11 +79,6 @@ public class VungleInitializer implements InitCallback {
         new Runnable() {
           @Override
           public void run() {
-            if (VungleConsent.getCurrentVungleConsent() != null) {
-              Vungle.updateConsentStatus(
-                  VungleConsent.getCurrentVungleConsent(),
-                  VungleConsent.getCurrentVungleConsentMessageVersion());
-            }
             for (VungleInitializationListener listener : mInitListeners) {
               listener.onInitializeSuccess();
             }
