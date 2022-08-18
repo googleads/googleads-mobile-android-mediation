@@ -1,4 +1,4 @@
-package com.google.ads.mediation.mintegral;
+package com.mintegral.mediation;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
