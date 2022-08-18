@@ -6,7 +6,6 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INS
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
@@ -42,7 +41,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
      * Mediation interstitial ad listener used to forward interstitial events from IronSource SDK to
      * Google Mobile Ads SDK.
      */
-    private MediationInterstitialListener mInterstitialListener;
+    private MediationInterstitialListener InterstitialListener;
 
     /**
      * This is the id of the instance to be shown.
@@ -52,12 +51,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
     /**
      * The view for the banner instance.
      */
-    private ISDemandOnlyBannerLayout mIronSourceBannerLayout;
+    private ISDemandOnlyBannerLayout IronSourceBannerLayout;
 
     /**
      * Callback object for Google's Banner Lifecycle.
      */
-    private MediationBannerListener mediationBannerListener;
+    private MediationBannerListener BannerListener;
 
 
     // region MediationInterstitialAdapter implementation.
@@ -72,7 +71,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                     @Override
                     public void onInitializeSuccess() {
                         mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
-                        mInterstitialListener = listener;
+                        InterstitialListener = listener;
                         Log.d(TAG,
                                 String.format("Loading IronSource interstitial ad with instance ID: %s",
                                         mInstanceID));
@@ -117,8 +116,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdLoaded(IronSourceAdapter.this);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdLoaded(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -136,8 +135,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
                         }
                     }
                 });
@@ -150,8 +149,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdOpened(IronSourceAdapter.this);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdOpened(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -164,8 +163,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdClosed(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -183,9 +182,9 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdOpened(IronSourceAdapter.this);
-                            mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdOpened(IronSourceAdapter.this);
+                            InterstitialListener.onAdClosed(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -198,9 +197,9 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdClicked(IronSourceAdapter.this);
-                            mInterstitialListener.onAdLeftApplication(IronSourceAdapter.this);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdClicked(IronSourceAdapter.this);
+                            InterstitialListener.onAdLeftApplication(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -215,8 +214,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mInterstitialListener != null) {
-                            mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+                        if (InterstitialListener != null) {
+                            InterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
                         }
                     }
                 });
@@ -239,8 +238,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mediationBannerListener != null) {
-                            mediationBannerListener.onAdLoaded(IronSourceAdapter.this);
+                        if (BannerListener != null) {
+                            BannerListener.onAdLoaded(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -259,8 +258,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mediationBannerListener != null) {
-                            mediationBannerListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+                        if (BannerListener != null) {
+                            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
                         }
                     }
                 });
@@ -274,8 +273,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mediationBannerListener != null) {
-                            mediationBannerListener.onAdClicked(IronSourceAdapter.this);
+                        if (BannerListener != null) {
+                            BannerListener.onAdClicked(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -289,8 +288,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mediationBannerListener != null) {
-                            mediationBannerListener.onAdOpened(IronSourceAdapter.this);
+                        if (BannerListener != null) {
+                            BannerListener.onAdOpened(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -303,8 +302,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (mediationBannerListener != null) {
-                            mediationBannerListener.onAdLeftApplication(IronSourceAdapter.this);
+                        if (BannerListener != null) {
+                            BannerListener.onAdLeftApplication(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -316,7 +315,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
     @NonNull
     @Override
     public View getBannerView() {
-        return mIronSourceBannerLayout;
+        return IronSourceBannerLayout;
     }
 
 
@@ -332,7 +331,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
             AdError errorMessage = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, "IronSource requires an Activity context to load ads." +
                     "adSize",
                     ERROR_DOMAIN);
-            mediationBannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
+            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
             return;
         }
         Activity activity = (Activity) context;
@@ -342,7 +341,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
             AdError errorMessage = new AdError(ERROR_BANNER_SIZE_MISMATCH, "There is no matching IronSource ad size for Google ad size: %s" +
                     "adSize",
                     ERROR_DOMAIN);
-            mediationBannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
+            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
             return;
         }
 
@@ -353,12 +352,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                     @Override
                     public void onInitializeSuccess() {
                         mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
-                        mediationBannerListener = listener;
+                        BannerListener = listener;
                         Log.d(TAG,
                                 String.format("Loading IronSource Banner ad with instance ID: %s",
                                         mInstanceID));
-                        mIronSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
-                        IronSourceManager.getInstance().loadBanner(mIronSourceBannerLayout, context, mInstanceID, IronSourceAdapter.this);
+                        IronSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
+                        IronSourceManager.getInstance().loadBanner(IronSourceBannerLayout, context, mInstanceID, IronSourceAdapter.this);
                     }
 
                     @Override
