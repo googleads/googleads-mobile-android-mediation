@@ -41,8 +41,8 @@ import java.util.Map;
 public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
 
   /**
-   * Key to disable automatic management of native ad.
-   * Required when displaying Vungle native ad in a RecyclerView.
+   * Key to disable automatic management of native ad. Required when displaying Vungle native ad in
+   * a RecyclerView.
    */
   public static final String EXTRA_DISABLE_FEED_MANAGEMENT = "disableFeedLifecycleManagement";
 
@@ -83,7 +83,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
-      Log.d(TAG, error.getMessage());
+      Log.d(TAG, error.toString());
       callback.onFailure(error);
       return;
     }
@@ -92,7 +92,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     if (TextUtils.isEmpty(placementId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
-      Log.d(TAG, error.getMessage());
+      Log.d(TAG, error.toString());
       callback.onFailure(error);
       return;
     }
@@ -122,7 +122,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
               @Override
               public void onInitializeError(AdError error) {
                 VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
-                Log.d(TAG, error.getMessage());
+                Log.d(TAG, error.toString());
                 callback.onFailure(error);
               }
             });
@@ -140,7 +140,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     public void onAdLoadError(String placementId, VungleException exception) {
       VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
       AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.d(TAG, error.getMessage());
+      Log.d(TAG, error.toString());
       callback.onFailure(error);
     }
 
@@ -149,7 +149,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
       VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
 
       AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.d(TAG, error.getMessage());
+      Log.d(TAG, error.toString());
       callback.onFailure(error);
     }
 

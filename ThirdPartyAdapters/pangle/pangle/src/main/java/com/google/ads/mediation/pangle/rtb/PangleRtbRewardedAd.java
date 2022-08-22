@@ -46,7 +46,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
     if (TextUtils.isEmpty(placementId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.");
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
@@ -127,7 +127,8 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onRewardVerify(boolean rewardVerify, final int rewardAmount, final String rewardName,
+          public void onRewardVerify(boolean rewardVerify, final int rewardAmount,
+              final String rewardName,
               int errorCode, String errorMsg) {
             if (!rewardVerify) {
               String newErrorMsg = String

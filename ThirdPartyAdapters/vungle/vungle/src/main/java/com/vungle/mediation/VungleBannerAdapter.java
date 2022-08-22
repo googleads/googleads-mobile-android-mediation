@@ -157,7 +157,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
                 mVungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
                 if (mPendingRequestBanner && mediationAdapter != null
                     && mediationListener != null) {
-                  Log.w(TAG, error.getMessage());
+                  Log.w(TAG, error.toString());
                   mediationListener.onAdFailedToLoad(mediationAdapter, error);
                 }
               }
@@ -208,7 +208,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
           }
           if (mediationAdapter != null && mediationListener != null) {
             AdError error = VungleMediationAdapter.getAdError(exception);
-            Log.w(TAG, error.getMessage());
+            Log.w(TAG, error.toString());
             mediationListener.onAdFailedToLoad(mediationAdapter, error);
             return;
           }
@@ -254,7 +254,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
             "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
                 + "Vungle.getNativeAd() returned null.",
             ERROR_DOMAIN);
-        Log.d(TAG, error.getMessage());
+        Log.d(TAG, error.toString());
         if (mediationAdapter != null && mediationListener != null) {
           mediationListener.onAdFailedToLoad(mediationAdapter, error);
         }
@@ -264,7 +264,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
           "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
               + "Vungle.getNativeAd() returned null.",
           ERROR_DOMAIN);
-      Log.d(TAG, error.getMessage());
+      Log.d(TAG, error.toString());
       if (mediationAdapter != null && mediationListener != null) {
         mediationListener.onAdFailedToLoad(mediationAdapter, error);
       }
@@ -343,7 +343,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   @Override
   public void onError(String placementID, VungleException exception) {
     AdError error = VungleMediationAdapter.getAdError(exception);
-    Log.w(TAG, error.getMessage());
+    Log.w(TAG, error.toString());
     if (mediationAdapter != null && mediationListener != null) {
       mediationListener.onAdFailedToLoad(mediationAdapter, error);
     }

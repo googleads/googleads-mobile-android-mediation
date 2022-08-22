@@ -29,7 +29,8 @@ public class VungleNativeAd {
    */
   private final NativeAd nativeAd;
 
-  public VungleNativeAd(@NonNull Context context, @NonNull String placementId, boolean isLifeCycleManagementDisabled) {
+  public VungleNativeAd(@NonNull Context context, @NonNull String placementId,
+      boolean isLifeCycleManagementDisabled) {
     this.placementId = placementId;
     this.nativeAd = new NativeAd(context, placementId);
     this.nativeAdLayout = new NativeAdLayout(context);

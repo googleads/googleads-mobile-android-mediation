@@ -61,7 +61,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid App ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mMediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -70,7 +70,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
     if (TextUtils.isEmpty(mPlacement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or invalid Placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mMediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -104,7 +104,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
 
               @Override
               public void onInitializeError(AdError error) {
-                Log.w(TAG, error.getMessage());
+                Log.w(TAG, error.toString());
                 mMediationAdLoadCallback.onFailure(error);
               }
             });
@@ -165,7 +165,8 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
   public void onAdRewarded(String placementId) {
     if (mMediationRewardedAdCallback != null) {
       mMediationRewardedAdCallback.onVideoComplete();
-      mMediationRewardedAdCallback.onUserEarnedReward(new VungleMediationAdapter.VungleReward("vungle", 1));
+      mMediationRewardedAdCallback.onUserEarnedReward(
+          new VungleMediationAdapter.VungleReward("vungle", 1));
     }
   }
 
@@ -179,7 +180,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
   @Override
   public void onError(final String placementId, final VungleException throwable) {
     AdError error = VungleMediationAdapter.getAdError(throwable);
-    Log.w(TAG, error.getMessage());
+    Log.w(TAG, error.toString());
     if (mMediationRewardedAdCallback != null) {
       mMediationRewardedAdCallback.onAdFailedToShow(error);
     } else if (mMediationAdLoadCallback != null) {

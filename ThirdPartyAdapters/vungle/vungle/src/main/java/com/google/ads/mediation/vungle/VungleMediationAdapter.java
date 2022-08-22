@@ -213,8 +213,8 @@ public class VungleMediationAdapter extends RtbAdapter
       if (initializationCompleteCallback != null) {
         AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
             ERROR_DOMAIN);
-        Log.w(TAG, error.getMessage());
-        initializationCompleteCallback.onInitializationFailed(error.getMessage());
+        Log.w(TAG, error.toString());
+        initializationCompleteCallback.onInitializationFailed(error.toString());
       }
       return;
     }
@@ -240,8 +240,8 @@ public class VungleMediationAdapter extends RtbAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                Log.w(TAG, error.getMessage());
-                initializationCompleteCallback.onInitializationFailed(error.getMessage());
+                Log.w(TAG, error.toString());
+                initializationCompleteCallback.onInitializationFailed(error.toString());
               }
 
             });
@@ -265,7 +265,7 @@ public class VungleMediationAdapter extends RtbAdapter
     if (TextUtils.isEmpty(mPlacement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or invalid Placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -274,7 +274,7 @@ public class VungleMediationAdapter extends RtbAdapter
         && mPlacementsInUse.get(mPlacement).get() != null) {
       AdError error = new AdError(ERROR_AD_ALREADY_LOADED,
           "Only a maximum of one ad can be loaded per placement.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -283,7 +283,7 @@ public class VungleMediationAdapter extends RtbAdapter
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid App ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -315,7 +315,7 @@ public class VungleMediationAdapter extends RtbAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                Log.w(TAG, error.getMessage());
+                Log.w(TAG, error.toString());
                 mMediationAdLoadCallback.onFailure(error);
                 mPlacementsInUse.remove(mPlacement);
               }
@@ -393,7 +393,7 @@ public class VungleMediationAdapter extends RtbAdapter
   @Override
   public void onError(final String placementId, final VungleException throwable) {
     AdError error = getAdError(throwable);
-    Log.w(TAG, error.getMessage());
+    Log.w(TAG, error.toString());
     if (mMediationRewardedAdCallback != null) {
       mMediationRewardedAdCallback.onAdFailedToShow(error);
     } else if (mMediationAdLoadCallback != null) {
@@ -445,7 +445,8 @@ public class VungleMediationAdapter extends RtbAdapter
     nativeAdapter.render();
   }
 
-  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
     VungleInitializer.getInstance()
