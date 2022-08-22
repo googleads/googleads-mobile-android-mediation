@@ -482,6 +482,7 @@ public class VungleMediationAdapter extends RtbAdapter
     Log.d(TAG, "loadRtbRewardedInterstitialAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
+    // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
     rtbRewardedInterstitialAd = new VungleRtbRewardedAd(adConfiguration, callback);
     rtbRewardedInterstitialAd.render();
   }
@@ -491,6 +492,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRewardedInterstitialAd()...");
+    // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
     loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
 }
