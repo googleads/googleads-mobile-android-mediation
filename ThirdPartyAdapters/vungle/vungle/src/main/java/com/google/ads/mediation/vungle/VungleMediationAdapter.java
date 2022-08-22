@@ -30,7 +30,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.VungleExtrasBuilder;
 import com.vungle.mediation.VungleManager;
-import com.vungle.mediation.VungleNativeAdapter;
+import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -55,6 +55,7 @@ public class VungleMediationAdapter extends RtbAdapter
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
+  private VungleRtbNativeAd rtbNativeAd;
 
   private AdConfig mAdConfig;
   private String mUserID;
@@ -438,7 +439,8 @@ public class VungleMediationAdapter extends RtbAdapter
     Log.d(TAG, "loadNativeAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
-    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(mediationNativeAdConfiguration,
+    // Vungle waterfall and bidding Native ads use the same API.
+    VungleRtbNativeAd nativeAdapter = new VungleRtbNativeAd(mediationNativeAdConfiguration,
         callback);
     nativeAdapter.render();
   }
@@ -471,8 +473,8 @@ public class VungleMediationAdapter extends RtbAdapter
     Log.d(TAG, "loadRtbNativeAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
-    VungleNativeAdapter nativeAdapter = new VungleNativeAdapter(adConfiguration, callback);
-    nativeAdapter.render();
+    rtbNativeAd = new VungleRtbNativeAd(adConfiguration, callback);
+    rtbNativeAd.render();
   }
 
   @Override

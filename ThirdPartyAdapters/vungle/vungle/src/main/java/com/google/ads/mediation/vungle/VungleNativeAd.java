@@ -1,4 +1,4 @@
-package com.vungle.mediation;
+package com.google.ads.mediation.vungle;
 
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
