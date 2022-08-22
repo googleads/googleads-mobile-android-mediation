@@ -440,9 +440,18 @@ public class VungleMediationAdapter extends RtbAdapter
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
     // Vungle waterfall and bidding Native ads use the same API.
-    VungleRtbNativeAd nativeAdapter = new VungleRtbNativeAd(mediationNativeAdConfiguration,
+    rtbNativeAd = new VungleRtbNativeAd(mediationNativeAdConfiguration,
         callback);
-    nativeAdapter.render();
+    rtbNativeAd.render();
+  }
+
+  @Override
+  public void loadRewardedInterstitialAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    Log.d(TAG, "loadRewardedInterstitialAd()...");
+    // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
+    loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
 
   public void loadRtbRewardedAd(
@@ -490,12 +499,4 @@ public class VungleMediationAdapter extends RtbAdapter
     rtbRewardedInterstitialAd.render();
   }
 
-  @Override
-  public void loadRewardedInterstitialAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    Log.d(TAG, "loadRewardedInterstitialAd()...");
-    // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
-    loadRewardedAd(mediationRewardedAdConfiguration, callback);
-  }
 }
