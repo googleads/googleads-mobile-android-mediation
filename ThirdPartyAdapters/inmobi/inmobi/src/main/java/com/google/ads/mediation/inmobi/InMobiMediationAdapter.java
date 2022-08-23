@@ -10,10 +10,19 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.inmobi.sdk.InMobiSdk;
 import java.lang.annotation.Retention;
@@ -112,6 +121,8 @@ public class InMobiMediationAdapter extends Adapter {
 
   // Callback listener
   private InMobiRewardedAd mInMobiRewarded;
+  private InMobiBannerAd mInMobiBanner;
+  private InMobiInterstitialAd mInMobiInterstitial;
 
   /**
    * {@link Adapter} implementation
@@ -216,6 +227,26 @@ public class InMobiMediationAdapter extends Adapter {
     mInMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     mInMobiRewarded.load();
+  }
+
+
+  @Override
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+              @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    mInMobiBanner = new InMobiBannerAd(mediationBannerAdConfiguration, callback);
+    mInMobiBanner.load();
+  }
+
+  @Override
+  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+                   @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+    mInMobiInterstitial = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
+    mInMobiInterstitial.load();
+  }
+
+  @Override
+  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    super.loadNativeAd(mediationNativeAdConfiguration, callback);
   }
 
 }

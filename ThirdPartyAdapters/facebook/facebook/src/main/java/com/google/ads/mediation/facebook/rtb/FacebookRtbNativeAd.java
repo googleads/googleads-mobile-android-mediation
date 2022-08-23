@@ -51,7 +51,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private MediaView mMediaView;
 
   public FacebookRtbNativeAd(MediationNativeAdConfiguration adConfiguration,
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+      MediationAdLoadCallback<MediationAdLoadCallback, MediationNativeAdCallback> callback) {
     this.callback = callback;
     this.adConfiguration = adConfiguration;
   }

@@ -166,7 +166,6 @@ public class InMobiRewardedAd implements MediationRewardedAd {
               if (mRewardedAdCallback != null) {
                 mRewardedAdCallback.onAdOpened();
                 mRewardedAdCallback.onVideoStart();
-                mRewardedAdCallback.reportAdImpression();
               }
             }
 
@@ -234,7 +233,9 @@ public class InMobiRewardedAd implements MediationRewardedAd {
             @Override
             public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
                 Log.d(TAG, "InMobi interstitial ad has logged an impression.");
-                mInterstitialListener.onAdImpression(InMobiAdapter.this);
+                if (mRewardedAdCallback != null) {
+                    mRewardedAdCallback.reportAdImpression();   
+                }
             }
           });
     } catch (SdkNotInitializedException exception) {
@@ -244,6 +245,9 @@ public class InMobiRewardedAd implements MediationRewardedAd {
       mMediationAdLoadCallback.onFailure(error);
       return;
     }
+
+    //Update Age Restricted User
+    InMobiAdapterUtils.updateAgeRestrictedUser(mRewardedAdConfiguration);
 
     Bundle extras = mRewardedAdConfiguration.getMediationExtras();
     HashMap<String, String> paramMap =

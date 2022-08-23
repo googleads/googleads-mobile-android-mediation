@@ -13,14 +13,24 @@ import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -263,6 +273,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     if (mediationAdRequest.getKeywords() != null) {
       adView.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
     }
+    
+    //Update Age Restricted User
+    InMobiAdapterUtils.updateAgeRestrictedUser(mediationAdRequest);
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -324,7 +337,6 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       @Override
       public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
         Log.d(TAG, "InMobi banner has logged an impression.");
-        mBannerListener.onAdImpression(InMobiAdapter.this);
       }
     });
 
@@ -440,7 +452,6 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             @Override
             public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
               Log.d(TAG, "InMobi interstitial ad has logged an impression.");
-              mInterstitialListener.onAdImpression(InMobiAdapter.this);
             }
           });
     } catch (SdkNotInitializedException exception) {
@@ -454,6 +465,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     if (mediationAdRequest.getKeywords() != null) {
       mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
     }
+
+    //Update Age Restricted User
+    InMobiAdapterUtils.updateAgeRestrictedUser(mediationAdRequest);
 
     // Create request parameters.
     HashMap<String, String> paramMap =
@@ -543,7 +557,6 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         @Override
         public void onAdImpression(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad has logged an impression.");
-          mNativeListener.onAdImpression(InMobiAdapter.this);
         }
 
         @Override
@@ -579,6 +592,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     if (null != mediationKeyWords) {
       mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
     }
+
+    //Update Age Restricted User
+    InMobiAdapterUtils.updateAgeRestrictedUser(mNativeMedAdReq);
 
     /*
      *  Extra request params : Add any other extra request params here

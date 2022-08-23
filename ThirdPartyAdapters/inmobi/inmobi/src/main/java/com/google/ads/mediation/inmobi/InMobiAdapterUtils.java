@@ -6,8 +6,12 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiNative;
@@ -54,6 +58,30 @@ class InMobiAdapterUtils {
   }
 
   static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {
+    configureGlobalTargeting(extras);
+
+    if (configuration.getLocation() != null) {
+      InMobiSdk.setLocation(configuration.getLocation());
+    }
+  }
+
+  static void setGlobalTargeting(MediationBannerAdConfiguration configuration, Bundle extras) {
+    configureGlobalTargeting(extras);
+
+    if (configuration.getLocation() != null) {
+      InMobiSdk.setLocation(configuration.getLocation());
+    }
+  }
+
+  static void setGlobalTargeting(MediationInterstitialAdConfiguration configuration, Bundle extras) {
+    configureGlobalTargeting(extras);
+
+    if (configuration.getLocation() != null) {
+      InMobiSdk.setLocation(configuration.getLocation());
+    }
+  }
+
+  static void setGlobalTargeting(MediationNativeAdConfiguration configuration, Bundle extras) {
     configureGlobalTargeting(extras);
 
     if (configuration.getLocation() != null) {
@@ -121,12 +149,6 @@ class InMobiAdapterUtils {
         }
       } else if (key.equals(InMobiNetworkKeys.INTERESTS)) {
         InMobiSdk.setInterests(value);
-      } else if (key.equals(InMobiNetworkKeys.AGE_RESTRICTED)) {
-        if (value != null) {
-          InMobiSdk.setIsAgeRestricted(value);
-        } else {
-          InMobiSdk.setIsAgeRestricted("1");
-        }
       }
     }
 
@@ -136,6 +158,24 @@ class InMobiAdapterUtils {
           && !Objects.equals(country, "")) {
         InMobiSdk.setLocationWithCityStateCountry(city, state, country);
       }
+    }
+  }
+
+  static void updateAgeRestrictedUser(MediationAdRequest adRequest) {
+    if (adRequest.taggedForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      InMobiSdk.setIsAgeRestricted(true);
+    } else {
+      InMobiSdk.setIsAgeRestricted(false);
+    }
+  }
+
+  static void updateAgeRestrictedUser(MediationAdConfiguration config) {
+    if (config.taggedForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      InMobiSdk.setIsAgeRestricted(true);
+    } else {
+      InMobiSdk.setIsAgeRestricted(false);
     }
   }
 
@@ -158,7 +198,7 @@ class InMobiAdapterUtils {
     map.put("tp", "c_admob");
 
     if (config.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
     } else {
       map.put("coppa", "0");
