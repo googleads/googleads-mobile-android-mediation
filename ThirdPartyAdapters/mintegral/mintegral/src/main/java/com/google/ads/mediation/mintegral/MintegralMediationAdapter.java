@@ -52,6 +52,8 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
+  private static boolean noTrackUser = false;
+  private static boolean allowGDPR = true;
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
@@ -120,6 +122,8 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
       }
       mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
       Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
+      mBridgeSDK.setDoNotTrackStatus(noTrackUser);
+      mBridgeSDK.setConsentStatus(context,allowGDPR? MBridgeConstans.IS_SWITCH_ON: MBridgeConstans.IS_SWITCH_OFF);
       mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
         @Override
         public void onInitSuccess() {
@@ -183,9 +187,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
    * @param coppa Whether the user is allowed to track user information, {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE } does not track, other is to track
    */
   public static void setCoppa(@RequestConfiguration.TagForChildDirectedTreatment int coppa) {
-    if(mBridgeSDK != null){
-      mBridgeSDK.setDoNotTrackStatus(coppa == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
-    }
+    noTrackUser = coppa == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
   }
 
   /**
@@ -196,11 +198,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
    *
    */
   public static void setGdpr(Context context,boolean allow) {
-    if(mBridgeSDK != null){
-      mBridgeSDK.setConsentStatus(context,allow? MBridgeConstans.IS_SWITCH_ON: MBridgeConstans.IS_SWITCH_OFF);
-    }else {
-      Log.w(TAG, "mintegral sdk not init");
-    }
+    allowGDPR = allow;
   }
 
   /**
@@ -210,10 +208,6 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
    *
    */
   public static void setCcpa(boolean ccpa) {
-    if(mBridgeSDK != null){
-      mBridgeSDK.setDoNotTrackStatus(ccpa);
-    }else {
-      Log.w(TAG, "mintegral sdk not init");
-    }
+    noTrackUser = ccpa;
   }
 }
