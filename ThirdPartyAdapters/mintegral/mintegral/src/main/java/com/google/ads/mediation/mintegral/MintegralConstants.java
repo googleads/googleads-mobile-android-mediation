@@ -16,7 +16,6 @@ public class MintegralConstants {
     public static final String ERROR_DOMAIN = "com.google.ads.mediation.mintegral";
     public static final String PANGLE_SDK_ERROR_DOMAIN = "com.mintegral.ads";
 
-
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
             value = {ERROR_INVALID_SERVER_PARAMETERS,
@@ -35,7 +34,7 @@ public class MintegralConstants {
     public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
     /**
-     * The requested ad size does not match a mintegral supported banner size.
+     * The requested ad size does not match a Mintegral supported banner size.
      */
     public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
@@ -45,15 +44,18 @@ public class MintegralConstants {
     public static final int ERROR_INVALID_BID_RESPONSE = 103;
 
     /**
-     * Mintegral sdk inter error
+     * Mintegral sdk inter error.
      */
     public static final int ERROR_SDK_INTER_ERROR = 100;
 
+    /**
+     * Mintegral sdk ad no fill
+     */
     public static final int ERROR_CODE_NO_FILL = 104;
     /**
-     * Mintegral sdk load error
+     * Mintegral adapter error.
      */
-    public static final int ERROR_SDK_LOAD_ERROR = 105;
+    public static final int ERROR_SDK_ADAPTER_ERROR = 105;
 
     @NonNull
     public static AdError createAdapterError(@AdapterError int errorCode,

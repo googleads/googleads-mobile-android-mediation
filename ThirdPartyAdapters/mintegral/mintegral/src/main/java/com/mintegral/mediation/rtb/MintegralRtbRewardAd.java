@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 
@@ -18,7 +19,6 @@ import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
-import com.mintegral.mediation.MintegralConstants;
 import com.mintegral.mediation.MintegralUtils;
 
 public class MintegralRtbRewardAd implements MediationRewardedAd, RewardVideoListener {

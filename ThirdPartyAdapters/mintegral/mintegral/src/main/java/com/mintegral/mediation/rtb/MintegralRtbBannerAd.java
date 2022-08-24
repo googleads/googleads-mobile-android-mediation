@@ -1,18 +1,15 @@
 package com.mintegral.mediation.rtb;
 
-import static com.mintegral.mediation.MintegralConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.mintegral.mediation.MintegralConstants.ERROR_INVALID_BID_RESPONSE;
-import static com.mintegral.mediation.MintegralConstants.ERROR_SDK_INTER_ERROR;
-import static com.mintegral.mediation.MintegralConstants.ERROR_SDK_LOAD_ERROR;
+
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -24,7 +21,6 @@ import com.mbridge.msdk.out.BannerAdListener;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
 import com.mbridge.msdk.out.MBridgeIds;
-import com.mintegral.mediation.MintegralConstants;
 
 import java.util.ArrayList;
 
@@ -64,7 +60,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
         supportedSizes.add(new AdSize(VALUE_800, VALUE_600));
         AdSize closestSize = MediationUtils.findClosestSize(mAdConfiguration.getContext(), mAdConfiguration.getAdSize(), supportedSizes);
         if (closestSize == null) {
-            callBackFail(ERROR_BANNER_SIZE_MISMATCH, "Failed to request banner ad from Mintegral. Invalid banner size.");
+            callBackFail(MintegralConstants.ERROR_BANNER_SIZE_MISMATCH, "Failed to request banner ad from Mintegral. Invalid banner size.");
             return;
         }
         if (closestSize.equals(AdSize.BANNER)) { // 320 * 50
@@ -86,15 +82,15 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
     private void initBannerAd() {
         if (mAdConfiguration == null) {
-            callBackFail(ERROR_SDK_INTER_ERROR, "Mintegral init Fail mAdConfiguration is null");
+            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail mAdConfiguration is null");
             return;
         }
         if (mAdConfiguration.getServerParameters() == null) {
-            callBackFail(ERROR_SDK_INTER_ERROR, "Mintegral init Fail ServiceParameters is null");
+            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail ServiceParameters is null");
             return;
         }
         if (mAdConfiguration.getContext() == null) {
-            callBackFail(ERROR_SDK_INTER_ERROR, "Mintegral init Fail context is null");
+            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail context is null");
             return;
         }
         String unitId = mAdConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
@@ -113,17 +109,17 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
     public void load() {
         if (mAdConfiguration == null) {
-            callBackFail(ERROR_SDK_LOAD_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
+            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
             return;
         }
         if (mBBannerView == null) {
-            callBackFail(ERROR_SDK_LOAD_ERROR, "Mintegral Ad load Fail mBBannerView is null");
+            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mBBannerView is null");
             return;
         }
 
         String token = mAdConfiguration.getBidResponse();
         if (TextUtils.isEmpty(token)) {
-            callBackFail(ERROR_INVALID_BID_RESPONSE, "Failed to load Banner ad from MIntegral. Missing or invalid bid response.");
+            callBackFail(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load Banner ad from MIntegral. Missing or invalid bid response.");
             return;
         }
 
@@ -139,7 +135,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
     @Override
     public void onLoadFailed(MBridgeIds mBridgeIds, String s) {
-        callBackFail(ERROR_SDK_INTER_ERROR, "Failed to load Banner ad from MIntegral.");
+        callBackFail(MintegralConstants.ERROR_SDK_INTER_ERROR, "Failed to load Banner ad from MIntegral.");
     }
 
     @Override

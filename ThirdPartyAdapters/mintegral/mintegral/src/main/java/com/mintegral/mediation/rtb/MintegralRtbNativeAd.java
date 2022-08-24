@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -23,7 +24,6 @@ import com.mbridge.msdk.out.Frame;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.mbridge.msdk.out.NativeListener;
-import com.mintegral.mediation.MintegralConstants;
 
 import java.util.ArrayList;
 import java.util.List;
