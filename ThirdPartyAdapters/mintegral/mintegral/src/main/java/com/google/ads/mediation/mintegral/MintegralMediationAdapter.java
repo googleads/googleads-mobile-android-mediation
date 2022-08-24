@@ -37,9 +37,9 @@ import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
 import com.mintegral.mediation.AdapterTools;
+import com.mintegral.mediation.rtb.MintegralRtbBannerAd;
 import com.mintegral.mediation.rtb.MintegralRtbInterstitialAd;
 import com.mintegral.mediation.rtb.MintegralRtbNativeAd;
-import com.mintegral.mediation.rtb.MintegralRtbBannerAd;
 import com.mintegral.mediation.rtb.MintegralRtbRewardedAd;
 
 import java.util.List;
@@ -54,6 +54,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   private MintegralRtbNativeAd mintegralRtbNativeAd;
   private static boolean noTrackUser = false;
   private static boolean allowGDPR = true;
+
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
@@ -123,7 +124,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
       mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
       Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
       mBridgeSDK.setDoNotTrackStatus(noTrackUser);
-      mBridgeSDK.setConsentStatus(context,allowGDPR? MBridgeConstans.IS_SWITCH_ON: MBridgeConstans.IS_SWITCH_OFF);
+      mBridgeSDK.setConsentStatus(context, allowGDPR ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF);
       mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
         @Override
         public void onInitSuccess() {
@@ -153,7 +154,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration,callback);
+    mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration, callback);
     mintegralRtbNativeAd.loadAd();
   }
 
@@ -166,7 +167,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void onDestroy() {
-    if(mintegralRtbBannerAd!= null){
+    if (mintegralRtbBannerAd != null) {
       mintegralRtbBannerAd.onDestroy();
     }
   }
@@ -194,10 +195,9 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
    * Set the GDPR setting in Mintegral SDK.
    *
    * @param context
-   * @param allow Whether the user is allowed to collect gdpr information, true is allowed, false is not allowed
-   *
+   * @param allow   Whether the user is allowed to collect gdpr information, true is allowed, false is not allowed
    */
-  public static void setGdpr(Context context,boolean allow) {
+  public static void setGdpr(Context context, boolean allow) {
     allowGDPR = allow;
   }
 
@@ -205,7 +205,6 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
    * Set the CCPA setting in Mintegral SDK.
    *
    * @param ccpa Whether the user is allowed to track user information, true does not track, false is to track
-   *
    */
   public static void setCcpa(boolean ccpa) {
     noTrackUser = ccpa;

@@ -10,7 +10,6 @@ import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -24,129 +23,129 @@ import com.mintegral.mediation.MintegralUtils;
 
 public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-    private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
-    /**
-     * Data used to render an RTB interstitial ad.
-     */
-    private final MediationRewardedAdConfiguration adConfiguration;
+  private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
+  /**
+   * Data used to render an RTB interstitial ad.
+   */
+  private final MediationRewardedAdConfiguration adConfiguration;
 
-    /**
-     * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
-     */
-    private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-            callback;
+  /**
+   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
+   */
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          callback;
 
-    private MBBidRewardVideoHandler mbBidRewardVideoHandler;
-    private MediationRewardedAdCallback rewardedAdCallback;
+  private MBBidRewardVideoHandler mbBidRewardVideoHandler;
+  private MediationRewardedAdCallback rewardedAdCallback;
 
-    public MintegralRtbRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-                                  MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback){
-        this.adConfiguration = adConfiguration;
-        this.callback = callback;
+  public MintegralRtbRewardedAd(MediationRewardedAdConfiguration adConfiguration,
+                                MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    this.adConfiguration = adConfiguration;
+    this.callback = callback;
+  }
+
+  public void loadAd() {
+    String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+    String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, unitId);
+    mbBidRewardVideoHandler.setRewardVideoListener(this);
+    String token = adConfiguration.getBidResponse();
+    if (TextUtils.isEmpty(token)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
+      callback.onFailure(error);
+      return;
     }
+    mbBidRewardVideoHandler.loadFromBid(token);
+  }
 
-    public void loadAd(){
-        String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-        String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-        mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(),placementId,unitId);
-        mbBidRewardVideoHandler.setRewardVideoListener(this);
-        String token = adConfiguration.getBidResponse();
-        if(TextUtils.isEmpty(token)){
-            AdError  error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE,"Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
-            callback.onFailure(error);
-            return;
+  @Override
+  public void showAd(@NonNull Context context) {
+    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
+    mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mbBidRewardVideoHandler.showFromBid();
+  }
+
+  @Override
+  public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
+    rewardedAdCallback = callback.onSuccess(this);
+  }
+
+  @Override
+  public void onLoadSuccess(MBridgeIds mBridgeIds) {
+    //No-op, AdMob has no corresponding method
+  }
+
+  @Override
+  public void onVideoLoadFail(MBridgeIds mBridgeIds, String s) {
+    AdError error = MintegralConstants.createSdkError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+    Log.w(TAG, error.toString());
+    callback.onFailure(error);
+  }
+
+  @Override
+  public void onAdShow(MBridgeIds mBridgeIds) {
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdOpened();
+      rewardedAdCallback.reportAdImpression();
+    }
+  }
+
+  @Override
+  public void onAdClose(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
+    }
+    if (rewardInfo == null || !rewardInfo.isCompleteView()) {
+      return;
+    }
+    RewardItem rewardItem = new RewardItem() {
+      @NonNull
+      @Override
+      public String getType() {
+        return rewardInfo.getRewardName();
+      }
+
+      @Override
+      public int getAmount() {
+        int amount = 0;
+        try {
+          amount = Integer.getInteger(rewardInfo.getRewardAmount());
+        } catch (Exception e) {
+          e.printStackTrace();
         }
-        mbBidRewardVideoHandler.loadFromBid(token);
+        return amount;
+      }
+    };
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onUserEarnedReward(rewardItem);
     }
 
-    @Override
-    public void showAd(@NonNull Context context) {
-        boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-        mbBidRewardVideoHandler.playVideoMute(muted?MBridgeConstans.REWARD_VIDEO_PLAY_MUTE:MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-        mbBidRewardVideoHandler.showFromBid();
+
+  }
+
+  @Override
+  public void onShowFail(MBridgeIds mBridgeIds, String s) {
+    if (rewardedAdCallback != null) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+      Log.w(TAG, error.toString());
+      rewardedAdCallback.onAdFailedToShow(error);
     }
+  }
 
-    @Override
-    public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
-       rewardedAdCallback = callback.onSuccess(this);
+  @Override
+  public void onVideoAdClicked(MBridgeIds mBridgeIds) {
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdClicked();
     }
+  }
 
-    @Override
-    public void onLoadSuccess(MBridgeIds mBridgeIds) {
-        //No-op, AdMob has no corresponding method
-    }
+  @Override
+  public void onVideoComplete(MBridgeIds mBridgeIds) {
+    //No-op, AdMob has no corresponding method
+  }
 
-    @Override
-    public void onVideoLoadFail(MBridgeIds mBridgeIds, String s) {
-        AdError error = MintegralConstants.createSdkError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
-        Log.w(TAG, error.toString());
-        callback.onFailure(error);
-    }
-
-    @Override
-    public void onAdShow(MBridgeIds mBridgeIds) {
-        if(rewardedAdCallback != null){
-            rewardedAdCallback.onAdOpened();
-            rewardedAdCallback.reportAdImpression();
-        }
-    }
-
-    @Override
-    public void onAdClose(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
-        if (rewardedAdCallback != null) {
-            rewardedAdCallback.onAdClosed();
-        }
-        if (rewardInfo == null || !rewardInfo.isCompleteView()) {
-            return;
-        }
-        RewardItem rewardItem = new RewardItem() {
-            @NonNull
-            @Override
-            public String getType() {
-                return rewardInfo.getRewardName();
-            }
-
-            @Override
-            public int getAmount() {
-                int amount = 0;
-                try {
-                    amount = Integer.getInteger(rewardInfo.getRewardAmount());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return amount;
-            }
-        };
-        if (rewardedAdCallback != null) {
-            rewardedAdCallback.onUserEarnedReward(rewardItem);
-        }
-
-
-    }
-
-    @Override
-    public void onShowFail(MBridgeIds mBridgeIds, String s) {
-        if(rewardedAdCallback != null){
-            AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR,s);
-            Log.w(TAG, error.toString());
-            rewardedAdCallback.onAdFailedToShow(error);
-        }
-    }
-
-    @Override
-    public void onVideoAdClicked(MBridgeIds mBridgeIds) {
-        if(rewardedAdCallback != null){
-            rewardedAdCallback.reportAdClicked();
-        }
-    }
-
-    @Override
-    public void onVideoComplete(MBridgeIds mBridgeIds) {
-        //No-op, AdMob has no corresponding method
-    }
-
-    @Override
-    public void onEndcardShow(MBridgeIds mBridgeIds) {
-        //No-op, AdMob has no corresponding method
-    }
+  @Override
+  public void onEndcardShow(MBridgeIds mBridgeIds) {
+    //No-op, AdMob has no corresponding method
+  }
 }
