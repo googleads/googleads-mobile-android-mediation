@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 
@@ -23,7 +24,7 @@ import com.mintegral.mediation.MintegralUtils;
 
 public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-    private static final String TAG = MintegralRtbRewardedAd.class.getSimpleName();
+    private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
     /**
      * Data used to render an RTB interstitial ad.
      */
@@ -42,13 +43,13 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
                                   MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback){
         this.adConfiguration = adConfiguration;
         this.callback = callback;
+    }
+
+    public void loadAd(){
         String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
         String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
         mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(),placementId,unitId);
         mbBidRewardVideoHandler.setRewardVideoListener(this);
-    }
-
-    public void load(){
         String token = adConfiguration.getBidResponse();
         if(TextUtils.isEmpty(token)){
             AdError  error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE,"Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
@@ -72,7 +73,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
     @Override
     public void onLoadSuccess(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
@@ -141,11 +142,11 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
     @Override
     public void onVideoComplete(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void onEndcardShow(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 }
