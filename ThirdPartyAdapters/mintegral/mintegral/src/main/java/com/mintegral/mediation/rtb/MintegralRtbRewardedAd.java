@@ -21,9 +21,9 @@ import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.mintegral.mediation.MintegralUtils;
 
-public class MintegralRtbRewardAd implements MediationRewardedAd, RewardVideoListener {
+public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-    private static final String TAG = MintegralRtbRewardAd.class.getSimpleName();
+    private static final String TAG = MintegralRtbRewardedAd.class.getSimpleName();
     /**
      * Data used to render an RTB interstitial ad.
      */
@@ -38,8 +38,8 @@ public class MintegralRtbRewardAd implements MediationRewardedAd, RewardVideoLis
     private MBBidRewardVideoHandler mbBidRewardVideoHandler;
     private MediationRewardedAdCallback rewardedAdCallback;
 
-    public MintegralRtbRewardAd(MediationRewardedAdConfiguration adConfiguration,
-                                MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback){
+    public MintegralRtbRewardedAd(MediationRewardedAdConfiguration adConfiguration,
+                                  MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback){
         this.adConfiguration = adConfiguration;
         this.callback = callback;
         String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);

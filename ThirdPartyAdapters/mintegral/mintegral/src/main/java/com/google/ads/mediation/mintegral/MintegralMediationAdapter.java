@@ -40,7 +40,7 @@ import com.mintegral.mediation.AdapterTools;
 import com.mintegral.mediation.rtb.MintegralRtbInterstitialAd;
 import com.mintegral.mediation.rtb.MintegralRtbNativeAd;
 import com.mintegral.mediation.rtb.MintegralRtbBannerAd;
-import com.mintegral.mediation.rtb.MintegralRtbRewardAd;
+import com.mintegral.mediation.rtb.MintegralRtbRewardedAd;
 
 import java.util.List;
 import java.util.Map;
@@ -50,7 +50,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   private static MBridgeSDK mBridgeSDK;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
-  private MintegralRtbRewardAd mintegralRtbRewardAd;
+  private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
@@ -155,8 +155,8 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    mintegralRtbRewardAd = new MintegralRtbRewardAd(adConfiguration, callback);
-    mintegralRtbRewardAd.load();
+    mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
+    mintegralRtbRewardedAd.load();
   }
 
 
