@@ -49,6 +49,9 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
+  private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
+  private MintegralRtbRewardAd mintegralRtbRewardAd;
+  private MintegralRtbNativeAd mintegralRtbNativeAd;
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
@@ -140,20 +143,20 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    MintegralRtbInterstitialAd rtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
-    rtbInterstitialAd.load();
+    mintegralRtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
+    mintegralRtbInterstitialAd.load();
   }
 
   @Override
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    MintegralRtbNativeAd mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration,callback);
+    mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration,callback);
     mintegralRtbNativeAd.load();
   }
 
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    MintegralRtbRewardAd rtbRewardAd = new MintegralRtbRewardAd(adConfiguration, callback);
-    rtbRewardAd.load();
+    mintegralRtbRewardAd = new MintegralRtbRewardAd(adConfiguration, callback);
+    mintegralRtbRewardAd.load();
   }
 
 
