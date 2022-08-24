@@ -4,9 +4,6 @@ import com.mbridge.msdk.foundation.same.net.Aa;
 
 import java.lang.reflect.Method;
 
-/**
- * Created by songjunjun on 2018/5/8.
- */
 
 public class AdapterTools {
     private static String TAG = "AdapterTools";
