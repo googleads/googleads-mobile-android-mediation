@@ -26,103 +26,84 @@ import java.util.ArrayList;
 
 public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
-    private final MediationBannerAdConfiguration mAdConfiguration;
-    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mAdLoadCallback;
-    private MediationBannerAdCallback mBannerAdCallback;
+    private final MediationBannerAdConfiguration adConfiguration;
+    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+    private MediationBannerAdCallback bannerAdCallback;
     private MBBannerView mbBannerView;
-    private BannerSize mBannerSize;
-    private static final int VALUE_800 = 800;
-    private static final int VALUE_728 = 728;
-    private static final int VALUE_600 = 600;
-    private static final int VALUE_320 = 320;
-    private static final int VALUE_300 = 300;
-    private static final int VALUE_250 = 250;
-    private static final int VALUE_90 = 90;
-    private static final int VALUE_50 = 50;
-    private static final int VALUE_0 = 0;
-    RelativeLayout.LayoutParams mParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+    private BannerSize bannerSize;
+    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
     public MintegralRtbBannerAd(
             @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
             @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
                     mediationAdLoadCallback) {
-        this.mAdConfiguration = mediationBannerAdConfiguration;
-        this.mAdLoadCallback = mediationAdLoadCallback;
-        initBannerAd();
+        this.adConfiguration = mediationBannerAdConfiguration;
+        this.adLoadCallback = mediationAdLoadCallback;
     }
 
     private void updateSupportBannerSize() {
-        ArrayList<AdSize> supportedSizes = new ArrayList<>(5);
-        supportedSizes.add(new AdSize(VALUE_320, VALUE_50));
-        supportedSizes.add(new AdSize(VALUE_300, VALUE_250));
-        supportedSizes.add(new AdSize(VALUE_728, VALUE_90));
-        supportedSizes.add(new AdSize(VALUE_320, VALUE_90));
-        supportedSizes.add(new AdSize(VALUE_800, VALUE_600));
-        AdSize closestSize = MediationUtils.findClosestSize(mAdConfiguration.getContext(), mAdConfiguration.getAdSize(), supportedSizes);
+        ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
+        supportedSizes.add(new AdSize(320, 50));
+        supportedSizes.add(new AdSize(300, 250));
+        supportedSizes.add(new AdSize(728, 90));
+        AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(), adConfiguration.getAdSize(), supportedSizes);
         if (closestSize == null) {
-            callBackFail(MintegralConstants.ERROR_BANNER_SIZE_MISMATCH, "Failed to request banner ad from Mintegral. Invalid banner size.");
+            callFailureCallback(MintegralConstants.ERROR_BANNER_SIZE_MISMATCH, "Failed to request banner ad from Mintegral. Invalid banner size.");
             return;
         }
         if (closestSize.equals(AdSize.BANNER)) { // 320 * 50
-            mBannerSize = new BannerSize(BannerSize.STANDARD_TYPE, VALUE_0, VALUE_0);
+            bannerSize = new BannerSize(BannerSize.STANDARD_TYPE, 0, 0);
         }
         if (closestSize.equals(AdSize.MEDIUM_RECTANGLE)) { // 300 * 250
-            mBannerSize = new BannerSize(BannerSize.MEDIUM_TYPE, VALUE_0, VALUE_0);
+            bannerSize = new BannerSize(BannerSize.MEDIUM_TYPE, 0, 0);
         }
         if (closestSize.equals(AdSize.LEADERBOARD)) { // 728 * 90
-            mBannerSize = new BannerSize(BannerSize.SMART_TYPE, VALUE_728, VALUE_90);
+            bannerSize = new BannerSize(BannerSize.SMART_TYPE, closestSize.getWidth(),0);
         }
-        if (mBannerSize == null && closestSize.getWidth() == VALUE_320) {
-            mBannerSize = new BannerSize(BannerSize.LARGE_TYPE, VALUE_0, VALUE_0);
-        }
-        if (mBannerSize == null) {
-            mBannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, VALUE_800, VALUE_600);
+        if (bannerSize == null) {
+            bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(), closestSize.getHeight());
         }
     }
 
     private void initBannerAd() {
-        if (mAdConfiguration == null) {
-            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail mAdConfiguration is null");
+        if (adConfiguration == null) {
+            callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail mAdConfiguration is null");
             return;
         }
-        if (mAdConfiguration.getServerParameters() == null) {
-            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail ServiceParameters is null");
+        if (adConfiguration.getServerParameters() == null) {
+            callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail ServiceParameters is null");
             return;
         }
-        if (mAdConfiguration.getContext() == null) {
-            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail context is null");
+        if (adConfiguration.getContext() == null) {
+            callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail context is null");
             return;
         }
-        String unitId = mAdConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-        String placementId = mAdConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-        mbBannerView = new MBBannerView(mAdConfiguration.getContext());
+        String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+        String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+        mbBannerView = new MBBannerView(adConfiguration.getContext());
         updateSupportBannerSize();
-        mbBannerView.init(mBannerSize, placementId, unitId);
-
-        if (mBannerSize == null) {
-            mBannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, VALUE_800, VALUE_600);
-        }
-        mParams.width = dip2px(mAdConfiguration.getContext(), mBannerSize.getWidth());
-        mParams.height = dip2px(mAdConfiguration.getContext(), mBannerSize.getHeight());
-        mbBannerView.setLayoutParams(mParams);
+        mbBannerView.init(bannerSize, placementId, unitId);
+        params.width = dipToPixels(adConfiguration.getContext(), bannerSize.getWidth());
+        params.height = dipToPixels(adConfiguration.getContext(), bannerSize.getHeight());
+        mbBannerView.setLayoutParams(params);
     }
 
     public void load() {
-        if (mAdConfiguration == null) {
-            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
+        initBannerAd();
+        if (adConfiguration == null) {
+            callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
             return;
         }
         if (mbBannerView == null) {
-            callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mBBannerView is null");
+            callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mBBannerView is null");
             return;
         }
 
-        String token = mAdConfiguration.getBidResponse();
+        String token = adConfiguration.getBidResponse();
         if (TextUtils.isEmpty(token)) {
-            callBackFail(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load Banner ad from MIntegral. Missing or invalid bid response.");
+            callFailureCallback(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load Banner ad from MIntegral. Missing or invalid bid response.");
             return;
         }
-
         mbBannerView.setBannerAdListener(this);
         mbBannerView.loadFromBid(token);
     }
@@ -134,53 +115,53 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     }
 
     @Override
-    public void onLoadFailed(MBridgeIds mBridgeIds, String s) {
-        callBackFail(MintegralConstants.ERROR_SDK_INTER_ERROR, "Failed to load Banner ad from MIntegral.");
+    public void onLoadFailed(MBridgeIds mBridgeIds, String errorMessage) {
+        callFailureCallback(MintegralConstants.ERROR_SDK_INTER_ERROR, errorMessage);
     }
 
     @Override
     public void onLoadSuccessed(MBridgeIds mBridgeIds) {
-        if (mAdLoadCallback == null) {
+        if (adLoadCallback == null) {
             return;
         }
-        mBannerAdCallback = mAdLoadCallback.onSuccess(this);
+        bannerAdCallback = adLoadCallback.onSuccess(this);
     }
 
     @Override
     public void onLogImpression(MBridgeIds mBridgeIds) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.reportAdImpression();
+        if (bannerAdCallback != null) {
+            bannerAdCallback.reportAdImpression();
         }
     }
 
     @Override
     public void onClick(MBridgeIds mBridgeIds) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.reportAdClicked();
+        if (bannerAdCallback != null) {
+            bannerAdCallback.reportAdClicked();
         }
     }
 
     @Override
     public void onLeaveApp(MBridgeIds mBridgeIds) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.onAdLeftApplication();
+        if (bannerAdCallback != null) {
+            bannerAdCallback.onAdLeftApplication();
         }
     }
 
     @Override
     public void showFullScreen(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void closeFullScreen(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void onCloseBanner(MBridgeIds mBridgeIds) {
-        if (mBannerAdCallback != null) {
-            mBannerAdCallback.onAdClosed();
+        if (bannerAdCallback != null) {
+            bannerAdCallback.onAdClosed();
         }
     }
 
@@ -190,16 +171,21 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
         }
     }
 
-
-    private static int dip2px(Context context, float dpValue) {
+    /**
+     *  dip convert pixels
+     * @param context
+     * @param dpValue
+     * @return
+     */
+    private static int dipToPixels(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }
 
-    private void callBackFail(int errorCode, String failMsg) {
-        if (mAdLoadCallback != null) {
-            AdError error = MintegralConstants.createAdapterError(errorCode, failMsg);
-            mAdLoadCallback.onFailure(error);
+    private void callFailureCallback(int errorCode, String errorMessage) {
+        if (adLoadCallback != null) {
+            AdError error = MintegralConstants.createAdapterError(errorCode, errorMessage);
+            adLoadCallback.onFailure(error);
         }
     }
 }
