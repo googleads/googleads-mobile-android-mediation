@@ -1,4 +1,4 @@
-package com.vungle.mediation;
+package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -26,6 +26,9 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
+import com.vungle.mediation.VungleExtrasBuilder;
+import com.vungle.mediation.VungleManager;
+import com.google.ads.mediation.vungle.VungleNativeAd;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.NativeAd;
 import com.vungle.warren.NativeAdLayout;
@@ -35,7 +38,7 @@ import com.vungle.warren.ui.view.MediaView;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class VungleNativeAdapter extends UnifiedNativeAdMapper {
+public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
 
   /**
    * Key to disable automatic management of native ad. Required when displaying Vungle native ad in
@@ -57,12 +60,14 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
    */
   private AdConfig adConfig;
 
+  private String adMarkup;
+
   /**
    * Wrapper object for Vungle native ads.
    */
   private VungleNativeAd vungleNativeAd;
 
-  public VungleNativeAdapter(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+  public VungleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     this.adConfiguration = mediationNativeAdConfiguration;
     this.callback = callback;
@@ -92,6 +97,9 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
       return;
     }
 
+    adMarkup = adConfiguration.getBidResponse();
+    Log.d(TAG, "Render native adMarkup=" + adMarkup);
+
     adConfig = VungleExtrasBuilder
         .adConfigWithNetworkExtras(mediationExtras, nativeAdOptions, true);
 
@@ -108,7 +116,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                vungleNativeAd.loadNativeAd(adConfig, new NativeListener());
+                vungleNativeAd.loadNativeAd(adConfig, adMarkup, new NativeListener());
               }
 
               @Override
@@ -125,7 +133,7 @@ public class VungleNativeAdapter extends UnifiedNativeAdMapper {
     @Override
     public void onNativeAdLoaded(NativeAd nativeAd) {
       mapNativeAd();
-      nativeAdCallback = callback.onSuccess(VungleNativeAdapter.this);
+      nativeAdCallback = callback.onSuccess(VungleRtbNativeAd.this);
     }
 
     @Override

@@ -1,7 +1,15 @@
 ## Vungle Android Mediation Adapter Changelog
 
+#### Version 6.12.0.0 (In progress)
+- Added waterfall mediation and bidding support for rewarded interstitial ad format.
+- Added bidding support for native ad format.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.1.0.
+- Vungle SDK version 6.12.0.
+
 #### Version 6.11.0.3
-- Added support for waterfall mediation native ads.
+- Added waterfall mediation support for native ad format.
 - Updated the minimum required Google Mobile Ads SDK version to 21.1.0.
 
 Built and tested with:
