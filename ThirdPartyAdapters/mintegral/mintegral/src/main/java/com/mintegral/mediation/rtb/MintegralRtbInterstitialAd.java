@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -22,7 +23,7 @@ import com.mintegral.mediation.MintegralUtils;
 
 public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewInterstitialListener {
 
-    private static final String TAG = MintegralRtbInterstitialAd.class.getSimpleName();
+    private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
     /**
      * Data used to render an RTB interstitial ad.
      */
@@ -31,7 +32,7 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
     /**
      * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
      */
-    private  MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback;
+    private  MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
 
     private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
     private MediationInterstitialAdCallback interstitialAdCallback;
@@ -39,18 +40,19 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
     public MintegralRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
                                       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback){
         this.adConfiguration = adConfiguration;
-        this.callback = callback;
+        this.adLoadCallback = callback;
+    }
+
+
+    public void loadAd(){
         String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
         String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
         mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(),placementId,unitId);
         mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
-    }
-
-    public void load(){
         String token = adConfiguration.getBidResponse();
         if(TextUtils.isEmpty(token)){
             AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE,"Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
-            callback.onFailure(error);
+            adLoadCallback.onFailure(error);
             return;
         }
         mbBidNewInterstitialHandler.loadFromBid(token);
@@ -64,19 +66,19 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
     @Override
     public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void onResourceLoadSuccess(MBridgeIds mBridgeIds) {
-        interstitialAdCallback = callback.onSuccess(this);
+        interstitialAdCallback = adLoadCallback.onSuccess(this);
     }
 
     @Override
     public void onResourceLoadFail(MBridgeIds mBridgeIds, String s) {
         AdError error = MintegralConstants.createSdkError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
         Log.w(TAG, error.toString());
-        callback.onFailure(error);
+        adLoadCallback.onFailure(error);
     }
 
     @Override
@@ -112,16 +114,16 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
     @Override
     public void onVideoComplete(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void onAdCloseWithNIReward(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
-
+        //No-op, AdMob has no corresponding method
     }
 
     @Override
     public void onEndcardShow(MBridgeIds mBridgeIds) {
-
+        //No-op, AdMob has no corresponding method
     }
 }

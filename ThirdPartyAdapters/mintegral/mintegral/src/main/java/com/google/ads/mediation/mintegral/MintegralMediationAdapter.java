@@ -144,7 +144,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   @Override
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     mintegralRtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
-    mintegralRtbInterstitialAd.load();
+    mintegralRtbInterstitialAd.loadAd();
   }
 
   @Override
