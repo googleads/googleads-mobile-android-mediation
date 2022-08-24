@@ -178,7 +178,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   }
 
   /**
-   * Set the COPPA setting in MIntegral SDK.
+   * Set the COPPA setting in Mintegral SDK.
    *
    * @param coppa Whether the user is allowed to track user information, {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE } does not track, other is to track
    */
@@ -189,7 +189,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   }
 
   /**
-   * Set the GDPR setting in MIntegral SDK.
+   * Set the GDPR setting in Mintegral SDK.
    *
    * @param context
    * @param allow Whether the user is allowed to collect gdpr information, true is allowed, false is not allowed
@@ -204,7 +204,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   }
 
   /**
-   * Set the CCPA setting in MIntegral SDK.
+   * Set the CCPA setting in Mintegral SDK.
    *
    * @param ccpa Whether the user is allowed to track user information, true does not track, false is to track
    *
