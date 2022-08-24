@@ -29,7 +29,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     private final MediationBannerAdConfiguration mAdConfiguration;
     private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mAdLoadCallback;
     private MediationBannerAdCallback mBannerAdCallback;
-    private MBBannerView mBBannerView;
+    private MBBannerView mbBannerView;
     private BannerSize mBannerSize;
     private static final int VALUE_800 = 800;
     private static final int VALUE_728 = 728;
@@ -95,16 +95,16 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
         }
         String unitId = mAdConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
         String placementId = mAdConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-        mBBannerView = new MBBannerView(mAdConfiguration.getContext());
+        mbBannerView = new MBBannerView(mAdConfiguration.getContext());
         updateSupportBannerSize();
-        mBBannerView.init(mBannerSize, placementId, unitId);
+        mbBannerView.init(mBannerSize, placementId, unitId);
 
         if (mBannerSize == null) {
             mBannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, VALUE_800, VALUE_600);
         }
         mParams.width = dip2px(mAdConfiguration.getContext(), mBannerSize.getWidth());
         mParams.height = dip2px(mAdConfiguration.getContext(), mBannerSize.getHeight());
-        mBBannerView.setLayoutParams(mParams);
+        mbBannerView.setLayoutParams(mParams);
     }
 
     public void load() {
@@ -112,7 +112,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
             callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
             return;
         }
-        if (mBBannerView == null) {
+        if (mbBannerView == null) {
             callBackFail(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mBBannerView is null");
             return;
         }
@@ -123,14 +123,14 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
             return;
         }
 
-        mBBannerView.setBannerAdListener(this);
-        mBBannerView.loadFromBid(token);
+        mbBannerView.setBannerAdListener(this);
+        mbBannerView.loadFromBid(token);
     }
 
     @NonNull
     @Override
     public View getView() {
-        return mBBannerView;
+        return mbBannerView;
     }
 
     @Override
@@ -185,8 +185,8 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     }
 
     public void onDestroy(){
-        if(mBBannerView!= null){
-            mBBannerView.release();
+        if(mbBannerView != null){
+            mbBannerView.release();
         }
     }
 
