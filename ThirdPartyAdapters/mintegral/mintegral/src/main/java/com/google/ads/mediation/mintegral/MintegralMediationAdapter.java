@@ -1,6 +1,5 @@
 package com.google.ads.mediation.mintegral;
 
-import static com.mintegral.mediation.MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -38,7 +37,6 @@ import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
 import com.mintegral.mediation.AdapterTools;
-import com.mintegral.mediation.MintegralConstants;
 import com.mintegral.mediation.rtb.MintegralRtbInterstitialAd;
 import com.mintegral.mediation.rtb.MintegralRtbNativeAd;
 import com.mintegral.mediation.rtb.MintegralRtbBannerAd;
@@ -50,7 +48,7 @@ import java.util.Map;
 public class MintegralMediationAdapter extends RtbAdapter implements MediationAdapter {
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
-  private MintegralRtbBannerAd mMintegralRtbBannerAd;
+  private MintegralRtbBannerAd mintegralRtbBannerAd;
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
@@ -112,7 +110,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
       if (TextUtils.isEmpty(appId) || TextUtils.isEmpty(appKey)) {
         AdError error =
                 MintegralConstants.createAdapterError(
-                        ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App key.");
+                        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App key.");
         Log.w(TAG, error.toString());
         initializationCompleteCallback.onInitializationFailed(error.toString());
         return;
@@ -136,8 +134,8 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    mMintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
-    mMintegralRtbBannerAd.load();
+    mintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
+    mintegralRtbBannerAd.load();
   }
 
   @Override
@@ -161,8 +159,8 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
 
   @Override
   public void onDestroy() {
-    if(mMintegralRtbBannerAd!= null){
-      mMintegralRtbBannerAd.onDestroy();
+    if(mintegralRtbBannerAd!= null){
+      mintegralRtbBannerAd.onDestroy();
     }
   }
 
