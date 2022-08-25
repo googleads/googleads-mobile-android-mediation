@@ -18,7 +18,7 @@ import com.chartboost.sdk.ads.Banner;
 
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
- * extras from {@link ChartboostAdapter} and {@link ChartboostMediationAdapter}
+ * extras from {@link ChartboostAdapter}
  */
 public class ChartboostParams {
 
@@ -89,19 +89,5 @@ public class ChartboostParams {
    */
   public void setLocation(String location) {
     this.cbLocation = location;
-  }
-
-  /**
-   * @return {@link #cbBannerSize}.
-   */
-  public Banner.BannerSize getBannerSize() {
-    return cbBannerSize;
-  }
-
-  /**
-   * @param bannerSize {@link #cbBannerSize}.
-   */
-  public void setBannerSize(Banner.BannerSize bannerSize) {
-    this.cbBannerSize = bannerSize;
   }
 }

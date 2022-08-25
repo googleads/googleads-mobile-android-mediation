@@ -15,7 +15,7 @@
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.createSDKError;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
+import static com.google.ads.mediation.chartboost.ChartboostAdapter.TAG;
 
 import android.content.Context;
 import android.util.Log;

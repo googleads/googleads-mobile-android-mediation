@@ -18,358 +18,229 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.FrameLayout;
+import androidx.annotation.IntDef;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.chartboost.sdk.ads.Banner;
-import com.chartboost.sdk.ads.Interstitial;
-import com.chartboost.sdk.callbacks.BannerCallback;
-import com.chartboost.sdk.callbacks.InterstitialCallback;
-import com.chartboost.sdk.events.CacheError;
-import com.chartboost.sdk.events.CacheEvent;
-import com.chartboost.sdk.events.ClickError;
-import com.chartboost.sdk.events.ClickEvent;
-import com.chartboost.sdk.events.DismissEvent;
-import com.chartboost.sdk.events.ImpressionEvent;
-import com.chartboost.sdk.events.ShowError;
-import com.chartboost.sdk.events.ShowEvent;
+import com.chartboost.sdk.Chartboost;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.mediation.MediationBannerAdapter;
-import com.google.android.gms.ads.mediation.MediationBannerListener;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
-import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.Adapter;
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.VersionInfo;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * The {@link ChartboostAdapter} class is used to load Chartboost rewarded-based video &
- * interstitial ads and mediate the callbacks between Chartboost SDK and Google Mobile Ads SDK.
+ * The {@link ChartboostAdapter} class is used to load Chartboost rewarded-based video,
+ * interstitial ads, banner ads and initialise Chartboost SDK.
  */
 @Keep
-public class ChartboostAdapter extends ChartboostMediationAdapter
-    implements MediationInterstitialAdapter, MediationBannerAdapter {
+public class ChartboostAdapter extends Adapter {
 
   static final String TAG = ChartboostAdapter.class.getSimpleName();
 
-  /**
-   * Mediation interstitial listener used to forward interstitial ad events from Chartboost SDK to
-   * Google Mobile Ads SDK.
-   */
-  private MediationInterstitialListener mMediationInterstitialListener;
+  // region Error codes
+  // Chartboost adapter error domain.
+  static final String ERROR_DOMAIN = "com.google.ads.mediation.chartboost";
+
+  // Chartboost SDK error domain.
+  static final String CHARTBOOST_SDK_ERROR_DOMAIN = "com.chartboost.sdk";
 
   /**
-   * Mediation banner listener used to forward banner ad events from Chartboost SDK to Google Mobile
-   * Ads SDK.
+   * Chartboost adapter errors.
    */
-  private MediationBannerListener mMediationBannerListener;
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+      value = {
+          ERROR_BANNER_SIZE_MISMATCH,
+          ERROR_AD_ALREADY_LOADED,
+          ERROR_INVALID_SERVER_PARAMETERS
+      })
+  public @interface AdapterError {
 
-  /**
-   * A Chartboost extras object used to store optional information used when loading ads.
-   */
-  private ChartboostParams mChartboostParams = new ChartboostParams();
-
-  /**
-   * Interstitial object {@link Interstitial} Chartboost ad object can hold only one ad per
-   * location. Once cached it will be loaded until shown or cleared.
-   */
-  private Interstitial mChartboostInterstitial;
-
-  /**
-   * Banner object {@link Banner}
-   */
-  private Banner mChartboostBanner;
-
-  /**
-   * FrameLayout use as a {@link Banner} container.
-   */
-  private FrameLayout mBannerContainer;
-
-  @Override
-  public void requestInterstitialAd(@NonNull Context context,
-      @NonNull final MediationInterstitialListener mediationInterstitialListener,
-      @NonNull Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
-      @Nullable Bundle networkExtras) {
-    mMediationInterstitialListener = mediationInterstitialListener;
-    mChartboostParams =
-        ChartboostAdapterUtils.createChartboostParams(serverParameters, networkExtras);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
-      // Invalid server parameters, send ad failed to load event.
-      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
-          ERROR_DOMAIN);
-      Log.e(TAG, loadError.toString());
-      mediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this, loadError);
-      return;
-    }
-
-    ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, mediationAdRequest.taggedForChildDirectedTreatment());
-    ChartboostInitializer.getInstance()
-        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
-          @Override
-          public void onInitializationSucceeded() {
-            if (mChartboostParams == null) {
-              onAdFailedWithInvalidServerParameters();
-              return;
-            }
-            createAndLoadInterstitialAd(mChartboostParams.getLocation());
-          }
-
-          @Override
-          public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
-            mediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this, error);
-          }
-        });
   }
 
-  @Override
-  public void showInterstitial() {
-    if (mChartboostInterstitial == null || !mChartboostInterstitial.isCached()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY,
-          "Chartboost Interstitial ad is not yet ready to be shown.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      return;
-    }
-    mChartboostInterstitial.show();
-  }
+  /**
+   * The requested ad size does not match a Chartboost supported banner size.
+   */
+  static final int ERROR_BANNER_SIZE_MISMATCH = 100;
 
-  @Override
-  public void onDestroy() {
-    if (mChartboostBanner != null) {
-      mChartboostBanner.detach();
-      mChartboostBanner = null;
-    }
-  }
+  /**
+   * Chartboost can only load 1 ad per location at a time.
+   */
+  static final int ERROR_AD_ALREADY_LOADED = 101;
 
-  @Override
-  public void onPause() {
-  }
+  /**
+   * Invalid server parameters (e.g. Chartboost App ID is missing).
+   */
+  static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
 
-  @Override
-  public void onResume() {
-  }
+  /**
+   * Chartboost ad is not ready to be shown.
+   */
+  static final int ERROR_AD_NOT_READY = 103;
+  // endregion
 
-  @Override
-  public void requestBannerAd(@NonNull final Context context,
-      @NonNull MediationBannerListener mediationBannerListener, @NonNull Bundle serverParameters,
-      @NonNull AdSize adSize, @NonNull MediationAdRequest mediationAdRequest,
-      @Nullable Bundle networkExtras) {
-    mMediationBannerListener = mediationBannerListener;
-    mChartboostParams =
-        ChartboostAdapterUtils.createChartboostParams(serverParameters, networkExtras);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
-      // Invalid server parameters, send ad failed to load event.
-      onAdFailedWithInvalidServerParameters();
-      return;
-    }
+  // Flag to check whether the Chartboost SDK has been initialized or not.
+  static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
 
-    Banner.BannerSize supportedAdSize = ChartboostAdapterUtils.findClosestBannerSize(context,
-        adSize);
-    if (supportedAdSize == null) {
-      String errorMessage = String.format("Unsupported size: %s", adSize);
-      AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
-      Log.e(TAG, sizeError.toString());
-      mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, sizeError);
-      return;
+  /**
+   * {@link Adapter} implementation
+   */
+  @NonNull
+  @Override
+  public VersionInfo getVersionInfo() {
+    String versionString = BuildConfig.ADAPTER_VERSION;
+    String[] splits = versionString.split("\\.");
+
+    if (splits.length >= 4) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    mChartboostParams.setBannerSize(supportedAdSize);
-    ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, mediationAdRequest.taggedForChildDirectedTreatment());
-    ChartboostInitializer.getInstance()
-        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
-          @Override
-          public void onInitializationSucceeded() {
-            if (mChartboostParams == null) {
-              onAdFailedWithInvalidServerParameters();
-              return;
-            }
-            createAndLoadBannerAd(context, mChartboostParams.getLocation(),
-                mChartboostParams.getBannerSize());
-          }
-
-          @Override
-          public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
-            if (mMediationBannerListener != null) {
-              mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, error);
-            }
-          }
-        });
+    String logMessage =
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
   }
 
   @NonNull
   @Override
-  public View getBannerView() {
-    return mBannerContainer;
-  }
+  public VersionInfo getSDKVersionInfo() {
+    String versionString = Chartboost.getSDKVersion();
+    String[] splits = versionString.split("\\.");
 
-  private void onAdFailedWithInvalidServerParameters() {
-    AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
-        ERROR_DOMAIN);
-    Log.e(TAG, loadError.toString());
-    if (mMediationBannerListener != null) {
-      mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, loadError);
+    if (splits.length >= 3) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]);
+      return new VersionInfo(major, minor, micro);
     }
+
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
   }
 
-  private void createAndLoadInterstitialAd(@Nullable String location) {
-    if (TextUtils.isEmpty(location)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      if (mMediationInterstitialListener != null) {
-        mMediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this, error);
+  @Override
+  public void initialize(@NonNull Context context,
+      @NonNull final InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
+    HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      Bundle params = configuration.getServerParameters();
+      String serverAppID = params.getString(ChartboostAdapterUtils.KEY_APP_ID);
+
+      if (!TextUtils.isEmpty(serverAppID)) {
+        chartboostConfigs.put(serverAppID, params);
       }
+    }
+
+    String appID;
+    Bundle serverParameters;
+    int count = chartboostConfigs.size();
+    if (count <= 0) {
+      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or Invalid App ID.", ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
       return;
     }
 
-    mChartboostInterstitial = new Interstitial(location, new InterstitialCallback() {
+    appID = chartboostConfigs.keySet().iterator().next();
+    serverParameters = chartboostConfigs.get(appID);
 
-      @Override
-      public void onAdDismiss(@NonNull DismissEvent dismissEvent) {
-        Log.d(TAG, "Chartboost interstitial ad has been dismissed.");
-        if (mMediationInterstitialListener != null) {
-          mMediationInterstitialListener.onAdClosed(ChartboostAdapter.this);
-        }
-      }
+    // Multiple app IDs are not considered an error.
+    if (count > 1) {
+      String logMessage =
+          String.format(
+              "Multiple '%s' entries found: %s. Using '%s' to initialize the Chartboost SDK.",
+              ChartboostAdapterUtils.KEY_APP_ID, chartboostConfigs.keySet(), appID);
+      Log.w(TAG, logMessage);
+    }
 
-      @Override
-      public void onImpressionRecorded(@NonNull ImpressionEvent impressionEvent) {
-        Log.d(TAG, "Chartboost interstitial ad impression recorded.");
-      }
-
-      @Override
-      public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
-        if (showError == null) {
-          Log.d(TAG, "Chartboost interstitial has been shown.");
-          if (mMediationInterstitialListener != null) {
-            mMediationInterstitialListener.onAdOpened(ChartboostAdapter.this);
-          }
-        } else {
-          AdError error = ChartboostAdapterUtils.createSDKError(showError);
-          Log.w(TAG, error.getMessage());
-        }
-      }
-
-      @Override
-      public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-        Log.d(TAG, "Chartboost interstitial ad will be shown.");
-      }
-
-      @Override
-      public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
-        if (cacheError == null) {
-          Log.d(TAG, "Chartboost interstitial ad has been loaded.");
-          if (mMediationInterstitialListener != null) {
-            mMediationInterstitialListener.onAdLoaded(ChartboostAdapter.this);
-          }
-        } else {
-          AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-          Log.w(TAG, error.getMessage());
-          if (mMediationInterstitialListener != null) {
-            mMediationInterstitialListener.onAdFailedToLoad(ChartboostAdapter.this, error);
-          }
-        }
-      }
-
-      @Override
-      public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
-        if (clickError == null) {
-          Log.d(TAG, "Chartboost interstitial ad has been clicked.");
-          if (mMediationInterstitialListener != null) {
-            mMediationInterstitialListener.onAdClicked(ChartboostAdapter.this);
-          }
-        } else {
-          AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-          Log.w(TAG, error.getMessage());
-        }
-      }
-    }, ChartboostAdapterUtils.getChartboostMediation());
-    mChartboostInterstitial.cache();
-  }
-
-  private void createAndLoadBannerAd(@NonNull Context context,
-      @Nullable String location,
-      @Nullable Banner.BannerSize mediationAdSize) {
-    if (TextUtils.isEmpty(location) || mediationAdSize == null) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, error);
+    if (serverParameters == null) {
+      // Invalid server parameters, send initialization failed event.
+      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Invalid server parameters.", ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
       return;
     }
 
-    // Attach object to layout to inflate the banner.
-    mBannerContainer = new FrameLayout(context);
-    FrameLayout.LayoutParams paramsLayout =
-        new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-    paramsLayout.gravity = Gravity.CENTER_HORIZONTAL;
-
-    mChartboostBanner =
-        new Banner(context, location, mediationAdSize, new BannerCallback() {
+    /*
+      A Chartboost extras object used to store optional information used when loading ads.
+     */
+    ChartboostParams mChartboostParams = ChartboostAdapterUtils.createChartboostParams(
+        serverParameters, null);
+    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+      // Invalid server parameters, send initialization failed event.
+      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Invalid server parameters.", ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
+      return;
+    }
+    ChartboostInitializer.getInstance()
+        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
           @Override
-          public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
-            if (cacheError == null) {
-              Log.d(TAG, "Chartboost banner has been loaded.");
-              mMediationBannerListener.onAdLoaded(ChartboostAdapter.this);
-              cacheEvent.getAd().show();
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-              Log.w(TAG, error.getMessage());
-              mMediationBannerListener.onAdFailedToLoad(ChartboostAdapter.this, error);
-            }
+          public void onInitializationSucceeded() {
+            isSdkInitialized.set(true);
+            initializationCompleteCallback.onInitializationSucceeded();
+
           }
 
           @Override
-          public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-            Log.d(TAG, "Chartboost banner requested to show.");
+          public void onInitializationFailed(@NonNull AdError error) {
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
           }
-
-          @Override
-          public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
-            if (showError == null) {
-              Log.d(TAG, "Chartboost banner opened a full screen view.");
-              mMediationBannerListener.onAdOpened(ChartboostAdapter.this);
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(showError);
-              Log.w(TAG, error.getMessage());
-            }
-          }
-
-          @Override
-          public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
-            if (clickError == null) {
-              Log.d(TAG, "Chartboost banner has been clicked.");
-              mMediationBannerListener.onAdClicked(ChartboostAdapter.this);
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-              Log.w(TAG, error.getMessage());
-            }
-          }
-
-          @Override
-          public void onImpressionRecorded(@NonNull ImpressionEvent impressionEvent) {
-            Log.d(TAG, "Chartboost banner recorded impression.");
-          }
-        }, ChartboostAdapterUtils.getChartboostMediation());
-    mBannerContainer.addView(mChartboostBanner, paramsLayout);
-    mChartboostBanner.cache();
+        });
   }
 
-  /**
-   * The {@link com.google.ads.mediation.chartboost.ChartboostAdapter
-   * .ChartboostExtrasBundleBuilder} class is used to create a networkExtras bundle which can be
-   * passed to the adapter to make network specific customizations.
-   */
-  public static final class ChartboostExtrasBundleBuilder {
+  @Override
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
+    // Callback listener
+    ChartboostRewardedAd mChartboostRewarded = new ChartboostRewardedAd(
+        mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    mChartboostRewarded.load();
+  }
 
-    public Bundle build() {
-      return new Bundle();
-    }
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+    ChartboostInterstitialAd mChartboostInterstitial = new ChartboostInterstitialAd(
+        mediationInterstitialAdConfiguration,
+        mediationAdLoadCallback);
+    mChartboostInterstitial.load();
+  }
+
+  @Override
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+    ChartboostBannerAd mChartboostBanner = new ChartboostBannerAd(
+        mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    mChartboostBanner.load();
   }
 }
