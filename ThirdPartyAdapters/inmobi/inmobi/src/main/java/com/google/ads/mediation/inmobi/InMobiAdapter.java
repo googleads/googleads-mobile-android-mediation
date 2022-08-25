@@ -510,10 +510,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
           }
 
-          InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this, imNativeAd, mIsOnlyUrl,
-                  mNativeListener);
-          inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
+//          InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
+//              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this, imNativeAd, mIsOnlyUrl,
+//                  mNativeListener);
+//          inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
         }
 
         @Override

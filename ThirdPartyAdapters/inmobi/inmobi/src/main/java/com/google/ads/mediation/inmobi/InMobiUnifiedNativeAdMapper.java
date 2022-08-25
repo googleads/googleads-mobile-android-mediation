@@ -1,5 +1,6 @@
 package com.google.ads.mediation.inmobi;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MALFORMED_IMAGE_URL;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MISSING_NATIVE_ASSETS;
@@ -18,6 +19,8 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
@@ -46,19 +49,20 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   /**
    * MediationNativeListener instance.
    */
-  private final MediationNativeListener mMediationNativeListener;
+  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mMediationAdLoadCallback;
+
+  private final InMobiNativeAd inMobiNativeAd;
 
   /**
    * InMobi adapter instance.
    */
-  private final InMobiAdapter mInMobiAdapter;
 
-  public InMobiUnifiedNativeAdMapper(InMobiAdapter inMobiAdapter, InMobiNative inMobiNative,
-      Boolean isOnlyURL, MediationNativeListener mediationNativeListener) {
-    this.mInMobiAdapter = inMobiAdapter;
+  public InMobiUnifiedNativeAdMapper(InMobiNative inMobiNative,
+      Boolean isOnlyURL, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mMediationAdLoadCallback, InMobiNativeAd inMobiNativeAd) {
     this.mInMobiNative = inMobiNative;
     this.mIsOnlyURL = isOnlyURL;
-    this.mMediationNativeListener = mediationNativeListener;
+    this.mMediationAdLoadCallback = mMediationAdLoadCallback;
+    this.inMobiNativeAd = inMobiNativeAd;
     setOverrideImpressionRecording(true);
   }
 
@@ -69,7 +73,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       AdError error = new AdError(ERROR_MISSING_NATIVE_ASSETS,
           "InMobi native ad returned with a missing asset.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
+      mMediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -89,7 +93,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       AdError error = new AdError(ERROR_MALFORMED_IMAGE_URL, exception.getLocalizedMessage(),
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
+      mMediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -176,14 +180,14 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                   new InMobiNativeMappedImage(new ColorDrawable(Color.TRANSPARENT), null, 1.0));
               setImages(imagesList);
 
-              if (null != iconDrawable) {
-                mMediationNativeListener.onAdLoaded(
-                    mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
+              if (null != iconDrawable && mMediationAdLoadCallback != null) {
+                inMobiNativeAd.mMediationNativeAdCallback
+                        = mMediationAdLoadCallback.onSuccess(inMobiNativeAd);
               } else {
                 AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
                     "Failed to download image assets.", ERROR_DOMAIN);
                 Log.w(TAG, error.getMessage());
-                mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
+                mMediationAdLoadCallback.onFailure(error);
               }
             }
 
@@ -192,12 +196,15 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
               AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
                   "Failed to download image assets.", ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
-              mMediationNativeListener.onAdFailedToLoad(mInMobiAdapter, error);
+              mMediationAdLoadCallback.onFailure(error);
             }
           })
           .execute(map);
     } else {
-      mMediationNativeListener.onAdLoaded(mInMobiAdapter, InMobiUnifiedNativeAdMapper.this);
+      if (mMediationAdLoadCallback != null) {
+        inMobiNativeAd.mMediationNativeAdCallback
+                = mMediationAdLoadCallback.onSuccess(inMobiNativeAd);
+      }
     }
   }
 
