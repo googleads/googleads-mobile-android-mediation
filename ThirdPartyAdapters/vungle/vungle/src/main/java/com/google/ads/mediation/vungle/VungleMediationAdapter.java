@@ -36,6 +36,7 @@ import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.error.VungleException;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -450,6 +451,9 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRewardedInterstitialAd()...");
+    Log.d(TAG, "Vungle adapter was asked to load a rewarded interstitial ad. "
+        + "Using the rewarded ad request flow to load the ad to attempt to load a "
+        + "rewarded interstitial ad from Vungle.");
     // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
     loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
@@ -492,6 +496,9 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRtbRewardedInterstitialAd()...");
+    Log.d(TAG, "Vungle adapter was asked to load a rewarded interstitial ad. "
+        + "Using the rewarded ad request flow to load the ad to attempt to load a "
+        + "rewarded interstitial ad from Vungle.");
     VungleInitializer.getInstance()
         .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
     // Vungle Rewarded Interstitial ads use the same Rewarded Video API.

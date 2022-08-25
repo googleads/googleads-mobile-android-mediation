@@ -35,6 +35,7 @@ import com.vungle.warren.NativeAdLayout;
 import com.vungle.warren.NativeAdListener;
 import com.vungle.warren.error.VungleException;
 import com.vungle.warren.ui.view.MediaView;
+
 import java.util.ArrayList;
 import java.util.Map;
 
