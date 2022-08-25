@@ -1,6 +1,6 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.12.0.0 (In progress)
+#### Version 6.12.0.0
 - Added waterfall mediation and bidding support for rewarded interstitial ad format.
 - Added bidding support for native ad format.
 
