@@ -65,7 +65,7 @@ public class ChartboostMediationAdapter extends Adapter {
   /**
    * Chartboost ad is not ready to be shown.
    */
-  static final int ERROR_AD_NOT_READY = 102;
+  static final int ERROR_AD_NOT_READY = 103;
   // endregion
 
   // Flag to check whether the Chartboost SDK has been initialized or not.

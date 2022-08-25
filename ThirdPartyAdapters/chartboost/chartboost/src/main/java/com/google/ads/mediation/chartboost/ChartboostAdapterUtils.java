@@ -40,6 +40,11 @@ class ChartboostAdapterUtils {
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
+   * Default location name for the chartboost ads
+   */
+  static final String LOCATION_DEFAULT = "default";
+
+  /**
    * Chartboost mediation object.
    */
   private static Mediation sMediation;
@@ -57,12 +62,12 @@ class ChartboostAdapterUtils {
    */
   static ChartboostParams createChartboostParams(@NonNull Bundle serverParameters,
       @Nullable Bundle networkExtras) {
-    ChartboostParams params = new ChartboostParams();
+    ChartboostParams chartboostParams = new ChartboostParams();
     String appId = serverParameters.getString(KEY_APP_ID);
     String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
     if (appId != null && appSignature != null) {
-      params.setAppId(appId.trim());
-      params.setAppSignature(appSignature.trim());
+      chartboostParams.setAppId(appId.trim());
+      chartboostParams.setAppSignature(appSignature.trim());
     }
 
     String adLocation = serverParameters.getString(KEY_AD_LOCATION);
@@ -72,28 +77,28 @@ class ChartboostAdapterUtils {
           String.format(
               "Chartboost ad location is empty, defaulting to %s. "
                   + "Please set the Ad Location parameter in the AdMob UI.",
-              "Default");
+                  LOCATION_DEFAULT);
       Log.w(ChartboostMediationAdapter.TAG, logMessage);
-      adLocation = "Default";
+      adLocation = LOCATION_DEFAULT;
     }
-    params.setLocation(adLocation.trim());
-    return params;
+    chartboostParams.setLocation(adLocation.trim());
+    return chartboostParams;
   }
 
   /**
    * Checks whether or not the provided {@link ChartboostParams} is valid.
    *
-   * @param params Chartboost params to be examined.
+   * @param chartboostParams Chartboost params to be examined.
    * @return {@code true} if the given ChartboostParams' appId and appSignature are valid, false
    * otherwise.
    */
-  static boolean isValidChartboostParams(ChartboostParams params) {
-    if (params == null) {
+  static boolean isValidChartboostParams(ChartboostParams chartboostParams) {
+    if (chartboostParams == null) {
       return false;
     }
 
-    String appId = params.getAppId();
-    String appSignature = params.getAppSignature();
+    String appId = chartboostParams.getAppId();
+    String appSignature = chartboostParams.getAppSignature();
     if (!isValidParam(appId) || !isValidParam(appSignature)) {
       String log =
           !isValidParam(appId)
@@ -124,8 +129,6 @@ class ChartboostAdapterUtils {
    */
   @NonNull
   static AdError createSDKError(@NonNull CacheError cacheError) {
-    // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an organized enum for cache errors.
     return new AdError(cacheError.getCode().getErrorCode(), cacheError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
@@ -138,8 +141,6 @@ class ChartboostAdapterUtils {
    */
   @NonNull
   static AdError createSDKError(@NonNull ShowError showError) {
-    // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an organized enum for show errors.
     return new AdError(showError.getCode().getErrorCode(), showError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
@@ -152,8 +153,6 @@ class ChartboostAdapterUtils {
    */
   @NonNull
   static AdError createSDKError(@NonNull ClickError clickError) {
-    // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an organized enum for click errors.
     return new AdError(clickError.getCode().getErrorCode(), clickError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
@@ -166,8 +165,6 @@ class ChartboostAdapterUtils {
    */
   @NonNull
   static AdError createSDKError(@NonNull StartError startError) {
-    // Use the error's code as opposed to getting the mediation error code due to Chartboost not
-    // having an organized enum for click errors.
     return new AdError(startError.getCode().getErrorCode(), startError.toString(),
         CHARTBOOST_SDK_ERROR_DOMAIN);
   }
@@ -212,6 +209,14 @@ class ChartboostAdapterUtils {
     return null;
   }
 
+  /**
+   * Return mediation object which contains mediation information like:
+   * - mediation name
+   * - library version
+   * - adapter version
+   * Used every time adapter creates Chartboost ad object
+   * @return {@link Mediation}
+   */
   static Mediation getChartboostMediation() {
     if (sMediation == null) {
       sMediation = new Mediation("AdMob", Chartboost.getSDKVersion(),
