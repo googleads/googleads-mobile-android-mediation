@@ -126,11 +126,10 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onUserEarnedRewardFail(int errorCode, String errorMsg) {
-            String newErrorMsg = String
-                .format("Failed to request rewarded ad from Pangle. The reward isn't valid. " +
-                    "The specific reason is: %s", errorMsg);
-            AdError error = PangleConstants.createSdkError(errorCode, newErrorMsg);
+          public void onUserEarnedRewardFail(int errorCode, String errorMessage) {
+            String rewardErrorMessage = String.format(
+                "Failed to request rewarded ad from Pangle: %s", errorMessage);
+            AdError error = PangleConstants.createSdkError(errorCode, rewardErrorMessage);
             Log.d(TAG, error.toString());
           }
         });

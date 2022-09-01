@@ -266,12 +266,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   public static void setUserData(Bundle networkExtras) {
-    if (networkExtras == null) {
+    if (networkExtras == null || !networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
       return;
     }
-    if (networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
-      String userData = networkExtras.getString(PangleExtras.Keys.USER_DATA, "");
-      PAGConfig.setUserData(userData);
-    }
+    PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
   }
 }

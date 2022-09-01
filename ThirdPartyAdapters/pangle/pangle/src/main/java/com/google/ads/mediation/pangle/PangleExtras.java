@@ -8,7 +8,6 @@ public class PangleExtras {
    * Class containing keys for the Pangle extras {@link Bundle}.
    */
   static class Keys {
-
     static final String USER_DATA = "user_data";
   }
 
@@ -17,13 +16,13 @@ public class PangleExtras {
    */
   public static class Builder {
 
-    private String mUserData;
+    private String userData;
 
     /**
      * Use this to set user data.
      */
     public Builder setUserData(String userData) {
-      mUserData = userData;
+      this.userData = userData;
       return this;
     }
 
@@ -32,7 +31,7 @@ public class PangleExtras {
      */
     public Bundle build() {
       final Bundle extras = new Bundle();
-      extras.putString(Keys.USER_DATA, mUserData);
+      extras.putString(Keys.USER_DATA, userData);
       return extras;
     }
   }
