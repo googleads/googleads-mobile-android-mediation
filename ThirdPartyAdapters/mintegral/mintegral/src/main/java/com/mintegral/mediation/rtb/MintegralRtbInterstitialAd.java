@@ -18,19 +18,14 @@ import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
-import com.mintegral.mediation.MintegralUtils;
+import com.mintegral.mediation.MintegralExtrasBuilder;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 
 public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewInterstitialListener {
-  private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
-  /**
-   * Data used to render an RTB interstitial ad.
-   */
+
   private final MediationInterstitialAdConfiguration adConfiguration;
 
-  /**
-   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
-   */
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
 
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
@@ -44,9 +39,9 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
 
   public void loadAd() {
-    String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, unitId);
+    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     String token = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(token)) {
@@ -59,7 +54,7 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
+    boolean muted = adConfiguration.getMediationExtras().getBoolean(MintegralExtrasBuilder.MUTE_AUDIO);
     mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidNewInterstitialHandler.showFromBid();
   }
@@ -76,7 +71,7 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
   @Override
   public void onResourceLoadFail(MBridgeIds mBridgeIds, String s) {
-    AdError error = MintegralConstants.createSdkError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+    AdError error = MintegralConstants.createSdkError(s);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
