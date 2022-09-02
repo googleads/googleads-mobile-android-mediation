@@ -78,15 +78,15 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
   private void initBannerAd() {
     if (adConfiguration == null) {
-      callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail mAdConfiguration is null");
+      callFailureCallback(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Mintegral init Fail mAdConfiguration is null");
       return;
     }
     if (adConfiguration.getServerParameters() == null) {
-      callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail ServiceParameters is null");
+      callFailureCallback(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Mintegral init Fail ServiceParameters is null");
       return;
     }
     if (adConfiguration.getContext() == null) {
-      callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral init Fail context is null");
+      callFailureCallback(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Mintegral init Fail context is null");
       return;
     }
     String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
@@ -102,11 +102,11 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
   public void load() {
     initBannerAd();
     if (adConfiguration == null) {
-      callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mAdConfiguration is null");
+      callFailureCallback(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Mintegral Ad load Fail mAdConfiguration is null");
       return;
     }
     if (mbBannerView == null) {
-      callFailureCallback(MintegralConstants.ERROR_SDK_ADAPTER_ERROR, "Mintegral Ad load Fail mBBannerView is null");
+      callFailureCallback(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Mintegral Ad load Fail mBBannerView is null");
       return;
     }
 
