@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -48,7 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class MintegralMediationAdapter extends RtbAdapter implements MediationAdapter {
+public class MintegralMediationAdapter extends RtbAdapter {
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
@@ -184,7 +183,7 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     mintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
-    mintegralRtbBannerAd.load();
+    mintegralRtbBannerAd.loadAd();
   }
 
   @Override
@@ -203,24 +202,6 @@ public class MintegralMediationAdapter extends RtbAdapter implements MediationAd
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
     mintegralRtbRewardedAd.loadAd();
-  }
-
-
-  @Override
-  public void onDestroy() {
-    if (mintegralRtbBannerAd != null) {
-      mintegralRtbBannerAd.onDestroy();
-    }
-  }
-
-  @Override
-  public void onPause() {
-
-  }
-
-  @Override
-  public void onResume() {
-
   }
 
   /**

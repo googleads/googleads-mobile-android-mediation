@@ -1,5 +1,7 @@
 package com.mintegral.mediation.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,7 +21,6 @@ import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.mintegral.mediation.MintegralExtrasBuilder;
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 

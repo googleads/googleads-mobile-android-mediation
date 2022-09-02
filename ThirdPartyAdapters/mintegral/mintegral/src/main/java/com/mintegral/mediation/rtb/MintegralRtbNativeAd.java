@@ -1,5 +1,6 @@
 package com.mintegral.mediation.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
 import android.graphics.drawable.Drawable;
@@ -28,7 +29,6 @@ import com.mbridge.msdk.out.NativeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener {
   private Campaign campaign;
