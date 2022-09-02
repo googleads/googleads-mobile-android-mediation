@@ -7,7 +7,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
-import com.google.ads.mediation.mintegral.MintegralMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -19,19 +18,14 @@ import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
-import com.mintegral.mediation.MintegralUtils;
+import com.mintegral.mediation.MintegralExtrasBuilder;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-  private static final String TAG = MintegralMediationAdapter.class.getSimpleName();
-  /**
-   * Data used to render an RTB interstitial ad.
-   */
+
   private final MediationRewardedAdConfiguration adConfiguration;
 
-  /**
-   * Callback object to notify the Google Mobile Ads SDK if ad rendering succeeded or failed.
-   */
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           callback;
 
@@ -45,9 +39,9 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   }
 
   public void loadAd() {
-    String unitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, unitId);
+    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     String token = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(token)) {
@@ -60,7 +54,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
+    boolean muted = adConfiguration.getMediationExtras().getBoolean(MintegralExtrasBuilder.MUTE_AUDIO);
     mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidRewardVideoHandler.showFromBid();
   }
@@ -76,8 +70,8 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   }
 
   @Override
-  public void onVideoLoadFail(MBridgeIds mBridgeIds, String s) {
-    AdError error = MintegralConstants.createSdkError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+  public void onVideoLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorMessage);
     Log.w(TAG, error.toString());
     callback.onFailure(error);
   }
@@ -124,9 +118,9 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String s) {
+  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     if (rewardedAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR, errorMessage);
       Log.w(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
     }
