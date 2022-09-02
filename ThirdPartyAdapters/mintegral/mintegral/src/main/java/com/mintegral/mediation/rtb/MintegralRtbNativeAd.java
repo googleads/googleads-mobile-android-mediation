@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
-import com.google.ads.mediation.mintegral.MintegralMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -29,15 +28,16 @@ import com.mbridge.msdk.out.NativeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener {
-  private final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private Campaign campaign;
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
   private MediationNativeAdCallback nativeCallback;
 
   private MBBidNativeHandler mbBidNativeHandler;
+  private static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
 
   public MintegralRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
                               @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
@@ -64,31 +64,33 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
 
   private void mapNativeAd(Campaign ad) {
     campaign = ad;
-    setHeadline(campaign.getAppName());
-    setBody(campaign.getAppDesc());
-    setCallToAction(campaign.getAdCall());
+    if (campaign.getAppName()!= null) {
+      setHeadline(campaign.getAppName());
+    }
+    if (campaign.getAppDesc()!= null) {
+      setBody(campaign.getAppDesc());
+    }
+    if (campaign.getAdCall()!= null) {
+      setCallToAction(campaign.getAdCall());
+    }
     setStarRating(campaign.getRating());
-    setStore(campaign.getPackageName());
-    setIcon(new MBridgeNativeMappedImage(null, Uri.parse(ad.getIconUrl()),
-            1.0));
-    List<Image> imagesList = new ArrayList<Image>();
-    imagesList.add(new MBridgeNativeMappedImage(null, Uri.parse(ad.getImageUrl()),
-            1.0));
-    setImages(imagesList);
+    if (campaign.getPackageName()!= null) {
+      setStore(campaign.getPackageName());
+    }
+    if (!TextUtils.isEmpty(campaign.getIconUrl())) {
+      setIcon(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getIconUrl()),
+              MINTEGRAL_SDK_IMAGE_SCALE));
+    }
+    if (!TextUtils.isEmpty(campaign.getImageUrl())) {
+      List<Image> imagesList = new ArrayList<Image>();
+      imagesList.add(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getImageUrl()),
+              MINTEGRAL_SDK_IMAGE_SCALE));
+      setImages(imagesList);
+    }
     setOverrideClickHandling(true);
-    setOverrideImpressionRecording(false);
   }
 
 
-  @Override
-  public void recordImpression() {
-  }
-
-
-  @Override
-  public void handleClick(View view) {
-    super.handleClick(view);
-  }
 
 
   @Override
@@ -109,9 +111,17 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   @Override
   public void untrackView(View view) {
     super.untrackView(view);
+    if (mbBidNativeHandler != null) {
+      mbBidNativeHandler.unregisterView(view, traversalView(view), campaign);
+    }
   }
 
 
+  /**
+   * Traverse all sub views of the view to add click event listening to all views
+   * @param view View of advertising area
+   * @return Return a list containing all the views that need to respond to the click
+   */
   private List traversalView(View view) {
     List<View> viewList = new ArrayList<View>();
     if (null == view) {
@@ -162,7 +172,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
 
   @Override
   public void onAdFramesLoaded(List<Frame> list) {
-    //No-op, the method is deprecated
+    //No-op, this method is deprecated
   }
 
   @Override
@@ -173,34 +183,34 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   }
 
   public class MBridgeNativeMappedImage extends Image {
-    private Drawable mDrawable;
-    private final Uri mImageUri;
-    private final double mScale;
+    private Drawable drawable;
+    private final Uri imageUri;
+    private final double scale;
 
     public MBridgeNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
-      mDrawable = drawable;
-      mImageUri = imageUri;
-      mScale = scale;
+      this.drawable = drawable;
+      this.imageUri = imageUri;
+      this.scale = scale;
     }
 
     @Override
     public Drawable getDrawable() {
-      return mDrawable;
+      return drawable;
     }
 
     @Override
     public Uri getUri() {
-      return mImageUri;
+      return imageUri;
     }
 
     @Override
     public double getScale() {
-      return mScale;
+      return scale;
     }
 
 
     void setDrawable(Drawable mDrawable) {
-      this.mDrawable = mDrawable;
+      this.drawable = mDrawable;
     }
   }
 
