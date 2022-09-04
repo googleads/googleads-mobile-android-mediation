@@ -1,4 +1,4 @@
-package com.vungle.mediation;
+package com.google.ads.mediation.vungle;
 
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
@@ -38,8 +38,9 @@ public class VungleNativeAd {
     this.mediaView = new MediaView(context);
   }
 
-  public void loadNativeAd(@Nullable AdConfig adConfig, @Nullable NativeAdListener listener) {
-    nativeAd.loadAd(adConfig, listener);
+  public void loadNativeAd(@Nullable AdConfig adConfig, @Nullable String adMarkup,
+      @Nullable NativeAdListener listener) {
+    nativeAd.loadAd(adConfig, adMarkup, listener);
   }
 
   @Nullable

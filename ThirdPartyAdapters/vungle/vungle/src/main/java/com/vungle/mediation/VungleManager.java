@@ -12,10 +12,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleBannerAd;
+import com.google.ads.mediation.vungle.VungleNativeAd;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.vungle.warren.AdConfig;
-import com.vungle.warren.Vungle;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,8 +68,8 @@ public class VungleManager {
   }
 
   /**
-   * Workaround to finish and clean {@link VungleBannerAdapter} if {@link
-   * VungleInterstitialAdapter#onDestroy()} is not called and adapter was garbage collected.
+   * Workaround to finish and clean {@link VungleBannerAdapter} if
+   * {@link VungleInterstitialAdapter#onDestroy()} is not called and adapter was garbage collected.
    */
   private void cleanLeakedBannerAdapters() {
     for (String placementId : new HashSet<>(mVungleBanners.keySet())) {
