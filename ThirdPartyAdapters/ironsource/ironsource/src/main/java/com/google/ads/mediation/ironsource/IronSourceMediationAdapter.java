@@ -59,12 +59,12 @@ public class IronSourceMediationAdapter extends Adapter
     /**
      * Banner size mismatch.
      */
-    public static final int ERROR_BANNER_SIZE_MISMATCH = 101;
+    public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
 
   /**
    * Server parameters (e.g. placement ID) are nil.
    */
-  public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
    * IronSource requires an {@link Activity} context to initialize their SDK.

@@ -91,11 +91,4 @@ public class IronSourceAdapterUtils {
 
     return null;
   }
-
-  @NonNull
-  static final AdError createAdError(int errorCode, @NonNull String description) {
-    IronSourceError ISError = null;
-    assert ISError != null;
-    return new AdError(ISError.getErrorCode(), ISError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
-  }
 }
