@@ -14,8 +14,6 @@
 
 package com.google.ads.mediation.chartboost;
 
-import com.chartboost.sdk.ads.Banner;
-
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
  * extras from {@link ChartboostMediationAdapter}
