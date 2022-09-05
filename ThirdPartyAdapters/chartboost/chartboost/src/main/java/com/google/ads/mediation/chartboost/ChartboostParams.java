@@ -1,4 +1,4 @@
-// Copyright 2022 Google Inc.
+// Copyright 2016 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import com.chartboost.sdk.ads.Banner;
 
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
- * extras from {@link ChartboostAdapter}
+ * extras from {@link ChartboostMediationAdapter}
  */
 public class ChartboostParams {
 
@@ -36,11 +36,6 @@ public class ChartboostParams {
    * Charboost location used to load ads.
    */
   private String cbLocation;
-
-  /**
-   * Size of the Chartboost banner required to create a banner
-   */
-  private Banner.BannerSize cbBannerSize;
 
   /**
    * Default constructor, sets a default value for {@link #cbLocation}.

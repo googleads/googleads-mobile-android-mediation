@@ -1,6 +1,7 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostAdapter.CHARTBOOST_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.CHARTBOOST_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -47,7 +48,7 @@ class ChartboostAdapterUtils {
   /**
    * Chartboost mediation object.
    */
-  private static Mediation sMediation;
+  private static Mediation chartboostMediation;
 
   /**
    * Creates and return a new {@link ChartboostParams} object populated with the parameters obtained
@@ -78,7 +79,7 @@ class ChartboostAdapterUtils {
               "Chartboost ad location is empty, defaulting to %s. "
                   + "Please set the Ad Location parameter in the AdMob UI.",
               LOCATION_DEFAULT);
-      Log.w(ChartboostAdapter.TAG, logMessage);
+      Log.w(TAG, logMessage);
       adLocation = LOCATION_DEFAULT;
     }
     chartboostParams.setLocation(adLocation.trim());
@@ -104,7 +105,7 @@ class ChartboostAdapterUtils {
           !isValidParam(appId)
               ? (!isValidParam(appSignature) ? "App ID and App Signature" : "App ID")
               : "App Signature";
-      Log.e(ChartboostAdapter.TAG, log + " cannot be empty.");
+      Log.e(TAG, log + " cannot be empty.");
       return false;
     }
     return true;
@@ -216,10 +217,10 @@ class ChartboostAdapterUtils {
    * @return {@link Mediation}
    */
   static Mediation getChartboostMediation() {
-    if (sMediation == null) {
-      sMediation = new Mediation("AdMob", Chartboost.getSDKVersion(),
+    if (chartboostMediation == null) {
+      chartboostMediation = new Mediation("AdMob", Chartboost.getSDKVersion(),
           BuildConfig.ADAPTER_VERSION);
     }
-    return sMediation;
+    return chartboostMediation;
   }
 }

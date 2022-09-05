@@ -1,9 +1,9 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostAdapter.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.chartboost.ChartboostAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.chartboost.ChartboostAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.chartboost.ChartboostAdapter.TAG;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -27,27 +27,30 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.rewarded.RewardItem;
 
-public class ChartboostRewardedAd implements MediationRewardedAd {
+public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallback, RewardItem {
+
 
   private Rewarded mChartboostRewardedAd;
 
-  private final MediationRewardedAdConfiguration mRewardedAdConfiguration;
+  private final MediationRewardedAdConfiguration rewardedAdConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mMediationAdLoadCallback;
-  private MediationRewardedAdCallback mRewardedAdCallback;
+      mediationAdLoadCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
+  private int mRewardAmount;
 
   public ChartboostRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback) {
-    mRewardedAdConfiguration = mediationRewardedAdConfiguration;
-    mMediationAdLoadCallback = mediationAdLoadCallback;
+    this.rewardedAdConfiguration = mediationRewardedAdConfiguration;
+    this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  public void load() {
-    final Context context = mRewardedAdConfiguration.getContext();
-    Bundle serverParameters = mRewardedAdConfiguration.getServerParameters();
+  public void loadAd() {
+    final Context context = rewardedAdConfiguration.getContext();
+    Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
 
     ChartboostParams mChartboostParams =
         ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
@@ -56,28 +59,24 @@ public class ChartboostRewardedAd implements MediationRewardedAd {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
           ERROR_DOMAIN);
       Log.e(TAG, error.toString());
-      if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback.onFailure(error);
-      }
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     final String location = mChartboostParams.getLocation();
     ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, mRewardedAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaStatus(context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
         .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
-            createAndLoadRewardAd(location, mMediationAdLoadCallback);
+            createAndLoadRewardAd(location);
           }
 
           @Override
           public void onInitializationFailed(@NonNull AdError error) {
             Log.w(TAG, error.getMessage());
-            if (mMediationAdLoadCallback != null) {
-              mMediationAdLoadCallback.onFailure(error);
-            }
+            mediationAdLoadCallback.onFailure(error);
           }
         });
   }
@@ -93,99 +92,109 @@ public class ChartboostRewardedAd implements MediationRewardedAd {
     mChartboostRewardedAd.show();
   }
 
-  private void createAndLoadRewardAd(@Nullable String location,
-      @Nullable final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mMediationAdLoadCallback) {
+  private void createAndLoadRewardAd(@Nullable String location) {
     if (TextUtils.isEmpty(location)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid location.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback.onFailure(error);
+      if (mediationAdLoadCallback != null) {
+        mediationAdLoadCallback.onFailure(error);
       }
       return;
     }
 
-    mChartboostRewardedAd = new Rewarded(location,
-        new RewardedCallback() {
-          @Override
-          public void onRewardEarned(@NonNull RewardEvent rewardEvent) {
-            Log.d(TAG, "Chartboost rewarded ad user earned a reward.");
-            int rewardValue = rewardEvent.getReward();
-            if (mRewardedAdCallback != null) {
-              mRewardedAdCallback.onVideoComplete();
-              mRewardedAdCallback.onUserEarnedReward(new ChartboostReward(rewardValue));
-            }
-          }
-
-          @Override
-          public void onAdDismiss(@NonNull DismissEvent dismissEvent) {
-            Log.d(TAG, "Chartboost rewarded ad has been dismissed.");
-            if (mRewardedAdCallback != null) {
-              mRewardedAdCallback.onAdClosed();
-            }
-          }
-
-          @Override
-          public void onImpressionRecorded(@NonNull ImpressionEvent impressionEvent) {
-            Log.d(TAG, "Chartboost rewarded ad impression recorded.");
-            if (mRewardedAdCallback != null) {
-              mRewardedAdCallback.reportAdImpression();
-            }
-          }
-
-          @Override
-          public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
-            if (showError == null) {
-              Log.d(TAG, "Chartboost rewarded has been shown.");
-              if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdOpened();
-                mRewardedAdCallback.onVideoStart();
-              }
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(showError);
-              Log.w(TAG, error.getMessage());
-              if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdFailedToShow(error);
-              }
-            }
-          }
-
-          @Override
-          public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-            Log.d(TAG, "Chartboost rewarded ad will be shown.");
-          }
-
-          @Override
-          public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
-            if (cacheError == null) {
-              Log.d(TAG, "Chartboost rewarded ad has been loaded.");
-              if (mMediationAdLoadCallback != null) {
-                mRewardedAdCallback =
-                    mMediationAdLoadCallback.onSuccess(ChartboostRewardedAd.this);
-              }
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-              Log.w(TAG, error.getMessage());
-              if (mMediationAdLoadCallback != null) {
-                mMediationAdLoadCallback.onFailure(error);
-              }
-            }
-          }
-
-          @Override
-          public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
-            if (clickError == null) {
-              Log.d(TAG, "Chartboost rewarded ad has been clicked.");
-              if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.reportAdClicked();
-              }
-            } else {
-              AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-              Log.w(TAG, error.getMessage());
-            }
-          }
-        }, ChartboostAdapterUtils.getChartboostMediation());
+    mChartboostRewardedAd = new Rewarded(location, ChartboostRewardedAd.this,
+        ChartboostAdapterUtils.getChartboostMediation());
     mChartboostRewardedAd.cache();
+  }
+
+  @Override
+  public void onRewardEarned(@NonNull RewardEvent rewardEvent) {
+    Log.d(TAG, "Chartboost rewarded ad user earned a reward.");
+    mRewardAmount = rewardEvent.getReward();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onVideoComplete();
+      rewardedAdCallback.onUserEarnedReward(this);
+    }
+  }
+
+  @Override
+  public void onAdDismiss(@NonNull DismissEvent dismissEvent) {
+    Log.d(TAG, "Chartboost rewarded ad has been dismissed.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
+    }
+  }
+
+  @Override
+  public void onImpressionRecorded(@NonNull ImpressionEvent impressionEvent) {
+    Log.d(TAG, "Chartboost rewarded ad impression recorded.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdImpression();
+    }
+  }
+
+  @Override
+  public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
+    if (showError == null) {
+      Log.d(TAG, "Chartboost rewarded has been shown.");
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdOpened();
+        rewardedAdCallback.onVideoStart();
+      }
+    } else {
+      AdError error = ChartboostAdapterUtils.createSDKError(showError);
+      Log.w(TAG, error.getMessage());
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
+      }
+    }
+  }
+
+  @Override
+  public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
+    Log.d(TAG, "Chartboost rewarded ad will be shown.");
+  }
+
+  @Override
+  public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
+    if (cacheError == null) {
+      Log.d(TAG, "Chartboost rewarded ad has been loaded.");
+      if (mediationAdLoadCallback != null) {
+        rewardedAdCallback =
+            mediationAdLoadCallback.onSuccess(ChartboostRewardedAd.this);
+      }
+    } else {
+      AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
+      Log.w(TAG, error.getMessage());
+      if (mediationAdLoadCallback != null) {
+        mediationAdLoadCallback.onFailure(error);
+      }
+    }
+  }
+
+  @Override
+  public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
+    if (clickError == null) {
+      Log.d(TAG, "Chartboost rewarded ad has been clicked.");
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.reportAdClicked();
+      }
+    } else {
+      AdError error = ChartboostAdapterUtils.createSDKError(clickError);
+      Log.w(TAG, error.getMessage());
+    }
+  }
+
+  @Override
+  @NonNull
+  public String getType() {
+    // Charboost doesn't provide reward type.
+    return "";
+  }
+
+  @Override
+  public int getAmount() {
+    return mRewardAmount;
   }
 }
