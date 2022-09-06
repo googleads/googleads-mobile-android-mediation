@@ -28,26 +28,31 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   private final MediationRewardedAdConfiguration adConfiguration;
 
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          callback;
+          adLoadCallback;
 
   private MBBidRewardVideoHandler mbBidRewardVideoHandler;
   private MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRtbRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-                                MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+                                MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
     this.adConfiguration = adConfiguration;
-    this.callback = callback;
+    this.adLoadCallback = adLoadCallback;
   }
 
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    if (TextUtils.isEmpty(adUnitId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load rewarded ad from MIntegral. Missing or invalid adUnitId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     String token = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(token)) {
       AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
-      callback.onFailure(error);
+      adLoadCallback.onFailure(error);
       return;
     }
     mbBidRewardVideoHandler.loadFromBid(token);
@@ -62,7 +67,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
   @Override
   public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
-    rewardedAdCallback = callback.onSuccess(this);
+    rewardedAdCallback = adLoadCallback.onSuccess(this);
   }
 
   @Override
@@ -74,7 +79,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   public void onVideoLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
     AdError error = MintegralConstants.createSdkError(errorMessage);
     Log.w(TAG, error.toString());
-    callback.onFailure(error);
+    adLoadCallback.onFailure(error);
   }
 
   @Override
@@ -114,14 +119,12 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onUserEarnedReward(rewardItem);
     }
-
-
   }
 
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     if (rewardedAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR, errorMessage);
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK, errorMessage);
       Log.w(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
     }

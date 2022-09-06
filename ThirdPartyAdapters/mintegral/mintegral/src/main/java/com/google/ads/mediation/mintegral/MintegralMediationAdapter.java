@@ -2,6 +2,7 @@ package com.google.ads.mediation.mintegral;
 
 
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.mintegral.MintegralConstants.createSdkError;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -30,7 +31,6 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.foundation.same.net.Aa;
 import com.mbridge.msdk.mbbid.out.BidManager;
@@ -50,12 +50,54 @@ import java.util.Map;
 public class MintegralMediationAdapter extends RtbAdapter {
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
+  private static int ccpaDoNotTrackStatus = -1;
+  private static int gdprConsentStatus = -1;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
-  private static int CCPAValues = -1;
-  private static int GDPRValue = -1;
+
+  /**
+   * Set the GDPR setting in Mintegral SDK.
+   *
+   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
+   *             personal data to serve ads under GDPR.
+   *             {@link com.google.ads.mediation.mintegral.MintegralConstants.MBridgeConstants#STATUS_GDPR_OR_CCPA_CONSENTS}
+   *             means the user consents. {@link com.google.ads.mediation.mintegral.MintegralConstants.MBridgeConstants#STATUS_GDPR_OR_CCPA_NOT_CONSENTS}
+   *             means the user does not consent.  Any
+   *             value outside of 0 or 1 will result in this method being a no-op.
+   *             See <a
+   *             href="https://dev.mintegral.com/doc/index.html?file=sdk-m_sdk-android&lang=en">Mintegral's
+   *             documentation</a> for more information about what values may be provided.
+   */
+  public static void setGdpr(@MintegralConstants.MBridgeConstants int gdpr) {
+    if (gdpr != 0 && gdpr != 1) {
+      // no-op
+      Log.w(TAG, "Invalid GDPR value. Mintegral SDK only accepts 0 or 1.");
+      return;
+    }
+    gdprConsentStatus = gdpr;
+  }
+
+  /**
+   * Set the CCPA setting in Mintegral SDK.
+   *
+   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
+   *             the "personal information" under CCPA. {@link com.google.ads.mediation.mintegral.MintegralConstants.MBridgeConstants#STATUS_GDPR_OR_CCPA_NOT_CONSENTS} means the user opts in.
+   *             {@link com.google.ads.mediation.mintegral.MintegralConstants.MBridgeConstants#STATUS_GDPR_OR_CCPA_CONSENTS}
+   *             means the user opts out.  Any value
+   *             outside of 0 or 1 will result in this method being a no-op.See <a
+   *             href="https://dev.mintegral.com/doc/index.html?file=sdk-m_sdk-android&lang=en">Mintegral's
+   *             documentation</a> for more information about what values may be provided.
+   */
+  public static void setCcpa(@MintegralConstants.MBridgeConstants int ccpa) {
+    if (ccpa != 0 && ccpa != 1) {
+      // no-op
+      Log.w(TAG, "Invalid CCPA value. Mintegral SDK only accepts  0 or 1.");
+      return;
+    }
+    ccpaDoNotTrackStatus = ccpa;
+  }
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
@@ -159,11 +201,11 @@ public class MintegralMediationAdapter extends RtbAdapter {
     }
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
     Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
-    if (CCPAValues == 0 || CCPAValues == 1) {
-      mBridgeSDK.setDoNotTrackStatus(CCPAValues == 1);
+    if (ccpaDoNotTrackStatus == 0 || ccpaDoNotTrackStatus == 1) {
+      mBridgeSDK.setDoNotTrackStatus(ccpaDoNotTrackStatus == 1);
     }
-    if (GDPRValue == 0 || GDPRValue == 1) {
-      mBridgeSDK.setConsentStatus(context, GDPRValue == 0 ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF);
+    if (gdprConsentStatus == 0 || gdprConsentStatus == 1) {
+      mBridgeSDK.setConsentStatus(context, gdprConsentStatus);
     }
     mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
       @Override
@@ -173,8 +215,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
       }
 
       @Override
-      public void onInitFail(String s) {
-        initializationCompleteCallback.onInitializationFailed(s);
+      public void onInitFail(String errorMessage) {
+        AdError initError = createSdkError(errorMessage);
+        initializationCompleteCallback.onInitializationFailed(initError.getMessage());
       }
     });
 
@@ -206,14 +249,11 @@ public class MintegralMediationAdapter extends RtbAdapter {
 
   /**
    * Call the private static method inside the Mintegral SDK through reflection to set the channel flag
-   *
    */
   private void addChannel() {
     try {
-      //create Object
       Aa a = new Aa();
       Class c = a.getClass();
-      //call private static method "b"
       Method method = c.getDeclaredMethod("b", String.class);
       method.setAccessible(true);
       //set channel flag. "Y+H6DFttYrPQYcIBicKwJQKQYrN=" is used to mark the AdMob channel
@@ -221,44 +261,5 @@ public class MintegralMediationAdapter extends RtbAdapter {
     } catch (Throwable e) {
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Set the GDPR setting in Mintegral SDK.
-   *
-   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *             personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1}
-   *             means the user does not consent. {@code -1} means the user hasn't specified. Any
-   *             value outside of -1, 0, or 1 will result in this method being a no-op.
-   *             See <a
-   *             href="https://dev.mintegral.com/doc/index.html?file=sdk-m_sdk-android&lang=en">Mintegral's
-   *             documentation</a> for more information about what values may be provided.
-   */
-  public static void setGdpr(int gdpr) {
-    if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
-      // no-op
-      Log.w(TAG, "Invalid GDPR value. Mintegral SDK only accepts -1, 0 or 1.");
-      return;
-    }
-    GDPRValue = gdpr;
-  }
-
-  /**
-   * Set the CCPA setting in Mintegral SDK.
-   *
-   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *             the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1}
-   *             means the user opts out. {@code -1} means the user hasn't specified. Any value
-   *             outside of -1, 0, or 1 will result in this method being a no-op.See <a
-   *             href="https://dev.mintegral.com/doc/index.html?file=sdk-m_sdk-android&lang=en">Mintegral's
-   *             documentation</a> for more information about what values may be provided.
-   */
-  public static void setCcpa(int ccpa) {
-    if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
-      // no-op
-      Log.w(TAG, "Invalid CCPA value. Mintegral SDK only accepts -1, 0 or 1.");
-      return;
-    }
-    CCPAValues = ccpa;
   }
 }

@@ -88,6 +88,11 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    if (TextUtils.isEmpty(adUnitId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load banner ad from MIntegral. Missing or invalid adUnitId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -116,7 +121,9 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
   @Override
   public void onLoadFailed(MBridgeIds mBridgeIds, String errorMessage) {
-    adLoadCallback.onFailure(MintegralConstants.createSdkError(errorMessage));
+    AdError error = MintegralConstants.createSdkError(errorMessage);
+    Log.w(TAG, error.toString());
+    adLoadCallback.onFailure(error);
   }
 
   @Override
@@ -175,7 +182,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
    * MBBannerView #release()} is not called and adapter was garbage collected.
    */
   private void cleanLeakedBannerRes() {
-    if(mbBannerView == null){
+    if (mbBannerView == null) {
       return;
     }
     mbBannerView.release();

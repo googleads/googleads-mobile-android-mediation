@@ -41,6 +41,11 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    if (TextUtils.isEmpty(adUnitId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load interstitial ad from MIntegral. Missing or invalid adUnitId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     String token = adConfiguration.getBidResponse();
@@ -70,8 +75,8 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   }
 
   @Override
-  public void onResourceLoadFail(MBridgeIds mBridgeIds, String s) {
-    AdError error = MintegralConstants.createSdkError(s);
+  public void onResourceLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
@@ -92,9 +97,9 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String s) {
+  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     if (interstitialAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_SDK_INTER_ERROR, s);
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK, errorMessage);
       Log.w(TAG, error.toString());
       interstitialAdCallback.onAdFailedToShow(error);
     }
