@@ -5,9 +5,7 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 
 import android.content.Context;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
@@ -19,14 +17,14 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.jirbo.adcolony.AdColonyManager;
-
 import java.util.ArrayList;
 
 public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener implements
     MediationInterstitialAd {
 
-  private MediationInterstitialAdCallback mInterstitialAdCallback;
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mAdLoadCallback;
+  private MediationInterstitialAdCallback interstitialAdCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      adLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
   private final MediationInterstitialAdConfiguration adConfiguration;
 
@@ -34,7 +32,7 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
           @NonNull MediationInterstitialAdConfiguration adConfiguration,
           @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
   ) {
-    this.mAdLoadCallback = callback;
+    this.adLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
 
@@ -56,37 +54,37 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
   @Override
   public void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
     AdColonyInterstitialRenderer.this.adColonyInterstitial = adColonyInterstitial;
-    mInterstitialAdCallback = mAdLoadCallback.onSuccess(AdColonyInterstitialRenderer.this);
+    interstitialAdCallback = adLoadCallback.onSuccess(AdColonyInterstitialRenderer.this);
   }
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
     AdError error = createSdkError();
     Log.w(TAG, error.getMessage());
-    mAdLoadCallback.onFailure(error);
+    adLoadCallback.onFailure(error);
   }
 
   @Override
   public void onLeftApplication(AdColonyInterstitial ad) {
     super.onLeftApplication(ad);
 
-    mInterstitialAdCallback.reportAdClicked();
-    mInterstitialAdCallback.onAdLeftApplication();
+    interstitialAdCallback.reportAdClicked();
+    interstitialAdCallback.onAdLeftApplication();
   }
 
   @Override
   public void onOpened(AdColonyInterstitial ad) {
     super.onOpened(ad);
 
-    mInterstitialAdCallback.onAdOpened();
-    mInterstitialAdCallback.reportAdImpression();
+    interstitialAdCallback.onAdOpened();
+    interstitialAdCallback.reportAdImpression();
   }
 
   @Override
   public void onClosed(AdColonyInterstitial ad) {
     super.onClosed(ad);
 
-    mInterstitialAdCallback.onAdClosed();
+    interstitialAdCallback.onAdClosed();
   }
 
   @Override

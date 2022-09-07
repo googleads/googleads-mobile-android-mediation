@@ -1,36 +1,33 @@
 package com.google.ads.mediation.adcolony;
 
-import android.util.Log;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-
-import com.adcolony.sdk.AdColony;
-import com.adcolony.sdk.AdColonyAdOptions;
-import com.adcolony.sdk.AdColonyAdSize;
-import com.adcolony.sdk.AdColonyAdView;
-import com.adcolony.sdk.AdColonyAdViewListener;
-import com.adcolony.sdk.AdColonyZone;
-
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAd;
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.jirbo.adcolony.AdColonyManager;
-
-import java.util.ArrayList;
-
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.convertPixelsToDp;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.TAG;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createAdapterError;
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createSdkError;
 
+import android.util.Log;
+import android.view.View;
+import androidx.annotation.NonNull;
+import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
+import com.adcolony.sdk.AdColonyAdSize;
+import com.adcolony.sdk.AdColonyAdView;
+import com.adcolony.sdk.AdColonyAdViewListener;
+import com.adcolony.sdk.AdColonyZone;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.jirbo.adcolony.AdColonyManager;
+import java.util.ArrayList;
+
 public class AdColonyBannerRenderer extends AdColonyAdViewListener implements MediationBannerAd {
 
-  private MediationBannerAdCallback mBannerAdCallback;
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mAdLoadCallback;
+  private MediationBannerAdCallback bannerAdCallback;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
   private AdColonyAdView adColonyAdView;
   private final MediationBannerAdConfiguration adConfiguration;
 
@@ -38,7 +35,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
           @NonNull MediationBannerAdConfiguration adConfiguration,
           @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback
   ) {
-    this.mAdLoadCallback = callback;
+    this.adLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
 
@@ -47,7 +44,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
       AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
               "Failed to request banner with unsupported size: null");
       Log.e(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
+      adLoadCallback.onFailure(error);
       return;
     }
 
@@ -71,34 +68,34 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
   @Override
   public void onRequestFilled(AdColonyAdView adColonyAdView) {
     this.adColonyAdView = adColonyAdView;
-    this.mBannerAdCallback = mAdLoadCallback.onSuccess(this);
+    this.bannerAdCallback = adLoadCallback.onSuccess(this);
   }
 
   @Override
   public void onRequestNotFilled(AdColonyZone zone) {
     AdError error = createSdkError();
     Log.w(TAG, error.getMessage());
-    this.mAdLoadCallback.onFailure(error);
+    this.adLoadCallback.onFailure(error);
   }
 
   @Override
   public void onLeftApplication(AdColonyAdView ad) {
-    this.mBannerAdCallback.onAdLeftApplication();
+    this.bannerAdCallback.onAdLeftApplication();
   }
 
   @Override
   public void onOpened(AdColonyAdView ad) {
-    this.mBannerAdCallback.onAdOpened();
+    this.bannerAdCallback.onAdOpened();
   }
 
   @Override
   public void onClosed(AdColonyAdView ad) {
-    this.mBannerAdCallback.onAdClosed();
+    this.bannerAdCallback.onAdClosed();
   }
 
   @Override
   public void onClicked(AdColonyAdView ad) {
-    this.mBannerAdCallback.reportAdClicked();
+    this.bannerAdCallback.reportAdClicked();
   }
 
   @NonNull
