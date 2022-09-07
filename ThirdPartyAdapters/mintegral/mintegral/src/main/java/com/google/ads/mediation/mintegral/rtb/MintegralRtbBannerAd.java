@@ -1,4 +1,4 @@
-package com.mintegral.mediation.rtb;
+package com.google.ads.mediation.mintegral.rtb;
 
 
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_MISMATCH;

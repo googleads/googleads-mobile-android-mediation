@@ -17,25 +17,6 @@ public class MintegralConstants {
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.mintegral";
   public static final String MINTEGRAL_SDK_ERROR_DOMAIN = "com.mbridge.msdk";
 
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-          value = {STATUS_GDPR_OR_CCPA_CONSENTS,
-                  STATUS_GDPR_OR_CCPA_NOT_CONSENTS,
-          })
-  public @interface MBridgeConstants {
-
-  }
-
-  /**
-   * user consents GDPR
-   */
-  public static final int STATUS_GDPR_OR_CCPA_CONSENTS = MBridgeConstans.IS_SWITCH_ON;
-
-  /**
-   * user not consents GDPR
-   */
-  public static final int STATUS_GDPR_OR_CCPA_NOT_CONSENTS = MBridgeConstans.IS_SWITCH_OFF;
-
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
@@ -87,4 +68,7 @@ public class MintegralConstants {
   public static AdError createSdkError(@NonNull String errorMessage) {
     return new AdError(ERROR_MINTEGRAL_SDK, errorMessage, MINTEGRAL_SDK_ERROR_DOMAIN);
   }
+
+
+
 }

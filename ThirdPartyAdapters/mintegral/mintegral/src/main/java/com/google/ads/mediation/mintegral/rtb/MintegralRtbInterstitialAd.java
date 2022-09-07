@@ -1,4 +1,4 @@
-package com.mintegral.mediation.rtb;
+package com.google.ads.mediation.mintegral.rtb;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
@@ -9,6 +9,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
+
+import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -19,7 +21,6 @@ import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
-import com.mintegral.mediation.MintegralExtrasBuilder;
 
 
 public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewInterstitialListener {
@@ -59,7 +60,7 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = adConfiguration.getMediationExtras().getBoolean(MintegralExtrasBuilder.MUTE_AUDIO);
+    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidNewInterstitialHandler.showFromBid();
   }
