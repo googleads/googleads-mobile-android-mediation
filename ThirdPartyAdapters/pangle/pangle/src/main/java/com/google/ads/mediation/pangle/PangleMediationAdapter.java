@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
@@ -52,6 +53,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    setUserData(rtbSignalData.getNetworkExtras());
     String biddingToken = PAGSdk.getBiddingToken();
     signalCallbacks.onSuccess(biddingToken);
   }
@@ -227,5 +229,18 @@ public class PangleMediationAdapter extends RtbAdapter {
       PAGConfig.setDoNotSell(ccpa);
     }
     PangleMediationAdapter.ccpa = ccpa;
+  }
+
+  /**
+   * Set the user data (e.g. in-app purchase status) to be sent to Pangle SDK.
+   *
+   * @param networkExtras a {@link Bundle} containing optional parameter to be passed to the
+   *                      adapter.
+   */
+  private static void setUserData(@Nullable Bundle networkExtras) {
+    if (networkExtras == null || !networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
+      return;
+    }
+    PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
   }
 }

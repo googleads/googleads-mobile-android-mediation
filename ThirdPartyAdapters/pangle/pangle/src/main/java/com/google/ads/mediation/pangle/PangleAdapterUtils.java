@@ -1,7 +1,5 @@
 package com.google.ads.mediation.pangle;
 
-import android.os.Bundle;
-import androidx.annotation.Nullable;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
@@ -46,18 +44,5 @@ public class PangleAdapterUtils {
 
   public static int getCoppa() {
     return coppa;
-  }
-
-  /**
-   * Set the user data (e.g. in-app purchase status) to be sent to Pangle SDK.
-   *
-   * @param networkExtras a {@link Bundle} containing optional parameter to be passed to the
-   *                      adapter.
-   */
-  public static void setUserData(@Nullable Bundle networkExtras) {
-    if (networkExtras == null || !networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
-      return;
-    }
-    PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
   }
 }

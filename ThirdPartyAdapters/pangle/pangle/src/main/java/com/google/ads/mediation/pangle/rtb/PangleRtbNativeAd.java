@@ -46,7 +46,6 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
-    PangleAdapterUtils.setUserData(adConfiguration.getMediationExtras());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
