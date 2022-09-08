@@ -13,8 +13,8 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -37,8 +37,8 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
-    PangleMediationAdapter.setUserData(adConfiguration.getMediationExtras());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setUserData(adConfiguration.getMediationExtras());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);

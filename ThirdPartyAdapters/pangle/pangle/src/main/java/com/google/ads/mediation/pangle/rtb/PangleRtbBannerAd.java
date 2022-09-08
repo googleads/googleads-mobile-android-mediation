@@ -16,8 +16,8 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -45,8 +45,8 @@ public class PangleRtbBannerAd
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
-    PangleMediationAdapter.setUserData(adConfiguration.getMediationExtras());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setUserData(adConfiguration.getMediationExtras());
 
     String placementId =
         adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);

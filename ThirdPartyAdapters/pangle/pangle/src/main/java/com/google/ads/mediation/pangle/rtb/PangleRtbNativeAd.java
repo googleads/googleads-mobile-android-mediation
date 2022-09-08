@@ -17,8 +17,8 @@ import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -45,8 +45,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
-    PangleMediationAdapter.setUserData(adConfiguration.getMediationExtras());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setUserData(adConfiguration.getMediationExtras());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);

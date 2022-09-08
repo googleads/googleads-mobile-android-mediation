@@ -15,8 +15,8 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -40,8 +40,8 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
-    PangleMediationAdapter.setUserData(adConfiguration.getMediationExtras());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setUserData(adConfiguration.getMediationExtras());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
@@ -128,7 +128,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           @Override
           public void onUserEarnedRewardFail(int errorCode, String errorMessage) {
             String rewardErrorMessage = String.format(
-                "Failed to request rewarded ad from Pangle: %s", errorMessage);
+                "Failed to reward user: %s", errorMessage);
             AdError error = PangleConstants.createSdkError(errorCode, rewardErrorMessage);
             Log.d(TAG, error.toString());
           }
