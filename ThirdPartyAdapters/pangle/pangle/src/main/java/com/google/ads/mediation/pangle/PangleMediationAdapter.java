@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
@@ -44,6 +46,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
   private PangleRtbNativeAd nativeAd;
+  private static int gdpr = -1;
+  private static int ccpa = -1;
 
   @Override
   public void collectSignals(
@@ -83,11 +87,11 @@ public class PangleMediationAdapter extends RtbAdapter {
           "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
       Log.w(TAG, message);
     }
-    PangleAdapterUtils.setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
     PAGSdk.init(
         context,
-        new PAGConfig.Builder().appId(appId).setChildDirected(PangleAdapterUtils.getCoppa())
-            .setGDPRConsent(PangleAdapterUtils.getGdpr()).setDoNotSell(PangleAdapterUtils.getCcpa())
+        new PAGConfig.Builder().appId(appId).setChildDirected(PangleAdapterUtils.setCoppa(
+                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()))
+            .setGDPRConsent(gdpr).setDoNotSell(ccpa)
             .build(),
         new PAGSdk.PAGInitCallback() {
           @Override
@@ -181,5 +185,47 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedAd = new PangleRtbRewardedAd(adConfiguration, callback);
     rewardedAd.render();
+  }
+
+  /**
+   * Set the GDPR setting in Pangle SDK.
+   *
+   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
+   *             personal data to serve ads under GDPR. See <a href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *             documentation</a> for more information about what values may be provided.
+   */
+  public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
+    if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
+      // no-op
+      Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
+      return;
+    }
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setGDPRConsent(gdpr);
+    }
+    PangleMediationAdapter.gdpr = gdpr;
+  }
+
+  /**
+   * Set the CCPA setting in Pangle SDK.
+   *
+   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
+   *             the "personal information" under CCPA. See <a href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *             documentation</a> for more information about what values may be provided.
+   */
+  public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
+    if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT) {
+      // no-op
+      Log.w(TAG, "Invalid CCPA value. Pangle SDK only accepts -1, 0 or 1.");
+      return;
+    }
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setDoNotSell(ccpa);
+    }
+    PangleMediationAdapter.ccpa = ccpa;
   }
 }
