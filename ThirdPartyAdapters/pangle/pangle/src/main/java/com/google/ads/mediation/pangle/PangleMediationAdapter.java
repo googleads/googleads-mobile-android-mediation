@@ -87,10 +87,10 @@ public class PangleMediationAdapter extends RtbAdapter {
           "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
       Log.w(TAG, message);
     }
+    PangleAdapterUtils.setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
     PAGSdk.init(
         context,
-        new PAGConfig.Builder().appId(appId).setChildDirected(PangleAdapterUtils.setCoppa(
-                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()))
+        new PAGConfig.Builder().appId(appId).setChildDirected(PangleAdapterUtils.getCoppa())
             .setGDPRConsent(gdpr).setDoNotSell(ccpa)
             .build(),
         new PAGSdk.PAGInitCallback() {
