@@ -10,12 +10,13 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardItem;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -28,7 +29,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
-  private TTRewardVideoAd ttRewardVideoAd;
+  private PAGRewardedAd pagRewardedAd;
 
   public PangleRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
@@ -39,7 +40,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
@@ -60,16 +61,9 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
       return;
     }
 
-    TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
-    TTAdNative mTTAdNative = mTTAdManager
-        .createAdNative(adConfiguration.getContext().getApplicationContext());
-
-    AdSlot adSlot = new AdSlot.Builder()
-        .setCodeId(placementId)
-        .withBid(bidResponse)
-        .build();
-
-    mTTAdNative.loadRewardVideoAd(adSlot, new TTAdNative.RewardVideoAdListener() {
+    PAGRewardedRequest request = new PAGRewardedRequest();
+    request.setAdString(bidResponse);
+    PAGRewardedAd.loadAd(placementId, request, new PAGRewardedAdLoadListener() {
       @Override
       public void onError(int errorCode, String errorMessage) {
         AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
@@ -78,24 +72,19 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
       }
 
       @Override
-      public void onRewardVideoAdLoad(TTRewardVideoAd rewardVideoAd) {
+      public void onAdLoaded(PAGRewardedAd rewardedAd) {
         rewardedAdCallback = adLoadCallback.onSuccess(PangleRtbRewardedAd.this);
-        ttRewardVideoAd = rewardVideoAd;
-      }
-
-      @Override
-      public void onRewardVideoCached() {
-
+        pagRewardedAd = rewardedAd;
       }
     });
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    ttRewardVideoAd
-        .setRewardAdInteractionListener(new TTRewardVideoAd.RewardAdInteractionListener() {
+    pagRewardedAd.setAdInteractionListener(
+        new PAGRewardedAdInteractionListener() {
           @Override
-          public void onAdShow() {
+          public void onAdShowed() {
             if (rewardedAdCallback != null) {
               rewardedAdCallback.onAdOpened();
               rewardedAdCallback.reportAdImpression();
@@ -103,52 +92,31 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onAdVideoBarClick() {
+          public void onAdClicked() {
             if (rewardedAdCallback != null) {
               rewardedAdCallback.reportAdClicked();
             }
           }
 
           @Override
-          public void onAdClose() {
+          public void onAdDismissed() {
             if (rewardedAdCallback != null) {
               rewardedAdCallback.onAdClosed();
             }
           }
 
           @Override
-          public void onVideoComplete() {
-
-          }
-
-          @Override
-          public void onVideoError() {
-
-          }
-
-          @Override
-          public void onRewardVerify(boolean rewardVerify, final int rewardAmount,
-              final String rewardName,
-              int errorCode, String errorMsg) {
-            if (!rewardVerify) {
-              String newErrorMsg = String
-                  .format("Failed to request rewarded ad from Pangle. The reward isn't valid. " +
-                      "The specific reason is: %s", errorMsg);
-              AdError error = PangleConstants.createSdkError(errorCode, newErrorMsg);
-              Log.d(TAG, error.toString());
-              return;
-            }
-
+          public void onUserEarnedReward(final PAGRewardItem pagRewardItem) {
             RewardItem rewardItem = new RewardItem() {
               @NonNull
               @Override
               public String getType() {
-                return rewardName;
+                return pagRewardItem.getRewardName();
               }
 
               @Override
               public int getAmount() {
-                return rewardAmount;
+                return pagRewardItem.getRewardAmount();
               }
             };
             if (rewardedAdCallback != null) {
@@ -157,15 +125,18 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
           }
 
           @Override
-          public void onSkippedVideo() {
-
+          public void onUserEarnedRewardFail(int errorCode, String errorMessage) {
+            String rewardErrorMessage = String.format(
+                "Failed to reward user: %s", errorMessage);
+            AdError error = PangleConstants.createSdkError(errorCode, rewardErrorMessage);
+            Log.d(TAG, error.toString());
           }
         });
     if (context instanceof Activity) {
-      ttRewardVideoAd.showRewardVideoAd((Activity) context);
+      pagRewardedAd.show((Activity) context);
       return;
     }
     // If the context is not an Activity, the application context will be used to render the ad.
-    ttRewardVideoAd.showRewardVideoAd(null);
+    pagRewardedAd.show(null);
   }
 }

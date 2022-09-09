@@ -9,12 +9,12 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
-import com.google.ads.mediation.pangle.PangleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -26,7 +26,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
-  private TTFullScreenVideoAd ttFullVideoAd;
+  private PAGInterstitialAd pagInterstitialAd;
 
   public PangleRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
@@ -37,7 +37,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
   }
 
   public void render() {
-    PangleMediationAdapter.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     String placementId = adConfiguration.getServerParameters()
         .getString(PangleConstants.PLACEMENT_ID);
@@ -58,16 +58,9 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       return;
     }
 
-    TTAdManager mTTAdManager = PangleMediationAdapter.getPangleSdkManager();
-    TTAdNative mTTAdNative = mTTAdManager
-        .createAdNative(adConfiguration.getContext().getApplicationContext());
-
-    AdSlot adSlot = new AdSlot.Builder()
-        .setCodeId(placementId)
-        .withBid(bidResponse)
-        .build();
-
-    mTTAdNative.loadFullScreenVideoAd(adSlot, new TTAdNative.FullScreenVideoAdListener() {
+    PAGInterstitialRequest request = new PAGInterstitialRequest();
+    request.setAdString(bidResponse);
+    PAGInterstitialAd.loadAd(placementId, request, new PAGInterstitialAdLoadListener() {
       @Override
       public void onError(int errorCode, String errorMessage) {
         AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
@@ -76,24 +69,19 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       }
 
       @Override
-      public void onFullScreenVideoAdLoad(TTFullScreenVideoAd ttFullScreenVideoAd) {
+      public void onAdLoaded(PAGInterstitialAd interstitialAd) {
         interstitialAdCallback = adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
-        ttFullVideoAd = ttFullScreenVideoAd;
-      }
-
-      @Override
-      public void onFullScreenVideoCached() {
-
+        pagInterstitialAd = interstitialAd;
       }
     });
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    ttFullVideoAd.setFullScreenVideoAdInteractionListener(
-        new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
+    pagInterstitialAd.setAdInteractionListener(
+        new PAGInterstitialAdInteractionListener() {
           @Override
-          public void onAdShow() {
+          public void onAdShowed() {
             if (interstitialAdCallback != null) {
               interstitialAdCallback.onAdOpened();
               interstitialAdCallback.reportAdImpression();
@@ -101,34 +89,24 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
           }
 
           @Override
-          public void onAdVideoBarClick() {
+          public void onAdClicked() {
             if (interstitialAdCallback != null) {
               interstitialAdCallback.reportAdClicked();
             }
           }
 
           @Override
-          public void onAdClose() {
+          public void onAdDismissed() {
             if (interstitialAdCallback != null) {
               interstitialAdCallback.onAdClosed();
             }
           }
-
-          @Override
-          public void onVideoComplete() {
-
-          }
-
-          @Override
-          public void onSkippedVideo() {
-
-          }
         });
     if (context instanceof Activity) {
-      ttFullVideoAd.showFullScreenVideoAd((Activity) context);
+      pagInterstitialAd.show((Activity) context);
       return;
     }
     // If the context is not an Activity, the application context will be used to render the ad.
-    ttFullVideoAd.showFullScreenVideoAd(null);
+    pagInterstitialAd.show(null);
   }
 }
