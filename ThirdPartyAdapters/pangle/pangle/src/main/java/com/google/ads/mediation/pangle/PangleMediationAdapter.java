@@ -52,6 +52,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    // The user data needs to be set for it to be included in the signals.
     Bundle networkExtras = rtbSignalData.getNetworkExtras();
     if (networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
       PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
