@@ -14,10 +14,10 @@ public class PangleAdapterUtils {
    * Set the COPPA setting in Pangle SDK.
    *
    * @param coppa an {@code Integer} value that indicates whether the app should be treated as
-   *              child-directed for purposes of the COPPA. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE}
-   *              means true. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE}
-   *              means false. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED}
-   *              means unspecified.
+   *     child-directed for purposes of the COPPA. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
    */
   public static void setCoppa(@TagForChildDirectedTreatment int coppa) {
     switch (coppa) {

@@ -27,8 +27,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
 
-public class PangleRtbBannerAd
-    implements MediationBannerAd, PAGBannerAdInteractionListener {
+public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
 
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -38,8 +37,9 @@ public class PangleRtbBannerAd
 
   public PangleRtbBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
@@ -89,8 +89,8 @@ public class PangleRtbBannerAd
 
     wrappedAdView = new FrameLayout(context);
 
-    PAGBannerRequest request = new PAGBannerRequest(
-        new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
+    PAGBannerRequest request =
+        new PAGBannerRequest(new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
     request.setAdString(bidResponse);
     PAGBannerAd.loadAd(
         placementId,

@@ -1,6 +1,5 @@
 package com.google.ads.mediation.pangle.rtb;
 
-
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
@@ -27,14 +26,16 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 public class PangleRtbRewardedAd implements MediationRewardedAd {
 
   private final MediationRewardedAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      adLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
   private PAGRewardedAd pagRewardedAd;
 
   public PangleRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
   }
@@ -42,11 +43,13 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstants.PLACEMENT_ID);
+    String placementId =
+        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.");
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -54,8 +57,10 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load rewarded ad from Pangle. Missing or invalid bid response.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_BID_RESPONSE,
+              "Failed to load rewarded ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -63,20 +68,23 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
 
     PAGRewardedRequest request = new PAGRewardedRequest();
     request.setAdString(bidResponse);
-    PAGRewardedAd.loadAd(placementId, request, new PAGRewardedAdLoadListener() {
-      @Override
-      public void onError(int errorCode, String errorMessage) {
-        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-        Log.w(TAG, error.toString());
-        adLoadCallback.onFailure(error);
-      }
+    PAGRewardedAd.loadAd(
+        placementId,
+        request,
+        new PAGRewardedAdLoadListener() {
+          @Override
+          public void onError(int errorCode, String errorMessage) {
+            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
 
-      @Override
-      public void onAdLoaded(PAGRewardedAd rewardedAd) {
-        rewardedAdCallback = adLoadCallback.onSuccess(PangleRtbRewardedAd.this);
-        pagRewardedAd = rewardedAd;
-      }
-    });
+          @Override
+          public void onAdLoaded(PAGRewardedAd rewardedAd) {
+            rewardedAdCallback = adLoadCallback.onSuccess(PangleRtbRewardedAd.this);
+            pagRewardedAd = rewardedAd;
+          }
+        });
   }
 
   @Override
@@ -107,18 +115,19 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
 
           @Override
           public void onUserEarnedReward(final PAGRewardItem pagRewardItem) {
-            RewardItem rewardItem = new RewardItem() {
-              @NonNull
-              @Override
-              public String getType() {
-                return pagRewardItem.getRewardName();
-              }
+            RewardItem rewardItem =
+                new RewardItem() {
+                  @NonNull
+                  @Override
+                  public String getType() {
+                    return pagRewardItem.getRewardName();
+                  }
 
-              @Override
-              public int getAmount() {
-                return pagRewardItem.getRewardAmount();
-              }
-            };
+                  @Override
+                  public int getAmount() {
+                    return pagRewardItem.getRewardAmount();
+                  }
+                };
             if (rewardedAdCallback != null) {
               rewardedAdCallback.onUserEarnedReward(rewardItem);
             }
@@ -126,8 +135,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
 
           @Override
           public void onUserEarnedRewardFail(int errorCode, String errorMessage) {
-            String rewardErrorMessage = String.format(
-                "Failed to reward user: %s", errorMessage);
+            String rewardErrorMessage = String.format("Failed to reward user: %s", errorMessage);
             AdError error = PangleConstants.createSdkError(errorCode, rewardErrorMessage);
             Log.d(TAG, error.toString());
           }

@@ -24,14 +24,16 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
   private final MediationInterstitialAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      adLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
   private PAGInterstitialAd pagInterstitialAd;
 
   public PangleRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback) {
     adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
   }
@@ -39,11 +41,13 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstants.PLACEMENT_ID);
+    String placementId =
+        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load interstitial ad from Pangle. Missing or invalid Placement ID.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load interstitial ad from Pangle. Missing or invalid Placement ID.");
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -51,8 +55,10 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     String bidResponse = adConfiguration.getBidResponse();
     if (TextUtils.isEmpty(bidResponse)) {
-      AdError error = PangleConstants.createAdapterError(ERROR_INVALID_BID_RESPONSE,
-          "Failed to load interstitial ad from Pangle. Missing or invalid bid response.");
+      AdError error =
+          PangleConstants.createAdapterError(
+              ERROR_INVALID_BID_RESPONSE,
+              "Failed to load interstitial ad from Pangle. Missing or invalid bid response.");
       Log.w(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -60,20 +66,23 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
     PAGInterstitialRequest request = new PAGInterstitialRequest();
     request.setAdString(bidResponse);
-    PAGInterstitialAd.loadAd(placementId, request, new PAGInterstitialAdLoadListener() {
-      @Override
-      public void onError(int errorCode, String errorMessage) {
-        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-        Log.w(TAG, error.toString());
-        adLoadCallback.onFailure(error);
-      }
+    PAGInterstitialAd.loadAd(
+        placementId,
+        request,
+        new PAGInterstitialAdLoadListener() {
+          @Override
+          public void onError(int errorCode, String errorMessage) {
+            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
 
-      @Override
-      public void onAdLoaded(PAGInterstitialAd interstitialAd) {
-        interstitialAdCallback = adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
-        pagInterstitialAd = interstitialAd;
-      }
-    });
+          @Override
+          public void onAdLoaded(PAGInterstitialAd interstitialAd) {
+            interstitialAdCallback = adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
+            pagInterstitialAd = interstitialAd;
+          }
+        });
   }
 
   @Override

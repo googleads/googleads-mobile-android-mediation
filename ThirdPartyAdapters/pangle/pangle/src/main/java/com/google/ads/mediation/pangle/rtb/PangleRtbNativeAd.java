@@ -34,12 +34,16 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
   private static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
   private final MediationNativeAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+      adLoadCallback;
   private MediationNativeAdCallback callback;
   private PAGNativeAd pagNativeAd;
 
-  public PangleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+  public PangleRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+              mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
   }
@@ -47,8 +51,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId = adConfiguration.getServerParameters()
-        .getString(PangleConstants.PLACEMENT_ID);
+    String placementId =
+        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
@@ -72,20 +76,23 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
 
     PAGNativeRequest request = new PAGNativeRequest();
     request.setAdString(bidResponse);
-    PAGNativeAd.loadAd(placementId, request, new PAGNativeAdLoadListener() {
-      @Override
-      public void onError(int errorCode, String message) {
-        AdError error = PangleConstants.createSdkError(errorCode, message);
-        Log.w(TAG, error.toString());
-        adLoadCallback.onFailure(error);
-      }
+    PAGNativeAd.loadAd(
+        placementId,
+        request,
+        new PAGNativeAdLoadListener() {
+          @Override
+          public void onError(int errorCode, String message) {
+            AdError error = PangleConstants.createSdkError(errorCode, message);
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
 
-      @Override
-      public void onAdLoaded(PAGNativeAd pagNativeAd) {
-        mapNativeAd(pagNativeAd);
-        callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
-      }
-    });
+          @Override
+          public void onAdLoaded(PAGNativeAd pagNativeAd) {
+            mapNativeAd(pagNativeAd);
+            callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
+          }
+        });
   }
 
   private void mapNativeAd(PAGNativeAd ad) {
@@ -96,8 +103,9 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     setBody(nativeAdData.getDescription());
     setCallToAction(nativeAdData.getButtonText());
     if (nativeAdData.getIcon() != null) {
-      setIcon(new PangleNativeMappedImage(null, Uri.parse(nativeAdData.getIcon().getImageUrl()),
-          PANGLE_SDK_IMAGE_SCALE));
+      setIcon(
+          new PangleNativeMappedImage(
+              null, Uri.parse(nativeAdData.getIcon().getImageUrl()), PANGLE_SDK_IMAGE_SCALE));
     }
 
     // Pangle does its own click event handling.
@@ -111,7 +119,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(@NonNull View containerView,
+  public void trackViews(
+      @NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
     // Set click interaction.
@@ -125,8 +134,12 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     if (creativeBtn != null) {
       creativeViews.add(creativeBtn);
     }
-    pagNativeAd.registerViewForInteraction((ViewGroup) containerView, assetViews, creativeViews,
-        null, new PAGNativeAdInteractionListener() {
+    pagNativeAd.registerViewForInteraction(
+        (ViewGroup) containerView,
+        assetViews,
+        creativeViews,
+        null,
+        new PAGNativeAdInteractionListener() {
           @Override
           public void onAdClicked() {
             if (callback != null) {
@@ -147,13 +160,15 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
           }
         });
 
-    //Set ad choices click listener to show Pangle's Privacy Policy page.
-    getAdChoicesContent().setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        pagNativeAd.showPrivacyActivity();
-      }
-    });
+    // Set ad choices click listener to show Pangle's Privacy Policy page.
+    getAdChoicesContent()
+        .setOnClickListener(
+            new OnClickListener() {
+              @Override
+              public void onClick(View v) {
+                pagNativeAd.showPrivacyActivity();
+              }
+            });
   }
 
   public class PangleNativeMappedImage extends Image {

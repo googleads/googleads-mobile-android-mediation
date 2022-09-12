@@ -54,7 +54,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     // The user data needs to be set for it to be included in the signals.
     Bundle networkExtras = rtbSignalData.getNetworkExtras();
-    if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
+    if (networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
       PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
     }
     String biddingToken = PAGSdk.getBiddingToken();
@@ -86,18 +86,25 @@ public class PangleMediationAdapter extends RtbAdapter {
     }
 
     String appId = appIds.iterator().next();
-
     if (count > 1) {
-      String message = String.format(
-          "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
+      String message =
+          String.format(
+              "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
       Log.w(TAG, message);
     }
-    PangleAdapterUtils.setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+
+    PangleAdapterUtils.setCoppa(
+        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+    PAGConfig pagConfig =
+        new PAGConfig.Builder()
+            .appId(appId)
+            .setChildDirected(PangleAdapterUtils.getCoppa())
+            .setGDPRConsent(gdpr)
+            .setDoNotSell(ccpa)
+            .build();
     PAGSdk.init(
         context,
-        new PAGConfig.Builder().appId(appId).setChildDirected(PangleAdapterUtils.getCoppa())
-            .setGDPRConsent(gdpr).setDoNotSell(ccpa)
-            .build(),
+        pagConfig,
         new PAGSdk.PAGInitCallback() {
           @Override
           public void success() {
@@ -170,8 +177,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
     interstitialAd = new PangleRtbInterstitialAd(adConfiguration, callback);
     interstitialAd.render();
   }
@@ -196,8 +204,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *             personal data to serve ads under GDPR. See <a href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *             documentation</a> for more information about what values may be provided.
+   *     personal data to serve ads under GDPR. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
   public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
     if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
@@ -217,8 +226,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *             the "personal information" under CCPA. See <a href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *             documentation</a> for more information about what values may be provided.
+   *     the "personal information" under CCPA. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
   public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
     if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
