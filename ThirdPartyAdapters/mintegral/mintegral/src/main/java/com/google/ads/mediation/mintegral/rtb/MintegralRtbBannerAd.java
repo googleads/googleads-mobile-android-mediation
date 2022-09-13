@@ -93,6 +93,11 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
       adLoadCallback.onFailure(error);
       return;
     }
+    if (TextUtils.isEmpty(placementId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load banner ad from MIntegral. Missing or invalid placementId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);

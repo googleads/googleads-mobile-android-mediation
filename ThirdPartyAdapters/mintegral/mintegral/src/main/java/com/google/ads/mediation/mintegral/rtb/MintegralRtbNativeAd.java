@@ -53,6 +53,11 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       adLoadCallback.onFailure(error);
       return;
     }
+    if (TextUtils.isEmpty(placementId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load native ad from MIntegral. Missing or invalid placementId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     Map<String, Object> properties = MBBidNativeHandler.getNativeProperties(placementId, adUnitId);
     properties.put(NATIVE_VIDEO_SUPPORT, true);
     properties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);

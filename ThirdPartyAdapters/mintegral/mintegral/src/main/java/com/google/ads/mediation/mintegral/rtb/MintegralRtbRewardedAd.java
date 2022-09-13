@@ -48,6 +48,11 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
       adLoadCallback.onFailure(error);
       return;
     }
+    if (TextUtils.isEmpty(placementId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load rewarded ad from MIntegral. Missing or invalid placementId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     String token = adConfiguration.getBidResponse();

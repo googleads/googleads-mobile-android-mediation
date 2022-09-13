@@ -47,6 +47,11 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
       adLoadCallback.onFailure(error);
       return;
     }
+    if (TextUtils.isEmpty(placementId)) {
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load interstitial ad from MIntegral. Missing or invalid placementId");
+      adLoadCallback.onFailure(error);
+      return;
+    }
     mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     String token = adConfiguration.getBidResponse();
