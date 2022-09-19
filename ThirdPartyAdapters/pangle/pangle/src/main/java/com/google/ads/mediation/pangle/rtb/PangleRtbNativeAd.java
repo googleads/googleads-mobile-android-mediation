@@ -4,8 +4,10 @@ import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +21,8 @@ import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleInitializer;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -51,8 +55,8 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId =
-        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
@@ -74,25 +78,42 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       return;
     }
 
-    PAGNativeRequest request = new PAGNativeRequest();
-    request.setAdString(bidResponse);
-    PAGNativeAd.loadAd(
-        placementId,
-        request,
-        new PAGNativeAdLoadListener() {
-          @Override
-          public void onError(int errorCode, String message) {
-            AdError error = PangleConstants.createSdkError(errorCode, message);
-            Log.w(TAG, error.toString());
-            adLoadCallback.onFailure(error);
-          }
+    Context context = adConfiguration.getContext();
+    String appId = serverParameters.getString(PangleConstants.APP_ID);
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                PAGNativeRequest request = new PAGNativeRequest();
+                request.setAdString(bidResponse);
+                PAGNativeAd.loadAd(
+                    placementId,
+                    request,
+                    new PAGNativeAdLoadListener() {
+                      @Override
+                      public void onError(int errorCode, String message) {
+                        AdError error = PangleConstants.createSdkError(errorCode, message);
+                        Log.w(TAG, error.toString());
+                        adLoadCallback.onFailure(error);
+                      }
 
-          @Override
-          public void onAdLoaded(PAGNativeAd pagNativeAd) {
-            mapNativeAd(pagNativeAd);
-            callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
-          }
-        });
+                      @Override
+                      public void onAdLoaded(PAGNativeAd pagNativeAd) {
+                        mapNativeAd(pagNativeAd);
+                        callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
+                      }
+                    });
+              }
+
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   private void mapNativeAd(PAGNativeAd ad) {
@@ -123,17 +144,21 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
       @NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
+
     // Set click interaction.
     HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
+
     // Exclude Pangle's Privacy Information Icon image and text from click events.
     copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
     copyClickableAssetViews.remove("3012");
-    ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
+
     View creativeBtn = copyClickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
     ArrayList<View> creativeViews = new ArrayList<>();
     if (creativeBtn != null) {
       creativeViews.add(creativeBtn);
     }
+
+    ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
     pagNativeAd.registerViewForInteraction(
         (ViewGroup) containerView,
         assetViews,

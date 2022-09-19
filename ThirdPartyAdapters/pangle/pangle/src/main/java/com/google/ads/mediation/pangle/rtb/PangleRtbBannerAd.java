@@ -6,6 +6,7 @@ import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERV
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,8 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleInitializer;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -47,8 +50,8 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId =
-        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
@@ -71,45 +74,63 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
     }
 
     Context context = adConfiguration.getContext();
-    ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
-    supportedSizes.add(new AdSize(320, 50));
-    supportedSizes.add(new AdSize(300, 250));
-    supportedSizes.add(new AdSize(728, 90));
-    AdSize closestSize =
-        MediationUtils.findClosestSize(context, adConfiguration.getAdSize(), supportedSizes);
-    if (closestSize == null) {
-      AdError error =
-          PangleConstants.createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              "Failed to request banner ad from Pangle. Invalid banner size.");
-      Log.w(TAG, error.toString());
-      adLoadCallback.onFailure(error);
-      return;
-    }
+    String appId = serverParameters.getString(PangleConstants.APP_ID);
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
+                supportedSizes.add(new AdSize(320, 50));
+                supportedSizes.add(new AdSize(300, 250));
+                supportedSizes.add(new AdSize(728, 90));
+                AdSize closestSize =
+                    MediationUtils.findClosestSize(
+                        context, adConfiguration.getAdSize(), supportedSizes);
+                if (closestSize == null) {
+                  AdError error =
+                      PangleConstants.createAdapterError(
+                          ERROR_BANNER_SIZE_MISMATCH,
+                          "Failed to request banner ad from Pangle. Invalid banner size.");
+                  Log.w(TAG, error.toString());
+                  adLoadCallback.onFailure(error);
+                  return;
+                }
 
-    wrappedAdView = new FrameLayout(context);
+                wrappedAdView = new FrameLayout(context);
 
-    PAGBannerRequest request =
-        new PAGBannerRequest(new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
-    request.setAdString(bidResponse);
-    PAGBannerAd.loadAd(
-        placementId,
-        request,
-        new PAGBannerAdLoadListener() {
-          @Override
-          public void onError(int errorCode, String errorMessage) {
-            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-            Log.w(TAG, error.toString());
-            adLoadCallback.onFailure(error);
-          }
+                PAGBannerRequest request =
+                    new PAGBannerRequest(
+                        new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
+                request.setAdString(bidResponse);
+                PAGBannerAd.loadAd(
+                    placementId,
+                    request,
+                    new PAGBannerAdLoadListener() {
+                      @Override
+                      public void onError(int errorCode, String errorMessage) {
+                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                        Log.w(TAG, error.toString());
+                        adLoadCallback.onFailure(error);
+                      }
 
-          @Override
-          public void onAdLoaded(PAGBannerAd pagBannerAd) {
-            pagBannerAd.setAdInteractionListener(PangleRtbBannerAd.this);
-            wrappedAdView.addView(pagBannerAd.getBannerView());
-            bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
-          }
-        });
+                      @Override
+                      public void onAdLoaded(PAGBannerAd pagBannerAd) {
+                        pagBannerAd.setAdInteractionListener(PangleRtbBannerAd.this);
+                        wrappedAdView.addView(pagBannerAd.getBannerView());
+                        bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
+                      }
+                    });
+              }
+
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @NonNull

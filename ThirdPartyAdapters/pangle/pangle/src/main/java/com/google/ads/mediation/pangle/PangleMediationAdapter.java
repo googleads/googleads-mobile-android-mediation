@@ -11,6 +11,7 @@ import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
@@ -95,28 +96,22 @@ public class PangleMediationAdapter extends RtbAdapter {
 
     PangleAdapterUtils.setCoppa(
         MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
-    PAGConfig pagConfig =
-        new PAGConfig.Builder()
-            .appId(appId)
-            .setChildDirected(PangleAdapterUtils.getCoppa())
-            .setGDPRConsent(gdpr)
-            .setDoNotSell(ccpa)
-            .build();
-    PAGSdk.init(
-        context,
-        pagConfig,
-        new PAGSdk.PAGInitCallback() {
-          @Override
-          public void success() {
-            initializationCompleteCallback.onInitializationSucceeded();
-          }
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
 
-          @Override
-          public void fail(int errorCode, String errorMessage) {
-            Log.w(TAG, errorMessage);
-            initializationCompleteCallback.onInitializationFailed(errorMessage);
-          }
-        });
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                initializationCompleteCallback.onInitializationFailed(error.getMessage());
+              }
+            });
   }
 
   @NonNull
@@ -222,6 +217,10 @@ public class PangleMediationAdapter extends RtbAdapter {
     PangleMediationAdapter.gdpr = gdpr;
   }
 
+  public static int getGDPRConsent() {
+    return gdpr;
+  }
+
   /**
    * Set the CCPA setting in Pangle SDK.
    *
@@ -242,5 +241,9 @@ public class PangleMediationAdapter extends RtbAdapter {
       PAGConfig.setDoNotSell(ccpa);
     }
     PangleMediationAdapter.ccpa = ccpa;
+  }
+
+  public static int getDoNotSell() {
+    return ccpa;
   }
 }

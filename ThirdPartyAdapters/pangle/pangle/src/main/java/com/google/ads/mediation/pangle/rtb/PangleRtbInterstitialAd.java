@@ -6,6 +6,7 @@ import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -15,6 +16,8 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListene
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleInitializer;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -41,8 +44,8 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId =
-        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
@@ -64,25 +67,43 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       return;
     }
 
-    PAGInterstitialRequest request = new PAGInterstitialRequest();
-    request.setAdString(bidResponse);
-    PAGInterstitialAd.loadAd(
-        placementId,
-        request,
-        new PAGInterstitialAdLoadListener() {
-          @Override
-          public void onError(int errorCode, String errorMessage) {
-            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-            Log.w(TAG, error.toString());
-            adLoadCallback.onFailure(error);
-          }
+    Context context = adConfiguration.getContext();
+    String appId = serverParameters.getString(PangleConstants.APP_ID);
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                PAGInterstitialRequest request = new PAGInterstitialRequest();
+                request.setAdString(bidResponse);
+                PAGInterstitialAd.loadAd(
+                    placementId,
+                    request,
+                    new PAGInterstitialAdLoadListener() {
+                      @Override
+                      public void onError(int errorCode, String errorMessage) {
+                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                        Log.w(TAG, error.toString());
+                        adLoadCallback.onFailure(error);
+                      }
 
-          @Override
-          public void onAdLoaded(PAGInterstitialAd interstitialAd) {
-            interstitialAdCallback = adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
-            pagInterstitialAd = interstitialAd;
-          }
-        });
+                      @Override
+                      public void onAdLoaded(PAGInterstitialAd interstitialAd) {
+                        interstitialAdCallback =
+                            adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
+                        pagInterstitialAd = interstitialAd;
+                      }
+                    });
+              }
+
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @Override
@@ -111,6 +132,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
             }
           }
         });
+
     if (context instanceof Activity) {
       pagInterstitialAd.show((Activity) context);
       return;

@@ -6,6 +6,7 @@ import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -16,6 +17,8 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleInitializer;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -43,8 +46,8 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
   public void render() {
     PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
-    String placementId =
-        adConfiguration.getServerParameters().getString(PangleConstants.PLACEMENT_ID);
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
@@ -66,25 +69,42 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
       return;
     }
 
-    PAGRewardedRequest request = new PAGRewardedRequest();
-    request.setAdString(bidResponse);
-    PAGRewardedAd.loadAd(
-        placementId,
-        request,
-        new PAGRewardedAdLoadListener() {
-          @Override
-          public void onError(int errorCode, String errorMessage) {
-            AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-            Log.w(TAG, error.toString());
-            adLoadCallback.onFailure(error);
-          }
+    Context context = adConfiguration.getContext();
+    String appId = serverParameters.getString(PangleConstants.APP_ID);
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                PAGRewardedRequest request = new PAGRewardedRequest();
+                request.setAdString(bidResponse);
+                PAGRewardedAd.loadAd(
+                    placementId,
+                    request,
+                    new PAGRewardedAdLoadListener() {
+                      @Override
+                      public void onError(int errorCode, String errorMessage) {
+                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                        Log.w(TAG, error.toString());
+                        adLoadCallback.onFailure(error);
+                      }
 
-          @Override
-          public void onAdLoaded(PAGRewardedAd rewardedAd) {
-            rewardedAdCallback = adLoadCallback.onSuccess(PangleRtbRewardedAd.this);
-            pagRewardedAd = rewardedAd;
-          }
-        });
+                      @Override
+                      public void onAdLoaded(PAGRewardedAd rewardedAd) {
+                        rewardedAdCallback = adLoadCallback.onSuccess(PangleRtbRewardedAd.this);
+                        pagRewardedAd = rewardedAd;
+                      }
+                    });
+              }
+
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @Override
@@ -140,6 +160,7 @@ public class PangleRtbRewardedAd implements MediationRewardedAd {
             Log.d(TAG, error.toString());
           }
         });
+
     if (context instanceof Activity) {
       pagRewardedAd.show((Activity) context);
       return;
