@@ -51,15 +51,6 @@ public class InMobiNativeAd extends UnifiedNativeAdMapper {
         final Context context = mMediationNativeAdConfiguration.getContext();
         Bundle serverParameters = mMediationNativeAdConfiguration.getServerParameters();
 
-        //todo
-//        if (!mMediationNativeAdConfiguration.) {
-//            AdError error = new AdError(ERROR_NON_UNIFIED_NATIVE_REQUEST,
-//                    "Unified Native Ad should be requested.", ERROR_DOMAIN);
-//            Log.w(TAG, error.getMessage());
-//            mMediationAdLoadCallback.onFailure(error);
-//            return;
-//        }
-
         String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
         if (TextUtils.isEmpty(accountID)) {
             AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
@@ -165,6 +156,9 @@ public class InMobiNativeAd extends UnifiedNativeAdMapper {
                 @Override
                 public void onAdImpression(@NonNull InMobiNative inMobiNative) {
                     Log.d(TAG, "InMobi native ad has logged an impression.");
+                    if (mMediationNativeAdCallback != null) {
+                        mMediationNativeAdCallback.reportAdImpression();
+                    }
                 }
 
                 @Override
@@ -195,12 +189,10 @@ public class InMobiNativeAd extends UnifiedNativeAdMapper {
             }
         });
 
-        //todo
-//        // Setting mediation key words to native ad object
-//        Set<String> mediationKeyWords = mMediationNativeAdConfiguration.getKeywords();
-//        if (null != mediationKeyWords) {
-//            mAdNative.setKeywords(TextUtils.join(", ", mediationKeyWords));
-//        }
+        // Setting mediation key words to native ad object
+        if (null != mMediationNativeAdConfiguration.getMediationExtras().keySet()) {
+            mAdNative.setKeywords(TextUtils.join(", ", mMediationNativeAdConfiguration.getMediationExtras().keySet()));
+        }
 
         //Update Age Restricted User
         InMobiAdapterUtils.updateAgeRestrictedUser(mMediationNativeAdConfiguration);

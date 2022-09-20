@@ -5,7 +5,7 @@ import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAI
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INMOBI_NOT_INITIALIZED;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.INMOBI_SDK_ERROR_DOMAIN;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+import static com.google.ads.mediation.inmobi.InMobiAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -38,8 +38,8 @@ import java.util.Map;
 
 public class InMobiBannerAd implements MediationBannerAd {
 
-    private MediationBannerAdConfiguration mMediationBannerAdConfiguration;
-    private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mMediationAdLoadCallback;
+    private final MediationBannerAdConfiguration mMediationBannerAdConfiguration;
+    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mMediationAdLoadCallback;
     private FrameLayout mWrappedAdView;
     private MediationBannerAdCallback mMediationBannerAdCallback;
 
@@ -59,6 +59,7 @@ public class InMobiBannerAd implements MediationBannerAd {
         Bundle serverParameters = mMediationBannerAdConfiguration.getServerParameters();
 
         final AdSize inMobiMediationAdSize = getSupportedAdSize(context, mMediationBannerAdConfiguration.getAdSize());
+        Log.d(TAG, " InMobiBannerAd load banner with ad size: " + inMobiMediationAdSize);
         if (inMobiMediationAdSize == null) {
             String errorMessage = String
                     .format("InMobi SDK supported banner sizes are not valid for the requested size: %s",
@@ -124,10 +125,9 @@ public class InMobiBannerAd implements MediationBannerAd {
         // Turn off the animation.
         adView.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
 
-        //todo
-//        if (mMediationBannerAdConfiguration.get() != null) {
-//            adView.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
-//        }
+        if (mMediationBannerAdConfiguration.getMediationExtras().keySet() != null) {
+            adView.setKeywords(TextUtils.join(", ", mMediationBannerAdConfiguration.getMediationExtras().keySet()));
+        }
 
         //Update Age Restricted User
         InMobiAdapterUtils.updateAgeRestrictedUser(mMediationBannerAdConfiguration);
@@ -138,6 +138,12 @@ public class InMobiBannerAd implements MediationBannerAd {
         adView.setExtras(paramMap);
 
         Bundle mediationExtras = mMediationBannerAdConfiguration.getMediationExtras();
+
+        Log.d(TAG, " InMobiBannerAd mediationExtras :  " + mediationExtras.keySet().toString());
+        for (String key: mediationExtras.keySet())
+        {
+            Log.d (TAG, " InMobiBannerAd mediationExtras :  " + key);
+        }
 
         adView.setListener(new BannerAdEventListener() {
             @Override

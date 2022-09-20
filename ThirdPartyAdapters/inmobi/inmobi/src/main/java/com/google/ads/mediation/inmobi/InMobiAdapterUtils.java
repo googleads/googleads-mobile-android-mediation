@@ -49,14 +49,6 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void setGlobalTargeting(MediationAdRequest mediationAdRequest, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (mediationAdRequest.getLocation() != null) {
-      InMobiSdk.setLocation(mediationAdRequest.getLocation());
-    }
-  }
-
   static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {
     configureGlobalTargeting(extras);
 
@@ -161,15 +153,6 @@ class InMobiAdapterUtils {
     }
   }
 
-  static void updateAgeRestrictedUser(MediationAdRequest adRequest) {
-    if (adRequest.taggedForChildDirectedTreatment()
-            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      InMobiSdk.setIsAgeRestricted(true);
-    } else {
-      InMobiSdk.setIsAgeRestricted(false);
-    }
-  }
-
   static void updateAgeRestrictedUser(MediationAdConfiguration config) {
     if (config.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
@@ -177,20 +160,6 @@ class InMobiAdapterUtils {
     } else {
       InMobiSdk.setIsAgeRestricted(false);
     }
-  }
-
-  static HashMap<String, String> createInMobiParameterMap(MediationAdRequest adRequest) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
-
-    if (adRequest.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
-    } else {
-      map.put("coppa", "0");
-    }
-
-    return map;
   }
 
   static HashMap<String, String> createInMobiParameterMap(MediationAdConfiguration config) {

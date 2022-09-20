@@ -190,10 +190,9 @@ public class InMobiInterstitialAd implements MediationInterstitialAd {
             return;
         }
 
-        //todo
-//        if (mediationAdRequest.getKeywords() != null) {
-//            mAdInterstitial.setKeywords(TextUtils.join(", ", mediationAdRequest.getKeywords()));
-//        }
+        if (mMediationInterstitialAdConfiguration.getMediationExtras().keySet() != null) {
+            mAdInterstitial.setKeywords(TextUtils.join(", ", mMediationInterstitialAdConfiguration.getMediationExtras().keySet()));
+        }
 
         //Update Age Restricted User
         InMobiAdapterUtils.updateAgeRestrictedUser(mMediationInterstitialAdConfiguration);
