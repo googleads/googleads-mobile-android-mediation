@@ -21,13 +21,13 @@ public class AppLovinExtras {
    */
   public static class Builder {
 
-    private boolean mMuteAudio;
+    private boolean muteAudio;
 
     /**
      * Use this to mute audio for video ads. Must be set on each ad request.
      */
     public Builder setMuteAudio(boolean muteAudio) {
-      mMuteAudio = muteAudio;
+      this.muteAudio = muteAudio;
       return this;
     }
 
@@ -36,7 +36,7 @@ public class AppLovinExtras {
      */
     public Bundle build() {
       final Bundle extras = new Bundle(1);
-      extras.putBoolean(Keys.MUTE_AUDIO, mMuteAudio);
+      extras.putBoolean(Keys.MUTE_AUDIO, muteAudio);
 
       return extras;
     }

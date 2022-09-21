@@ -29,12 +29,12 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
 
   private static final long DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
 
-  private final DrawableDownloadListener mListener;
+  private final DrawableDownloadListener listener;
 
-  private final InMobiMemoryCache mMemoryCache = new InMobiMemoryCache();
+  private final InMobiMemoryCache memoryCache = new InMobiMemoryCache();
 
   public ImageDownloaderAsyncTask(DrawableDownloadListener listener) {
-    mListener = listener;
+    this.listener = listener;
   }
 
   /**
@@ -57,12 +57,12 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
     Drawable iconDrawable;
 
     try {
-      if (null != mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)))) {
-        iconDrawable = mMemoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
+      if (null != memoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)))) {
+        iconDrawable = memoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
       } else {
         iconDrawable = getDrawableFuture(urlsMap.get(KEY_ICON), executorService).get
             (DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        mMemoryCache.put(String.valueOf(urlsMap.get(KEY_ICON)), iconDrawable);
+        memoryCache.put(String.valueOf(urlsMap.get(KEY_ICON)), iconDrawable);
       }
 
       HashMap<String, Drawable> drawableHashMap = new HashMap<>();
@@ -107,9 +107,9 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
     super.onPostExecute(stringDrawableHashMap);
     if (stringDrawableHashMap != null) {
       // Image download successful, send on success callback.
-      mListener.onDownloadSuccess(stringDrawableHashMap);
+      listener.onDownloadSuccess(stringDrawableHashMap);
     } else {
-      mListener.onDownloadFailure();
+      listener.onDownloadFailure();
     }
   }
 

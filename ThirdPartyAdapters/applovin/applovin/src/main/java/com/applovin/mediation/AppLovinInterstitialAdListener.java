@@ -15,35 +15,35 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 class AppLovinInterstitialAdListener
     implements AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
-  private final ApplovinAdapter mAdapter;
-  private final MediationInterstitialListener mMediationInterstitialListener;
+  private final ApplovinAdapter adapter;
+  private final MediationInterstitialListener mediationInterstitialListener;
 
   AppLovinInterstitialAdListener(
       ApplovinAdapter adapter, MediationInterstitialListener mediationInterstitialListener) {
-    mAdapter = adapter;
-    mMediationInterstitialListener = mediationInterstitialListener;
+    this.adapter = adapter;
+    this.mediationInterstitialListener = mediationInterstitialListener;
   }
 
   // Ad Display Listener.
   @Override
   public void adDisplayed(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Interstitial displayed.");
-    mMediationInterstitialListener.onAdOpened(mAdapter);
+    mediationInterstitialListener.onAdOpened(adapter);
   }
 
   @Override
   public void adHidden(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Interstitial dismissed.");
-    mAdapter.unregister();
-    mMediationInterstitialListener.onAdClosed(mAdapter);
+    adapter.unregister();
+    mediationInterstitialListener.onAdClosed(adapter);
   }
 
   // Ad Click Listener.
   @Override
   public void adClicked(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Interstitial clicked.");
-    mMediationInterstitialListener.onAdClicked(mAdapter);
-    mMediationInterstitialListener.onAdLeftApplication(mAdapter);
+    mediationInterstitialListener.onAdClicked(adapter);
+    mediationInterstitialListener.onAdLeftApplication(adapter);
   }
 
   // Ad Video Playback Listener.

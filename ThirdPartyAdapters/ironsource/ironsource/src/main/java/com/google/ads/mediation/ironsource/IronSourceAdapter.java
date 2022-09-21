@@ -28,12 +28,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
    * Mediation interstitial ad listener used to forward interstitial events from IronSource SDK to
    * Google Mobile Ads SDK.
    */
-  private MediationInterstitialListener mInterstitialListener;
+  private MediationInterstitialListener interstitialListener;
 
   /**
    * This is the id of the instance to be shown.
    */
-  private String mInstanceID;
+  private String instanceID;
 
   // region MediationInterstitialAdapter implementation.
   @Override
@@ -46,12 +46,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new InitializationCallback() {
           @Override
           public void onInitializeSuccess() {
-            mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
-            mInterstitialListener = listener;
+            instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+            interstitialListener = listener;
             Log.d(TAG,
                 String.format("Loading IronSource interstitial ad with instance ID: %s",
-                    mInstanceID));
-            IronSourceManager.getInstance().loadInterstitial(mInstanceID, IronSourceAdapter.this);
+                    instanceID));
+            IronSourceManager.getInstance().loadInterstitial(instanceID, IronSourceAdapter.this);
           }
 
           @Override
@@ -65,8 +65,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
   @Override
   public void showInterstitial() {
     Log.d(TAG,
-        String.format("Showing IronSource interstitial ad for instance ID: %s", this.mInstanceID));
-    IronSourceManager.getInstance().showInterstitial(mInstanceID);
+        String.format("Showing IronSource interstitial ad for instance ID: %s", this.instanceID));
+    IronSourceManager.getInstance().showInterstitial(instanceID);
   }
   // endregion
 
@@ -90,8 +90,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdLoaded(IronSourceAdapter.this);
+            if (interstitialListener != null) {
+              interstitialListener.onAdLoaded(IronSourceAdapter.this);
             }
           }
         });
@@ -109,8 +109,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+            if (interstitialListener != null) {
+              interstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
             }
           }
         });
@@ -123,8 +123,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdOpened(IronSourceAdapter.this);
+            if (interstitialListener != null) {
+              interstitialListener.onAdOpened(IronSourceAdapter.this);
             }
           }
         });
@@ -137,8 +137,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+            if (interstitialListener != null) {
+              interstitialListener.onAdClosed(IronSourceAdapter.this);
             }
           }
         });
@@ -156,9 +156,9 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdOpened(IronSourceAdapter.this);
-              mInterstitialListener.onAdClosed(IronSourceAdapter.this);
+            if (interstitialListener != null) {
+              interstitialListener.onAdOpened(IronSourceAdapter.this);
+              interstitialListener.onAdClosed(IronSourceAdapter.this);
             }
           }
         });
@@ -171,9 +171,9 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdClicked(IronSourceAdapter.this);
-              mInterstitialListener.onAdLeftApplication(IronSourceAdapter.this);
+            if (interstitialListener != null) {
+              interstitialListener.onAdClicked(IronSourceAdapter.this);
+              interstitialListener.onAdLeftApplication(IronSourceAdapter.this);
             }
           }
         });
@@ -188,8 +188,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
         new Runnable() {
           @Override
           public void run() {
-            if (mInterstitialListener != null) {
-              mInterstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+            if (interstitialListener != null) {
+              interstitialListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
             }
           }
         });

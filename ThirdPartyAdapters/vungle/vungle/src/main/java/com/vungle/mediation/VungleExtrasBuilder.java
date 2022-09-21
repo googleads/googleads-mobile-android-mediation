@@ -22,14 +22,14 @@ public final class VungleExtrasBuilder {
   static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
   static final String UUID_KEY = "uniqueVungleRequestKey";
 
-  private final Bundle mBundle = new Bundle();
+  private final Bundle bundle = new Bundle();
 
   public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
-    mBundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
+    bundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
   }
 
   public VungleExtrasBuilder setPlayingPlacement(String placement) {
-    mBundle.putString(EXTRA_PLAY_PLACEMENT, placement);
+    bundle.putString(EXTRA_PLAY_PLACEMENT, placement);
     return this;
   }
 
@@ -39,35 +39,35 @@ public final class VungleExtrasBuilder {
   }
 
   public VungleExtrasBuilder setStartMuted(boolean muted) {
-    mBundle.putBoolean(EXTRA_START_MUTED, muted);
+    bundle.putBoolean(EXTRA_START_MUTED, muted);
     return this;
   }
 
   public VungleExtrasBuilder setUserId(String userId) {
-    mBundle.putString(EXTRA_USER_ID, userId);
+    bundle.putString(EXTRA_USER_ID, userId);
     return this;
   }
 
   public VungleExtrasBuilder setOrdinalViewCount(int ordinalViewCount) {
-    mBundle.putInt(EXTRA_ORDINAL_VIEW_COUNT, ordinalViewCount);
+    bundle.putInt(EXTRA_ORDINAL_VIEW_COUNT, ordinalViewCount);
     return this;
   }
 
   public VungleExtrasBuilder setAdOrientation(int adOrientation) {
-    mBundle.putInt(EXTRA_ORIENTATION, adOrientation);
+    bundle.putInt(EXTRA_ORIENTATION, adOrientation);
     return this;
   }
 
   public VungleExtrasBuilder setBannerUniqueRequestID(String uniqueID) {
-    mBundle.putString(UUID_KEY, uniqueID);
+    bundle.putString(UUID_KEY, uniqueID);
     return this;
   }
 
   public Bundle build() {
-    if (TextUtils.isEmpty(mBundle.getString(UUID_KEY, null))) {
-      mBundle.putString(UUID_KEY, UUID.randomUUID().toString());
+    if (TextUtils.isEmpty(bundle.getString(UUID_KEY, null))) {
+      bundle.putString(UUID_KEY, UUID.randomUUID().toString());
     }
-    return mBundle;
+    return bundle;
   }
 
   public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras, boolean defaultMuteState) {

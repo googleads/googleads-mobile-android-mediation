@@ -25,10 +25,10 @@ public class ChartboostReward implements RewardItem {
   /**
    * Reward item amount to be rewarded.
    */
-  private final int mAmount;
+  private final int amount;
 
   public ChartboostReward(int amount) {
-    this.mAmount = amount;
+    this.amount = amount;
   }
 
   @Override
@@ -40,6 +40,6 @@ public class ChartboostReward implements RewardItem {
 
   @Override
   public int getAmount() {
-    return mAmount;
+    return amount;
   }
 }

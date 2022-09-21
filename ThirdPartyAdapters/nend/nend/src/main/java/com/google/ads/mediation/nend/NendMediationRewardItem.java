@@ -9,22 +9,22 @@ import net.nend.android.NendAdRewardItem;
  */
 class NendMediationRewardItem implements RewardItem {
 
-  private final String mRewardType;
-  private final int mRewardAmount;
+  private final String rewardType;
+  private final int rewardAmount;
 
   NendMediationRewardItem(@NonNull NendAdRewardItem item) {
-    mRewardType = item.getCurrencyName();
-    mRewardAmount = item.getCurrencyAmount();
+    rewardType = item.getCurrencyName();
+    rewardAmount = item.getCurrencyAmount();
   }
 
   @Override
   @NonNull
   public String getType() {
-    return mRewardType;
+    return rewardType;
   }
 
   @Override
   public int getAmount() {
-    return mRewardAmount;
+    return rewardAmount;
   }
 }

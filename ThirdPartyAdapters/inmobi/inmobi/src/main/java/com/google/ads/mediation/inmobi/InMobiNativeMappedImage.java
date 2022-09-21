@@ -11,31 +11,31 @@ import com.google.android.gms.ads.formats.NativeAd;
  */
 class InMobiNativeMappedImage extends NativeAd.Image {
 
-  private final Drawable mInMobiDrawable;
-  private final Uri mInmobiImageUri;
-  private final double mInMobiScale;
+  private final Drawable inMobiDrawable;
+  private final Uri inMobiImageUri;
+  private final double inMobiScale;
 
   public InMobiNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
-    mInMobiDrawable = drawable;
-    mInmobiImageUri = imageUri;
-    mInMobiScale = scale;
+    inMobiDrawable = drawable;
+    inMobiImageUri = imageUri;
+    inMobiScale = scale;
   }
 
   @NonNull
   @Override
   public Drawable getDrawable() {
-    return mInMobiDrawable;
+    return inMobiDrawable;
   }
 
   @NonNull
   @Override
   public Uri getUri() {
-    return mInmobiImageUri;
+    return inMobiImageUri;
   }
 
   @Override
   public double getScale() {
-    return mInMobiScale;
+    return inMobiScale;
   }
 
 }

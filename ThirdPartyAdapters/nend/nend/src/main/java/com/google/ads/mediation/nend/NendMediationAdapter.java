@@ -173,9 +173,9 @@ public class NendMediationAdapter extends Adapter
 
   static final String MEDIATION_NAME_ADMOB = "AdMob";
 
-  private NendAdRewardedVideo mRewardedVideo;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  private NendAdRewardedVideo rewardedVideo;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
 
   public enum FormatType {
     TYPE_VIDEO,
@@ -273,24 +273,24 @@ public class NendMediationAdapter extends Adapter
       return;
     }
 
-    mAdLoadCallback = mediationAdLoadCallback;
+    adLoadCallback = mediationAdLoadCallback;
 
-    mRewardedVideo = new NendAdRewardedVideo(context, spotID, apiKey);
-    mRewardedVideo.setActionListener(NendMediationAdapter.this);
-    mRewardedVideo.setMediationName(MEDIATION_NAME_ADMOB);
-    mRewardedVideo.setUserId(networkExtras.getString(KEY_USER_ID, ""));
+    rewardedVideo = new NendAdRewardedVideo(context, spotID, apiKey);
+    rewardedVideo.setActionListener(NendMediationAdapter.this);
+    rewardedVideo.setMediationName(MEDIATION_NAME_ADMOB);
+    rewardedVideo.setUserId(networkExtras.getString(KEY_USER_ID, ""));
 
-    mRewardedVideo.loadAd();
+    rewardedVideo.loadAd();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (!mRewardedVideo.isLoaded()) {
+    if (!rewardedVideo.isLoaded()) {
       AdError error = new AdError(ERROR_AD_NOT_READY, "nend rewarded ad not ready yet.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(error);
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
       }
       return;
     }
@@ -299,13 +299,13 @@ public class NendMediationAdapter extends Adapter
       AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
           "nend requires an Activity context to show ads.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(error);
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
       }
       return;
     }
 
-    mRewardedVideo.showAd((Activity) context);
+    rewardedVideo.showAd((Activity) context);
   }
 
   /**
@@ -348,14 +348,14 @@ public class NendMediationAdapter extends Adapter
    */
   @Override
   public void onLoaded(@NonNull NendAdVideo nendAdVideo) {
-    if (mRewardedVideo.getType() == NendAdVideoType.NORMAL) {
-      NendAdVideoPlayingState state = mRewardedVideo.playingState();
+    if (rewardedVideo.getType() == NendAdVideoType.NORMAL) {
+      NendAdVideoPlayingState state = rewardedVideo.playingState();
       if (state != null) {
         state.setPlayingStateListener(new NendAdVideoPlayingStateListener() {
           @Override
           public void onStarted(@NonNull NendAdVideo nendAdVideo) {
-            if (mRewardedAdCallback != null) {
-              mRewardedAdCallback.onVideoStart();
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.onVideoStart();
             }
           }
 
@@ -366,16 +366,16 @@ public class NendMediationAdapter extends Adapter
 
           @Override
           public void onCompleted(@NonNull NendAdVideo nendAdVideo) {
-            if (mRewardedAdCallback != null) {
-              mRewardedAdCallback.onVideoComplete();
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.onVideoComplete();
             }
           }
         });
       }
     }
 
-    if (mAdLoadCallback != null) {
-      mRewardedAdCallback = mAdLoadCallback.onSuccess(NendMediationAdapter.this);
+    if (adLoadCallback != null) {
+      rewardedAdCallback = adLoadCallback.onSuccess(NendMediationAdapter.this);
     }
   }
 
@@ -385,17 +385,17 @@ public class NendMediationAdapter extends Adapter
         .format("Nend SDK returned an ad load failure callback with code: %d", errorCode);
     AdError error = new AdError(errorCode, errorMessage, NEND_SDK_ERROR_DOMAIN);
     Log.e(TAG, error.getMessage());
-    if (mAdLoadCallback != null) {
-      mAdLoadCallback.onFailure(error);
+    if (adLoadCallback != null) {
+      adLoadCallback.onFailure(error);
     }
-    mRewardedVideo.releaseAd();
+    rewardedVideo.releaseAd();
   }
 
   @Override
   public void onRewarded(@NonNull NendAdVideo nendAdVideo,
       @NonNull NendAdRewardItem nendAdRewardItem) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onUserEarnedReward(new NendMediationRewardItem(nendAdRewardItem));
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onUserEarnedReward(new NendMediationRewardItem(nendAdRewardItem));
     }
   }
 
@@ -404,31 +404,31 @@ public class NendMediationAdapter extends Adapter
     AdError error = new AdError(ERROR_AD_FAILED_TO_PLAY,
         "Nend SDK returned the onFailedToPlay() error callback.", ERROR_DOMAIN);
     Log.e(TAG, error.getMessage());
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow(error);
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdFailedToShow(error);
     }
   }
 
   @Override
   public void onShown(@NonNull NendAdVideo nendAdVideo) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdOpened();
-      mRewardedAdCallback.reportAdImpression();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdOpened();
+      rewardedAdCallback.reportAdImpression();
     }
   }
 
   @Override
   public void onClosed(@NonNull NendAdVideo nendAdVideo) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdClosed();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
     }
-    mRewardedVideo.releaseAd();
+    rewardedVideo.releaseAd();
   }
 
   @Override
   public void onAdClicked(@NonNull NendAdVideo nendAdVideo) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.reportAdClicked();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdClicked();
     }
   }
 

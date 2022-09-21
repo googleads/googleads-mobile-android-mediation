@@ -74,7 +74,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   /**
    * BannerView.IListener instance.
    */
-  private BannerView.IListener mUnityBannerListener = new BannerView.Listener() {
+  private BannerView.IListener unityBannerListener = new BannerView.Listener() {
     @Override
     public void onBannerLoaded(BannerView bannerView) {
       String logMessage = String.format("Unity Ads finished loading banner ad for placement ID: %s",
@@ -113,7 +113,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     }
     bannerView = null;
     mediationBannerListener = null;
-    mUnityBannerListener = null;
+    unityBannerListener = null;
   }
 
   @Override
@@ -167,7 +167,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
               bannerView = new BannerView(activity, bannerPlacementId, unityBannerSize);
             }
 
-            bannerView.setListener(mUnityBannerListener);
+            bannerView.setListener(unityBannerListener);
             bannerView.load();
           }
 
