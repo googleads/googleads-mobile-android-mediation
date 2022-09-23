@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 4.7.0.3.0 (In progress)
+#### Version 4.7.0.3.0
 - Verified compatibility with Pangle SDK version 4.7.0.3.
 - The adapter now attempts to initialize the Pangle SDK before loading ads.
 
