@@ -59,7 +59,6 @@ public class InMobiBannerAd implements MediationBannerAd {
         Bundle serverParameters = mMediationBannerAdConfiguration.getServerParameters();
 
         final AdSize inMobiMediationAdSize = getSupportedAdSize(context, mMediationBannerAdConfiguration.getAdSize());
-        Log.d(TAG, " InMobiBannerAd load banner with ad size: " + inMobiMediationAdSize);
         if (inMobiMediationAdSize == null) {
             String errorMessage = String
                     .format("InMobi SDK supported banner sizes are not valid for the requested size: %s",
@@ -138,12 +137,6 @@ public class InMobiBannerAd implements MediationBannerAd {
         adView.setExtras(paramMap);
 
         Bundle mediationExtras = mMediationBannerAdConfiguration.getMediationExtras();
-
-        Log.d(TAG, " InMobiBannerAd mediationExtras :  " + mediationExtras.keySet().toString());
-        for (String key: mediationExtras.keySet())
-        {
-            Log.d (TAG, " InMobiBannerAd mediationExtras :  " + key);
-        }
 
         adView.setListener(new BannerAdEventListener() {
             @Override
@@ -234,8 +227,6 @@ public class InMobiBannerAd implements MediationBannerAd {
                         mMediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
         mWrappedAdView.addView(adView);
         InMobiAdapterUtils.setGlobalTargeting(mMediationBannerAdConfiguration, mediationExtras);
-
-        Log.d(TAG, "Requesting banner with ad size: " + mMediationBannerAdConfiguration.getAdSize().toString());
         adView.load();
     }
 
