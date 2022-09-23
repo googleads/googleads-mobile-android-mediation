@@ -49,31 +49,7 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (configuration.getLocation() != null) {
-      InMobiSdk.setLocation(configuration.getLocation());
-    }
-  }
-
-  static void setGlobalTargeting(MediationBannerAdConfiguration configuration, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (configuration.getLocation() != null) {
-      InMobiSdk.setLocation(configuration.getLocation());
-    }
-  }
-
-  static void setGlobalTargeting(MediationInterstitialAdConfiguration configuration, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (configuration.getLocation() != null) {
-      InMobiSdk.setLocation(configuration.getLocation());
-    }
-  }
-
-  static void setGlobalTargeting(MediationNativeAdConfiguration configuration, Bundle extras) {
+  static void setGlobalTargeting(MediationAdConfiguration configuration, Bundle extras) {
     configureGlobalTargeting(extras);
 
     if (configuration.getLocation() != null) {
