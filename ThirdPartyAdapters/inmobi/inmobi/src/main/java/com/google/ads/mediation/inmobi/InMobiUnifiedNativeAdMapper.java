@@ -1,6 +1,5 @@
 package com.google.ads.mediation.inmobi;
 
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MALFORMED_IMAGE_URL;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_MISSING_NATIVE_ASSETS;
@@ -21,7 +20,6 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
-import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
 import java.net.MalformedURLException;
@@ -182,7 +180,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
               if (null != iconDrawable && mMediationAdLoadCallback != null) {
                 inMobiNativeAd.mMediationNativeAdCallback
-                        = mMediationAdLoadCallback.onSuccess(inMobiNativeAd);
+                        = mMediationAdLoadCallback.onSuccess(InMobiUnifiedNativeAdMapper.this);
               } else {
                 AdError error = new AdError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
                     "Failed to download image assets.", ERROR_DOMAIN);
@@ -203,7 +201,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     } else {
       if (mMediationAdLoadCallback != null) {
         inMobiNativeAd.mMediationNativeAdCallback
-                = mMediationAdLoadCallback.onSuccess(inMobiNativeAd);
+                = mMediationAdLoadCallback.onSuccess(InMobiUnifiedNativeAdMapper.this);
       }
     }
   }

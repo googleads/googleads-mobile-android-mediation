@@ -3,7 +3,6 @@ package com.google.ads.mediation.inmobi;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INMOBI_NOT_INITIALIZED;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_NON_UNIFIED_NATIVE_REQUEST;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.INMOBI_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
@@ -16,12 +15,8 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAd;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
-import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.inmobi.ads.AdMetaInfo;
@@ -32,9 +27,8 @@ import com.inmobi.ads.listeners.NativeAdEventListener;
 import com.inmobi.ads.listeners.VideoEventListener;
 
 import java.util.HashMap;
-import java.util.Set;
 
-public class InMobiNativeAd extends UnifiedNativeAdMapper {
+public class InMobiNativeAd {
 
     MediationNativeAdConfiguration mMediationNativeAdConfiguration;
     MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mMediationAdLoadCallback;
@@ -113,7 +107,9 @@ public class InMobiNativeAd extends UnifiedNativeAdMapper {
                     AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
                             requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
                     Log.w(TAG, error.getMessage());
-                    mMediationAdLoadCallback.onFailure(error);
+                    if (mMediationNativeAdCallback != null) {
+                        mMediationAdLoadCallback.onFailure(error);
+                    }
                 }
 
                 @Override
@@ -179,7 +175,9 @@ public class InMobiNativeAd extends UnifiedNativeAdMapper {
             public void onVideoCompleted(final InMobiNative inMobiNative) {
                 super.onVideoCompleted(inMobiNative);
                 Log.d(TAG, "InMobi native video ad completed.");
-                mMediationNativeAdCallback.onVideoComplete();
+                if (mMediationNativeAdCallback != null) {
+                    mMediationNativeAdCallback.onVideoComplete();
+                }
             }
 
             @Override

@@ -25,7 +25,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
@@ -207,7 +206,6 @@ public class InMobiBannerAd implements MediationBannerAd {
             }
         });
 
-        //todo disable hardware flag not getting set anywhere in InMobiAdapter
         if (sDisableHardwareFlag) {
             adView.disableHardwareAcceleration();
         }

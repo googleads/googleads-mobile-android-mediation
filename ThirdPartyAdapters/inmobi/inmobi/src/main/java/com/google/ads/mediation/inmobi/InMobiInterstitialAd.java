@@ -17,13 +17,9 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationRewardedAd;
-import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
@@ -39,6 +35,7 @@ public class InMobiInterstitialAd implements MediationInterstitialAd {
     private MediationInterstitialAdConfiguration mMediationInterstitialAdConfiguration;
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mMediationAdLoadCallback;
     private MediationInterstitialAdCallback mInterstitialAdCallback;
+    private static Boolean sDisableHardwareFlag = false;
 
     public InMobiInterstitialAd(MediationInterstitialAdConfiguration mMediationInterstitialAdConfiguration,
              MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mMediationAdLoadCallback) {
@@ -109,9 +106,6 @@ public class InMobiInterstitialAd implements MediationInterstitialAd {
                             AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.",
                                     ERROR_DOMAIN);
                             Log.w(TAG, error.getMessage());
-                            if (mInterstitialAdCallback != null) {
-                                mInterstitialAdCallback.onAdFailedToShow(error);
-                            }
                         }
 
                         @Override
@@ -201,6 +195,11 @@ public class InMobiInterstitialAd implements MediationInterstitialAd {
         HashMap<String, String> paramMap =
                 InMobiAdapterUtils.createInMobiParameterMap(mMediationInterstitialAdConfiguration);
         mAdInterstitial.setExtras(paramMap);
+
+        if (sDisableHardwareFlag) {
+            mAdInterstitial.disableHardwareAcceleration();
+        }
+
         InMobiAdapterUtils.setGlobalTargeting(mMediationInterstitialAdConfiguration, extras);
         mAdInterstitial.load();
     }
@@ -211,10 +210,6 @@ public class InMobiInterstitialAd implements MediationInterstitialAd {
             AdError error = new AdError(ERROR_AD_NOT_READY,
                     "InMobi Rewarded ad is not yet ready to be shown.", ERROR_DOMAIN);
             Log.w(TAG, error.getMessage());
-
-            if (mInterstitialAdCallback != null) {
-                mInterstitialAdCallback.onAdFailedToShow(error);
-            }
             return;
         }
 
