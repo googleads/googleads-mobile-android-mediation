@@ -288,11 +288,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
                   }
                   INCENTIVIZED_ADS.put(zoneId, incentivizedInterstitial);
                 }
+                incentivizedInterstitial.preload(this);
               }
             });
       }
-
-      incentivizedInterstitial.preload(this);
     } else {
       this.mediationAdLoadCallback = mediationAdLoadCallback;
       networkExtras = adConfiguration.getMediationExtras();
