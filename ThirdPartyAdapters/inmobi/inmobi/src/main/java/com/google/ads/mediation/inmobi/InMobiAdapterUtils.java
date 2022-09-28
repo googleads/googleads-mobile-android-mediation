@@ -5,18 +5,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
-import com.inmobi.sdk.InMobiSdk.Gender;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
@@ -45,15 +41,7 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void setGlobalTargeting(MediationAdRequest mediationAdRequest, Bundle extras) {
-    configureGlobalTargeting(extras);
-
-    if (mediationAdRequest.getLocation() != null) {
-      InMobiSdk.setLocation(mediationAdRequest.getLocation());
-    }
-  }
-
-  static void setGlobalTargeting(MediationRewardedAdConfiguration configuration, Bundle extras) {
+  static void setGlobalTargeting(MediationAdConfiguration configuration, Bundle extras) {
     configureGlobalTargeting(extras);
 
     if (configuration.getLocation() != null) {
@@ -133,18 +121,13 @@ class InMobiAdapterUtils {
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(MediationAdRequest adRequest) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
-
-    if (adRequest.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
+  static void updateAgeRestrictedUser(MediationAdConfiguration config) {
+    if (config.taggedForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      InMobiSdk.setIsAgeRestricted(true);
     } else {
-      map.put("coppa", "0");
+      InMobiSdk.setIsAgeRestricted(false);
     }
-
-    return map;
   }
 
   static HashMap<String, String> createInMobiParameterMap(MediationAdConfiguration config) {
@@ -152,7 +135,7 @@ class InMobiAdapterUtils {
     map.put("tp", "c_admob");
 
     if (config.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
     } else {
       map.put("coppa", "0");
