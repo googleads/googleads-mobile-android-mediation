@@ -3,7 +3,7 @@
 #### Next Version
 - Fixed an issue where rewarded ad requests continuously fail if the initial rewarded ad request times out.
 
-#### Version 11.5.1.0 (In progress)
+#### Version 11.5.1.0
 - Verified compatibility with AppLovin SDK 11.5.1.
 
 Built and tested with:
