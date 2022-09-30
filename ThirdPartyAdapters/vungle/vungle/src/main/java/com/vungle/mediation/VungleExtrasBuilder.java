@@ -1,12 +1,10 @@
 package com.vungle.mediation;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
-import com.vungle.warren.AdConfig;
-import java.util.UUID;
+import com.vungle.ads.AdConfig;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
@@ -15,32 +13,15 @@ import java.util.UUID;
 public final class VungleExtrasBuilder {
 
   public static final String EXTRA_USER_ID = "userId";
-  private static final String EXTRA_START_MUTED = "startMuted";
   private static final String EXTRA_ORDINAL_VIEW_COUNT = "ordinalViewCount";
   private static final String EXTRA_ORIENTATION = "adOrientation";
   static final String EXTRA_ALL_PLACEMENTS = "allPlacements";
   static final String EXTRA_PLAY_PLACEMENT = "playPlacement";
-  static final String UUID_KEY = "uniqueVungleRequestKey";
 
   private final Bundle bundle = new Bundle();
 
   public VungleExtrasBuilder(@Nullable @Size(min = 1L) String[] placements) {
     bundle.putStringArray(EXTRA_ALL_PLACEMENTS, placements);
-  }
-
-  public VungleExtrasBuilder setPlayingPlacement(String placement) {
-    bundle.putString(EXTRA_PLAY_PLACEMENT, placement);
-    return this;
-  }
-
-  @Deprecated
-  public VungleExtrasBuilder setSoundEnabled(boolean enabled) {
-    return setStartMuted(!enabled);
-  }
-
-  public VungleExtrasBuilder setStartMuted(boolean muted) {
-    bundle.putBoolean(EXTRA_START_MUTED, muted);
-    return this;
   }
 
   public VungleExtrasBuilder setUserId(String userId) {
@@ -58,33 +39,23 @@ public final class VungleExtrasBuilder {
     return this;
   }
 
-  public VungleExtrasBuilder setBannerUniqueRequestID(String uniqueID) {
-    bundle.putString(UUID_KEY, uniqueID);
-    return this;
-  }
-
   public Bundle build() {
-    if (TextUtils.isEmpty(bundle.getString(UUID_KEY, null))) {
-      bundle.putString(UUID_KEY, UUID.randomUUID().toString());
-    }
     return bundle;
   }
 
-  public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras, boolean defaultMuteState) {
+  public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras) {
     AdConfig adConfig = new AdConfig();
-    adConfig.setMuted(defaultMuteState);
 
     if (networkExtras != null) {
-      adConfig.setMuted(networkExtras.getBoolean(EXTRA_START_MUTED, defaultMuteState));
-      adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
+      //TODO TBD adConfig.setOrdinal(networkExtras.getInt(EXTRA_ORDINAL_VIEW_COUNT, 0));
       adConfig.setAdOrientation(networkExtras.getInt(EXTRA_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
     return adConfig;
   }
 
   public static AdConfig adConfigWithNetworkExtras(Bundle networkExtras,
-      NativeAdOptions options, boolean defaultMuteState) {
-    AdConfig adConfig = adConfigWithNetworkExtras(networkExtras, defaultMuteState);
+      NativeAdOptions options) {
+    AdConfig adConfig = adConfigWithNetworkExtras(networkExtras);
 
     int privacyIconPlacement;
     if (options != null) {

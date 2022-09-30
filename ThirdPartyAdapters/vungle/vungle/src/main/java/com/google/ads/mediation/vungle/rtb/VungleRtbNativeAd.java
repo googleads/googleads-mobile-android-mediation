@@ -26,47 +26,25 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
+import com.vungle.ads.AdConfig;
+import com.vungle.ads.BaseAd;
+import com.vungle.ads.NativeAd;
+import com.vungle.ads.NativeAdListener;
+import com.vungle.ads.VungleException;
+import com.vungle.ads.internal.ui.view.MediaView;
+import com.vungle.mediation.PlacementFinder;
 import com.vungle.mediation.VungleExtrasBuilder;
-import com.vungle.mediation.VungleManager;
-import com.google.ads.mediation.vungle.VungleNativeAd;
-import com.vungle.warren.AdConfig;
-import com.vungle.warren.NativeAd;
-import com.vungle.warren.NativeAdLayout;
-import com.vungle.warren.NativeAdListener;
-import com.vungle.warren.error.VungleException;
-import com.vungle.warren.ui.view.MediaView;
-
 import java.util.ArrayList;
 import java.util.Map;
 
-public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
-
-  /**
-   * Key to disable automatic management of native ad. Required when displaying Vungle native ad in
-   * a RecyclerView.
-   */
-  public static final String EXTRA_DISABLE_FEED_MANAGEMENT = "disableFeedLifecycleManagement";
+public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAdListener {
 
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
   private MediationNativeAdCallback nativeAdCallback;
 
-  /**
-   * Vungle native placement ID.
-   */
-  private String placementId;
-
-  /**
-   * Vungle ad configuration settings.
-   */
-  private AdConfig adConfig;
-
-  private String adMarkup;
-
-  /**
-   * Wrapper object for Vungle native ads.
-   */
-  private VungleNativeAd vungleNativeAd;
+  private NativeAd nativeAd;
+  private MediaView mediaView;
 
   public VungleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
@@ -78,7 +56,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     Bundle mediationExtras = adConfiguration.getMediationExtras();
     Bundle serverParameters = adConfiguration.getServerParameters();
     NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
-    final Context context = adConfiguration.getContext();
+    Context context = adConfiguration.getContext();
 
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
@@ -89,8 +67,8 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
       return;
     }
 
-    placementId = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
-    if (TextUtils.isEmpty(placementId)) {
+    String placementId = PlacementFinder.findPlacement(mediationExtras, serverParameters);
+    if (placementId == null || placementId.isEmpty()) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
@@ -98,88 +76,33 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
       return;
     }
 
-    adMarkup = adConfiguration.getBidResponse();
-    Log.d(TAG, "Render native adMarkup=" + adMarkup);
+    String adMarkup = adConfiguration.getBidResponse();
 
-    adConfig = VungleExtrasBuilder
-        .adConfigWithNetworkExtras(mediationExtras, nativeAdOptions, true);
+    AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras,
+        nativeAdOptions);
 
     Log.d(TAG, "start to render native ads...");
-
-    vungleNativeAd = new VungleNativeAd(context, placementId,
-        mediationExtras.getBoolean(EXTRA_DISABLE_FEED_MANAGEMENT, false));
-    VungleManager.getInstance().registerNativeAd(placementId, vungleNativeAd);
 
     VungleInitializer.getInstance()
         .initialize(
             appID,
-            context.getApplicationContext(),
+            context,
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                vungleNativeAd.loadNativeAd(adConfig, adMarkup, new NativeListener());
+                nativeAd = new NativeAd(context, placementId, adConfig);
+                nativeAd.setAdListener(VungleRtbNativeAd.this);
+                mediaView = new MediaView(context);
+
+                nativeAd.load(adMarkup);
               }
 
               @Override
               public void onInitializeError(AdError error) {
-                VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
                 Log.d(TAG, error.toString());
                 callback.onFailure(error);
               }
             });
-  }
-
-  private class NativeListener implements NativeAdListener {
-
-    @Override
-    public void onNativeAdLoaded(NativeAd nativeAd) {
-      mapNativeAd();
-      nativeAdCallback = callback.onSuccess(VungleRtbNativeAd.this);
-    }
-
-    @Override
-    public void onAdLoadError(String placementId, VungleException exception) {
-      VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
-      AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.d(TAG, error.toString());
-      callback.onFailure(error);
-    }
-
-    @Override
-    public void onAdPlayError(String placementId, VungleException exception) {
-      VungleManager.getInstance().removeActiveNativeAd(placementId, vungleNativeAd);
-
-      AdError error = VungleMediationAdapter.getAdError(exception);
-      Log.d(TAG, error.toString());
-      callback.onFailure(error);
-    }
-
-    @Override
-    public void onAdClick(String placementId) {
-      if (nativeAdCallback != null) {
-        nativeAdCallback.reportAdClicked();
-        nativeAdCallback.onAdOpened();
-      }
-    }
-
-    @Override
-    public void onAdLeftApplication(String placementId) {
-      if (nativeAdCallback != null) {
-        nativeAdCallback.onAdLeftApplication();
-      }
-    }
-
-    @Override
-    public void creativeId(String creativeId) {
-      // no-op
-    }
-
-    @Override
-    public void onAdImpression(String placementId) {
-      if (nativeAdCallback != null) {
-        nativeAdCallback.reportAdImpression();
-      }
-    }
   }
 
   @Override
@@ -193,7 +116,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
 
     ViewGroup adView = (ViewGroup) view;
 
-    if (vungleNativeAd.getNativeAd() == null || !vungleNativeAd.getNativeAd().canPlayAd()) {
+    if (nativeAd == null || !nativeAd.canPlayAd()) {
       return;
     }
 
@@ -203,10 +126,6 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
       Log.d(TAG, "Vungle requires a FrameLayout to render the native ad.");
       return;
     }
-
-    // Since NativeAdView from GMA SDK will be used to render the ad options view,
-    // we need to pass it to the Vungle SDK.
-    vungleNativeAd.getNativeAd().setAdOptionsRootView((FrameLayout) overlayView);
 
     View iconView = null;
     ArrayList<View> assetViews = new ArrayList<>();
@@ -225,58 +144,34 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
       Log.d(TAG, "The view to display a Vungle native icon image is not a type of ImageView, "
           + "so it can't be registered for click events.");
     }
-
-    vungleNativeAd.getNativeAd()
-        .registerViewForInteraction(vungleNativeAd.getNativeAdLayout(),
-            vungleNativeAd.getMediaView(), iconImageView, assetViews);
+    nativeAd.registerViewForInteraction((FrameLayout) overlayView, mediaView, iconImageView,
+        assetViews);
   }
 
   @Override
   public void untrackView(@NonNull View view) {
     super.untrackView(view);
     Log.d(TAG, "untrackView()");
-    if (vungleNativeAd.getNativeAd() == null) {
+    if (nativeAd == null) {
       return;
     }
 
-    vungleNativeAd.getNativeAd().unregisterView();
+    nativeAd.unregisterView();
   }
 
   private void mapNativeAd() {
-    NativeAd nativeAd = vungleNativeAd.getNativeAd();
-    String title = nativeAd.getAdTitle();
-    if (title != null) {
-      setHeadline(title);
-    }
-    String body = nativeAd.getAdBodyText();
-    if (body != null) {
-      setBody(body);
-    }
-    String cta = nativeAd.getAdCallToActionText();
-    if (cta != null) {
-      setCallToAction(cta);
-    }
+    setHeadline(nativeAd.getAdTitle());
+    setBody(nativeAd.getAdBodyText());
+    setCallToAction(nativeAd.getAdCallToActionText());
     Double starRating = nativeAd.getAdStarRating();
     if (starRating != null) {
       setStarRating(starRating);
     }
-
-    String sponsored = nativeAd.getAdSponsoredText();
-    if (sponsored != null) {
-      setAdvertiser(sponsored);
-    }
-
-    // Since NativeAdView from GMA SDK (instead of Vungle SDK's NativeAdLayout) will be used as
-    // the root view to render Vungle native ad, below is the workaround to set the media view to
-    // ensure impression events will be fired.
-    NativeAdLayout nativeAdLayout = vungleNativeAd.getNativeAdLayout();
-    MediaView mediaView = vungleNativeAd.getMediaView();
-    nativeAdLayout.removeAllViews();
-    nativeAdLayout.addView(mediaView);
-    setMediaView(nativeAdLayout);
+    setAdvertiser(nativeAd.getAdSponsoredText());
+    setMediaView(mediaView);
 
     String iconUrl = nativeAd.getAppIcon();
-    if (iconUrl != null && iconUrl.startsWith("file://")) {
+    if (iconUrl.startsWith("file://")) {
       setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
 
@@ -284,9 +179,53 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     setOverrideClickHandling(true);
   }
 
+  @Override
+  public void adClick(@NonNull BaseAd baseAd) {
+    if (nativeAdCallback != null) {
+      nativeAdCallback.reportAdClicked();
+      nativeAdCallback.onAdOpened();
+    }
+  }
+
+  @Override
+  public void adEnd(@NonNull BaseAd baseAd) {
+    // no-op
+  }
+
+  @Override
+  public void adImpression(@NonNull BaseAd baseAd) {
+    if (nativeAdCallback != null) {
+      nativeAdCallback.reportAdImpression();
+    }
+  }
+
+  @Override
+  public void adLoaded(@NonNull BaseAd baseAd) {
+    mapNativeAd();
+    nativeAdCallback = callback.onSuccess(VungleRtbNativeAd.this);
+  }
+
+  @Override
+  public void adStart(@NonNull BaseAd baseAd) {
+    // no-op
+  }
+
+  @Override
+  public void error(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    AdError error = VungleMediationAdapter.getAdError(e);
+    callback.onFailure(error);
+  }
+
+  @Override
+  public void onAdLeftApplication(@NonNull BaseAd baseAd) {
+    if (nativeAdCallback != null) {
+      nativeAdCallback.onAdLeftApplication();
+    }
+  }
+
   private static class VungleNativeMappedImage extends Image {
 
-    private Uri imageUri;
+    private final Uri imageUri;
 
     public VungleNativeMappedImage(Uri imageUrl) {
       this.imageUri = imageUrl;
@@ -306,17 +245,5 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper {
     public double getScale() {
       return 1;
     }
-  }
-
-  @NonNull
-  @Override
-  public String toString() {
-    return " [placementId="
-        + placementId
-        + " # hashcode="
-        + hashCode()
-        + " # vungleNativeAd="
-        + vungleNativeAd
-        + "] ";
   }
 }
