@@ -48,9 +48,9 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
-  private NativeAdBase mNativeAdBase;
-  private MediationNativeAdCallback mNativeAdCallback;
-  private MediaView mMediaView;
+  private NativeAdBase nativeAdBase;
+  private MediationNativeAdCallback nativeAdCallback;
+  private MediaView mediaView;
 
   public FacebookRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
@@ -71,11 +71,12 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     setMixedAudience(adConfiguration);
-    mMediaView = new MediaView(adConfiguration.getContext());
+    mediaView = new MediaView(adConfiguration.getContext());
 
     try {
-      mNativeAdBase = NativeAdBase.fromBidPayload(adConfiguration.getContext(), placementID,
-          adConfiguration.getBidResponse());
+      nativeAdBase =
+          NativeAdBase.fromBidPayload(
+              adConfiguration.getContext(), placementID, adConfiguration.getBidResponse());
     } catch (Exception ex) {
       AdError error = new AdError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
           "Failed to create native ad from bid payload: " + ex.getMessage(), ERROR_DOMAIN);
@@ -85,13 +86,14 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
-      mNativeAdBase.setExtraHints(new ExtraHints.Builder()
-          .mediationData(adConfiguration.getWatermark()).build());
+      nativeAdBase.setExtraHints(
+          new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
     }
 
-    mNativeAdBase.loadAd(
-        mNativeAdBase.buildLoadAdConfig()
-            .withAdListener(new NativeListener(adConfiguration.getContext(), mNativeAdBase))
+    nativeAdBase.loadAd(
+        nativeAdBase
+            .buildLoadAdConfig()
+            .withAdListener(new NativeListener(adConfiguration.getContext(), nativeAdBase))
             .withBid(adConfiguration.getBidResponse())
             .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
             .withPreloadedIconView(
@@ -102,26 +104,22 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
   private class NativeListener implements AdListener, NativeAdListener {
 
-    /**
-     * Context required to create AdOptions View.
-     */
-    private final WeakReference<Context> mContext;
+    /** Context required to create AdOptions View. */
+    private final WeakReference<Context> context;
 
-    /**
-     * Meta Audience Network native ad instance.
-     */
-    private final NativeAdBase mNativeAd;
+    /** Meta Audience Network native ad instance. */
+    private final NativeAdBase nativeAd;
 
     NativeListener(Context mContext, NativeAdBase mNativeAd) {
-      this.mNativeAd = mNativeAd;
-      this.mContext = new WeakReference<>(mContext);
+      this.nativeAd = mNativeAd;
+      this.context = new WeakReference<>(mContext);
     }
 
     @Override
     public void onAdClicked(Ad ad) {
-      mNativeAdCallback.reportAdClicked();
-      mNativeAdCallback.onAdOpened();
-      mNativeAdCallback.onAdLeftApplication();
+      nativeAdCallback.reportAdClicked();
+      nativeAdCallback.onAdOpened();
+      nativeAdCallback.onAdLeftApplication();
     }
 
     @Override
@@ -131,7 +129,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
     @Override
     public void onAdLoaded(Ad ad) {
-      if (ad != mNativeAd) {
+      if (ad != nativeAd) {
         AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad Loaded is not a Native Ad.",
             ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
@@ -139,7 +137,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         return;
       }
 
-      Context context = mContext.get();
+      Context context = this.context.get();
       if (context == null) {
         AdError error = new AdError(ERROR_NULL_CONTEXT, "Context is null.", ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
@@ -147,18 +145,20 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         return;
       }
 
-      FacebookRtbNativeAd.this.mapNativeAd(context, new NativeAdMapperListener() {
-        @Override
-        public void onMappingSuccess() {
-          mNativeAdCallback = callback.onSuccess(FacebookRtbNativeAd.this);
-        }
+      FacebookRtbNativeAd.this.mapNativeAd(
+          context,
+          new NativeAdMapperListener() {
+            @Override
+            public void onMappingSuccess() {
+              nativeAdCallback = callback.onSuccess(FacebookRtbNativeAd.this);
+            }
 
-        @Override
-        public void onMappingFailed(AdError error) {
-          Log.w(TAG, error.getMessage());
-          callback.onFailure(error);
-        }
-      });
+            @Override
+            public void onMappingFailed(AdError error) {
+              Log.w(TAG, error.getMessage());
+              callback.onFailure(error);
+            }
+          });
     }
 
     @Override
@@ -175,15 +175,15 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   /**
-   * This method will map the Meta Audience Network {@link #mNativeAdBase} to this mapper and send
-   * a success callback if the mapping was successful or a failure callback if the mapping was
+   * This method will map the Meta Audience Network {@link #nativeAdBase} to this mapper and send a
+   * success callback if the mapping was successful or a failure callback if the mapping was
    * unsuccessful.
    *
    * @param mapperListener used to send success/failure callbacks when mapping is done.
    */
-  public void mapNativeAd(@NonNull Context context,
-      @NonNull NativeAdMapperListener mapperListener) {
-    if (!containsRequiredFieldsForUnifiedNativeAd(mNativeAdBase)) {
+  public void mapNativeAd(
+      @NonNull Context context, @NonNull NativeAdMapperListener mapperListener) {
+    if (!containsRequiredFieldsForUnifiedNativeAd(nativeAdBase)) {
       AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
           "Ad from Meta Audience Network doesn't have all required assets.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
@@ -193,86 +193,87 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
     // Map all required assets (headline, one image, body, icon and call to
     // action).
-    setHeadline(mNativeAdBase.getAdHeadline());
-    if (mNativeAdBase.getAdCoverImage() != null) {
+    setHeadline(nativeAdBase.getAdHeadline());
+    if (nativeAdBase.getAdCoverImage() != null) {
       List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
       images.add(
-          new FacebookAdapterNativeAdImage(Uri.parse(mNativeAdBase.getAdCoverImage().getUrl())));
+          new FacebookAdapterNativeAdImage(Uri.parse(nativeAdBase.getAdCoverImage().getUrl())));
       setImages(images);
     }
-    setBody(mNativeAdBase.getAdBodyText());
-    if (mNativeAdBase.getPreloadedIconViewDrawable() == null) {
-      if (mNativeAdBase.getAdIcon() == null) {
+    setBody(nativeAdBase.getAdBodyText());
+    if (nativeAdBase.getPreloadedIconViewDrawable() == null) {
+      if (nativeAdBase.getAdIcon() == null) {
         setIcon(new FacebookAdapterNativeAdImage());
       } else {
-        setIcon(new FacebookAdapterNativeAdImage(Uri.parse(mNativeAdBase.getAdIcon().getUrl())));
+        setIcon(new FacebookAdapterNativeAdImage(Uri.parse(nativeAdBase.getAdIcon().getUrl())));
       }
     } else {
-      Drawable iconDrawable = mNativeAdBase.getPreloadedIconViewDrawable();
+      Drawable iconDrawable = nativeAdBase.getPreloadedIconViewDrawable();
       FacebookAdapterNativeAdImage iconImage = new FacebookAdapterNativeAdImage(iconDrawable);
       setIcon(iconImage);
     }
-    setCallToAction(mNativeAdBase.getAdCallToAction());
-    setAdvertiser(mNativeAdBase.getAdvertiserName());
+    setCallToAction(nativeAdBase.getAdCallToAction());
+    setAdvertiser(nativeAdBase.getAdvertiserName());
 
-    mMediaView.setListener(new MediaViewListener() {
-      @Override
-      public void onPlay(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+    this.mediaView.setListener(
+        new MediaViewListener() {
+          @Override
+          public void onPlay(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onVolumeChange(MediaView mediaView, float v) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+          @Override
+          public void onVolumeChange(MediaView mediaView, float v) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onPause(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+          @Override
+          public void onPause(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onComplete(MediaView mediaView) {
-        if (mNativeAdCallback != null) {
-          mNativeAdCallback.onVideoComplete();
-        }
-      }
+          @Override
+          public void onComplete(MediaView mediaView) {
+            if (nativeAdCallback != null) {
+              nativeAdCallback.onVideoComplete();
+            }
+          }
 
-      @Override
-      public void onEnterFullscreen(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+          @Override
+          public void onEnterFullscreen(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onExitFullscreen(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+          @Override
+          public void onExitFullscreen(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onFullscreenBackground(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
+          @Override
+          public void onFullscreenBackground(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
 
-      @Override
-      public void onFullscreenForeground(MediaView mediaView) {
-        // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
-      }
-    });
+          @Override
+          public void onFullscreenForeground(MediaView mediaView) {
+            // Google Mobile Ads SDK doesn't have a matching event. Do nothing.
+          }
+        });
 
     // Because the Meta Audience Network SDK doesn't offer a way to determine whether a native ad contains
     // a video asset or not, the adapter always returns a MediaView and claims to have
     // video content.
     FacebookRtbNativeAd.this.setHasVideoContent(true);
-    FacebookRtbNativeAd.this.setMediaView(mMediaView);
+    FacebookRtbNativeAd.this.setMediaView(this.mediaView);
 
     // Pass all the assets not supported by Google as extras.
     Bundle extras = new Bundle();
-    extras.putCharSequence(KEY_ID, mNativeAdBase.getId());
-    extras.putCharSequence(KEY_SOCIAL_CONTEXT_ASSET,
-        FacebookRtbNativeAd.this.mNativeAdBase.getAdSocialContext());
+    extras.putCharSequence(KEY_ID, nativeAdBase.getId());
+    extras.putCharSequence(
+        KEY_SOCIAL_CONTEXT_ASSET, FacebookRtbNativeAd.this.nativeAdBase.getAdSocialContext());
     setExtras(extras);
 
-    AdOptionsView adOptionsView = new AdOptionsView(context, mNativeAdBase, null);
+    AdOptionsView adOptionsView = new AdOptionsView(context, nativeAdBase, null);
     setAdChoicesContent(adOptionsView);
     mapperListener.onMappingSuccess();
   }
@@ -292,7 +293,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     if (nativeAd instanceof NativeBannerAd) {
       return hasNativeBannerAdAssets;
     }
-    return hasNativeBannerAdAssets && (nativeAd.getAdCoverImage() != null) && (mMediaView != null);
+    return hasNativeBannerAdAssets && (nativeAd.getAdCoverImage() != null) && (mediaView != null);
   }
 
   @Override
@@ -305,7 +306,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     ArrayList<View> assetViews = new ArrayList<>(clickableAssetViews.values());
     View iconView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
 
-    if (mNativeAdBase instanceof NativeBannerAd) {
+    if (nativeAdBase instanceof NativeBannerAd) {
       // trackViews() gets called after the ad loads, so forwarding onAdFailedToLoad() will be
       // too late.
       if (iconView == null) {
@@ -322,16 +323,16 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
         return;
       }
 
-      NativeBannerAd nativeBannerAd = (NativeBannerAd) mNativeAdBase;
+      NativeBannerAd nativeBannerAd = (NativeBannerAd) nativeAdBase;
       nativeBannerAd.registerViewForInteraction(view, (ImageView) iconView, assetViews);
-    } else if (mNativeAdBase instanceof NativeAd) {
-      NativeAd nativeAd = (NativeAd) mNativeAdBase;
+    } else if (nativeAdBase instanceof NativeAd) {
+      NativeAd nativeAd = (NativeAd) nativeAdBase;
       if (iconView instanceof ImageView) {
-        nativeAd.registerViewForInteraction(view, mMediaView, (ImageView) iconView, assetViews);
+        nativeAd.registerViewForInteraction(view, mediaView, (ImageView) iconView, assetViews);
       } else {
         Log.w(TAG, "Native icon asset is not of type ImageView. "
             + "Calling registerViewForInteraction() without a reference to the icon view.");
-        nativeAd.registerViewForInteraction(view, mMediaView, assetViews);
+        nativeAd.registerViewForInteraction(view, mediaView, assetViews);
       }
     } else {
       Log.w(TAG, "Native ad type is not of type NativeAd or NativeBannerAd. "
@@ -343,8 +344,8 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
   @Override
   public void untrackView(@NonNull View view) {
-    if (mNativeAdBase != null) {
-      mNativeAdBase.unregisterView();
+    if (nativeAdBase != null) {
+      nativeAdBase.unregisterView();
     }
     super.untrackView(view);
   }
@@ -352,15 +353,11 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private class FacebookAdapterNativeAdImage extends
       com.google.android.gms.ads.formats.NativeAd.Image {
 
-    /**
-     * A drawable for the Image.
-     */
-    private Drawable mDrawable;
+    /** A drawable for the Image. */
+    private Drawable drawable;
 
-    /**
-     * An Uri from which the image can be obtained.
-     */
-    private Uri mUri;
+    /** An Uri from which the image can be obtained. */
+    private Uri uri;
 
     /**
      * Default constructor for {@link FacebookAdapterNativeAdImage}.
@@ -374,7 +371,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
      * @param uri required to initialize.
      */
     public FacebookAdapterNativeAdImage(Uri uri) {
-      this.mUri = uri;
+      this.uri = uri;
     }
 
     /**
@@ -383,7 +380,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
      * @param drawable required to initialize.
      */
     public FacebookAdapterNativeAdImage(Drawable drawable) {
-      this.mDrawable = drawable;
+      this.drawable = drawable;
     }
 
     /**
@@ -398,13 +395,13 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     @Override
     @Nullable
     public Drawable getDrawable() {
-      return mDrawable;
+      return drawable;
     }
 
     @Override
     @NonNull
     public Uri getUri() {
-      return mUri;
+      return uri;
     }
 
     @Override

@@ -60,7 +60,7 @@ public class VerizonMediationAdapter extends Adapter
   /**
    * The Verizon Media banner renderer.
    */
-  private VerizonMediaBannerRenderer mBannerRenderer;
+  private VerizonMediaBannerRenderer bannerRenderer;
 
   /**
    * The Verizon Media native renderer.
@@ -157,15 +157,15 @@ public class VerizonMediationAdapter extends Adapter
       @NonNull com.google.android.gms.ads.AdSize adSize,
       @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    mBannerRenderer = new VerizonMediaBannerRenderer(this);
-    mBannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
+    bannerRenderer = new VerizonMediaBannerRenderer(this);
+    bannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
         mediationExtras);
   }
 
   @NonNull
   @Override
   public View getBannerView() {
-    return mBannerRenderer.getBannerView();
+    return bannerRenderer.getBannerView();
   }
 
   @Override
@@ -216,8 +216,8 @@ public class VerizonMediationAdapter extends Adapter
     if (verizonMediaInterstitialRenderer != null) {
       verizonMediaInterstitialRenderer.destroy();
     }
-    if (mBannerRenderer != null) {
-      mBannerRenderer.destroy();
+    if (bannerRenderer != null) {
+      bannerRenderer.destroy();
     }
     if (verizonMediaNativeRenderer != null) {
       verizonMediaNativeRenderer.destroy();

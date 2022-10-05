@@ -88,37 +88,37 @@ public class FyberMediationAdapter extends Adapter
   /**
    * Fyber's Spot object for the banner.
    */
-  private InneractiveAdSpot mBannerSpot;
+  private InneractiveAdSpot bannerSpot;
 
   /**
    * Holds the banner view which is created by Fyber, in order to return when AdMob calls getView.
    */
-  private ViewGroup mBannerWrapperView;
+  private ViewGroup bannerWrapperView;
 
   /**
    * AdMob's external Banner listener.
    */
-  private MediationBannerListener mMediationBannerListener;
+  private MediationBannerListener mediationBannerListener;
 
   /**
    * AdMob's external Interstitial listener.
    */
-  private MediationInterstitialListener mMediationInterstitialListener;
+  private MediationInterstitialListener mediationInterstitialListener;
 
   /**
    * The Activity which was passed by AdMob to {@link #requestInterstitialAd}.
    */
-  private WeakReference<Activity> mInterstitialActivityRef;
+  private WeakReference<Activity> interstitialActivityRef;
 
   /**
    * Fyber's spot object for interstitial.
    */
-  private InneractiveAdSpot mInterstitialSpot;
+  private InneractiveAdSpot interstitialSpot;
 
   /**
    * Fyber rewarded ad video renderer.
    */
-  private FyberRewardedVideoRenderer mRewardedRenderer;
+  private FyberRewardedVideoRenderer rewardedRenderer;
 
   /**
    * Default Constructor.
@@ -195,8 +195,8 @@ public class FyberMediationAdapter extends Adapter
               callback.onFailure(error);
               return;
             }
-            mRewardedRenderer = new FyberRewardedVideoRenderer(configuration, callback);
-            mRewardedRenderer.render();
+            rewardedRenderer = new FyberRewardedVideoRenderer(configuration, callback);
+            rewardedRenderer.render();
           }
         });
   }
@@ -297,13 +297,13 @@ public class FyberMediationAdapter extends Adapter
       @NonNull final MediationBannerListener mediationBannerListener,
       @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable final Bundle mediationExtras) {
-    mMediationBannerListener = mediationBannerListener;
+    this.mediationBannerListener = mediationBannerListener;
     String keyAppId = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(keyAppId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "App ID is null or empty.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+      this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
       return;
     }
 
@@ -313,7 +313,7 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
           return;
         }
 
@@ -324,27 +324,27 @@ public class FyberMediationAdapter extends Adapter
               "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
               ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
           return;
         }
 
-        mBannerSpot = InneractiveAdSpotManager.get().createSpot();
-        mBannerSpot.setMediationName(MEDIATOR_NAME);
+        bannerSpot = InneractiveAdSpotManager.get().createSpot();
+        bannerSpot.setMediationName(MEDIATOR_NAME);
 
         InneractiveAdViewUnitController controller = new InneractiveAdViewUnitController();
-        mBannerSpot.addUnitController(controller);
+        bannerSpot.addUnitController(controller);
 
         // Prepare wrapper view before making request.
-        mBannerWrapperView = new RelativeLayout(context);
+        bannerWrapperView = new RelativeLayout(context);
 
         InneractiveAdSpot.RequestListener requestListener = createFyberBannerAdListener();
-        mBannerSpot.setRequestListener(requestListener);
+        bannerSpot.setRequestListener(requestListener);
 
         requestedAdSize = adSize;
 
         FyberAdapterUtils.updateFyberUserParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        mBannerSpot.requestAd(request);
+        bannerSpot.requestAd(request);
       }
     });
   }
@@ -352,24 +352,24 @@ public class FyberMediationAdapter extends Adapter
   @NonNull
   @Override
   public View getBannerView() {
-    return mBannerWrapperView;
+    return bannerWrapperView;
   }
 
   @Override
   public void onDestroy() {
-    if (mBannerSpot != null) {
-      mBannerSpot.destroy();
-      mBannerSpot = null;
+    if (bannerSpot != null) {
+      bannerSpot.destroy();
+      bannerSpot = null;
     }
 
-    if (mInterstitialSpot != null) {
-      mInterstitialSpot.destroy();
-      mInterstitialSpot = null;
+    if (interstitialSpot != null) {
+      interstitialSpot.destroy();
+      interstitialSpot = null;
     }
 
-    if (mInterstitialActivityRef != null) {
-      mInterstitialActivityRef.clear();
-      mInterstitialActivityRef = null;
+    if (interstitialActivityRef != null) {
+      interstitialActivityRef.clear();
+      interstitialActivityRef = null;
     }
   }
 
@@ -394,26 +394,26 @@ public class FyberMediationAdapter extends Adapter
       @Override
       public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
         // Just a double check that we have the right type of selected controller.
-        if (!(mBannerSpot.getSelectedUnitController() instanceof
+        if (!(bannerSpot.getSelectedUnitController() instanceof
             InneractiveAdViewUnitController)) {
           String message = String.format("Unexpected controller type. Expected: %s. Actual: %s",
               InneractiveUnitController.class.getName(),
-              mBannerSpot.getSelectedUnitController().getClass().getName());
+              bannerSpot.getSelectedUnitController().getClass().getName());
           AdError error = new AdError(ERROR_WRONG_CONTROLLER_TYPE, message, ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mMediationBannerListener
+          mediationBannerListener
               .onAdFailedToLoad(FyberMediationAdapter.this, error);
-          mBannerSpot.destroy();
+          bannerSpot.destroy();
         }
 
         InneractiveAdViewUnitController controller =
-            (InneractiveAdViewUnitController) mBannerSpot.getSelectedUnitController();
+            (InneractiveAdViewUnitController) bannerSpot.getSelectedUnitController();
         InneractiveAdViewEventsListener listener = createFyberAdViewListener();
         controller.setEventsListener(listener);
-        controller.bindView(mBannerWrapperView);
+        controller.bindView(bannerWrapperView);
 
         // Validate the ad size returned by Fyber Marketplace with the requested ad size.
-        Context context = mBannerWrapperView.getContext();
+        Context context = bannerWrapperView.getContext();
         float density = context.getResources().getDisplayMetrics().density;
         int fyberAdWidth = Math.round(controller.getAdContentWidth() / density);
         int fyberAdHeight = Math.round(controller.getAdContentHeight() / density);
@@ -430,10 +430,10 @@ public class FyberMediationAdapter extends Adapter
               requestedAdHeight, fyberAdWidth, fyberAdHeight);
           AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH, message, ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
           return;
         }
-        mMediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
+        mediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
       }
 
       @Override
@@ -441,7 +441,7 @@ public class FyberMediationAdapter extends Adapter
           InneractiveErrorCode inneractiveErrorCode) {
         AdError error = getAdError(inneractiveErrorCode);
         Log.w(TAG, error.getMessage());
-        mMediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+        mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
       }
     };
   }
@@ -461,18 +461,18 @@ public class FyberMediationAdapter extends Adapter
 
       @Override
       public void onAdClicked(InneractiveAdSpot adSpot) {
-        mMediationBannerListener.onAdClicked(FyberMediationAdapter.this);
-        mMediationBannerListener.onAdOpened(FyberMediationAdapter.this);
+        mediationBannerListener.onAdClicked(FyberMediationAdapter.this);
+        mediationBannerListener.onAdOpened(FyberMediationAdapter.this);
       }
 
       @Override
       public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-        mMediationBannerListener.onAdClosed(FyberMediationAdapter.this);
+        mediationBannerListener.onAdClosed(FyberMediationAdapter.this);
       }
 
       @Override
       public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-        mMediationBannerListener.onAdLeftApplication(FyberMediationAdapter.this);
+        mediationBannerListener.onAdLeftApplication(FyberMediationAdapter.this);
       }
     };
   }
@@ -486,14 +486,14 @@ public class FyberMediationAdapter extends Adapter
       @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
 
-    mMediationInterstitialListener = mediationInterstitialListener;
+    this.mediationInterstitialListener = mediationInterstitialListener;
 
     String keyAppId = serverParameters.getString(KEY_APP_ID);
     AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "App ID is null or empty.",
         ERROR_DOMAIN);
     if (TextUtils.isEmpty(keyAppId)) {
       Log.w(TAG, error.getMessage());
-      mMediationInterstitialListener
+      this.mediationInterstitialListener
           .onAdFailedToLoad(FyberMediationAdapter.this, error);
       return;
     }
@@ -504,7 +504,7 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          mMediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
           return;
         }
 
@@ -515,7 +515,7 @@ public class FyberMediationAdapter extends Adapter
               "Cannot render interstitial ad. Please define a valid spot id on the AdMob UI.",
               ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mMediationInterstitialListener
+          FyberMediationAdapter.this.mediationInterstitialListener
               .onAdFailedToLoad(FyberMediationAdapter.this, error);
           return;
         }
@@ -526,56 +526,56 @@ public class FyberMediationAdapter extends Adapter
               "Cannot request an interstitial ad without an activity context.",
               ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          if (mMediationInterstitialListener != null) {
-            mMediationInterstitialListener
+          if (FyberMediationAdapter.this.mediationInterstitialListener != null) {
+            FyberMediationAdapter.this.mediationInterstitialListener
                 .onAdFailedToLoad(FyberMediationAdapter.this, error);
           }
           return;
         }
 
         // Cache the context for showInterstitial.
-        mInterstitialActivityRef = new WeakReference<>((Activity) context);
+        interstitialActivityRef = new WeakReference<>((Activity) context);
 
-        mInterstitialSpot = InneractiveAdSpotManager.get().createSpot();
-        mInterstitialSpot.setMediationName(MEDIATOR_NAME);
+        interstitialSpot = InneractiveAdSpotManager.get().createSpot();
+        interstitialSpot.setMediationName(MEDIATOR_NAME);
 
         InneractiveFullscreenUnitController controller = new InneractiveFullscreenUnitController();
-        mInterstitialSpot.addUnitController(controller);
+        interstitialSpot.addUnitController(controller);
 
         InneractiveAdSpot.RequestListener requestListener = createFyberInterstitialAdListener();
-        mInterstitialSpot.setRequestListener(requestListener);
+        interstitialSpot.setRequestListener(requestListener);
 
         FyberAdapterUtils.updateFyberUserParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-        mInterstitialSpot.requestAd(request);
+        interstitialSpot.requestAd(request);
       }
     });
   }
 
   @Override
   public void showInterstitial() {
-    Activity activity = mInterstitialActivityRef == null ? null : mInterstitialActivityRef.get();
+    Activity activity = interstitialActivityRef == null ? null : interstitialActivityRef.get();
     if (activity == null) {
       Log.w(TAG, "showInterstitial called, but activity reference was lost.");
-      mMediationInterstitialListener.onAdOpened(this);
-      mMediationInterstitialListener.onAdClosed(this);
+      mediationInterstitialListener.onAdOpened(this);
+      mediationInterstitialListener.onAdClosed(this);
       return;
     }
 
-    if (!(mInterstitialSpot
+    if (!(interstitialSpot
         .getSelectedUnitController() instanceof InneractiveFullscreenUnitController)) {
       Log.w(TAG, "showInterstitial called, but wrong spot has been used (should not happen).");
-      mMediationInterstitialListener.onAdOpened(this);
-      mMediationInterstitialListener.onAdClosed(this);
+      mediationInterstitialListener.onAdOpened(this);
+      mediationInterstitialListener.onAdClosed(this);
       return;
     }
     InneractiveFullscreenUnitController controller =
-        (InneractiveFullscreenUnitController) mInterstitialSpot.getSelectedUnitController();
+        (InneractiveFullscreenUnitController) interstitialSpot.getSelectedUnitController();
 
-    if (!mInterstitialSpot.isReady()) {
+    if (!interstitialSpot.isReady()) {
       Log.w(TAG, "showInterstitial called, but Ad has expired.");
-      mMediationInterstitialListener.onAdOpened(this);
-      mMediationInterstitialListener.onAdClosed(this);
+      mediationInterstitialListener.onAdOpened(this);
+      mediationInterstitialListener.onAdClosed(this);
       return;
     }
     controller.show(activity);
@@ -586,23 +586,23 @@ public class FyberMediationAdapter extends Adapter
     return new InneractiveAdSpot.RequestListener() {
       @Override
       public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-        if (!(mInterstitialSpot.getSelectedUnitController() instanceof
+        if (!(interstitialSpot.getSelectedUnitController() instanceof
             InneractiveFullscreenUnitController)) {
           String message = String.format("Unexpected controller type. Expected: %s. Actual: %s",
               InneractiveUnitController.class.getName(),
-              mBannerSpot.getSelectedUnitController().getClass().getName());
+              bannerSpot.getSelectedUnitController().getClass().getName());
           AdError error = new AdError(ERROR_WRONG_CONTROLLER_TYPE, message, ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mMediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
-          mInterstitialSpot.destroy();
+          mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          interstitialSpot.destroy();
         }
 
         InneractiveFullscreenUnitController controller =
-            (InneractiveFullscreenUnitController) mInterstitialSpot.getSelectedUnitController();
+            (InneractiveFullscreenUnitController) interstitialSpot.getSelectedUnitController();
         InneractiveFullscreenAdEventsListener listener = createFyberInterstitialListener();
         controller.setEventsListener(listener);
 
-        mMediationInterstitialListener.onAdLoaded(FyberMediationAdapter.this);
+        mediationInterstitialListener.onAdLoaded(FyberMediationAdapter.this);
       }
 
       @Override
@@ -611,7 +611,7 @@ public class FyberMediationAdapter extends Adapter
         // Convert Fyber's Marketplace error code into custom error code
         AdError error = getAdError(inneractiveErrorCode);
         Log.w(TAG, error.getMessage());
-        mMediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+        mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
       }
     };
   }
@@ -626,22 +626,22 @@ public class FyberMediationAdapter extends Adapter
     return new InneractiveFullscreenAdEventsListenerAdapter() {
       @Override
       public void onAdImpression(InneractiveAdSpot adSpot) {
-        mMediationInterstitialListener.onAdOpened(FyberMediationAdapter.this);
+        mediationInterstitialListener.onAdOpened(FyberMediationAdapter.this);
       }
 
       @Override
       public void onAdClicked(InneractiveAdSpot adSpot) {
-        mMediationInterstitialListener.onAdClicked(FyberMediationAdapter.this);
+        mediationInterstitialListener.onAdClicked(FyberMediationAdapter.this);
       }
 
       @Override
       public void onAdDismissed(InneractiveAdSpot adSpot) {
-        mMediationInterstitialListener.onAdClosed(FyberMediationAdapter.this);
+        mediationInterstitialListener.onAdClosed(FyberMediationAdapter.this);
       }
 
       @Override
       public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-        mMediationInterstitialListener.onAdLeftApplication(FyberMediationAdapter.this);
+        mediationInterstitialListener.onAdLeftApplication(FyberMediationAdapter.this);
       }
     };
   }

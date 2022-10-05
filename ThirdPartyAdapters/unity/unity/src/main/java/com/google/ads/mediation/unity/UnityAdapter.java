@@ -79,7 +79,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   /**
    * IUnityAdsLoadListener instance.
    */
-  private final IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
+  private final IUnityAdsLoadListener unityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
       String logMessage = String
@@ -164,7 +164,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    UnityAds.load(placementId, mUnityLoadListener);
+    UnityAds.load(placementId, unityLoadListener);
   }
 
   private void sendAdFailedToLoad(int errorCode, String errorDescription) {
@@ -180,10 +180,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
    */
   @Override
   public void showInterstitial() {
-    // Unity Ads does not have an ad opened callback. Sending Ad Opened event before showing the
-    // ad.
-    eventAdapter.sendAdEvent(AdEvent.OPENED);
-
     Activity activityReference = activityWeakReference == null ? null : activityWeakReference.get();
     if (activityReference == null) {
       Log.w(TAG, "Failed to show interstitial ad for placement ID '" + placementId +
@@ -197,21 +193,22 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activityReference, placementId, mUnityShowListener);
+    UnityAds.show(activityReference, placementId, unityShowListener);
   }
 
   /**
    * IUnityAdsShowListener instance. Contains logic for callbacks when showing ads.
    */
-  private final IUnityAdsShowListener mUnityShowListener = new IUnityAdsShowListener() {
+  private final IUnityAdsShowListener unityShowListener = new IUnityAdsShowListener() {
     @Override
     public void onUnityAdsShowStart(String placementId) {
       String logMessage = String.format("Unity Ads interstitial ad started for placement ID: %s",
           UnityAdapter.this.placementId);
       Log.d(TAG, logMessage);
 
-      // Unity Ads video ad started playing. Google Mobile Ads SDK does not support
-      // callbacks for Interstitial ads when they start playing.
+      // Unity Ads does not have an "ad opened" callback.
+      // Sending Ad Opened event when the video ad starts playing.
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
     }
 
     @Override
@@ -247,6 +244,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
       // Unity Ads ad failed to show.
       AdError adError = createSDKError(error, message);
       Log.w(TAG, adError.toString());
+
+      eventAdapter.sendAdEvent(AdEvent.OPENED);
       eventAdapter.sendAdEvent(AdEvent.CLOSED);
     }
   };

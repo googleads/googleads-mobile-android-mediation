@@ -36,24 +36,24 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
   /**
    * AdMob's Rewarded ad configuration object.
    */
-  private final MediationRewardedAdConfiguration mAdConfiguration;
+  private final MediationRewardedAdConfiguration adConfiguration;
 
   /**
    * AdMob's callback object.
    */
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mAdLoadCallback;
+      adLoadCallback;
 
   /**
    * AbMob's rewarded ad callback. as returned from {@link MediationAdLoadCallback#onSuccess}.
    */
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
 
   /**
    * The Spot object for the banner.
    */
-  private InneractiveAdSpot mRewardedSpot;
-  private InneractiveFullscreenUnitController mUnitController;
+  private InneractiveAdSpot rewardedSpot;
+  private InneractiveFullscreenUnitController unitController;
 
   /**
    * Constructor.
@@ -63,34 +63,34 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
    */
   FyberRewardedVideoRenderer(MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
-    mAdConfiguration = adConfiguration;
-    mAdLoadCallback = adLoadCallback;
+    this.adConfiguration = adConfiguration;
+    this.adLoadCallback = adLoadCallback;
   }
 
   void render() {
     // Check that we got a valid Spot ID from the server.
-    String spotId = mAdConfiguration.getServerParameters()
+    String spotId = adConfiguration.getServerParameters()
         .getString(FyberMediationAdapter.KEY_SPOT_ID);
     if (TextUtils.isEmpty(spotId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Spot ID is null or empty.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
+      adLoadCallback.onFailure(error);
       return;
     }
 
-    mRewardedSpot = InneractiveAdSpotManager.get().createSpot();
-    mRewardedSpot.setMediationName(InneractiveMediationName.ADMOB);
+    rewardedSpot = InneractiveAdSpotManager.get().createSpot();
+    rewardedSpot.setMediationName(InneractiveMediationName.ADMOB);
 
-    mUnitController = new InneractiveFullscreenUnitController();
-    mRewardedSpot.addUnitController(mUnitController);
+    unitController = new InneractiveFullscreenUnitController();
+    rewardedSpot.addUnitController(unitController);
 
     InneractiveAdSpot.RequestListener requestListener = createRequestListener();
-    mRewardedSpot.setRequestListener(requestListener);
+    rewardedSpot.setRequestListener(requestListener);
 
-    FyberAdapterUtils.updateFyberUserParams(mAdConfiguration.getMediationExtras());
+    FyberAdapterUtils.updateFyberUserParams(adConfiguration.getMediationExtras());
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-    mRewardedSpot.requestAd(request);
+    rewardedSpot.requestAd(request);
   }
 
   private InneractiveAdSpot.RequestListener createRequestListener() {
@@ -98,8 +98,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
       @Override
       public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
         // Report load success to AdMob, and cache the returned callback for a later use
-        mRewardedAdCallback = mAdLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
-        registerFyberAdListener(mUnitController);
+        rewardedAdCallback = adLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
+        registerFyberAdListener(unitController);
       }
 
       @Override
@@ -107,7 +107,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
           InneractiveErrorCode errorCode) {
         AdError error = getAdError(errorCode);
         Log.w(TAG, error.getMessage());
-        mAdLoadCallback.onFailure(error);
+        adLoadCallback.onFailure(error);
       }
     };
   }
@@ -124,24 +124,24 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         new InneractiveFullscreenAdEventsListenerAdapter() {
           @Override
           public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
-            mRewardedAdCallback.onAdOpened();
+            rewardedAdCallback.onAdOpened();
 
             // Code review note: Report video start should be called before reporting ad impression
             if (isVideoAdAvailable(controller)) {
-              mRewardedAdCallback.onVideoStart();
+              rewardedAdCallback.onVideoStart();
             }
 
-            mRewardedAdCallback.reportAdImpression();
+            rewardedAdCallback.reportAdImpression();
           }
 
           @Override
           public void onAdClicked(InneractiveAdSpot inneractiveAdSpot) {
-            mRewardedAdCallback.reportAdClicked();
+            rewardedAdCallback.reportAdClicked();
           }
 
           @Override
           public void onAdDismissed(InneractiveAdSpot inneractiveAdSpot) {
-            mRewardedAdCallback.onAdClosed();
+            rewardedAdCallback.onAdClosed();
           }
         };
 
@@ -153,8 +153,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     controller.setRewardedListener(new InneractiveFullScreenAdRewardedListener() {
       @Override
       public void onAdRewarded(InneractiveAdSpot inneractiveAdSpot) {
-        mRewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
-        mRewardedAdCallback.onVideoComplete();
+        rewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+        rewardedAdCallback.onVideoComplete();
       }
     });
 
@@ -169,19 +169,19 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
           "Cannot show a rewarded ad without an activity context.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(error);
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
       }
       return;
     }
 
-    if (mRewardedSpot != null && mUnitController != null && mRewardedSpot.isReady()) {
-      mUnitController.show((Activity) context);
-    } else if (mRewardedAdCallback != null) {
+    if (rewardedSpot != null && unitController != null && rewardedSpot.isReady()) {
+      unitController.show((Activity) context);
+    } else if (rewardedAdCallback != null) {
       AdError error = new AdError(ERROR_AD_NOT_READY, "Fyber's rewarded spot is not ready.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mRewardedAdCallback.onAdFailedToShow(error);
+      rewardedAdCallback.onAdFailedToShow(error);
     }
   }
 

@@ -24,11 +24,11 @@ import jp.maio.sdk.android.MaioAdsListenerInterface;
  */
 public class MaioAdsManager implements MaioAdsListenerInterface {
 
-  private static final HashMap<String, MaioAdsManager> mInstances = new HashMap<>();
-  private final ArrayList<InitializationListener> mInitListeners = new ArrayList<>();
+  private static final HashMap<String, MaioAdsManager> instances = new HashMap<>();
+  private final ArrayList<InitializationListener> initListeners = new ArrayList<>();
 
-  private MaioAdsInstance mMaioInstance;
-  private final String mMediaID;
+  private MaioAdsInstance maioInstance;
+  private final String mediaID;
 
   private enum InitializationStatus {
     UNINITIALIZED,
@@ -36,51 +36,52 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
     INITIALIZED
   }
 
-  private InitializationStatus mInitState;
+  private InitializationStatus initState;
 
-  private final HashMap<String, WeakReference<MaioAdsManagerListener>> mListeners;
+  private final HashMap<String, WeakReference<MaioAdsManagerListener>> listeners;
 
   public static final String KEY_MEDIA_ID = "mediaId";
   public static final String KEY_ZONE_ID = "zoneId";
 
+  @NonNull
   public static MaioAdsManager getManager(@NonNull String mediaID) {
-    if (!mInstances.containsKey(mediaID)) {
-      mInstances.put(mediaID, new MaioAdsManager(mediaID));
+    if (!instances.containsKey(mediaID)) {
+      instances.put(mediaID, new MaioAdsManager(mediaID));
     }
-    return mInstances.get(mediaID);
+    return instances.get(mediaID);
   }
 
   private MaioAdsManager(String mediaID) {
-    this.mMediaID = mediaID;
-    this.mListeners = new HashMap<>();
-    this.mInitState = InitializationStatus.UNINITIALIZED;
+    this.mediaID = mediaID;
+    this.listeners = new HashMap<>();
+    this.initState = InitializationStatus.UNINITIALIZED;
   }
 
   public void initialize(Activity activity, InitializationListener listener) {
-    if (mInitState == InitializationStatus.INITIALIZED) {
+    if (initState == InitializationStatus.INITIALIZED) {
       listener.onMaioInitialized();
       return;
     }
 
-    mInitListeners.add(listener);
-    if (mInitState != InitializationStatus.INITIALIZING) {
-      mInitState = InitializationStatus.INITIALIZING;
+    initListeners.add(listener);
+    if (initState != InitializationStatus.INITIALIZING) {
+      initState = InitializationStatus.INITIALIZING;
 
-      this.mMaioInstance =
-          MaioAds.initWithNonDefaultMediaId(activity, this.mMediaID, MaioAdsManager.this);
+      this.maioInstance =
+          MaioAds.initWithNonDefaultMediaId(activity, this.mediaID, MaioAdsManager.this);
     }
   }
 
   private boolean hasListener(String zoneID) {
     return !TextUtils.isEmpty(zoneID)
-        && this.mListeners.containsKey(zoneID)
-        && this.mListeners.get(zoneID).get() != null;
+        && this.listeners.containsKey(zoneID)
+        && this.listeners.get(zoneID).get() != null;
   }
 
   private boolean canShowAd(String zoneID) {
     return !TextUtils.isEmpty(zoneID)
-        && this.mMaioInstance != null
-        && this.mMaioInstance.canShow(zoneID);
+        && this.maioInstance != null
+        && this.maioInstance.canShow(zoneID);
   }
 
   public void loadAd(String zoneID, MaioAdsManagerListener listener) {
@@ -99,13 +100,13 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
       listener.onAdFailedToLoad(error);
       return;
     }
-    mListeners.put(zoneID, new WeakReference<>(listener));
+    listeners.put(zoneID, new WeakReference<>(listener));
     listener.onChangedCanShow(zoneID, true);
   }
 
   public void showAd(String zoneID, MaioAdsManagerListener listener) {
     if (!canShowAd(zoneID)) {
-      this.mListeners.remove(zoneID);
+      this.listeners.remove(zoneID);
       AdError error = new AdError(ERROR_AD_NOT_AVAILABLE,
           "Failed to show ad: Ad not ready for zone ID: " + zoneID, ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
@@ -113,69 +114,69 @@ public class MaioAdsManager implements MaioAdsListenerInterface {
       return;
     }
 
-    this.mMaioInstance.show(zoneID);
+    this.maioInstance.show(zoneID);
   }
 
   // region MaioAdsListenerInterface implementation
   @Override
   public void onInitialized() {
-    mInitState = InitializationStatus.INITIALIZED;
+    initState = InitializationStatus.INITIALIZED;
 
-    for (InitializationListener listener : mInitListeners) {
+    for (InitializationListener listener : initListeners) {
       listener.onMaioInitialized();
     }
-    mInitListeners.clear();
+    initListeners.clear();
   }
 
   @Override
   public void onChangedCanShow(String zoneId, boolean isAvailable) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onChangedCanShow(zoneId, isAvailable);
+      this.listeners.get(zoneId).get().onChangedCanShow(zoneId, isAvailable);
     }
   }
 
   @Override
   public void onFailed(FailNotificationReason reason, String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onFailed(reason, zoneId);
+      this.listeners.get(zoneId).get().onFailed(reason, zoneId);
     }
-    this.mListeners.remove(zoneId);
+    this.listeners.remove(zoneId);
   }
 
   @Override
   public void onOpenAd(String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onOpenAd(zoneId);
+      this.listeners.get(zoneId).get().onOpenAd(zoneId);
     }
   }
 
   @Override
   public void onStartedAd(String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onStartedAd(zoneId);
+      this.listeners.get(zoneId).get().onStartedAd(zoneId);
     }
   }
 
   @Override
   public void onClickedAd(String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onClickedAd(zoneId);
+      this.listeners.get(zoneId).get().onClickedAd(zoneId);
     }
   }
 
   @Override
   public void onFinishedAd(int playtime, boolean skipped, int duration, String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onFinishedAd(playtime, skipped, duration, zoneId);
+      this.listeners.get(zoneId).get().onFinishedAd(playtime, skipped, duration, zoneId);
     }
   }
 
   @Override
   public void onClosedAd(String zoneId) {
     if (hasListener(zoneId)) {
-      this.mListeners.get(zoneId).get().onClosedAd(zoneId);
+      this.listeners.get(zoneId).get().onClosedAd(zoneId);
     }
-    this.mListeners.remove(zoneId);
+    this.listeners.remove(zoneId);
   }
   // endregion
 

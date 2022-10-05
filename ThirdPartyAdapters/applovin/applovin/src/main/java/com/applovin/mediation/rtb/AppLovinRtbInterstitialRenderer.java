@@ -42,7 +42,7 @@ public final class AppLovinRtbInterstitialRenderer
   /**
    * Listener object to notify the Google Mobile Ads SDK of interstitial presentation events.
    */
-  private MediationInterstitialAdCallback mInterstitalAdCallback;
+  private MediationInterstitialAdCallback interstitialAdCallback;
 
   private final AppLovinSdk sdk;
   private AppLovinInterstitialAdDialog interstitialAd;
@@ -86,7 +86,7 @@ public final class AppLovinRtbInterstitialRenderer
     log(DEBUG, "Interstitial did load ad: " + ad.getAdIdNumber());
 
     this.ad = ad;
-    mInterstitalAdCallback = callback.onSuccess(AppLovinRtbInterstitialRenderer.this);
+    interstitialAdCallback = callback.onSuccess(AppLovinRtbInterstitialRenderer.this);
   }
 
   @Override
@@ -99,21 +99,21 @@ public final class AppLovinRtbInterstitialRenderer
   @Override
   public void adDisplayed(AppLovinAd ad) {
     log(DEBUG, "Interstitial displayed.");
-    mInterstitalAdCallback.reportAdImpression();
-    mInterstitalAdCallback.onAdOpened();
+    interstitialAdCallback.reportAdImpression();
+    interstitialAdCallback.onAdOpened();
   }
 
   @Override
   public void adHidden(AppLovinAd ad) {
     log(DEBUG, "Interstitial hidden.");
-    mInterstitalAdCallback.onAdClosed();
+    interstitialAdCallback.onAdClosed();
   }
 
   @Override
   public void adClicked(AppLovinAd ad) {
     log(DEBUG, "Interstitial clicked.");
-    mInterstitalAdCallback.reportAdClicked();
-    mInterstitalAdCallback.onAdLeftApplication();
+    interstitialAdCallback.reportAdClicked();
+    interstitialAdCallback.onAdLeftApplication();
   }
 
   @Override

@@ -31,7 +31,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       callback;
   private InterstitialAd interstitialAd;
-  private MediationInterstitialAdCallback mInterstitalAdCallback;
+  private MediationInterstitialAdCallback interstitalAdCallback;
   private final AtomicBoolean showAdCalled = new AtomicBoolean();
   private final AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
@@ -75,23 +75,23 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
           "Failed to present interstitial ad.", ERROR_DOMAIN);
       Log.w(TAG, showError.toString());
 
-      if (mInterstitalAdCallback != null) {
-        mInterstitalAdCallback.onAdFailedToShow(showError);
+      if (interstitalAdCallback != null) {
+        interstitalAdCallback.onAdFailedToShow(showError);
       }
     }
   }
 
   @Override
   public void onInterstitialDisplayed(Ad ad) {
-    if (mInterstitalAdCallback != null) {
-      mInterstitalAdCallback.onAdOpened();
+    if (interstitalAdCallback != null) {
+      interstitalAdCallback.onAdOpened();
     }
   }
 
   @Override
   public void onInterstitialDismissed(Ad ad) {
-    if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
-      mInterstitalAdCallback.onAdClosed();
+    if (!didInterstitialAdClose.getAndSet(true) && interstitalAdCallback != null) {
+      interstitalAdCallback.onAdClosed();
     }
   }
 
@@ -100,9 +100,9 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     AdError error = getAdError(adError);
     Log.w(TAG, error.getMessage());
     if (showAdCalled.get()) {
-      if (mInterstitalAdCallback != null) {
-        mInterstitalAdCallback.onAdOpened();
-        mInterstitalAdCallback.onAdClosed();
+      if (interstitalAdCallback != null) {
+        interstitalAdCallback.onAdOpened();
+        interstitalAdCallback.onAdClosed();
       }
       return;
     }
@@ -111,28 +111,28 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
 
   @Override
   public void onAdLoaded(Ad ad) {
-    mInterstitalAdCallback = callback.onSuccess(this);
+    interstitalAdCallback = callback.onSuccess(this);
   }
 
   @Override
   public void onAdClicked(Ad ad) {
-    if (mInterstitalAdCallback != null) {
-      mInterstitalAdCallback.reportAdClicked();
-      mInterstitalAdCallback.onAdLeftApplication();
+    if (interstitalAdCallback != null) {
+      interstitalAdCallback.reportAdClicked();
+      interstitalAdCallback.onAdLeftApplication();
     }
   }
 
   @Override
   public void onLoggingImpression(Ad ad) {
-    if (mInterstitalAdCallback != null) {
-      mInterstitalAdCallback.reportAdImpression();
+    if (interstitalAdCallback != null) {
+      interstitalAdCallback.reportAdImpression();
     }
   }
 
   @Override
   public void onInterstitialActivityDestroyed() {
-    if (!didInterstitialAdClose.getAndSet(true) && mInterstitalAdCallback != null) {
-      mInterstitalAdCallback.onAdClosed();
+    if (!didInterstitialAdClose.getAndSet(true) && interstitalAdCallback != null) {
+      interstitalAdCallback.onAdClosed();
     }
   }
 

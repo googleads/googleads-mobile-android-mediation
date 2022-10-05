@@ -50,7 +50,7 @@ public final class AppLovinRtbBannerRenderer
   /**
    * Listener object to notify the Google Mobile Ads SDK of banner presentation events.
    */
-  private MediationBannerAdCallback mBannerAdCallback;
+  private MediationBannerAdCallback bannerAdCallback;
 
   private AppLovinAdView adView;
 
@@ -93,7 +93,7 @@ public final class AppLovinRtbBannerRenderer
   public void adReceived(AppLovinAd ad) {
     Log.d(TAG, "Banner did load ad: " + ad.getAdIdNumber());
 
-    mBannerAdCallback = callback.onSuccess(AppLovinRtbBannerRenderer.this);
+    bannerAdCallback = callback.onSuccess(AppLovinRtbBannerRenderer.this);
     adView.renderAd(ad);
   }
 
@@ -107,8 +107,8 @@ public final class AppLovinRtbBannerRenderer
   @Override
   public void adDisplayed(AppLovinAd ad) {
     Log.d(TAG, "Banner displayed.");
-    mBannerAdCallback.reportAdImpression();
-    mBannerAdCallback.onAdOpened();
+    bannerAdCallback.reportAdImpression();
+    bannerAdCallback.onAdOpened();
   }
 
   @Override
@@ -119,25 +119,25 @@ public final class AppLovinRtbBannerRenderer
   @Override
   public void adClicked(AppLovinAd ad) {
     Log.d(TAG, "Banner clicked.");
-    mBannerAdCallback.reportAdClicked();
+    bannerAdCallback.reportAdClicked();
   }
 
   @Override
   public void adOpenedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
     Log.d(TAG, "Banner opened fullscreen.");
-    mBannerAdCallback.onAdOpened();
+    bannerAdCallback.onAdOpened();
   }
 
   @Override
   public void adClosedFullscreen(AppLovinAd ad, AppLovinAdView adView) {
     Log.d(TAG, "Banner closed fullscreen.");
-    mBannerAdCallback.onAdClosed();
+    bannerAdCallback.onAdClosed();
   }
 
   @Override
   public void adLeftApplication(AppLovinAd ad, AppLovinAdView adView) {
     Log.d(TAG, "Banner left application.");
-    mBannerAdCallback.onAdLeftApplication();
+    bannerAdCallback.onAdLeftApplication();
   }
 
   @Override

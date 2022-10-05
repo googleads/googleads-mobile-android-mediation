@@ -48,17 +48,17 @@ public final class InMobiAdapter extends InMobiMediationAdapter
   private static final String TAG = InMobiAdapter.class.getSimpleName();
 
   // Callback listeners.
-  private MediationBannerListener mBannerListener;
-  private MediationInterstitialListener mInterstitialListener;
-  private MediationNativeListener mNativeListener;
+  private MediationBannerListener bannerListener;
+  private MediationInterstitialListener interstitialListener;
+  private MediationNativeListener nativeListener;
 
-  private InMobiInterstitial mAdInterstitial;
-  private FrameLayout mWrappedAdView;
+  private InMobiInterstitial adInterstitial;
+  private FrameLayout wrappedAdView;
 
-  private static final Boolean sDisableHardwareFlag = false;
+  private static final Boolean disableHardwareFlag = false;
 
-  private NativeMediationAdRequest mNativeMedAdReq;
-  private InMobiNative mAdNative;
+  private NativeMediationAdRequest nativeMedAdReq;
+  private InMobiNative adNative;
 
   // region MediationAdapter implementation.
   @Override
@@ -101,7 +101,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       return;
     }
 
-    mBannerListener = listener;
+    bannerListener = listener;
     final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     InMobiInitializer.getInstance().init(context, accountID, new Listener() {
       @Override
@@ -113,8 +113,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       @Override
       public void onInitializeError(@NonNull AdError error) {
         Log.w(TAG, error.getMessage());
-        if (mBannerListener != null) {
-          mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
+        if (bannerListener != null) {
+          bannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
         }
       }
     });
@@ -139,7 +139,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
   @NonNull
   @Override
   public View getBannerView() {
-    return mWrappedAdView;
+    return wrappedAdView;
   }
   // endregion
 
@@ -159,7 +159,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       return;
     }
 
-    mInterstitialListener = listener;
+    interstitialListener = listener;
     final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     InMobiInitializer.getInstance().init(context, accountID, new Listener() {
       @Override
@@ -170,8 +170,8 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       @Override
       public void onInitializeError(@NonNull AdError error) {
         Log.w(TAG, error.getMessage());
-        if (mInterstitialListener != null) {
-          mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
+        if (interstitialListener != null) {
+          interstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
         }
       }
     });
@@ -179,14 +179,14 @@ public final class InMobiAdapter extends InMobiMediationAdapter
 
   @Override
   public void showInterstitial() {
-    if (!mAdInterstitial.isReady()) {
+    if (!adInterstitial.isReady()) {
       AdError error = new AdError(ERROR_AD_NOT_READY,
           "InMobi Interstitial ad is not yet ready to be shown.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       return;
     }
 
-    mAdInterstitial.show();
+    adInterstitial.show();
   }
   // endregion
 
@@ -214,20 +214,20 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       return;
     }
 
-    mNativeListener = listener;
-    mNativeMedAdReq = mediationAdRequest;
+    nativeListener = listener;
+    nativeMedAdReq = mediationAdRequest;
     final long placement = InMobiAdapterUtils.getPlacementId(serverParameters);
     InMobiInitializer.getInstance().init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
-        createAndLoadNativeAd(context, placement, mNativeMedAdReq, mediationExtras);
+        createAndLoadNativeAd(context, placement, nativeMedAdReq, mediationExtras);
       }
 
       @Override
       public void onInitializeError(@NonNull AdError error) {
         Log.w(TAG, error.getMessage());
-        if (mNativeListener != null) {
-          mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
+        if (nativeListener != null) {
+          nativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
         }
       }
     });
@@ -242,7 +242,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      bannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
@@ -255,7 +255,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      bannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
@@ -282,7 +282,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       @Override
       public void onUserLeftApplication(@NonNull InMobiBanner inMobiBanner) {
         Log.d(TAG, "InMobi banner left application.");
-        mBannerListener.onAdLeftApplication(InMobiAdapter.this);
+        bannerListener.onAdLeftApplication(InMobiAdapter.this);
       }
 
       @Override
@@ -295,7 +295,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       public void onAdLoadSucceeded(@NonNull InMobiBanner inMobiBanner,
           @NonNull AdMetaInfo adMetaInfo) {
         Log.d(TAG, "InMobi banner has been loaded.");
-        mBannerListener.onAdLoaded(InMobiAdapter.this);
+        bannerListener.onAdLoaded(InMobiAdapter.this);
       }
 
       @Override
@@ -304,30 +304,30 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
             requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
         Log.w(TAG, error.getMessage());
-        mBannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
+        bannerListener.onAdFailedToLoad(InMobiAdapter.this, error);
       }
 
       @Override
       public void onAdDisplayed(@NonNull InMobiBanner inMobiBanner) {
         Log.d(TAG, "InMobi banner opened a full screen view.");
-        mBannerListener.onAdOpened(InMobiAdapter.this);
+        bannerListener.onAdOpened(InMobiAdapter.this);
       }
 
       @Override
       public void onAdDismissed(@NonNull InMobiBanner inMobiBanner) {
         Log.d(TAG, "InMobi banner has been dismissed.");
-        mBannerListener.onAdClosed(InMobiAdapter.this);
+        bannerListener.onAdClosed(InMobiAdapter.this);
       }
 
       @Override
       public void onAdClicked(@NonNull InMobiBanner inMobiBanner,
           Map<Object, Object> map) {
         Log.d(TAG, "InMobi banner has been clicked.");
-        mBannerListener.onAdClicked(InMobiAdapter.this);
+        bannerListener.onAdClicked(InMobiAdapter.this);
       }
     });
 
-    if (InMobiAdapter.sDisableHardwareFlag) {
+    if (InMobiAdapter.disableHardwareFlag) {
       adView.disableHardwareAcceleration();
     }
 
@@ -338,13 +338,13 @@ public final class InMobiAdapter extends InMobiMediationAdapter
      * in landscape view. If the underlying library sets the appropriate
      * size instead of match_parent, this wrapper can be removed.
      */
-    mWrappedAdView = new FrameLayout(context);
-    mWrappedAdView.setLayoutParams(wrappedLayoutParams);
+    wrappedAdView = new FrameLayout(context);
+    wrappedAdView.setLayoutParams(wrappedLayoutParams);
     adView.setLayoutParams(
         new LinearLayout.LayoutParams(
             mediationAdSize.getWidthInPixels(context),
             mediationAdSize.getHeightInPixels(context)));
-    mWrappedAdView.addView(adView);
+    wrappedAdView.addView(adView);
     InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
 
     Log.d(TAG, "Requesting banner with ad size: " + mediationAdSize);
@@ -359,18 +359,18 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      interstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
     try {
-      mAdInterstitial = new InMobiInterstitial(context, placement,
+      adInterstitial = new InMobiInterstitial(context, placement,
           new InterstitialAdEventListener() {
 
             @Override
             public void onUserLeftApplication(@NonNull InMobiInterstitial inMobiInterstitial) {
               Log.d(TAG, "InMobi interstitial left application.");
-              mInterstitialListener.onAdLeftApplication(InMobiAdapter.this);
+              interstitialListener.onAdLeftApplication(InMobiAdapter.this);
             }
 
             @Override
@@ -396,7 +396,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
                 @NonNull AdMetaInfo adMetaInfo) {
               Log.d(TAG, "InMobi interstitial ad has been loaded.");
-              mInterstitialListener.onAdLoaded(InMobiAdapter.this);
+              interstitialListener.onAdLoaded(InMobiAdapter.this);
             }
 
             @Override
@@ -405,7 +405,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter
               AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
                   requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
               Log.w(TAG, error.getMessage());
-              mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
+              interstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
             }
 
             @Override
@@ -419,76 +419,76 @@ public final class InMobiAdapter extends InMobiMediationAdapter
             public void onAdDisplayed(@NonNull InMobiInterstitial inMobiInterstitial,
                 @NonNull AdMetaInfo adMetaInfo) {
               Log.d(TAG, "InMobi interstitial has been shown.");
-              mInterstitialListener.onAdOpened(InMobiAdapter.this);
+              interstitialListener.onAdOpened(InMobiAdapter.this);
 
             }
 
             @Override
             public void onAdDismissed(@NonNull InMobiInterstitial inMobiInterstitial) {
               Log.d(TAG, "InMobi interstitial ad has been dismissed.");
-              mInterstitialListener.onAdClosed(InMobiAdapter.this);
+              interstitialListener.onAdClosed(InMobiAdapter.this);
             }
 
             @Override
             public void onAdClicked(@NonNull InMobiInterstitial inMobiInterstitial,
                 Map<Object, Object> clickParameters) {
               Log.d(TAG, "InMobi interstitial ad has been clicked.");
-              mInterstitialListener.onAdClicked(InMobiAdapter.this);
+              interstitialListener.onAdClicked(InMobiAdapter.this);
             }
           });
     } catch (SdkNotInitializedException exception) {
       AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mInterstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      interstitialListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
     Set<String> keywords = mediationAdRequest.getKeywords();
     if (keywords != null) {
-      mAdInterstitial.setKeywords(TextUtils.join(", ", keywords));
+      adInterstitial.setKeywords(TextUtils.join(", ", keywords));
     }
 
     // Create request parameters.
     HashMap<String, String> paramMap =
         InMobiAdapterUtils.createInMobiParameterMap(mediationAdRequest);
-    mAdInterstitial.setExtras(paramMap);
+    adInterstitial.setExtras(paramMap);
 
-    if (InMobiAdapter.sDisableHardwareFlag) {
-      mAdInterstitial.disableHardwareAcceleration();
+    if (InMobiAdapter.disableHardwareFlag) {
+      adInterstitial.disableHardwareAcceleration();
     }
 
     InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
-    mAdInterstitial.load();
+    adInterstitial.load();
   }
 
   // region Native adapter utility classes.
   private void createAndLoadNativeAd(final Context context, long placement,
-      final NativeMediationAdRequest mNativeMedAdReq, Bundle mediationExtras) {
+      final NativeMediationAdRequest nativeAdRequest, Bundle mediationExtras) {
 
     if (placement <= 0L) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      nativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
     try {
-      mAdNative = new InMobiNative(context, placement, new NativeAdEventListener() {
+      adNative = new InMobiNative(context, placement, new NativeAdEventListener() {
         @Override
         public void onAdLoadSucceeded(@NonNull final InMobiNative imNativeAd,
             @NonNull AdMetaInfo adMetaInfo) {
           Log.d(TAG, "InMobi native ad has been loaded.");
 
           // This setting decides whether to download images or not.
-          NativeAdOptions nativeAdOptions = InMobiAdapter.this.mNativeMedAdReq
+          NativeAdOptions nativeAdOptions = InMobiAdapter.this.nativeMedAdReq
               .getNativeAdRequestOptions();
-          boolean mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
+          boolean isOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
 
           InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this, imNativeAd, mIsOnlyUrl,
-                  mNativeListener);
+              new InMobiUnifiedNativeAdMapper(InMobiAdapter.this, imNativeAd, isOnlyUrl,
+                  nativeListener);
           inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(context);
         }
 
@@ -498,13 +498,13 @@ public final class InMobiAdapter extends InMobiMediationAdapter
           AdError error = new AdError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
               requestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
+          nativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
         }
 
         @Override
         public void onAdFullScreenDismissed(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad has been dismissed.");
-          mNativeListener.onAdClosed(InMobiAdapter.this);
+          nativeListener.onAdClosed(InMobiAdapter.this);
         }
 
         @Override
@@ -515,25 +515,25 @@ public final class InMobiAdapter extends InMobiMediationAdapter
         @Override
         public void onAdFullScreenDisplayed(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad opened.");
-          mNativeListener.onAdOpened(InMobiAdapter.this);
+          nativeListener.onAdOpened(InMobiAdapter.this);
         }
 
         @Override
         public void onUserWillLeaveApplication(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad left application.");
-          mNativeListener.onAdLeftApplication(InMobiAdapter.this);
+          nativeListener.onAdLeftApplication(InMobiAdapter.this);
         }
 
         @Override
         public void onAdImpressed(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad impression occurred.");
-          mNativeListener.onAdImpression(InMobiAdapter.this);
+          nativeListener.onAdImpression(InMobiAdapter.this);
         }
 
         @Override
         public void onAdClicked(@NonNull InMobiNative inMobiNative) {
           Log.d(TAG, "InMobi native ad has been clicked.");
-          mNativeListener.onAdClicked(InMobiAdapter.this);
+          nativeListener.onAdClicked(InMobiAdapter.this);
         }
 
         @Override
@@ -545,16 +545,16 @@ public final class InMobiAdapter extends InMobiMediationAdapter
       AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      mNativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
+      nativeListener.onAdFailedToLoad(InMobiAdapter.this, error);
       return;
     }
 
-    mAdNative.setVideoEventListener(new VideoEventListener() {
+    adNative.setVideoEventListener(new VideoEventListener() {
       @Override
       public void onVideoCompleted(final InMobiNative inMobiNative) {
         super.onVideoCompleted(inMobiNative);
         Log.d(TAG, "InMobi native video ad completed.");
-        mNativeListener.onVideoEnd(InMobiAdapter.this);
+        nativeListener.onVideoEnd(InMobiAdapter.this);
       }
 
       @Override
@@ -565,9 +565,9 @@ public final class InMobiAdapter extends InMobiMediationAdapter
     });
 
     // Setting mediation keywords to native ad object
-    Set<String> keywords = mNativeMedAdReq.getKeywords();
+    Set<String> keywords = nativeAdRequest.getKeywords();
     if (keywords != null) {
-      mAdNative.setKeywords(TextUtils.join(", ", keywords));
+      adNative.setKeywords(TextUtils.join(", ", keywords));
     }
 
     /*
@@ -576,10 +576,10 @@ public final class InMobiAdapter extends InMobiMediationAdapter
      *  #2. Landing url
      */
     HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(mNativeMedAdReq);
-    mAdNative.setExtras(paramMap);
+        InMobiAdapterUtils.createInMobiParameterMap(nativeAdRequest);
+    adNative.setExtras(paramMap);
 
     InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
-    mAdNative.load();
+    adNative.load();
   }
 }

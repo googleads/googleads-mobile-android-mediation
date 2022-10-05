@@ -45,6 +45,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,27 +60,27 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static AppLovinSdkSettings appLovinSdkSettings;
 
   // AppLovin open-bidding banner ad renderer.
-  private AppLovinRtbBannerRenderer mRtbBannerRenderer;
+  private AppLovinRtbBannerRenderer rtbBannerRenderer;
 
   // AppLovin open-bidding interstitial ad renderer.
-  private AppLovinRtbInterstitialRenderer mRtbInterstitialRenderer;
+  private AppLovinRtbInterstitialRenderer rtbInterstitialRenderer;
 
   // Rewarded video globals.
-  public static final HashMap<String, AppLovinIncentivizedInterstitial> INCENTIVIZED_ADS =
+  public static final HashMap<String, WeakReference<AppLovinMediationAdapter>> INCENTIVIZED_ADS =
       new HashMap<>();
   private static final Object INCENTIVIZED_ADS_LOCK = new Object();
 
   // Parent objects.
-  private AppLovinSdk mSdk;
+  private AppLovinSdk sdk;
 
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mMediationAdLoadCallback;
+      mediationAdLoadCallback;
 
   // Rewarded Video objects.
-  private MediationRewardedAdCallback mRewardedAdCallback;
-  private AppLovinIncentivizedInterstitial mIncentivizedInterstitial;
-  private String mZoneId;
-  private Bundle mNetworkExtras;
+  private MediationRewardedAdCallback rewardedAdCallback;
+  private AppLovinIncentivizedInterstitial incentivizedInterstitial;
+  private String zoneId;
+  private Bundle networkExtras;
   private MediationRewardedAdConfiguration adConfiguration;
   private AppLovinAd ad;
 
@@ -93,15 +94,15 @@ public class AppLovinMediationAdapter extends RtbAdapter
   public static final String APPLOVIN_SDK_ERROR_DOMAIN = "com.applovin.sdk";
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      value = {
-          ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_EMPTY_BID_TOKEN,
-          ERROR_AD_ALREADY_REQUESTED,
-          ERROR_PRESENTATON_AD_NOT_READY,
-          ERROR_AD_FORMAT_UNSUPPORTED,
-          ERROR_INVALID_SERVER_PARAMETERS
-      })
+  @IntDef(value = {
+      ERROR_BANNER_SIZE_MISMATCH,
+      ERROR_EMPTY_BID_TOKEN,
+      ERROR_AD_ALREADY_REQUESTED,
+      ERROR_PRESENTATON_AD_NOT_READY,
+      ERROR_AD_FORMAT_UNSUPPORTED,
+      ERROR_INVALID_SERVER_PARAMETERS}
+  )
+
   public @interface AdapterError {
 
   }
@@ -164,8 +165,8 @@ public class AppLovinMediationAdapter extends RtbAdapter
     }
 
     if (sdkKeys.isEmpty()) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid SDK Key.", ERROR_DOMAIN);
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
+          ERROR_DOMAIN);
       log(WARN, error.getMessage());
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
@@ -202,10 +203,9 @@ public class AppLovinMediationAdapter extends RtbAdapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage =
-        String.format(
-            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString);
     log(WARN, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -223,9 +223,8 @@ public class AppLovinMediationAdapter extends RtbAdapter
       return new VersionInfo(major, minor, patch);
     }
 
-    String logMessage =
-        String.format(
-            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     log(WARN, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -259,73 +258,71 @@ public class AppLovinMediationAdapter extends RtbAdapter
             .initialize(context, sdkKey, new OnInitializeSuccessListener() {
               @Override
               public void onInitializeSuccess(@NonNull String sdkKey) {
-                mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-                mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-                mNetworkExtras = adConfiguration.getMediationExtras();
-                mMediationAdLoadCallback = mediationAdLoadCallback;
+                zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+                sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+                networkExtras = adConfiguration.getMediationExtras();
+                AppLovinMediationAdapter.this.mediationAdLoadCallback = mediationAdLoadCallback;
 
-                String logMessage = String
-                    .format("Requesting rewarded video for zone '%s'", mZoneId);
+                String logMessage = String.format("Requesting rewarded video for zone '%s'",
+                    zoneId);
                 log(DEBUG, logMessage);
 
                 // Check if incentivized ad for zone already exists.
-                if (INCENTIVIZED_ADS.containsKey(mZoneId)) {
-                  mIncentivizedInterstitial = INCENTIVIZED_ADS.get(mZoneId);
+                if (INCENTIVIZED_ADS.containsKey(zoneId) && INCENTIVIZED_ADS.get(zoneId) != null) {
                   AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED,
                       "Cannot load multiple rewarded ads with the same Zone ID. "
                           + "Display one ad before attempting to load another.", ERROR_DOMAIN);
                   log(ERROR, error.getMessage());
-                  mMediationAdLoadCallback.onFailure(error);
+                  AppLovinMediationAdapter.this.mediationAdLoadCallback.onFailure(error);
                 } else {
                   // If this is a default Zone, create the incentivized ad normally
-                  if (DEFAULT_ZONE.equals(mZoneId)) {
-                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
+                  if (DEFAULT_ZONE.equals(zoneId)) {
+                    incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(sdk);
                   }
                   // Otherwise, use the Zones API
                   else {
-                    mIncentivizedInterstitial = AppLovinIncentivizedInterstitial
-                        .create(mZoneId, mSdk);
+                    incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(zoneId, sdk);
                   }
-                  INCENTIVIZED_ADS.put(mZoneId, mIncentivizedInterstitial);
+                  INCENTIVIZED_ADS.put(zoneId, new WeakReference<>(AppLovinMediationAdapter.this));
                 }
               }
             });
       }
 
-      mIncentivizedInterstitial.preload(this);
+      incentivizedInterstitial.preload(this);
     } else {
-      mMediationAdLoadCallback = mediationAdLoadCallback;
-      mNetworkExtras = adConfiguration.getMediationExtras();
-      mSdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
+      this.mediationAdLoadCallback = mediationAdLoadCallback;
+      networkExtras = adConfiguration.getMediationExtras();
+      sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
 
       // Create rewarded video object
-      mIncentivizedInterstitial = AppLovinIncentivizedInterstitial.create(mSdk);
+      incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(sdk);
       // Load ad!
-      mSdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
+      sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
     }
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
-    final AppLovinIncentivizedAdListener listener =
-        new AppLovinIncentivizedAdListener(adConfiguration, mRewardedAdCallback);
+    sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
+    final AppLovinIncentivizedAdListener listener = new AppLovinIncentivizedAdListener(
+        adConfiguration, rewardedAdCallback);
 
     if (!isRtbAd) {
-      if (mZoneId != null) {
-        String logMessage = String.format("Showing rewarded video for zone '%s'", mZoneId);
+      if (zoneId != null) {
+        String logMessage = String.format("Showing rewarded video for zone '%s'", zoneId);
         log(DEBUG, logMessage);
       }
-      if (!mIncentivizedInterstitial.isAdReadyToDisplay()) {
+      if (!incentivizedInterstitial.isAdReadyToDisplay()) {
         AdError error = new AdError(ERROR_PRESENTATON_AD_NOT_READY, "Ad not ready to show.",
             ERROR_DOMAIN);
         log(ERROR, error.getMessage());
-        mRewardedAdCallback.onAdFailedToShow(error);
+        rewardedAdCallback.onAdFailedToShow(error);
       } else {
-        mIncentivizedInterstitial.show(context, listener, listener, listener, listener);
+        incentivizedInterstitial.show(context, listener, listener, listener, listener);
       }
     } else {
-      mIncentivizedInterstitial.show(ad, context, listener, listener, listener, listener);
+      incentivizedInterstitial.show(ad, context, listener, listener, listener, listener);
     }
   }
 
@@ -346,8 +343,8 @@ public class AppLovinMediationAdapter extends RtbAdapter
 
     // Check if the publisher provided extra parameters
     log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
-    AppLovinSdk sdk =
-        AppLovinUtils.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
+    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(config.getServerParameters(),
+        rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();
 
     if (!TextUtils.isEmpty(bidToken)) {
@@ -362,52 +359,50 @@ public class AppLovinMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void loadBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
 
-    mRtbBannerRenderer =
-        new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration, mediationAdLoadCallback);
-    mRtbBannerRenderer.loadAd();
+    rtbBannerRenderer = new AppLovinRtbBannerRenderer(mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    rtbBannerRenderer.loadAd();
   }
 
   @Override
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
 
-    mRtbInterstitialRenderer =
-        new AppLovinRtbInterstitialRenderer(mediationInterstitialAdConfiguration, callback);
-    mRtbInterstitialRenderer.loadAd();
+    rtbInterstitialRenderer = new AppLovinRtbInterstitialRenderer(
+        mediationInterstitialAdConfiguration, callback);
+    rtbInterstitialRenderer.loadAd();
   }
 
   @Override
   public void adReceived(final AppLovinAd appLovinAd) {
     ad = appLovinAd;
     Log.d("INFO", "Rewarded video did load ad: " + ad.getAdIdNumber());
-    AppLovinSdkUtils.runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            mRewardedAdCallback = mMediationAdLoadCallback.onSuccess(AppLovinMediationAdapter.this);
-          }
-        });
+    AppLovinSdkUtils.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        rewardedAdCallback = mediationAdLoadCallback.onSuccess(AppLovinMediationAdapter.this);
+      }
+    });
   }
 
   @Override
   public void failedToReceiveAd(final int code) {
     if (!isRtbAd) {
-      INCENTIVIZED_ADS.remove(mZoneId);
+      INCENTIVIZED_ADS.remove(zoneId);
     }
-    AppLovinSdkUtils.runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            AdError error = AppLovinUtils.getAdError(code);
-            log(WARN, error.getMessage());
-            mMediationAdLoadCallback.onFailure(error);
-          }
-        });
+    AppLovinSdkUtils.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        AdError error = AppLovinUtils.getAdError(code);
+        log(WARN, error.getMessage());
+        mediationAdLoadCallback.onFailure(error);
+      }
+    });
   }
 }

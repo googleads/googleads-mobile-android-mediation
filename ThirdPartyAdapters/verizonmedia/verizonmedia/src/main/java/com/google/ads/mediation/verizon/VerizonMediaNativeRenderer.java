@@ -190,7 +190,6 @@ final class VerizonMediaNativeRenderer implements NativeAd.NativeAdListener,
     });
   }
 
-
   @Override
   public void onError(final NativeAdFactory nativeAdFactory, final ErrorInfo errorInfo) {
     Log.i(TAG, "Verizon Ads SDK Native Ad request failed (" + errorInfo.getErrorCode() + "): " +

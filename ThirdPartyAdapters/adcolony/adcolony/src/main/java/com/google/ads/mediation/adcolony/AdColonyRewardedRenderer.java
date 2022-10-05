@@ -10,9 +10,7 @@ import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.createS
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
@@ -28,17 +26,18 @@ import java.util.ArrayList;
 
 public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
-  private MediationRewardedAdCallback mRewardedAdCallback;
-  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      adLoadCallback;
   private final MediationRewardedAdConfiguration adConfiguration;
-  private AdColonyInterstitial mAdColonyInterstitial;
+  private AdColonyInterstitial adColonyInterstitial;
 
   public AdColonyRewardedRenderer(
           @NonNull MediationRewardedAdConfiguration adConfiguration,
           @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback
   ) {
     this.adConfiguration = adConfiguration;
-    this.mAdLoadCallback = callback;
+    this.adLoadCallback = callback;
   }
 
   public void render() {
@@ -50,74 +49,79 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
 
     if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
             && adConfiguration.getBidResponse().isEmpty()) {
-      AdError error = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
-              "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone ID.");
+      AdError error =
+          createAdapterError(
+              ERROR_AD_ALREADY_REQUESTED,
+              "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone"
+                  + " ID.");
       Log.e(TAG, error.getMessage());
-      mAdLoadCallback.onFailure(error);
+      adLoadCallback.onFailure(error);
       return;
     }
 
     // Either configures the AdColony SDK if it has not yet been initialized, or short circuits to
     // the initialization success call if not needed to lead directly to the ad request.
-    AdColonyManager.getInstance().configureAdColony(adConfiguration,
-        new InitializationListener() {
-          @Override
-          public void onInitializeSuccess() {
-            // Cannot request an ad without a valid zone.
-            if (TextUtils.isEmpty(requestedZone)) {
-              AdError error = createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-                      "Missing or invalid Zone ID.");
-              Log.e(TAG, error.getMessage());
-              mAdLoadCallback.onFailure(error);
-              return;
-            }
-            AdColonyAdOptions adOptions =
-                AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
-            AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
-            AdColonyRewardedEventForwarder.getInstance()
-                .addListener(requestedZone, AdColonyRewardedRenderer.this);
-            AdColony
-                .requestInterstitial(requestedZone, AdColonyRewardedEventForwarder.getInstance(),
-                    adOptions);
-          }
+    AdColonyManager.getInstance()
+        .configureAdColony(
+            adConfiguration,
+            new InitializationListener() {
+              @Override
+              public void onInitializeSuccess() {
+                // Cannot request an ad without a valid zone.
+                if (TextUtils.isEmpty(requestedZone)) {
+                  AdError error =
+                      createAdapterError(
+                          ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Zone ID.");
+                  Log.e(TAG, error.getMessage());
+                  adLoadCallback.onFailure(error);
+                  return;
+                }
+                AdColonyAdOptions adOptions =
+                    AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
+                AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
+                AdColonyRewardedEventForwarder.getInstance()
+                    .addListener(requestedZone, AdColonyRewardedRenderer.this);
+                AdColony.requestInterstitial(
+                    requestedZone, AdColonyRewardedEventForwarder.getInstance(), adOptions);
+              }
 
-          @Override
-          public void onInitializeFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
-            mAdLoadCallback.onFailure(error);
-          }
-        });
+              @Override
+              public void onInitializeFailed(@NonNull AdError error) {
+                Log.w(TAG, error.getMessage());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   //region AdColony Rewarded Events
   void onRequestFilled(AdColonyInterstitial adColonyInterstitial) {
-    mAdColonyInterstitial = adColonyInterstitial;
-    mRewardedAdCallback = mAdLoadCallback.onSuccess(AdColonyRewardedRenderer.this);
+    this.adColonyInterstitial = adColonyInterstitial;
+    rewardedAdCallback = adLoadCallback.onSuccess(AdColonyRewardedRenderer.this);
   }
 
   void onRequestNotFilled(AdColonyZone zone) {
     AdError error = createSdkError();
     Log.w(TAG, error.getMessage());
-    mAdLoadCallback.onFailure(error);
+    adLoadCallback.onFailure(error);
   }
 
   void onExpiring(AdColonyInterstitial ad) {
     // No relevant ad event can be forwarded to the Google Mobile Ads SDK.
-    mAdColonyInterstitial = null;
+    adColonyInterstitial = null;
     AdColony.requestInterstitial(ad.getZoneID(), AdColonyRewardedEventForwarder.getInstance());
   }
 
   void onClicked(AdColonyInterstitial ad) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.reportAdClicked();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdClicked();
     }
   }
 
   void onOpened(AdColonyInterstitial ad) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdOpened();
-      mRewardedAdCallback.onVideoStart();
-      mRewardedAdCallback.reportAdImpression();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdOpened();
+      rewardedAdCallback.onVideoStart();
+      rewardedAdCallback.reportAdImpression();
     }
   }
 
@@ -126,8 +130,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   void onClosed(AdColonyInterstitial ad) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdClosed();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
     }
   }
 
@@ -136,23 +140,23 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   }
 
   void onReward(com.adcolony.sdk.AdColonyReward adColonyReward) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onVideoComplete();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onVideoComplete();
 
       if (adColonyReward.success()) {
         AdColonyReward reward = new AdColonyReward(adColonyReward.getRewardName(),
             adColonyReward.getRewardAmount());
-        mRewardedAdCallback.onUserEarnedReward(reward);
+        rewardedAdCallback.onUserEarnedReward(reward);
       }
     }
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (mAdColonyInterstitial == null) {
+    if (adColonyInterstitial == null) {
       AdError error = createAdapterError(ERROR_PRESENTATION_AD_NOT_LOADED, "No ad to show.");
       Log.w(TAG, error.getMessage());
-      mRewardedAdCallback.onAdFailedToShow(error);
+      rewardedAdCallback.onAdFailedToShow(error);
       return;
     }
 
@@ -162,6 +166,6 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
       AdColony.setRewardListener(AdColonyRewardedEventForwarder.getInstance());
     }
 
-    mAdColonyInterstitial.show();
+    adColonyInterstitial.show();
   }
 }

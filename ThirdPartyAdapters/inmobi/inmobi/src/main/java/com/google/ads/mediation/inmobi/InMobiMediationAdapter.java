@@ -111,7 +111,7 @@ public class InMobiMediationAdapter extends Adapter {
   static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
 
   // Callback listener
-  private InMobiRewardedAd mInMobiRewarded;
+  private InMobiRewardedAd inMobiRewarded;
 
   /**
    * {@link Adapter} implementation
@@ -213,9 +213,9 @@ public class InMobiMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       final @NonNull MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback) {
-    mInMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration,
+    inMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
-    mInMobiRewarded.load();
+    inMobiRewarded.load();
   }
 
 }
