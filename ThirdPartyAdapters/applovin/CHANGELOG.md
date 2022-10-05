@@ -1,7 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 11.5.2.0 (In progress)
 - Fixed an issue where rewarded ad requests continuously fail if the initial rewarded ad request times out.
+- Verified compatibility with AppLovin SDK 11.5.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.2.0.
+- AppLovin SDK version 11.5.2.
 
 #### Version 11.5.1.0
 - Verified compatibility with AppLovin SDK 11.5.1.
