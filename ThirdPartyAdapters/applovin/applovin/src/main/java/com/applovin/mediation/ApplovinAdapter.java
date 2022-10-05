@@ -214,6 +214,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                   "Failed to request banner with unsupported size.", ERROR_DOMAIN);
               log(ERROR, error.getMessage());
               mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
+              return;
             }
 
             log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);
