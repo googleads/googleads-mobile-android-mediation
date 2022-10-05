@@ -100,9 +100,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid location.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mediationAdLoadCallback != null) {
-        mediationAdLoadCallback.onFailure(error);
-      }
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -129,14 +127,15 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   @Override
   public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
-    if (showError == null) {
-      Log.d(TAG, "Chartboost banner has been shown.");
-      if (bannerAdCallback != null) {
-        bannerAdCallback.onAdOpened();
-      }
-    } else {
+    if (showError != null) {
       AdError error = ChartboostAdapterUtils.createSDKError(showError);
       Log.w(TAG, error.getMessage());
+      return;
+    }
+
+    Log.d(TAG, "Chartboost banner has been shown.");
+    if (bannerAdCallback != null) {
+      bannerAdCallback.onAdOpened();
     }
   }
 
@@ -147,32 +146,30 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   @Override
   public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
-    if (cacheError == null) {
-      Log.d(TAG, "Chartboost banner ad has been loaded.");
-      if (mediationAdLoadCallback != null) {
-        bannerAdCallback =
-            mediationAdLoadCallback.onSuccess(ChartboostBannerAd.this);
-        cacheEvent.getAd().show();
-      }
-    } else {
+    if (cacheError != null) {
       AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
       Log.w(TAG, error.getMessage());
-      if (mediationAdLoadCallback != null) {
-        mediationAdLoadCallback.onFailure(error);
-      }
+      mediationAdLoadCallback.onFailure(error);
+      return;
     }
+
+    Log.d(TAG, "Chartboost banner ad has been loaded.");
+    bannerAdCallback =
+        mediationAdLoadCallback.onSuccess(ChartboostBannerAd.this);
+    cacheEvent.getAd().show();
   }
 
   @Override
   public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
-    if (clickError == null) {
-      Log.d(TAG, "Chartboost banner ad has been clicked.");
-      if (bannerAdCallback != null) {
-        bannerAdCallback.reportAdClicked();
-      }
-    } else {
+    if (clickError != null) {
       AdError error = ChartboostAdapterUtils.createSDKError(clickError);
       Log.w(TAG, error.getMessage());
+      return;
+    }
+
+    Log.d(TAG, "Chartboost banner ad has been clicked.");
+    if (bannerAdCallback != null) {
+      bannerAdCallback.reportAdClicked();
     }
   }
 
