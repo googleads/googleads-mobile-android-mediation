@@ -5,9 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
@@ -107,25 +106,20 @@ class InMobiAdapterUtils {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       if (!Objects.equals(city, "")
-          && !Objects.equals(state, "")
-          && !Objects.equals(country, "")) {
+              && !Objects.equals(state, "")
+              && !Objects.equals(country, "")) {
         InMobiSdk.setLocationWithCityStateCountry(city, state, country);
       }
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(MediationAdRequest adRequest) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
-
-    if (adRequest.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
+  static void updateAgeRestrictedUser(MediationAdConfiguration config) {
+    if (config.taggedForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      InMobiSdk.setIsAgeRestricted(true);
     } else {
-      map.put("coppa", "0");
+      InMobiSdk.setIsAgeRestricted(false);
     }
-
-    return map;
   }
 
   static HashMap<String, String> createInMobiParameterMap(MediationAdConfiguration config) {
@@ -133,7 +127,7 @@ class InMobiAdapterUtils {
     map.put("tp", "c_admob");
 
     if (config.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
     } else {
       map.put("coppa", "0");
