@@ -32,8 +32,8 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
   private MediationInterstitialAdCallback interstitialAdCallback;
 
-  public MintegralRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-                                    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+                                    @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
@@ -42,25 +42,16 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-    if (TextUtils.isEmpty(adUnitId)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load interstitial ad from MIntegral. Missing or invalid adUnitId");
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    if (TextUtils.isEmpty(placementId)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load interstitial ad from MIntegral. Missing or invalid placementId");
+    String bidToken = adConfiguration.getBidResponse();
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(
+            adUnitId, placementId, bidToken);
+    if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
     mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, adUnitId);
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
-    String token = adConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(token)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    mbBidNewInterstitialHandler.loadFromBid(token);
+    mbBidNewInterstitialHandler.loadFromBid(bidToken);
   }
 
   @Override

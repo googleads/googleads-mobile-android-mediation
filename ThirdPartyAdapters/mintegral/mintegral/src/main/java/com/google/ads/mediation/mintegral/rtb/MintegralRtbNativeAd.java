@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -21,10 +22,12 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.Campaign;
 import com.mbridge.msdk.out.Frame;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 import com.mbridge.msdk.out.NativeListener;
+import com.mbridge.msdk.widget.MBAdChoice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,28 +51,22 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
-    if (TextUtils.isEmpty(adUnitId)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load native ad from MIntegral. Missing or invalid adUnitId");
+    String bidToken = adConfiguration.getBidResponse();
+    AdError error =
+            MintegralUtils.validateMintegralAdLoadParams(
+                    adUnitId, placementId, bidToken);
+    if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
-    if (TextUtils.isEmpty(placementId)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS, "Failed to load native ad from MIntegral. Missing or invalid placementId");
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    Map<String, Object> properties = MBBidNativeHandler.getNativeProperties(placementId, adUnitId);
-    properties.put(NATIVE_VIDEO_SUPPORT, true);
-    properties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
-    mbBidNativeHandler = new MBBidNativeHandler(properties, adConfiguration.getContext());
-    String token = adConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(token)) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_BID_RESPONSE, "Failed to load rewarded ad from MIntegral. Missing or invalid bid response.");
-      adLoadCallback.onFailure(error);
-      return;
-    }
+    Map<String, Object> nativeProperties = MBBidNativeHandler.getNativeProperties(placementId, adUnitId);
+    //Whether native advertisements support video. If it is true, the unit supports video; otherwise, no video is returned
+    nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
+    //How many advertisements are expected to be returned in a native advertisement request, and one advertisement is returned by default
+    nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
+    mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
     mbBidNativeHandler.setAdListener(this);
-    mbBidNativeHandler.bidLoad(token);
+    mbBidNativeHandler.bidLoad(bidToken);
   }
 
   private void mapNativeAd(Campaign ad) {
@@ -91,13 +88,17 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       setIcon(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getIconUrl()),
               MINTEGRAL_SDK_IMAGE_SCALE));
     }
-    if (!TextUtils.isEmpty(campaign.getImageUrl())) {
-      List<Image> imagesList = new ArrayList<Image>();
-      imagesList.add(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getImageUrl()),
-              MINTEGRAL_SDK_IMAGE_SCALE));
-      setImages(imagesList);
-    }
+    MBMediaView mbMediaView = new MBMediaView(adConfiguration.getContext());
+    mbMediaView.setProgressVisibility(true);
+    mbMediaView.setSoundIndicatorVisibility(true);
+    mbMediaView.setVideoSoundOnOff(false);
+    setMediaView(mbMediaView);
+
+    MBAdChoice mbAdChoice = new MBAdChoice(adConfiguration.getContext());
+    mbAdChoice.setCampaign(campaign);
+    setAdChoicesContent(mbAdChoice);
     setOverrideClickHandling(true);
+    setOverrideImpressionRecording(true);
   }
 
 
@@ -131,7 +132,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
    */
   private List traversalView(View view) {
     List<View> viewList = new ArrayList<View>();
-    if (null == view) {
+    if (view == null) {
       return viewList;
     }
     if (view instanceof MediaView) {

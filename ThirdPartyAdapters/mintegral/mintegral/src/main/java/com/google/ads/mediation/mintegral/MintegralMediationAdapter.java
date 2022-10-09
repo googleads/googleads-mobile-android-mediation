@@ -51,7 +51,7 @@ import java.util.Map;
 public class MintegralMediationAdapter extends RtbAdapter {
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
-  private static boolean CCPAdoNotTrackStatus = false;
+  private static boolean ccpaDoNotTrackstatus = false;
   private static int gdprConsentStatus = -1;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
@@ -69,7 +69,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    //SDK_VERSION string: MAL_16.2.11
+    // Mintegral SDK returns the SDK version in @"MAL_16.2.11".
     String versionString = MBConfiguration.SDK_VERSION;
     String[] versionSplits = versionString.split("_");
     if (versionSplits.length > 1) {
@@ -128,48 +128,55 @@ public class MintegralMediationAdapter extends RtbAdapter {
         appKeys.add(appKey);
       }
     }
-    int count = appIds.size();
-    int keyCount = appKeys.size();
-    if (count <= 0) {
+    int appIdCount = appIds.size();
+    int appKeyCount = appKeys.size();
+    if (appIdCount <= 0) {
       AdError error =
               MintegralConstants.createAdapterError(
                       ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.");
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
-    if (keyCount <= 0) {
+    if (appKeyCount <= 0) {
       AdError error =
               MintegralConstants.createAdapterError(
                       ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App key.");
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
-
-
     String appId = appIds.iterator().next();
     String appKey = appKeys.iterator().next();
-    if (count > 1) {
+    if (appIdCount > 1) {
       String message = String.format(
               "Found multiple app IDs in %s. Using %s to initialize Mintegral SDK.", appIds, appId);
       Log.w(TAG, message);
     }
-    if (keyCount > 1) {
+    if (appKeyCount > 1) {
       String message = String.format(
-              "Found multiple appKeys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
+              "Found multiple App Keys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
       Log.w(TAG, message);
     }
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
     Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
-    mBridgeSDK.setDoNotTrackStatus(CCPAdoNotTrackStatus);
+    mBridgeSDK.setDoNotTrackStatus(ccpaDoNotTrackstatus);
     if (gdprConsentStatus != MBridgeConstans.IS_SWITCH_OFF && gdprConsentStatus != MBridgeConstans.IS_SWITCH_ON) {
       mBridgeSDK.setConsentStatus(context, gdprConsentStatus);
     }
     mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
       @Override
       public void onInitSuccess() {
-        addChannel();
+        try {
+          Aa channelManagerInstance = new Aa();
+          Class channelManagerClass = channelManagerInstance.getClass();
+          Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
+          setChannelMethod.setAccessible(true);
+          //set channel flag. "Y+H6DFttYrPQYcIBicKwJQKQYrN=" is used to mark the AdMob channel
+          setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBicKwJQKQYrN=");
+        } catch (Throwable e) {
+          e.printStackTrace();
+        }
         initializationCompleteCallback.onInitializationSucceeded();
       }
 
@@ -177,6 +184,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
       public void onInitFail(String errorMessage) {
         AdError initError = createSdkError(errorMessage);
         initializationCompleteCallback.onInitializationFailed(initError.getMessage());
+        Log.w(TAG, initError.toString());
       }
     });
 
@@ -216,9 +224,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setConsentStatus(int consentStatus) {
-    if (consentStatus != 0 && consentStatus != 1) {
+    if (gdprConsentStatus != MBridgeConstans.IS_SWITCH_OFF && gdprConsentStatus != MBridgeConstans.IS_SWITCH_ON){
       // no-op
-      Log.w(TAG, "Invalid GDPR value. Mintegral SDK only accepts 0 or 1.");
+      Log.w(TAG, "Invalid GDPR consent status value. Mintegral SDK only accepts integer value 0 or 1.");
       return;
     }
     gdprConsentStatus = consentStatus;
@@ -232,22 +240,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setDoNotTrackStatus(boolean doNotTrackStatus) {
-    CCPAdoNotTrackStatus = doNotTrackStatus;
+    ccpaDoNotTrackstatus = doNotTrackStatus;
   }
 
-  /**
-   * Call the private static method inside the Mintegral SDK through reflection to set the channel flag
-   */
-  private void addChannel() {
-    try {
-      Aa a = new Aa();
-      Class c = a.getClass();
-      Method method = c.getDeclaredMethod("b", String.class);
-      method.setAccessible(true);
-      //set channel flag. "Y+H6DFttYrPQYcIBicKwJQKQYrN=" is used to mark the AdMob channel
-      method.invoke(a, "Y+H6DFttYrPQYcIBicKwJQKQYrN=");
-    } catch (Throwable e) {
-      e.printStackTrace();
-    }
-  }
 }
