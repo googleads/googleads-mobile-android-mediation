@@ -98,7 +98,6 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     mbAdChoice.setCampaign(campaign);
     setAdChoicesContent(mbAdChoice);
     setOverrideClickHandling(true);
-    setOverrideImpressionRecording(true);
   }
 
 
