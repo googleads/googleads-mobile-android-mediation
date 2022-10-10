@@ -56,13 +56,10 @@ class ChartboostAdapterUtils {
    *
    * @param serverParameters a {@link Bundle} containing server parameters used to initialize
    *                         Chartboost.
-   * @param networkExtras    a {@link Bundle} containing optional information to be used by the
-   *                         adapter.
    * @return a {@link ChartboostParams} object populated with the params obtained from the bundles
    * provided.
    */
-  static ChartboostParams createChartboostParams(@NonNull Bundle serverParameters,
-      @Nullable Bundle networkExtras) {
+  static ChartboostParams createChartboostParams(@NonNull Bundle serverParameters) {
     ChartboostParams chartboostParams = new ChartboostParams();
     String appId = serverParameters.getString(KEY_APP_ID);
     String appSignature = serverParameters.getString(KEY_APP_SIGNATURE);
@@ -93,7 +90,7 @@ class ChartboostAdapterUtils {
    * @return {@code true} if the given ChartboostParams' appId and appSignature are valid, false
    * otherwise.
    */
-  static boolean isValidChartboostParams(ChartboostParams chartboostParams) {
+  static boolean isValidChartboostParams(@Nullable ChartboostParams chartboostParams) {
     if (chartboostParams == null) {
       return false;
     }
@@ -212,7 +209,8 @@ class ChartboostAdapterUtils {
 
   /**
    * Return mediation object which contains mediation information like: - mediation name - library
-   * version - adapter version Used every time adapter creates Chartboost ad object
+   * version - adapter version
+   * Used every time adapter creates Chartboost ad object
    *
    * @return {@link Mediation}
    */

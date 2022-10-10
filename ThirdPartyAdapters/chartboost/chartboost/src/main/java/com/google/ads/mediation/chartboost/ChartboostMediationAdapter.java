@@ -40,7 +40,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The {@link ChartboostMediationAdapter} class is used to load Chartboost rewarded-based video,
@@ -92,8 +91,6 @@ public class ChartboostMediationAdapter extends Adapter {
   static final int ERROR_AD_NOT_READY = 103;
   // endregion
 
-  // Flag to check whether the Chartboost SDK has been initialized or not.
-  static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
   private ChartboostBannerAd bannerAd;
   private ChartboostInterstitialAd interstitialAd;
   private ChartboostRewardedAd rewardedAd;
@@ -190,7 +187,7 @@ public class ChartboostMediationAdapter extends Adapter {
       A Chartboost extras object used to store optional information used when loading ads.
      */
     ChartboostParams chartboostParams = ChartboostAdapterUtils.createChartboostParams(
-        serverParameters, null);
+        serverParameters);
     if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send initialization failed event.
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
@@ -203,7 +200,6 @@ public class ChartboostMediationAdapter extends Adapter {
         .init(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
-            isSdkInitialized.set(true);
             initializationCompleteCallback.onInitializationSucceeded();
 
           }

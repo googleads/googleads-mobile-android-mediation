@@ -35,7 +35,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   /**
    * FrameLayout use as a {@link Banner} container.
    */
-  private FrameLayout mBannerContainer;
+  private FrameLayout bannerContainer;
 
   private final MediationBannerAdConfiguration bannerAdConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -55,7 +55,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     Bundle serverParameters = bannerAdConfiguration.getServerParameters();
 
     ChartboostParams mChartboostParams =
-        ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
+        ChartboostAdapterUtils.createChartboostParams(serverParameters);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
@@ -99,22 +99,22 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     if (TextUtils.isEmpty(location) || supportedAdSize == null) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     //Attach object to layout to inflate the banner.
-    mBannerContainer = new FrameLayout(context);
+    bannerContainer = new FrameLayout(context);
     FrameLayout.LayoutParams paramsLayout =
         new FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
     paramsLayout.gravity = Gravity.CENTER_HORIZONTAL;
 
-    Banner mChartboostBannerAd = new Banner(context, location, supportedAdSize,
+    Banner chartboostBannerAd = new Banner(context, location, supportedAdSize,
         ChartboostBannerAd.this, ChartboostAdapterUtils.getChartboostMediation());
-    mBannerContainer.addView(mChartboostBannerAd, paramsLayout);
-    mChartboostBannerAd.cache();
+    bannerContainer.addView(chartboostBannerAd, paramsLayout);
+    chartboostBannerAd.cache();
   }
 
   @Override
@@ -176,6 +176,6 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   @NonNull
   @Override
   public View getView() {
-    return mBannerContainer;
+    return bannerContainer;
   }
 }
