@@ -106,7 +106,6 @@ class VerizonMediaRewardedRenderer implements InterstitialAd.InterstitialAdListe
     });
   }
 
-
   @Override
   public void onError(final InterstitialAdFactory interstitialAdFactory,
       final ErrorInfo errorInfo) {

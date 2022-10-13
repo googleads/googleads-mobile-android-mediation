@@ -67,7 +67,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
   /**
    * IUnityAdsLoadListener instance.
    */
-  private final IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
+  private final IUnityAdsLoadListener unityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
       String logMessage = String
@@ -130,7 +130,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
           }
         });
 
-    UnityAds.load(placementId, mUnityLoadListener);
+    UnityAds.load(placementId, unityLoadListener);
   }
 
   @Override
@@ -152,13 +152,13 @@ public class UnityRewardedAd implements MediationRewardedAd {
     }
 
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activity, placementId, mUnityShowListener);
+    UnityAds.show(activity, placementId, unityShowListener);
   }
 
   /**
    * IUnityAdsShowListener instance. Contains logic for callbacks when showing ads.
    */
-  private final IUnityAdsShowListener mUnityShowListener = new IUnityAdsShowListener() {
+  private final IUnityAdsShowListener unityShowListener = new IUnityAdsShowListener() {
     @Override
     public void onUnityAdsShowStart(String placementId) {
       // Unity Ads video ad started playing. Send Video Started event if this is a rewarded

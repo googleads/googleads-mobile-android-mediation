@@ -79,7 +79,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
   /**
    * IUnityAdsLoadListener instance.
    */
-  private final IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
+  private final IUnityAdsLoadListener unityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
       String logMessage = String
@@ -164,7 +164,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    UnityAds.load(placementId, mUnityLoadListener);
+    UnityAds.load(placementId, unityLoadListener);
   }
 
   private void sendAdFailedToLoad(int errorCode, String errorDescription) {
@@ -193,13 +193,13 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
 
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activityReference, placementId, mUnityShowListener);
+    UnityAds.show(activityReference, placementId, unityShowListener);
   }
 
   /**
    * IUnityAdsShowListener instance. Contains logic for callbacks when showing ads.
    */
-  private final IUnityAdsShowListener mUnityShowListener = new IUnityAdsShowListener() {
+  private final IUnityAdsShowListener unityShowListener = new IUnityAdsShowListener() {
     @Override
     public void onUnityAdsShowStart(String placementId) {
       String logMessage = String.format("Unity Ads interstitial ad started for placement ID: %s",

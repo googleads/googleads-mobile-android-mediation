@@ -66,7 +66,6 @@ public class UnityMediationAdapter extends Adapter {
           ERROR_CONTEXT_NOT_ACTIVITY,
           ERROR_AD_NOT_READY,
           ERROR_UNITY_ADS_NOT_SUPPORTED,
-          ERROR_AD_ALREADY_LOADING,
           ERROR_FINISH,
           ERROR_BANNER_SIZE_MISMATCH,
           ERROR_INITIALIZATION_FAILURE
@@ -109,11 +108,6 @@ public class UnityMediationAdapter extends Adapter {
    * UnityAds is not supported on the device.
    */
   static final int ERROR_UNITY_ADS_NOT_SUPPORTED = 107;
-
-  /**
-   * UnityAds can only load 1 ad per placement at a time.
-   */
-  static final int ERROR_AD_ALREADY_LOADING = 108;
 
   /**
    * UnityAds finished with an error state.

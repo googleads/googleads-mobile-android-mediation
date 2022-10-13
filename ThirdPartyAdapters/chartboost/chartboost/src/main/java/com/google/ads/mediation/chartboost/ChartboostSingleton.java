@@ -40,21 +40,21 @@ public final class ChartboostSingleton {
    * their Chartboost location.
    */
   private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
-      mInterstitialDelegates = new HashMap<>();
+      interstitialDelegates = new HashMap<>();
   private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
-      mRewardedDelegates = new HashMap<>();
+      rewardedDelegates = new HashMap<>();
   private static final HashMap<String, WeakReference<AbstractChartboostAdapterDelegate>>
-      mBannerDelegates = new HashMap<>();
+      bannerDelegates = new HashMap<>();
 
   /**
    * Flag to keep track of whether or not {@link Chartboost} has initialized.
    */
-  private static boolean mIsChartboostInitialized;
+  private static boolean isChartboostInitialized;
 
   /**
    * Flag to keep track of whether or not {@link Chartboost} is in progress of initializing.
    */
-  private static boolean mIsChartboostInitializing;
+  private static boolean isChartboostInitializing;
 
   /**
    * The only instance of {@link ChartboostSingletonDelegate}.
@@ -76,36 +76,36 @@ public final class ChartboostSingleton {
   /**
    * Adds the given {@link AbstractChartboostAdapterDelegate} to the map of Chartboost locations.
    *
-   * @param delegate the delegate that needs to be added to {@link #mInterstitialDelegates}.
+   * @param delegate the delegate that needs to be added to {@link #interstitialDelegates}.
    */
   private static void addInterstitialDelegate(
       String location, AbstractChartboostAdapterDelegate delegate) {
     if (!TextUtils.isEmpty(location) && delegate != null) {
-      mInterstitialDelegates.put(location, new WeakReference<>(delegate));
+      interstitialDelegates.put(location, new WeakReference<>(delegate));
     }
   }
 
   /**
    * Adds the given {@link AbstractChartboostAdapterDelegate} to the map of Chartboost locations.
    *
-   * @param delegate the delegate that needs to be added to {@link #mRewardedDelegates}.
+   * @param delegate the delegate that needs to be added to {@link #rewardedDelegates}.
    */
   private static void addRewardedDelegate(
       String location, AbstractChartboostAdapterDelegate delegate) {
     if (!TextUtils.isEmpty(location) && delegate != null) {
-      mRewardedDelegates.put(location, new WeakReference<>(delegate));
+      rewardedDelegates.put(location, new WeakReference<>(delegate));
     }
   }
 
   /**
    * Adds the given {@link AbstractChartboostAdapterDelegate} to the map of Chartboost locations.
    *
-   * @param delegate the delegate that needs to be added to {@link #mBannerDelegates}.
+   * @param delegate the delegate that needs to be added to {@link #bannerDelegates}.
    */
   private static void addBannerDelegate(
       String location, AbstractChartboostAdapterDelegate delegate) {
     if (!TextUtils.isEmpty(location) && delegate != null) {
-      mBannerDelegates.put(location, new WeakReference<>(delegate));
+      bannerDelegates.put(location, new WeakReference<>(delegate));
     }
   }
 
@@ -118,8 +118,8 @@ public final class ChartboostSingleton {
   @Nullable
   private static AbstractChartboostAdapterDelegate getInterstitialDelegate(
       @NonNull String location) {
-    if (!TextUtils.isEmpty(location) && mInterstitialDelegates.containsKey(location)) {
-      return mInterstitialDelegates.get(location).get();
+    if (!TextUtils.isEmpty(location) && interstitialDelegates.containsKey(location)) {
+      return interstitialDelegates.get(location).get();
     }
     return null;
   }
@@ -132,8 +132,8 @@ public final class ChartboostSingleton {
    */
   @Nullable
   private static AbstractChartboostAdapterDelegate getRewardedDelegate(String location) {
-    if (!TextUtils.isEmpty(location) && mRewardedDelegates.containsKey(location)) {
-      return mRewardedDelegates.get(location).get();
+    if (!TextUtils.isEmpty(location) && rewardedDelegates.containsKey(location)) {
+      return rewardedDelegates.get(location).get();
     }
     return null;
   }
@@ -146,8 +146,8 @@ public final class ChartboostSingleton {
    */
   @Nullable
   private static AbstractChartboostAdapterDelegate getBannerDelegate(String location) {
-    if (!TextUtils.isEmpty(location) && mBannerDelegates.containsKey(location)) {
-      return mBannerDelegates.get(location).get();
+    if (!TextUtils.isEmpty(location) && bannerDelegates.containsKey(location)) {
+      return bannerDelegates.get(location).get();
     }
     return null;
   }
@@ -160,12 +160,12 @@ public final class ChartboostSingleton {
    */
   static void removeBannerDelegate(@NonNull AbstractChartboostAdapterDelegate bannerDelegate) {
     String location = bannerDelegate.getChartboostParams().getLocation();
-    if (TextUtils.isEmpty(location) || !mBannerDelegates.containsKey(location)) {
+    if (TextUtils.isEmpty(location) || !bannerDelegates.containsKey(location)) {
       return;
     }
 
-    if (bannerDelegate.equals(mBannerDelegates.get(location).get())) {
-      mBannerDelegates.remove(location);
+    if (bannerDelegate.equals(bannerDelegates.get(location).get())) {
+      bannerDelegates.remove(location);
     }
   }
 
@@ -263,16 +263,16 @@ public final class ChartboostSingleton {
       Chartboost.setFramework(params.getFramework(), params.getFrameworkVersion());
     }
 
-    if (mIsChartboostInitializing) {
+    if (isChartboostInitializing) {
       return;
     }
 
-    if (mIsChartboostInitialized) {
+    if (isChartboostInitialized) {
       adapterDelegate.didInitialize();
       return;
     }
 
-    mIsChartboostInitializing = true;
+    isChartboostInitializing = true;
     Chartboost.setDelegate(getInstance());
     Chartboost.startWithAppId(context, params.getAppId(), params.getAppSignature());
     Chartboost.setMediation(
@@ -359,24 +359,24 @@ public final class ChartboostSingleton {
       // Chartboost SDK has been successfully initialized.
       // Rewarded video pre-fetching has been completed.
       super.didInitialize();
-      mIsChartboostInitializing = false;
-      mIsChartboostInitialized = true;
+      isChartboostInitializing = false;
+      isChartboostInitialized = true;
 
       for (WeakReference<AbstractChartboostAdapterDelegate> reference :
-          mInterstitialDelegates.values()) {
+          interstitialDelegates.values()) {
         if (reference.get() != null) {
           reference.get().didInitialize();
         }
       }
 
       for (WeakReference<AbstractChartboostAdapterDelegate> reference :
-          mRewardedDelegates.values()) {
+          rewardedDelegates.values()) {
         if (reference.get() != null) {
           reference.get().didInitialize();
         }
       }
 
-      for (WeakReference<AbstractChartboostAdapterDelegate> reference : mBannerDelegates.values()) {
+      for (WeakReference<AbstractChartboostAdapterDelegate> reference : bannerDelegates.values()) {
         if (reference.get() != null) {
           reference.get().didInitialize();
         }
@@ -403,7 +403,7 @@ public final class ChartboostSingleton {
       if (delegate != null) {
         delegate.didFailToLoadInterstitial(location, error);
       }
-      mInterstitialDelegates.remove(location);
+      interstitialDelegates.remove(location);
     }
 
     @Override
@@ -426,7 +426,7 @@ public final class ChartboostSingleton {
       if (reference != null) {
         reference.didDismissInterstitial(location);
       }
-      mInterstitialDelegates.remove(location);
+      interstitialDelegates.remove(location);
     }
 
     @Override
@@ -465,7 +465,7 @@ public final class ChartboostSingleton {
       if (delegate != null) {
         delegate.didFailToLoadRewardedVideo(location, error);
       }
-      mRewardedDelegates.remove(location);
+      rewardedDelegates.remove(location);
     }
 
     @Override
@@ -510,7 +510,7 @@ public final class ChartboostSingleton {
       if (delegate != null) {
         delegate.didDismissRewardedVideo(location);
       }
-      mRewardedDelegates.remove(location);
+      rewardedDelegates.remove(location);
     }
   }
 }

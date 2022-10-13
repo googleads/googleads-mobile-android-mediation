@@ -22,7 +22,7 @@ import jp.maio.sdk.android.MaioAds;
 public class Interstitial extends MaioMediationAdapter
     implements MediationInterstitialAdapter, MaioAdsManagerListener {
 
-  private MediationInterstitialListener mMediationInterstitialListener;
+  private MediationInterstitialListener mediationInterstitialListener;
 
   // region MediationInterstitialAdapter implementation
   @Override
@@ -41,56 +41,56 @@ public class Interstitial extends MaioMediationAdapter
   public void requestInterstitialAd(@NonNull Context context,
       @NonNull MediationInterstitialListener listener, @NonNull Bundle serverParameters,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
-    this.mMediationInterstitialListener = listener;
+    this.mediationInterstitialListener = listener;
     if (!(context instanceof Activity)) {
       AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
           "Maio SDK requires an Activity context to load ads.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
-    this.mMediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
-    if (TextUtils.isEmpty(mMediaID)) {
+    this.mediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
+    if (TextUtils.isEmpty(mediaID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
-    this.mZoneID = serverParameters.getString(MaioAdsManager.KEY_ZONE_ID);
-    if (TextUtils.isEmpty(mZoneID)) {
+    this.zoneID = serverParameters.getString(MaioAdsManager.KEY_ZONE_ID);
+    if (TextUtils.isEmpty(zoneID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
 
     MaioAds.setAdTestMode(mediationAdRequest.isTesting());
-    MaioAdsManager.getManager(mMediaID)
+    MaioAdsManager.getManager(mediaID)
         .initialize(
             (Activity) context,
             new MaioAdsManager.InitializationListener() {
               @Override
               public void onMaioInitialized() {
-                MaioAdsManager.getManager(mMediaID).loadAd(mZoneID, Interstitial.this);
+                MaioAdsManager.getManager(mediaID).loadAd(zoneID, Interstitial.this);
               }
             });
   }
 
   @Override
   public void showInterstitial() {
-    MaioAdsManager.getManager(mMediaID).showAd(mZoneID, Interstitial.this);
+    MaioAdsManager.getManager(mediaID).showAd(zoneID, Interstitial.this);
   }
   // endregion
 
   // region MaioAdsManagerListener implementation
   @Override
   public void onChangedCanShow(String zoneId, boolean isAvailable) {
-    if (this.mMediationInterstitialListener != null && isAvailable) {
-      this.mMediationInterstitialListener.onAdLoaded(Interstitial.this);
+    if (this.mediationInterstitialListener != null && isAvailable) {
+      this.mediationInterstitialListener.onAdLoaded(Interstitial.this);
     }
   }
 
@@ -98,32 +98,32 @@ public class Interstitial extends MaioMediationAdapter
   public void onFailed(FailNotificationReason reason, String zoneId) {
     AdError error = MaioMediationAdapter.getAdError(reason);
     Log.w(TAG, error.getMessage());
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
     }
   }
 
   @Override
   public void onAdFailedToShow(@NonNull AdError error) {
     Log.w(TAG, error.getMessage());
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdOpened(Interstitial.this);
-      this.mMediationInterstitialListener.onAdClosed(Interstitial.this);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdOpened(Interstitial.this);
+      this.mediationInterstitialListener.onAdClosed(Interstitial.this);
     }
   }
 
   @Override
   public void onAdFailedToLoad(@NonNull AdError error) {
     Log.w(TAG, error.getMessage());
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
     }
   }
 
   @Override
   public void onOpenAd(String zoneId) {
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdOpened(Interstitial.this);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdOpened(Interstitial.this);
     }
   }
 
@@ -134,9 +134,9 @@ public class Interstitial extends MaioMediationAdapter
 
   @Override
   public void onClickedAd(String zoneId) {
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdClicked(Interstitial.this);
-      this.mMediationInterstitialListener.onAdLeftApplication(Interstitial.this);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdClicked(Interstitial.this);
+      this.mediationInterstitialListener.onAdLeftApplication(Interstitial.this);
     }
   }
 
@@ -147,8 +147,8 @@ public class Interstitial extends MaioMediationAdapter
 
   @Override
   public void onClosedAd(String zoneId) {
-    if (this.mMediationInterstitialListener != null) {
-      this.mMediationInterstitialListener.onAdClosed(Interstitial.this);
+    if (this.mediationInterstitialListener != null) {
+      this.mediationInterstitialListener.onAdClosed(Interstitial.this);
     }
   }
   // endregion

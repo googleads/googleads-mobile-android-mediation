@@ -50,18 +50,18 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   private AppLovinAd appLovinInterstitialAd;
 
   // Parent objects.
-  private AppLovinSdk mSdk;
-  private Context mContext;
-  private Bundle mNetworkExtras;
+  private AppLovinSdk sdk;
+  private Context context;
+  private Bundle networkExtras;
 
   // Interstitial objects.
-  private MediationInterstitialListener mMediationInterstitialListener;
+  private MediationInterstitialListener mediationInterstitialListener;
 
   // Banner objects.
-  private AppLovinAdView mAdView;
+  private AppLovinAdView adView;
 
   // Controlled fields.
-  private String mZoneId;
+  private String zoneId;
 
   // region MediationInterstitialAdapter implementation.
   @Override
@@ -83,9 +83,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
         .initialize(context, sdkKey, new OnInitializeSuccessListener() {
           @Override
           public void onInitializeSuccess(@NonNull String sdkKey) {
-            mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-            if (appLovinInterstitialAds.containsKey(mZoneId)
-                && appLovinInterstitialAds.get(mZoneId).get() != null) {
+            zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+            if (appLovinInterstitialAds.containsKey(zoneId)
+                && appLovinInterstitialAds.get(zoneId).get() != null) {
               AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED,
                   " Cannot load multiple interstitial ads with the same Zone ID. "
                       + "Display one ad before attempting to load another. ", ERROR_DOMAIN);
@@ -93,15 +93,15 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
               interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, error);
               return;
             }
-            appLovinInterstitialAds.put(mZoneId, new WeakReference<>(ApplovinAdapter.this));
+            appLovinInterstitialAds.put(zoneId, new WeakReference<>(ApplovinAdapter.this));
 
             // Store parent objects.
-            mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-            mContext = context;
-            mNetworkExtras = networkExtras;
-            mMediationInterstitialListener = interstitialListener;
+            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            ApplovinAdapter.this.context = context;
+            ApplovinAdapter.this.networkExtras = networkExtras;
+            mediationInterstitialListener = interstitialListener;
 
-            log(DEBUG, "Requesting interstitial for zone: " + mZoneId);
+            log(DEBUG, "Requesting interstitial for zone: " + zoneId);
 
             // Create Ad Load listener.
             final AppLovinAdLoadListener adLoadListener =
@@ -110,14 +110,14 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                   public void adReceived(final AppLovinAd ad) {
                     log(DEBUG,
                         "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
-                            + mZoneId);
+                            + zoneId);
                     appLovinInterstitialAd = ad;
 
                     AppLovinSdkUtils.runOnUiThread(
                         new Runnable() {
                           @Override
                           public void run() {
-                            mMediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
+                            mediationInterstitialListener.onAdLoaded(ApplovinAdapter.this);
                           }
                         });
                   }
@@ -131,17 +131,17 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                         new Runnable() {
                           @Override
                           public void run() {
-                            mMediationInterstitialListener
+                            mediationInterstitialListener
                                 .onAdFailedToLoad(ApplovinAdapter.this, error);
                           }
                         });
                   }
                 };
 
-            if (!TextUtils.isEmpty(mZoneId)) {
-              mSdk.getAdService().loadNextAdForZoneId(mZoneId, adLoadListener);
+            if (!TextUtils.isEmpty(zoneId)) {
+              sdk.getAdService().loadNextAdForZoneId(zoneId, adLoadListener);
             } else {
-              mSdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
+              sdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, adLoadListener);
             }
           }
         });
@@ -150,13 +150,13 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   @Override
   public void showInterstitial() {
     // Update mute state.
-    mSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(mNetworkExtras));
+    sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     final AppLovinInterstitialAdDialog interstitialAdDialog =
-        AppLovinInterstitialAd.create(mSdk, mContext);
+        AppLovinInterstitialAd.create(sdk, context);
 
     final AppLovinInterstitialAdListener listener =
-        new AppLovinInterstitialAdListener(ApplovinAdapter.this, mMediationInterstitialListener);
+        new AppLovinInterstitialAdListener(ApplovinAdapter.this, mediationInterstitialListener);
     interstitialAdDialog.setAdDisplayListener(listener);
     interstitialAdDialog.setAdClickListener(listener);
     interstitialAdDialog.setAdVideoPlaybackListener(listener);
@@ -165,19 +165,19 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       log(DEBUG, "Attempting to show interstitial before one was loaded.");
 
       // Check if we have a default zone interstitial available.
-      if (TextUtils.isEmpty(mZoneId)) {
+      if (TextUtils.isEmpty(zoneId)) {
         log(DEBUG, "Showing interstitial preloaded by SDK.");
         interstitialAdDialog.show();
       }
       // TODO: Show ad for zone identifier if exists
       else {
-        mMediationInterstitialListener.onAdOpened(this);
-        mMediationInterstitialListener.onAdClosed(this);
+        mediationInterstitialListener.onAdOpened(this);
+        mediationInterstitialListener.onAdClosed(this);
       }
       return;
     }
 
-    log(DEBUG, "Showing interstitial for zone: " + mZoneId);
+    log(DEBUG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
   }
   // endregion
@@ -198,38 +198,38 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       return;
     }
 
+    // Convert requested size to AppLovin Ad Size.
+    final AppLovinAdSize appLovinAdSize =
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
+    if (appLovinAdSize == null) {
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size.", ERROR_DOMAIN);
+      log(ERROR, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
+      return;
+    }
+
     AppLovinInitializer.getInstance()
         .initialize(context, sdkKey, new OnInitializeSuccessListener() {
           @Override
           public void onInitializeSuccess(@NonNull String sdkKey) {
             // Store parent objects
-            mSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
-            mZoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-            // Convert requested size to AppLovin Ad Size.
-            final AppLovinAdSize appLovinAdSize =
-                AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
-            if (appLovinAdSize == null) {
-              AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-                  "Failed to request banner with unsupported size.", ERROR_DOMAIN);
-              log(ERROR, error.getMessage());
-              mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
-            }
+            log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);
+            adView = new AppLovinAdView(sdk, appLovinAdSize, context);
 
-            log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + mZoneId);
-            mAdView = new AppLovinAdView(mSdk, appLovinAdSize, context);
+            final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(zoneId, adView,
+                ApplovinAdapter.this, mediationBannerListener);
+            adView.setAdDisplayListener(listener);
+            adView.setAdClickListener(listener);
+            adView.setAdViewEventListener(listener);
 
-            final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(mZoneId, mAdView,
-                ApplovinAdapter.this,
-                mediationBannerListener);
-            mAdView.setAdDisplayListener(listener);
-            mAdView.setAdClickListener(listener);
-            mAdView.setAdViewEventListener(listener);
-
-            if (!TextUtils.isEmpty(mZoneId)) {
-              mSdk.getAdService().loadNextAdForZoneId(mZoneId, listener);
+            if (!TextUtils.isEmpty(zoneId)) {
+              sdk.getAdService().loadNextAdForZoneId(zoneId, listener);
             } else {
-              mSdk.getAdService().loadNextAd(appLovinAdSize, listener);
+              sdk.getAdService().loadNextAd(appLovinAdSize, listener);
             }
           }
         });
@@ -238,7 +238,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   @NonNull
   @Override
   public View getBannerView() {
-    return mAdView;
+    return adView;
   }
   // endregion
 
@@ -260,7 +260,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   @Override
   public void onContextChanged(@NonNull Context context) {
     log(DEBUG, "Context changed: " + context);
-    mContext = context;
+    this.context = context;
   }
 
   // Logging
@@ -272,10 +272,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
   // Utilities
   void unregister() {
-    if (!TextUtils.isEmpty(mZoneId)
-        && appLovinInterstitialAds.containsKey(mZoneId)
-        && ApplovinAdapter.this.equals(appLovinInterstitialAds.get(mZoneId).get())) {
-      appLovinInterstitialAds.remove(mZoneId);
+    if (!TextUtils.isEmpty(zoneId)
+        && appLovinInterstitialAds.containsKey(zoneId)
+        && ApplovinAdapter.this.equals(appLovinInterstitialAds.get(zoneId).get())) {
+      appLovinInterstitialAds.remove(zoneId);
     }
   }
 }

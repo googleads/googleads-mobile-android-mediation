@@ -95,7 +95,7 @@ class IronSourceManager
   void loadInterstitial(@Nullable Context context,@NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
     if (!(context instanceof Activity)) {
       String errorMessage = String
-              .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
+              .format("[%d] errorMessage", ERROR_REQUIRES_ACTIVITY_CONTEXT);
       AdError concurrentError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
       adapter.onAdFailedToLoad(concurrentError);
       return;

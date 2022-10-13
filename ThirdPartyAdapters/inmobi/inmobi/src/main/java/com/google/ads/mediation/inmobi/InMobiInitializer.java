@@ -47,7 +47,7 @@ public class InMobiInitializer {
   private @InitializationStatus
   int initializationStatus;
 
-  private final ArrayList<Listener> mListeners = new ArrayList<>();
+  private final ArrayList<Listener> listeners = new ArrayList<>();
 
   private InMobiInitializer() {
     initializationStatus = UNINITIALIZED;
@@ -68,7 +68,7 @@ public class InMobiInitializer {
       return;
     }
 
-    mListeners.add(listener);
+    listeners.add(listener);
     if (initializationStatus == INITIALIZING) {
       return;
     }
@@ -83,7 +83,7 @@ public class InMobiInitializer {
               Log.d(TAG, "InMobi SDK initialized.");
 
               initializationStatus = INITIALIZED;
-              for (Listener initListener : mListeners) {
+              for (Listener initListener : listeners) {
                 initListener.onInitializeSuccess();
               }
             } else {
@@ -91,11 +91,11 @@ public class InMobiInitializer {
 
               AdError initializationError = new AdError(ERROR_INMOBI_FAILED_INITIALIZATION,
                   error.getLocalizedMessage(), ERROR_DOMAIN);
-              for (Listener initListener : mListeners) {
+              for (Listener initListener : listeners) {
                 initListener.onInitializeError(initializationError);
               }
             }
-            mListeners.clear();
+            listeners.clear();
           }
         });
   }

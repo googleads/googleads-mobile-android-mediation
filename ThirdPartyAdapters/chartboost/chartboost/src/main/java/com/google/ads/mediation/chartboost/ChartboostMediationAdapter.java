@@ -66,16 +66,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
   /**
    * A Chartboost extras object used to store optional information used when loading ads.
    */
-  private ChartboostParams mChartboostParams = new ChartboostParams();
+  private ChartboostParams chartboostParams = new ChartboostParams();
 
   /**
    * Flag to keep track of whether or not this {@link ChartboostMediationAdapter} is loading ads.
    */
-  private boolean mIsLoading;
+  private boolean isLoading;
 
-  private InitializationCompleteCallback mInitializationCallback;
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mAdLoadCallback;
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  private InitializationCompleteCallback initializationCallback;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
 
   /**
    * {@link Adapter} implementation
@@ -158,16 +158,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       Log.w(TAG, logMessage);
     }
 
-    mInitializationCallback = initializationCompleteCallback;
-    mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+    initializationCallback = initializationCompleteCallback;
+    chartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
+    if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send initialization failed event.
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Invalid server parameters.", ERROR_DOMAIN);
       initializationCompleteCallback.onInitializationFailed(initializationError.toString());
       return;
     }
-    ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
+    ChartboostSingleton.startChartboostRewardedVideo(context, chartboostRewardedVideoDelegate);
   }
 
   @Override
@@ -176,12 +176,12 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
 
-    mAdLoadCallback = mediationAdLoadCallback;
+    adLoadCallback = mediationAdLoadCallback;
     final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     final Bundle extras = mediationRewardedAdConfiguration.getMediationExtras();
 
-    mChartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, extras);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+    chartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, extras);
+    if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send initialization failed event.
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Invalid server parameters.", ERROR_DOMAIN);
@@ -191,49 +191,49 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
     }
 
     Context context = mediationRewardedAdConfiguration.getContext();
-    ChartboostSingleton.startChartboostRewardedVideo(context, mChartboostRewardedVideoDelegate);
+    ChartboostSingleton.startChartboostRewardedVideo(context, chartboostRewardedVideoDelegate);
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    ChartboostSingleton.showRewardedVideoAd(mChartboostRewardedVideoDelegate);
+    ChartboostSingleton.showRewardedVideoAd(chartboostRewardedVideoDelegate);
   }
 
   /**
    * The Abstract Chartboost adapter delegate used to forward events received from {@link
    * ChartboostSingleton} to Google Mobile Ads SDK for rewarded video ads.
    */
-  private final AbstractChartboostAdapterDelegate mChartboostRewardedVideoDelegate =
+  private final AbstractChartboostAdapterDelegate chartboostRewardedVideoDelegate =
       new AbstractChartboostAdapterDelegate() {
 
         @Override
         public ChartboostParams getChartboostParams() {
-          return mChartboostParams;
+          return chartboostParams;
         }
 
         @Override
         public void didInitialize() {
           super.didInitialize();
-          if (mInitializationCallback != null) {
-            mInitializationCallback.onInitializationSucceeded();
+          if (initializationCallback != null) {
+            initializationCallback.onInitializationSucceeded();
           }
 
           // If 'mAdLoadCallback' is not null, then it means an Ad request is pending
           // to be sent after initializing.
-          if (mAdLoadCallback != null) {
-            mIsLoading = true;
-            ChartboostSingleton.loadRewardedVideoAd(mChartboostRewardedVideoDelegate);
+          if (adLoadCallback != null) {
+            isLoading = true;
+            ChartboostSingleton.loadRewardedVideoAd(chartboostRewardedVideoDelegate);
           }
         }
 
         @Override
         public void didCacheRewardedVideo(String location) {
           super.didCacheRewardedVideo(location);
-          if (mAdLoadCallback != null
-              && mIsLoading
-              && location.equals(mChartboostParams.getLocation())) {
-            mIsLoading = false;
-            mRewardedAdCallback = mAdLoadCallback.onSuccess(ChartboostMediationAdapter.this);
+          if (adLoadCallback != null
+              && isLoading
+              && location.equals(chartboostParams.getLocation())) {
+            isLoading = false;
+            rewardedAdCallback = adLoadCallback.onSuccess(ChartboostMediationAdapter.this);
           }
         }
 
@@ -243,16 +243,16 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           AdError loadError = ChartboostAdapterUtils.createSDKError(error);
           Log.i(TAG, loadError.toString());
 
-          if (mAdLoadCallback != null && location.equals(mChartboostParams.getLocation())) {
-            if (mIsLoading) {
-              mAdLoadCallback.onFailure(loadError);
-              mIsLoading = false;
+          if (adLoadCallback != null && location.equals(chartboostParams.getLocation())) {
+            if (isLoading) {
+              adLoadCallback.onFailure(loadError);
+              isLoading = false;
             } else if (error == CBError.CBImpressionError.INTERNET_UNAVAILABLE_AT_SHOW) {
               // Chartboost sends the CBErrorInternetUnavailableAtShow error when
               // the Chartboost SDK fails to show an ad because no network connection
               // is available.
-              if (mRewardedAdCallback != null) {
-                mRewardedAdCallback.onAdFailedToShow(loadError);
+              if (rewardedAdCallback != null) {
+                rewardedAdCallback.onAdFailedToShow(loadError);
               }
             }
           }
@@ -261,45 +261,45 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
         @Override
         public void onAdFailedToLoad(@NonNull AdError loadError) {
           Log.e(TAG, loadError.toString());
-          if (mAdLoadCallback != null) {
-            mAdLoadCallback.onFailure(loadError);
+          if (adLoadCallback != null) {
+            adLoadCallback.onFailure(loadError);
           }
         }
 
         @Override
         public void didDismissRewardedVideo(String location) {
           super.didDismissRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onAdClosed();
+          if (rewardedAdCallback != null) {
+            rewardedAdCallback.onAdClosed();
           }
         }
 
         @Override
         public void didClickRewardedVideo(String location) {
           super.didClickRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.reportAdClicked();
+          if (rewardedAdCallback != null) {
+            rewardedAdCallback.reportAdClicked();
           }
         }
 
         @Override
         public void didCompleteRewardedVideo(String location, int reward) {
           super.didCompleteRewardedVideo(location, reward);
-          if (mRewardedAdCallback != null) {
-            mRewardedAdCallback.onVideoComplete();
-            mRewardedAdCallback.onUserEarnedReward(new ChartboostReward(reward));
+          if (rewardedAdCallback != null) {
+            rewardedAdCallback.onVideoComplete();
+            rewardedAdCallback.onUserEarnedReward(new ChartboostReward(reward));
           }
         }
 
         @Override
         public void didDisplayRewardedVideo(String location) {
           super.didDisplayRewardedVideo(location);
-          if (mRewardedAdCallback != null) {
+          if (rewardedAdCallback != null) {
             // Charboost doesn't have a video started callback. We assume that the video
             // started once the ad has been displayed.
-            mRewardedAdCallback.onAdOpened();
-            mRewardedAdCallback.onVideoStart();
-            mRewardedAdCallback.reportAdImpression();
+            rewardedAdCallback.onAdOpened();
+            rewardedAdCallback.onVideoStart();
+            rewardedAdCallback.reportAdImpression();
           }
         }
       };

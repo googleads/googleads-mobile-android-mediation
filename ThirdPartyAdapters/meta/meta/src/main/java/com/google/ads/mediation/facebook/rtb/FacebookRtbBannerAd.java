@@ -1,10 +1,10 @@
 package com.google.ads.mediation.facebook.rtb;
 
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.content.Context;
@@ -31,8 +31,8 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
   private AdView adView;
-  private FrameLayout mWrappedAdView;
-  private MediationBannerAdCallback mBannerAdCallback;
+  private FrameLayout wrappedAdView;
+  private MediationBannerAdCallback bannerAdCallback;
 
   public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
@@ -71,9 +71,9 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
     Context context = adConfiguration.getContext();
     FrameLayout.LayoutParams adViewLayoutParams = new FrameLayout.LayoutParams(
         adConfiguration.getAdSize().getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
-    mWrappedAdView = new FrameLayout(context);
+    wrappedAdView = new FrameLayout(context);
     adView.setLayoutParams(adViewLayoutParams);
-    mWrappedAdView.addView(adView);
+    wrappedAdView.addView(adView);
     adView.loadAd(
         adView.buildLoadAdConfig()
             .withAdListener(this)
@@ -85,7 +85,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   @NonNull
   @Override
   public View getView() {
-    return mWrappedAdView;
+    return wrappedAdView;
   }
 
   @Override
@@ -97,22 +97,22 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
   @Override
   public void onAdLoaded(Ad ad) {
-    mBannerAdCallback = callback.onSuccess(this);
+    bannerAdCallback = callback.onSuccess(this);
   }
 
   @Override
   public void onAdClicked(Ad ad) {
-    if (mBannerAdCallback != null) {
-      mBannerAdCallback.reportAdClicked();
-      mBannerAdCallback.onAdOpened();
-      mBannerAdCallback.onAdLeftApplication();
+    if (bannerAdCallback != null) {
+      bannerAdCallback.reportAdClicked();
+      bannerAdCallback.onAdOpened();
+      bannerAdCallback.onAdLeftApplication();
     }
   }
 
   @Override
   public void onLoggingImpression(Ad ad) {
-    if (mBannerAdCallback != null) {
-      mBannerAdCallback.reportAdImpression();
+    if (bannerAdCallback != null) {
+      bannerAdCallback.reportAdImpression();
     }
   }
 }

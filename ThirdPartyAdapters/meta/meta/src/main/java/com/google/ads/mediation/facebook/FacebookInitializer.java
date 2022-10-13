@@ -9,14 +9,13 @@ import com.facebook.ads.AudienceNetworkAds.InitResult;
 import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
 
-
 class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
   private static FacebookInitializer instance;
-  private boolean mIsInitializing = false;
-  private boolean mIsInitialized = false;
+  private boolean isInitializing = false;
+  private boolean isInitialized = false;
 
-  private final ArrayList<Listener> mListeners;
+  private final ArrayList<Listener> listeners;
 
   static FacebookInitializer getInstance() {
     if (instance == null) {
@@ -26,7 +25,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
   }
 
   private FacebookInitializer() {
-    mListeners = new ArrayList<>();
+    listeners = new ArrayList<>();
   }
 
   void initialize(Context context, String placementId, Listener listener) {
@@ -37,19 +36,19 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
   }
 
   void initialize(Context context, ArrayList<String> placements, Listener listener) {
-    if (mIsInitializing) {
-      mListeners.add(listener);
+    if (isInitializing) {
+      listeners.add(listener);
       return;
     }
 
-    if (mIsInitialized) {
+    if (isInitialized) {
       listener.onInitializeSuccess();
       return;
     }
 
-    mIsInitializing = true;
+    isInitializing = true;
 
-    getInstance().mListeners.add(listener);
+    getInstance().listeners.add(listener);
     AudienceNetworkAds.buildInitSettings(context)
         .withMediationService("GOOGLE:" + BuildConfig.ADAPTER_VERSION)
         .withPlacementIds(placements)
@@ -59,10 +58,10 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
 
   @Override
   public void onInitialized(InitResult initResult) {
-    mIsInitializing = false;
-    mIsInitialized = initResult.isSuccess();
+    isInitializing = false;
+    isInitialized = initResult.isSuccess();
 
-    for (Listener listener : mListeners) {
+    for (Listener listener : listeners) {
       if (initResult.isSuccess()) {
         listener.onInitializeSuccess();
       } else {
@@ -71,7 +70,7 @@ class FacebookInitializer implements AudienceNetworkAds.InitListener {
         listener.onInitializeError(error);
       }
     }
-    mListeners.clear();
+    listeners.clear();
   }
 
   interface Listener {

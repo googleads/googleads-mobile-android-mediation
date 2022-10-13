@@ -20,31 +20,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VungleInitializer implements InitCallback {
 
   private static final VungleInitializer instance = new VungleInitializer();
-  private final AtomicBoolean mIsInitializing = new AtomicBoolean(false);
-  private final ArrayList<VungleInitializationListener> mInitListeners;
-  private final Handler mHandler = new Handler(Looper.getMainLooper());
+  private final AtomicBoolean isInitializing = new AtomicBoolean(false);
+  private final ArrayList<VungleInitializationListener> initListeners;
+  private final Handler handler = new Handler(Looper.getMainLooper());
 
+  @NonNull
   public static VungleInitializer getInstance() {
     return instance;
   }
 
   private VungleInitializer() {
-    mInitListeners = new ArrayList<>();
+    initListeners = new ArrayList<>();
     Plugin.addWrapperInfo(
         VungleApiClient.WrapperFramework.admob,
         com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
   }
 
   public void initialize(
-      final String appId, final Context context, VungleInitializationListener listener) {
+      final @NonNull String appId,
+      final @NonNull Context context,
+      @NonNull VungleInitializationListener listener) {
 
     if (Vungle.isInitialized()) {
       listener.onInitializeSuccess();
       return;
     }
 
-    if (mIsInitializing.getAndSet(true)) {
-      mInitListeners.add(listener);
+    if (isInitializing.getAndSet(true)) {
+      initListeners.add(listener);
       return;
     }
 
@@ -70,38 +73,38 @@ public class VungleInitializer implements InitCallback {
 
     VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
     Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
-    mInitListeners.add(listener);
+    initListeners.add(listener);
   }
 
   @Override
   public void onSuccess() {
-    mHandler.post(
+    handler.post(
         new Runnable() {
           @Override
           public void run() {
-            for (VungleInitializationListener listener : mInitListeners) {
+            for (VungleInitializationListener listener : initListeners) {
               listener.onInitializeSuccess();
             }
-            mInitListeners.clear();
+            initListeners.clear();
           }
         });
-    mIsInitializing.set(false);
+    isInitializing.set(false);
   }
 
   @Override
   public void onError(final VungleException exception) {
     final AdError error = VungleMediationAdapter.getAdError(exception);
-    mHandler.post(
+    handler.post(
         new Runnable() {
           @Override
           public void run() {
-            for (VungleInitializationListener listener : mInitListeners) {
+            for (VungleInitializationListener listener : initListeners) {
               listener.onInitializeError(error);
             }
-            mInitListeners.clear();
+            initListeners.clear();
           }
         });
-    mIsInitializing.set(false);
+    isInitializing.set(false);
   }
 
   @Override
@@ -132,6 +135,5 @@ public class VungleInitializer implements InitCallback {
     void onInitializeSuccess();
 
     void onInitializeError(AdError error);
-
   }
 }

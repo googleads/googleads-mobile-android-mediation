@@ -3,6 +3,7 @@ package com.applovin.mediation;
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
+import androidx.annotation.NonNull;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
@@ -24,59 +25,59 @@ public class AppLovinIncentivizedAdListener
     AppLovinAdClickListener,
     AppLovinAdVideoPlaybackListener {
 
-  private final MediationRewardedAdCallback mRewardedAdCallback;
+  private final MediationRewardedAdCallback rewardedAdCallback;
 
-  private boolean mFullyWatched;
-  private AppLovinRewardItem mRewardItem;
-  private final String mZoneId;
+  private boolean fullyWatched;
+  private AppLovinRewardItem rewardItem;
+  private final String zoneId;
 
   public AppLovinIncentivizedAdListener(
-      MediationRewardedAdConfiguration adConfiguration,
-      MediationRewardedAdCallback mRewardedAdCallback) {
-    mZoneId = AppLovinUtils.retrieveZoneId(adConfiguration.getServerParameters());
-    this.mRewardedAdCallback = mRewardedAdCallback;
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationRewardedAdCallback rewardedAdCallback) {
+    zoneId = AppLovinUtils.retrieveZoneId(adConfiguration.getServerParameters());
+    this.rewardedAdCallback = rewardedAdCallback;
   }
 
   // Ad Display Listener.
   @Override
   public void adDisplayed(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Rewarded video displayed.");
-    mRewardedAdCallback.onAdOpened();
-    mRewardedAdCallback.reportAdImpression();
+    rewardedAdCallback.onAdOpened();
+    rewardedAdCallback.reportAdImpression();
   }
 
   @Override
   public void adHidden(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Rewarded video dismissed.");
-    AppLovinMediationAdapter.INCENTIVIZED_ADS.remove(mZoneId);
-    if (mFullyWatched) {
-      mRewardedAdCallback.onUserEarnedReward(mRewardItem);
+    AppLovinMediationAdapter.INCENTIVIZED_ADS.remove(zoneId);
+    if (fullyWatched) {
+      rewardedAdCallback.onUserEarnedReward(rewardItem);
     }
 
-    mRewardedAdCallback.onAdClosed();
+    rewardedAdCallback.onAdClosed();
   }
 
   // Ad Click Listener.
   @Override
   public void adClicked(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Rewarded video clicked.");
-    mRewardedAdCallback.reportAdClicked();
+    rewardedAdCallback.reportAdClicked();
   }
 
   // Video Playback Listener.
   @Override
   public void videoPlaybackBegan(AppLovinAd ad) {
     ApplovinAdapter.log(DEBUG, "Rewarded video playback began.");
-    mRewardedAdCallback.onVideoStart();
+    rewardedAdCallback.onVideoStart();
   }
 
   @Override
   public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
     ApplovinAdapter.log(
         DEBUG, "Rewarded video playback ended at playback percent: " + percentViewed + "%.");
-    mFullyWatched = fullyWatched;
+    this.fullyWatched = fullyWatched;
     if (fullyWatched) {
-      mRewardedAdCallback.onVideoComplete();
+      rewardedAdCallback.onVideoComplete();
     }
   }
 
@@ -109,6 +110,6 @@ public class AppLovinIncentivizedAdListener
     final int amount = (int) Double.parseDouble(amountStr);
 
     ApplovinAdapter.log(DEBUG, "Rewarded " + amount + " " + currency);
-    mRewardItem = new AppLovinRewardItem(amount, currency);
+    rewardItem = new AppLovinRewardItem(amount, currency);
   }
 }

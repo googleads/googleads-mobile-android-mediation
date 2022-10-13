@@ -7,17 +7,17 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdSdk;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
+import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
+import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -47,14 +47,18 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
   private PangleRtbNativeAd nativeAd;
-  private static int coppa = -1;
   private static int gdpr = -1;
   private static int ccpa = -1;
 
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
-    String biddingToken = getPangleSdkManager().getBiddingToken();
+    // The user data needs to be set for it to be included in the signals.
+    Bundle networkExtras = rtbSignalData.getNetworkExtras();
+    if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
+      PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
+    }
+    String biddingToken = PAGSdk.getBiddingToken();
     signalCallbacks.onSuccess(biddingToken);
   }
 
@@ -83,28 +87,31 @@ public class PangleMediationAdapter extends RtbAdapter {
     }
 
     String appId = appIds.iterator().next();
-
     if (count > 1) {
-      String message = String.format(
-          "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
+      String message =
+          String.format(
+              "Found multiple app IDs in %s. Using %s to initialize Pangle SDK.", appIds, appId);
       Log.w(TAG, message);
     }
-    setCoppa(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
-    TTAdSdk.init(
-        context,
-        new TTAdConfig.Builder().appId(appId).coppa(coppa).setGDPR(gdpr).setCCPA(ccpa).build(),
-        new TTAdSdk.InitCallback() {
-          @Override
-          public void success() {
-            initializationCompleteCallback.onInitializationSucceeded();
-          }
 
-          @Override
-          public void fail(int errorCode, String errorMessage) {
-            Log.w(TAG, errorMessage);
-            initializationCompleteCallback.onInitializationFailed(errorMessage);
-          }
-        });
+    PangleAdapterUtils.setCoppa(
+        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+    PangleInitializer.getInstance()
+        .initialize(
+            context,
+            appId,
+            new Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
+
+              @Override
+              public void onInitializeError(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                initializationCompleteCallback.onInitializationFailed(error.getMessage());
+              }
+            });
   }
 
   @NonNull
@@ -134,7 +141,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = TTAdSdk.getAdManager().getSDKVersion();
+    String versionString = PAGSdk.getSDKVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -165,8 +172,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
     interstitialAd = new PangleRtbInterstitialAd(adConfiguration, callback);
     interstitialAd.render();
   }
@@ -187,79 +195,55 @@ public class PangleMediationAdapter extends RtbAdapter {
     rewardedAd.render();
   }
 
-  public static TTAdManager getPangleSdkManager() {
-    return TTAdSdk.getAdManager();
-  }
-
-  /**
-   * Set the COPPA setting in Pangle SDK.
-   *
-   * @param coppa an {@code Integer} value that indicates whether the app should be treated as
-   *              child-directed for purposes of the COPPA. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE}
-   *              means true. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE}
-   *              means false. {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED}
-   *              means unspecified.
-   */
-  public static void setCoppa(@TagForChildDirectedTreatment int coppa) {
-    switch (coppa) {
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(1);
-        }
-        PangleMediationAdapter.coppa = 1;
-        break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(0);
-        }
-        PangleMediationAdapter.coppa = 0;
-        break;
-      default:
-        if (TTAdSdk.isInitSuccess()) {
-          TTAdSdk.setCoppa(-1);
-        }
-        PangleMediationAdapter.coppa = -1;
-        break;
-    }
-  }
-
   /**
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *             personal data to serve ads under GDPR. {@code 0} means the user consents. {@code 1}
-   *             means the user does not consent. {@code -1} means the user hasn't specified. Any
-   *             value outside of -1, 0, or 1 will result in this method being a no-op.
+   *     personal data to serve ads under GDPR. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
-  public static void setGdpr(int gdpr) {
-    if (gdpr != 0 && gdpr != 1 && gdpr != -1) {
+  public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
+    if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
+        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
       // no-op
       Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (TTAdSdk.isInitSuccess()) {
-      TTAdSdk.setGdpr(gdpr);
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setGDPRConsent(gdpr);
     }
     PangleMediationAdapter.gdpr = gdpr;
+  }
+
+  public static int getGDPRConsent() {
+    return gdpr;
   }
 
   /**
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *             the "personal information" under CCPA. {@code 0} means the user opts in. {@code 1}
-   *             means the user opts out. {@code -1} means the user hasn't specified. Any value
-   *             outside of -1, 0, or 1 will result in this method being a no-op.
+   *     the "personal information" under CCPA. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
    */
-  public static void setCcpa(int ccpa) {
-    if (ccpa != 0 && ccpa != 1 && ccpa != -1) {
+  public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
+    if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL
+        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT) {
       // no-op
       Log.w(TAG, "Invalid CCPA value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (TTAdSdk.isInitSuccess()) {
-      TTAdSdk.setCCPA(ccpa);
+    if (PAGSdk.isInitSuccess()) {
+      PAGConfig.setDoNotSell(ccpa);
     }
     PangleMediationAdapter.ccpa = ccpa;
+  }
+
+  public static int getDoNotSell() {
+    return ccpa;
   }
 }

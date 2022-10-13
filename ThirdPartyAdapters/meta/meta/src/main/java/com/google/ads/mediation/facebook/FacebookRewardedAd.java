@@ -28,7 +28,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mMediationAdLoadCallback;
+      mediationAdLoadCallback;
 
   /**
    * Meta Audience Network rewarded video ad instance.
@@ -44,13 +44,14 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
    * Mediation rewarded video ad listener used to forward rewarded video ad events from the Meta
    * Audience Network SDK to the Google Mobile Ads SDK.
    */
-  private MediationRewardedAdCallback mRewardedAdCallback;
+  private MediationRewardedAdCallback rewardedAdCallback;
+
   private final AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
   public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     this.adConfiguration = adConfiguration;
-    this.mMediationAdLoadCallback = callback;
+    this.mediationAdLoadCallback = callback;
   }
 
   public void render() {
@@ -62,7 +63,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad. PlacementID is null or empty.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
-      mMediationAdLoadCallback.onFailure(error);
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
@@ -89,16 +90,16 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
       AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present rewarded ad.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(error);
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
       }
       rewardedAd.destroy();
       return;
     }
 
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onVideoStart();
-      mRewardedAdCallback.onAdOpened();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onVideoStart();
+      rewardedAdCallback.onAdOpened();
     }
   }
 
@@ -109,8 +110,8 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   @Override
   public void onRewardedVideoCompleted() {
-    mRewardedAdCallback.onVideoComplete();
-    mRewardedAdCallback.onUserEarnedReward(new FacebookReward());
+    rewardedAdCallback.onVideoComplete();
+    rewardedAdCallback.onUserEarnedReward(new FacebookReward());
   }
 
   @Override
@@ -119,13 +120,13 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
     if (showAdCalled.get()) {
       Log.w(TAG, error.getMessage());
-      if (mRewardedAdCallback != null) {
-        mRewardedAdCallback.onAdFailedToShow(error);
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
       }
     } else {
       Log.w(TAG, error.getMessage());
-      if (mMediationAdLoadCallback != null) {
-        mMediationAdLoadCallback.onFailure(error);
+      if (mediationAdLoadCallback != null) {
+        mediationAdLoadCallback.onFailure(error);
       }
     }
 
@@ -134,29 +135,29 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   @Override
   public void onAdLoaded(Ad ad) {
-    if (mMediationAdLoadCallback != null) {
-      mRewardedAdCallback = mMediationAdLoadCallback.onSuccess(this);
+    if (mediationAdLoadCallback != null) {
+      rewardedAdCallback = mediationAdLoadCallback.onSuccess(this);
     }
   }
 
   @Override
   public void onAdClicked(Ad ad) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.reportAdClicked();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdClicked();
     }
   }
 
   @Override
   public void onLoggingImpression(Ad ad) {
-    if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.reportAdImpression();
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdImpression();
     }
   }
 
   @Override
   public void onRewardedVideoClosed() {
-    if (!didRewardedAdClose.getAndSet(true) && mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdClosed();
+    if (!didRewardedAdClose.getAndSet(true) && rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
     }
     if (rewardedAd != null) {
       rewardedAd.destroy();
@@ -165,8 +166,8 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   @Override
   public void onRewardedVideoActivityDestroyed() {
-    if (!didRewardedAdClose.getAndSet(true) && mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdClosed();
+    if (!didRewardedAdClose.getAndSet(true) && rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
     }
     if (rewardedAd != null) {
       rewardedAd.destroy();
