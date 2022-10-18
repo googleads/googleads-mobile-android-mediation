@@ -132,7 +132,7 @@ public class ChartboostInitializer {
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:
-        // Chartboost's SDK only supports updating a user's COPPA status with true and false values
+        // Chartboost's SDK only supports updating a user's COPPA status with true and false values.
         break;
     }
   }

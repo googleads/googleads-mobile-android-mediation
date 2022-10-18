@@ -160,7 +160,7 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Find the closest possible {@link Banner.BannerSize} format based on the provided {@link
+   * Returns the closest possible {@link Banner.BannerSize} format based on the provided {@link
    * AdSize}.
    *
    * @param context the context of requesting banner ad.
@@ -200,11 +200,8 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * Return mediation object which contains mediation information like: - mediation name - library
-   * version - adapter version
-   * Used every time adapter creates Chartboost ad object
-   *
-   * @return {@link Mediation}
+   * @return Returns a {@link Mediation} object that contains mediation information. This will be
+   * called every time a Chartboost ad object is created.
    */
   static Mediation getChartboostMediation() {
     if (chartboostMediation == null) {

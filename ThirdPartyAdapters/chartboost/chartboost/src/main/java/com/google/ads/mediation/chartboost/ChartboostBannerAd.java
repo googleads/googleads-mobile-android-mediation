@@ -33,7 +33,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   /**
-   * FrameLayout use as a {@link Banner} container.
+   * A container view that holds Chartboost's {@link Banner} view.
    */
   private FrameLayout bannerContainer;
 
@@ -123,6 +123,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     Banner chartboostBannerAd = new Banner(context, location, supportedAdSize,
         ChartboostBannerAd.this, ChartboostAdapterUtils.getChartboostMediation());
     bannerContainer.addView(chartboostBannerAd, paramsLayout);
+    // Chartboost banner requires cache call to be loaded. It has to be done before show call.
     chartboostBannerAd.cache();
   }
 
