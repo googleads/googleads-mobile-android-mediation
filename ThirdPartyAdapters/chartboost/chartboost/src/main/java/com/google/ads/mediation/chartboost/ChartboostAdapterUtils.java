@@ -5,6 +5,7 @@ import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,7 +70,7 @@ class ChartboostAdapterUtils {
     }
 
     String adLocation = serverParameters.getString(KEY_AD_LOCATION);
-    if (!isValidParam(adLocation)) {
+    if (TextUtils.isEmpty(adLocation)) {
       // Ad Location is empty, log a warning and use the default location.
       String logMessage =
           String.format(
@@ -97,26 +98,17 @@ class ChartboostAdapterUtils {
 
     String appId = chartboostParams.getAppId();
     String appSignature = chartboostParams.getAppSignature();
-    if (!isValidParam(appId) || !isValidParam(appSignature)) {
+    boolean isAppIdEmpty = TextUtils.isEmpty(appId);
+    boolean isAppSignatureEmpty = TextUtils.isEmpty(appSignature);
+    if (isAppIdEmpty || isAppSignatureEmpty) {
       String log =
-          !isValidParam(appId)
-              ? (!isValidParam(appSignature) ? "App ID and App Signature" : "App ID")
+          isAppIdEmpty
+              ? (isAppSignatureEmpty ? "App ID and App Signature" : "App ID")
               : "App Signature";
       Log.e(TAG, log + " cannot be empty.");
       return false;
     }
     return true;
-  }
-
-  /**
-   * Checks whether or not the Chartboost parameter string provided is valid.
-   *
-   * @param string the string to be examined.
-   * @return {@code true} if the param string is not null and length when trimmed is not zero,
-   * {@code false} otherwise.
-   */
-  static boolean isValidParam(String string) {
-    return !(string == null || string.trim().length() == 0);
   }
 
   /**
