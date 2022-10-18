@@ -29,7 +29,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 
 public class ChartboostInterstitialAd implements MediationInterstitialAd, InterstitialCallback {
 
-  private Interstitial mChartboostInterstitialAd;
+  private Interstitial chartboostInterstitialAd;
 
   private final MediationInterstitialAdConfiguration interstitialAdConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -79,13 +79,13 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (mChartboostInterstitialAd == null || !mChartboostInterstitialAd.isCached()) {
+    if (chartboostInterstitialAd == null || !chartboostInterstitialAd.isCached()) {
       AdError error = new AdError(ERROR_AD_NOT_READY,
           "Chartboost interstitial ad is not yet ready to be shown.", ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       return;
     }
-    mChartboostInterstitialAd.show();
+    chartboostInterstitialAd.show();
   }
 
   private void createAndLoadInterstitialAd(@Nullable String location) {
@@ -99,9 +99,9 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
       return;
     }
 
-    mChartboostInterstitialAd = new Interstitial(location, ChartboostInterstitialAd.this,
+    chartboostInterstitialAd = new Interstitial(location, ChartboostInterstitialAd.this,
         ChartboostAdapterUtils.getChartboostMediation());
-    mChartboostInterstitialAd.cache();
+    chartboostInterstitialAd.cache();
   }
 
   @Override
