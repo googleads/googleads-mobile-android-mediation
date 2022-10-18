@@ -96,9 +96,17 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   private void createAndLoadBannerAd(@NonNull Context context,
       @Nullable String location,
       @Nullable Banner.BannerSize supportedAdSize) {
-    if (TextUtils.isEmpty(location) || supportedAdSize == null) {
+    if (TextUtils.isEmpty(location)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or Invalid location.", ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    if (supportedAdSize == null) {
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "Missing banner ad size.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
