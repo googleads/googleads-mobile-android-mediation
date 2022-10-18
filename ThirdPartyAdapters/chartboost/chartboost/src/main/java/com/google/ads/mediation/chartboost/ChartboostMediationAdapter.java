@@ -14,6 +14,9 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -48,48 +51,6 @@ import java.util.List;
 public class ChartboostMediationAdapter extends Adapter {
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
-
-  // region Error codes
-  // Chartboost adapter error domain.
-  static final String ERROR_DOMAIN = "com.google.ads.mediation.chartboost";
-
-  // Chartboost SDK error domain.
-  static final String CHARTBOOST_SDK_ERROR_DOMAIN = "com.chartboost.sdk";
-
-  /**
-   * Chartboost adapter errors.
-   */
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      value = {
-          ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_AD_ALREADY_LOADED,
-          ERROR_INVALID_SERVER_PARAMETERS
-      })
-  public @interface AdapterError {
-
-  }
-
-  /**
-   * The requested ad size does not match a Chartboost supported banner size.
-   */
-  static final int ERROR_BANNER_SIZE_MISMATCH = 100;
-
-  /**
-   * Chartboost can only load 1 ad per location at a time.
-   */
-  static final int ERROR_AD_ALREADY_LOADED = 101;
-
-  /**
-   * Invalid server parameters (e.g. Chartboost App ID is missing).
-   */
-  static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
-
-  /**
-   * Chartboost ad is not ready to be shown.
-   */
-  static final int ERROR_AD_NOT_READY = 103;
-  // endregion
 
   private ChartboostBannerAd bannerAd;
   private ChartboostInterstitialAd interstitialAd;

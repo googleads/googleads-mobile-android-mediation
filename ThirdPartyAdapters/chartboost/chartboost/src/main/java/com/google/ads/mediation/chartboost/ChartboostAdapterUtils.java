@@ -1,6 +1,6 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.CHARTBOOST_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.CHARTBOOST_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
@@ -42,7 +42,7 @@ class ChartboostAdapterUtils {
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
-   * Default location name for the chartboost ads
+   * Default location for Chartboost ads.
    */
   static final String LOCATION_DEFAULT = "default";
 

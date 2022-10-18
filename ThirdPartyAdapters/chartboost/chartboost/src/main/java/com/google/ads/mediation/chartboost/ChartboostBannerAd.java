@@ -1,8 +1,8 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;

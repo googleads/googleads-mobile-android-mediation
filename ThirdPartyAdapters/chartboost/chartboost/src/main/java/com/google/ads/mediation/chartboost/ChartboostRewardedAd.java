@@ -1,13 +1,12 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
