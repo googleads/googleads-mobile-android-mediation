@@ -46,17 +46,17 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
     /**
      * This is the id of the instance to be shown.
      */
-    private String mInstanceID;
+    private String instanceID;
 
     /**
      * The view for the banner instance.
      */
-    private ISDemandOnlyBannerLayout IronSourceBannerLayout;
+    private ISDemandOnlyBannerLayout ironSourceBannerLayout;
 
     /**
      * Callback object for Google's Banner Lifecycle.
      */
-    private MediationBannerListener BannerListener;
+    private MediationBannerListener bannerListener;
 
 
     // region MediationInterstitialAdapter implementation.
@@ -70,12 +70,12 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new InitializationCallback() {
                     @Override
                     public void onInitializeSuccess() {
-                        mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+                        instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
                         interstitialListener = listener;
                         Log.d(TAG,
                                 String.format("Loading IronSource interstitial ad with instance ID: %s",
-                                        mInstanceID));
-                        IronSourceManager.getInstance().loadInterstitial(context, mInstanceID, IronSourceAdapter.this);
+                                        instanceID));
+                        IronSourceManager.getInstance().loadInterstitial(context, instanceID, IronSourceAdapter.this);
                     }
 
                     @Override
@@ -89,8 +89,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
     @Override
     public void showInterstitial() {
         Log.d(TAG,
-                String.format("Showing IronSource interstitial ad for instance ID: %s", this.mInstanceID));
-        IronSourceManager.getInstance().showInterstitial(mInstanceID);
+                String.format("Showing IronSource interstitial ad for instance ID: %s", this.instanceID));
+        IronSourceManager.getInstance().showInterstitial(instanceID);
     }
     // endregion
 
@@ -238,8 +238,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (BannerListener != null) {
-                            BannerListener.onAdLoaded(IronSourceAdapter.this);
+                        if (bannerListener != null) {
+                            bannerListener.onAdLoaded(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -251,15 +251,15 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
         String errorMessage = String
                 .format("IronSource failed to load Banner ad for instance ID: %s. Error: %s",
-                        instanceId, loadError.getMessage());
+                        instanceId, loadError.toString());
         Log.e(TAG, errorMessage);
 
         IronSourceAdapterUtils.sendEventOnUIThread(
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (BannerListener != null) {
-                            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
+                        if (bannerListener != null) {
+                            bannerListener.onAdFailedToLoad(IronSourceAdapter.this, loadError);
                         }
                     }
                 });
@@ -273,8 +273,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (BannerListener != null) {
-                            BannerListener.onAdClicked(IronSourceAdapter.this);
+                        if (bannerListener != null) {
+                            bannerListener.onAdClicked(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -288,8 +288,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (BannerListener != null) {
-                            BannerListener.onAdOpened(IronSourceAdapter.this);
+                        if (bannerListener != null) {
+                            bannerListener.onAdOpened(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -302,8 +302,8 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (BannerListener != null) {
-                            BannerListener.onAdLeftApplication(IronSourceAdapter.this);
+                        if (bannerListener != null) {
+                            bannerListener.onAdLeftApplication(IronSourceAdapter.this);
                         }
                     }
                 });
@@ -315,7 +315,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
     @NonNull
     @Override
     public View getBannerView() {
-        return IronSourceBannerLayout;
+        return ironSourceBannerLayout;
     }
 
 
@@ -327,18 +327,16 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                                 @Nullable Bundle bundle1) {
         ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSize(context, adSize);
         if (bannerSize == null) {
-            AdError errorMessage = new AdError(ERROR_BANNER_SIZE_MISMATCH, "There is no matching IronSource ad size for Google ad size: %s" +
-                    "adSize",
+            AdError errorMessage = new AdError(ERROR_BANNER_SIZE_MISMATCH, "There is no matching IronSource ad size" ,
                     ERROR_DOMAIN);
-            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
+            bannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
             return;
         }
 
         if (!(context instanceof Activity)) {
-            AdError errorMessage = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, "IronSource requires an Activity context to load ads." +
-                    "adSize",
+            AdError errorMessage = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, "IronSource requires an Activity context to load ads.",
                     ERROR_DOMAIN);
-            BannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
+            bannerListener.onAdFailedToLoad(IronSourceAdapter.this, errorMessage);
             return;
         }
         Activity activity = (Activity) context;
@@ -348,13 +346,13 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, Mediatio
                 new InitializationCallback() {
                     @Override
                     public void onInitializeSuccess() {
-                        mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
-                        BannerListener = listener;
+                        instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+                        bannerListener = listener;
                         Log.d(TAG,
                                 String.format("Loading IronSource Banner ad with instance ID: %s",
-                                        mInstanceID));
-                        IronSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
-                        IronSourceManager.getInstance().loadBanner(IronSourceBannerLayout, context, mInstanceID, IronSourceAdapter.this);
+                                        instanceID));
+                        ironSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
+                        IronSourceManager.getInstance().loadBanner(ironSourceBannerLayout, context, instanceID, IronSourceAdapter.this);
                     }
 
                     @Override

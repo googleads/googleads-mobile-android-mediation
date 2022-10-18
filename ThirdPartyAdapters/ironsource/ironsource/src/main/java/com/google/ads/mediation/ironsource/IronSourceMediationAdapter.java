@@ -56,10 +56,6 @@ public class IronSourceMediationAdapter extends Adapter
 
   }
 
-    /**
-     * Banner size mismatch.
-     */
-    public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
 
   /**
    * Server parameters (e.g. placement ID) are nil.
@@ -80,7 +76,13 @@ public class IronSourceMediationAdapter extends Adapter
    * IronSource adapter does not have authority to show an ad instance.
    */
   public static final int ERROR_AD_SHOW_UNAUTHORIZED = 104;
-  // endregion
+
+    /**
+     * Banner size mismatch.
+     */
+    public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
+
+    // endregion
 
   /**
    * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
