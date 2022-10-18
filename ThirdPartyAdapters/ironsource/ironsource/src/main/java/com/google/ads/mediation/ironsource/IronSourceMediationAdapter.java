@@ -88,19 +88,19 @@ public class IronSourceMediationAdapter extends Adapter
    * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
    * SDK while ad is presented
    */
-  private MediationRewardedAdCallback mMediationRewardedAdCallback;
+  private MediationRewardedAdCallback mediationRewardedAdCallback;
 
   /**
    * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
    * SDK for loading phases of the ad
    */
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mMediationAdLoadCallback;
+          mediationAdLoadCallback;
 
   /**
    * This is the id of the rewarded video instance requested.
    */
-  private String mInstanceID;
+  private String instanceID;
 
   /**
    * MediationRewardedAd implementation.
@@ -209,17 +209,17 @@ public class IronSourceMediationAdapter extends Adapter
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     Context context = mediationRewardedAdConfiguration.getContext();
     String appKey = serverParameters.getString(KEY_APP_KEY);
-    this.mInstanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    this.instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
 
     IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
         new InitializationCallback() {
           @Override
           public void onInitializeSuccess() {
-            mMediationAdLoadCallback = mediationAdLoadCallback;
+            IronSourceMediationAdapter.this.mediationAdLoadCallback = mediationAdLoadCallback;
             Log.d(TAG,
-                String.format("Loading IronSource rewarded ad with instance ID: %s", mInstanceID));
+                String.format("Loading IronSource rewarded ad with instance ID: %s", instanceID));
             IronSourceManager.getInstance()
-                .loadRewardedVideo(context,mInstanceID, IronSourceMediationAdapter.this);
+                .loadRewardedVideo(context, instanceID, IronSourceMediationAdapter.this);
           }
 
           @Override
@@ -245,9 +245,9 @@ public class IronSourceMediationAdapter extends Adapter
   @Override
   public void showAd(@NonNull Context context) {
     Log.d(TAG,
-        String.format("Showing IronSource rewarded ad for instance ID: %s", this.mInstanceID));
+        String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
     IronSourceManager.getInstance()
-        .showRewardedVideo(this.mInstanceID, IronSourceMediationAdapter.this);
+        .showRewardedVideo(this.instanceID, IronSourceMediationAdapter.this);
   }
 
   // region ISDemandOnlyRewardedVideoListener implementation.
@@ -258,9 +258,9 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationAdLoadCallback != null) {
-              mMediationRewardedAdCallback =
-                  mMediationAdLoadCallback.onSuccess(IronSourceMediationAdapter.this);
+            if (mediationAdLoadCallback != null) {
+              mediationRewardedAdCallback =
+                  mediationAdLoadCallback.onSuccess(IronSourceMediationAdapter.this);
             }
           }
         });
@@ -278,8 +278,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationAdLoadCallback != null) {
-              mMediationAdLoadCallback.onFailure(loadError);
+            if (mediationAdLoadCallback != null) {
+              mediationAdLoadCallback.onFailure(loadError);
             }
           }
         });
@@ -292,10 +292,10 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdOpened();
-              mMediationRewardedAdCallback.onVideoStart();
-              mMediationRewardedAdCallback.reportAdImpression();
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.onAdOpened();
+              mediationRewardedAdCallback.onVideoStart();
+              mediationRewardedAdCallback.reportAdImpression();
             }
           }
         });
@@ -308,8 +308,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdClosed();
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.onAdClosed();
             }
           }
         });
@@ -327,9 +327,9 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onVideoComplete();
-              mMediationRewardedAdCallback.onUserEarnedReward(reward);
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.onVideoComplete();
+              mediationRewardedAdCallback.onUserEarnedReward(reward);
             }
           }
         });
@@ -347,8 +347,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdFailedToShow(showError);
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.onAdFailedToShow(showError);
             }
           }
         });
@@ -361,8 +361,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.reportAdClicked();
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.reportAdClicked();
             }
           }
         });
@@ -377,8 +377,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationAdLoadCallback != null) {
-              mMediationAdLoadCallback.onFailure(loadError);
+            if (mediationAdLoadCallback != null) {
+              mediationAdLoadCallback.onFailure(loadError);
             }
           }
         });
@@ -391,8 +391,8 @@ public class IronSourceMediationAdapter extends Adapter
         new Runnable() {
           @Override
           public void run() {
-            if (mMediationRewardedAdCallback != null) {
-              mMediationRewardedAdCallback.onAdFailedToShow(showError);
+            if (mediationRewardedAdCallback != null) {
+              mediationRewardedAdCallback.onAdFailedToShow(showError);
             }
           }
         });
