@@ -138,7 +138,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-    Log.d(TAG, "Chartboost interstitial ad will be shown.");
+    Log.d(TAG, "Chartboost interstitial requested to show.");
   }
 
   @Override
