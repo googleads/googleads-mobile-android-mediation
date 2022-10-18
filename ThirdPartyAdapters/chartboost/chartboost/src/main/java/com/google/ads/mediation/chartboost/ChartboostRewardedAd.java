@@ -29,8 +29,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
-public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallback, RewardItem {
-
+public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallback {
 
   private Rewarded chartboostRewardedAd;
 
@@ -38,7 +37,6 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
-  private int rewardAmount;
 
   public ChartboostRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
@@ -52,9 +50,9 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     final Context context = rewardedAdConfiguration.getContext();
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
 
-    ChartboostParams mChartboostParams =
+    ChartboostParams chartboostParams =
         ChartboostAdapterUtils.createChartboostParams(serverParameters);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+    if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
           ERROR_DOMAIN);
@@ -63,14 +61,16 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       return;
     }
 
-    final String location = mChartboostParams.getLocation();
+    final String location = chartboostParams.getLocation();
     ChartboostInitializer.getInstance()
         .updateCoppaStatus(context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
+        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
-            createAndLoadRewardAd(location);
+            chartboostRewardedAd = new Rewarded(location, ChartboostRewardedAd.this,
+                ChartboostAdapterUtils.getChartboostMediation());
+            chartboostRewardedAd.cache();
           }
 
           @Override
@@ -92,29 +92,24 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     chartboostRewardedAd.show();
   }
 
-  private void createAndLoadRewardAd(@Nullable String location) {
-    if (TextUtils.isEmpty(location)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      if (mediationAdLoadCallback != null) {
-        mediationAdLoadCallback.onFailure(error);
-      }
-      return;
-    }
-
-    chartboostRewardedAd = new Rewarded(location, ChartboostRewardedAd.this,
-        ChartboostAdapterUtils.getChartboostMediation());
-    chartboostRewardedAd.cache();
-  }
-
   @Override
   public void onRewardEarned(@NonNull RewardEvent rewardEvent) {
     Log.d(TAG, "Chartboost rewarded ad user earned a reward.");
-    rewardAmount = rewardEvent.getReward();
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onVideoComplete();
-      rewardedAdCallback.onUserEarnedReward(this);
+      rewardedAdCallback.onUserEarnedReward(new RewardItem() {
+        @Override
+        public int getAmount() {
+          return rewardEvent.getReward();
+        }
+
+        @NonNull
+        @Override
+        public String getType() {
+          // Charboost doesn't provide reward type.
+          return "";
+        }
+      });
     }
   }
 
@@ -184,17 +179,5 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       AdError error = ChartboostAdapterUtils.createSDKError(clickError);
       Log.w(TAG, error.getMessage());
     }
-  }
-
-  @Override
-  @NonNull
-  public String getType() {
-    // Charboost doesn't provide reward type.
-    return "";
-  }
-
-  @Override
-  public int getAmount() {
-    return rewardAmount;
   }
 }
