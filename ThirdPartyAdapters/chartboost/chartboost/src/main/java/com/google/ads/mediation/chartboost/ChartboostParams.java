@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.LOCATION_DEFAULT;
+
 /**
  * The {@link ChartboostParams} class is used to send network parameters and mediation/network
  * extras from {@link ChartboostMediationAdapter}
@@ -39,7 +41,7 @@ public class ChartboostParams {
    * Default constructor, sets a default value for {@link #cbLocation}.
    */
   public ChartboostParams() {
-    this.cbLocation = "Default";
+    this.cbLocation = LOCATION_DEFAULT;
   }
 
   /**

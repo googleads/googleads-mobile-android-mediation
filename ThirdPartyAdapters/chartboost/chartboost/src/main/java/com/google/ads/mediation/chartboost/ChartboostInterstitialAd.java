@@ -49,7 +49,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
     Bundle serverParameters = interstitialAdConfiguration.getServerParameters();
 
     ChartboostParams mChartboostParams =
-        ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
+        ChartboostAdapterUtils.createChartboostParams(serverParameters);
     if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
