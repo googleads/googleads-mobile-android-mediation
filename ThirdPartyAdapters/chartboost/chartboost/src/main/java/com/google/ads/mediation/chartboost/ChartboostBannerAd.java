@@ -68,7 +68,8 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     Banner.BannerSize supportedAdSize = ChartboostAdapterUtils.findClosestBannerSize(context,
         adSize);
     if (supportedAdSize == null) {
-      String errorMessage = String.format("Unsupported size: %s", adSize);
+      String errorMessage = String.format(
+          "The requested banner size: %s is not supported by Chartboost SDK.", adSize);
       AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
       Log.e(TAG, sizeError.toString());
       mediationAdLoadCallback.onFailure(sizeError);
