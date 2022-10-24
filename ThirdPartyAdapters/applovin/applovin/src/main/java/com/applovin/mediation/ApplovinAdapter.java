@@ -198,6 +198,17 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       return;
     }
 
+    // Convert requested size to AppLovin Ad Size.
+    final AppLovinAdSize appLovinAdSize =
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
+    if (appLovinAdSize == null) {
+      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
+          "Failed to request banner with unsupported size.", ERROR_DOMAIN);
+      log(ERROR, error.getMessage());
+      mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
+      return;
+    }
+
     AppLovinInitializer.getInstance()
         .initialize(context, sdkKey, new OnInitializeSuccessListener() {
           @Override
@@ -206,22 +217,11 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
-            // Convert requested size to AppLovin Ad Size.
-            final AppLovinAdSize appLovinAdSize =
-                AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
-            if (appLovinAdSize == null) {
-              AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-                  "Failed to request banner with unsupported size.", ERROR_DOMAIN);
-              log(ERROR, error.getMessage());
-              mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
-            }
-
             log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);
             adView = new AppLovinAdView(sdk, appLovinAdSize, context);
 
             final AppLovinBannerAdListener listener = new AppLovinBannerAdListener(zoneId, adView,
-                ApplovinAdapter.this,
-                mediationBannerListener);
+                ApplovinAdapter.this, mediationBannerListener);
             adView.setAdDisplayListener(listener);
             adView.setAdClickListener(listener);
             adView.setAdViewEventListener(listener);
