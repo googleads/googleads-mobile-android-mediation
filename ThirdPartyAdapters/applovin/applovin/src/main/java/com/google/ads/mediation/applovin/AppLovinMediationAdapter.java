@@ -299,12 +299,10 @@ public class AppLovinMediationAdapter extends RtbAdapter
                 incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(zoneId, sdk);
               }
               INCENTIVIZED_ADS.put(zoneId, new WeakReference<>(AppLovinMediationAdapter.this));
+              incentivizedInterstitial.preload(this);
             }
           });
     }
-
-    incentivizedInterstitial.preload(this);
-
   }
 
   @Override
