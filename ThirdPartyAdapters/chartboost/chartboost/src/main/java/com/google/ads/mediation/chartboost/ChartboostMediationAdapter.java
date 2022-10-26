@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Model.CBError;
 import com.google.android.gms.ads.AdError;
@@ -62,6 +63,18 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
    */
   static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
   // endregion
+
+  /**
+   * Preferred Chartboost App ID.
+   */
+  @Nullable
+  private static String preferredAppID;
+
+  /**
+   * Preferred Chartboost App Signature.
+   */
+  @Nullable
+  private static String preferredAppSignature;
 
   /**
    * A Chartboost extras object used to store optional information used when loading ads.
@@ -126,40 +139,51 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
-    for (MediationConfiguration configuration : mediationConfigurations) {
-      Bundle params = configuration.getServerParameters();
-      String serverAppID = params.getString(ChartboostAdapterUtils.KEY_APP_ID);
+    // Initialize with the preferred parameters if set.
+    if (!TextUtils.isEmpty(preferredAppID) && !TextUtils.isEmpty(preferredAppSignature)) {
+      String logMessage = String.format("Preferred parameters have been set. "
+              + "Initializing Chartboost SDK with App ID: '%s', App Signature: '%s'",
+          preferredAppID, preferredAppSignature);
+      Log.d(TAG, logMessage);
 
-      if (!TextUtils.isEmpty(serverAppID)) {
-        chartboostConfigs.put(serverAppID, params);
+      chartboostParams = new ChartboostParams();
+      chartboostParams.setAppId(preferredAppID);
+      chartboostParams.setAppSignature(preferredAppSignature);
+    } else {
+      // Fetch the credentials from the mediation configurations.
+      HashMap<String, Bundle> chartboostConfigs = new HashMap<>();
+      for (MediationConfiguration configuration : mediationConfigurations) {
+        Bundle params = configuration.getServerParameters();
+        String serverAppID = params.getString(ChartboostAdapterUtils.KEY_APP_ID);
+
+        if (!TextUtils.isEmpty(serverAppID)) {
+          chartboostConfigs.put(serverAppID, params);
+        }
       }
-    }
 
-    String appID;
-    Bundle serverParameters;
-    int count = chartboostConfigs.size();
-    if (count <= 0) {
-      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid App ID.", ERROR_DOMAIN);
-      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
-      return;
-    }
+      String appID;
+      int count = chartboostConfigs.size();
+      if (count <= 0) {
+        AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or Invalid App ID.", ERROR_DOMAIN);
+        initializationCompleteCallback.onInitializationFailed(initializationError.toString());
+        return;
+      }
 
-    appID = chartboostConfigs.keySet().iterator().next();
-    serverParameters = chartboostConfigs.get(appID);
+      appID = chartboostConfigs.keySet().iterator().next();
+      // Multiple app IDs are not considered an error.
+      if (count > 1) {
+        String logMessage = String.format(
+            "Multiple '%s' entries found: %s. Using '%s' to initialize the Chartboost SDK.",
+            ChartboostAdapterUtils.KEY_APP_ID, chartboostConfigs.keySet(), appID);
+        Log.w(TAG, logMessage);
+      }
 
-    // Multiple app IDs are not considered an error.
-    if (count > 1) {
-      String logMessage =
-          String.format(
-              "Multiple '%s' entries found: %s. Using '%s' to initialize the Chartboost SDK.",
-              ChartboostAdapterUtils.KEY_APP_ID, chartboostConfigs.keySet(), appID);
-      Log.w(TAG, logMessage);
+      Bundle serverParameters = chartboostConfigs.get(appID);
+      chartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
     }
 
     initializationCallback = initializationCompleteCallback;
-    chartboostParams = ChartboostAdapterUtils.createChartboostParams(serverParameters, null);
     if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send initialization failed event.
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
@@ -303,4 +327,18 @@ public class ChartboostMediationAdapter extends Adapter implements MediationRewa
           }
         }
       };
+
+  // region Public utility methods
+
+  /**
+   * Indicates which Chartboost App ID and App Signature to use to initialize the Chartboost SDK.
+   *
+   * @param appId        Chartboost App ID
+   * @param appSignature Chartboost App Signature
+   */
+  public static void setAppParams(@NonNull String appId, @NonNull String appSignature) {
+    preferredAppID = appId;
+    preferredAppSignature = appSignature;
+  }
+  // endregion
 }

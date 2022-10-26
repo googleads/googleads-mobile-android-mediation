@@ -1,5 +1,10 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next Version
+- Added the `ChartboostMediationAdapter.setAppParams(String, String)` method as an optional way to
+  hardcode which app ID and app signature to use to initialize the Chartboost SDK.
+- Updated the minimum required Google Mobile Ads SDK version to 21.3.0.
+
 #### Version 8.4.3.1
 - Updated the minimum required Google Mobile Ads SDK version to 21.0.0.
 - Updated the minimum required Android API level to 19.
