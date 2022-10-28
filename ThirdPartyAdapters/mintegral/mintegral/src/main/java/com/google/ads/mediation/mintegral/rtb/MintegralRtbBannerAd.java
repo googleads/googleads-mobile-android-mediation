@@ -1,12 +1,10 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 
-import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_INVALID_BID_RESPONSE;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -46,7 +44,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
   }
 
   /**
-   * Converts density independent pixels unit to equivalent pixels, depending on device density
+   * Converts density independent pixels unit to equivalent pixels, depending on device density.
    *
    * @param context the context object
    * @param dpValue the value in dp (density independent pixels) unit that needs to be converted into pixels
@@ -64,11 +62,12 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     supportedSizes.add(new AdSize(728, 90));
     AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(), adConfiguration.getAdSize(), supportedSizes);
     if (closestSize == null) {
-      AdError error = MintegralConstants.createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              "Failed to request banner ad from Mintegral. Invalid banner size.");
-      Log.e(TAG, error.toString());
-      adLoadCallback.onFailure(error);
+      AdError bannerSizeError = MintegralConstants.createAdapterError(
+              ERROR_BANNER_SIZE_UNSUPPORTED, String.format(
+                      "The requested banner size: %s is not supported by Mintegral SDK.",
+                      adConfiguration.getAdSize()));
+      Log.e(TAG, bannerSizeError.toString());
+      adLoadCallback.onFailure(bannerSizeError);
       return;
     }
 
@@ -151,7 +150,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
   @Override
   public void closeFullScreen(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override

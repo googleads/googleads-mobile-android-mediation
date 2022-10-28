@@ -60,9 +60,9 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       return;
     }
     Map<String, Object> nativeProperties = MBBidNativeHandler.getNativeProperties(placementId, adUnitId);
-    //Whether native advertisements support video. If it is true, the unit supports video; otherwise, no video is returned
+    // Configure the properties of the Mintegral native ad, where video ad will be supported and
+    // only one ad will be returned in each ad request.
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
-    //How many advertisements are expected to be returned in a native advertisement request, and one advertisement is returned by default
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
     mbBidNativeHandler.setAdListener(this);

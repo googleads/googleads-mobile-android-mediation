@@ -4,7 +4,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdError;
-import com.mbridge.msdk.MBridgeConstans;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,7 +20,7 @@ public class MintegralConstants {
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
           value = {ERROR_INVALID_SERVER_PARAMETERS,
-                  ERROR_BANNER_SIZE_MISMATCH,
+                  ERROR_BANNER_SIZE_UNSUPPORTED,
                   ERROR_INVALID_BID_RESPONSE,
                   ERROR_MINTEGRAL_SDK,
                   ERROR_CODE_NO_FILL,
@@ -44,19 +43,17 @@ public class MintegralConstants {
   /**
    * The requested ad size does not match a Mintegral supported banner size.
    */
-  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
+  public static final int ERROR_BANNER_SIZE_UNSUPPORTED = 102;
 
   /**
    * Missing or invalid bid response.
    */
   public static final int ERROR_INVALID_BID_RESPONSE = 103;
 
-
   /**
-   * Mintegral sdk ad no fill
+   * Mintegral SDK returned a no fill error.
    */
   public static final int ERROR_CODE_NO_FILL = 104;
-
 
   @NonNull
   public static AdError createAdapterError(@AdapterError int errorCode,

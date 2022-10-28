@@ -70,7 +70,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
   @Override
   public void onLoadSuccess(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
@@ -138,11 +138,11 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
   @Override
   public void onVideoComplete(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
   public void onEndcardShow(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 }

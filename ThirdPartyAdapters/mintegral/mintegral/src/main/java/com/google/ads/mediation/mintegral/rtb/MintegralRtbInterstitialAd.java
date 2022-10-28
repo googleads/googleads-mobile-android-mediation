@@ -63,7 +63,7 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
   @Override
   public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
@@ -111,16 +111,16 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
 
   @Override
   public void onVideoComplete(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
   public void onAdCloseWithNIReward(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
   public void onEndcardShow(MBridgeIds mBridgeIds) {
-    //No-op, AdMob has no corresponding method
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 }

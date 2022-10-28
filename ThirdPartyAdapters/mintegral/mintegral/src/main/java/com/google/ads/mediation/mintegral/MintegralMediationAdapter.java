@@ -69,7 +69,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    // Mintegral SDK returns the SDK version in @"MAL_16.2.11".
+    // Mintegral SDK returns the SDK version in @"MAL_x.y.z" format.
     String versionString = MBConfiguration.SDK_VERSION;
     String[] versionSplits = versionString.split("_");
     if (versionSplits.length > 1) {
@@ -130,18 +130,11 @@ public class MintegralMediationAdapter extends RtbAdapter {
     }
     int appIdCount = appIds.size();
     int appKeyCount = appKeys.size();
-    if (appIdCount <= 0) {
+    if (appIdCount <= 0 || appKeyCount <= 0) {
       AdError error =
               MintegralConstants.createAdapterError(
-                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.");
-      Log.e(TAG, error.toString());
-      initializationCompleteCallback.onInitializationFailed(error.toString());
-      return;
-    }
-    if (appKeyCount <= 0) {
-      AdError error =
-              MintegralConstants.createAdapterError(
-                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App key.");
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App Key"
+                              + " configured for this ad source instance in the AdMob or Ad Manager UI");
       Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
@@ -172,7 +165,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
           Class channelManagerClass = channelManagerInstance.getClass();
           Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
           setChannelMethod.setAccessible(true);
-          //set channel flag. "Y+H6DFttYrPQYcIBicKwJQKQYrN=" is used to mark the AdMob channel
+          // Set the channel flag, where "Y+H6DFttYrPQYcIBicKwJQKQYrN=" indicates it's an AdMob channel.
           setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBicKwJQKQYrN=");
         } catch (Throwable e) {
           e.printStackTrace();
