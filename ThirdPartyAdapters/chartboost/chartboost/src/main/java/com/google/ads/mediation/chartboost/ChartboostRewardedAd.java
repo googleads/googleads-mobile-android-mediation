@@ -1,7 +1,6 @@
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
@@ -53,8 +52,10 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
         ChartboostAdapterUtils.createChartboostParams(serverParameters);
     if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
-          ERROR_DOMAIN);
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load rewarded ad from Chartboost. Missing or invalid server parameters.");
       Log.e(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -74,7 +75,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
           @Override
           public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
+            Log.w(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
           }
         });
@@ -83,9 +84,11 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
   @Override
   public void showAd(@NonNull Context context) {
     if (chartboostRewardedAd == null || !chartboostRewardedAd.isCached()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY,
-          "Chartboost rewarded ad is not yet ready to be shown.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_AD_NOT_READY,
+              "Chartboost rewarded ad is not yet ready to be shown.");
+      Log.w(TAG, error.toString());
       return;
     }
     chartboostRewardedAd.show();
@@ -93,7 +96,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void onRewardEarned(@NonNull RewardEvent rewardEvent) {
-    Log.d(TAG, "Chartboost rewarded ad user earned a reward.");
+    Log.d(TAG, "User earned a rewarded from Chartboost rewarded ad.");
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onVideoComplete();
       rewardedAdCallback.onUserEarnedReward(new RewardItem() {
@@ -131,14 +134,14 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
   @Override
   public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
     if (showError == null) {
-      Log.d(TAG, "Chartboost rewarded has been shown.");
+      Log.d(TAG, "Chartboost rewarded ad has been shown.");
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdOpened();
         rewardedAdCallback.onVideoStart();
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(showError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(showError);
+      Log.w(TAG, error.toString());
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdFailedToShow(error);
       }
@@ -159,8 +162,8 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
             mediationAdLoadCallback.onSuccess(ChartboostRewardedAd.this);
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(cacheError);
+      Log.w(TAG, error.toString());
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
@@ -175,8 +178,8 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
         rewardedAdCallback.reportAdClicked();
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(clickError);
+      Log.w(TAG, error.toString());
     }
   }
 }

@@ -1,20 +1,5 @@
-// Copyright 2022 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 
 import android.content.Context;
@@ -43,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The {@link ChartboostMediationAdapter} class is used to load Chartboost rewarded-based video,
- * interstitial ads, banner ads and initialise Chartboost SDK.
+ * The {@link ChartboostMediationAdapter} class is used to initialize the Chartboost SDK, and load
+ * Chartboost banner, interstitial and rewarded video ads.
  */
 public class ChartboostMediationAdapter extends Adapter {
 
@@ -140,10 +125,12 @@ public class ChartboostMediationAdapter extends Adapter {
 
       int count = chartboostConfigs.size();
       if (count <= 0) {
-        AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-            "Missing or invalid App ID.", ERROR_DOMAIN);
-        initializationCompleteCallback.onInitializationFailed(initializationError.toString());
-        Log.e(TAG, initializationError.toString());
+        AdError error =
+            ChartboostConstants.createAdapterError(
+                ERROR_INVALID_SERVER_PARAMETERS,
+                "Missing or invalid App ID.");
+        initializationCompleteCallback.onInitializationFailed(error.toString());
+        Log.e(TAG, error.toString());
         return;
       }
 
@@ -161,10 +148,12 @@ public class ChartboostMediationAdapter extends Adapter {
 
       if (serverParameters == null) {
         // Invalid server parameters, send initialization failed event.
-        AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-            "Invalid server parameters.", ERROR_DOMAIN);
-        initializationCompleteCallback.onInitializationFailed(initializationError.toString());
-        Log.e(TAG, initializationError.toString());
+        AdError error =
+            ChartboostConstants.createAdapterError(
+                ERROR_INVALID_SERVER_PARAMETERS,
+                "Invalid server parameters.");
+        initializationCompleteCallback.onInitializationFailed(error.toString());
+        Log.e(TAG, error.toString());
         return;
       }
 
@@ -177,10 +166,12 @@ public class ChartboostMediationAdapter extends Adapter {
 
     if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send initialization failed event.
-      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Invalid server parameters.", ERROR_DOMAIN);
-      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
-      Log.e(TAG, initializationError.toString());
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Invalid server parameters.");
+      initializationCompleteCallback.onInitializationFailed(error.toString());
+      Log.e(TAG, error.toString());
       return;
     }
 
@@ -194,7 +185,7 @@ public class ChartboostMediationAdapter extends Adapter {
 
           @Override
           public void onInitializationFailed(@NonNull AdError error) {
-            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+            initializationCompleteCallback.onInitializationFailed(error.toString());
           }
         });
   }
@@ -204,9 +195,7 @@ public class ChartboostMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    // Callback listener
-    rewardedAd = new ChartboostRewardedAd(
-        mediationRewardedAdConfiguration,
+    rewardedAd = new ChartboostRewardedAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     rewardedAd.loadAd();
   }
@@ -215,8 +204,7 @@ public class ChartboostMediationAdapter extends Adapter {
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    interstitialAd = new ChartboostInterstitialAd(
-        mediationInterstitialAdConfiguration,
+    interstitialAd = new ChartboostInterstitialAd(mediationInterstitialAdConfiguration,
         mediationAdLoadCallback);
     interstitialAd.loadAd();
   }
@@ -224,9 +212,7 @@ public class ChartboostMediationAdapter extends Adapter {
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    bannerAd = new ChartboostBannerAd(
-        mediationBannerAdConfiguration,
-        mediationAdLoadCallback);
+    bannerAd = new ChartboostBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
     bannerAd.loadAd();
   }
 

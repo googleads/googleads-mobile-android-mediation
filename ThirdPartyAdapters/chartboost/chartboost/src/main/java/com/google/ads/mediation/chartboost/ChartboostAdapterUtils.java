@@ -96,67 +96,14 @@ class ChartboostAdapterUtils {
       return false;
     }
 
-    String appId = chartboostParams.getAppId();
-    String appSignature = chartboostParams.getAppSignature();
-    boolean isAppIdEmpty = TextUtils.isEmpty(appId);
-    boolean isAppSignatureEmpty = TextUtils.isEmpty(appSignature);
-    if (isAppIdEmpty || isAppSignatureEmpty) {
-      String log =
-          isAppIdEmpty
-              ? (isAppSignatureEmpty ? "App ID and App Signature" : "App ID")
-              : "App Signature";
-      Log.e(TAG, log + " cannot be empty.");
+    if (TextUtils.isEmpty(chartboostParams.getAppId()) || TextUtils.isEmpty(
+        chartboostParams.getAppSignature())) {
+      Log.e(TAG,
+          "Missing or invalid App ID or App Signature configured for this ad source instance"
+              + "in the AdMob or Ad Manager UI.");
       return false;
     }
     return true;
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link CacheError}.
-   *
-   * @param cacheError Chartboost's error.
-   * @return the {@link AdError} object.
-   */
-  @NonNull
-  static AdError createSDKError(@NonNull CacheError cacheError) {
-    return new AdError(cacheError.getCode().getErrorCode(), cacheError.toString(),
-        CHARTBOOST_SDK_ERROR_DOMAIN);
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link ShowError}.
-   *
-   * @param showError Chartboost's error.
-   * @return the {@link AdError} object.
-   */
-  @NonNull
-  static AdError createSDKError(@NonNull ShowError showError) {
-    return new AdError(showError.getCode().getErrorCode(), showError.toString(),
-        CHARTBOOST_SDK_ERROR_DOMAIN);
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link ClickError}.
-   *
-   * @param clickError Chartboost's error.
-   * @return the {@link AdError} object.
-   */
-  @NonNull
-  static AdError createSDKError(@NonNull ClickError clickError) {
-    return new AdError(clickError.getCode().getErrorCode(), clickError.toString(),
-        CHARTBOOST_SDK_ERROR_DOMAIN);
-  }
-
-  /**
-   * Creates an {@link AdError} object given Chartboost's {@link StartError}.
-   *
-   * @param startError Chartboost's error.
-   * @return the {@link AdError} object.
-   */
-  @NonNull
-  static AdError createSDKError(@NonNull StartError startError) {
-    return new AdError(startError.getCode().getErrorCode(), startError.toString(),
-        CHARTBOOST_SDK_ERROR_DOMAIN);
   }
 
   /**
@@ -200,7 +147,7 @@ class ChartboostAdapterUtils {
   }
 
   /**
-   * @return Returns a {@link Mediation} object that contains mediation information. This will be
+   * Returns a {@link Mediation} object that contains mediation information. This will be
    * called every time a Chartboost ad object is created.
    */
   static Mediation getChartboostMediation() {

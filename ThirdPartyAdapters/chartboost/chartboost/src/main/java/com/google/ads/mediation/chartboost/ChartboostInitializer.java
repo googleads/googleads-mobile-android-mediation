@@ -1,20 +1,5 @@
-// Copyright 2022 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostAdapterUtils.createSDKError;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
@@ -40,38 +25,9 @@ public class ChartboostInitializer {
 
   private static ChartboostInitializer instance;
 
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef(value = {
-      UNINITIALIZED,
-      INITIALIZING,
-      INITIALIZED
-  })
-
-  public @interface InitializationStatus {
-
-  }
-
-  /**
-   * UNINITIALIZED.
-   */
-  public static final int UNINITIALIZED = 0;
-  /**
-   * INITIALIZING.
-   */
-  public static final int INITIALIZING = 1;
-  /**
-   * INITIALIZED.
-   */
-  public static final int INITIALIZED = 2;
-
-  private @InitializationStatus
-  int initializationStatus;
-
-  private final ArrayList<Listener> mListeners = new ArrayList<>();
-
-  private ChartboostInitializer() {
-    initializationStatus = UNINITIALIZED;
-  }
+  private boolean isInitializing = false;
+  private boolean isInitialized = false;
+  private final ArrayList<Listener> initListeners = new ArrayList<>();
 
   public static ChartboostInitializer getInstance() {
     if (instance == null) {
@@ -82,18 +38,18 @@ public class ChartboostInitializer {
 
   public void init(@NonNull final Context context,
       @NonNull ChartboostParams params, @NonNull final Listener listener) {
+    if (isInitializing) {
+      initListeners.add(listener);
+      return;
+    }
 
-    if (initializationStatus == INITIALIZED) {
+    if (isInitialized) {
       listener.onInitializationSucceeded();
       return;
     }
 
-    mListeners.add(listener);
-    if (initializationStatus == INITIALIZING) {
-      return;
-    }
-
-    initializationStatus = INITIALIZING;
+    isInitializing = true;
+    initListeners.add(listener);
 
     updateCoppaStatus(context,
         MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
@@ -101,23 +57,22 @@ public class ChartboostInitializer {
         new StartCallback() {
           @Override
           public void onStartCompleted(@Nullable StartError startError) {
-            ArrayList<Listener> tempListeners = new ArrayList<>(mListeners);
+            isInitializing = false;
+            ArrayList<Listener> tempListeners = new ArrayList<>(initListeners);
             if (startError == null) {
+              isInitialized = true;
               Log.d(TAG, "Chartboost SDK initialized.");
-
-              initializationStatus = INITIALIZED;
               for (Listener initListener : tempListeners) {
                 initListener.onInitializationSucceeded();
               }
             } else {
-              initializationStatus = UNINITIALIZED;
-
-              AdError initializationError = createSDKError(startError);
+              isInitialized = false;
+              AdError initializationError = ChartboostConstants.createSDKError(startError);
               for (Listener initListener : tempListeners) {
                 initListener.onInitializationFailed(initializationError);
               }
             }
-            mListeners.clear();
+            initListeners.clear();
           }
         });
   }

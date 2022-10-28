@@ -1,6 +1,12 @@
 package com.google.ads.mediation.chartboost;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import com.chartboost.sdk.events.CacheError;
+import com.chartboost.sdk.events.ClickError;
+import com.chartboost.sdk.events.ShowError;
+import com.chartboost.sdk.events.StartError;
+import com.google.android.gms.ads.AdError;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -46,4 +52,58 @@ public class ChartboostConstants {
    * Chartboost ad is not ready to be shown.
    */
   static final int ERROR_AD_NOT_READY = 104;
+
+  @NonNull
+  public static AdError createAdapterError(@AdapterError int errorCode,
+      @NonNull String errorMessage) {
+    return new AdError(errorCode, errorMessage, ERROR_DOMAIN);
+  }
+
+  /**
+   * Creates an {@link AdError} object given Chartboost's {@link CacheError}.
+   *
+   * @param cacheError Chartboost's error.
+   * @return the {@link AdError} object.
+   */
+  @NonNull
+  static AdError createSDKError(@NonNull CacheError cacheError) {
+    return new AdError(cacheError.getCode().getErrorCode(), cacheError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
+  }
+
+  /**
+   * Creates an {@link AdError} object given Chartboost's {@link ShowError}.
+   *
+   * @param showError Chartboost's error.
+   * @return the {@link AdError} object.
+   */
+  @NonNull
+  static AdError createSDKError(@NonNull ShowError showError) {
+    return new AdError(showError.getCode().getErrorCode(), showError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
+  }
+
+  /**
+   * Creates an {@link AdError} object given Chartboost's {@link ClickError}.
+   *
+   * @param clickError Chartboost's error.
+   * @return the {@link AdError} object.
+   */
+  @NonNull
+  static AdError createSDKError(@NonNull ClickError clickError) {
+    return new AdError(clickError.getCode().getErrorCode(), clickError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
+  }
+
+  /**
+   * Creates an {@link AdError} object given Chartboost's {@link StartError}.
+   *
+   * @param startError Chartboost's error.
+   * @return the {@link AdError} object.
+   */
+  @NonNull
+  static AdError createSDKError(@NonNull StartError startError) {
+    return new AdError(startError.getCode().getErrorCode(), startError.toString(),
+        CHARTBOOST_SDK_ERROR_DOMAIN);
+  }
 }

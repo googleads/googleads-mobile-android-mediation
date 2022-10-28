@@ -1,7 +1,6 @@
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
@@ -48,22 +47,24 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
     final Context context = interstitialAdConfiguration.getContext();
     Bundle serverParameters = interstitialAdConfiguration.getServerParameters();
 
-    ChartboostParams mChartboostParams =
+    ChartboostParams chartboostParams =
         ChartboostAdapterUtils.createChartboostParams(serverParameters);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+    if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
-          ERROR_DOMAIN);
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load interstitial ad from Chartboost. Missing or invalid server parameters.");
       Log.e(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    final String location = mChartboostParams.getLocation();
+    final String location = chartboostParams.getLocation();
     ChartboostInitializer.getInstance()
         .updateCoppaStatus(context, interstitialAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
+        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             createAndLoadInterstitialAd(location);
@@ -71,7 +72,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
           @Override
           public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
+            Log.w(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
           }
         });
@@ -80,9 +81,11 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
   @Override
   public void showAd(@NonNull Context context) {
     if (chartboostInterstitialAd == null || !chartboostInterstitialAd.isCached()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY,
-          "Chartboost interstitial ad is not yet ready to be shown.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_AD_NOT_READY,
+              "Chartboost interstitial ad is not yet ready to be shown.");
+      Log.w(TAG, error.toString());
       return;
     }
     chartboostInterstitialAd.show();
@@ -90,9 +93,11 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   private void createAndLoadInterstitialAd(@Nullable String location) {
     if (TextUtils.isEmpty(location)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or Invalid location.");
+      Log.w(TAG, error.toString());
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
@@ -128,8 +133,8 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
         interstitialAdCallback.onAdOpened();
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(showError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(showError);
+      Log.w(TAG, error.toString());
       if (interstitialAdCallback != null) {
         interstitialAdCallback.onAdFailedToShow(error);
       }
@@ -150,8 +155,8 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
             mediationAdLoadCallback.onSuccess(ChartboostInterstitialAd.this);
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(cacheError);
+      Log.w(TAG, error.toString());
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
@@ -166,8 +171,8 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
         interstitialAdCallback.reportAdClicked();
       }
     } else {
-      AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(clickError);
+      Log.w(TAG, error.toString());
     }
   }
 }

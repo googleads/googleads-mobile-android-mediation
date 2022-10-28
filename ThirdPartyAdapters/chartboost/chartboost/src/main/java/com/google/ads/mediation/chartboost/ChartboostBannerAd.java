@@ -1,7 +1,6 @@
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
@@ -9,7 +8,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
@@ -54,12 +52,14 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     final Context context = bannerAdConfiguration.getContext();
     Bundle serverParameters = bannerAdConfiguration.getServerParameters();
 
-    ChartboostParams mChartboostParams =
+    ChartboostParams chartboostParams =
         ChartboostAdapterUtils.createChartboostParams(serverParameters);
-    if (!ChartboostAdapterUtils.isValidChartboostParams(mChartboostParams)) {
+    if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
       // Invalid server parameters, send ad failed to load event.
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Invalid server parameters.",
-          ERROR_DOMAIN);
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load banner ad from Chartboost. Missing or invalid server parameters.");
       Log.e(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -70,17 +70,20 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     if (supportedAdSize == null) {
       String errorMessage = String.format(
           "The requested banner size: %s is not supported by Chartboost SDK.", adSize);
-      AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, errorMessage, ERROR_DOMAIN);
-      Log.e(TAG, sizeError.toString());
-      mediationAdLoadCallback.onFailure(sizeError);
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              errorMessage);
+      Log.e(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    final String location = mChartboostParams.getLocation();
+    final String location = chartboostParams.getLocation();
     ChartboostInitializer.getInstance()
         .updateCoppaStatus(context, bannerAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .init(context, mChartboostParams, new ChartboostInitializer.Listener() {
+        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             createAndLoadBannerAd(context, location, supportedAdSize);
@@ -88,7 +91,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
           @Override
           public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.getMessage());
+            Log.w(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
           }
         });
@@ -98,16 +101,10 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       @Nullable String location,
       @Nullable Banner.BannerSize supportedAdSize) {
     if (TextUtils.isEmpty(location)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid location.", ERROR_DOMAIN);
-      Log.w(TAG, error.toString());
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    if (supportedAdSize == null) {
-      AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-          "Missing banner ad size.", ERROR_DOMAIN);
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or Invalid location.");
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -115,11 +112,11 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
     //Attach object to layout to inflate the banner.
     bannerContainer = new FrameLayout(context);
+
+    AdSize closestSize = new AdSize(supportedAdSize.getWidth(), supportedAdSize.getHeight());
     FrameLayout.LayoutParams paramsLayout =
         new FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-    paramsLayout.gravity = Gravity.CENTER_HORIZONTAL;
-
+            closestSize.getWidthInPixels(context), closestSize.getHeightInPixels(context));
     Banner chartboostBannerAd = new Banner(context, location, supportedAdSize,
         ChartboostBannerAd.this, ChartboostAdapterUtils.getChartboostMediation());
     bannerContainer.addView(chartboostBannerAd, paramsLayout);
@@ -138,8 +135,8 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   @Override
   public void onAdShown(@NonNull ShowEvent showEvent, @Nullable ShowError showError) {
     if (showError != null) {
-      AdError error = ChartboostAdapterUtils.createSDKError(showError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(showError);
+      Log.w(TAG, error.toString());
       return;
     }
 
@@ -157,8 +154,8 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   @Override
   public void onAdLoaded(@NonNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
     if (cacheError != null) {
-      AdError error = ChartboostAdapterUtils.createSDKError(cacheError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(cacheError);
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -172,8 +169,8 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   @Override
   public void onAdClicked(@NonNull ClickEvent clickEvent, @Nullable ClickError clickError) {
     if (clickError != null) {
-      AdError error = ChartboostAdapterUtils.createSDKError(clickError);
-      Log.w(TAG, error.getMessage());
+      AdError error = ChartboostConstants.createSDKError(clickError);
+      Log.w(TAG, error.toString());
       return;
     }
 
