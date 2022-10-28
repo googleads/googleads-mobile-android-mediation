@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 11.5.3.1 (In progress)
+#### Version 11.5.3.1
 - Fixed an issue that can cause `NullPointerException` when loading rewarded ads.
 
 Built and tested with:
