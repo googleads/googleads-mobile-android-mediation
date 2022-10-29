@@ -7,11 +7,15 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
+import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
@@ -56,6 +60,7 @@ public class VungleMediationAdapter extends RtbAdapter
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
+  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbNativeAd rtbNativeAd;
 
   private AdConfig adConfig;
@@ -211,12 +216,10 @@ public class VungleMediationAdapter extends RtbAdapter
 
     int count = appIDs.size();
     if (count <= 0) {
-      if (initializationCompleteCallback != null) {
-        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
-            ERROR_DOMAIN);
-        Log.w(TAG, error.toString());
-        initializationCompleteCallback.onInitializationFailed(error.toString());
-      }
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
 
@@ -258,9 +261,7 @@ public class VungleMediationAdapter extends RtbAdapter
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
-    if (mediationExtras != null) {
-      userId = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
-    }
+    userId = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
 
     placement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
     if (TextUtils.isEmpty(placement)) {
@@ -468,6 +469,18 @@ public class VungleMediationAdapter extends RtbAdapter
     rtbRewardedAd = new VungleRtbRewardedAd(
         mediationRewardedAdConfiguration, mediationAdLoadCallback);
     rtbRewardedAd.render();
+  }
+
+  @Override
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+    Log.d(TAG, "loadRtbBannerAd()...");
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
+    rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    rtbBannerAd.render();
   }
 
   @Override
