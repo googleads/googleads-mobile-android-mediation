@@ -89,9 +89,8 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
               MINTEGRAL_SDK_IMAGE_SCALE));
     }
     MBMediaView mbMediaView = new MBMediaView(adConfiguration.getContext());
-    mbMediaView.setProgressVisibility(true);
-    mbMediaView.setSoundIndicatorVisibility(true);
-    mbMediaView.setVideoSoundOnOff(false);
+    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
+    mbMediaView.setVideoSoundOnOff(!muted);
     setMediaView(mbMediaView);
 
     MBAdChoice mbAdChoice = new MBAdChoice(adConfiguration.getContext());
