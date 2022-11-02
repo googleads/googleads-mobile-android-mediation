@@ -1,5 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 11.5.4.0 (In progress)
+- Verified compatibility with AppLovin SDK 11.5.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.3.0.
+- AppLovin SDK version 11.5.4.
+
 #### Version 11.5.3.1
 - Fixed an issue that can cause `NullPointerException` when loading rewarded ads.
 
