@@ -80,10 +80,9 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     }
 
     final String location = chartboostParams.getLocation();
+    ChartboostAdapterUtils.updateCoppaStatus(context, bannerAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, bannerAdConfiguration.taggedForChildDirectedTreatment());
-    ChartboostInitializer.getInstance()
-        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
+        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             createAndLoadBannerAd(context, location, supportedAdSize);
@@ -110,9 +109,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       return;
     }
 
-    //Attach object to layout to inflate the banner.
     bannerContainer = new FrameLayout(context);
-
     AdSize closestSize = new AdSize(supportedAdSize.getWidth(), supportedAdSize.getHeight());
     FrameLayout.LayoutParams paramsLayout =
         new FrameLayout.LayoutParams(
@@ -148,7 +145,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   @Override
   public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-    Log.d(TAG, "Chartboost banner ad will be shown.");
+    Log.d(TAG, "Chartboost banner ad is requested to be shown.");
   }
 
   @Override

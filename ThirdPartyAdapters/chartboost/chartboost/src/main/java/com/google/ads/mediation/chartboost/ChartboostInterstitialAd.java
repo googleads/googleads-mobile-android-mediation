@@ -61,10 +61,9 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
     }
 
     final String location = chartboostParams.getLocation();
+    ChartboostAdapterUtils.updateCoppaStatus(context, interstitialAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, interstitialAdConfiguration.taggedForChildDirectedTreatment());
-    ChartboostInitializer.getInstance()
-        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
+        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             createAndLoadInterstitialAd(location);
@@ -143,7 +142,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-    Log.d(TAG, "Chartboost interstitial requested to show.");
+    Log.d(TAG, "Chartboost interstitial ad is requested to be shown.");
   }
 
   @Override

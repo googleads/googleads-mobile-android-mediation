@@ -1,6 +1,5 @@
 package com.google.ads.mediation.chartboost;
 
-import static com.google.ads.mediation.chartboost.ChartboostConstants.CHARTBOOST_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
@@ -12,13 +11,10 @@ import androidx.annotation.Nullable;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Mediation;
 import com.chartboost.sdk.ads.Banner;
-import com.chartboost.sdk.events.CacheError;
-import com.chartboost.sdk.events.ClickError;
-import com.chartboost.sdk.events.ShowError;
-import com.chartboost.sdk.events.StartError;
-import com.google.android.gms.ads.AdError;
+import com.chartboost.sdk.privacy.model.COPPA;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.RequestConfiguration;
 import java.util.ArrayList;
 
 /**
@@ -156,5 +152,20 @@ class ChartboostAdapterUtils {
           BuildConfig.ADAPTER_VERSION);
     }
     return chartboostMediation;
+  }
+
+  static void updateCoppaStatus(Context context, int coppa) {
+    switch (coppa) {
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
+        Chartboost.addDataUseConsent(context, new COPPA(true));
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
+        Chartboost.addDataUseConsent(context, new COPPA(false));
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
+      default:
+        // Chartboost's SDK only supports updating a user's COPPA status with true and false values.
+        break;
+    }
   }
 }

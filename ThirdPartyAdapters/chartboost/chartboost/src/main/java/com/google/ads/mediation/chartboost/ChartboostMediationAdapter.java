@@ -176,7 +176,7 @@ public class ChartboostMediationAdapter extends Adapter {
     }
 
     ChartboostInitializer.getInstance()
-        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
+        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             initializationCompleteCallback.onInitializationSucceeded();

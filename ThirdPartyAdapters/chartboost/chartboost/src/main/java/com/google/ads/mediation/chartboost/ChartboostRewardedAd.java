@@ -62,10 +62,9 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     }
 
     final String location = chartboostParams.getLocation();
+    ChartboostAdapterUtils.updateCoppaStatus(context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .updateCoppaStatus(context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
-    ChartboostInitializer.getInstance()
-        .init(context, chartboostParams, new ChartboostInitializer.Listener() {
+        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
           @Override
           public void onInitializationSucceeded() {
             chartboostRewardedAd = new Rewarded(location, ChartboostRewardedAd.this,
@@ -150,7 +149,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void onAdRequestedToShow(@NonNull ShowEvent showEvent) {
-    Log.d(TAG, "Chartboost rewarded ad will be shown.");
+    Log.d(TAG, "Chartboost rewarded ad is requested to be shown.");
   }
 
   @Override
