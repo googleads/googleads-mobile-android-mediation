@@ -1,8 +1,14 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next Version
+#### 6.12.0.0
+- Verified compatibility with Facebook SDK v6.12.0.
+- Updated the minimum required Google Mobile Ads SDK version to 21.2.0.
 - Rebranded adapter name to "Meta Audience Network".
 - Removed waterfall integration.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.2.0.
+- Facebook SDK version 6.12.0.
 
 #### 6.11.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
