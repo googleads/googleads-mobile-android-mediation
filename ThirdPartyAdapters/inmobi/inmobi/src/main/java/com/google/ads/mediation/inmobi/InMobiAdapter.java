@@ -18,26 +18,28 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
  */
 public final class InMobiAdapter extends InMobiMediationAdapter {
 
-  static final String TAG = InMobiAdapter.class.getSimpleName();
+  private InMobiBannerAd inMobiBanner;
+  private InMobiInterstitialAd inMobiInterstitial;
+  private InMobiNativeAd inMobiNativeAd;
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
                            @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    InMobiBannerAd mInMobiBanner = new InMobiBannerAd(mediationBannerAdConfiguration, callback);
-    mInMobiBanner.load();
+    inMobiBanner = new InMobiBannerAd(mediationBannerAdConfiguration, callback);
+    inMobiBanner.loadAd();
   }
 
   @Override
   public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
                                  @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    InMobiInterstitialAd mInMobiInterstitial = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
-    mInMobiInterstitial.load();
+    inMobiInterstitial = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
+    inMobiInterstitial.loadAd();
   }
 
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
                            @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    InMobiNativeAd mInMobiNativeAd = new InMobiNativeAd(mediationNativeAdConfiguration, callback);
-    mInMobiNativeAd.load();
+    inMobiNativeAd = new InMobiNativeAd(mediationNativeAdConfiguration, callback);
+    inMobiNativeAd.loadAd();
   }
 }

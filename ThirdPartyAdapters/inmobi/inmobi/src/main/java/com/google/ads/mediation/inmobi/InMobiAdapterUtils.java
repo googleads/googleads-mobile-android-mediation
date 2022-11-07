@@ -1,10 +1,18 @@
 package com.google.ads.mediation.inmobi;
 
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
+
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -13,6 +21,8 @@ import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
@@ -28,7 +38,7 @@ class InMobiAdapterUtils {
   static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      Log.w(InMobiMediationAdapter.TAG, "Missing or Invalid Placement ID.");
+      Log.e(InMobiMediationAdapter.TAG, "Missing or Invalid Placement ID.");
       return 0L;
     }
 
@@ -36,7 +46,7 @@ class InMobiAdapterUtils {
     try {
       placement = Long.parseLong(placementId);
     } catch (NumberFormatException exception) {
-      Log.w(InMobiMediationAdapter.TAG, "Invalid Placement ID.", exception);
+      Log.e(InMobiMediationAdapter.TAG, "Invalid Placement ID.", exception);
     }
     return placement;
   }
@@ -249,4 +259,34 @@ class InMobiAdapterUtils {
     return 99;
   }
 
+  @Nullable
+  public static AdSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
+    /*
+        Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
+        320x50,
+        300x250,
+        728x90.
+     */
+
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(new AdSize(320, 50));
+    potentials.add(new AdSize(300, 250));
+    potentials.add(new AdSize(728, 90));
+    return MediationUtils.findClosestSize(context, adSize, potentials);
+  }
+
+  @Nullable
+  public static AdError validateInMobiAdLoadParams(
+          @Nullable String accountID,
+          long placementID) {
+    if (TextUtils.isEmpty(accountID) || placementID <= 0L) {
+      AdError parameterError =
+              InMobiConstants.createAdapterError(
+                      ERROR_INVALID_SERVER_PARAMETERS,
+                      "Missing or invalid account ID or placement ID.");
+      Log.e(InMobiMediationAdapter.TAG, parameterError.toString());
+      return parameterError;
+    }
+    return null;
+  }
 }
