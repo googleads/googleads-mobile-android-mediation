@@ -89,8 +89,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
                 mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context));
         InMobiBanner adView;
         if(!InMobiSdk.isSDKInitialized()){
-            //todo Please initialize the SDK before creating
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiBanner");
+            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiBanner.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
             return;

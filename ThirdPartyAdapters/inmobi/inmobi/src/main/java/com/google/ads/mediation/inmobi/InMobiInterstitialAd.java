@@ -70,14 +70,14 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
 
     private void createAndLoadInterstitialAd(Context context, long placementId) {
 
-        try {
-            adInterstitial = new InMobiInterstitial(context, placementId, InMobiInterstitialAd.this);
-        } catch (SdkNotInitializedException exception) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage());
+        if(!InMobiSdk.isSDKInitialized()){
+            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiInterstitial.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
             return;
         }
+
+        adInterstitial = new InMobiInterstitial(context, placementId, InMobiInterstitialAd.this);
 
         if (mediationInterstitialAdConfiguration.getMediationExtras().keySet() != null) {
             adInterstitial.setKeywords(TextUtils.join(", ", mediationInterstitialAdConfiguration.getMediationExtras().keySet()));

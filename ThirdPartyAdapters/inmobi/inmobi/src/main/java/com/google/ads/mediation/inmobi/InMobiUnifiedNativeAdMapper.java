@@ -21,7 +21,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.inmobi.ads.InMobiNative;
-import com.inmobi.sdk.InMobiSdk;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

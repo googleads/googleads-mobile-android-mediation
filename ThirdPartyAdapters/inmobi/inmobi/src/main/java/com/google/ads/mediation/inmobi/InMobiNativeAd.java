@@ -22,6 +22,7 @@ import com.inmobi.ads.InMobiNative;
 import com.inmobi.ads.exceptions.SdkNotInitializedException;
 import com.inmobi.ads.listeners.NativeAdEventListener;
 import com.inmobi.ads.listeners.VideoEventListener;
+import com.inmobi.sdk.InMobiSdk;
 
 import java.util.HashMap;
 
@@ -68,14 +69,14 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
     private void createAndLoadNativeAd(Context context, long placementId) {
 
-        try {
-            adNative = new InMobiNative(context, placementId, InMobiNativeAd.this);
-        } catch (SdkNotInitializedException exception) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage());
+        if(!InMobiSdk.isSDKInitialized()){
+            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiNative.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
             return;
         }
+
+        adNative = new InMobiNative(context, placementId, InMobiNativeAd.this);
 
         adNative.setVideoEventListener(new VideoEventListener() {
             @Override
