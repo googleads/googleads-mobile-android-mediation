@@ -165,8 +165,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
           Class channelManagerClass = channelManagerInstance.getClass();
           Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
           setChannelMethod.setAccessible(true);
-          // Set the channel flag, where "Y+H6DFttYrPQYcIBicKwJQKQYrN=" indicates it's an AdMob channel.
-          setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBicKwJQKQYrN=");
+          // Set the channel flag, where "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" indicates it's an AdMob channel.
+          setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBiQKwJQKQYrN=");
         } catch (Throwable e) {
           e.printStackTrace();
         }
