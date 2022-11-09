@@ -217,6 +217,11 @@ public class MintegralMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setConsentStatus(int consentStatus) {
+    if (gdprConsentStatus != MBridgeConstans.IS_SWITCH_OFF && gdprConsentStatus != MBridgeConstans.IS_SWITCH_ON){
+      // no-op
+      Log.w(TAG, "Invalid GDPR consent status value. Mintegral SDK only accepts integer value 0 or 1.");
+      return;
+    }
     gdprConsentStatus = consentStatus;
   }
 
