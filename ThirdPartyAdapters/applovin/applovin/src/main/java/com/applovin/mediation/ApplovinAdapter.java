@@ -1,8 +1,8 @@
 package com.applovin.mediation;
 
 import static android.util.Log.DEBUG;
-import static android.util.Log.WARN;
 import static android.util.Log.ERROR;
+import static android.util.Log.WARN;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -165,7 +165,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       log(DEBUG, "Attempting to show interstitial before one was loaded.");
 
       // Check if we have a default zone interstitial available.
-      if (TextUtils.isEmpty(mZoneId) && interstitialAdDialog.isAdReadyToDisplay()) {
+      if (TextUtils.isEmpty(mZoneId)) {
         log(DEBUG, "Showing interstitial preloaded by SDK.");
         interstitialAdDialog.show();
       }

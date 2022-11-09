@@ -18,11 +18,9 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.os.Bundle;
 import android.view.View;
-
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ import java.util.Map;
 
 /**
  * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
- * Ads SDK's {@link com.google.android.gms.ads.formats.UnifiedNativeAd} interface.
+ * Ads SDK's {@link com.google.android.gms.ads.nativead.NativeAd} interface.
  */
 public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
@@ -43,8 +41,9 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     setCallToAction(sampleAd.getCallToAction());
     setStarRating(sampleAd.getStarRating());
     setStore(sampleAd.getStoreName());
-    setIcon(new SampleNativeMappedImage(ad.getIcon(), ad.getIconUri(),
-        SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
+    setIcon(
+        new SampleNativeMappedImage(
+            ad.getIcon(), ad.getIconUri(), SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
     setAdvertiser(ad.getAdvertiser());
 
     List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();

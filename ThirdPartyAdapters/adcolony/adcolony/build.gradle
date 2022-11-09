@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "AdColony"
     // String property to store version name.
-    stringVersion = "4.6.5.0"
+    stringVersion = "4.7.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,7 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        versionCode 4060500
+        versionCode 4070100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -36,9 +36,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.adcolony:sdk:4.6.5'
+    implementation 'com.adcolony:sdk:4.7.1'
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.google.android.gms:play-services-ads:20.4.0'
+    implementation 'com.google.android.gms:play-services-ads:20.6.0'
 }
 
 /**

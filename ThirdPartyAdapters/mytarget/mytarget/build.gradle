@@ -8,17 +8,17 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "MyTarget"
     // String property to store version name.
-    stringVersion = "5.14.4.0"
+    stringVersion = "5.15.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 30
-        versionCode 5140400
+        targetSdkVersion 31
+        versionCode 5150100
         versionName stringVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
@@ -32,9 +32,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+    implementation 'com.google.android.gms:play-services-ads:20.6.0'
     implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'com.my.target:mytarget-sdk:5.14.4'
+    implementation 'com.my.target:mytarget-sdk:5.15.1'
 }
 
 /**

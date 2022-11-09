@@ -1,5 +1,78 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 11.3.3.0
+- Verified compatibility with AppLovin SDK 11.3.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.3.3.
+
+#### Version 11.3.2.0
+- Verified compatibility with AppLovin SDK 11.3.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.3.2.
+
+#### Version 11.3.1.0
+- Verified compatibility with AppLovin SDK 11.3.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.3.1.
+
+#### Version 11.3.0.0
+- Verified compatibility with AppLovin SDK 11.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.3.0.
+
+#### Version 11.2.2.0
+- Verified compatibility with AppLovin SDK 11.2.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.2.2.
+
+#### Version 11.2.1.0
+- Verified compatibility with AppLovin SDK 11.2.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.2.1.
+
+#### Version 11.1.3.0
+- Verified compatibility with AppLovin SDK 11.1.3.
+- Updated the minimum required Google Mobile Ads SDK version to 20.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.6.0.
+- AppLovin SDK version 11.1.3.
+
+#### Version 11.1.2.0
+- Verified compatibility with AppLovin SDK 11.1.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- AppLovin SDK version 11.1.2.
+
+#### Version 11.1.0.0
+- Verified compatibility with AppLovin SDK 11.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- AppLovin SDK version 11.1.0.
+
+#### Version 11.0.0.0
+- Verified compatibility with AppLovin SDK 11.0.0.
+- Updated the `AppLovinMediationAdapter.getSdkSettings()` method to require a `Context` parameter.
+- Updated the minimum required Google Mobile Ads SDK version to 20.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 20.5.0.
+- AppLovin SDK version 11.0.0.
+
 #### Version 10.3.5.0
 - Verified compatibility with AppLovin SDK 10.3.5.
 

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.facebook.ads.Ad;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.InterstitialAd;
@@ -67,17 +68,15 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     showAdCalled.set(true);
     if (!interstitialAd.show()) {
-      AdError error = new AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present interstitial ad.",
-          ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError showError = new AdError(ERROR_FAILED_TO_PRESENT_AD,
+          "Failed to present interstitial ad.", ERROR_DOMAIN);
+      Log.w(TAG, showError.toString());
 
-      // TODO: Call onAdFailedToShow() once API becomes available.
       if (mInterstitalAdCallback != null) {
-        mInterstitalAdCallback.onAdOpened();
-        mInterstitalAdCallback.onAdClosed();
+        mInterstitalAdCallback.onAdFailedToShow(showError);
       }
     }
   }
@@ -118,8 +117,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onAdClicked(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdClicked();
+      mInterstitalAdCallback.reportAdClicked();
       mInterstitalAdCallback.onAdLeftApplication();
     }
   }
@@ -127,8 +125,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   @Override
   public void onLoggingImpression(Ad ad) {
     if (mInterstitalAdCallback != null) {
-      // TODO: Upon approval, add this callback back in.
-      // mInterstitalAdCallback.reportAdImpression();
+      mInterstitalAdCallback.reportAdImpression();
     }
   }
 
