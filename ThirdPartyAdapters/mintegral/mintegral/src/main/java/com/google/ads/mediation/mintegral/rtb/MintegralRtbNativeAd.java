@@ -81,9 +81,6 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       setCallToAction(campaign.getAdCall());
     }
     setStarRating(campaign.getRating());
-    if (campaign.getPackageName() != null) {
-      setStore(campaign.getPackageName());
-    }
     if (!TextUtils.isEmpty(campaign.getIconUrl())) {
       setIcon(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getIconUrl()),
               MINTEGRAL_SDK_IMAGE_SCALE));
@@ -91,6 +88,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     MBMediaView mbMediaView = new MBMediaView(adConfiguration.getContext());
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbMediaView.setVideoSoundOnOff(!muted);
+    mbMediaView.setNativeAd(campaign);
     setMediaView(mbMediaView);
 
     MBAdChoice mbAdChoice = new MBAdChoice(adConfiguration.getContext());
