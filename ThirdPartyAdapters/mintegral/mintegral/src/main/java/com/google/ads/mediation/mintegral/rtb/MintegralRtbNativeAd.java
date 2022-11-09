@@ -151,7 +151,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   }
 
   @Override
-  public void onAdLoaded(List<Campaign> list, int i) {
+  public void onAdLoaded(List<Campaign> list, int template) {
     if (list == null || list.size() == 0) {
       AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL, "response is empty");
       Log.w(TAG, adError.toString());

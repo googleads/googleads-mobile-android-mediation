@@ -154,7 +154,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
     Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
     mBridgeSDK.setDoNotTrackStatus(ccpaDoNotTrackstatus);
-    if (gdprConsentStatus != MBridgeConstans.IS_SWITCH_OFF && gdprConsentStatus != MBridgeConstans.IS_SWITCH_ON) {
+    if (gdprConsentStatus == MBridgeConstans.IS_SWITCH_OFF || gdprConsentStatus == MBridgeConstans.IS_SWITCH_ON) {
       mBridgeSDK.setConsentStatus(context, gdprConsentStatus);
     }
     mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
@@ -217,11 +217,6 @@ public class MintegralMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setConsentStatus(int consentStatus) {
-    if (gdprConsentStatus != MBridgeConstans.IS_SWITCH_OFF && gdprConsentStatus != MBridgeConstans.IS_SWITCH_ON){
-      // no-op
-      Log.w(TAG, "Invalid GDPR consent status value. Mintegral SDK only accepts integer value 0 or 1.");
-      return;
-    }
     gdprConsentStatus = consentStatus;
   }
 
