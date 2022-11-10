@@ -37,8 +37,8 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     private FrameLayout wrappedAdView;
     private MediationBannerAdCallback mediationBannerAdCallback;
 
-    public InMobiBannerAd (MediationBannerAdConfiguration mediationBannerAdConfiguration,
-                           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback){
+    public InMobiBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+                          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
         this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
         this.mediationAdLoadCallback = mediationAdLoadCallback;
     }
@@ -49,10 +49,10 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
 
         final AdSize inMobiMediationAdSize = InMobiAdapterUtils.findClosestBannerSize(context, mediationBannerAdConfiguration.getAdSize());
         if (inMobiMediationAdSize == null) {
-            String errorMessage = String
-                    .format("InMobi SDK supported banner sizes are not valid for the requested size: %s",
-                            mediationBannerAdConfiguration.getAdSize().toString());
-            AdError mismatchError = InMobiConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH, errorMessage);
+            AdError mismatchError = InMobiConstants.createAdapterError(
+                    ERROR_BANNER_SIZE_MISMATCH, String.format(
+                            "The requested banner size: %s is not supported by InMobi SDK.",
+                            mediationBannerAdConfiguration.getAdSize()));
             Log.e(TAG, mismatchError.toString());
             mediationAdLoadCallback.onFailure(mismatchError);
             return;
@@ -82,13 +82,12 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
         });
     }
 
-    private void createAndLoadBannerAd(Context context, long placementId){
-
+    private void createAndLoadBannerAd(Context context, long placementId) {
         FrameLayout.LayoutParams wrappedLayoutParams = new FrameLayout.LayoutParams(
                 mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
                 mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context));
         InMobiBanner adView;
-        if(!InMobiSdk.isSDKInitialized()){
+        if (!InMobiSdk.isSDKInitialized()) {
             AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiBanner.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);

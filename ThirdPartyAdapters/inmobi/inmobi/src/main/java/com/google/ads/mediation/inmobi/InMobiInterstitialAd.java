@@ -34,8 +34,8 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
     private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback;
     private MediationInterstitialAdCallback interstitialAdCallback;
 
-    public InMobiInterstitialAd(MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-                                MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
+    public InMobiInterstitialAd(@NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+                                @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
         this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
         this.mediationAdLoadCallback = mediationAdLoadCallback;
     }
@@ -70,7 +70,7 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
 
     private void createAndLoadInterstitialAd(Context context, long placementId) {
 
-        if(!InMobiSdk.isSDKInitialized()){
+        if (!InMobiSdk.isSDKInitialized()) {
             AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiInterstitial.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
@@ -86,12 +86,12 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
         //Update Age Restricted User
         InMobiAdapterUtils.updateAgeRestrictedUser(mediationInterstitialAdConfiguration);
 
-        Bundle extras = mediationInterstitialAdConfiguration.getMediationExtras();
         HashMap<String, String> paramMap =
                 InMobiAdapterUtils.createInMobiParameterMap(mediationInterstitialAdConfiguration);
         adInterstitial.setExtras(paramMap);
 
-        InMobiAdapterUtils.configureGlobalTargeting(extras);
+        InMobiAdapterUtils.configureGlobalTargeting(mediationInterstitialAdConfiguration
+                .getMediationExtras());
         adInterstitial.load();
     }
 
@@ -123,7 +123,7 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
 
     @Override
     public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-        AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.");
+        AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED, "InMobi SDK failed to display an interstitial ad.");
         Log.e(TAG, error.toString());
     }
 
