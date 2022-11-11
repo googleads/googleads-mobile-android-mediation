@@ -4,10 +4,9 @@ package com.google.ads.mediation.mintegral.rtb;
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
@@ -43,17 +42,6 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     this.adLoadCallback = mediationAdLoadCallback;
   }
 
-  /**
-   * Converts density independent pixels unit to equivalent pixels, depending on device density.
-   *
-   * @param context the context object
-   * @param dpValue the value in dp (density independent pixels) unit that needs to be converted into pixels
-   * @return the {@code Integer} value to represent px equivalent to dp value
-   */
-  private static int convertDpToPixels(Context context, float dpValue) {
-    final float scale = context.getResources().getDisplayMetrics().density;
-    return (int) (dpValue * scale + 0.5f);
-  }
   public void loadAd() {
     BannerSize bannerSize = null;
     ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
@@ -95,7 +83,7 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(convertDpToPixels(adConfiguration.getContext(), bannerSize.getWidth()), convertDpToPixels(adConfiguration.getContext(), bannerSize.getHeight()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(closestSize.getWidthInPixels(adConfiguration.getContext()),closestSize.getHeightInPixels(adConfiguration.getContext()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);

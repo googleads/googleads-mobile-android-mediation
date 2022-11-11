@@ -25,12 +25,9 @@ import com.mbridge.msdk.out.RewardVideoListener;
 
 public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-
   private final MediationRewardedAdConfiguration adConfiguration;
-
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           adLoadCallback;
-
   private MBBidRewardVideoHandler mbBidRewardVideoHandler;
   private MediationRewardedAdCallback rewardedAdCallback;
 
@@ -95,7 +92,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
     }
     rewardedAdCallback.onAdClosed();
     if (rewardInfo == null || !rewardInfo.isCompleteView()) {
-      Log.w(TAG,"Mintegral reward video can't get reward, because rewardInfo is null or ad is not completed");
+      Log.w(TAG,"Mintegral SDK failed to reward user due to missing reward settings or rewarded ad playback not completed.");
       return;
     }
     RewardItem rewardItem = new RewardItem() {

@@ -3,7 +3,6 @@ package com.google.ads.mediation.mintegral.rtb;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -26,9 +25,7 @@ import com.mbridge.msdk.out.RewardInfo;
 public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewInterstitialListener {
 
   private final MediationInterstitialAdConfiguration adConfiguration;
-
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
-
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
   private MediationInterstitialAdCallback interstitialAdCallback;
 
@@ -37,7 +34,6 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
-
 
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);

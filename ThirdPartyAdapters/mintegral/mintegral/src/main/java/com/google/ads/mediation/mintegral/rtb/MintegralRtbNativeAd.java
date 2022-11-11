@@ -35,11 +35,11 @@ import java.util.List;
 import java.util.Map;
 
 public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener, OnMBMediaViewListener {
+
   private Campaign campaign;
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
   private MediationNativeAdCallback nativeCallback;
-
   private MBBidNativeHandler mbBidNativeHandler;
   private static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
 
@@ -152,7 +152,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   @Override
   public void onAdLoaded(List<Campaign> list, int template) {
     if (list == null || list.size() == 0) {
-      AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL, "response is empty");
+      AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL, "Mintegral SDK failed to return a native ad.");
       Log.w(TAG, adError.toString());
       adLoadCallback.onFailure(adError);
       return;
@@ -242,16 +242,17 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       return drawable;
     }
 
+    @NonNull
     @Override
     public Uri getUri() {
       return imageUri;
     }
 
+    @NonNull
     @Override
     public double getScale() {
       return scale;
     }
-
   }
 
 }
