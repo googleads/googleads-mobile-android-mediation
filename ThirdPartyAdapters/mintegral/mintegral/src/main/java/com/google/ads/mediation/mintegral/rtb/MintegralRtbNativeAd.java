@@ -27,13 +27,14 @@ import com.mbridge.msdk.out.Campaign;
 import com.mbridge.msdk.out.Frame;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 import com.mbridge.msdk.out.NativeListener;
+import com.mbridge.msdk.out.OnMBMediaViewListener;
 import com.mbridge.msdk.widget.MBAdChoice;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener {
+public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener, OnMBMediaViewListener {
   private Campaign campaign;
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
@@ -176,13 +177,52 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
 
   @Override
   public void onAdFramesLoaded(List<Frame> list) {
-    //No-op, this method is deprecated
+    // No-op, this callback is deprecated in Mintegral SDK.
   }
 
   @Override
   public void onLoggingImpression(int i) {
     if (nativeCallback != null) {
       nativeCallback.reportAdImpression();
+    }
+  }
+
+  @Override
+  public void onEnterFullscreen() {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onExitFullscreen() {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onStartRedirection(Campaign campaign, String s) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onFinishRedirection(Campaign campaign, String s) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onRedirectionFailed(Campaign campaign, String s) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onVideoAdClicked(Campaign campaign) {
+    if (nativeCallback != null) {
+      nativeCallback.reportAdClicked();
+    }
+  }
+
+  @Override
+  public void onVideoStart() {
+    if (nativeCallback != null) {
+      nativeCallback.onVideoPlay();
     }
   }
 
