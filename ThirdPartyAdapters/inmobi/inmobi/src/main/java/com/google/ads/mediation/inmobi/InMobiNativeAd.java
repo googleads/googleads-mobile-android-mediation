@@ -33,8 +33,8 @@ public class InMobiNativeAd extends NativeAdEventListener {
     private InMobiNative adNative;
     public MediationNativeAdCallback mediationNativeAdCallback;
 
-    public InMobiNativeAd(MediationNativeAdConfiguration mediationNativeAdConfiguration,
-                          MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+    public InMobiNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+                          @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
         this.mediationNativeAdConfiguration = mediationNativeAdConfiguration;
         this.mediationAdLoadCallback = mediationAdLoadCallback;
     }

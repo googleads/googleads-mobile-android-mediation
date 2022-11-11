@@ -123,8 +123,8 @@ class InMobiAdapterUtils {
     }
   }
 
-  static void updateAgeRestrictedUser(MediationAdConfiguration config) {
-    if (config.taggedForChildDirectedTreatment()
+  static void updateAgeRestrictedUser(MediationAdConfiguration mediationAdConfiguration) {
+    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       InMobiSdk.setIsAgeRestricted(true);
     } else {
@@ -132,11 +132,11 @@ class InMobiAdapterUtils {
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(MediationAdConfiguration config) {
+  static HashMap<String, String> createInMobiParameterMap(@NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
     map.put("tp", "c_admob");
 
-    if (config.taggedForChildDirectedTreatment()
+    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
     } else {

@@ -9,7 +9,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -31,7 +33,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
     private InMobiInterstitial inMobiRewardedAd;
 
-    private MediationRewardedAdConfiguration rewardedAdConfiguration;
+    private MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
     private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
             mediationAdLoadCallback;
     private MediationRewardedAdCallback rewardedAdCallback;
@@ -40,13 +42,13 @@ public class InMobiRewardedAd implements MediationRewardedAd {
             @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
             @NonNull MediationAdLoadCallback<MediationRewardedAd,
                     MediationRewardedAdCallback> mediationAdLoadCallback) {
-        rewardedAdConfiguration = mediationRewardedAdConfiguration;
+        this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
         this.mediationAdLoadCallback = mediationAdLoadCallback;
     }
 
     public void loadAd() {
-        final Context context = rewardedAdConfiguration.getContext();
-        Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
+        final Context context = mediationRewardedAdConfiguration.getContext();
+        Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
         String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
         final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
@@ -95,7 +97,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                                        final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
                                                mMediationAdLoadCallback) {
 
-        if(!InMobiSdk.isSDKInitialized()){
+        if (!InMobiSdk.isSDKInitialized()) {
             AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiRewardedAd.");
             Log.e(TAG, error.toString());
             mMediationAdLoadCallback.onFailure(error);
@@ -234,13 +236,12 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                 });
 
         //Update Age Restricted User
-        InMobiAdapterUtils.updateAgeRestrictedUser(rewardedAdConfiguration);
+        InMobiAdapterUtils.updateAgeRestrictedUser(mediationRewardedAdConfiguration);
 
-        Bundle extras = rewardedAdConfiguration.getMediationExtras();
         HashMap<String, String> paramMap =
-                InMobiAdapterUtils.createInMobiParameterMap(rewardedAdConfiguration);
+                InMobiAdapterUtils.createInMobiParameterMap(mediationRewardedAdConfiguration);
         inMobiRewardedAd.setExtras(paramMap);
-        InMobiAdapterUtils.configureGlobalTargeting(extras);
+        InMobiAdapterUtils.configureGlobalTargeting(mediationRewardedAdConfiguration.getMediationExtras());
         inMobiRewardedAd.load();
     }
     // endregion
@@ -249,14 +250,15 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
 class InMobiReward implements RewardItem {
 
-    private String type;
-    private int amount;
+    private final String type;
+    private final int amount;
 
     InMobiReward(String type, int amount) {
         this.type = type;
         this.amount = amount;
     }
 
+    @NonNull
     @Override
     public String getType() {
         return type;
