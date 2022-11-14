@@ -135,7 +135,7 @@ public class ChartboostMediationAdapter extends Adapter {
       }
 
       String appId = chartboostConfigs.keySet().iterator().next();
-      Bundle serverParameters = chartboostConfigs.get(appId);
+      Bundle chartboostConfig = chartboostConfigs.get(appId);
 
       // Multiple app IDs are not considered an error.
       if (count > 1) {
@@ -146,7 +146,7 @@ public class ChartboostMediationAdapter extends Adapter {
         Log.w(TAG, logMessage);
       }
 
-      if (serverParameters == null) {
+      if (chartboostConfig == null) {
         // Invalid server parameters, send initialization failed event.
         AdError error =
             ChartboostConstants.createAdapterError(
@@ -161,7 +161,7 @@ public class ChartboostMediationAdapter extends Adapter {
       A Chartboost extras object used to store optional information used when loading ads.
      */
       chartboostParams = ChartboostAdapterUtils.createChartboostParams(
-          serverParameters);
+          chartboostConfig);
     }
 
     if (!ChartboostAdapterUtils.isValidChartboostParams(chartboostParams)) {
