@@ -70,6 +70,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     mbBidNativeHandler.bidLoad(bidToken);
   }
 
+  @NonNull
   private void mapNativeAd(Campaign ad) {
     campaign = ad;
     if (campaign.getAppName() != null) {
@@ -248,7 +249,6 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       return imageUri;
     }
 
-    @NonNull
     @Override
     public double getScale() {
       return scale;

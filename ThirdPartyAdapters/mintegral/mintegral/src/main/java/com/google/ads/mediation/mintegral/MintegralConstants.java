@@ -36,7 +36,7 @@ public class MintegralConstants {
   public static final int ERROR_MINTEGRAL_SDK = 100;
 
   /**
-   * Invalid server parameters (e.g. Missing app ID or placement ID).
+   * Invalid server parameters (e.g. Missing App ID or Placement ID).
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
