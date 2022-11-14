@@ -1,4 +1,7 @@
-## Fyber Android Mediation Adapter Changelog
+## DT Exchange Android Mediation Adapter Changelog
+
+#### Next Version
+- Rebranded adapter name to "DT Exchange".
 
 #### Version 8.2.0.0
 - Verified compatibility with Fyber SDK 8.2.0.

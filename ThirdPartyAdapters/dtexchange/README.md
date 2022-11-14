@@ -1,4 +1,4 @@
-# Fyber Adapter for Google Mobile Ads SDK for Android
+# DT Exchange Adapter for Google Mobile Ads SDK for Android
 
 This is an adapter to be used in conjunction with the Google Mobile Ads SDK.
 See the
