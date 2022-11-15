@@ -1,6 +1,6 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Version 9.1.1 (In progress)
+#### Version 9.1.1.0
 - Added the `ChartboostMediationAdapter.setAppParams(String, String)` method as an optional way to
   hardcode which app ID and app signature to use to initialize the Chartboost SDK.
 - Verified compatibility with Chartboost SDK 9.1.1.
