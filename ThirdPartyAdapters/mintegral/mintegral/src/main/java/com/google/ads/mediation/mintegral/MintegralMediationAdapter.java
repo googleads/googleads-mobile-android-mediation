@@ -1,8 +1,17 @@
 package com.google.ads.mediation.mintegral;
 
+
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.mintegral.MintegralConstants.createSdkError;
+
 import android.content.Context;
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -22,37 +31,59 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.MBridgeSDK;
+import com.mbridge.msdk.foundation.same.net.Aa;
+import com.mbridge.msdk.mbbid.out.BidManager;
+import com.mbridge.msdk.out.MBConfiguration;
+import com.mbridge.msdk.out.MBridgeSDKFactory;
+import com.mbridge.msdk.out.SDKInitStatusListener;
+import com.google.ads.mediation.mintegral.rtb.MintegralRtbBannerAd;
+import com.google.ads.mediation.mintegral.rtb.MintegralRtbNativeAd;
+import com.google.ads.mediation.mintegral.rtb.MintegralRtbInterstitialAd;
+import com.google.ads.mediation.mintegral.rtb.MintegralRtbRewardedAd;
+
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class MintegralMediationAdapter extends RtbAdapter {
+  public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
+  private static MBridgeSDK mBridgeSDK;
+  private MintegralRtbBannerAd mintegralRtbBannerAd;
+  private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
+  private MintegralRtbRewardedAd mintegralRtbRewardedAd;
+  private MintegralRtbNativeAd mintegralRtbNativeAd;
 
-  final static String TAG = MintegralMediationAdapter.class.getSimpleName();
+
 
   @Override
-  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
-      @NonNull SignalCallbacks signalCallbacks) {
-    // TODO: Start signal generation and callback SignalCallbacks when the signal generation
-    //  finishes or fails.
-    signalCallbacks.onSuccess("");
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
+    signalCallbacks.onSuccess(buyerUid);
   }
 
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    // TODO: Populate `versionString` with the ad-network's SDK version in String format.
-    String versionString = "";
-    String[] splits = versionString.split("\\.");
+    // Mintegral SDK returns the SDK version in @"MAL_x.y.z" format.
+    String versionString = MBConfiguration.SDK_VERSION;
+    String[] versionSplits = versionString.split("_");
+    if (versionSplits.length > 1) {
+      String[] splits = versionSplits[1].split("\\.");
 
-    if (splits.length >= 3) {
-      int major = Integer.parseInt(splits[0]);
-      int minor = Integer.parseInt(splits[1]);
-      int micro = Integer.parseInt(splits[2]);
-      return new VersionInfo(major, minor, micro);
+      if (splits.length >= 3) {
+        int major = Integer.parseInt(splits[0]);
+        int minor = Integer.parseInt(splits[1]);
+        int micro = Integer.parseInt(splits[2]);
+        return new VersionInfo(major, minor, micro);
+      }
     }
 
-    String logMessage = String
-        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-            versionString);
+    String logMessage =
+            String.format(
+                    "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -70,44 +101,103 @@ public class MintegralMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
+    String logMessage =
+            String.format(
+                    "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+                    versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
   public void initialize(@NonNull Context context,
-      @NonNull InitializationCompleteCallback initializationCompleteCallback,
-      @NonNull List<MediationConfiguration> list) {
+                         @NonNull InitializationCompleteCallback initializationCompleteCallback,
+                         @NonNull List<MediationConfiguration> list) {
+    HashSet<String> appIds = new HashSet<>();
+    HashSet<String> appKeys = new HashSet<>();
+    for (MediationConfiguration mediationConfiguration : list) {
+      Bundle serverParameters = mediationConfiguration.getServerParameters();
+      String appId = serverParameters.getString(MintegralConstants.APP_ID);
+      String appKey = serverParameters.getString(MintegralConstants.APP_KEY);
+      if (!TextUtils.isEmpty(appId)) {
+        appIds.add(appId);
+      }
+      if (!TextUtils.isEmpty(appKey)) {
+        appKeys.add(appKey);
+      }
+    }
+    int appIdCount = appIds.size();
+    int appKeyCount = appKeys.size();
+    if (appIdCount <= 0 || appKeyCount <= 0) {
+      AdError error =
+              MintegralConstants.createAdapterError(
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App Key"
+                              + " configured for this ad source instance in the AdMob or Ad Manager UI");
+      Log.e(TAG, error.toString());
+      initializationCompleteCallback.onInitializationFailed(error.toString());
+      return;
+    }
+    String appId = appIds.iterator().next();
+    String appKey = appKeys.iterator().next();
+    if (appIdCount > 1) {
+      String message = String.format(
+              "Found multiple app IDs in %s. Using %s to initialize Mintegral SDK.", appIds, appId);
+      Log.w(TAG, message);
+    }
+    if (appKeyCount > 1) {
+      String message = String.format(
+              "Found multiple App Keys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
+      Log.w(TAG, message);
+    }
+    mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
+    Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
+    mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
+      @Override
+      public void onInitSuccess() {
+        try {
+          Aa channelManagerInstance = new Aa();
+          Class channelManagerClass = channelManagerInstance.getClass();
+          Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
+          setChannelMethod.setAccessible(true);
+          // Set the channel flag, where "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" indicates it's an AdMob channel.
+          setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBiQKwJQKQYrN=");
+        } catch (Throwable e) {
+          e.printStackTrace();
+        }
+        initializationCompleteCallback.onInitializationSucceeded();
+      }
 
-    // TODO: Initialize the ad-network's SDK and forward the success callback:
-    initializationCompleteCallback.onInitializationSucceeded();
+      @Override
+      public void onInitFail(String errorMessage) {
+        AdError initError = createSdkError(errorMessage);
+        initializationCompleteCallback.onInitializationFailed(initError.getMessage());
+        Log.w(TAG, initError.toString());
+      }
+    });
+
   }
 
   @Override
-  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    // TODO: Start loading a bidding banner ad.
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    mintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
+    mintegralRtbBannerAd.loadAd();
   }
 
   @Override
-  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    // TODO: Start loading a bidding interstitial ad.
+  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+    mintegralRtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
+    mintegralRtbInterstitialAd.loadAd();
   }
 
   @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    // TODO: Start loading a bidding native ad.
+  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration, callback);
+    mintegralRtbNativeAd.loadAd();
   }
 
   @Override
-  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    // TODO: Start loading a bidding rewarded ad.
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
+    mintegralRtbRewardedAd.loadAd();
   }
-
 }
