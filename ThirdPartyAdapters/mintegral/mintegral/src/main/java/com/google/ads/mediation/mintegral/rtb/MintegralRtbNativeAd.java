@@ -21,6 +21,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.MediaView;
+import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.Campaign;
@@ -31,6 +32,7 @@ import com.mbridge.msdk.out.OnMBMediaViewListener;
 import com.mbridge.msdk.widget.MBAdChoice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -101,15 +103,17 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
 
 
   @Override
-  public void trackViews(@NonNull View view, @NonNull Map<String, View> map, @NonNull Map<String, View> map1) {
-    if (view instanceof ViewGroup) {
-      if (mbBidNativeHandler != null) {
-        mbBidNativeHandler.registerView(view, traversalView(view), campaign);
-      }
-    } else if (view instanceof View) {
-      if (mbBidNativeHandler != null) {
-        mbBidNativeHandler.registerView(view, campaign);
-      }
+  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews, @NonNull Map<String, View> map1) {
+    // Set click interaction.
+    HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
+
+    // Exclude Mintegral's Privacy Information Icon image and text from click events.
+    copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
+    copyClickableAssetViews.remove("3012");
+
+    ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
+    if (mbBidNativeHandler != null) {
+      mbBidNativeHandler.registerView(null, assetViews, campaign);
     }
   }
 
