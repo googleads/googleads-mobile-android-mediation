@@ -9,6 +9,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public class MintegralConstants {
+
   public static final String APP_ID = "app_id";
   public static final String APP_KEY = "app_key";
   public static final String AD_UNIT_ID = "ad_unit_id";
@@ -16,19 +17,17 @@ public class MintegralConstants {
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.mintegral";
   public static final String MINTEGRAL_SDK_ERROR_DOMAIN = "com.mbridge.msdk";
 
-
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
-          value = {ERROR_INVALID_SERVER_PARAMETERS,
-                  ERROR_BANNER_SIZE_UNSUPPORTED,
-                  ERROR_INVALID_BID_RESPONSE,
-                  ERROR_MINTEGRAL_SDK,
-                  ERROR_CODE_NO_FILL,
-          })
+      value = {ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_BANNER_SIZE_UNSUPPORTED,
+          ERROR_INVALID_BID_RESPONSE,
+          ERROR_MINTEGRAL_SDK,
+          ERROR_CODE_NO_FILL,
+      })
   public @interface AdapterError {
 
   }
-
 
   /**
    * The Mintegral SDK returned a failure callback.
@@ -57,7 +56,7 @@ public class MintegralConstants {
 
   @NonNull
   public static AdError createAdapterError(@AdapterError int errorCode,
-                                           @NonNull String errorMessage) {
+      @NonNull String errorMessage) {
     return new AdError(errorCode, errorMessage, ERROR_DOMAIN);
   }
 
@@ -65,7 +64,4 @@ public class MintegralConstants {
   public static AdError createSdkError(@NonNull String errorMessage) {
     return new AdError(ERROR_MINTEGRAL_SDK, errorMessage, MINTEGRAL_SDK_ERROR_DOMAIN);
   }
-
-
-
 }

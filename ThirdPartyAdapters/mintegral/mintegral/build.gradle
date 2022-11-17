@@ -31,8 +31,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:21.1.0'
-    implementation 'androidx.annotation:annotation:1.4.0'
+    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.mbridge.msdk.oversea:mbbid:16.2.61'
     implementation 'com.mbridge.msdk.oversea:reward:16.2.61'
     implementation 'com.mbridge.msdk.oversea:mbnative:16.2.61'

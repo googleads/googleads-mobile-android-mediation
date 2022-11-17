@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MintegralMediationAdapter extends RtbAdapter {
+
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
@@ -56,10 +57,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
 
-
-
   @Override
-  public void collectSignals(@NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+  public void collectSignals(@NonNull RtbSignalData rtbSignalData,
+      @NonNull SignalCallbacks signalCallbacks) {
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
     signalCallbacks.onSuccess(buyerUid);
   }
@@ -67,7 +67,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    // Mintegral SDK returns the SDK version in @"MAL_x.y.z" format.
+    // Mintegral SDK returns the SDK version in "MAL_x.y.z" format.
     String versionString = MBConfiguration.SDK_VERSION;
     String[] versionSplits = versionString.split("_");
     if (versionSplits.length > 1) {
@@ -82,8 +82,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
     }
 
     String logMessage =
-            String.format(
-                    "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -102,17 +102,17 @@ public class MintegralMediationAdapter extends RtbAdapter {
     }
 
     String logMessage =
-            String.format(
-                    "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-                    versionString);
+        String.format(
+            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
   public void initialize(@NonNull Context context,
-                         @NonNull InitializationCompleteCallback initializationCompleteCallback,
-                         @NonNull List<MediationConfiguration> list) {
+      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> list) {
     HashSet<String> appIds = new HashSet<>();
     HashSet<String> appKeys = new HashSet<>();
     for (MediationConfiguration mediationConfiguration : list) {
@@ -130,9 +130,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
     int appKeyCount = appKeys.size();
     if (appIdCount <= 0 || appKeyCount <= 0) {
       AdError error =
-              MintegralConstants.createAdapterError(
-                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App Key"
-                              + " configured for this ad source instance in the AdMob or Ad Manager UI");
+          MintegralConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App Key"
+                  + " configured for this ad source instance in the AdMob or Ad Manager UI");
       Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
@@ -141,12 +141,12 @@ public class MintegralMediationAdapter extends RtbAdapter {
     String appKey = appKeys.iterator().next();
     if (appIdCount > 1) {
       String message = String.format(
-              "Found multiple app IDs in %s. Using %s to initialize Mintegral SDK.", appIds, appId);
+          "Found multiple app IDs in %s. Using %s to initialize Mintegral SDK.", appIds, appId);
       Log.w(TAG, message);
     }
     if (appKeyCount > 1) {
       String message = String.format(
-              "Found multiple App Keys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
+          "Found multiple App Keys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
       Log.w(TAG, message);
     }
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
@@ -159,7 +159,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
           Class channelManagerClass = channelManagerInstance.getClass();
           Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
           setChannelMethod.setAccessible(true);
-          // Set the channel flag, where "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" indicates it's an AdMob channel.
+          // Set the channel flag to "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" to indicate an AdMob channel.
           setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBiQKwJQKQYrN=");
         } catch (Throwable e) {
           e.printStackTrace();
@@ -178,25 +178,30 @@ public class MintegralMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     mintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
     mintegralRtbBannerAd.loadAd();
   }
 
   @Override
-  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     mintegralRtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
     mintegralRtbInterstitialAd.loadAd();
   }
 
   @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration, callback);
     mintegralRtbNativeAd.loadAd();
   }
 
   @Override
-  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
     mintegralRtbRewardedAd.loadAd();
   }

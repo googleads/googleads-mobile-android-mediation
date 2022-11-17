@@ -27,28 +27,30 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
 
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          adLoadCallback;
+      adLoadCallback;
   private MBBidRewardVideoHandler mbBidRewardVideoHandler;
   private MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                                @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          adLoadCallback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
   }
 
   public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    String adUnitId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.AD_UNIT_ID);
+    String placementId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
-    AdError error =
-            MintegralUtils.validateMintegralAdLoadParams(
-                    adUnitId, placementId, bidToken);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId, adUnitId);
+    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId,
+        adUnitId);
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     mbBidRewardVideoHandler.loadFromBid(bidToken);
   }
@@ -56,7 +58,8 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   @Override
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidRewardVideoHandler.showFromBid();
   }
 
@@ -92,7 +95,9 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
     }
     rewardedAdCallback.onAdClosed();
     if (rewardInfo == null || !rewardInfo.isCompleteView()) {
-      Log.w(TAG,"Mintegral SDK failed to reward user due to missing reward settings or rewarded ad playback not completed.");
+      Log.w(TAG,
+          "Mintegral SDK failed to reward user due to missing reward settings or rewarded ad "
+              + "playback not completed.");
       return;
     }
     RewardItem rewardItem = new RewardItem() {
@@ -107,9 +112,9 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
         int amount = 0;
         try {
           amount = Integer.getInteger(rewardInfo.getRewardAmount());
-        } catch (Exception e) {
-          Log.w(TAG,e.getMessage());
-          e.printStackTrace();
+        } catch (Exception exception) {
+          Log.w(TAG, exception.getMessage());
+          exception.printStackTrace();
         }
         return amount;
       }
@@ -120,7 +125,8 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     if (rewardedAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK, errorMessage);
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+          errorMessage);
       Log.w(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
     }

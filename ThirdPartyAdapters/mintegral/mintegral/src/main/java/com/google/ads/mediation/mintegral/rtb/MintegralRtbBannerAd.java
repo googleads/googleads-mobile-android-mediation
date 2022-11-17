@@ -33,11 +33,10 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
 
-
   public MintegralRtbBannerAd(
-          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-                  mediationAdLoadCallback) {
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }
@@ -48,12 +47,13 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
     supportedSizes.add(new AdSize(320, 50));
     supportedSizes.add(new AdSize(300, 250));
     supportedSizes.add(new AdSize(728, 90));
-    AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(), adConfiguration.getAdSize(), supportedSizes);
+    AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(),
+        adConfiguration.getAdSize(), supportedSizes);
     if (closestSize == null) {
       AdError bannerSizeError = MintegralConstants.createAdapterError(
-              ERROR_BANNER_SIZE_UNSUPPORTED, String.format(
-                      "The requested banner size: %s is not supported by Mintegral SDK.",
-                      adConfiguration.getAdSize()));
+          ERROR_BANNER_SIZE_UNSUPPORTED, String.format(
+              "The requested banner size: %s is not supported by Mintegral SDK.",
+              adConfiguration.getAdSize()));
       Log.e(TAG, bannerSizeError.toString());
       adLoadCallback.onFailure(bannerSizeError);
       return;
@@ -69,21 +69,25 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
       bannerSize = new BannerSize(BannerSize.SMART_TYPE, closestSize.getWidth(), 0);
     }
     if (bannerSize == null) {
-      bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(), closestSize.getHeight());
+      bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
+          closestSize.getHeight());
     }
 
-    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    String adUnitId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.AD_UNIT_ID);
+    String placementId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId, bidToken);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(closestSize.getWidthInPixels(adConfiguration.getContext()),closestSize.getHeightInPixels(adConfiguration.getContext()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+        closestSize.getWidthInPixels(adConfiguration.getContext()),
+        closestSize.getHeightInPixels(adConfiguration.getContext()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);

@@ -36,7 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements NativeListener.NativeAdListener, OnMBMediaViewListener {
+public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements
+    NativeListener.NativeAdListener, OnMBMediaViewListener {
 
   private Campaign campaign;
   private final MediationNativeAdConfiguration adConfiguration;
@@ -45,24 +46,28 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   private MBBidNativeHandler mbBidNativeHandler;
   private static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
 
-  public MintegralRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-                              @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+  public MintegralRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
   }
 
   public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    String adUnitId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.AD_UNIT_ID);
+    String placementId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
     AdError error =
-            MintegralUtils.validateMintegralAdLoadParams(
-                    adUnitId, placementId, bidToken);
+        MintegralUtils.validateMintegralAdLoadParams(
+            adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
-    Map<String, Object> nativeProperties = MBBidNativeHandler.getNativeProperties(placementId, adUnitId);
+    Map<String, Object> nativeProperties = MBBidNativeHandler.getNativeProperties(placementId,
+        adUnitId);
     // Configure the properties of the Mintegral native ad, where video ad will be supported and
     // only one ad will be returned in each ad request.
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
@@ -73,7 +78,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   }
 
   @NonNull
-  private void mapNativeAd(Campaign ad) {
+  private void mapNativeAd(@NonNull Campaign ad) {
     campaign = ad;
     if (campaign.getAppName() != null) {
       setHeadline(campaign.getAppName());
@@ -87,7 +92,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     setStarRating(campaign.getRating());
     if (!TextUtils.isEmpty(campaign.getIconUrl())) {
       setIcon(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getIconUrl()),
-              MINTEGRAL_SDK_IMAGE_SCALE));
+          MINTEGRAL_SDK_IMAGE_SCALE));
     }
     MBMediaView mbMediaView = new MBMediaView(adConfiguration.getContext());
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
@@ -101,9 +106,9 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     setOverrideClickHandling(true);
   }
 
-
   @Override
-  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews, @NonNull Map<String, View> map1) {
+  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> map1) {
     // Set click interaction.
     HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
 
@@ -117,14 +122,12 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
     }
   }
 
-
   @Override
   public void untrackView(View view) {
     if (mbBidNativeHandler != null) {
       mbBidNativeHandler.unregisterView(view, traversalView(view), campaign);
     }
   }
-
 
   /**
    * Traverse all sub views of the view to add click event listening to all views
@@ -157,7 +160,8 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   @Override
   public void onAdLoaded(List<Campaign> list, int template) {
     if (list == null || list.size() == 0) {
-      AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL, "Mintegral SDK failed to return a native ad.");
+      AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL,
+          "Mintegral SDK failed to return a native ad.");
       Log.w(TAG, adError.toString());
       adLoadCallback.onFailure(adError);
       return;
@@ -168,7 +172,8 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
 
   @Override
   public void onAdLoadError(String errorMessage) {
-    AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK, errorMessage);
+    AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+        errorMessage);
     Log.w(TAG, adError.toString());
     adLoadCallback.onFailure(adError);
   }
@@ -232,6 +237,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
   }
 
   public class MBridgeNativeMappedImage extends Image {
+
     private final Drawable drawable;
     private final Uri imageUri;
     private final double scale;
@@ -258,5 +264,4 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements Nativ
       return scale;
     }
   }
-
 }

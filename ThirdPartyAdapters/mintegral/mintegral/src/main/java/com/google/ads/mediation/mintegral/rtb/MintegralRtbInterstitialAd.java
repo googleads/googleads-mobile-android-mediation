@@ -22,7 +22,8 @@ import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
 
-public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewInterstitialListener {
+public class MintegralRtbInterstitialAd implements MediationInterstitialAd,
+    NewInterstitialListener {
 
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
@@ -30,22 +31,25 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   private MediationInterstitialAdCallback interstitialAdCallback;
 
   public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-                                    @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
 
   public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+    String adUnitId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.AD_UNIT_ID);
+    String placementId = adConfiguration.getServerParameters()
+        .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
     AdError error = MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId, bidToken);
+        adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(), placementId, adUnitId);
+    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(),
+        placementId, adUnitId);
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     mbBidNewInterstitialHandler.loadFromBid(bidToken);
   }
@@ -53,7 +57,8 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   @Override
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidNewInterstitialHandler.showFromBid();
   }
 
@@ -92,7 +97,8 @@ public class MintegralRtbInterstitialAd implements MediationInterstitialAd, NewI
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     if (interstitialAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK, errorMessage);
+      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+          errorMessage);
       Log.w(TAG, error.toString());
       interstitialAdCallback.onAdFailedToShow(error);
     }

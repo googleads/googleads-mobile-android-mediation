@@ -1,14 +1,18 @@
 package com.google.ads.mediation.mintegral;
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
 public final class MintegralExtras {
+
   static class Keys {
+
     static final String MUTE_AUDIO = "mute_audio";
   }
 
   public static class Builder {
+
     private boolean muteAudio;
 
     @NonNull
