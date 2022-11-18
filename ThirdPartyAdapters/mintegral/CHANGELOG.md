@@ -1,6 +1,6 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 16.2.61.0 (In progress)
+#### Version 16.2.61.0
 - Initial release!
 - Added bidding support for banner (includes MREC), interstitial, rewarded and native ad formats.
 
