@@ -94,11 +94,6 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
             return;
         }
         adView = new InMobiBanner(context, placementId);
-        try {
-
-        } catch (SdkNotInitializedException exception) {
-
-        }
 
         // Turn off automatic refresh.
         adView.setEnableAutoRefresh(false);

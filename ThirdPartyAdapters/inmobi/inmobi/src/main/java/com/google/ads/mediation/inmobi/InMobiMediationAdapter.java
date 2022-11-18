@@ -35,9 +35,6 @@ public class InMobiMediationAdapter extends Adapter {
 
     public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
-    // Flag to check whether the InMobi SDK has been initialized or not.
-    static final AtomicBoolean isSdkInitialized = new AtomicBoolean();
-
     // Callback listener
     private InMobiRewardedAd inMobiRewarded;
 
@@ -89,7 +86,7 @@ public class InMobiMediationAdapter extends Adapter {
                            final @NonNull InitializationCompleteCallback initializationCompleteCallback,
                            @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-        if (isSdkInitialized.get()) {
+        if (InMobiSdk.isSDKInitialized()) {
             initializationCompleteCallback.onInitializationSucceeded();
             return;
         }
@@ -125,7 +122,6 @@ public class InMobiMediationAdapter extends Adapter {
         InMobiInitializer.getInstance().init(context, accountID, new Listener() {
             @Override
             public void onInitializeSuccess() {
-                isSdkInitialized.set(true);
                 initializationCompleteCallback.onInitializationSucceeded();
             }
 

@@ -12,7 +12,7 @@ public class InMobiConsent {
    * basis.
    */
   public static void updateGDPRConsent(JSONObject consentObj) {
-    if (InMobiAdapter.isSdkInitialized.get()) {
+    if (InMobiSdk.isSDKInitialized()) {
       InMobiSdk.updateGDPRConsent(consentObj);
     }
     InMobiConsent.consentObj = consentObj;
