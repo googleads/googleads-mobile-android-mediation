@@ -182,6 +182,7 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements
   public void onAdClick(Campaign campaign) {
     if (nativeCallback != null) {
       nativeCallback.reportAdClicked();
+      nativeCallback.onAdLeftApplication();
     }
   }
 
@@ -199,12 +200,16 @@ public class MintegralRtbNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onEnterFullscreen() {
-    // Google Mobile Ads SDK doesn't have a matching event.
+    if (nativeCallback != null) {
+      nativeCallback.onAdOpened();
+    }
   }
 
   @Override
   public void onExitFullscreen() {
-    // Google Mobile Ads SDK doesn't have a matching event.
+    if (nativeCallback != null) {
+      nativeCallback.onAdClosed();
+    }
   }
 
   @Override

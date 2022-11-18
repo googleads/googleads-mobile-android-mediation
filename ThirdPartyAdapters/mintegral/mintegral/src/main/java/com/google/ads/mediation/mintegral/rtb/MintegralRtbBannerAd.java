@@ -137,12 +137,16 @@ public class MintegralRtbBannerAd implements MediationBannerAd, BannerAdListener
 
   @Override
   public void showFullScreen(MBridgeIds mBridgeIds) {
-    // Google Mobile Ads SDK doesn't have a matching event.
+    if (bannerAdCallback != null) {
+      bannerAdCallback.onAdOpened();
+    }
   }
 
   @Override
   public void closeFullScreen(MBridgeIds mBridgeIds) {
-    // Google Mobile Ads SDK doesn't have a matching event.
+    if (bannerAdCallback != null) {
+      bannerAdCallback.onAdClosed();
+    }
   }
 
   @Override
