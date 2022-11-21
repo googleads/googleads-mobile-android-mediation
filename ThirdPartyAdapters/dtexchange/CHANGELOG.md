@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.2.1.0 (In progress)
+#### Version 8.2.1.0
 - Rebranded adapter name to "DT Exchange".
 - Verified compatibility with DT Exchange SDK 8.2.1.
 - Updated the minimum required Google Mobile Ads SDK version to 21.3.0.
