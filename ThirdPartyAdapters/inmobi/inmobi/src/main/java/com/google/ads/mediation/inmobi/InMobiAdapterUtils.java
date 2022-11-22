@@ -123,6 +123,10 @@ class InMobiAdapterUtils {
     }
   }
 
+  /**
+  * Unless specified TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE by the publisher, InMobi SDK
+  * expects the default value as false.
+  */
   static void updateAgeRestrictedUser(MediationAdConfiguration mediationAdConfiguration) {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
@@ -132,6 +136,10 @@ class InMobiAdapterUtils {
     }
   }
 
+  /**
+   * Unless specified TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE by the publisher, InMobi SDK
+   * expects the default value as false.
+   */
   static HashMap<String, String> createInMobiParameterMap(@NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
     map.put("tp", "c_admob");
