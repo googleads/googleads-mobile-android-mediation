@@ -13,7 +13,13 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -36,7 +42,9 @@ public class InMobiMediationAdapter extends Adapter {
     public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
     // Callback listener
-    private InMobiRewardedAd inMobiRewarded;
+    private InMobiRewardedAd inMobiRewardedAd;
+
+    private InMobiNativeAd inMobiNativeAd;
 
     /**
      * {@link Adapter} implementation
@@ -104,7 +112,7 @@ public class InMobiMediationAdapter extends Adapter {
         int count = accountIDs.size();
         if (count <= 0) {
             AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-                    "Missing or Invalid Account ID." + " configured for this ad source instance in the AdMob or Ad Manager UI");
+                    "Missing or invalid Account ID." + " configured for this ad source instance in the AdMob or Ad Manager UI");
             initializationCompleteCallback.onInitializationFailed(error.toString());
             return;
         }
@@ -137,9 +145,9 @@ public class InMobiMediationAdapter extends Adapter {
             @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
             final @NonNull MediationAdLoadCallback<MediationRewardedAd,
                     MediationRewardedAdCallback> mediationAdLoadCallback) {
-        inMobiRewarded = new InMobiRewardedAd(mediationRewardedAdConfiguration,
+        inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
                 mediationAdLoadCallback);
-        inMobiRewarded.loadAd();
+        inMobiRewardedAd.loadAd();
     }
 
 }

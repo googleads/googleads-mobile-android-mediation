@@ -123,11 +123,9 @@ class InMobiAdapterUtils {
     }
   }
 
-  /**
-  * Unless specified TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE by the publisher, InMobi SDK
-  * expects the default value as false.
-  */
-  static void updateAgeRestrictedUser(MediationAdConfiguration mediationAdConfiguration) {
+  static void setIsAgeRestricted(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+    /* If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
+    be `false`. */
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       InMobiSdk.setIsAgeRestricted(true);
@@ -136,14 +134,13 @@ class InMobiAdapterUtils {
     }
   }
 
-  /**
-   * Unless specified TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE by the publisher, InMobi SDK
-   * expects the default value as false.
-   */
-  static HashMap<String, String> createInMobiParameterMap(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+  static HashMap<String, String> createInMobiParameterMap(
+          @NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
     map.put("tp", "c_admob");
 
+    /* If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
+    be `0`. */
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
@@ -269,13 +266,6 @@ class InMobiAdapterUtils {
 
   @Nullable
   public static AdSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
-    /*
-        Supported Sizes (ref: https://www.inmobi.com/ui/pdfs/ad-specs.pdf)
-        320x50,
-        300x250,
-        728x90.
-     */
-
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(new AdSize(320, 50));
     potentials.add(new AdSize(300, 250));
@@ -291,7 +281,8 @@ class InMobiAdapterUtils {
       AdError parameterError =
               InMobiConstants.createAdapterError(
                       ERROR_INVALID_SERVER_PARAMETERS,
-                      "Missing or invalid account ID or placement ID.");
+                      "Missing or invalid Account ID or Placement ID for this ad source"
+                              + " instance in the AdMob or Ad Manager UI.");
       Log.e(InMobiMediationAdapter.TAG, parameterError.toString());
       return parameterError;
     }

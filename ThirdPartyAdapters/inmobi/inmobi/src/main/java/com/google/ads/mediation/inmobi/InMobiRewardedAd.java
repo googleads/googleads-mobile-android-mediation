@@ -98,7 +98,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                                                mMediationAdLoadCallback) {
 
         if (!InMobiSdk.isSDKInitialized()) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiRewardedAd.");
+            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
+                    "Please initialize the SDK before creating InMobiRewardedAd.");
             Log.e(TAG, error.toString());
             mMediationAdLoadCallback.onFailure(error);
             return;
@@ -143,7 +144,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
                     @Override
                     public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-                        AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.");
+                        AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
+                                "InMobi ad failed to show.");
                         Log.e(TAG, error.toString());
                         if (rewardedAdCallback != null) {
                             rewardedAdCallback.onAdFailedToShow(error);
@@ -207,8 +209,8 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                     @Override
                     public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
                                                     @NonNull AdMetaInfo adMetaInfo) {
-                        Log.d(TAG, "InMobi rewarded ad fetched from server, "
-                                + "but ad contents still need to be loaded.");
+                        Log.d(TAG, "InMobi SDK fetched the rewarded ad successfully, " +
+                                "but the ad contents still need to be loaded.");
                     }
 
                     @Override
@@ -228,15 +230,15 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
                     @Override
                     public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
-                        Log.d(TAG, "InMobi interstitial ad has logged an impression.");
+                        Log.d(TAG, "InMobi rewarded ad has logged an impression.");
                         if (rewardedAdCallback != null) {
                             rewardedAdCallback.reportAdImpression();
                         }
                     }
                 });
 
-        //Update Age Restricted User
-        InMobiAdapterUtils.updateAgeRestrictedUser(mediationRewardedAdConfiguration);
+        // Set the COPPA value in InMobi SDK.
+        InMobiAdapterUtils.setIsAgeRestricted(mediationRewardedAdConfiguration);
 
         HashMap<String, String> paramMap =
                 InMobiAdapterUtils.createInMobiParameterMap(mediationRewardedAdConfiguration);

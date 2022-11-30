@@ -15,6 +15,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -37,7 +40,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   /**
    * InMobi native ad instance.
    */
-  private final InMobiNative inMobiNative;
+  private final InMobiNative imNative;
 
   /**
    * Flag to check whether urls are returned for image assets.
@@ -55,9 +58,9 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
    * InMobi adapter instance.
    */
 
-  public InMobiUnifiedNativeAdMapper(InMobiNative inMobiNative,
+  public InMobiUnifiedNativeAdMapper(@NonNull InMobiNative inMobiNative,
                                      Boolean isOnlyURL, MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback, InMobiNativeAd inMobiNativeAd) {
-    this.inMobiNative = inMobiNative;
+    this.imNative = inMobiNative;
     this.isOnlyURL = isOnlyURL;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.inMobiNativeAd = inMobiNativeAd;
@@ -67,17 +70,17 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   // Map InMobi Native Ad to AdMob Unified Native Ad.
   void mapUnifiedNativeAd(final Context context) {
 
-    if (!InMobiAdapterUtils.isValidNativeAd(inMobiNative)) {
+    if (!InMobiAdapterUtils.isValidNativeAd(imNative)) {
       AdError error = InMobiConstants.createAdapterError(ERROR_MISSING_NATIVE_ASSETS,
               "InMobi native ad returned with a missing asset.");
-      Log.e(TAG, error.toString());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    setHeadline(inMobiNative.getAdTitle());
-    setBody(inMobiNative.getAdDescription());
-    setCallToAction(inMobiNative.getAdCtaText());
+    setHeadline(imNative.getAdTitle());
+    setBody(imNative.getAdDescription());
+    setCallToAction(imNative.getAdCtaText());
 
     // App icon.
     final URL iconURL;
@@ -85,7 +88,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     final double iconScale = 1.0;
 
     try {
-      iconURL = new URL(inMobiNative.getAdIconUrl());
+      iconURL = new URL(imNative.getAdIconUrl());
       iconUri = Uri.parse(iconURL.toURI().toString());
     } catch (MalformedURLException | URISyntaxException exception) {
       AdError error = InMobiConstants.createAdapterError(ERROR_MALFORMED_IMAGE_URL, exception.getLocalizedMessage());
@@ -95,7 +98,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
 
     HashMap<String, URL> map = new HashMap<>();
-    String landingURL = inMobiNative.getAdLandingPageUrl();
+    String landingURL = imNative.getAdLandingPageUrl();
     Bundle paramMap = new Bundle();
     paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
     setExtras(paramMap);
@@ -111,8 +114,8 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
 
     // Optional assets.
-    if (inMobiNative.getCustomAdContent() != null) {
-      JSONObject payLoad = inMobiNative.getCustomAdContent();
+    if (imNative.getCustomAdContent() != null) {
+      JSONObject payLoad = imNative.getCustomAdContent();
 
       try {
         if (payLoad.has(InMobiNetworkValues.RATING)) {
@@ -123,7 +126,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           setPrice(payLoad.getString(InMobiNetworkValues.PRICE));
         }
       } catch (JSONException jsonException) {
-        Log.e(TAG, "InMobi custom native ad content payload could not be parsed. "
+        Log.w(TAG, "InMobi custom native ad content payload could not be parsed. "
                 + "The returned native ad will not have star rating or price values.");
       }
 
@@ -145,7 +148,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
               @Override
               public void run() {
                 final View primaryView =
-                        inMobiNative.getPrimaryViewOfWidth(context, null, placeHolderView,
+                        imNative.getPrimaryViewOfWidth(context, null, placeHolderView,
                                 placeHolderView.getWidth());
                 if (primaryView == null) {
                   return;
@@ -160,7 +163,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
             });
 
     setMediaView(placeHolderView);
-    boolean hasVideo = (inMobiNative.isVideo() == null) ? false : inMobiNative.isVideo();
+    boolean hasVideo = (imNative.isVideo() == null) ? false : imNative.isVideo();
     setHasVideoContent(hasVideo);
 
     // Download drawables.
@@ -182,7 +185,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                             = mediationAdLoadCallback.onSuccess(InMobiUnifiedNativeAdMapper.this);
                   } else {
                     AdError error = InMobiConstants.createAdapterError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
-                            "Failed to download image assets.");
+                            "InMobi SDK failed to download native ad image assets.");
                     Log.e(TAG, error.toString());
                     mediationAdLoadCallback.onFailure(error);
                   }
@@ -191,7 +194,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
                 @Override
                 public void onDownloadFailure() {
                   AdError error = InMobiConstants.createAdapterError(ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
-                          "Failed to download image assets.");
+                          "InMobi SDK failed to download native ad image assets.");
                   Log.e(TAG, error.toString());
                   mediationAdLoadCallback.onFailure(error);
                 }
@@ -208,17 +211,17 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   @Override
   public void handleClick(View view) {
     // Handle click.
-    inMobiNative.reportAdClickAndOpenLandingPage();
+    imNative.reportAdClickAndOpenLandingPage();
   }
 
   @Override
   public void untrackView(View view) {
-    inMobiNative.pause();
+    imNative.pause();
   }
 
   @Override
   public void trackViews(View containerView, Map<String, View> clickableAssetViews,
                          Map<String, View> nonclickableAssetViews) {
-    inMobiNative.resume();
+    imNative.resume();
   }
 }
