@@ -209,7 +209,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
                     @Override
                     public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
                                                     @NonNull AdMetaInfo adMetaInfo) {
-                        Log.d(TAG, "InMobi SDK fetched the interstitial ad successfully, " +
+                        Log.d(TAG, "InMobi SDK fetched the rewarded ad successfully, " +
                                 "but the ad contents still need to be loaded.");
                     }
 
