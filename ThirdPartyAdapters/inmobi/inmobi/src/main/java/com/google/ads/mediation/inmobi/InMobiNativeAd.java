@@ -70,7 +70,8 @@ public class InMobiNativeAd extends NativeAdEventListener {
     private void createAndLoadNativeAd(Context context, long placementId) {
 
         if(!InMobiSdk.isSDKInitialized()){
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiNative.");
+            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
+                    "Please initialize the SDK before creating InMobiNative.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
             return;
@@ -97,16 +98,16 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
         // Setting mediation key words to native ad object
         if (null != mediationNativeAdConfiguration.getMediationExtras().keySet()) {
-            adNative.setKeywords(TextUtils.join(", ", mediationNativeAdConfiguration.getMediationExtras().keySet()));
+            adNative.setKeywords(TextUtils.join(", ",
+                    mediationNativeAdConfiguration.getMediationExtras().keySet()));
         }
 
-        //Update Age Restricted User
-        InMobiAdapterUtils.updateAgeRestrictedUser(mediationNativeAdConfiguration);
+        // Set the COPPA value in InMobi SDK.
+        InMobiAdapterUtils.setIsAgeRestricted(mediationNativeAdConfiguration);
 
         /*
          *  Extra request params : Add any other extra request params here
          *  #1. Explicitly setting mediation supply parameter to AdMob
-         *  #2. Landing url
          */
         HashMap<String, String> paramMap =
                 InMobiAdapterUtils.createInMobiParameterMap(mediationNativeAdConfiguration);
@@ -123,21 +124,23 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
         // This setting decides whether to download images or not.
         NativeAdOptions nativeAdOptions = mediationNativeAdConfiguration.getNativeAdOptions();
-        boolean mIsOnlyUrl = false;
+        boolean isOnlyUrl = false;
 
         if (null != nativeAdOptions) {
-            mIsOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
+            isOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
         }
 
         InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-                new InMobiUnifiedNativeAdMapper(imNativeAd, mIsOnlyUrl, mediationAdLoadCallback, InMobiNativeAd.this);
+                new InMobiUnifiedNativeAdMapper(imNativeAd, isOnlyUrl,
+                        mediationAdLoadCallback, InMobiNativeAd.this);
         inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(mediationNativeAdConfiguration.getContext());
     }
 
     @Override
     public void onAdLoadFailed(@NonNull InMobiNative inMobiNative,
                                @NonNull InMobiAdRequestStatus requestStatus) {
-        AdError error = InMobiConstants.createSdkError(InMobiAdapterUtils.getMediationErrorCode(requestStatus),
+        AdError error = InMobiConstants.createSdkError(
+                InMobiAdapterUtils.getMediationErrorCode(requestStatus),
                 requestStatus.getMessage());
         Log.e(TAG, error.toString());
         if (mediationNativeAdCallback != null) {
@@ -168,7 +171,7 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
     @Override
     public void onUserWillLeaveApplication(@NonNull InMobiNative inMobiNative) {
-        Log.d(TAG, "InMobi native ad left application.");
+        Log.d(TAG, "InMobi native ad has caused the user to leave the application.");
         if (mediationNativeAdCallback != null) {
             mediationNativeAdCallback.onAdLeftApplication();
         }

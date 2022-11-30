@@ -86,14 +86,13 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
         FrameLayout.LayoutParams wrappedLayoutParams = new FrameLayout.LayoutParams(
                 mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
                 mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context));
-        InMobiBanner adView;
         if (!InMobiSdk.isSDKInitialized()) {
             AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED, "Please initialize the SDK before creating InMobiBanner.");
             Log.e(TAG, error.toString());
             mediationAdLoadCallback.onFailure(error);
             return;
         }
-        adView = new InMobiBanner(context, placementId);
+        InMobiBanner adView = new InMobiBanner(context, placementId);
 
         // Turn off automatic refresh.
         adView.setEnableAutoRefresh(false);
@@ -104,8 +103,8 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
             adView.setKeywords(TextUtils.join(", ", mediationBannerAdConfiguration.getMediationExtras().keySet()));
         }
 
-        //Update Age Restricted User
-        InMobiAdapterUtils.updateAgeRestrictedUser(mediationBannerAdConfiguration);
+        // Set the COPPA value in InMobi SDK.
+        InMobiAdapterUtils.setIsAgeRestricted(mediationBannerAdConfiguration);
 
         // Create request parameters.
         HashMap<String, String> paramMap =
@@ -142,7 +141,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
 
     @Override
     public void onUserLeftApplication(@NonNull InMobiBanner inMobiBanner) {
-        Log.d(TAG, "InMobi banner left application.");
+        Log.d(TAG, "InMobi banner ad has caused the user to leave the application.");
         mediationBannerAdCallback.onAdLeftApplication();
     }
 
@@ -155,7 +154,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     @Override
     public void onAdLoadSucceeded(@NonNull InMobiBanner inMobiBanner,
                                   @NonNull AdMetaInfo adMetaInfo) {
-        Log.d(TAG, "InMobi banner has been loaded.");
+        Log.d(TAG, "InMobi banner ad has been loaded.");
         if (mediationAdLoadCallback != null) {
             mediationBannerAdCallback =
                     mediationAdLoadCallback.onSuccess(InMobiBannerAd.this);
@@ -176,7 +175,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
 
     @Override
     public void onAdDisplayed(@NonNull InMobiBanner inMobiBanner) {
-        Log.d(TAG, "InMobi banner opened a full screen view.");
+        Log.d(TAG, "InMobi banner ad opened a full screen view.");
         if (mediationBannerAdCallback != null) {
             mediationBannerAdCallback.onAdOpened();
         }
@@ -184,7 +183,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
 
     @Override
     public void onAdDismissed(@NonNull InMobiBanner inMobiBanner) {
-        Log.d(TAG, "InMobi banner has been dismissed.");
+        Log.d(TAG, "InMobi banner ad has been dismissed.");
         if (mediationBannerAdCallback != null) {
             mediationBannerAdCallback.onAdClosed();
         }
@@ -193,7 +192,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     @Override
     public void onAdClicked(@NonNull InMobiBanner inMobiBanner,
                             Map<Object, Object> map) {
-        Log.d(TAG, "InMobi banner has been clicked.");
+        Log.d(TAG, "InMobi banner ad has been clicked.");
         if (mediationBannerAdCallback != null) {
             mediationBannerAdCallback.reportAdClicked();
         }
@@ -201,7 +200,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
 
     @Override
     public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
-        Log.d(TAG, "InMobi banner has logged an impression.");
+        Log.d(TAG, "InMobi banner ad has logged an impression.");
         if (mediationBannerAdCallback != null) {
             mediationBannerAdCallback.reportAdImpression();
         }
