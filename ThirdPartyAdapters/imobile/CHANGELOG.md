@@ -1,6 +1,6 @@
 ## i-mobile Android Mediation Adapter Changelog
 
-#### Version 2.3.0.0 (In progress)
+#### Version 2.3.0.0
 - Verified compatibility with i-mobile SDK v2.3.0.
 - Updated the minimum required Google Mobile Ads SDK version to 21.3.0.
 
