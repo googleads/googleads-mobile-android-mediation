@@ -85,14 +85,14 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
 
+    Context context = mediationRewardedAdConfiguration.getContext();
+
     VungleInitializer.getInstance()
-        .initialize(
-            appID,
-            mediationRewardedAdConfiguration.getContext(),
+        .initialize(appID, context,
             new VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                rewardedAd = new RewardedAd(placement, adConfig);
+                rewardedAd = new RewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleRtbRewardedAd.this);
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);

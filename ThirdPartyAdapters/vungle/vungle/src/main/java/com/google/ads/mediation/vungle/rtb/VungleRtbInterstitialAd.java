@@ -79,14 +79,14 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
 
     AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
 
+    Context context = mediationInterstitialAdConfiguration.getContext();
+
     VungleInitializer.getInstance()
-        .initialize(
-            appID,
-            mediationInterstitialAdConfiguration.getContext(),
+        .initialize(appID, context,
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                interstitialAd = new InterstitialAd(placement, adConfig);
+                interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(VungleRtbInterstitialAd.this);
 
                 interstitialAd.load(adMarkup);

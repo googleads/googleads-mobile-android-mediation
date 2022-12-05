@@ -6,12 +6,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
+import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -53,6 +57,7 @@ public class VungleMediationAdapter extends RtbAdapter
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
+  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbNativeAd rtbNativeAd;
 
   private String placement;
@@ -164,7 +169,7 @@ public class VungleMediationAdapter extends RtbAdapter
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
-    String token = VungleAds.getBiddingToken();
+    String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
     Log.d(TAG, "token=" + token);
     signalCallbacks.onSuccess(token);
   }
@@ -269,22 +274,22 @@ public class VungleMediationAdapter extends RtbAdapter
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
 
+    Context context = mediationRewardedAdConfiguration.getContext();
+
     VungleInitializer.getInstance()
-        .initialize(
-            appID,
-            mediationRewardedAdConfiguration.getContext(),
+        .initialize(appID, context,
             new VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
                 placementsInUse.put(placement, new WeakReference<>(VungleMediationAdapter.this));
 
-                rewardedAd = new RewardedAd(placement, adConfig);
+                rewardedAd = new RewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleMediationAdapter.this);
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);
                 }
 
-                rewardedAd.load();
+                rewardedAd.load(null);
               }
 
               @Override
@@ -422,6 +427,18 @@ public class VungleMediationAdapter extends RtbAdapter
     rtbRewardedAd = new VungleRtbRewardedAd(
         mediationRewardedAdConfiguration, mediationAdLoadCallback);
     rtbRewardedAd.render();
+  }
+
+  @Override
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+    Log.d(TAG, "loadRtbBannerAd()...");
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
+    rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration,
+        mediationAdLoadCallback);
+    rtbBannerAd.render();
   }
 
   @Override

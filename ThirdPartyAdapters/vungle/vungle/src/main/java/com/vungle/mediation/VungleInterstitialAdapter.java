@@ -87,14 +87,14 @@ public class VungleInterstitialAdapter
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                interstitialAd = new InterstitialAd(placement, adConfig);
+                interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(new VungleInterstitialListener());
 
                 if (interstitialAd.canPlayAd()) {
                   mediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
                   return;
                 }
-                interstitialAd.load();
+                interstitialAd.load(null);
               }
 
               @Override
@@ -244,7 +244,7 @@ public class VungleInterstitialAdapter
                 bannerAd = new BannerAd(context, placement, adConfig);
                 bannerAd.setAdListener(new VungleBannerListener());
 
-                bannerAd.load();
+                bannerAd.load(null);
               }
 
               @Override
@@ -317,8 +317,7 @@ public class VungleInterstitialAdapter
       }
     } else {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
-          "Vungle SDK returned a successful load callback, but Banners.getBanner() or "
-              + "Vungle.getNativeAd() returned null.",
+          "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
           ERROR_DOMAIN);
       Log.d(TAG, error.toString());
       if (mediationBannerListener != null) {
@@ -334,7 +333,7 @@ public class VungleInterstitialAdapter
     return bannerLayout;
   }
 
-  private boolean hasBannerSizeAd(Context context, AdSize adSize, AdConfig adConfig) {
+  public static boolean hasBannerSizeAd(Context context, AdSize adSize, AdConfig adConfig) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(new AdSize(com.vungle.ads.AdSize.BANNER_SHORT.getWidth(),
         com.vungle.ads.AdSize.BANNER_SHORT.getHeight()));
