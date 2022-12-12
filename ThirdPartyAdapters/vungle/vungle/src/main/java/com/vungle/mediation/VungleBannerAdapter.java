@@ -194,7 +194,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
               public void onInitializeError(AdError error) {
                 vungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
                 if (!pendingRequestBanner) {
-                  Log.w(TAG, "No banner request fired.");
+                  Log.w(TAG, "No Vungle banner ad request is made.");
                   return;
                 }
                 Log.w(TAG, error.toString());

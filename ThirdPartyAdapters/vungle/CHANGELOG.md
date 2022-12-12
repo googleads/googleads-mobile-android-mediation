@@ -1,7 +1,7 @@
 ## Vungle Android Mediation Adapter Changelog
 
 #### Version 6.12.1.0
-- Added bidding support for Banner/MREC format.
+- Added bidding support for banner ad format.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.3.0.

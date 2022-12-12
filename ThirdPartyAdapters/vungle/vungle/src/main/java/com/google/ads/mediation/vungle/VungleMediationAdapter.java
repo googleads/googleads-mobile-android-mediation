@@ -216,9 +216,9 @@ public class VungleMediationAdapter extends RtbAdapter
 
     int count = appIDs.size();
     if (count <= 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
+      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.",
           ERROR_DOMAIN);
-      Log.w(TAG, error.toString());
+      Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
