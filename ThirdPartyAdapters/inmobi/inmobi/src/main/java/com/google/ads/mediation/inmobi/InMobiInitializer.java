@@ -88,7 +88,8 @@ public class InMobiInitializer {
             } else {
               initializationStatus = UNINITIALIZED;
 
-              AdError initializationError = InMobiConstants.createAdapterError(ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
+              AdError initializationError = InMobiConstants.createAdapterError(
+                  ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
               for (Listener initListener : listeners) {
                 initListener.onInitializeError(initializationError);
               }
