@@ -27,178 +27,179 @@ import com.inmobi.sdk.InMobiSdk;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InMobiInterstitialAd extends InterstitialAdEventListener implements MediationInterstitialAd {
+public class InMobiInterstitialAd extends InterstitialAdEventListener implements
+    MediationInterstitialAd {
 
-    private InMobiInterstitial adInterstitial;
-    private MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
-    private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback;
-    private MediationInterstitialAdCallback interstitialAdCallback;
+  private InMobiInterstitial adInterstitial;
+  private MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
+  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback;
+  private MediationInterstitialAdCallback interstitialAdCallback;
 
-    public InMobiInterstitialAd(
-            @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-            @NonNull MediationAdLoadCallback<MediationInterstitialAd,
-            MediationInterstitialAdCallback> mediationAdLoadCallback) {
-        this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
-        this.mediationAdLoadCallback = mediationAdLoadCallback;
+  public InMobiInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd,
+          MediationInterstitialAdCallback> mediationAdLoadCallback) {
+    this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
+    this.mediationAdLoadCallback = mediationAdLoadCallback;
+  }
+
+  public void loadAd() {
+    final Context context = mediationInterstitialAdConfiguration.getContext();
+    Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+
+    String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
+    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
+    if (error != null) {
+      mediationAdLoadCallback.onFailure(error);
+      return;
     }
 
-    public void loadAd() {
-        final Context context = mediationInterstitialAdConfiguration.getContext();
-        Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+    InMobiInitializer.getInstance().init(context, accountID, new InMobiInitializer.Listener() {
+      @Override
+      public void onInitializeSuccess() {
+        createAndLoadInterstitialAd(context, placementId);
+      }
 
-        String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-        final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-        AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
-        if (error != null) {
-            mediationAdLoadCallback.onFailure(error);
-            return;
-        }
-
-        InMobiInitializer.getInstance().init(context, accountID, new InMobiInitializer.Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                createAndLoadInterstitialAd(context, placementId);
-            }
-
-            @Override
-            public void onInitializeError(@NonNull AdError error) {
-                Log.e(TAG, error.toString());
-                if (mediationAdLoadCallback != null) {
-                    mediationAdLoadCallback.onFailure(error);
-                }
-            }
-        });
-    }
-
-    private void createAndLoadInterstitialAd(Context context, long placementId) {
-
-        if (!InMobiSdk.isSDKInitialized()) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
-                    "Please initialize the SDK before creating InMobiInterstitial.");
-            Log.e(TAG, error.toString());
-            mediationAdLoadCallback.onFailure(error);
-            return;
-        }
-
-        adInterstitial = new InMobiInterstitial(context, placementId,
-                InMobiInterstitialAd.this);
-
-        if (mediationInterstitialAdConfiguration.getMediationExtras().keySet() != null) {
-            adInterstitial.setKeywords(TextUtils.join(", ",
-                    mediationInterstitialAdConfiguration.getMediationExtras().keySet()));
-        }
-
-        // Set the COPPA value in InMobi SDK.
-        InMobiAdapterUtils.setIsAgeRestricted(mediationInterstitialAdConfiguration);
-
-        HashMap<String, String> paramMap =
-                InMobiAdapterUtils.createInMobiParameterMap(mediationInterstitialAdConfiguration);
-        adInterstitial.setExtras(paramMap);
-
-        InMobiAdapterUtils.configureGlobalTargeting(mediationInterstitialAdConfiguration
-                .getMediationExtras());
-        adInterstitial.load();
-    }
-
-    @Override
-    public void showAd(@NonNull Context context) {
-        if (!adInterstitial.isReady()) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
-                    "InMobi interstitial ad is not yet ready to be shown.");
-            Log.e(TAG, error.toString());
-            return;
-        }
-
-        adInterstitial.show();
-    }
-
-    @Override
-    public void onUserLeftApplication(@NonNull InMobiInterstitial inMobiInterstitial) {
-        Log.d(TAG, "InMobi interstitial ad has caused the user to leave the application.");
-        if (interstitialAdCallback != null) {
-            interstitialAdCallback.onAdLeftApplication();
-        }
-    }
-
-    @Override
-    public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
-                                  Map<Object, Object> rewards) {
-        // Google Mobile Ads SDK doesn't have a matching event.
-    }
-
-    @Override
-    public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-        AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
-                "InMobi SDK failed to display an interstitial ad.");
-        Log.e(TAG, error.toString());
-    }
-
-    @Override
-    public void onAdWillDisplay(@NonNull InMobiInterstitial inMobiInterstitial) {
-        Log.d(TAG, "InMobi interstitial ad will be shown.");
-        // No-op, `onAdDisplayed` will be used to forward the Google Mobile Ads SDK `onAdOpened` callback instead.
-    }
-
-    @Override
-    public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
-                                  @NonNull AdMetaInfo adMetaInfo) {
-        Log.d(TAG, "InMobi interstitial ad has been loaded.");
+      @Override
+      public void onInitializeError(@NonNull AdError error) {
+        Log.w(TAG, error.toString());
         if (mediationAdLoadCallback != null) {
-            interstitialAdCallback =
-                    mediationAdLoadCallback.onSuccess(InMobiInterstitialAd.this);
+          mediationAdLoadCallback.onFailure(error);
         }
+      }
+    });
+  }
+
+  private void createAndLoadInterstitialAd(Context context, long placementId) {
+
+    if (!InMobiSdk.isSDKInitialized()) {
+      AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
+          "InMobi SDK failed to request an interstitial ad since it isn't initialized.");
+      Log.e(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
+      return;
     }
 
-    @Override
-    public void onAdLoadFailed(@NonNull InMobiInterstitial inMobiInterstitial,
-                               @NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
-        AdError error = InMobiConstants.createSdkError(
-                InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
-                inMobiAdRequestStatus.getMessage());
-        Log.e(TAG, error.toString());
-        if (mediationAdLoadCallback != null) {
-            mediationAdLoadCallback.onFailure(error);
-        }
+    adInterstitial = new InMobiInterstitial(context, placementId,
+        InMobiInterstitialAd.this);
+
+    if (mediationInterstitialAdConfiguration.getMediationExtras().keySet() != null) {
+      adInterstitial.setKeywords(TextUtils.join(", ",
+          mediationInterstitialAdConfiguration.getMediationExtras().keySet()));
     }
 
-    @Override
-    public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
-                                    @NonNull AdMetaInfo adMetaInfo) {
-        Log.d(TAG, "InMobi SDK fetched the interstitial ad successfully, but the ad " +
-                "contents still need to be loaded.");
+    // Set the COPPA value in InMobi SDK.
+    InMobiAdapterUtils.setIsAgeRestricted(mediationInterstitialAdConfiguration);
+
+    HashMap<String, String> paramMap =
+        InMobiAdapterUtils.createInMobiParameterMap(mediationInterstitialAdConfiguration);
+    adInterstitial.setExtras(paramMap);
+
+    InMobiAdapterUtils.configureGlobalTargeting(mediationInterstitialAdConfiguration
+        .getMediationExtras());
+    adInterstitial.load();
+  }
+
+  @Override
+  public void showAd(@NonNull Context context) {
+    if (!adInterstitial.isReady()) {
+      AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
+          "InMobi interstitial ad is not yet ready to be shown.");
+      Log.e(TAG, error.toString());
+      return;
     }
 
-    @Override
-    public void onAdDisplayed(@NonNull InMobiInterstitial inMobiInterstitial,
-                              @NonNull AdMetaInfo adMetaInfo) {
-        Log.d(TAG, "InMobi interstitial ad has been shown.");
-        if (interstitialAdCallback != null) {
-            interstitialAdCallback.onAdOpened();
-        }
-    }
+    adInterstitial.show();
+  }
 
-    @Override
-    public void onAdDismissed(@NonNull InMobiInterstitial inMobiInterstitial) {
-        Log.d(TAG, "InMobi interstitial ad has been dismissed.");
-        if (interstitialAdCallback != null) {
-            interstitialAdCallback.onAdClosed();
-        }
+  @Override
+  public void onUserLeftApplication(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi interstitial ad has caused the user to leave the application.");
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.onAdLeftApplication();
     }
+  }
 
-    @Override
-    public void onAdClicked(@NonNull InMobiInterstitial inMobiInterstitial,
-                            Map<Object, Object> clickParameters) {
-        Log.d(TAG, "InMobi interstitial ad has been clicked.");
-        if (interstitialAdCallback != null) {
-            interstitialAdCallback.reportAdClicked();
-        }
-    }
+  @Override
+  public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
+      Map<Object, Object> rewards) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
 
-    @Override
-    public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
-        Log.d(TAG, "InMobi interstitial ad has logged an impression.");
-        if (interstitialAdCallback != null) {
-            interstitialAdCallback.reportAdImpression();
-        }
+  @Override
+  public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
+    AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
+        "InMobi SDK failed to display an interstitial ad.");
+    Log.e(TAG, error.toString());
+  }
+
+  @Override
+  public void onAdWillDisplay(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi interstitial ad will be shown.");
+    // No-op, `onAdDisplayed` will be used to forward the Google Mobile Ads SDK `onAdOpened` callback instead.
+  }
+
+  @Override
+  public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi interstitial ad has been loaded.");
+    if (mediationAdLoadCallback != null) {
+      interstitialAdCallback =
+          mediationAdLoadCallback.onSuccess(InMobiInterstitialAd.this);
     }
+  }
+
+  @Override
+  public void onAdLoadFailed(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
+    AdError error = InMobiConstants.createSdkError(
+        InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
+        inMobiAdRequestStatus.getMessage());
+    Log.e(TAG, error.toString());
+    if (mediationAdLoadCallback != null) {
+      mediationAdLoadCallback.onFailure(error);
+    }
+  }
+
+  @Override
+  public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi SDK fetched the interstitial ad successfully, but the ad " +
+        "contents still need to be loaded.");
+  }
+
+  @Override
+  public void onAdDisplayed(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi interstitial ad has been shown.");
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.onAdOpened();
+    }
+  }
+
+  @Override
+  public void onAdDismissed(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi interstitial ad has been dismissed.");
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.onAdClosed();
+    }
+  }
+
+  @Override
+  public void onAdClicked(@NonNull InMobiInterstitial inMobiInterstitial,
+      Map<Object, Object> clickParameters) {
+    Log.d(TAG, "InMobi interstitial ad has been clicked.");
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.reportAdClicked();
+    }
+  }
+
+  @Override
+  public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi interstitial ad has logged an impression.");
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.reportAdImpression();
+    }
+  }
 }

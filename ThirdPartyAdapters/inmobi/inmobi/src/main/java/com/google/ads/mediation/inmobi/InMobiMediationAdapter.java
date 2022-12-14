@@ -39,115 +39,115 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class InMobiMediationAdapter extends Adapter {
 
-    public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
+  public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
-    // Callback listener
-    private InMobiRewardedAd inMobiRewardedAd;
+  // Callback listener
+  private InMobiRewardedAd inMobiRewardedAd;
 
-    private InMobiNativeAd inMobiNativeAd;
+  private InMobiNativeAd inMobiNativeAd;
 
-    /**
-     * {@link Adapter} implementation
-     */
-    @NonNull
-    @Override
-    public VersionInfo getVersionInfo() {
-        String versionString = BuildConfig.ADAPTER_VERSION;
-        String[] splits = versionString.split("\\.");
+  /**
+   * {@link Adapter} implementation
+   */
+  @NonNull
+  @Override
+  public VersionInfo getVersionInfo() {
+    String versionString = BuildConfig.ADAPTER_VERSION;
+    String[] splits = versionString.split("\\.");
 
-        if (splits.length >= 4) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-            return new VersionInfo(major, minor, micro);
-        }
-
-        String logMessage = String
-                .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-                        versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 4) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @NonNull
-    @Override
-    public VersionInfo getSDKVersionInfo() {
-        String versionString = InMobiSdk.getVersion();
-        String[] splits = versionString.split("\\.");
+    String logMessage = String
+        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+            versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-        if (splits.length >= 3) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]);
-            return new VersionInfo(major, minor, micro);
-        }
+  @NonNull
+  @Override
+  public VersionInfo getSDKVersionInfo() {
+    String versionString = InMobiSdk.getVersion();
+    String[] splits = versionString.split("\\.");
 
-        String logMessage = String
-                .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-                        versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
+    if (splits.length >= 3) {
+      int major = Integer.parseInt(splits[0]);
+      int minor = Integer.parseInt(splits[1]);
+      int micro = Integer.parseInt(splits[2]);
+      return new VersionInfo(major, minor, micro);
     }
 
-    @Override
-    public void initialize(@NonNull Context context,
-                           final @NonNull InitializationCompleteCallback initializationCompleteCallback,
-                           @NonNull List<MediationConfiguration> mediationConfigurations) {
+    String logMessage = String
+        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+            versionString);
+    Log.w(TAG, logMessage);
+    return new VersionInfo(0, 0, 0);
+  }
 
-        if (InMobiSdk.isSDKInitialized()) {
-            initializationCompleteCallback.onInitializationSucceeded();
-            return;
-        }
+  @Override
+  public void initialize(@NonNull Context context,
+      final @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-        HashSet<String> accountIDs = new HashSet<>();
-        for (MediationConfiguration configuration : mediationConfigurations) {
-            String serverAccountID = configuration.getServerParameters()
-                    .getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-
-            if (!TextUtils.isEmpty(serverAccountID)) {
-                accountIDs.add(serverAccountID);
-            }
-        }
-
-        int count = accountIDs.size();
-        if (count <= 0) {
-            AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-                    "Missing or invalid Account ID." + " configured for this ad source instance in the AdMob or Ad Manager UI");
-            initializationCompleteCallback.onInitializationFailed(error.toString());
-            return;
-        }
-
-
-        String accountID = accountIDs.iterator().next();
-
-        if (count > 1) {
-            String message = String.format("Multiple '%s' entries found: %s. "
-                            + "Using '%s' to initialize the InMobi SDK",
-                    InMobiAdapterUtils.KEY_ACCOUNT_ID, accountIDs, accountID);
-            Log.w(TAG, message);
-        }
-
-        InMobiInitializer.getInstance().init(context, accountID, new Listener() {
-            @Override
-            public void onInitializeSuccess() {
-                initializationCompleteCallback.onInitializationSucceeded();
-            }
-
-            @Override
-            public void onInitializeError(@NonNull AdError error) {
-                initializationCompleteCallback.onInitializationFailed(error.toString());
-            }
-        });
+    if (InMobiSdk.isSDKInitialized()) {
+      initializationCompleteCallback.onInitializationSucceeded();
+      return;
     }
 
-    @Override
-    public void loadRewardedAd(
-            @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-            final @NonNull MediationAdLoadCallback<MediationRewardedAd,
-                    MediationRewardedAdCallback> mediationAdLoadCallback) {
-        inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
-                mediationAdLoadCallback);
-        inMobiRewardedAd.loadAd();
+    HashSet<String> accountIDs = new HashSet<>();
+    for (MediationConfiguration configuration : mediationConfigurations) {
+      String serverAccountID = configuration.getServerParameters()
+          .getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+
+      if (!TextUtils.isEmpty(serverAccountID)) {
+        accountIDs.add(serverAccountID);
+      }
     }
+
+    int count = accountIDs.size();
+    if (count <= 0) {
+      AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Account ID."
+              + " configured for this ad source instance in the AdMob or Ad Manager UI");
+      initializationCompleteCallback.onInitializationFailed(error.toString());
+      return;
+    }
+
+    String accountID = accountIDs.iterator().next();
+
+    if (count > 1) {
+      String message = String.format("Multiple '%s' entries found: %s. "
+              + "Using '%s' to initialize the InMobi SDK",
+          InMobiAdapterUtils.KEY_ACCOUNT_ID, accountIDs, accountID);
+      Log.w(TAG, message);
+    }
+
+    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+      @Override
+      public void onInitializeSuccess() {
+        initializationCompleteCallback.onInitializationSucceeded();
+      }
+
+      @Override
+      public void onInitializeError(@NonNull AdError error) {
+        initializationCompleteCallback.onInitializationFailed(error.toString());
+      }
+    });
+  }
+
+  @Override
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      final @NonNull MediationAdLoadCallback<MediationRewardedAd,
+          MediationRewardedAdCallback> mediationAdLoadCallback) {
+    inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    inMobiRewardedAd.loadAd();
+  }
 
 }
