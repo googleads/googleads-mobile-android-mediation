@@ -93,7 +93,6 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
     if (rewardedAdCallback == null) {
       return;
     }
-    rewardedAdCallback.onAdClosed();
     if (rewardInfo == null || !rewardInfo.isCompleteView()) {
       Log.w(TAG,
           "Mintegral SDK failed to reward user due to missing reward settings or rewarded ad "
@@ -120,6 +119,7 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
       }
     };
     rewardedAdCallback.onUserEarnedReward(rewardItem);
+    rewardedAdCallback.onAdClosed();
   }
 
   @Override
