@@ -11,6 +11,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.ads.mediation.mintegral.mediation.MintegralBannerAd;
+import com.google.ads.mediation.mintegral.mediation.MintegralInterstitialAd;
+import com.google.ads.mediation.mintegral.mediation.MintegralNativeAd;
+import com.google.ads.mediation.mintegral.mediation.MintegralRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -31,7 +35,6 @@ import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.foundation.same.net.Aa;
 import com.mbridge.msdk.mbbid.out.BidManager;
@@ -56,6 +59,10 @@ public class MintegralMediationAdapter extends RtbAdapter {
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
+  private MintegralBannerAd mintegralBannerAd;
+  private MintegralInterstitialAd mintegralInterstitialAd;
+  private MintegralRewardedAd mintegralRewardedAd;
+  private MintegralNativeAd mintegralNativeAd;
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -204,5 +211,34 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
     mintegralRtbRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+                              @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    mintegralBannerAd = new MintegralBannerAd(adConfiguration, callback);
+    mintegralBannerAd.loadAd();
+  }
+
+  @Override
+  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+                                    @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+                                            callback) {
+    mintegralInterstitialAd = new MintegralInterstitialAd(adConfiguration, callback);
+    mintegralInterstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
+                              @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    mintegralNativeAd = new MintegralNativeAd(adConfiguration, callback);
+    mintegralNativeAd.loadAd();
+  }
+
+  @Override
+  public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+                                @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    mintegralRewardedAd = new MintegralRewardedAd(adConfiguration, callback);
+    mintegralRewardedAd.loadAd();
   }
 }
