@@ -3,13 +3,9 @@ package com.google.ads.mediation.mintegral.rtb;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralConstants;
-import com.google.ads.mediation.mintegral.MintegralExtras;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -93,42 +89,39 @@ public class MintegralRtbRewardedAd implements MediationRewardedAd, RewardVideoL
     if (rewardedAdCallback == null) {
       return;
     }
-    if (rewardInfo == null || !rewardInfo.isCompleteView()) {
-      Log.w(TAG,
-          "Mintegral SDK failed to reward user due to missing reward settings or rewarded ad "
-              + "playback not completed.");
-      rewardedAdCallback.onAdClosed();
-      return;
-    }
-    RewardItem rewardItem = new RewardItem() {
-      @NonNull
-      @Override
-      public String getType() {
-        return rewardInfo.getRewardName();
-      }
-
-      @Override
-      public int getAmount() {
-        int amount = 0;
-        try {
-          amount = Integer.getInteger(rewardInfo.getRewardAmount());
-        } catch (Exception exception) {
-          Log.w(TAG, exception.getMessage());
-          exception.printStackTrace();
+    if (rewardInfo != null && rewardInfo.isCompleteView()) {
+      RewardItem rewardItem = new RewardItem() {
+        @NonNull
+        @Override
+        public String getType() {
+          return rewardInfo.getRewardName();
         }
-        return amount;
-      }
-    };
-    rewardedAdCallback.onUserEarnedReward(rewardItem);
+        @Override
+        public int getAmount() {
+          int amount = 0;
+          try {
+            amount = Integer.getInteger(rewardInfo.getRewardAmount());
+          } catch (Exception exception) {
+            Log.w(TAG, "Failed to get reward amount.", exception);
+          }
+          return amount;
+        }
+      };
+      rewardedAdCallback.onUserEarnedReward(rewardItem);
+    } else {
+      Log.w(TAG, "Mintegral SDK failed to reward user due to missing reward settings "
+          + "or rewarded ad playback not completed.");
+    }
     rewardedAdCallback.onAdClosed();
   }
 
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
+    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+        errorMessage);
+    Log.w(TAG, error.toString());
+
     if (rewardedAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-          errorMessage);
-      Log.w(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
     }
   }
