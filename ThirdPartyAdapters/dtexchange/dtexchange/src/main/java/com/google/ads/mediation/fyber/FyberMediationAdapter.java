@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Fyber's official AdMob 3rd party adapter class. Implements Banners and Interstitials by
+ * DT Exchange's official AdMob 3rd party adapter class. Implements Banners and Interstitials by
  * implementing the {@link MediationBannerAdapter} and {@link MediationInterstitialAdapter}
  * interfaces. Implements initialization and Rewarded video ads, by extending the {@link Adapter}
  * class.
@@ -66,17 +66,17 @@ public class FyberMediationAdapter extends Adapter
   static final String TAG = FyberMediationAdapter.class.getSimpleName();
 
   /**
-   * Fyber requires to know the host mediation platform.
+   * DT Exchange requires to know the host mediation platform.
    */
   private final static InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
   /**
-   * Key to obtain App id, required for initializing Fyber's SDK.
+   * Key to obtain App id, required for initializing DT Exchange's SDK.
    */
   private static final String KEY_APP_ID = "applicationId";
 
   /**
-   * Key to obtain a placement name or spot id. Required for creating a Fyber ad request.
+   * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
    */
   static final String KEY_SPOT_ID = "spotId";
 
@@ -86,12 +86,12 @@ public class FyberMediationAdapter extends Adapter
   private AdSize requestedAdSize;
 
   /**
-   * Fyber's Spot object for the banner.
+   * DT Exchange's Spot object for the banner.
    */
   private InneractiveAdSpot bannerSpot;
 
   /**
-   * Holds the banner view which is created by Fyber, in order to return when AdMob calls getView.
+   * A wrapper view for the DT Exchange banner view.
    */
   private ViewGroup bannerWrapperView;
 
@@ -111,12 +111,12 @@ public class FyberMediationAdapter extends Adapter
   private WeakReference<Activity> interstitialActivityRef;
 
   /**
-   * Fyber's spot object for interstitial.
+   * DT Exchange's spot object for interstitial.
    */
   private InneractiveAdSpot interstitialSpot;
 
   /**
-   * Fyber rewarded ad video renderer.
+   * DT Exchange rewarded ad video renderer.
    */
   private FyberRewardedVideoRenderer rewardedRenderer;
 
@@ -140,9 +140,9 @@ public class FyberMediationAdapter extends Adapter
   }
 
   /**
-   * Fyber adapter error domain.
+   * DT Exchange adapter error domain.
    */
-  public static final String ERROR_DOMAIN = "com.google.ads.mediation.fyber";
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.dtexchange";
 
   /**
    * Server parameters, such as app ID or spot ID, are invalid.
@@ -150,12 +150,12 @@ public class FyberMediationAdapter extends Adapter
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * The requested ad size does not match a Fyber supported banner size.
+   * The requested ad size does not match a DT Exchange supported banner size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 103;
 
   /**
-   * Fyber SDK loaded an ad but returned an unexpected controller.
+   * DT Exchange SDK loaded an ad but returned an unexpected controller.
    */
   public static final int ERROR_WRONG_CONTROLLER_TYPE = 105;
 
@@ -222,18 +222,18 @@ public class FyberMediationAdapter extends Adapter
 
     if (configuredAppIds.isEmpty()) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Fyber Marketplace SDK requires an appId to be configured on the AdMob UI.",
+          "DT Exchange SDK requires an appId to be configured on the AdMob UI.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       completionCallback.onInitializationFailed(error.getMessage());
       return;
     }
 
-    // We can only use one app id to initialize the Fyber Marketplace SDK.
+    // We can only use one app id to initialize the DT Exchange SDK.
     String appIdForInitialization = configuredAppIds.iterator().next();
     if (configuredAppIds.size() > 1) {
       String logMessage = String.format("Multiple '%s' entries found: %s. "
-              + "Using '%s' to initialize the Fyber Marketplace SDK.", KEY_APP_ID, configuredAppIds,
+              + "Using '%s' to initialize the DT Exchange SDK.", KEY_APP_ID, configuredAppIds,
           appIdForInitialization);
       Log.w(TAG, logMessage);
     }
@@ -384,7 +384,7 @@ public class FyberMediationAdapter extends Adapter
   }
 
   /**
-   * Creates Fyber's banner ad request listener.
+   * Creates DT Exchange's banner ad request listener.
    *
    * @return the created request listener.
    */
@@ -450,7 +450,7 @@ public class FyberMediationAdapter extends Adapter
   }
 
   /**
-   * When an ad is fetched successfully, creates a listener for Fyber's AdView events.
+   * When an ad is fetched successfully, creates a listener for DT Exchange's AdView events.
    *
    * @return the create events listener.
    */
@@ -611,7 +611,7 @@ public class FyberMediationAdapter extends Adapter
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
           InneractiveErrorCode inneractiveErrorCode) {
-        // Convert Fyber's Marketplace error code into custom error code
+        // Convert DT Exchange error code into custom error code
         AdError error = getAdError(inneractiveErrorCode);
         Log.w(TAG, error.getMessage());
         mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
@@ -620,7 +620,7 @@ public class FyberMediationAdapter extends Adapter
   }
 
   /**
-   * Creates a listener for Fyber's Interstitial events
+   * Creates a listener for DT Exchange's Interstitial events
    *
    * @return the created event listener.
    */

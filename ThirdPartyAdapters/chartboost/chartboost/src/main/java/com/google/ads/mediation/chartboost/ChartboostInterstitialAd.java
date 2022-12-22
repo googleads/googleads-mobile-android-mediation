@@ -95,7 +95,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or Invalid location.");
+              "Missing or invalid location.");
       Log.w(TAG, error.toString());
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);

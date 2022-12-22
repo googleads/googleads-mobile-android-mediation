@@ -29,7 +29,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 
 /**
- * Class for rendering a Fyber Marketplace rewarded video.
+ * Class for rendering a DT Exchange rewarded video.
  */
 public class FyberRewardedVideoRenderer implements MediationRewardedAd {
 
@@ -113,7 +113,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
   }
 
   /**
-   * Creates a listener for Fyber's fullscreen placement events.
+   * Creates a listener for DT Exchange's fullscreen placement events.
    *
    * @param controller the full screen controller.
    */
@@ -178,7 +178,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     if (rewardedSpot != null && unitController != null && rewardedSpot.isReady()) {
       unitController.show((Activity) context);
     } else if (rewardedAdCallback != null) {
-      AdError error = new AdError(ERROR_AD_NOT_READY, "Fyber's rewarded spot is not ready.",
+      AdError error = new AdError(ERROR_AD_NOT_READY, "DT Exchange's rewarded spot is not ready.",
           ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       rewardedAdCallback.onAdFailedToShow(error);

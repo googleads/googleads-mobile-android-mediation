@@ -99,6 +99,7 @@ class ChartboostAdapterUtils {
               + "in the AdMob or Ad Manager UI.");
       return false;
     }
+
     return true;
   }
 

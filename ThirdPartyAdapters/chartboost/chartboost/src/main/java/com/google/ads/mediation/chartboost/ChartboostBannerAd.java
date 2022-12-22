@@ -103,7 +103,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or Invalid location.");
+              "Missing or invalid location.");
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;

@@ -13,7 +13,7 @@ import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.
 import com.google.android.gms.ads.AdError;
 
 /**
- * Utility class for the Fyber adapter.
+ * Utility class for the DT Exchange adapter.
  */
 class FyberAdapterUtils {
 
@@ -26,7 +26,7 @@ class FyberAdapterUtils {
   /**
    * Gets the specific error code for the specified {@link FyberInitStatus}.
    *
-   * @param initStatus the initialization state from Fyber.
+   * @param initStatus the initialization state from DT Exchange.
    * @return specific error.
    */
   static AdError getAdError(@NonNull FyberInitStatus initStatus) {
@@ -46,7 +46,7 @@ class FyberAdapterUtils {
         code = 203;
         break;
     }
-    return new AdError(code, "Fyber failed to initialize with reason: " + initStatus, ERROR_DOMAIN);
+    return new AdError(code, "DT Exchange failed to initialize with reason: " + initStatus, ERROR_DOMAIN);
   }
 
   /**
@@ -117,12 +117,12 @@ class FyberAdapterUtils {
       case ERROR_CODE_NATIVE_VIDEO_NOT_SUPPORTED:
         break;
     }
-    return new AdError(code, "Fyber failed to request ad with reason: " + inneractiveErrorCode,
+    return new AdError(code, "DT Exchange failed to request ad with reason: " + inneractiveErrorCode,
         ERROR_DOMAIN);
   }
 
   /**
-   * Extract age from mediation extras and add it to Fyber SDK's global user params setting.
+   * Extract age from mediation extras and add it to DT Exchange SDK's global user params setting.
    *
    * @param mediationExtras mediation extras bundle
    */
