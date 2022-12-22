@@ -90,33 +90,29 @@ public class MintegralRewardedAd implements MediationRewardedAd, RewardVideoList
     if (rewardedAdCallback == null) {
       return;
     }
-    if (rewardInfo == null || !rewardInfo.isCompleteView()) {
-      Log.w(TAG,
-          "Mintegral SDK failed to reward user due to missing reward settings or rewarded ad "
-              + "playback not completed.");
-      rewardedAdCallback.onAdClosed();
-      return;
-    }
-    RewardItem rewardItem = new RewardItem() {
-      @NonNull
-      @Override
-      public String getType() {
-        return rewardInfo.getRewardName();
-      }
-
-      @Override
-      public int getAmount() {
-        int amount = 0;
-        try {
-          amount = Integer.getInteger(rewardInfo.getRewardAmount());
-        } catch (Exception exception) {
-          Log.w(TAG, exception.getMessage());
-          exception.printStackTrace();
+    if (rewardInfo != null && rewardInfo.isCompleteView()) {
+      RewardItem rewardItem = new RewardItem() {
+        @NonNull
+        @Override
+        public String getType() {
+          return rewardInfo.getRewardName();
         }
-        return amount;
-      }
-    };
-    rewardedAdCallback.onUserEarnedReward(rewardItem);
+        @Override
+        public int getAmount() {
+          int amount = 0;
+          try {
+            amount = Integer.getInteger(rewardInfo.getRewardAmount());
+          } catch (Exception exception) {
+            Log.w(TAG, "Failed to get reward amount.", exception);
+          }
+          return amount;
+        }
+      };
+      rewardedAdCallback.onUserEarnedReward(rewardItem);
+    } else {
+      Log.w(TAG, "Mintegral SDK failed to reward user due to missing reward settings "
+              + "or rewarded ad playback not completed.");
+    }
     rewardedAdCallback.onAdClosed();
   }
 
