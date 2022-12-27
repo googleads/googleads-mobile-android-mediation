@@ -1,7 +1,6 @@
 package com.google.ads.mediation.inmobi;
 
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INMOBI_FAILED_INITIALIZATION;
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
@@ -89,8 +88,8 @@ public class InMobiInitializer {
             } else {
               initializationStatus = UNINITIALIZED;
 
-              AdError initializationError = new AdError(ERROR_INMOBI_FAILED_INITIALIZATION,
-                  error.getLocalizedMessage(), ERROR_DOMAIN);
+              AdError initializationError = InMobiConstants.createAdapterError(
+                  ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
               for (Listener initListener : listeners) {
                 initListener.onInitializeError(initializationError);
               }
