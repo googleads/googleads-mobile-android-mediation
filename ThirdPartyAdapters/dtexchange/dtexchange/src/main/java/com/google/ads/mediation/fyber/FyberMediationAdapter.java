@@ -442,6 +442,9 @@ public class FyberMediationAdapter extends Adapter
         AdError error = getAdError(inneractiveErrorCode);
         Log.w(TAG, error.getMessage());
         mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+        if (adSpot != null) {
+          adSpot.destroy();
+        }
       }
     };
   }
