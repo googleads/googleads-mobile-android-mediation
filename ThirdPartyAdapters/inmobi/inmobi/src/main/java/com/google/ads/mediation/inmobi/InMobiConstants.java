@@ -18,19 +18,10 @@ class InMobiConstants {
   public static final String INMOBI_SDK_ERROR_DOMAIN = "com.inmobi.sdk";
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      value = {
-          ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_INMOBI_FAILED_INITIALIZATION,
-          ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_NON_UNIFIED_NATIVE_REQUEST,
-          ERROR_INMOBI_NOT_INITIALIZED,
-          ERROR_AD_NOT_READY,
-          ERROR_AD_DISPLAY_FAILED,
-          ERROR_MISSING_NATIVE_ASSETS,
-          ERROR_MALFORMED_IMAGE_URL,
-          ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
-      })
+  @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_INMOBI_FAILED_INITIALIZATION,
+      ERROR_BANNER_SIZE_MISMATCH, ERROR_NON_UNIFIED_NATIVE_REQUEST, ERROR_INMOBI_NOT_INITIALIZED,
+      ERROR_AD_NOT_READY, ERROR_AD_DISPLAY_FAILED, ERROR_MISSING_NATIVE_ASSETS,
+      ERROR_MALFORMED_IMAGE_URL, ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,})
   public @interface AdapterError {
 
   }
@@ -41,7 +32,7 @@ class InMobiConstants {
   static final int ERROR_INVALID_SERVER_PARAMETERS = 100;
 
   /**
-   * Failed to initialize the InMobi SDK.
+   * InMobi SDK failed to initialize.
    */
   static final int ERROR_INMOBI_FAILED_INITIALIZATION = 101;
 
@@ -51,13 +42,12 @@ class InMobiConstants {
   static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
   /**
-   * Ad request is not a Unified native ad request.
+   * Native ad request is not a Unified native ad request.
    */
   static final int ERROR_NON_UNIFIED_NATIVE_REQUEST = 103;
 
   /**
-   * Attempted to request an InMobi ad without initializing the InMobi SDK. This should not happen
-   * since the adapter initializes the InMobi SDK prior to requesting InMobi ads.
+   * InMobi SDK isn't initialized yet.
    */
   static final int ERROR_INMOBI_NOT_INITIALIZED = 104;
 

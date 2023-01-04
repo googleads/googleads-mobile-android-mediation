@@ -38,7 +38,7 @@ class InMobiAdapterUtils {
   static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(InMobiMediationAdapter.TAG, "Missing or Invalid Placement ID.");
+      Log.e(InMobiMediationAdapter.TAG, "Missing or invalid Placement ID.");
       return 0L;
     }
 
@@ -115,9 +115,7 @@ class InMobiAdapterUtils {
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      if (!Objects.equals(city, "")
-          && !Objects.equals(state, "")
-          && !Objects.equals(country, "")) {
+      if (!Objects.equals(city, "") && !Objects.equals(state, "") && !Objects.equals(country, "")) {
         InMobiSdk.setLocationWithCityStateCountry(city, state, country);
       }
     }
@@ -202,10 +200,8 @@ class InMobiAdapterUtils {
    * @return {@code true} if the native ad has all the required assets.
    */
   public static boolean isValidNativeAd(InMobiNative nativeAd) {
-    return nativeAd.getAdCtaText() != null
-        && nativeAd.getAdDescription() != null
-        && nativeAd.getAdIconUrl() != null
-        && nativeAd.getAdLandingPageUrl() != null
+    return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
+        && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
         && nativeAd.getAdTitle() != null;
   }
 
@@ -274,15 +270,11 @@ class InMobiAdapterUtils {
   }
 
   @Nullable
-  public static AdError validateInMobiAdLoadParams(
-      @Nullable String accountID,
-      long placementID) {
+  public static AdError validateInMobiAdLoadParams(@Nullable String accountID, long placementID) {
     if (TextUtils.isEmpty(accountID) || placementID <= 0L) {
-      AdError parameterError =
-          InMobiConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid Account ID or Placement ID for this ad source"
-                  + " instance in the AdMob or Ad Manager UI.");
+      AdError parameterError = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Account ID or Placement ID for this ad source"
+              + " instance in the AdMob or Ad Manager UI.");
       Log.e(InMobiMediationAdapter.TAG, parameterError.toString());
       return parameterError;
     }

@@ -137,7 +137,7 @@ public class InMobiRewardedAd extends InterstitialAdEventListener implements Med
   @Override
   public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
     AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
-        "InMobi ad failed to show.");
+        "InMobi rewarded ad failed to show.");
     Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdFailedToShow(error);
@@ -160,7 +160,6 @@ public class InMobiRewardedAd extends InterstitialAdEventListener implements Med
   @Override
   public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
       Map<Object, Object> rewards) {
-    Log.d(TAG, "InMobi rewarded ad user earned a reward.");
     String rewardKey = "";
     String rewardStringValue = "";
     int rewardValue = 0;
@@ -187,6 +186,7 @@ public class InMobiRewardedAd extends InterstitialAdEventListener implements Med
     }
 
     if (rewardedAdCallback != null) {
+      Log.d(TAG, "InMobi rewarded ad credited the user with a reward.");
       rewardedAdCallback.onVideoComplete();
       rewardedAdCallback.onUserEarnedReward(new InMobiReward(rewardKey, rewardValue));
     }
@@ -232,7 +232,7 @@ public class InMobiRewardedAd extends InterstitialAdEventListener implements Med
     AdError error = InMobiConstants.createSdkError(
         InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
         inMobiAdRequestStatus.getMessage());
-    Log.e(TAG, error.toString());
+    Log.w(TAG, error.toString());
     if (mediationAdLoadCallback != null) {
       mediationAdLoadCallback.onFailure(error);
     }
@@ -241,7 +241,7 @@ public class InMobiRewardedAd extends InterstitialAdEventListener implements Med
   @Override
   public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
       @NonNull AdMetaInfo adMetaInfo) {
-    Log.d(TAG, "InMobi rewaded ad has been loaded.");
+    Log.d(TAG, "InMobi rewarded ad has been loaded.");
     if (mediationAdLoadCallback != null) {
       rewardedAdCallback =
           mediationAdLoadCallback.onSuccess(InMobiRewardedAd.this);

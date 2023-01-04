@@ -30,15 +30,16 @@ import java.util.Map;
 public class InMobiInterstitialAd extends InterstitialAdEventListener implements
     MediationInterstitialAd {
 
-  private InMobiInterstitial adInterstitial;
+  private InMobiInterstitial inMobiInterstitial;
   private MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
-  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback;
+  private MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      mediationAdLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
 
   public InMobiInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> mediationAdLoadCallback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          mediationAdLoadCallback) {
     this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
@@ -76,41 +77,40 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
     if (!InMobiSdk.isSDKInitialized()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
           "InMobi SDK failed to request an interstitial ad since it isn't initialized.");
-      Log.e(TAG, error.toString());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    adInterstitial = new InMobiInterstitial(context, placementId,
-        InMobiInterstitialAd.this);
+    inMobiInterstitial = new InMobiInterstitial(context, placementId, InMobiInterstitialAd.this);
 
     if (mediationInterstitialAdConfiguration.getMediationExtras().keySet() != null) {
-      adInterstitial.setKeywords(TextUtils.join(", ",
-          mediationInterstitialAdConfiguration.getMediationExtras().keySet()));
+      inMobiInterstitial.setKeywords(
+          TextUtils.join(", ", mediationInterstitialAdConfiguration.getMediationExtras().keySet()));
     }
 
     // Set the COPPA value in InMobi SDK.
     InMobiAdapterUtils.setIsAgeRestricted(mediationInterstitialAdConfiguration);
 
-    HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(mediationInterstitialAdConfiguration);
-    adInterstitial.setExtras(paramMap);
+    HashMap<String, String> paramMap = InMobiAdapterUtils.createInMobiParameterMap(
+        mediationInterstitialAdConfiguration);
+    inMobiInterstitial.setExtras(paramMap);
 
-    InMobiAdapterUtils.configureGlobalTargeting(mediationInterstitialAdConfiguration
-        .getMediationExtras());
-    adInterstitial.load();
+    InMobiAdapterUtils.configureGlobalTargeting(
+        mediationInterstitialAdConfiguration.getMediationExtras());
+    inMobiInterstitial.load();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (!adInterstitial.isReady()) {
+    if (!inMobiInterstitial.isReady()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
           "InMobi interstitial ad is not yet ready to be shown.");
-      Log.e(TAG, error.toString());
+      Log.w(TAG, error.toString());
       return;
     }
 
-    adInterstitial.show();
+    inMobiInterstitial.show();
   }
 
   @Override
@@ -137,7 +137,8 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
   @Override
   public void onAdWillDisplay(@NonNull InMobiInterstitial inMobiInterstitial) {
     Log.d(TAG, "InMobi interstitial ad will be shown.");
-    // No-op, `onAdDisplayed` will be used to forward the Google Mobile Ads SDK `onAdOpened` callback instead.
+    // No-op, `onAdDisplayed` will be used to forward the Google Mobile Ads SDK `onAdOpened`
+    // callback instead.
   }
 
   @Override
@@ -145,8 +146,7 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
       @NonNull AdMetaInfo adMetaInfo) {
     Log.d(TAG, "InMobi interstitial ad has been loaded.");
     if (mediationAdLoadCallback != null) {
-      interstitialAdCallback =
-          mediationAdLoadCallback.onSuccess(InMobiInterstitialAd.this);
+      interstitialAdCallback = mediationAdLoadCallback.onSuccess(InMobiInterstitialAd.this);
     }
   }
 
@@ -165,8 +165,8 @@ public class InMobiInterstitialAd extends InterstitialAdEventListener implements
   @Override
   public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
       @NonNull AdMetaInfo adMetaInfo) {
-    Log.d(TAG, "InMobi SDK fetched the interstitial ad successfully, but the ad " +
-        "contents still need to be loaded.");
+    Log.d(TAG, "InMobi SDK fetched the interstitial ad successfully, but the ad "
+        + "contents still need to be loaded.");
   }
 
   @Override

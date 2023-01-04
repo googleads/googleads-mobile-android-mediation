@@ -42,8 +42,24 @@ public class InMobiMediationAdapter extends Adapter {
   public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
   // Callback listener
+  /**
+   * InMobiRewardedAd instance.
+   */
   private InMobiRewardedAd inMobiRewardedAd;
 
+  /**
+   * InMobiBannerAd instance.
+   */
+  private InMobiBannerAd inMobiBannerAd;
+
+  /**
+   * InMobiInterstitialAd instance.
+   */
+  private InMobiInterstitialAd inMobiInterstitialAd;
+
+  /**
+   * InMobiNativeAd instance.
+   */
   private InMobiNativeAd inMobiNativeAd;
 
   /**
@@ -62,9 +78,9 @@ public class InMobiMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -82,9 +98,8 @@ public class InMobiMediationAdapter extends Adapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -121,8 +136,8 @@ public class InMobiMediationAdapter extends Adapter {
     String accountID = accountIDs.iterator().next();
 
     if (count > 1) {
-      String message = String.format("Multiple '%s' entries found: %s. "
-              + "Using '%s' to initialize the InMobi SDK",
+      String message = String.format(
+          "Multiple '%s' entries found: %s. " + "Using '%s' to initialize the InMobi SDK",
           InMobiAdapterUtils.KEY_ACCOUNT_ID, accountIDs, accountID);
       Log.w(TAG, message);
     }
@@ -143,11 +158,32 @@ public class InMobiMediationAdapter extends Adapter {
   @Override
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      final @NonNull MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
         mediationAdLoadCallback);
     inMobiRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    inMobiBannerAd = new InMobiBannerAd(mediationBannerAdConfiguration, callback);
+    inMobiBannerAd.loadAd();
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+    inMobiInterstitialAd = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
+    inMobiInterstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    inMobiNativeAd = new InMobiNativeAd(mediationNativeAdConfiguration, callback);
+    inMobiNativeAd.loadAd();
   }
 
 }

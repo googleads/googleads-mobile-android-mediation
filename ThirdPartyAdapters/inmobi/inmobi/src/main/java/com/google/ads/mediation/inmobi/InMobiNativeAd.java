@@ -30,7 +30,7 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
   MediationNativeAdConfiguration mediationNativeAdConfiguration;
   MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback;
-  private InMobiNative adNative;
+  private InMobiNative inMobiNative;
   public MediationNativeAdCallback mediationNativeAdCallback;
 
   public InMobiNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
@@ -77,13 +77,13 @@ public class InMobiNativeAd extends NativeAdEventListener {
       return;
     }
 
-    adNative = new InMobiNative(context, placementId, InMobiNativeAd.this);
+    inMobiNative = new InMobiNative(context, placementId, InMobiNativeAd.this);
 
-    adNative.setVideoEventListener(new VideoEventListener() {
+    inMobiNative.setVideoEventListener(new VideoEventListener() {
       @Override
       public void onVideoCompleted(final InMobiNative inMobiNative) {
         super.onVideoCompleted(inMobiNative);
-        Log.d(TAG, "InMobi native video ad completed.");
+        Log.d(TAG, "InMobi native ad video has completed.");
         if (mediationNativeAdCallback != null) {
           mediationNativeAdCallback.onVideoComplete();
         }
@@ -92,26 +92,26 @@ public class InMobiNativeAd extends NativeAdEventListener {
       @Override
       public void onVideoSkipped(final InMobiNative inMobiNative) {
         super.onVideoSkipped(inMobiNative);
-        Log.d(TAG, "InMobi native video ad skipped.");
+        Log.d(TAG, "InMobi native ad video has been skipped.");
       }
     });
 
-    // Setting mediation key words to native ad object.
+    // Set the mediation key words in InMobi native ad object.
     if (null != mediationNativeAdConfiguration.getMediationExtras().keySet()) {
-      adNative.setKeywords(TextUtils.join(", ",
-          mediationNativeAdConfiguration.getMediationExtras().keySet()));
+      inMobiNative.setKeywords(
+          TextUtils.join(", ", mediationNativeAdConfiguration.getMediationExtras().keySet()));
     }
 
     // Set the COPPA value in InMobi SDK.
     InMobiAdapterUtils.setIsAgeRestricted(mediationNativeAdConfiguration);
 
-    HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(mediationNativeAdConfiguration);
-    adNative.setExtras(paramMap);
+    HashMap<String, String> paramMap = InMobiAdapterUtils.createInMobiParameterMap(
+        mediationNativeAdConfiguration);
+    inMobiNative.setExtras(paramMap);
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationNativeAdConfiguration.getMediationExtras());
-    adNative.load();
+    inMobiNative.load();
   }
 
   @Override
@@ -126,9 +126,8 @@ public class InMobiNativeAd extends NativeAdEventListener {
       isOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
     }
 
-    InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper =
-        new InMobiUnifiedNativeAdMapper(imNativeAd, isOnlyUrl,
-            mediationAdLoadCallback, InMobiNativeAd.this);
+    InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper = new InMobiUnifiedNativeAdMapper(
+        imNativeAd, isOnlyUrl, mediationAdLoadCallback, InMobiNativeAd.this);
     inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(mediationNativeAdConfiguration.getContext());
   }
 
@@ -136,9 +135,8 @@ public class InMobiNativeAd extends NativeAdEventListener {
   public void onAdLoadFailed(@NonNull InMobiNative inMobiNative,
       @NonNull InMobiAdRequestStatus requestStatus) {
     AdError error = InMobiConstants.createSdkError(
-        InMobiAdapterUtils.getMediationErrorCode(requestStatus),
-        requestStatus.getMessage());
-    Log.e(TAG, error.toString());
+        InMobiAdapterUtils.getMediationErrorCode(requestStatus), requestStatus.getMessage());
+    Log.w(TAG, error.toString());
     if (mediationNativeAdCallback != null) {
       mediationAdLoadCallback.onFailure(error);
     }
@@ -159,7 +157,7 @@ public class InMobiNativeAd extends NativeAdEventListener {
 
   @Override
   public void onAdFullScreenDisplayed(@NonNull InMobiNative inMobiNative) {
-    Log.d(TAG, "InMobi native ad opened.");
+    Log.d(TAG, "InMobi native ad has been displayed.");
     if (mediationNativeAdCallback != null) {
       mediationNativeAdCallback.onAdOpened();
     }

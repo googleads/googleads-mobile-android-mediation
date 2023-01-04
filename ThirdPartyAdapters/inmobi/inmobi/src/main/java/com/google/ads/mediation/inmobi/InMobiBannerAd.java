@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdError;
@@ -23,7 +22,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
-import com.inmobi.ads.exceptions.SdkNotInitializedException;
 import com.inmobi.ads.listeners.BannerAdEventListener;
 import com.inmobi.sdk.InMobiSdk;
 
@@ -50,9 +48,8 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     final AdSize inMobiMediationAdSize = InMobiAdapterUtils.findClosestBannerSize(context,
         mediationBannerAdConfiguration.getAdSize());
     if (inMobiMediationAdSize == null) {
-      AdError mismatchError = InMobiConstants.createAdapterError(
-          ERROR_BANNER_SIZE_MISMATCH, String.format(
-              "The requested banner size: %s is not supported by InMobi SDK.",
+      AdError mismatchError = InMobiConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
+          String.format("The requested banner size: %s is not supported by InMobi SDK.",
               mediationBannerAdConfiguration.getAdSize()));
       Log.e(TAG, mismatchError.toString());
       mediationAdLoadCallback.onFailure(mismatchError);
@@ -90,7 +87,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     if (!InMobiSdk.isSDKInitialized()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
           "InMobi SDK failed to request a banner ad since it isn't initialized.");
-      Log.e(TAG, error.toString());
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -110,8 +107,8 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     InMobiAdapterUtils.setIsAgeRestricted(mediationBannerAdConfiguration);
 
     // Create request parameters.
-    HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(mediationBannerAdConfiguration);
+    HashMap<String, String> paramMap = InMobiAdapterUtils.createInMobiParameterMap(
+        mediationBannerAdConfiguration);
     adView.setExtras(paramMap);
 
     Bundle mediationExtras = mediationBannerAdConfiguration.getMediationExtras();
@@ -119,18 +116,14 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
     adView.setListener(InMobiBannerAd.this);
 
     /*
-     * We wrap the ad View in a FrameLayout to ensure that it's the right
-     * size. Without this the ad takes up the maximum width possible,
-     * causing artifacts on high density screens (like the Galaxy Nexus) or
-     * in landscape view. If the underlying library sets the appropriate
-     * size instead of match_parent, this wrapper can be removed.
+     * Wrap InMobi's ad view to limit the dependency on its methods. For example, the method
+     * that specifies the width and height for the ad view.
      */
     wrappedAdView = new FrameLayout(context);
     wrappedAdView.setLayoutParams(wrappedLayoutParams);
-    adView.setLayoutParams(
-        new LinearLayout.LayoutParams(
-            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+    adView.setLayoutParams(new LinearLayout.LayoutParams(
+        mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
+        mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
     wrappedAdView.addView(adView);
     InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
     adView.load();
@@ -149,8 +142,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
   }
 
   @Override
-  public void onRewardsUnlocked(@NonNull InMobiBanner inMobiBanner,
-      Map<Object, Object> rewards) {
+  public void onRewardsUnlocked(@NonNull InMobiBanner inMobiBanner, Map<Object, Object> rewards) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
@@ -159,8 +151,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
       @NonNull AdMetaInfo adMetaInfo) {
     Log.d(TAG, "InMobi banner ad has been loaded.");
     if (mediationAdLoadCallback != null) {
-      mediationBannerAdCallback =
-          mediationAdLoadCallback.onSuccess(InMobiBannerAd.this);
+      mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(InMobiBannerAd.this);
     }
   }
 
@@ -193,8 +184,7 @@ public class InMobiBannerAd extends BannerAdEventListener implements MediationBa
   }
 
   @Override
-  public void onAdClicked(@NonNull InMobiBanner inMobiBanner,
-      Map<Object, Object> map) {
+  public void onAdClicked(@NonNull InMobiBanner inMobiBanner, Map<Object, Object> map) {
     Log.d(TAG, "InMobi banner ad has been clicked.");
     if (mediationBannerAdCallback != null) {
       mediationBannerAdCallback.reportAdClicked();
