@@ -4,7 +4,7 @@
 - Added bidding support for banner ad format.
 
 Built and tested with:
-- Google Mobile Ads SDK version 21.3.0.
+- Google Mobile Ads SDK version 21.4.0.
 - Vungle SDK version 6.12.1.
 
 #### Version 6.12.0.0

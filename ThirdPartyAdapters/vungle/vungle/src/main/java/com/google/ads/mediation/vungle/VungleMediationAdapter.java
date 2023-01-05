@@ -216,10 +216,12 @@ public class VungleMediationAdapter extends RtbAdapter
 
     int count = appIDs.size();
     if (count <= 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.",
-          ERROR_DOMAIN);
-      Log.e(TAG, error.toString());
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      if (initializationCompleteCallback != null) {
+        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
+            ERROR_DOMAIN);
+        Log.w(TAG, error.toString());
+        initializationCompleteCallback.onInitializationFailed(error.toString());
+      }
       return;
     }
 
@@ -261,7 +263,9 @@ public class VungleMediationAdapter extends RtbAdapter
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
-    userId = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+    if (mediationExtras != null) {
+      userId = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
+    }
 
     placement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
     if (TextUtils.isEmpty(placement)) {

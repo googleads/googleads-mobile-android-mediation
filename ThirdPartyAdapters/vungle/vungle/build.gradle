@@ -31,12 +31,12 @@ android {
 }
 
 dependencies {
-    implementation ('com.vungle:publisher-sdk-android:6.12.1') {
+    implementation ('com.github.vungle:vungle-android-sdk:6.12.1-RC6') {
         transitive=true
     }
 
     implementation 'androidx.annotation:annotation:1.4.0'
-    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'com.google.android.gms:play-services-ads:21.4.0'
 }
 
 /**

@@ -1,6 +1,8 @@
 package com.google.ads.mediation.vungle;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
@@ -20,6 +22,7 @@ public class VungleInitializer implements InitCallback {
   private static final VungleInitializer instance = new VungleInitializer();
   private final AtomicBoolean isInitializing = new AtomicBoolean(false);
   private final ArrayList<VungleInitializationListener> initListeners;
+  private final Handler handler = new Handler(Looper.getMainLooper());
 
   @NonNull
   public static VungleInitializer getInstance() {
@@ -75,20 +78,32 @@ public class VungleInitializer implements InitCallback {
 
   @Override
   public void onSuccess() {
-    for (VungleInitializationListener listener : initListeners) {
-      listener.onInitializeSuccess();
-    }
-    initListeners.clear();
+    handler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            for (VungleInitializationListener listener : initListeners) {
+              listener.onInitializeSuccess();
+            }
+            initListeners.clear();
+          }
+        });
     isInitializing.set(false);
   }
 
   @Override
   public void onError(final VungleException exception) {
     final AdError error = VungleMediationAdapter.getAdError(exception);
-    for (VungleInitializationListener listener : initListeners) {
-      listener.onInitializeError(error);
-    }
-    initListeners.clear();
+    handler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            for (VungleInitializationListener listener : initListeners) {
+              listener.onInitializeError(error);
+            }
+            initListeners.clear();
+          }
+        });
     isInitializing.set(false);
   }
 

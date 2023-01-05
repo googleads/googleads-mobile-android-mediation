@@ -83,14 +83,15 @@ public class VungleRtbBannerAd implements MediationBannerAd {
     }
 
     AdapterParametersParser.Config config = AdapterParametersParser.parse(appID, mediationExtras);
-    // Adapter does not support multiple Banner instances playing for same placement except for
-    // refresh.
+    // Vungle SDK doesn't support rendering multiple banner ads for the same placement at the same time,
+    // except for refresh.
     String uniqueRequestId = config.getRequestUniqueId();
     if (!VungleManager.getInstance().canRequestBannerAd(placementForPlay, uniqueRequestId)) {
       AdError error = new AdError(ERROR_AD_ALREADY_LOADED,
-          "Vungle adapter does not support multiple banner instances for same placement.",
+          "Vungle SDK doesn't support rendering multiple banner ads for the same placement "
+              + "at the same time, except for refresh.",
           ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
+      Log.w(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
@@ -100,12 +101,11 @@ public class VungleRtbBannerAd implements MediationBannerAd {
 
     vungleBannerAdapter = new VungleBannerAdapter(placementForPlay, uniqueRequestId, adConfig,
         VungleRtbBannerAd.this);
-    Log.d(TAG, "New banner adapter: " + vungleBannerAdapter + "; size: " + adConfig.getAdSize());
 
     VungleBannerAd vungleBanner = new VungleBannerAd(placementForPlay, vungleBannerAdapter);
     VungleManager.getInstance().registerBannerAd(placementForPlay, vungleBanner);
 
-    Log.d(TAG, "Requesting banner with ad size: " + adConfig.getAdSize());
+    Log.d(TAG, "Vungle SDK requests a bidding banner ad with ad size:"+adConfig.getAdSize());
     vungleBannerAdapter
         .requestBannerAd(context, config.getAppId(), adSize, adMarkup, mediationAdLoadCallback);
   }
@@ -113,7 +113,7 @@ public class VungleRtbBannerAd implements MediationBannerAd {
   @NonNull
   @Override
   public View getView() {
-    Log.d(TAG, "getBannerView # instance: " + hashCode());
+    Log.d(TAG, "Vungle SDK returns a bidding banner view instance: " + hashCode());
     return vungleBannerAdapter.getAdLayout();
   }
 }

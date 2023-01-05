@@ -137,6 +137,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   void requestBannerAd(@NonNull Context context, @NonNull String appId, @NonNull AdSize adSize,
       @NonNull MediationBannerListener mediationBannerListener) {
     mediationListener = mediationBannerListener;
+    adMarkup = null;
 
     requestBannerAd(context, appId, adSize);
   }
@@ -146,6 +147,9 @@ public class VungleBannerAdapter implements PlayAdCallback {
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.adMarkup = adMarkup;
+    if(TextUtils.isEmpty(this.adMarkup)) {
+      this.adMarkup = null;
+    }
 
     requestBannerAd(context, appId, adSize);
   }
