@@ -1,10 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated the adapter to forward `onUserEarnedReward()` before `onAdClosed()` when showing rewarded ads.
-
-#### Version 16.3.11.0 (In progress)
+#### Version 16.3.11.0
 - Verified compatibility with Mintegral SDK 16.3.11.
+- Updated the adapter to forward `onUserEarnedReward()` before `onAdClosed()` when showing rewarded ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.3.0.
