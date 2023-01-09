@@ -57,10 +57,10 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final String TAG = VungleMediationAdapter.class.getSimpleName();
   public static final String KEY_APP_ID = "appid";
 
+  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
-  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbNativeAd rtbNativeAd;
 
   private AdConfig adConfig;
@@ -312,7 +312,8 @@ public class VungleMediationAdapter extends RtbAdapter
 
                 if (Vungle.canPlayAd(placement)) {
                   mediationRewardedAdCallback =
-                      VungleMediationAdapter.this.mediationAdLoadCallback.onSuccess(VungleMediationAdapter.this);
+                      VungleMediationAdapter.this.mediationAdLoadCallback.onSuccess(
+                          VungleMediationAdapter.this);
                   return;
                 }
 
