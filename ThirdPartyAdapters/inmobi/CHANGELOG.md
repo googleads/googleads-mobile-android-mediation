@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Version 10.1.2.1 (In progress)
+#### Version 10.1.2.1
 - Added support for forwarding the COPPA value to InMobi SDK.
 - Updated the adapter to use the new mediation APIs.
 - Updated the minimum required Google Mobile Ads SDK version to 21.4.0.
