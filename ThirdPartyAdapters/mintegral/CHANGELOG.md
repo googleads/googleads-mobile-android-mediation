@@ -1,5 +1,13 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 16.3.41.0 (In progress)
+- Verified compatibility with Mintegral SDK 16.3.41.
+- Updated the minimum required Google Mobile Ads SDK version to 21.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.4.0.
+- Mintegral SDK version 16.3.41.
+
 #### Version 16.3.11.0
 - Verified compatibility with Mintegral SDK 16.3.11.
 - Updated the adapter to forward `onUserEarnedReward()` before `onAdClosed()` when showing rewarded ads.
