@@ -1,6 +1,6 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.12.0.1 (In progress)
+#### Version 6.12.0.1
 - Added bidding support for banner ad format.
 - Verified compatibility with Vungle SDK 6.12.0.
 - Updated the minimum required Google Mobile Ads SDK version to 21.4.0.
