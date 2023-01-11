@@ -1,4 +1,4 @@
-package com.google.ads.mediation.mintegral.rtb;
+package com.google.ads.mediation.mintegral.waterfall;
 
 import android.content.Context;
 
@@ -13,14 +13,14 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
+import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 
 
-public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
+public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
-  private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
+  private MBNewInterstitialHandler mbNewInterstitialHandler;
 
-  public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public MintegralWaterfallInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     super(adConfiguration, callback);
   }
 
@@ -29,24 +29,23 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
-    String bidToken = adConfiguration.getBidResponse();
     AdError error = MintegralUtils.validateMintegralAdLoadParams(
-        adUnitId, placementId, bidToken);
+        adUnitId, placementId);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(),
+    mbNewInterstitialHandler = new MBNewInterstitialHandler(adConfiguration.getContext(),
         placementId, adUnitId);
-    mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
-    mbBidNewInterstitialHandler.loadFromBid(bidToken);
+    mbNewInterstitialHandler.setInterstitialVideoListener(this);
+    mbNewInterstitialHandler.load();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+    mbNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
         : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbBidNewInterstitialHandler.showFromBid();
+    mbNewInterstitialHandler.show();
   }
 }

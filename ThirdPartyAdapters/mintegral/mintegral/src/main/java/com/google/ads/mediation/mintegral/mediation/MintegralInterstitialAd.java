@@ -2,33 +2,27 @@ package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
-import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
-import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
 
-public class MintegralInterstitialAd implements MediationInterstitialAd,
+public abstract class MintegralInterstitialAd implements MediationInterstitialAd,
     NewInterstitialListener {
 
-  private final MediationInterstitialAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
-  private MBNewInterstitialHandler mbNewInterstitialHandler;
-  private MediationInterstitialAdCallback interstitialAdCallback;
+  protected final MediationInterstitialAdConfiguration adConfiguration;
+  protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+  protected MediationInterstitialAdCallback interstitialAdCallback;
 
   public MintegralInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
                                  @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
@@ -36,30 +30,11 @@ public class MintegralInterstitialAd implements MediationInterstitialAd,
     this.adLoadCallback = callback;
   }
 
-  public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.PLACEMENT_ID);
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(
-        adUnitId, placementId);
-    if (error != null) {
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    mbNewInterstitialHandler = new MBNewInterstitialHandler(adConfiguration.getContext(),
-        placementId, adUnitId);
-    mbNewInterstitialHandler.setInterstitialVideoListener(this);
-    mbNewInterstitialHandler.load();
-  }
+  /**
+   * Loads an Mintegral Interstitial ad.
+   */
+  public abstract void loadAd();
 
-  @Override
-  public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbNewInterstitialHandler.show();
-  }
 
   @Override
   public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {

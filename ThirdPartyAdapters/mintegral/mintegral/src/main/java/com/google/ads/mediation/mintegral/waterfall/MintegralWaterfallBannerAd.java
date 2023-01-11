@@ -1,4 +1,4 @@
-package com.google.ads.mediation.mintegral.rtb;
+package com.google.ads.mediation.mintegral.waterfall;
 
 
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
@@ -24,9 +24,11 @@ import com.mbridge.msdk.out.MBBannerView;
 
 import java.util.ArrayList;
 
-public class MintegralRtbBannerAd extends MintegralBannerAd {
+public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
-  public MintegralRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+  public MintegralWaterfallBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+                                    @NonNull MediationAdLoadCallback<MediationBannerAd,
+                                            MediationBannerAdCallback> mediationAdLoadCallback) {
     super(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
@@ -66,8 +68,7 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
-    String bidToken = adConfiguration.getBidResponse();
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
@@ -79,6 +80,6 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
         closestSize.getHeightInPixels(adConfiguration.getContext()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
-    mbBannerView.loadFromBid(bidToken);
+    mbBannerView.load();
   }
 }

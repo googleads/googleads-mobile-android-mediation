@@ -1,7 +1,6 @@
 package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
-import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -21,31 +20,24 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.MediaView;
-import com.google.android.gms.ads.nativead.NativeAdAssetNames;
-import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.Campaign;
 import com.mbridge.msdk.out.Frame;
-import com.mbridge.msdk.out.MBBidNativeHandler;
-import com.mbridge.msdk.out.MBNativeHandler;
 import com.mbridge.msdk.out.NativeListener;
 import com.mbridge.msdk.out.OnMBMediaViewListener;
 import com.mbridge.msdk.widget.MBAdChoice;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class MintegralNativeAd extends UnifiedNativeAdMapper implements
+public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
     NativeListener.NativeAdListener, OnMBMediaViewListener {
 
-  private Campaign campaign;
-  private final MediationNativeAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
-  private MediationNativeAdCallback nativeCallback;
-  private MBNativeHandler mbNativeHandler;
-  private static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
+  protected Campaign campaign;
+  protected final MediationNativeAdConfiguration adConfiguration;
+  protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+  protected MediationNativeAdCallback nativeCallback;
+  protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
 
   public MintegralNativeAd(
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
@@ -54,28 +46,10 @@ public class MintegralNativeAd extends UnifiedNativeAdMapper implements
     adLoadCallback = mediationAdLoadCallback;
   }
 
-  public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.PLACEMENT_ID);
-    AdError error =
-        MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId);
-    if (error != null) {
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    Map<String, Object> nativeProperties = MBBidNativeHandler.getNativeProperties(placementId,
-        adUnitId);
-    // Configure the properties of the Mintegral native ad, where video ad will be supported and
-    // only one ad will be returned in each ad request.
-    nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
-    nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
-    mbNativeHandler = new MBNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbNativeHandler.setAdListener(this);
-    mbNativeHandler.load();
-  }
+  /**
+   * Loads an Mintegral native ad.
+   */
+  public abstract void loadAd();
 
   @NonNull
   private void mapNativeAd(@NonNull Campaign ad) {
@@ -106,28 +80,6 @@ public class MintegralNativeAd extends UnifiedNativeAdMapper implements
     setOverrideClickHandling(true);
   }
 
-  @Override
-  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
-      @NonNull Map<String, View> map1) {
-    // Set click interaction.
-    HashMap<String, View> copyClickableAssetViews = new HashMap<>(clickableAssetViews);
-
-    // Exclude Mintegral's Privacy Information Icon image and text from click events.
-    copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
-    copyClickableAssetViews.remove("3012");
-
-    ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
-    if (mbNativeHandler != null) {
-      mbNativeHandler.registerView(null, assetViews, campaign);
-    }
-  }
-
-  @Override
-  public void untrackView(View view) {
-    if (mbNativeHandler != null) {
-      mbNativeHandler.unregisterView(view, traversalView(view), campaign);
-    }
-  }
 
   /**
    * Traverse all sub views of the view to add click event listening to all views
@@ -135,7 +87,7 @@ public class MintegralNativeAd extends UnifiedNativeAdMapper implements
    * @param view View of advertising area
    * @return Return a list containing all the views that need to respond to the click
    */
-  private List traversalView(View view) {
+  protected List traversalView(View view) {
     List<View> viewList = new ArrayList<View>();
     if (view == null) {
       return viewList;

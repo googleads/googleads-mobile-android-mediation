@@ -2,32 +2,27 @@ package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
-import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
-import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.out.MBRewardVideoHandler;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 
-public class MintegralRewardedAd implements MediationRewardedAd, RewardVideoListener {
+public abstract class MintegralRewardedAd implements MediationRewardedAd, RewardVideoListener {
 
-  private final MediationRewardedAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  protected final MediationRewardedAdConfiguration adConfiguration;
+  protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
-  private MBRewardVideoHandler mbRewardVideoHandler;
-  private MediationRewardedAdCallback rewardedAdCallback;
+  protected MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
                              @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
@@ -36,29 +31,10 @@ public class MintegralRewardedAd implements MediationRewardedAd, RewardVideoList
     this.adLoadCallback = adLoadCallback;
   }
 
-  public void loadAd() {
-    String adUnitId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.AD_UNIT_ID);
-    String placementId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.PLACEMENT_ID);
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId);
-    if (error != null) {
-      adLoadCallback.onFailure(error);
-      return;
-    }
-    mbRewardVideoHandler = new MBRewardVideoHandler(adConfiguration.getContext(), placementId,
-        adUnitId);
-    mbRewardVideoHandler.setRewardVideoListener(this);
-    mbRewardVideoHandler.load();
-  }
-
-  @Override
-  public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbRewardVideoHandler.show();
-  }
+  /**
+   * Loads an Mintegral Reward ad.
+   */
+  public abstract void loadAd();
 
   @Override
   public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
