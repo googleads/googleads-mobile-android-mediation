@@ -32,36 +32,15 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     super(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
+  @Override
   public void loadAd() {
-    BannerSize bannerSize = null;
-    ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
-    supportedSizes.add(new AdSize(320, 50));
-    supportedSizes.add(new AdSize(300, 250));
-    supportedSizes.add(new AdSize(728, 90));
-    AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(),
-        adConfiguration.getAdSize(), supportedSizes);
-    if (closestSize == null) {
-      AdError bannerSizeError = MintegralConstants.createAdapterError(
-          ERROR_BANNER_SIZE_UNSUPPORTED, String.format(
-              "The requested banner size: %s is not supported by Mintegral SDK.",
-              adConfiguration.getAdSize()));
-      Log.e(TAG, bannerSizeError.toString());
-      adLoadCallback.onFailure(bannerSizeError);
+    AdSize closestSize = getAdSize();
+    if(closestSize == null){
       return;
     }
-
-    if (closestSize.equals(AdSize.BANNER)) { // 320 * 50
-      bannerSize = new BannerSize(BannerSize.STANDARD_TYPE, 0, 0);
-    }
-    if (closestSize.equals(AdSize.MEDIUM_RECTANGLE)) { // 300 * 250
-      bannerSize = new BannerSize(BannerSize.MEDIUM_TYPE, 0, 0);
-    }
-    if (closestSize.equals(AdSize.LEADERBOARD)) { // 728 * 90
-      bannerSize = new BannerSize(BannerSize.SMART_TYPE, closestSize.getWidth(), 0);
-    }
-    if (bannerSize == null) {
-      bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
-          closestSize.getHeight());
+    BannerSize bannerSize = validateMintegralBannerAdSizeForAdSize(closestSize);
+    if(bannerSize == null){
+      return;
     }
 
     String adUnitId = adConfiguration.getServerParameters()

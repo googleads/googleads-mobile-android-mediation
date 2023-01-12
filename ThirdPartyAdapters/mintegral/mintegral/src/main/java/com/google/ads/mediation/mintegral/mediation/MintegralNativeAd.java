@@ -47,7 +47,7 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   }
 
   /**
-   * Loads an Mintegral native ad.
+   * Loads a Mintegral native ad.
    */
   public abstract void loadAd();
 

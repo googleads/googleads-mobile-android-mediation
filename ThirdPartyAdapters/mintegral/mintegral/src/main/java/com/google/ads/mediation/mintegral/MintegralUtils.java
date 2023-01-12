@@ -48,15 +48,14 @@ public class MintegralUtils {
           @Nullable String adUnitId,
           @Nullable String placementId,
           @Nullable String bidToken) {
-    AdError parameterError = null;
-    if ((parameterError = validateMintegralAdLoadParams(adUnitId, placementId)) != null) {
+    AdError parameterError = validateMintegralAdLoadParams(adUnitId, placementId);
+    if (parameterError != null) {
       return parameterError;
     }
     if (TextUtils.isEmpty(bidToken)) {
       parameterError = MintegralConstants.createAdapterError(
               MintegralConstants.ERROR_INVALID_BID_RESPONSE,
-              "Missing or invalid bid token configured for this ad source instance in the"
-                      + " AdMob or Ad Manager UI.");
+              "Missing or invalid Mintegral bidding signal in this ad request.");
       Log.e(TAG, parameterError.toString());
       return parameterError;
     }

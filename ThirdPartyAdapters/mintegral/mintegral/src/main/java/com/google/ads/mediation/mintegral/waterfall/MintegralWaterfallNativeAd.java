@@ -32,6 +32,7 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
     super(mediationNativeAdConfiguration, mediationAdLoadCallback);
   }
 
+  @Override
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);

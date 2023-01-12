@@ -32,7 +32,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
   }
 
   /**
-   * Loads an Mintegral Reward ad.
+   * Loads a Mintegral rewarded ad.
    */
   public abstract void loadAd();
 
@@ -86,7 +86,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
       };
       rewardedAdCallback.onUserEarnedReward(rewardItem);
     } else {
-      Log.w(TAG, "Mintegral SDK failed to reward user due to missing reward settings "
+      Log.w(TAG, "Mintegral SDK failed to reward user due to missing rewarded settings "
               + "or rewarded ad playback not completed.");
     }
     rewardedAdCallback.onAdClosed();
@@ -94,10 +94,10 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
 
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
+    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+            errorMessage);
+    Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-          errorMessage);
-      Log.w(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
     }
   }

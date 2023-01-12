@@ -31,7 +31,7 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   }
 
   /**
-   * Loads an Mintegral Interstitial ad.
+   * Loads a Mintegral Interstitial ad.
    */
   public abstract void loadAd();
 
@@ -70,10 +70,10 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
 
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
+    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+            errorMessage);
+    Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {
-      AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-          errorMessage);
-      Log.w(TAG, error.toString());
       interstitialAdCallback.onAdFailedToShow(error);
     }
   }

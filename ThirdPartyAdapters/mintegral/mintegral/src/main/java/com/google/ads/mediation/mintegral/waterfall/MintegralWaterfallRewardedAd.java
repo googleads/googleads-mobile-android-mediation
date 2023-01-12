@@ -25,6 +25,7 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
     super(adConfiguration, adLoadCallback);
   }
 
+  @Override
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);

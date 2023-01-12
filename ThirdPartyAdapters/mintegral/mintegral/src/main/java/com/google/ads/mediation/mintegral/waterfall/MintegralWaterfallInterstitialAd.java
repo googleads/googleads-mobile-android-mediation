@@ -24,6 +24,7 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
     super(adConfiguration, callback);
   }
 
+  @Override
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
