@@ -1,6 +1,6 @@
 ## Vungle Android Mediation Adapter Changelog
 
-#### Version 6.12.1.0 (In Progress)
+#### Version 6.12.1.0
 - Verified compatibility with Vungle SDK 6.12.1.
 
 Built and tested with:
