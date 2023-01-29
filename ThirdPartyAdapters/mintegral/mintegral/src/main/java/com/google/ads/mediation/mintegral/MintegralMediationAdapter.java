@@ -55,14 +55,14 @@ public class MintegralMediationAdapter extends RtbAdapter {
 
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
   private static MBridgeSDK mBridgeSDK;
-  private MintegralRtbBannerAd mintegralRtbBannerAd;
-  private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
-  private MintegralRtbRewardedAd mintegralRtbRewardedAd;
-  private MintegralRtbNativeAd mintegralRtbNativeAd;
   private MintegralWaterfallBannerAd mintegralWaterfallBannerAd;
   private MintegralWaterfallInterstitialAd mintegralInterstitialAd;
   private MintegralWaterfallRewardedAd mintegralRewardedAd;
   private MintegralWaterfallNativeAd mintegralNativeAd;
+  private MintegralRtbBannerAd mintegralRtbBannerAd;
+  private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
+  private MintegralRtbRewardedAd mintegralRtbRewardedAd;
+  private MintegralRtbNativeAd mintegralRtbNativeAd;
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
