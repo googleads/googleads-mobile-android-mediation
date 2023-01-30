@@ -38,6 +38,10 @@ import com.unity3d.ads.IUnityAdsShowListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
+import com.unity3d.ads.UnityAdsLoadOptions;
+import com.unity3d.ads.UnityAdsShowOptions;
+
+import java.util.UUID;
 
 public class UnityRewardedAd implements MediationRewardedAd {
 
@@ -58,6 +62,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
    * Placement ID used to determine what type of ad to load.
    */
   private String placementId;
+
+  /**
+   * Object ID used to track loaded/shown ads.
+   */
+  private String objectId;
 
   /**
    * UnityRewardedEventAdapter instance to send events from the mediationRewardedAdCallback.
@@ -101,8 +110,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
     }
 
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
-    String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
+    final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
+    final String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
     if (!UnityAdapter.areValidIds(gameId, placementId)) {
       sendRewardedLoadFailure(
           createAdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid server parameters."));
@@ -130,7 +139,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
           }
         });
 
-    UnityAds.load(placementId, unityLoadListener);
+    objectId = UUID.randomUUID().toString();
+    UnityAdsLoadOptions unityAdsLoadOptions = new UnityAdsLoadOptions();
+    unityAdsLoadOptions.setObjectId(objectId);
+
+    UnityAds.load(placementId, unityAdsLoadOptions, unityLoadListener);
   }
 
   @Override
@@ -151,8 +164,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
       Log.w(TAG, "Unity Ads received call to show before successfully loading an ad.");
     }
 
+    UnityAdsShowOptions unityAdsShowOptions = new UnityAdsShowOptions();
+    unityAdsShowOptions.setObjectId(objectId);
+
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activity, placementId, unityShowListener);
+    UnityAds.show(activity, placementId, unityAdsShowOptions, unityShowListener);
   }
 
   /**

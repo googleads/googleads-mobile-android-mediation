@@ -144,9 +144,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           "Unity Ads requires an Activity context to load ads.");
       return;
     }
-    Activity activity = (Activity) context;
+    final Activity activity = (Activity) context;
 
-    UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
     if (unityBannerSize == null) {
       String errorMessage = String
           .format("There is no matching Unity Ads ad size for Google ad size: %s",
