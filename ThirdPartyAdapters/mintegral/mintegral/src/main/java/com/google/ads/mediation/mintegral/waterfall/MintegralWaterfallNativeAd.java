@@ -1,4 +1,4 @@
-package com.google.ads.mediation.mintegral.rtb;
+package com.google.ads.mediation.mintegral.waterfall;
 
 import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
@@ -17,16 +17,18 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidNativeHandler;
+import com.mbridge.msdk.out.MBNativeHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MintegralRtbNativeAd extends MintegralNativeAd {
+public class MintegralWaterfallNativeAd extends MintegralNativeAd {
 
-  private MBBidNativeHandler mbBidNativeHandler;
+  private MBNativeHandler mbNativeHandler;
 
-  public MintegralRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+
+  public MintegralWaterfallNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
     super(mediationNativeAdConfiguration, mediationAdLoadCallback);
   }
 
@@ -36,10 +38,9 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
-    String bidToken = adConfiguration.getBidResponse();
     AdError error =
         MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId, bidToken);
+            adUnitId, placementId);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
@@ -50,9 +51,9 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     // only one ad will be returned in each ad request.
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
-    mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbBidNativeHandler.setAdListener(this);
-    mbBidNativeHandler.bidLoad(bidToken);
+    mbNativeHandler = new MBNativeHandler(nativeProperties, adConfiguration.getContext());
+    mbNativeHandler.setAdListener(this);
+    mbNativeHandler.load();
   }
 
   @Override
@@ -66,15 +67,15 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     copyClickableAssetViews.remove("3012");
 
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
-    if (mbBidNativeHandler != null) {
-      mbBidNativeHandler.registerView(null, assetViews, campaign);
+    if (mbNativeHandler != null) {
+      mbNativeHandler.registerView(null, assetViews, campaign);
     }
   }
 
   @Override
   public void untrackView(View view) {
-    if (mbBidNativeHandler != null) {
-      mbBidNativeHandler.unregisterView(view, traversalView(view), campaign);
+    if (mbNativeHandler != null) {
+      mbNativeHandler.unregisterView(view, traversalView(view), campaign);
     }
   }
 }
