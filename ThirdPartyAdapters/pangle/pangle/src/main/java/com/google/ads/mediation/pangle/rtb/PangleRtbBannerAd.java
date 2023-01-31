@@ -90,13 +90,9 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
                     MediationUtils.findClosestSize(
                         context, adConfiguration.getAdSize(), supportedSizes);
                 if (closestSize == null) {
-                  AdError error =
-                      PangleConstants.createAdapterError(
-                          ERROR_BANNER_SIZE_MISMATCH,
-                          "Failed to request banner ad from Pangle. Invalid banner size.");
-                  Log.w(TAG, error.toString());
-                  adLoadCallback.onFailure(error);
-                  return;
+                  // The width and height of the banner cannot be matched, and the default size is 320*50
+                  Log.d(TAG, "Invalid banner size. Mandatory banner size is 320*50.");
+                  closestSize = new AdSize(320, 50);
                 }
 
                 wrappedAdView = new FrameLayout(context);
