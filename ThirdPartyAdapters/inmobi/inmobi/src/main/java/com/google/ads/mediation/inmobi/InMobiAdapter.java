@@ -19,9 +19,9 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 public final class InMobiAdapter extends InMobiMediationAdapter {
 
   static final String TAG = InMobiAdapter.class.getSimpleName();
-  InMobiBannerAd mInMobiBanner;
-  InMobiInterstitialAd mInMobiInterstitial;
-  InMobiNativeAd mInMobiNativeAd;
+  private InMobiBannerAd mInMobiBanner;
+  private InMobiInterstitialAd mInMobiInterstitial;
+  private InMobiNativeAd mInMobiNativeAd;
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
