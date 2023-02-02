@@ -38,7 +38,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:21.4.0'
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads:10.1.2'
+    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.3'
 }
 
 /**
