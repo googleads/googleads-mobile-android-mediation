@@ -1,14 +1,14 @@
 package com.google.ads.mediation.mintegral.mediation;
 
-
-import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -26,21 +26,17 @@ import java.util.ArrayList;
 
 public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdListener {
 
-  protected final MediationBannerAdConfiguration adConfiguration;
-  protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  protected MediationBannerAdConfiguration adConfiguration;
+  protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
   protected MBBannerView mbBannerView;
   protected MediationBannerAdCallback bannerAdCallback;
-  protected ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
 
-  public MintegralBannerAd(
-          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-                  mediationAdLoadCallback) {
+  public MintegralBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
-    supportedSizes.add(new AdSize(320, 50));
-    supportedSizes.add(new AdSize(300, 250));
-    supportedSizes.add(new AdSize(728, 90));
   }
 
   /**
@@ -48,22 +44,19 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
    */
   public abstract void loadAd();
 
-  protected AdSize getAdSize() {
-    AdSize closestSize = MediationUtils.findClosestSize(adConfiguration.getContext(),
-            adConfiguration.getAdSize(), supportedSizes);
+  @Nullable
+  public static BannerSize getMintegralBannerSizeFromAdMobAdSize(@NonNull AdSize adSize,
+      @NonNull Context context) {
+    ArrayList<AdSize> supportedAdSizes = new ArrayList<>();
+    supportedAdSizes.add(new AdSize(320, 50));
+    supportedAdSizes.add(new AdSize(300, 250));
+    supportedAdSizes.add(new AdSize(728, 90));
+
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, supportedAdSizes);
     if (closestSize == null) {
-      AdError bannerSizeError = MintegralConstants.createAdapterError(
-              ERROR_BANNER_SIZE_UNSUPPORTED, String.format(
-                      "The requested banner size: %s is not supported by Mintegral SDK.",
-                      adConfiguration.getAdSize()));
-      Log.e(TAG, bannerSizeError.toString());
-      adLoadCallback.onFailure(bannerSizeError);
       return null;
     }
-    return closestSize;
-  }
 
-  public BannerSize validateMintegralBannerAdSizeForAdSize(AdSize closestSize) {
     BannerSize bannerSize = null;
     if (closestSize.equals(AdSize.BANNER)) { // 320 * 50
       bannerSize = new BannerSize(BannerSize.STANDARD_TYPE, 0, 0);
@@ -76,7 +69,7 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
     }
     if (bannerSize == null) {
       bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
-              closestSize.getHeight());
+          closestSize.getHeight());
     }
     return bannerSize;
   }

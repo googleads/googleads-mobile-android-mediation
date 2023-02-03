@@ -15,12 +15,13 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
 
-
 public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
 
-  public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     super(adConfiguration, callback);
   }
 
@@ -31,8 +32,7 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(
-        adUnitId, placementId, bidToken);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;

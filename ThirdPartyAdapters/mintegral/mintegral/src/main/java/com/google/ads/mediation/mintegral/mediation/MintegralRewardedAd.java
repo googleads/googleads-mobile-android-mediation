@@ -25,7 +25,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
   protected MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                             @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           adLoadCallback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
@@ -73,6 +73,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
         public String getType() {
           return rewardInfo.getRewardName();
         }
+
         @Override
         public int getAmount() {
           int amount = 0;
@@ -87,7 +88,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
       rewardedAdCallback.onUserEarnedReward(rewardItem);
     } else {
       Log.w(TAG, "Mintegral SDK failed to reward user due to missing rewarded settings "
-              + "or rewarded ad playback not completed.");
+          + "or rewarded ad playback not completed.");
     }
     rewardedAdCallback.onAdClosed();
   }
@@ -95,7 +96,7 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-            errorMessage);
+        errorMessage);
     Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdFailedToShow(error);

@@ -1,6 +1,5 @@
 package com.google.ads.mediation.mintegral.waterfall;
 
-
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
@@ -26,20 +25,23 @@ import java.util.ArrayList;
 
 public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
-  public MintegralWaterfallBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-                                    @NonNull MediationAdLoadCallback<MediationBannerAd,
-                                            MediationBannerAdCallback> mediationAdLoadCallback) {
+  public MintegralWaterfallBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     super(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
   public void loadAd() {
-    AdSize closestSize = getAdSize();
-    if(closestSize == null){
-      return;
-    }
-    BannerSize bannerSize = validateMintegralBannerAdSizeForAdSize(closestSize);
-    if(bannerSize == null){
+    BannerSize bannerSize = getMintegralBannerSizeFromAdMobAdSize(adConfiguration.getAdSize(),
+        adConfiguration.getContext());
+    if (bannerSize == null) {
+      AdError bannerSizeError = MintegralConstants.createAdapterError(ERROR_BANNER_SIZE_UNSUPPORTED,
+          String.format("The requested banner size: %s is not supported by Mintegral SDK.",
+              adConfiguration.getAdSize()));
+      Log.e(TAG, bannerSizeError.toString());
+      adLoadCallback.onFailure(bannerSizeError);
       return;
     }
 
@@ -54,9 +56,8 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-        closestSize.getWidthInPixels(adConfiguration.getContext()),
-        closestSize.getHeightInPixels(adConfiguration.getContext()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(bannerSize.getWidth(),
+        bannerSize.getHeight());
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.load();

@@ -1,15 +1,16 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
+import android.util.Log;
 import android.widget.FrameLayout;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralBannerAd;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -19,18 +20,23 @@ import com.mbridge.msdk.out.MBBannerView;
 
 public class MintegralRtbBannerAd extends MintegralBannerAd {
 
-  public MintegralRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration, @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+  public MintegralRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     super(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
   public void loadAd() {
-    AdSize closestSize = getAdSize();
-    if(closestSize == null){
-      return;
-    }
-    BannerSize bannerSize = validateMintegralBannerAdSizeForAdSize(closestSize);
-    if(bannerSize == null){
+    BannerSize bannerSize = getMintegralBannerSizeFromAdMobAdSize(adConfiguration.getAdSize(),
+        adConfiguration.getContext());
+    if (bannerSize == null) {
+      AdError bannerSizeError = MintegralConstants.createAdapterError(ERROR_BANNER_SIZE_UNSUPPORTED,
+          String.format("The requested banner size: %s is not supported by Mintegral SDK.",
+              adConfiguration.getAdSize()));
+      Log.e(TAG, bannerSizeError.toString());
+      adLoadCallback.onFailure(bannerSizeError);
       return;
     }
     String adUnitId = adConfiguration.getServerParameters()
@@ -45,9 +51,8 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-        closestSize.getWidthInPixels(adConfiguration.getContext()),
-        closestSize.getHeightInPixels(adConfiguration.getContext()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(bannerSize.getWidth(),
+        bannerSize.getHeight());
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);

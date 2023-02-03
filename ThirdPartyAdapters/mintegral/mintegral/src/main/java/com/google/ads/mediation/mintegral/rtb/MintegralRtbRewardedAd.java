@@ -19,16 +19,18 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
 
   private MBBidRewardVideoHandler mbBidRewardVideoHandler;
 
-  public MintegralRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
+  public MintegralRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          adLoadCallback) {
     super(adConfiguration, adLoadCallback);
   }
 
   @Override
   public void loadAd() {
     String adUnitId = adConfiguration.getServerParameters()
-            .getString(MintegralConstants.AD_UNIT_ID);
+        .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
-            .getString(MintegralConstants.PLACEMENT_ID);
+        .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
     AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
@@ -36,7 +38,7 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
       return;
     }
     mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId,
-            adUnitId);
+        adUnitId);
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     mbBidRewardVideoHandler.loadFromBid(bidToken);
   }
@@ -45,7 +47,7 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-            : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidRewardVideoHandler.showFromBid();
   }
 }

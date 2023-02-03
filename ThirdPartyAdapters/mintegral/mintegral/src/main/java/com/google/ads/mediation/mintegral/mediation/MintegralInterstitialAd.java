@@ -21,11 +21,13 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
     NewInterstitialListener {
 
   protected final MediationInterstitialAdConfiguration adConfiguration;
-  protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+  protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      adLoadCallback;
   protected MediationInterstitialAdCallback interstitialAdCallback;
 
   public MintegralInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-                                 @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
@@ -71,7 +73,7 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   @Override
   public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
     AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-            errorMessage);
+        errorMessage);
     Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdFailedToShow(error);

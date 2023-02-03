@@ -15,12 +15,14 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 
-
 public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
   private MBNewInterstitialHandler mbNewInterstitialHandler;
 
-  public MintegralWaterfallInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration, @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+  public MintegralWaterfallInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     super(adConfiguration, callback);
   }
 
@@ -30,8 +32,7 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
-    AdError error = MintegralUtils.validateMintegralAdLoadParams(
-        adUnitId, placementId);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;
