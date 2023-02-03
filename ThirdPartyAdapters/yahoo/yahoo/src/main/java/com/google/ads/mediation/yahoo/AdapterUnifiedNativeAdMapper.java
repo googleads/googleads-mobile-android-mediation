@@ -1,6 +1,6 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
-import static com.google.ads.mediation.verizon.VerizonMediationAdapter.TAG;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -15,46 +15,47 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.verizon.ads.nativeplacement.NativeAd;
-import com.verizon.ads.utils.ThreadUtils;
+import com.yahoo.ads.nativeplacement.NativeAd;
+import com.yahoo.ads.utils.ThreadUtils;
+import org.json.JSONObject;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONObject;
 
 class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   /**
-   * Verizon Media native ad.
+   * Yahoo native ad.
    */
-  private final NativeAd verizonAd;
+  private final NativeAd yahooAd;
 
   /**
    * The Context.
    */
   private final Context context;
 
-  public AdapterUnifiedNativeAdMapper(final Context context, @NonNull final NativeAd nativeAd) {
-
+  public AdapterUnifiedNativeAdMapper(@NonNull final Context context,
+      @NonNull final NativeAd nativeAd) {
     this.context = context;
-    verizonAd = nativeAd;
+    yahooAd = nativeAd;
 
-    // title
+    // Title
     setHeadline(parseTextComponent("title", nativeAd));
 
-    // body
+    // Body
     setBody(parseTextComponent("body", nativeAd));
 
-    // callToAction
+    // Call to Action
     setCallToAction(parseTextComponent("callToAction", nativeAd));
 
-    // disclaimer
+    // Disclaimer
     setAdvertiser(parseTextComponent("disclaimer", nativeAd));
 
-    // rating
+    // Rating
     String ratingString = parseTextComponent("rating", nativeAd);
     if (!TextUtils.isEmpty(ratingString)) {
       String[] ratingArray = ratingString.trim().split("\\s+");
@@ -69,8 +70,8 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
   }
 
-  private Drawable drawableFromUrl(final String url) {
-
+  @Nullable
+  private Drawable drawableFromUrl(@NonNull final String url) {
     HttpURLConnection connection = null;
     InputStream input = null;
     try {
@@ -101,16 +102,16 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   @Override
   public void recordImpression() {
-    verizonAd.fireImpression(context);
+    yahooAd.fireImpression();
   }
 
   @Override
   public void handleClick(@NonNull final View view) {
-    verizonAd.invokeDefaultAction(context);
+    yahooAd.invokeDefaultAction();
   }
 
-  private AdapterNativeMappedImage parseImageComponent(final JSONObject jsonObject) {
-
+  @Nullable
+  private AdapterNativeMappedImage parseImageComponent(@Nullable final JSONObject jsonObject) {
     if (jsonObject != null) {
       try {
         JSONObject dataObject = jsonObject.getJSONObject("data");
@@ -123,7 +124,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           drawable = Drawable.createFromPath(assetPath);
         }
         return new AdapterNativeMappedImage(drawable, url,
-            VerizonMediationAdapter.VAS_IMAGE_SCALE);
+            YahooMediationAdapter.YAS_IMAGE_SCALE);
       } catch (Exception e) {
         Log.e(TAG, "Unable to parse data object.", e);
       }
@@ -131,8 +132,8 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     return null;
   }
 
-  private String parseTextComponent(final String key, final NativeAd nativeAd) {
-
+  @NonNull
+  private String parseTextComponent(@NonNull final String key, @NonNull final NativeAd nativeAd) {
     String value = "";
     JSONObject jsonObject = nativeAd.getJSON(key);
     if (jsonObject != null) {
@@ -146,8 +147,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     return value;
   }
 
-  void loadResources(final LoadListener loadListener) {
-
+  void loadResources(@NonNull final LoadListener loadListener) {
     ThreadUtils.runOffUiThread(new Runnable() {
       @Override
       public void run() {
@@ -157,7 +157,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           boolean mediaViewSet = false;
 
           // iconImage
-          JSONObject iconImageJSON = verizonAd.getJSON("iconImage");
+          JSONObject iconImageJSON = yahooAd.getJSON("iconImage");
           if (iconImageJSON != null) {
             AdapterNativeMappedImage adapterNativeMappedImage =
                 parseImageComponent(iconImageJSON);
@@ -168,7 +168,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           }
 
           // mainImage
-          JSONObject mainImageJSON = verizonAd.getJSON("mainImage");
+          JSONObject mainImageJSON = yahooAd.getJSON("mainImage");
           if (mainImageJSON != null) {
             List<com.google.android.gms.ads.formats.NativeAd.Image> imagesList =
                 new ArrayList<>();

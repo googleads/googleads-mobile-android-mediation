@@ -1,4 +1,4 @@
-package com.google.ads.mediation.verizon;
+package com.google.ads.mediation.yahoo;
 
 import android.app.Activity;
 import android.app.Application;
@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -25,22 +26,21 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
-import com.verizon.ads.ActivityStateManager;
-import com.verizon.ads.Configuration;
-import com.verizon.ads.VASAds;
+import com.yahoo.ads.ActivityStateManager;
+import com.yahoo.ads.YASAds;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 
-public class VerizonMediationAdapter extends Adapter
-    implements MediationBannerAdapter, MediationInterstitialAdapter, MediationNativeAdapter {
+public class YahooMediationAdapter extends Adapter implements MediationBannerAdapter,
+    MediationInterstitialAdapter, MediationNativeAdapter {
+
+  public static final String TAG = YahooMediationAdapter.class.getSimpleName();
 
   /**
-   * The pixel-to-dpi scale for images downloaded Verizon Ads SDK
+   * The pixel-to-dpi scale for images downloaded Yahoo Mobile SDK.
    */
-  static final double VAS_IMAGE_SCALE = 1.0;
-
-  public static final String TAG = VerizonMediationAdapter.class.getSimpleName();
+  static final double YAS_IMAGE_SCALE = 1.0;
 
   /**
    * Weak reference of context.
@@ -48,31 +48,30 @@ public class VerizonMediationAdapter extends Adapter
   private WeakReference<Context> contextWeakRef;
 
   /**
-   * The Verizon Media interstitial renderer.
+   * The Yahoo interstitial ad renderer.
    */
-  private VerizonMediaInterstitialRenderer verizonMediaInterstitialRenderer;
+  private YahooInterstitialRenderer yahooInterstitialRenderer;
 
   /**
-   * The Verizon Media rewarded ad renderer.
+   * The Yahoo rewarded ad renderer.
    */
-  private VerizonMediaRewardedRenderer verizonMediaRewardedRenderer;
+  private YahooRewardedRenderer yahooRewardedRenderer;
 
   /**
-   * The Verizon Media banner renderer.
+   * The Yahoo banner ad renderer.
    */
-  private VerizonMediaBannerRenderer bannerRenderer;
+  private YahooBannerRenderer yahooBannerRenderer;
 
   /**
-   * The Verizon Media native renderer.
+   * The Yahoo native ad renderer.
    */
-  private VerizonMediaNativeRenderer verizonMediaNativeRenderer;
+  private YahooNativeRenderer yahooNativeRenderer;
 
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = com.google.ads.mediation.verizon.BuildConfig.ADAPTER_VERSION;
+    String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
-
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
       int minor = Integer.parseInt(splits[1]);
@@ -80,9 +79,9 @@ public class VerizonMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -90,11 +89,7 @@ public class VerizonMediationAdapter extends Adapter
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = Configuration.getString("com.verizon.ads", "editionVersion", null);
-    if (TextUtils.isEmpty(versionString)) {
-      versionString = VASAds.getSDKInfo().version;
-    }
-
+    String versionString = YASAds.getSDKInfo().version;
     String[] splits = versionString.split("\\.");
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);
@@ -103,9 +98,8 @@ public class VerizonMediationAdapter extends Adapter
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage = String
-        .format("Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -117,14 +111,14 @@ public class VerizonMediationAdapter extends Adapter
 
     if (!(context instanceof Activity)) {
       initializationCompleteCallback.onInitializationFailed(
-          "Verizon Media SDK requires an Activity context to initialize");
+          "Yahoo Mobile SDK requires an Activity context to initialize");
       return;
     }
 
     HashSet<String> siteIDs = new HashSet<>();
     for (MediationConfiguration mediationConfiguration : mediationConfigurations) {
-      String siteID = VerizonMediaAdapterUtils.getSiteId(
-          mediationConfiguration.getServerParameters(), (Bundle) null);
+      String siteID = YahooAdapterUtils.getSiteId(mediationConfiguration.getServerParameters(),
+          (Bundle) null);
       if (!TextUtils.isEmpty(siteID)) {
         siteIDs.add(siteID);
       }
@@ -139,33 +133,32 @@ public class VerizonMediationAdapter extends Adapter
     String siteID = siteIDs.iterator().next();
     if (count > 1) {
       String message = String.format("Multiple '%s' entries found: %s. " +
-              "Using '%s' to initialize Verizon SDK.", VerizonMediaAdapterUtils.SITE_KEY,
-          siteIDs, siteID);
+              "Using '%s' to initialize Yahoo Mobile SDK.", YahooAdapterUtils.SITE_KEY, siteIDs,
+          siteID);
       Log.w(TAG, message);
     }
     if (initializeSDK(context, siteID)) {
       initializationCompleteCallback.onInitializationSucceeded();
     } else {
       initializationCompleteCallback.onInitializationFailed(
-          "Verizon SDK initialization failed");
+          "Yahoo Mobile SDK initialization failed");
     }
   }
 
   @Override
   public void requestBannerAd(@NonNull final Context context,
       @NonNull final MediationBannerListener listener, @NonNull final Bundle serverParameters,
-      @NonNull com.google.android.gms.ads.AdSize adSize,
-      @NonNull final MediationAdRequest mediationAdRequest,
+      @NonNull AdSize adSize, @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    bannerRenderer = new VerizonMediaBannerRenderer(this);
-    bannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
+    yahooBannerRenderer = new YahooBannerRenderer(this);
+    yahooBannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
         mediationExtras);
   }
 
   @NonNull
   @Override
   public View getBannerView() {
-    return bannerRenderer.getBannerView();
+    return yahooBannerRenderer.getBannerView();
   }
 
   @Override
@@ -174,9 +167,9 @@ public class VerizonMediationAdapter extends Adapter
       @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
     setContext(context);
-    verizonMediaInterstitialRenderer = new VerizonMediaInterstitialRenderer(this);
-    verizonMediaInterstitialRenderer.render(context, listener, mediationAdRequest,
-        serverParameters, mediationExtras);
+    yahooInterstitialRenderer = new YahooInterstitialRenderer(this);
+    yahooInterstitialRenderer.render(context, listener, mediationAdRequest, serverParameters,
+        mediationExtras);
   }
 
   @Override
@@ -186,7 +179,7 @@ public class VerizonMediationAdapter extends Adapter
       Log.e(TAG, "Failed to show: context is null");
       return;
     }
-    verizonMediaInterstitialRenderer.showInterstitial(context);
+    yahooInterstitialRenderer.showInterstitial(context);
   }
 
   @Override
@@ -194,10 +187,9 @@ public class VerizonMediationAdapter extends Adapter
       @NonNull final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    verizonMediaRewardedRenderer =
-        new VerizonMediaRewardedRenderer(mediationAdLoadCallback,
-            mediationRewardedAdConfiguration);
-    verizonMediaRewardedRenderer.render();
+    yahooRewardedRenderer = new YahooRewardedRenderer(mediationRewardedAdConfiguration,
+        mediationAdLoadCallback);
+    yahooRewardedRenderer.render();
   }
 
   @Override
@@ -205,25 +197,25 @@ public class VerizonMediationAdapter extends Adapter
       @NonNull final MediationNativeListener listener, @NonNull final Bundle serverParameters,
       @NonNull final NativeMediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    verizonMediaNativeRenderer = new VerizonMediaNativeRenderer(this);
-    verizonMediaNativeRenderer.render(context, listener, serverParameters, mediationAdRequest,
+    yahooNativeRenderer = new YahooNativeRenderer(this);
+    yahooNativeRenderer.render(context, listener, serverParameters, mediationAdRequest,
         mediationExtras);
   }
 
   @Override
   public void onDestroy() {
     Log.i(TAG, "Aborting.");
-    if (verizonMediaInterstitialRenderer != null) {
-      verizonMediaInterstitialRenderer.destroy();
+    if (yahooInterstitialRenderer != null) {
+      yahooInterstitialRenderer.destroy();
     }
-    if (bannerRenderer != null) {
-      bannerRenderer.destroy();
+    if (yahooBannerRenderer != null) {
+      yahooBannerRenderer.destroy();
     }
-    if (verizonMediaNativeRenderer != null) {
-      verizonMediaNativeRenderer.destroy();
+    if (yahooNativeRenderer != null) {
+      yahooNativeRenderer.destroy();
     }
-    if (verizonMediaRewardedRenderer != null) {
-      verizonMediaRewardedRenderer.destroy();
+    if (yahooRewardedRenderer != null) {
+      yahooRewardedRenderer.destroy();
     }
   }
 
@@ -236,34 +228,32 @@ public class VerizonMediationAdapter extends Adapter
   }
 
   /**
-   * Checks whether Verizon Media SDK is initialized, if not initializes Verizon Media SDK.
+   * Checks whether Yahoo Mobile SDK is initialized, if not initializes Yahoo Mobile SDK.
    */
   protected static boolean initializeSDK(@NonNull final Context context,
       @NonNull final String siteId) {
     boolean success = true;
-    if (!VASAds.isInitialized()) {
+    if (!YASAds.isInitialized()) {
       if (!(context instanceof Activity)) {
-        Log.e(TAG, "VASAds.initialize must be explicitly called with an Activity context.");
+        Log.e(TAG, "YASAds.initialize must be explicitly called with an Activity context.");
         return false;
       }
       if (TextUtils.isEmpty(siteId)) {
-        Log.e(TAG, "Verizon Ads SDK Site ID must be set in mediation extras or server parameters");
+        Log.e(TAG, "Yahoo Mobile SDK Site ID must be set in mediation extras or server parameters");
         return false;
       }
       try {
         Application application = ((Activity) context).getApplication();
         Log.d(TAG, "Initializing using site ID: " + siteId);
-        success = VASAds.initialize(application, siteId);
+        success = YASAds.initialize(application, siteId);
       } catch (Exception e) {
-        Log.w(TAG, "Error occurred initializing Verizon Ads SDK.", e);
+        Log.w(TAG, "Error occurred initializing Yahoo Mobile SDK.", e);
         return false;
       }
     }
 
-    VASAds.getActivityStateManager().setState((Activity) context,
-        ActivityStateManager.ActivityState.RESUMED);
-    VASAds.setDataPrivacy(VerizonPrivacy.getInstance().getDataPrivacy());
-
+    YASAds.getActivityStateManager()
+        .setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
     return success;
   }
 

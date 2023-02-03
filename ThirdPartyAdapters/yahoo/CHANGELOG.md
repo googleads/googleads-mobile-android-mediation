@@ -1,4 +1,8 @@
-## Verizon Media Android Mediation Adapter Changelog
+## Yahoo Android Mediation Adapter Changelog
+
+#### Next Version
+- Rebranded adapter name to "Yahoo".
+- Support for Yahoo Mobile SDK v1.3.0.
 
 #### Version 1.14.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.
