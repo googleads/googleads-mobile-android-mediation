@@ -28,21 +28,21 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
   private AdColonyInterstitial adColonyInterstitial;
   private final MediationInterstitialAdConfiguration adConfiguration;
 
-  AdColonyInterstitialRenderer(
-          @NonNull MediationInterstitialAdConfiguration adConfiguration,
-          @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback
-  ) {
+  AdColonyInterstitialRenderer(@NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     this.adLoadCallback = callback;
     this.adConfiguration = adConfiguration;
   }
 
   public void render() {
-    AdColonyAdOptions adOptions = AdColonyManager.getInstance().getAdOptionsFromAdConfig(adConfiguration);
-    ArrayList<String> listFromServerParams =
-            AdColonyManager.getInstance().parseZoneList(adConfiguration.getServerParameters());
-    String requestedZone = AdColonyManager
-            .getInstance()
-            .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
+    AdColony.setAppOptions(AdColonyManager.getInstance().buildAppOptions(adConfiguration));
+    AdColonyAdOptions adOptions = AdColonyManager.getInstance()
+        .getAdOptionsFromAdConfig(adConfiguration);
+    ArrayList<String> listFromServerParams = AdColonyManager.getInstance()
+        .parseZoneList(adConfiguration.getServerParameters());
+    String requestedZone = AdColonyManager.getInstance()
+        .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
     AdColony.requestInterstitial(requestedZone, this, adOptions);
   }
 

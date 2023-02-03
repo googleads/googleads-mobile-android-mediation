@@ -45,7 +45,7 @@ public class AdColonyManager {
       @NonNull InitializationListener listener) {
     if (!(context instanceof Activity || context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
-              "AdColony SDK requires an Activity context to initialize");
+          "AdColony SDK requires an Activity context to initialize");
       listener.onInitializeFailed(error);
       return;
     }
@@ -120,6 +120,8 @@ public class AdColonyManager {
    * @return a valid {@link AdColonyAppOptions} object.
    */
   private AdColonyAppOptions buildAppOptions(@NonNull MediationAdRequest adRequest) {
+    AdColonyAdapterUtils.setCoppaPrivacyFrameworkRequired(
+        adRequest.taggedForChildDirectedTreatment());
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.
@@ -132,11 +134,13 @@ public class AdColonyManager {
   /**
    * Configure AdColony app options from the provided ad configuration.
    *
-   * @param adConfiguration rewarded ad configuration object.
+   * @param adConfiguration ad configuration object.
    * @return a valid {@link AdColonyAppOptions} object.
    */
-  private AdColonyAppOptions buildAppOptions(
-      @NonNull MediationRewardedAdConfiguration adConfiguration) {
+  @NonNull
+  public AdColonyAppOptions buildAppOptions(@NonNull MediationAdConfiguration adConfiguration) {
+    AdColonyAdapterUtils.setCoppaPrivacyFrameworkRequired(
+        adConfiguration.taggedForChildDirectedTreatment());
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.
@@ -182,12 +186,13 @@ public class AdColonyManager {
       showPostPopup = networkExtras.getBoolean("show_post_popup", false);
     }
     return new AdColonyAdOptions()
-            .enableConfirmationDialog(showPrePopup)
-            .enableResultsDialog(showPostPopup);
+        .enableConfirmationDialog(showPrePopup)
+        .enableResultsDialog(showPostPopup);
   }
 
   public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
-    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
+    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(
+        adConfiguration.getMediationExtras());
     String bidResponse = adConfiguration.getBidResponse();
     if (!bidResponse.isEmpty()) {
       adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);

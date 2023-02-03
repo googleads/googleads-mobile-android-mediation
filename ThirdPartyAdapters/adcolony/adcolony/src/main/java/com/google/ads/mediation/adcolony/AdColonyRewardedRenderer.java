@@ -32,10 +32,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   private final MediationRewardedAdConfiguration adConfiguration;
   private AdColonyInterstitial adColonyInterstitial;
 
-  public AdColonyRewardedRenderer(
-          @NonNull MediationRewardedAdConfiguration adConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback
-  ) {
+  public AdColonyRewardedRenderer(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
@@ -48,12 +46,10 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
         .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
 
     if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
-            && adConfiguration.getBidResponse().isEmpty()) {
-      AdError error =
-          createAdapterError(
-              ERROR_AD_ALREADY_REQUESTED,
-              "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone"
-                  + " ID.");
+        && adConfiguration.getBidResponse().isEmpty()) {
+      AdError error = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
+          "Failed to load ad from AdColony: "
+              + "Only a maximum of one ad can be loaded per Zone ID.");
       Log.e(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;
