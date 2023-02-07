@@ -1,6 +1,6 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 16.3.51.1 (In progress)
+#### Version 16.3.51.1
 - Added waterfall support for banner (includes MREC), interstitial, rewarded and native ad formats.
 - Updated the minimum required Google Mobile Ads SDK version to 21.5.0.
 
