@@ -18,4 +18,5 @@ public interface IronSourceAdapterListener {
    * @param showError the {@link AdError} object.
    */
   void onAdFailedToShow(@NonNull AdError showError);
+
 }
