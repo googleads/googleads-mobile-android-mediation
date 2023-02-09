@@ -1,6 +1,6 @@
 ## AdColony Android Mediation Adapter Changelog
 
-#### Version 4.8.0.1 (In progress)
+#### Version 4.8.0.1
 - Added support for forwarding COPPA information to the AdColony SDK.
 - Updated the minimum required Google Mobile Ads SDK version to 21.5.0.
 
