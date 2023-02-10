@@ -61,4 +61,42 @@ public class MintegralUtils {
     }
     return null;
   }
+
+  public static int getCodeByMsg(@NonNull String errorMessage){
+    int code  = MintegralConstants.ERROR_MINTEGRAL_SDK;
+    if(!TextUtils.isEmpty(errorMessage)){
+      if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_APP_INSTALLED) || errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_SHOW_LIST_IS_NULL) ){
+        code = MintegralConstants.ERROR_CODE_APP_FILTER;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_TPL_PRELOAD_FAILED) ){
+        code = MintegralConstants.ERROR_CODE_H5_TEMPLATE_ERROR;
+      }else if (errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_ZIP_OR_HTML_FAILED)){
+        code = MintegralConstants.ERROR_CODE_ZIP_OR_HTML_FAILED;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_201_LOAD_FAILED)){
+        code = MintegralConstants.ERROR_CODE_LOAD_201_TIMEOUT;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_101_LOAD_FAILED)){
+        code = MintegralConstants.ERROR_CODE_LOAD_101_TIMEOUT;
+      }else if(errorMessage.contains(MintegralConstants.ERROR_MESSAGE_RV_ZIP_ERROR)){
+        code = MintegralConstants.ERROR_CODE_RV_ZIP_ERROR;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_MRAID_ERROR)){
+        code = MintegralConstants.ERROR_CODE_MRAID_ERROR;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_DISCONNECTED_EXCEPTION)){
+        code = MintegralConstants.ERROR_CODE_DISCONNECTED_EXCEPTION;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_V3_ERROR)){
+        code = MintegralConstants.ERROR_CODE_V3_ERROR;
+      }else if(errorMessage.contains(MintegralConstants.ERROR_MESSAGE_EXCEPTION_RETURN_EMPTY)){
+        code = MintegralConstants.ERROR_CODE_EXCEPTION_RETURN_EMPTY;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_UNKNOWN_HOST)){
+        code = MintegralConstants.ERROR_CODE_UNKNOWN_HOST;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_VIDEO_UNABLE_RESOLVE_HOST)){
+        code = MintegralConstants.ERROR_CODE_VIDEO_UNABLE_RESOLVE_HOST;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_CONNECT_EXCEPTION)){
+        code = MintegralConstants.ERROR_CODE_CONNECT_EXCEPTION;
+      }else if(errorMessage.contains(MintegralConstants.ERROR_MESSAGE_VIDEO_NO_SPACE)){
+        code = MintegralConstants.ERROR_CODE_VIDEO_NO_SPACE;
+      }else if(errorMessage.startsWith(MintegralConstants.ERROR_MESSAGE_TEMP_DOWNLOAD_FAILED)){
+        code = MintegralConstants.ERROR_CODE_TEMP_DOWNLOAD_FAILED;
+      }
+    }
+    return code;
+  }
 }
