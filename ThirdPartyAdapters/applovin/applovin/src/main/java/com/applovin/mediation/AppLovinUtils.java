@@ -211,7 +211,7 @@ public class AppLovinUtils {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
-    potentials.add( AdSize.MEDIUM_RECTANGLE );
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (AdSize.BANNER.equals(closestSize)) {
