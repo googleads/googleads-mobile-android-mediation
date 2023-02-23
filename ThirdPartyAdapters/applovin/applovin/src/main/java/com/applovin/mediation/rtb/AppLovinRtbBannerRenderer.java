@@ -78,16 +78,7 @@ public final class AppLovinRtbBannerRenderer
   public void loadAd() {
     Context context = adConfiguration.getContext();
 
-    AppLovinAdSize appLovinAdSize = AppLovinAdSize.BANNER;
-    AdSize googleAdSize = adConfiguration.getAdSize();
-    if (googleAdSize.getWidth() >= 300 && googleAdSize.getHeight() >= 250) {
-      appLovinAdSize = AppLovinAdSize.MREC;
-    } else if (googleAdSize.getWidth() >= 728 && googleAdSize.getHeight() >= 90) {
-      appLovinAdSize = AppLovinAdSize.LEADER;
-    } else if (googleAdSize.getWidth() >= 320 && googleAdSize.getHeight() >= 50) {
-      appLovinAdSize = AppLovinAdSize.BANNER;
-    }
-
+    AppLovinAdSize appLovinAdSize = AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adConfiguration.getAdSize());
     AppLovinSdk sdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
     adView = new AppLovinAdView(sdk, appLovinAdSize, context);
     adView.setAdDisplayListener(this);
