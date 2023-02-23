@@ -79,6 +79,11 @@ public class FyberMediationAdapter extends Adapter
    * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
    */
   static final String KEY_SPOT_ID = "spotId";
+  
+  /**
+   * Key to obtain the mute video state, which enables the publisher to mute interstitial ads
+   */
+  static final String KEY_MUTE_VIDEO = "muteVideo";
 
   /**
    * Requested banner ad size.
@@ -342,7 +347,7 @@ public class FyberMediationAdapter extends Adapter
 
         requestedAdSize = adSize;
 
-        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
+        FyberAdapterUtils.updateFyberExtraParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
         bannerSpot.requestAd(request);
       }
@@ -548,7 +553,7 @@ public class FyberMediationAdapter extends Adapter
         InneractiveAdSpot.RequestListener requestListener = createFyberInterstitialAdListener();
         interstitialSpot.setRequestListener(requestListener);
 
-        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
+        FyberAdapterUtils.updateFyberExtraParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
         interstitialSpot.requestAd(request);
       }
