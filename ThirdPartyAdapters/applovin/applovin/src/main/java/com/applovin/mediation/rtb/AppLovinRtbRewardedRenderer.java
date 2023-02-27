@@ -45,6 +45,7 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
 
     // Create rewarded video object.
     incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);
+    incentivizedInterstitial.setExtraInfo("google_watermark", adConfiguration.getWatermark());
 
     // Load ad.
     appLovinSdk.getAdService().loadNextAdForAdToken(
