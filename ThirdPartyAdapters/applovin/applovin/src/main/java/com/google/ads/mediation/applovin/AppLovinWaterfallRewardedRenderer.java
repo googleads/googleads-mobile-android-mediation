@@ -111,6 +111,7 @@ public class AppLovinWaterfallRewardedRenderer
               incentivizedInterstitial =
                   AppLovinIncentivizedInterstitial.create(zoneId, appLovinSdk);
             }
+            incentivizedInterstitial.setExtraInfo("google_watermark", adConfiguration.getWatermark());
             incentivizedInterstitial.preload(AppLovinWaterfallRewardedRenderer.this);
           }
         });

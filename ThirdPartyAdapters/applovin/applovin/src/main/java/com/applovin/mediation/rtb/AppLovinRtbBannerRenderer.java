@@ -84,6 +84,7 @@ public final class AppLovinRtbBannerRenderer
     adView.setAdDisplayListener(this);
     adView.setAdClickListener(this);
     adView.setAdViewEventListener(this);
+    adView.setExtraInfo("google_watermark", adConfiguration.getWatermark());
 
     // Load ad!
     sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
