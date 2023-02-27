@@ -1,14 +1,18 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
-import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.YAHOO_MOBILE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeYahooSDK;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
@@ -16,7 +20,6 @@ import com.yahoo.ads.ErrorInfo;
 import com.yahoo.ads.nativeplacement.NativeAd;
 import com.yahoo.ads.nativeplacement.NativeAd.NativeAdListener;
 import com.yahoo.ads.nativeplacement.NativePlacementConfig;
-import com.yahoo.ads.utils.TextUtils;
 import com.yahoo.ads.utils.ThreadUtils;
 import com.yahoo.ads.yahoonativecontroller.NativeComponent;
 import java.lang.ref.WeakReference;
@@ -56,26 +59,31 @@ final class YahooNativeRenderer implements NativeAdListener {
     MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
 
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, parameterError);
         return;
       }
     }
 
-    if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize the Yahoo Mobile SDK.");
+    AdError initializationError = initializeYahooSDK(context, siteId);
+    if (initializationError != null) {
+      Log.w(TAG, initializationError.toString());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        nativeListener.onAdFailedToLoad(adapter, initializationError);
       }
       return;
     }
 
     String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Placement ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
       if (nativeListener != null && adapter != null) {
-        nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        nativeListener.onAdFailedToLoad(adapter, parameterError);
       }
       return;
     }
@@ -105,7 +113,6 @@ final class YahooNativeRenderer implements NativeAdListener {
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
-
         final MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
         final AdapterUnifiedNativeAdMapper mapper =
             new AdapterUnifiedNativeAdMapper(context, nativeAd);
@@ -122,11 +129,12 @@ final class YahooNativeRenderer implements NativeAdListener {
           }
 
           @Override
-          public void onLoadError() {
+          public void onLoadError(@NonNull AdError loadError) {
+            Log.w(TAG, loadError.toString());
             ThreadUtils.postOnUiThread(new Runnable() {
               @Override
               public void run() {
-                nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+                nativeListener.onAdFailedToLoad(adapter, loadError);
               }
             });
           }
@@ -137,14 +145,15 @@ final class YahooNativeRenderer implements NativeAdListener {
 
   @Override
   public void onLoadFailed(final NativeAd nativeAd, final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Mobile SDK failed to request a native ad with with error code: "
-        + errorInfo.getErrorCode() + ", message: " + errorInfo.getDescription());
+    AdError loadError = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, loadError.toString());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationNativeAdapter adapter = nativeAdapterWeakRef.get();
         if (nativeListener != null && adapter != null) {
-          nativeListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_MEDIATION_NO_FILL);
+          nativeListener.onAdFailedToLoad(adapter, loadError);
         }
       }
     });

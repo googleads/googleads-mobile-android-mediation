@@ -1,17 +1,22 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
-import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.YAHOO_MOBILE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeYahooSDK;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
@@ -20,7 +25,6 @@ import com.yahoo.ads.ErrorInfo;
 import com.yahoo.ads.inlineplacement.InlineAdView;
 import com.yahoo.ads.inlineplacement.InlineAdView.InlineAdListener;
 import com.yahoo.ads.inlineplacement.InlinePlacementConfig;
-import com.yahoo.ads.utils.TextUtils;
 import com.yahoo.ads.utils.ThreadUtils;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -57,37 +61,46 @@ final class YahooBannerRenderer implements InlineAdListener {
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
     bannerListener = listener;
     MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
+
     String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, parameterError);
       }
       return;
     }
 
-    if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize the Yahoo Mobile SDK.");
+    AdError initializationError = initializeYahooSDK(context, siteId);
+    if (initializationError != null) {
+      Log.w(TAG, initializationError.toString());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        bannerListener.onAdFailedToLoad(adapter, initializationError);
       }
       return;
     }
 
     String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Placement ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, parameterError);
       }
       return;
     }
 
     AdSize normalizedSize = YahooAdapterUtils.normalizeSize(context, adSize);
     if (normalizedSize == null) {
-      Log.w(TAG, "The input ad size " + adSize + " is not currently supported.");
+      String message = String.format(
+          "The requested banner size is not supported by Yahoo Mobile SDK: %s", adSize);
+      AdError adSizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, message, ERROR_DOMAIN);
+      Log.e(TAG, adSizeError.toString());
       if (bannerListener != null && adapter != null) {
-        bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        bannerListener.onAdFailedToLoad(adapter, adSizeError);
       }
       return;
     }
@@ -140,14 +153,15 @@ final class YahooBannerRenderer implements InlineAdListener {
 
   @Override
   public void onLoadFailed(InlineAdView inlineAdFactory, final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Mobile SDK failed to request a banner ad with error code: "
-        + errorInfo.getErrorCode() + ", message: " + errorInfo.getDescription());
+    AdError loadError = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, loadError.toString());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationBannerAdapter adapter = bannerAdapterWeakRef.get();
         if (bannerListener != null && adapter != null) {
-          bannerListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_MEDIATION_NO_FILL);
+          bannerListener.onAdFailedToLoad(adapter, loadError);
         }
       }
     });

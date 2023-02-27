@@ -1,14 +1,19 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_AD_NOT_READY_TO_SHOW;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
-import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.YAHOO_MOBILE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeYahooSDK;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
@@ -16,7 +21,6 @@ import com.yahoo.ads.ErrorInfo;
 import com.yahoo.ads.interstitialplacement.InterstitialAd;
 import com.yahoo.ads.interstitialplacement.InterstitialAd.InterstitialAdListener;
 import com.yahoo.ads.interstitialplacement.InterstitialPlacementConfig;
-import com.yahoo.ads.utils.TextUtils;
 import com.yahoo.ads.utils.ThreadUtils;
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -49,25 +53,32 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
     String siteId = YahooAdapterUtils.getSiteId(serverParameters, mediationExtras);
     MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
     if (TextUtils.isEmpty(siteId)) {
-      Log.e(TAG, "Failed to request ad: siteID is null or empty.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+        interstitialListener.onAdFailedToLoad(adapter, parameterError);
       }
       return;
     }
 
-    if (!initializeSDK(context, siteId)) {
-      Log.e(TAG, "Unable to initialize the Yahoo Mobile SDK.");
+    AdError initializationError = initializeYahooSDK(context, siteId);
+    if (initializationError != null) {
+      Log.w(TAG, initializationError.toString());
       if (interstitialListener != null && adapter != null) {
-        interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INTERNAL_ERROR);
+        interstitialListener.onAdFailedToLoad(adapter, initializationError);
       }
       return;
     }
 
     String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      Log.e(TAG, "Failed to request ad: placementID is null or empty.");
-      interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_INVALID_REQUEST);
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Placement ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
+      if (interstitialListener != null && adapter != null) {
+        interstitialListener.onAdFailedToLoad(adapter, parameterError);
+      }
       return;
     }
 
@@ -82,7 +93,9 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
 
   void showInterstitial(@NonNull Context context) {
     if (interstitialAd == null) {
-      Log.w(TAG, "Failed to show: No ads to show.");
+      AdError showError = new AdError(ERROR_AD_NOT_READY_TO_SHOW, "No ads ready to be shown.",
+          ERROR_DOMAIN);
+      Log.w(TAG, showError.toString());
       return;
     }
 
@@ -114,14 +127,15 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
 
   @Override
   public void onLoadFailed(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Mobile SDK failed to request an interstitial ad with error code: "
-        + errorInfo.getErrorCode() + ", message: " + errorInfo.getDescription());
+    AdError loadError = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, loadError.toString());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         MediationInterstitialAdapter adapter = interstitialAdapterWeakRef.get();
         if (adapter != null && interstitialListener != null) {
-          interstitialListener.onAdFailedToLoad(adapter, AdRequest.ERROR_CODE_MEDIATION_NO_FILL);
+          interstitialListener.onAdFailedToLoad(adapter, loadError);
         }
       }
     });
@@ -129,7 +143,10 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
 
   @Override
   public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Mobile SDK returned an error for interstitial ad: " + errorInfo);
+    AdError error = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, error.toString());
+
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {

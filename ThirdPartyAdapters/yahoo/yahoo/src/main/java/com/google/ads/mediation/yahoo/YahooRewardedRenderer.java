@@ -1,13 +1,18 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_AD_NOT_READY_TO_SHOW;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
-import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeSDK;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.YAHOO_MOBILE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.initializeYahooSDK;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -68,17 +73,27 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
     String siteId = YahooAdapterUtils.getSiteId(serverParameters,
         mediationRewardedAdConfiguration);
     Context context = mediationRewardedAdConfiguration.getContext();
-    if (!initializeSDK(context, siteId)) {
-      final String message = "Unable to initialize the Yahoo Mobile SDK.";
-      Log.e(TAG, message);
-      mediationAdLoadCallback.onFailure(message);
+
+    if (TextUtils.isEmpty(siteId)) {
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
+      mediationAdLoadCallback.onFailure(parameterError);
+    }
+
+    AdError initializationError = initializeYahooSDK(context, siteId);
+    if (initializationError != null) {
+      Log.w(TAG, initializationError.toString());
+      mediationAdLoadCallback.onFailure(initializationError);
       return;
     }
 
     String placementId = YahooAdapterUtils.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementId)) {
-      mediationAdLoadCallback.onFailure("Yahoo Mobile SDK placement ID must be set in "
-          + "mediationRewardedAdConfiguration server params.");
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Placement ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
+      mediationAdLoadCallback.onFailure(parameterError);
       return;
     }
 
@@ -93,8 +108,11 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
   @Override
   public void showAd(@NonNull Context context) {
     if (rewardedAd == null) {
+      AdError showError = new AdError(ERROR_AD_NOT_READY_TO_SHOW, "No ads ready to be shown.",
+          ERROR_DOMAIN);
+      Log.w(TAG, showError.toString());
       if (mediationRewardedAdCallback != null) {
-        mediationRewardedAdCallback.onAdFailedToShow("No ads to show.");
+        mediationRewardedAdCallback.onAdFailedToShow(showError);
       }
       return;
     }
@@ -129,14 +147,14 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
 
   @Override
   public void onLoadFailed(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-    final String message = "Yahoo Mobile SDK failed to request a rewarded ad with error code: "
-        + errorInfo.getErrorCode() + ", message: " + errorInfo.getDescription();
-    Log.w(TAG, message);
+    AdError loadError = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, loadError.toString());
     ThreadUtils.postOnUiThread(new Runnable() {
       @Override
       public void run() {
         if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(message);
+          mediationAdLoadCallback.onFailure(loadError);
         }
       }
     });
@@ -144,7 +162,9 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
 
   @Override
   public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-    Log.w(TAG, "Yahoo Mobile SDK returned an error for rewarded ad: " + errorInfo);
+    AdError error = new AdError(errorInfo.getErrorCode(), errorInfo.getDescription(),
+        YAHOO_MOBILE_SDK_ERROR_DOMAIN);
+    Log.w(TAG, error.toString());
 
     // This error callback is used if the interstitial ad is loaded successfully, but an
     // error occurs while trying to display
@@ -152,7 +172,7 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
       @Override
       public void run() {
         if (mediationRewardedAdCallback != null) {
-          mediationRewardedAdCallback.onAdFailedToShow(errorInfo.getDescription());
+          mediationRewardedAdCallback.onAdFailedToShow(error);
         }
       }
     });

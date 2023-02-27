@@ -2,7 +2,9 @@
 
 #### Next Version
 - Rebranded adapter name to "Yahoo".
-- Support for Yahoo Mobile SDK v1.3.0.
+- Verified compatibility with Yahoo Mobile SDK 1.4.0.
+- Added descriptive error codes and reasons for adapter load and show failures.
+- Updated the minimum required Google Mobile Ads SDK version to 21.5.0.
 
 #### Version 1.14.0.1
 - Updated `compileSdkVersion` and `targetSdkVersion` to API 31.

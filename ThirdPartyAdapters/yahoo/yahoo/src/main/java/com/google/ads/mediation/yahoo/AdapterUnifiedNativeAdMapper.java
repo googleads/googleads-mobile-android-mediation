@@ -1,5 +1,7 @@
 package com.google.ads.mediation.yahoo;
 
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.yahoo.YahooMediationAdapter.ERROR_FAILED_TO_LOAD_NATIVE_ASSETS;
 import static com.google.ads.mediation.yahoo.YahooMediationAdapter.TAG;
 
 import android.content.Context;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.yahoo.ads.nativeplacement.NativeAd;
 import com.yahoo.ads.utils.ThreadUtils;
@@ -82,7 +85,7 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       Bitmap bitmap = BitmapFactory.decodeStream(input);
       return new BitmapDrawable(Resources.getSystem(), bitmap);
     } catch (Exception e) {
-      Log.e(TAG, "Unable to create drawable from URL " + url, e);
+      Log.e(TAG, "Unable to create drawable from URL: " + url, e);
     } finally {
       try {
         if (input != null) {
@@ -193,12 +196,15 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
           if (mediaViewSet && iconSet) {
             loadListener.onLoadComplete();
           } else {
-            Log.e(TAG, "Failed to set icon and/or media view");
-            loadListener.onLoadError();
+            AdError mediaError = new AdError(ERROR_FAILED_TO_LOAD_NATIVE_ASSETS,
+                "Failed to set icon and/or media views.", ERROR_DOMAIN);
+            loadListener.onLoadError(mediaError);
           }
-        } catch (Exception e) {
-          Log.e(TAG, "Unable to load resources.", e);
-          loadListener.onLoadError();
+        } catch (Exception exception) {
+          AdError mediaError = new AdError(ERROR_FAILED_TO_LOAD_NATIVE_ASSETS,
+              "Exception thrown when loading native ad resources.", ERROR_DOMAIN);
+          Log.e(TAG, "Exception thrown when loading native ad resources.", exception);
+          loadListener.onLoadError(mediaError);
         }
       }
     });
@@ -208,6 +214,6 @@ class AdapterUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
     void onLoadComplete();
 
-    void onLoadError();
+    void onLoadError(@NonNull AdError loadError);
   }
 }

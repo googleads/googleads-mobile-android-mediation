@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -28,6 +30,8 @@ import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.VersionInfo;
 import com.yahoo.ads.ActivityStateManager;
 import com.yahoo.ads.YASAds;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +40,60 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
     MediationInterstitialAdapter, MediationNativeAdapter {
 
   public static final String TAG = YahooMediationAdapter.class.getSimpleName();
+
+  // region Error codes
+  // Yahoo Mobile adapter error domain.
+  public static final String ERROR_DOMAIN = "com.google.ads.mediation.yahoo";
+
+  // Yahoo Mobile SDK error domain.
+  public static final String YAHOO_MOBILE_SDK_ERROR_DOMAIN = "com.yahoo.ads";
+
+  /**
+   * Yahoo Mobile adapter errors.
+   */
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(value = {
+      ERROR_INVALID_SERVER_PARAMETERS,
+      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+      ERROR_INITIALIZATION_ERROR,
+      ERROR_BANNER_SIZE_MISMATCH,
+      ERROR_FAILED_TO_LOAD_NATIVE_ASSETS,
+      ERROR_AD_NOT_READY_TO_SHOW,
+  })
+  public @interface AdapterError {
+
+  }
+
+  /**
+   * Server parameters, such as Site ID or Placement ID, are invalid.
+   */
+  public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
+
+  /**
+   * Yahoo Mobile SDK requires an {@link Activity} to initialize.
+   */
+  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 102;
+
+  /**
+   * Yahoo Mobile SDK failed to initialize.
+   */
+  public static final int ERROR_INITIALIZATION_ERROR = 103;
+
+  /**
+   * The requested ad size does not match a Yahoo Mobile SDK supported banner size.
+   */
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 104;
+
+  /**
+   * Failed to load the native ad media view and/or icon assets.
+   */
+  public static final int ERROR_FAILED_TO_LOAD_NATIVE_ASSETS = 105;
+
+  /**
+   * There are no ads to be shown.
+   */
+  public static final int ERROR_AD_NOT_READY_TO_SHOW = 106;
+  // endregion
 
   /**
    * The pixel-to-dpi scale for images downloaded Yahoo Mobile SDK.
@@ -109,9 +167,8 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Yahoo Mobile SDK requires an Activity context to initialize");
+    if (YASAds.isInitialized()) {
+      initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
 
@@ -123,25 +180,30 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
         siteIDs.add(siteID);
       }
     }
+
     int count = siteIDs.size();
     if (count <= 0) {
-      String logMessage = "Initialization failed: Missing or invalid Site ID";
-      Log.e(TAG, logMessage);
-      initializationCompleteCallback.onInitializationFailed(logMessage);
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      Log.e(TAG, parameterError.toString());
+      initializationCompleteCallback.onInitializationFailed(parameterError.getMessage());
       return;
     }
+
     String siteID = siteIDs.iterator().next();
     if (count > 1) {
       String message = String.format("Multiple '%s' entries found: %s. " +
-              "Using '%s' to initialize Yahoo Mobile SDK.", YahooAdapterUtils.SITE_KEY, siteIDs,
-          siteID);
+              "Using '%s' to initialize the Yahoo Mobile SDK.", YahooAdapterUtils.SITE_KEY,
+          siteIDs, siteID);
       Log.w(TAG, message);
     }
-    if (initializeSDK(context, siteID)) {
+
+    AdError initializationError = initializeYahooSDK(context, siteID);
+    if (initializationError == null) {
       initializationCompleteCallback.onInitializationSucceeded();
     } else {
-      initializationCompleteCallback.onInitializationFailed(
-          "Yahoo Mobile SDK initialization failed");
+      Log.e(TAG, initializationError.toString());
+      initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
     }
   }
 
@@ -150,7 +212,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationBannerListener listener, @NonNull final Bundle serverParameters,
       @NonNull AdSize adSize, @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    yahooBannerRenderer = new YahooBannerRenderer(this);
+    yahooBannerRenderer = new YahooBannerRenderer(YahooMediationAdapter.this);
     yahooBannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
         mediationExtras);
   }
@@ -167,7 +229,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
     setContext(context);
-    yahooInterstitialRenderer = new YahooInterstitialRenderer(this);
+    yahooInterstitialRenderer = new YahooInterstitialRenderer(YahooMediationAdapter.this);
     yahooInterstitialRenderer.render(context, listener, mediationAdRequest, serverParameters,
         mediationExtras);
   }
@@ -176,7 +238,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
   public void showInterstitial() {
     Context context = getContext();
     if (context == null) {
-      Log.e(TAG, "Failed to show: context is null");
+      Log.w(TAG, "Failed to show: context is null");
       return;
     }
     yahooInterstitialRenderer.showInterstitial(context);
@@ -197,7 +259,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationNativeListener listener, @NonNull final Bundle serverParameters,
       @NonNull final NativeMediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    yahooNativeRenderer = new YahooNativeRenderer(this);
+    yahooNativeRenderer = new YahooNativeRenderer(YahooMediationAdapter.this);
     yahooNativeRenderer.render(context, listener, serverParameters, mediationAdRequest,
         mediationExtras);
   }
@@ -230,31 +292,44 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
   /**
    * Checks whether Yahoo Mobile SDK is initialized, if not initializes Yahoo Mobile SDK.
    */
-  protected static boolean initializeSDK(@NonNull final Context context,
+  @Nullable
+  protected static AdError initializeYahooSDK(@NonNull final Context context,
       @NonNull final String siteId) {
-    boolean success = true;
-    if (!YASAds.isInitialized()) {
-      if (!(context instanceof Activity)) {
-        Log.e(TAG, "YASAds.initialize must be explicitly called with an Activity context.");
-        return false;
-      }
-      if (TextUtils.isEmpty(siteId)) {
-        Log.e(TAG, "Yahoo Mobile SDK Site ID must be set in mediation extras or server parameters");
-        return false;
-      }
-      try {
-        Application application = ((Activity) context).getApplication();
-        Log.d(TAG, "Initializing using site ID: " + siteId);
-        success = YASAds.initialize(application, siteId);
-      } catch (Exception e) {
-        Log.w(TAG, "Error occurred initializing Yahoo Mobile SDK.", e);
-        return false;
-      }
+    if (YASAds.isInitialized()) {
+      return null;
     }
 
-    YASAds.getActivityStateManager()
-        .setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
-    return success;
+    if (!(context instanceof Activity)) {
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "Yahoo Mobile SDK requires an Activity context to initialize.", ERROR_DOMAIN);
+      return contextError;
+    }
+    Activity activity = (Activity) context;
+
+    if (TextUtils.isEmpty(siteId)) {
+      AdError parameterError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Site ID.", ERROR_DOMAIN);
+      return parameterError;
+    }
+
+    Application application = activity.getApplication();
+    Log.d(TAG, "Initializing using site ID: " + siteId);
+    try {
+      boolean success = YASAds.initialize(application, siteId);
+      if (!success) {
+        return new AdError(ERROR_INITIALIZATION_ERROR, "Yahoo Mobile SDK failed to initialize.",
+            ERROR_DOMAIN);
+      }
+    } catch (Exception exception) {
+      String errorMessage = String.format(
+          "Exception thrown when initializing the Yahoo Mobile SDK: %s", exception.getMessage());
+      AdError exceptionError = new AdError(ERROR_INITIALIZATION_ERROR, errorMessage, ERROR_DOMAIN);
+      Log.w(TAG, "Exception thrown when initializing Yahoo Mobile SDK.", exception);
+      return exceptionError;
+    }
+
+    YASAds.getActivityStateManager().setState(activity, ActivityStateManager.ActivityState.RESUMED);
+    return null;
   }
 
   private void setContext(@NonNull Context context) {
