@@ -2,6 +2,8 @@
 
 #### Version 11.8.2.0 (In progress)
 - Verified compatibility with AppLovin SDK 11.8.2.
+- Added support for watermark when bidding.
+- Added support for Medium Rectangle(MREC) ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.5.0.
