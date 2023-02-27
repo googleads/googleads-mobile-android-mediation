@@ -55,9 +55,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class AppLovinMediationAdapter extends RtbAdapter {
+
+  public ExecutorService executor = Executors.newCachedThreadPool();
 
   /**
    * AppLovin SDK settings.
@@ -249,18 +253,25 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
     AppLovinSdk sdk = AppLovinUtils.retrieveSdk(config.getServerParameters(),
         rtbSignalData.getContext());
-    String bidToken = sdk.getAdService().getBidToken();
 
-    if (TextUtils.isEmpty(bidToken)) {
-      AdError error = new AdError(ERROR_EMPTY_BID_TOKEN, "Failed to generate bid token.",
-          ERROR_DOMAIN);
-      log(ERROR, error.getMessage());
-      signalCallbacks.onFailure(error);
-      return;
-    }
+    executor.execute( new Runnable() {
+      @Override
+      public void run()
+      {
+        String bidToken = sdk.getAdService().getBidToken();
 
-    log(INFO, "Generated bid token: " + bidToken);
-    signalCallbacks.onSuccess(bidToken);
+        if (TextUtils.isEmpty(bidToken)) {
+          AdError error = new AdError(ERROR_EMPTY_BID_TOKEN, "Failed to generate bid token.",
+                                      ERROR_DOMAIN);
+          log(ERROR, error.getMessage());
+          signalCallbacks.onFailure(error);
+          return;
+        }
+
+        log(INFO, "Generated bid token: " + bidToken);
+        signalCallbacks.onSuccess(bidToken);
+      }
+    } );
   }
 
   @Override
