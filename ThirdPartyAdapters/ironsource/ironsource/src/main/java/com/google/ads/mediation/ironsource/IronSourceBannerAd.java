@@ -70,14 +70,6 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
             return;
         }
 
-        if (!(context instanceof Activity)) {
-            AdError errorMessage = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, "IronSource requires an Activity context to load ads." +
-                    "adSize",
-                    ERROR_DOMAIN);
-            adLoadCallback.onFailure( errorMessage);
-            return;
-        }
-
         ironSourceAdView = new FrameLayout(context);
         IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
                 new IronSourceManager.InitializationCallback() {
