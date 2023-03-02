@@ -4,19 +4,15 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -26,19 +22,15 @@ import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-
-import com.google.android.gms.ads.mediation.VersionInfo;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.utils.IronSourceUtils;
+
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
-public class IronSourceAdapter extends Adapter implements MediationInterstitialAd, IronSourceAdapterListener {
-
-    // region Error codes
+public class IronSourceAdapter extends IronSourceMediationAdapter implements  MediationInterstitialAd,IronSourceAdapterListener {
 
     // IronSource adapter error domain.
     public static final String ERROR_DOMAIN = "com.google.ads.mediation.ironsource";
@@ -58,6 +50,8 @@ public class IronSourceAdapter extends Adapter implements MediationInterstitialA
     public @interface AdapterError {
 
     }
+
+    // region Error codes
 
     /**
      * Server parameters (e.g. placement ID) are nil.
@@ -99,54 +93,7 @@ public class IronSourceAdapter extends Adapter implements MediationInterstitialA
      */
     private String instanceID;
 
-    @NonNull
-    @Override
-    public VersionInfo getSDKVersionInfo() {
-        String versionString = IronSourceUtils.getSDKVersion();
-        String[] splits = versionString.split("\\.");
 
-        if (splits.length >= 3) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]);
-            if (splits.length >= 4) {
-                micro = micro * 100 + Integer.parseInt(splits[3]);
-            }
-
-            return new VersionInfo(major, minor, micro);
-        }
-
-        String logMessage =
-                String.format(
-                        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
-    }
-
-    @NonNull
-    @Override
-    public VersionInfo getVersionInfo() {
-        String versionString = BuildConfig.ADAPTER_VERSION;
-        String[] splits = versionString.split("\\.");
-
-        if (splits.length >= 4) {
-            int major = Integer.parseInt(splits[0]);
-            int minor = Integer.parseInt(splits[1]);
-            int micro = Integer.parseInt(splits[2]) * 100 + Integer.parseInt(splits[3]);
-            if (splits.length >= 5) {
-                micro = micro * 100 + Integer.parseInt(splits[4]);
-            }
-
-            return new VersionInfo(major, minor, micro);
-        }
-
-        String logMessage =
-                String.format(
-                        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-                        versionString);
-        Log.w(TAG, logMessage);
-        return new VersionInfo(0, 0, 0);
-    }
 
     @Override
     public void initialize(@NonNull Context context,
@@ -194,6 +141,9 @@ public class IronSourceAdapter extends Adapter implements MediationInterstitialA
                 });
     }
 
+    /**
+     * Interstitial implementation.
+     */
     @Override
     public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
                                    @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
@@ -314,6 +264,11 @@ public class IronSourceAdapter extends Adapter implements MediationInterstitialA
                 });
     }
 
+
+    /**
+     * banner implementation.
+     */
+    @Override
     public void loadBannerAd(@NonNull MediationBannerAdConfiguration MediationBannerAdConfiguration,
                              @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
         Bundle serverParameters = MediationBannerAdConfiguration.getServerParameters();

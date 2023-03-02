@@ -10,16 +10,21 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+
 
 import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -33,16 +38,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
-public class IronSourceMediationAdapter extends Adapter
-        implements MediationRewardedAd, IronSourceAdapterListener {
-
-    // region Error codes
+public class IronSourceMediationAdapter extends Adapter implements MediationRewardedAd,IronSourceAdapterListener {
 
     // IronSource adapter error domain.
     public static final String ERROR_DOMAIN = "com.google.ads.mediation.ironsource";
 
     // IronSource SDK error domain.
     public static final String IRONSOURCE_SDK_ERROR_DOMAIN = "com.ironsource.mediationsdk";
+
+
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
@@ -57,11 +61,7 @@ public class IronSourceMediationAdapter extends Adapter
 
     }
 
-    /**
-     * Banner size mismatch.
-     */
-    public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
-
+    // region Error codes
     /**
      * Server parameters (e.g. placement ID) are nil.
      */
@@ -81,6 +81,11 @@ public class IronSourceMediationAdapter extends Adapter
      * IronSource adapter does not have authority to show an ad instance.
      */
     public static final int ERROR_AD_SHOW_UNAUTHORIZED = 104;
+
+    /**
+     * Banner size mismatch.
+     */
+    public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
 
     // endregion
 
@@ -132,7 +137,7 @@ public class IronSourceMediationAdapter extends Adapter
     @NonNull
     @Override
     public VersionInfo getVersionInfo() {
-        String versionString = "7.2.6";
+        String versionString = BuildConfig.ADAPTER_VERSION;
         String[] splits = versionString.split("\\.");
 
         if (splits.length >= 4) {
@@ -372,6 +377,8 @@ public class IronSourceMediationAdapter extends Adapter
     }
 
     // endregion
+
+
 
     // region IronSourceAdapterListener implementation.
 

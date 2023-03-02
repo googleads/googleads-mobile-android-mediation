@@ -33,9 +33,8 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
     /**
      * The view for the banner instance.
      */
-    public ISDemandOnlyBannerLayout ironSourceBannerLayout;
+    private  ISDemandOnlyBannerLayout ironSourceBannerLayout;
     private FrameLayout ironSourceAdView;
-
     private final MediationBannerAdConfiguration adConfiguration;
     private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
             adLoadCallback;
@@ -64,10 +63,10 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
 
         ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSize(context, adConfiguration.getAdSize());
         if (bannerSize == null) {
-            AdError errorMessage = new AdError(ERROR_BANNER_SIZE_MISMATCH, "There is no matching IronSource ad size for Google ad size: %s" +
+            AdError sizeError = new AdError(ERROR_BANNER_SIZE_MISMATCH, "There is no matching IronSource ad size for Google ad size: %s" +
                     "adSize",
                     ERROR_DOMAIN);
-            adLoadCallback.onFailure( errorMessage);
+            adLoadCallback.onFailure( sizeError);
             return;
         }
 
@@ -91,7 +90,7 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
 
                     @Override
                     public void onInitializeError(@NonNull AdError initializationError) {
-                        Log.e(TAG, initializationError.getMessage());
+                        Log.w(TAG, initializationError.toString());
                         adLoadCallback.onFailure(initializationError);
                     }
                 });
@@ -99,11 +98,11 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
         Activity activity = (Activity) context;
         ironSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
         ironSourceBannerLayout.setBannerDemandOnlyListener(this);
-        IronSource.loadISDemandOnlyBanner((Activity) context, ironSourceBannerLayout,instanceID);
+        IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout,instanceID);
     }
 
     @Override
-    public void onBannerAdLoaded(String instanceId) {
+    public void onBannerAdLoaded(@NonNull String instanceId) {
         Log.d(TAG, String.format("IronSource Banner ad loaded for instance ID: %s", instanceId));
 
         IronSourceAdapterUtils.sendEventOnUIThread(
@@ -119,13 +118,13 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
     }
 
     @Override
-    public void onBannerAdLoadFailed(final String instanceId, final IronSourceError ironSourceError) {
+    public void onBannerAdLoadFailed(@NonNull final String instanceId,@NonNull final IronSourceError ironSourceError) {
         final AdError loadError = new AdError(ironSourceError.getErrorCode(),
                 ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
         String errorMessage = String
                 .format("IronSource failed to load Banner ad for instance ID: %s. Error: %s",
-                        instanceId, loadError.getMessage());
-        Log.e(TAG, errorMessage);
+                        instanceId, loadError.toString());
+        Log.w(TAG, errorMessage);
 
         IronSourceAdapterUtils.sendEventOnUIThread(
                 new Runnable() {
@@ -136,7 +135,7 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
                 });
     }
 
-    public void onBannerAdShown(String instanceId) {
+    public void onBannerAdShown(@NonNull String instanceId) {
         Log.d(TAG, String.format("IronSource Banner AdShown for instance ID: %s", instanceId));
 
         IronSourceAdapterUtils.sendEventOnUIThread(
@@ -144,7 +143,6 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
                     @Override
                     public void run() {
                         if (bannerAdCallback != null) {
-                            bannerAdCallback.onAdOpened();
                             bannerAdCallback.reportAdImpression();
                         }
                     }
@@ -152,7 +150,7 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
     }
 
     @Override
-    public void onBannerAdClicked(String instanceId) {
+    public void onBannerAdClicked(@NonNull String instanceId) {
         Log.d(TAG, String.format("IronSource Banner ad clicked for instance ID: %s", instanceId));
 
         IronSourceAdapterUtils.sendEventOnUIThread(
@@ -160,6 +158,7 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
                     @Override
                     public void run() {
                         if (bannerAdCallback != null) {
+                            bannerAdCallback.onAdOpened();
                             bannerAdCallback.reportAdClicked();
                         }
                     }
@@ -167,7 +166,7 @@ public class IronSourceBannerAd extends IronSourceMediationAdapter implements Me
     }
 
     @Override
-    public void onBannerAdLeftApplication(String instanceId) {
+    public void onBannerAdLeftApplication(@NonNull String instanceId) {
         Log.d(TAG, String.format("IronSource Banner ad onBanner Ad Left Application for instance ID: %s", instanceId));
 
         IronSourceAdapterUtils.sendEventOnUIThread(
