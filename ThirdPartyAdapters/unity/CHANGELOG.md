@@ -1,6 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
 #### Version 4.6.0.0 (In progress)
+- Added support for forwarding COPPA information to the Unity Ads SDK.
 - Verified compatibility with Unity Ads SDK 4.6.0.
 - Updated the minimum required Google Mobile Ads SDK version to 21.5.0.
 

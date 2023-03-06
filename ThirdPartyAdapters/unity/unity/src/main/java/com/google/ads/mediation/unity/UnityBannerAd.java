@@ -30,6 +30,7 @@ import androidx.annotation.Nullable;
 import com.google.ads.mediation.unity.eventadapters.UnityBannerEventAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -146,11 +147,11 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     }
     final Activity activity = (Activity) context;
 
-    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+    final UnityBannerSize unityBannerSize = UnityAdsAdapterUtils.getUnityBannerSize(context,
+        adSize);
     if (unityBannerSize == null) {
-      String errorMessage = String
-          .format("There is no matching Unity Ads ad size for Google ad size: %s",
-              adSize);
+      String errorMessage = String.format(
+          "There is no matching Unity Ads ad size for Google ad size: %s", adSize);
       sendBannerFailedToLoad(ERROR_BANNER_SIZE_MISMATCH, errorMessage);
       return;
     }
@@ -167,6 +168,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
               bannerView = new BannerView(activity, bannerPlacementId, unityBannerSize);
             }
 
+            UnityAdsAdapterUtils.setCoppa(
+                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
+
             bannerView.setListener(unityBannerListener);
             bannerView.load();
           }
@@ -175,9 +179,9 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
           public void onInitializationFailed(
               UnityAds.UnityAdsInitializationError unityAdsInitializationError,
               String errorMessage) {
-            String adErrorMessage = String
-                .format("Unity Ads initialization failed for game ID '%s' with error message: %s",
-                    gameId, errorMessage);
+            String adErrorMessage = String.format(
+                "Unity Ads initialization failed for game ID '%s' with error message: %s", gameId,
+                errorMessage);
             AdError adError = createSDKError(unityAdsInitializationError, adErrorMessage);
             Log.w(TAG, adError.toString());
 

@@ -3,13 +3,17 @@ package com.google.ads.mediation.unity;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN;
 
 import android.content.Context;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
+import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import java.util.ArrayList;
@@ -204,4 +208,27 @@ public class UnityAdsAdapterUtils {
 
     return null;
   }
+
+  /**
+   * Set the COPPA setting in Unity Ads SDK.
+   *
+   * @param coppa an {@code Integer} value that indicates whether the app should be treated as
+   *     child-directed for purposes of the COPPA. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
+   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
+   */
+  public static void setCoppa(@TagForChildDirectedTreatment int coppa, @NonNull Context context) {
+
+    MetaData userMetaData = new MetaData(context);
+    if (coppa == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+      userMetaData.set("user.nonbehavioral", false);
+    } else {
+      // Unity Ads will default to treating users as children when a user-level COPPA designation is
+      // absent.
+      userMetaData.set("user.nonbehavioral", true);
+    }
+    userMetaData.commit();
+  }
+
 }
