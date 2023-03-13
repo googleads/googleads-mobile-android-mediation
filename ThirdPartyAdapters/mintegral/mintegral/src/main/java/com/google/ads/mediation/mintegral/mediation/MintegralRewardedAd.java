@@ -94,8 +94,9 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
+  public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+
+    AdError error = MintegralConstants.createSdkError(errorCode,
             errorMessage);
     Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {
