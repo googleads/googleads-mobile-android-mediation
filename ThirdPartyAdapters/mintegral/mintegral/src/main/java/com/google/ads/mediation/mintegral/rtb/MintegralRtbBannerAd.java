@@ -25,18 +25,15 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
 
   @Override
   public void loadAd() {
-    AdSize closestSize = getAdSize();
-    if(closestSize == null){
-      return;
-    }
-    BannerSize bannerSize = validateMintegralBannerAdSizeForAdSize(closestSize);
-    if(bannerSize == null){
-      return;
-    }
+    AdSize closestSize = adConfiguration.getAdSize();
+    BannerSize bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE,
+            closestSize.getWidthInPixels(adConfiguration.getContext()),
+            closestSize.getHeightInPixels(adConfiguration.getContext()));
+
     String adUnitId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.AD_UNIT_ID);
+            .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
-        .getString(MintegralConstants.PLACEMENT_ID);
+            .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
     AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
@@ -46,8 +43,8 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
     FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-        closestSize.getWidthInPixels(adConfiguration.getContext()),
-        closestSize.getHeightInPixels(adConfiguration.getContext()));
+            closestSize.getWidthInPixels(adConfiguration.getContext()),
+            closestSize.getHeightInPixels(adConfiguration.getContext()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);

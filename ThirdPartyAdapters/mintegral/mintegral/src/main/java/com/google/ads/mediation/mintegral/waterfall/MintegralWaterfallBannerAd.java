@@ -34,14 +34,10 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
   @Override
   public void loadAd() {
-    AdSize closestSize = getAdSize();
-    if(closestSize == null){
-      return;
-    }
-    BannerSize bannerSize = validateMintegralBannerAdSizeForAdSize(closestSize);
-    if(bannerSize == null){
-      return;
-    }
+    AdSize closestSize = adConfiguration.getAdSize();
+    BannerSize bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE,
+            closestSize.getWidthInPixels(adConfiguration.getContext()),
+            closestSize.getHeightInPixels(adConfiguration.getContext()));
 
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
