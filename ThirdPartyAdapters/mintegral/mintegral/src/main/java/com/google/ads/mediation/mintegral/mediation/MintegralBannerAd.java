@@ -39,7 +39,6 @@ public abstract class MintegralBannerAd extends BannerAdWithCodeListener impleme
   protected MBBannerView mbBannerView;
   protected MediationBannerAdCallback bannerAdCallback;
 
-
   public MintegralBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
