@@ -14,12 +14,12 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.mbridge.msdk.out.BannerAdListener;
+import com.mbridge.msdk.out.BannerAdWithCodeListener;
 import com.mbridge.msdk.out.MBBannerView;
 import com.mbridge.msdk.out.MBridgeIds;
 
 
-public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdListener {
+public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements MediationBannerAd {
 
   protected final MediationBannerAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
@@ -47,8 +47,8 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
   }
 
   @Override
-  public void onLoadFailed(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorMessage);
+  public void onLoadFailedWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode,errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
