@@ -20,8 +20,8 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
   private MBRewardVideoHandler mbRewardVideoHandler;
 
   public MintegralWaterfallRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                                      @NonNull MediationAdLoadCallback<MediationRewardedAd,
-                                              MediationRewardedAdCallback> adLoadCallback) {
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          adLoadCallback) {
     super(adConfiguration, adLoadCallback);
   }
 

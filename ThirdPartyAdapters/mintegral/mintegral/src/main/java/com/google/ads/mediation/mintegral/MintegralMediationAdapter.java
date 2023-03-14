@@ -1,6 +1,5 @@
 package com.google.ads.mediation.mintegral;
 
-
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.mintegral.MintegralConstants.createSdkError;
 
@@ -88,9 +87,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
       }
     }
 
-    String logMessage =
-        String.format(
-            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    String logMessage = String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -108,10 +106,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
       return new VersionInfo(major, minor, micro);
     }
 
-    String logMessage =
-        String.format(
-            "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-            versionString);
+    String logMessage = String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -136,10 +133,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
     int appIdCount = appIds.size();
     int appKeyCount = appKeys.size();
     if (appIdCount <= 0 || appKeyCount <= 0) {
-      AdError error =
-          MintegralConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID or App Key"
-                  + " configured for this ad source instance in the AdMob or Ad Manager UI");
+      AdError error = MintegralConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid App ID or App Key"
+              + " configured for this ad source instance in the AdMob or Ad Manager UI");
       Log.e(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
@@ -215,29 +211,29 @@ public class MintegralMediationAdapter extends RtbAdapter {
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
-                              @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     mintegralWaterfallBannerAd = new MintegralWaterfallBannerAd(adConfiguration, callback);
     mintegralWaterfallBannerAd.loadAd();
   }
 
   @Override
   public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-                                    @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-                                            callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     mintegralInterstitialAd = new MintegralWaterfallInterstitialAd(adConfiguration, callback);
     mintegralInterstitialAd.loadAd();
   }
 
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
-                              @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     mintegralNativeAd = new MintegralWaterfallNativeAd(adConfiguration, callback);
     mintegralNativeAd.loadAd();
   }
 
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                                @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRewardedAd = new MintegralWaterfallRewardedAd(adConfiguration, callback);
     mintegralRewardedAd.loadAd();
   }

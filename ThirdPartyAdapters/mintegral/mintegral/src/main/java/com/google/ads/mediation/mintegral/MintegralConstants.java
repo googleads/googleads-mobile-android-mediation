@@ -18,13 +18,8 @@ public class MintegralConstants {
   public static final String MINTEGRAL_SDK_ERROR_DOMAIN = "com.mbridge.msdk";
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      value = {ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_BANNER_SIZE_UNSUPPORTED,
-          ERROR_INVALID_BID_RESPONSE,
-          ERROR_MINTEGRAL_SDK,
-          ERROR_CODE_NO_FILL,
-      })
+  @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_BANNER_SIZE_UNSUPPORTED,
+      ERROR_INVALID_BID_RESPONSE, ERROR_MINTEGRAL_SDK, ERROR_CODE_NO_FILL,})
   public @interface AdapterError {
 
   }

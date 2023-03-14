@@ -26,7 +26,10 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
 
   private MBBidNativeHandler mbBidNativeHandler;
 
-  public MintegralRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+  public MintegralRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+          mediationAdLoadCallback) {
     super(mediationNativeAdConfiguration, mediationAdLoadCallback);
   }
 
@@ -37,9 +40,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
     String bidToken = adConfiguration.getBidResponse();
-    AdError error =
-        MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId, bidToken);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;

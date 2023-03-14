@@ -22,21 +22,21 @@ public class MintegralUtils {
 
   @Nullable
   public static AdError validateMintegralAdLoadParams(
-          @Nullable String adUnitId,
-          @Nullable String placementId) {
+      @Nullable String adUnitId,
+      @Nullable String placementId) {
     if (TextUtils.isEmpty(adUnitId)) {
       AdError parameterError =
-              MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
-                      "Missing or invalid ad Unit ID configured for this ad source instance in the"
-                              + " AdMob or Ad Manager UI.");
+          MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid ad Unit ID configured for this ad source instance in the"
+                  + " AdMob or Ad Manager UI.");
       Log.e(TAG, parameterError.toString());
       return parameterError;
     }
     if (TextUtils.isEmpty(placementId)) {
       AdError parameterError =
-              MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
-                      "Missing or invalid Placement ID configured for this ad source instance in the"
-                              + " AdMob or Ad Manager UI.");
+          MintegralConstants.createAdapterError(MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid Placement ID configured for this ad source instance in the"
+                  + " AdMob or Ad Manager UI.");
       Log.e(TAG, parameterError.toString());
       return parameterError;
     }
@@ -45,18 +45,18 @@ public class MintegralUtils {
 
   @Nullable
   public static AdError validateMintegralAdLoadParams(
-          @Nullable String adUnitId,
-          @Nullable String placementId,
-          @Nullable String bidToken) {
+      @Nullable String adUnitId,
+      @Nullable String placementId,
+      @Nullable String bidToken) {
     AdError parameterError = validateMintegralAdLoadParams(adUnitId, placementId);
     if (parameterError != null) {
       return parameterError;
     }
     if (TextUtils.isEmpty(bidToken)) {
       parameterError = MintegralConstants.createAdapterError(
-              MintegralConstants.ERROR_INVALID_BID_RESPONSE,
-              "Missing or invalid Mintegral bidding signal in this ad request.");
-      Log.e(TAG, parameterError.toString());
+          MintegralConstants.ERROR_INVALID_BID_RESPONSE,
+          "Missing or invalid Mintegral bidding signal in this ad request.");
+      Log.w(TAG, parameterError.toString());
       return parameterError;
     }
     return null;

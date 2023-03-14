@@ -1,6 +1,6 @@
 package com.applovin.mediation;
 
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -182,8 +182,10 @@ public class AppLovinUtils {
       default: // fall out
     }
 
-    return new AdError(applovinErrorCode,
-        "AppLovin SDK returned a load failure callback with reason: " + reason, ERROR_DOMAIN);
+    return new AdError(
+        applovinErrorCode,
+        "AppLovin SDK returned a load failure callback with reason: " + reason,
+        APPLOVIN_SDK_ERROR_DOMAIN);
   }
 
   /**

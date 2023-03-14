@@ -21,11 +21,13 @@ import com.mbridge.msdk.out.RewardInfo;
 public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements MediationInterstitialAd {
 
   protected final MediationInterstitialAdConfiguration adConfiguration;
-  protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> adLoadCallback;
+  protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      adLoadCallback;
   protected MediationInterstitialAdCallback interstitialAdCallback;
 
   public MintegralInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-                                 @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }

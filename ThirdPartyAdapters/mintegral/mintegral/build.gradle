@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "16.3.11.0"
+    stringVersion = "16.3.81.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'com.google.android.gms:play-services-ads:21.5.0'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.mbridge.msdk.oversea:mbbid:16.4.11'
     implementation 'com.mbridge.msdk.oversea:reward:16.4.11'

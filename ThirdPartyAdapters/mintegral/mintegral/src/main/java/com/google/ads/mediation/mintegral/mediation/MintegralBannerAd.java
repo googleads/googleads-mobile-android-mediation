@@ -1,13 +1,14 @@
 package com.google.ads.mediation.mintegral.mediation;
 
-
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -21,16 +22,15 @@ import com.mbridge.msdk.out.MBridgeIds;
 
 public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements MediationBannerAd {
 
-  protected final MediationBannerAdConfiguration adConfiguration;
-  protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  protected MediationBannerAdConfiguration adConfiguration;
+  protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
   protected MBBannerView mbBannerView;
   protected MediationBannerAdCallback bannerAdCallback;
 
-
-  public MintegralBannerAd(
-          @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-          @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-                  mediationAdLoadCallback) {
+  public MintegralBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
   }

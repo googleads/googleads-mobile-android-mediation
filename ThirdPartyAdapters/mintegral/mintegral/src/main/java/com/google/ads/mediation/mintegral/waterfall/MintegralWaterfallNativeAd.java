@@ -27,8 +27,10 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
 
   private MBNativeHandler mbNativeHandler;
 
-
-  public MintegralWaterfallNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration, @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+  public MintegralWaterfallNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+          mediationAdLoadCallback) {
     super(mediationNativeAdConfiguration, mediationAdLoadCallback);
   }
 
@@ -38,9 +40,7 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.PLACEMENT_ID);
-    AdError error =
-        MintegralUtils.validateMintegralAdLoadParams(
-            adUnitId, placementId);
+    AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId);
     if (error != null) {
       adLoadCallback.onFailure(error);
       return;

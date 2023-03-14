@@ -6,11 +6,13 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store the proper name of the mediation network adapter.
-    adapterName = "VerizonMedia"
+    adapterName = "Yahoo"
     // String property to store version name.
-    stringVersion = "1.14.0.1"
+    stringVersion = "1.3.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
+    // String property to store the artifact id.
+    stringArtifactId = "yahoo"
 }
 
 android {
@@ -18,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 1140001
+        versionCode 1030000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -31,12 +33,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'androidx.browser:browser:1.4.0'
-    implementation 'com.google.android.gms:play-services-ads:21.0.0'
-    implementation ('com.verizon.ads:android-vas-standard-edition:1.14.0') {
-        exclude module: 'support-compat'
-    }
+    implementation 'com.google.android.gms:play-services-ads:21.5.0'
+    implementation 'com.yahoo.mobile.ads:android-yahoo-mobile-sdk:1.4.0'
 }
 
 /**
@@ -54,7 +54,7 @@ publishing {
     publications {
         adapterPublications(MavenPublication) {
             groupId = stringGroupId
-            artifactId = project.name
+            artifactId = stringArtifactId
             version = stringVersion
 
             // Add the aar artifact to publication.
@@ -119,9 +119,9 @@ task copyArtifactsForDistribution(type: Copy) {
  */
 task packageDistribution(type: Zip) {
     from("$buildDir/distribution") {
-        rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
-        rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
-        rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+        rename("${project.name}-release.aar", "${stringArtifactId}-${stringVersion}.aar")
+        rename("${project.name}-sources.jar", "${stringArtifactId}-${stringVersion}-sources.jar")
+        rename("pom-default.xml", "${stringArtifactId}-${stringVersion}.pom")
     }
 
     archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"

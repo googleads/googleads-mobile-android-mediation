@@ -26,7 +26,7 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
   protected MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-                             @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           adLoadCallback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
@@ -74,6 +74,7 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
         public String getType() {
           return rewardInfo.getRewardName();
         }
+
         @Override
         public int getAmount() {
           int amount = 0;
@@ -88,7 +89,7 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
       rewardedAdCallback.onUserEarnedReward(rewardItem);
     } else {
       Log.w(TAG, "Mintegral SDK failed to reward user due to missing rewarded settings "
-              + "or rewarded ad playback not completed.");
+          + "or rewarded ad playback not completed.");
     }
     rewardedAdCallback.onAdClosed();
   }

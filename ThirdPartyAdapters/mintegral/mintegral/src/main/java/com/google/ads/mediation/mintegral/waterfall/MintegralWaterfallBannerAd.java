@@ -1,6 +1,5 @@
 package com.google.ads.mediation.mintegral.waterfall;
 
-
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
@@ -26,9 +25,10 @@ import java.util.ArrayList;
 
 public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
-  public MintegralWaterfallBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-                                    @NonNull MediationAdLoadCallback<MediationBannerAd,
-                                            MediationBannerAdCallback> mediationAdLoadCallback) {
+  public MintegralWaterfallBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     super(mediationBannerAdConfiguration, mediationAdLoadCallback);
   }
 
@@ -38,6 +38,7 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     BannerSize bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE,
             closestSize.getWidthInPixels(adConfiguration.getContext()),
             closestSize.getHeightInPixels(adConfiguration.getContext()));
+
 
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
@@ -50,9 +51,8 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-        closestSize.getWidthInPixels(adConfiguration.getContext()),
-        closestSize.getHeightInPixels(adConfiguration.getContext()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(bannerSize.getWidth(),
+        bannerSize.getHeight());
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.load();

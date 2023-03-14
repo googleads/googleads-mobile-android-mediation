@@ -36,14 +36,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   protected Campaign campaign;
   protected final MediationNativeAdConfiguration adConfiguration;
-  protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+  protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+      adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
   public NativeAdWithCodeListenerImpl nativeAdWithCodeListener;
 
-  public MintegralNativeAd(
-      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+  public MintegralNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+          mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     nativeAdWithCodeListener = new NativeAdWithCodeListenerImpl(this);

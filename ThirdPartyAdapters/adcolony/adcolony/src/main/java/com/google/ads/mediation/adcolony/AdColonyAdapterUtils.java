@@ -2,12 +2,14 @@ package com.google.ads.mediation.adcolony;
 
 import android.content.Context;
 import android.content.res.Resources;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.adcolony.sdk.AdColonyAdSize;
+import com.adcolony.sdk.AdColonyAppOptions;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 import java.util.ArrayList;
 
 public class AdColonyAdapterUtils {
@@ -51,5 +53,20 @@ public class AdColonyAdapterUtils {
    */
   public static int convertPixelsToDp(int px) {
     return (int) (px / Resources.getSystem().getDisplayMetrics().density);
+  }
+
+  public static void setCoppaPrivacyFrameworkRequired(@TagForChildDirectedTreatment int coppa) {
+    AdColonyAppOptions appOptions = AdColonyMediationAdapter.getAppOptions();
+    switch (coppa) {
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
+        appOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.COPPA, true);
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
+        appOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.COPPA, false);
+        break;
+      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
+      default:
+        break;
+    }
   }
 }
