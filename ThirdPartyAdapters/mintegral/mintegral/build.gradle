@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "16.3.81.0"
+    stringVersion = "16.4.11.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
