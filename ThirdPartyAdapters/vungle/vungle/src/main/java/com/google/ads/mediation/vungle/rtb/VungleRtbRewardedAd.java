@@ -9,8 +9,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
@@ -97,7 +99,10 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);
                 }
-
+                String watermark = mediationRewardedAdConfiguration.getWatermark();
+                if (!TextUtils.isEmpty(watermark)) {
+                  adConfig.setWatermark(watermark);
+                }
                 rewardedAd.load(adMarkup);
               }
 

@@ -15,7 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
+
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -34,6 +36,7 @@ import com.vungle.ads.VungleException;
 import com.vungle.ads.internal.ui.view.MediaView;
 import com.vungle.mediation.PlacementFinder;
 import com.vungle.mediation.VungleExtrasBuilder;
+
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -93,7 +96,10 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
                 nativeAd = new NativeAd(context, placementId, adConfig);
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
                 mediaView = new MediaView(context);
-
+                String watermark = adConfiguration.getWatermark();
+                if (!TextUtils.isEmpty(watermark)) {
+                  adConfig.setWatermark(watermark);
+                }
                 nativeAd.load(adMarkup);
               }
 

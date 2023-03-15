@@ -6,9 +6,9 @@ include ':vungle'
 //aar based on our sdk's feature branch easily and quickly.
 def dependOnVungleSdkProject = hasProperty("SdkSrcDependency") ? "$SdkSrcDependency".toBoolean() : false
 gradle.ext.dependOnVungleSdkProject = dependOnVungleSdkProject
-def vungleSdkProjectDir = '../../../vungle-android-sdk'
+def vungleSdkProjectDir = '../../../vng-android-sdk'
 if (file(vungleSdkProjectDir).exists() && dependOnVungleSdkProject) {
-    include ':vungle-android-sdk'
-    project(':vungle-android-sdk').projectDir = new File(settingsDir, vungleSdkProjectDir)
-    include ':vungle-android-sdk:publisher-sdk-android'
+    include ':vng-android-sdk'
+    project(':vng-android-sdk').projectDir = new File(settingsDir, vungleSdkProjectDir)
+    include ':vng-android-sdk:vungle-ads'
 }

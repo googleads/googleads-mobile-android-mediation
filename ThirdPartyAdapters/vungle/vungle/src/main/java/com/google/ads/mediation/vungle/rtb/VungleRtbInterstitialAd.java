@@ -88,7 +88,10 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
               public void onInitializeSuccess() {
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(VungleRtbInterstitialAd.this);
-
+                String watermark = mediationInterstitialAdConfiguration.getWatermark();
+                if (!TextUtils.isEmpty(watermark)) {
+                  adConfig.setWatermark(watermark);
+                }
                 interstitialAd.load(adMarkup);
               }
 

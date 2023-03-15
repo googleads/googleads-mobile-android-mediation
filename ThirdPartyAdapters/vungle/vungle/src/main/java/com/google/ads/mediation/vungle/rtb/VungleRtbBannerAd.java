@@ -5,7 +5,6 @@ import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAI
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_VUNGLE_BANNER_NULL;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,7 +12,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
+
 import androidx.annotation.NonNull;
+
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -108,7 +109,10 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
                 bannerAd = new BannerAd(context, placementForPlay, adConfig);
                 bannerAd.setAdListener(VungleRtbBannerAd.this);
-
+                String watermark = mediationBannerAdConfiguration.getWatermark();
+                if (!TextUtils.isEmpty(watermark)) {
+                  adConfig.setWatermark(watermark);
+                }
                 bannerAd.load(adMarkup);
               }
 
