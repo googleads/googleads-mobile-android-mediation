@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
-import com.applovin.mediation.rtb.AppLovinRtbBannerRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbRewardedRenderer;
 import com.applovin.sdk.AppLovinSdk;
@@ -64,11 +63,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   @Nullable
   public static AppLovinSdkSettings appLovinSdkSettings;
-
-  /**
-   * AppLovin bidding banner ad renderer.
-   */
-  private AppLovinRtbBannerRenderer rtbBannerRenderer;
 
   /**
    * AppLovin bidding interstitial ad renderer.
@@ -261,13 +255,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     log(INFO, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
-  }
-
-  @Override
-  public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    rtbBannerRenderer = new AppLovinRtbBannerRenderer(adConfiguration, callback);
-    rtbBannerRenderer.loadAd();
   }
 
   @Override
