@@ -23,7 +23,6 @@ import com.vungle.ads.BaseAd;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleException;
-import com.vungle.mediation.VungleExtrasBuilder;
 import com.vungle.mediation.PlacementFinder;
 
 public class VungleRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdListener {
@@ -43,7 +42,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   public VungleRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
     this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
@@ -75,11 +74,18 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
       return;
     }
 
-    String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
-
-    AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras);
+    AdConfig adConfig = new AdConfig();
+    if (mediationExtras.containsKey(VungleMediationAdapter.KEY_ORIENTATION)) {
+      adConfig.setAdOrientation(
+          mediationExtras.getInt(VungleMediationAdapter.KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
+    }
+    String watermark = mediationInterstitialAdConfiguration.getWatermark();
+    if (!TextUtils.isEmpty(watermark)) {
+      adConfig.setWatermark(watermark);
+    }
 
     Context context = mediationInterstitialAdConfiguration.getContext();
+    String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
 
     VungleInitializer.getInstance()
         .initialize(appID, context,
@@ -88,10 +94,6 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
               public void onInitializeSuccess() {
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(VungleRtbInterstitialAd.this);
-                String watermark = mediationInterstitialAdConfiguration.getWatermark();
-                if (!TextUtils.isEmpty(watermark)) {
-                  adConfig.setWatermark(watermark);
-                }
                 interstitialAd.load(adMarkup);
               }
 
@@ -109,48 +111,53 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void adClick(@NonNull BaseAd baseAd) {
+  public void onAdClicked(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.reportAdClicked();
     }
   }
 
   @Override
-  public void adEnd(@NonNull BaseAd baseAd) {
+  public void onAdEnd(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.onAdClosed();
     }
   }
 
   @Override
-  public void adImpression(@NonNull BaseAd baseAd) {
+  public void onAdImpression(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.reportAdImpression();
     }
   }
 
   @Override
-  public void adLoaded(@NonNull BaseAd baseAd) {
+  public void onAdLoaded(@NonNull BaseAd baseAd) {
     mediationInterstitialAdCallback =
         mediationAdLoadCallback.onSuccess(VungleRtbInterstitialAd.this);
   }
 
   @Override
-  public void adStart(@NonNull BaseAd baseAd) {
+  public void onAdStart(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.onAdOpened();
     }
   }
 
   @Override
-  public void error(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     Log.w(TAG, error.toString());
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.onAdFailedToShow(error);
-    } else {
-      mediationAdLoadCallback.onFailure(error);
     }
+  }
+
+  @Override
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    AdError error = VungleMediationAdapter.getAdError(e);
+    Log.w(TAG, error.toString());
+    mediationAdLoadCallback.onFailure(error);
   }
 
   @Override

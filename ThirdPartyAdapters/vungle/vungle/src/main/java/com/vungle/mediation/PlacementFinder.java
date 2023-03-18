@@ -1,5 +1,6 @@
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_PLAY_PLACEMENT;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.os.Bundle;
@@ -14,8 +15,8 @@ public class PlacementFinder {
   public static String findPlacement(Bundle networkExtras, Bundle serverParameters) {
     String placement = null;
     if (networkExtras != null
-        && networkExtras.containsKey(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT)) {
-      placement = networkExtras.getString(VungleExtrasBuilder.EXTRA_PLAY_PLACEMENT);
+        && networkExtras.containsKey(KEY_PLAY_PLACEMENT)) {
+      placement = networkExtras.getString(KEY_PLAY_PLACEMENT);
     }
     if (serverParameters != null && serverParameters.containsKey(PLAYING_PLACEMENT)) {
       if (placement != null) {

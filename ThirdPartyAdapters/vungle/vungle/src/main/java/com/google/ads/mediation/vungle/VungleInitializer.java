@@ -6,11 +6,10 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
-import com.vungle.ads.Plugin;
 import com.vungle.ads.VungleAds;
+import com.vungle.ads.VungleAds.WrapperFramework;
 import com.vungle.ads.VungleException;
-import com.vungle.ads.VungleSettings;
-import com.vungle.mediation.VungleNetworkSettings;
+import com.vungle.mediation.VungleConsent;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,8 +26,8 @@ public class VungleInitializer implements InitializationListener {
 
   private VungleInitializer() {
     initListeners = new ArrayList<>();
-    Plugin.addWrapperInfo(
-        Plugin.WrapperFramework.admob,
+    VungleAds.setIntegrationName(
+        WrapperFramework.admob,
         com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
   }
 
@@ -49,8 +48,7 @@ public class VungleInitializer implements InitializationListener {
 
     updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
 
-    VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
-    VungleAds.init(context, appId,VungleInitializer.this, vungleSettings);
+    VungleAds.init(context, appId, VungleInitializer.this);
     initListeners.add(listener);
   }
 
@@ -76,10 +74,10 @@ public class VungleInitializer implements InitializationListener {
   public void updateCoppaStatus(int configuration) {
     switch (configuration) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        VungleAds.updateUserCoppaStatus(true);
+        VungleConsent.setCOPPAStatus(true);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        VungleAds.updateUserCoppaStatus(false);
+        VungleConsent.setCOPPAStatus(false);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:

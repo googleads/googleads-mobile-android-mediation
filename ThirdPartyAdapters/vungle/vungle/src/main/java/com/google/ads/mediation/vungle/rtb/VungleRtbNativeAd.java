@@ -28,14 +28,12 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
-import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.NativeAd;
 import com.vungle.ads.NativeAdListener;
 import com.vungle.ads.VungleException;
 import com.vungle.ads.internal.ui.view.MediaView;
 import com.vungle.mediation.PlacementFinder;
-import com.vungle.mediation.VungleExtrasBuilder;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -79,12 +77,26 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       return;
     }
 
+    int privacyIconPlacement = nativeAdOptions.getAdChoicesPlacement();
+    int adOptionsPosition;
+    switch (privacyIconPlacement) {
+      case NativeAdOptions.ADCHOICES_TOP_LEFT:
+        adOptionsPosition = NativeAd.TOP_LEFT;
+        break;
+      case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+        adOptionsPosition = NativeAd.BOTTOM_LEFT;
+        break;
+      case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+        adOptionsPosition = NativeAd.BOTTOM_RIGHT;
+        break;
+      case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+      default:
+        adOptionsPosition = NativeAd.TOP_RIGHT;
+        break;
+    }
+
     String adMarkup = adConfiguration.getBidResponse();
-
-    AdConfig adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras,
-        nativeAdOptions);
-
-    Log.d(TAG, "start to render native ads...");
+    String watermark = adConfiguration.getWatermark();
 
     VungleInitializer.getInstance()
         .initialize(
@@ -93,12 +105,12 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                nativeAd = new NativeAd(context, placementId, adConfig);
+                nativeAd = new NativeAd(context, placementId);
+                nativeAd.setAdOptionsPosition(adOptionsPosition);
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
                 mediaView = new MediaView(context);
-                String watermark = adConfiguration.getWatermark();
                 if (!TextUtils.isEmpty(watermark)) {
-                  adConfig.setWatermark(watermark);
+                  nativeAd.getAdConfig().setWatermark(watermark);
                 }
                 nativeAd.load(adMarkup);
               }
@@ -186,7 +198,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   }
 
   @Override
-  public void adClick(@NonNull BaseAd baseAd) {
+  public void onAdClicked(@NonNull BaseAd baseAd) {
     if (nativeAdCallback != null) {
       nativeAdCallback.reportAdClicked();
       nativeAdCallback.onAdOpened();
@@ -194,30 +206,36 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   }
 
   @Override
-  public void adEnd(@NonNull BaseAd baseAd) {
+  public void onAdEnd(@NonNull BaseAd baseAd) {
     // no-op
   }
 
   @Override
-  public void adImpression(@NonNull BaseAd baseAd) {
+  public void onAdImpression(@NonNull BaseAd baseAd) {
     if (nativeAdCallback != null) {
       nativeAdCallback.reportAdImpression();
     }
   }
 
   @Override
-  public void adLoaded(@NonNull BaseAd baseAd) {
+  public void onAdLoaded(@NonNull BaseAd baseAd) {
     mapNativeAd();
     nativeAdCallback = callback.onSuccess(VungleRtbNativeAd.this);
   }
 
   @Override
-  public void adStart(@NonNull BaseAd baseAd) {
+  public void onAdStart(@NonNull BaseAd baseAd) {
     // no-op
   }
 
   @Override
-  public void error(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    AdError error = VungleMediationAdapter.getAdError(e);
+    callback.onFailure(error);
+  }
+
+  @Override
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     callback.onFailure(error);
   }
