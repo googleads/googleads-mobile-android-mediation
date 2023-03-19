@@ -4,12 +4,10 @@ import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
 import com.google.android.gms.ads.AdError;
@@ -23,57 +21,11 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
 public class IronSourceAdapter extends IronSourceMediationAdapter implements  MediationInterstitialAd,IronSourceAdapterListener {
 
-    // IronSource adapter error domain.
-    public static final String ERROR_DOMAIN = "com.google.ads.mediation.ironsource";
-
-    // IronSource SDK error domain.
-    public static final String IRONSOURCE_SDK_ERROR_DOMAIN = "com.ironsource.mediationsdk";
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-            value = {
-                    ERROR_INVALID_SERVER_PARAMETERS,
-                    ERROR_REQUIRES_ACTIVITY_CONTEXT,
-                    ERROR_AD_ALREADY_LOADED,
-                    ERROR_AD_SHOW_UNAUTHORIZED,
-            })
-
-    public @interface AdapterError {
-
-    }
-
-    // region Error codes
-
-    /**
-     * Server parameters (e.g. placement ID) are nil.
-     */
-    public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
-
-    /**
-     * IronSource requires an {@link Activity} context to initialize their SDK.
-     */
-    public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 102;
-
-    /**
-     * IronSource can only load 1 ad per IronSource instance ID.
-     */
-    public static final int ERROR_AD_ALREADY_LOADED = 103;
-
-    /**
-     * IronSource adapter does not have authority to show an ad instance.
-     */
-    public static final int ERROR_AD_SHOW_UNAUTHORIZED = 104;
-
-    // endregion
 
     /**
      * Mediation listener used to forward interstitial ad events from IronSource SDK to Google Mobile Ads

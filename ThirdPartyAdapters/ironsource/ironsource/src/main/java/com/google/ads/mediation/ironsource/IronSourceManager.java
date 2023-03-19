@@ -148,21 +148,6 @@ public class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISD
                            @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback,
                            Context context,
                            String instanceId) {
-        if (!(context instanceof Activity)) {
-            String errorMessage = String
-                    .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
-            AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
-            ironSourceBannerAd.onAdFailedToLoad(contextError);
-            return;
-        }
-
-        if (TextUtils.isEmpty(instanceId)) {
-            AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-                    "Missing or invalid instance ID.", ERROR_DOMAIN);
-            ironSourceBannerAd.onAdFailedToLoad(loadError);
-            return;
-        }
-
         ironSourceBannerAd = new IronSourceBannerAd(MediationBannerAdConfiguration, callback);
         registerISBannerAdapter(instanceId, new WeakReference(ironSourceBannerAd));
         ironSourceBannerAd.render();
@@ -405,7 +390,7 @@ public class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISD
             }
 
             if (ironSourceError.getErrorCode() == ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS || ironSourceError.getErrorCode() == ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS) {
-                Log.d(TAG, String.format("IronSource banner ad is already Loading or Showing"));
+            // IronSource banner ad is already Loading or Showing
             } else {
                 availableBannerInstances.remove(instanceId);
             }
