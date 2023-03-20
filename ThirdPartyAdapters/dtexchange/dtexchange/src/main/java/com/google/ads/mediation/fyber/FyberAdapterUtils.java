@@ -126,7 +126,7 @@ class FyberAdapterUtils {
    *
    * @param mediationExtras mediation extras bundle
    */
-  static void updateFyberUserParams(@Nullable Bundle mediationExtras) {
+  static void updateFyberExtraParams(@Nullable Bundle mediationExtras) {
     if (mediationExtras == null) {
       return;
     }
@@ -136,7 +136,13 @@ class FyberAdapterUtils {
       int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
       userParams.setAge(age);
     }
+    
+    if (mediationExtras.containsKey(FyberMediationAdapter.KEY_MUTE_VIDEO)) {
+      boolean muteState = mediationExtras.getBoolean(FyberMediationAdapter.KEY_MUTE_VIDEO, false);
+      InneractiveAdManager.setMuteVideo(muteState);
+    }
 
     InneractiveAdManager.setUserParams(userParams);
   }
+  
 }
