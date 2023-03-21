@@ -1,4 +1,4 @@
-// Copyright 2020 Google Inc.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -125,9 +125,14 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   public void onResume() {
   }
 
-  public void requestBannerAd(@NonNull Context context, @NonNull MediationBannerListener listener,
-      @NonNull Bundle serverParameters, @NonNull AdSize adSize,
-      @NonNull MediationAdRequest adRequest, @Nullable Bundle mediationExtras) {
+  @Override
+  public void requestBannerAd(
+      @NonNull Context context,
+      @NonNull MediationBannerListener listener,
+      @NonNull Bundle serverParameters,
+      @NonNull AdSize adSize,
+      @NonNull MediationAdRequest adRequest,
+      @Nullable Bundle mediationExtras) {
     mediationBannerListener = listener;
     eventAdapter = new UnityBannerEventAdapter(mediationBannerListener, this);
 
