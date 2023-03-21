@@ -80,6 +80,7 @@ public final class AppLovinRtbInterstitialRenderer
     interstitialAd.setAdDisplayListener(this);
     interstitialAd.setAdClickListener(this);
     interstitialAd.setAdVideoPlaybackListener(this);
+    interstitialAd.setExtraInfo("google_watermark", adConfiguration.getWatermark());
 
     // Load ad!
     sdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
