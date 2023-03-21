@@ -153,13 +153,11 @@ class FyberAdapterUtils {
       int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
       userParams.setAge(age);
     }
-    
+    InneractiveAdManager.setUserParams(userParams);
+
     if (mediationExtras.containsKey(FyberMediationAdapter.KEY_MUTE_VIDEO)) {
       boolean muteState = mediationExtras.getBoolean(FyberMediationAdapter.KEY_MUTE_VIDEO, false);
       InneractiveAdManager.setMuteVideo(muteState);
     }
-
-    InneractiveAdManager.setUserParams(userParams);
   }
-  
 }

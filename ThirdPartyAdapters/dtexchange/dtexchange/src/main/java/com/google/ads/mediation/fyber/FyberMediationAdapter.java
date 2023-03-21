@@ -93,7 +93,7 @@ public class FyberMediationAdapter extends Adapter
    * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
    */
   static final String KEY_SPOT_ID = "spotId";
-  
+
   /**
    * Key to obtain the mute video state, which enables the publisher to mute interstitial ads
    */
@@ -332,7 +332,8 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
@@ -343,7 +344,8 @@ public class FyberMediationAdapter extends Adapter
               "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
               ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
@@ -526,7 +528,8 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationInterstitialListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
