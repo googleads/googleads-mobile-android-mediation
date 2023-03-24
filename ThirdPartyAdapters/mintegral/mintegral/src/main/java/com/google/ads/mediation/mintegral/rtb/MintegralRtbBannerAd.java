@@ -1,16 +1,13 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 
-import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
-
-import android.util.Log;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralBannerAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
