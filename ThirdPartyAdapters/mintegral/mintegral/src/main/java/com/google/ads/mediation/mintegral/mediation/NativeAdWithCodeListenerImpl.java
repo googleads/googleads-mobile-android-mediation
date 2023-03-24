@@ -46,7 +46,6 @@ public class NativeAdWithCodeListenerImpl extends NativeAdWithCodeListener {
 
   @Override
   public void onAdLoadErrorWithCode(int errorCode, String errorMessage) {
-
     AdError adError = MintegralConstants.createSdkError(errorCode,
             errorMessage);
     Log.w(TAG, adError.toString());
