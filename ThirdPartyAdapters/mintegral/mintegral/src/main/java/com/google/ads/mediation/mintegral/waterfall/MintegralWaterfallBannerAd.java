@@ -38,7 +38,6 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     BannerSize bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE,
             closestSize.getWidthInPixels(adConfiguration.getContext()),
             closestSize.getHeightInPixels(adConfiguration.getContext()));
-
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
