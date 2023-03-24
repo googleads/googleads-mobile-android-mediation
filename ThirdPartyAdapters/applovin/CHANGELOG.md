@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 11.8.2.0 (In progress)
+#### Version 11.8.2.0
 - Verified compatibility with AppLovin SDK 11.8.2.
 - Added watermark support for bidding ads.
 - Added support for MREC size banner ads.
