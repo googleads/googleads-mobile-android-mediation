@@ -23,10 +23,10 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.ironsource.mediationsdk.ISBannerSize;
-import com.ironsource.mediationsdk.ISDemandOnlyBannerLayout;
+import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerLayout;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.sdk.ISDemandOnlyBannerListener;
+import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerListener;
 
 public class IronSourceBannerAd implements MediationBannerAd, ISDemandOnlyBannerListener {
 

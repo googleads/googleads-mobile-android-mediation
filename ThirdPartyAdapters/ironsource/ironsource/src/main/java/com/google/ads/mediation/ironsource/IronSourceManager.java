@@ -26,10 +26,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.sdk.ISDemandOnlyBannerListener;
-import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
-import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
-
+import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerListener;
+import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyInterstitialListener;
+import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyRewardedVideoListener;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
