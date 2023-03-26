@@ -51,7 +51,7 @@ public class IronSourceAdapter implements MediationInterstitialAdapter, IronSour
             Log.d(TAG,
                 String.format("Loading IronSource interstitial ad with instance ID: %s",
                     instanceID));
-            IronSourceManager.getInstance().loadInterstitial(instanceID, IronSourceAdapter.this);
+            IronSourceManager.getInstance().loadInterstitial(context,instanceID, IronSourceAdapter.this);
           }
 
           @Override

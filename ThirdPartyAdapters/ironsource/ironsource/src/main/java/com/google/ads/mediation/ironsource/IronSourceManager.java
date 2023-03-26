@@ -59,14 +59,6 @@ class IronSourceManager
       return;
     }
 
-    if (!(context instanceof Activity)) {
-      AdError initializationError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "IronSource SDK requires an Activity context to initialize.", ERROR_DOMAIN);
-      listener.onInitializeError(initializationError);
-      return;
-    }
-    Activity activity = (Activity) context;
-
     if (TextUtils.isEmpty(appKey)) {
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid app key.", ERROR_DOMAIN);
@@ -76,51 +68,70 @@ class IronSourceManager
 
     IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
     Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
-    IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL,
+    IronSource.initISDemandOnly(context, appKey, IronSource.AD_UNIT.INTERSTITIAL,
         IronSource.AD_UNIT.REWARDED_VIDEO);
 
     isInitialized.set(true);
     listener.onInitializeSuccess();
   }
 
-  void loadInterstitial(@NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
+  void loadInterstitial(@Nullable Context context, @NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
+    if (!(context instanceof Activity)) {
+      String errorMessage = String
+              .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(contextError);
+      return;
+    }
+    Activity activity = (Activity) context;
+
     if (TextUtils.isEmpty(instanceId)) {
       AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid instance ID.", ERROR_DOMAIN);
+              "Missing or invalid instance ID.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadInterstitialInstance(instanceId)) {
       String errorMessage = String
-          .format("An ad is already loading for instance ID: %s", instanceId);
+              .format("An ad is already loading for instance ID: %s", instanceId);
       AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
       adapter.onAdFailedToLoad(concurrentError);
       return;
     }
 
     registerISInterstitialAdapter(instanceId, new WeakReference<>(adapter));
-    IronSource.loadISDemandOnlyInterstitial(instanceId);
+    IronSource.loadISDemandOnlyInterstitial(activity, instanceId);
   }
 
-  void loadRewardedVideo(@NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
+  void loadRewardedVideo(@NonNull Context context, @NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
+    if (!(context instanceof Activity)) {
+      String errorMessage = String
+              .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      adapter.onAdFailedToLoad(contextError);
+      return;
+    }
+
+    Activity activity = (Activity) context;
+
     if (TextUtils.isEmpty(instanceId)) {
       AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid instance ID.", ERROR_DOMAIN);
+              "Missing or invalid instance ID.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadRewardedVideoInstance(instanceId)) {
       String errorMessage = String
-          .format("An ad is already loading for instance ID: %s", instanceId);
+              .format("An ad is already loading for instance ID: %s", instanceId);
       AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
       adapter.onAdFailedToLoad(concurrentError);
       return;
     }
 
     registerISRewardedVideoAdapter(instanceId, new WeakReference<>(adapter));
-    IronSource.loadISDemandOnlyRewardedVideo(instanceId);
+    IronSource.loadISDemandOnlyRewardedVideo(activity, instanceId);
   }
 
   private boolean canLoadInterstitialInstance(@NonNull String instanceId) {
