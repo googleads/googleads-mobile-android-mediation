@@ -17,13 +17,13 @@ import com.mbridge.msdk.out.NativeAdWithCodeListener;
 
 import java.util.List;
 
-public class NativeAdWithCodeListenerImpl extends NativeAdWithCodeListener {
+public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
   protected  MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   private MintegralNativeAd mintegralNativeAd;
 
-  public NativeAdWithCodeListenerImpl(@NonNull MintegralNativeAd mintegralNativeAd){
+  public MintegralNativeAdListener(@NonNull MintegralNativeAd mintegralNativeAd){
     this.mintegralNativeAd = mintegralNativeAd;
     this.nativeCallback = mintegralNativeAd.nativeCallback;
     this.adLoadCallback = mintegralNativeAd.adLoadCallback;

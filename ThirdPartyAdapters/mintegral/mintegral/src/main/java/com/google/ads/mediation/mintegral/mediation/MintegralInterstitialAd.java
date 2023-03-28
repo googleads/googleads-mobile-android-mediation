@@ -62,7 +62,7 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
 
   @Override
   public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorCode,errorMessage);
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
@@ -84,8 +84,7 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
 
   @Override
   public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorCode,
-            errorMessage);
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdFailedToShow(error);

@@ -14,18 +14,14 @@
 
 package com.google.ads.mediation.mintegral.mediation;
 
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
-
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import com.google.ads.mediation.mintegral.MintegralConstants;
+
 import com.google.ads.mediation.mintegral.MintegralUtils;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -34,9 +30,6 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.Campaign;
-import com.mbridge.msdk.out.Frame;
-import com.mbridge.msdk.out.NativeAdWithCodeListener;
-import com.mbridge.msdk.out.NativeListener;
 import com.mbridge.msdk.out.OnMBMediaViewListener;
 import com.mbridge.msdk.widget.MBAdChoice;
 import java.util.ArrayList;
@@ -51,14 +44,14 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
       adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
-  public NativeAdWithCodeListenerImpl nativeAdWithCodeListener;
+  public MintegralNativeAdListener nativeAdWithCodeListener;
 
   public MintegralNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
-    nativeAdWithCodeListener = new NativeAdWithCodeListenerImpl(this);
+    nativeAdWithCodeListener = new MintegralNativeAdListener(this);
   }
 
   /**
