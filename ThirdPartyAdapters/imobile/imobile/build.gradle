@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "IMobile"
     // String property to store version name.
-    stringVersion = "2.3.0.0"
+    stringVersion = "2.3.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 2030000
+        versionCode 2030100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -31,9 +31,9 @@ android {
 }
 
 dependencies {
-    implementation 'jp.co.imobile:adnw-sdk-android:2.3.0'
+    implementation 'jp.co.imobile:adnw-sdk-android:2.3.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'com.google.android.gms:play-services-ads:21.5.0'
 }
 
 /**
