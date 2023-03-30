@@ -14,13 +14,16 @@
 
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
+import android.util.Log;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralBannerAd;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -39,10 +42,16 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
 
   @Override
   public void loadAd() {
-    AdSize closestSize = adConfiguration.getAdSize();
-    BannerSize bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE,
-            closestSize.getWidthInPixels(adConfiguration.getContext()),
-            closestSize.getHeightInPixels(adConfiguration.getContext()));
+    BannerSize bannerSize = getMintegralBannerSizeFromAdMobAdSize(adConfiguration.getAdSize(),
+            adConfiguration.getContext());
+    if (bannerSize == null) {
+      AdError bannerSizeError = MintegralConstants.createAdapterError(ERROR_BANNER_SIZE_UNSUPPORTED,
+              String.format("The requested banner size: %s is not supported by Mintegral SDK.",
+                      adConfiguration.getAdSize()));
+      Log.e(TAG, bannerSizeError.toString());
+      adLoadCallback.onFailure(bannerSizeError);
+      return;
+    }
 
     String adUnitId = adConfiguration.getServerParameters()
             .getString(MintegralConstants.AD_UNIT_ID);
@@ -56,9 +65,8 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-            closestSize.getWidthInPixels(adConfiguration.getContext()),
-            closestSize.getHeightInPixels(adConfiguration.getContext()));
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(bannerSize.getWidth(),
+        bannerSize.getHeight());
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);
