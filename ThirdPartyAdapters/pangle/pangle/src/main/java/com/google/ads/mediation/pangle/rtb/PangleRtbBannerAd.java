@@ -32,6 +32,7 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
+import com.google.ads.mediation.pangle.PangleBannerAdLoader;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
@@ -49,6 +50,8 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
+  private final PangleInitializer pangleInitializer;
+  private final PangleBannerAdLoader pangleBannerAdLoader;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
 
@@ -56,9 +59,13 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleBannerAdLoader pangleBannerAdLoader) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
+    this.pangleBannerAdLoader = pangleBannerAdLoader;
   }
 
   public void render() {
@@ -89,7 +96,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
 
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
+    pangleInitializer
         .initialize(
             context,
             appId,
@@ -119,7 +126,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
                     new PAGBannerRequest(
                         new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
                 request.setAdString(bidResponse);
-                PAGBannerAd.loadAd(
+                pangleBannerAdLoader.loadAd(
                     placementId,
                     request,
                     new PAGBannerAdLoadListener() {

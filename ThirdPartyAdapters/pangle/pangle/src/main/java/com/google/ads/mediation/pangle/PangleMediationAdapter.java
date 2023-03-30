@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
@@ -57,12 +58,26 @@ import java.util.List;
 public class PangleMediationAdapter extends RtbAdapter {
 
   public static final String TAG = PangleMediationAdapter.class.getSimpleName();
+  private final PangleInitializer pangleInitializer;
+  private final PangleBannerAdLoader pangleBannerAdLoader;
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
   private PangleRtbNativeAd nativeAd;
   private static int gdpr = -1;
   private static int ccpa = -1;
+
+  PangleMediationAdapter() {
+    this.pangleInitializer = PangleInitializer.getInstance();
+    this.pangleBannerAdLoader = new PangleBannerAdLoader();
+  }
+
+  @VisibleForTesting
+  PangleMediationAdapter(
+      PangleInitializer pangleInitializer, PangleBannerAdLoader pangleBannerAdLoader) {
+    this.pangleInitializer = pangleInitializer;
+    this.pangleBannerAdLoader = pangleBannerAdLoader;
+  }
 
   @Override
   public void collectSignals(
@@ -179,7 +194,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerAd = new PangleRtbBannerAd(adConfiguration, callback);
+    bannerAd =
+        new PangleRtbBannerAd(adConfiguration, callback, pangleInitializer, pangleBannerAdLoader);
     bannerAd.render();
   }
 
