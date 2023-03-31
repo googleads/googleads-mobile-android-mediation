@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.2.2.1 (In progress)
+#### Version 8.2.2.1
 - Added support for passing `muteAudio` key in mediation extra to mute interstitial ads.
 
 Built and tested with:
