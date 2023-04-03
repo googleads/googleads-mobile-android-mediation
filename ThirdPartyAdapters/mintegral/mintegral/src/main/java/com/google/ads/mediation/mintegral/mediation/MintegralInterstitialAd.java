@@ -25,11 +25,12 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
+import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
-public abstract class MintegralInterstitialAd implements MediationInterstitialAd,
-    NewInterstitialListener {
+
+public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements MediationInterstitialAd {
 
   protected final MediationInterstitialAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -60,8 +61,8 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   }
 
   @Override
-  public void onResourceLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorMessage);
+  public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
@@ -82,9 +83,8 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-        errorMessage);
+  public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdFailedToShow(error);

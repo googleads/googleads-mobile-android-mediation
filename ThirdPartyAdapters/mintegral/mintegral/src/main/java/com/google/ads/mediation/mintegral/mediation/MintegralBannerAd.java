@@ -29,13 +29,14 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.mbridge.msdk.out.BannerAdListener;
+import com.mbridge.msdk.out.BannerAdWithCodeListener;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
 import com.mbridge.msdk.out.MBridgeIds;
+
 import java.util.ArrayList;
 
-public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdListener {
+public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements MediationBannerAd {
 
   protected MediationBannerAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -57,7 +58,7 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
 
   @Nullable
   public static BannerSize getMintegralBannerSizeFromAdMobAdSize(@NonNull AdSize adSize,
-      @NonNull Context context) {
+                                                                 @NonNull Context context) {
     ArrayList<AdSize> supportedAdSizes = new ArrayList<>();
     supportedAdSizes.add(new AdSize(320, 50));
     supportedAdSizes.add(new AdSize(300, 250));
@@ -80,7 +81,7 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
     }
     if (bannerSize == null) {
       bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
-          closestSize.getHeight());
+              closestSize.getHeight());
     }
     return bannerSize;
   }
@@ -92,8 +93,8 @@ public abstract class MintegralBannerAd implements MediationBannerAd, BannerAdLi
   }
 
   @Override
-  public void onLoadFailed(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorMessage);
+  public void onLoadFailedWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode,errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }

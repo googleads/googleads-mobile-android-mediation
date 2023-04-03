@@ -63,7 +63,7 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbNativeHandler = new MBNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbNativeHandler.setAdListener(this);
+    mbNativeHandler.setAdListener(nativeAdWithCodeListener);
     mbNativeHandler.load();
   }
 

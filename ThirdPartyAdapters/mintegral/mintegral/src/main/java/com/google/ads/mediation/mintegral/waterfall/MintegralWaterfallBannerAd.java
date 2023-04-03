@@ -43,11 +43,11 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
   @Override
   public void loadAd() {
     BannerSize bannerSize = getMintegralBannerSizeFromAdMobAdSize(adConfiguration.getAdSize(),
-        adConfiguration.getContext());
+            adConfiguration.getContext());
     if (bannerSize == null) {
       AdError bannerSizeError = MintegralConstants.createAdapterError(ERROR_BANNER_SIZE_UNSUPPORTED,
-          String.format("The requested banner size: %s is not supported by Mintegral SDK.",
-              adConfiguration.getAdSize()));
+              String.format("The requested banner size: %s is not supported by Mintegral SDK.",
+                      adConfiguration.getAdSize()));
       Log.e(TAG, bannerSizeError.toString());
       adLoadCallback.onFailure(bannerSizeError);
       return;

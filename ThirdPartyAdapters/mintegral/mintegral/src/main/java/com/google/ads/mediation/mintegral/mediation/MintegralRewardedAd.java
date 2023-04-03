@@ -27,9 +27,9 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
-import com.mbridge.msdk.out.RewardVideoListener;
+import com.mbridge.msdk.out.RewardVideoWithCodeListener;
 
-public abstract class MintegralRewardedAd implements MediationRewardedAd, RewardVideoListener {
+public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener implements MediationRewardedAd {
 
   protected final MediationRewardedAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
@@ -59,8 +59,8 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
   }
 
   @Override
-  public void onVideoLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorMessage);
+  public void onVideoLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
@@ -106,9 +106,8 @@ public abstract class MintegralRewardedAd implements MediationRewardedAd, Reward
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-        errorMessage);
+  public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdFailedToShow(error);

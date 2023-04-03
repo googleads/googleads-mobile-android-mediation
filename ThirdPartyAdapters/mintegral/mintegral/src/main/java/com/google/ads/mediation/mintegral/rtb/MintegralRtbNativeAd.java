@@ -66,7 +66,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbBidNativeHandler.setAdListener(this);
+    mbBidNativeHandler.setAdListener(nativeAdWithCodeListener);
     mbBidNativeHandler.bidLoad(bidToken);
   }
 

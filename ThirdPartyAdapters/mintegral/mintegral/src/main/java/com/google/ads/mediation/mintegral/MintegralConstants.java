@@ -31,7 +31,7 @@ public class MintegralConstants {
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_BANNER_SIZE_UNSUPPORTED,
-      ERROR_INVALID_BID_RESPONSE, ERROR_MINTEGRAL_SDK, ERROR_CODE_NO_FILL,})
+          ERROR_INVALID_BID_RESPONSE, ERROR_MINTEGRAL_SDK, ERROR_CODE_NO_FILL, ERROR_CODE_SDK_INIT_FAILED})
   public @interface AdapterError {
 
   }
@@ -61,14 +61,20 @@ public class MintegralConstants {
    */
   public static final int ERROR_CODE_NO_FILL = 104;
 
+  /**
+   * Mintegral SDK failed to initialize.
+   */
+  public static final int ERROR_CODE_SDK_INIT_FAILED = 105;
+
   @NonNull
   public static AdError createAdapterError(@AdapterError int errorCode,
-      @NonNull String errorMessage) {
+                                           @NonNull String errorMessage) {
     return new AdError(errorCode, errorMessage, ERROR_DOMAIN);
   }
 
   @NonNull
-  public static AdError createSdkError(@NonNull String errorMessage) {
-    return new AdError(ERROR_MINTEGRAL_SDK, errorMessage, MINTEGRAL_SDK_ERROR_DOMAIN);
+  public static AdError createSdkError(@AdapterError int errorCode, @NonNull String errorMessage) {
+    return new AdError(errorCode, errorMessage, MINTEGRAL_SDK_ERROR_DOMAIN);
   }
+
 }
