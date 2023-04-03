@@ -222,7 +222,7 @@ public class IronSourceMediationAdapter extends Adapter
             Log.d(TAG,
                 String.format("Loading IronSource rewarded ad with instance ID: %s", instanceID));
             IronSourceManager.getInstance()
-                .loadRewardedVideo(context,instanceID, IronSourceMediationAdapter.this);
+                .loadRewardedVideo(context, instanceID, IronSourceMediationAdapter.this);
           }
 
           @Override

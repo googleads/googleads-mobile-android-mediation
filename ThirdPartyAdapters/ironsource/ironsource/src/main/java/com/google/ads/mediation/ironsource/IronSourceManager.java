@@ -42,16 +42,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A centralized {@link ISDemandOnlyRewardedVideoListener} to forward IronSource ad events to all
  * {@link IronSourceMediationAdapter} instances.
  */
-class IronSourceManager
-    implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener {
+class IronSourceManager implements ISDemandOnlyRewardedVideoListener,
+    ISDemandOnlyInterstitialListener {
 
   private static final IronSourceManager instance = new IronSourceManager();
   private final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
-  private final ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>>
-      availableInstances;
-  private final ConcurrentHashMap<String, WeakReference<IronSourceAdapter>>
-      availableInterstitialInstances;
+  private final ConcurrentHashMap<String, WeakReference<IronSourceMediationAdapter>> availableInstances;
+  private final ConcurrentHashMap<String, WeakReference<IronSourceAdapter>> availableInterstitialInstances;
 
   private WeakReference<IronSourceMediationAdapter> currentlyShowingRewardedAdapter;
 
@@ -89,11 +87,11 @@ class IronSourceManager
     listener.onInitializeSuccess();
   }
 
-  void loadInterstitial(@Nullable Context context, @NonNull String instanceId, @NonNull IronSourceAdapter adapter) {
+  void loadInterstitial(@Nullable Context context, @NonNull String instanceId,
+      @NonNull IronSourceAdapter adapter) {
     if (!(context instanceof Activity)) {
-      String errorMessage = String
-              .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
-      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "IronSource requires an Activity context to load ads.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(contextError);
       return;
     }
@@ -101,14 +99,14 @@ class IronSourceManager
 
     if (TextUtils.isEmpty(instanceId)) {
       AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid instance ID.", ERROR_DOMAIN);
+          "Missing or invalid instance ID.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadInterstitialInstance(instanceId)) {
-      String errorMessage = String
-              .format("An ad is already loading for instance ID: %s", instanceId);
+      String errorMessage = String.format("An ad is already loading for instance ID: %s",
+          instanceId);
       AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
       adapter.onAdFailedToLoad(concurrentError);
       return;
@@ -118,11 +116,11 @@ class IronSourceManager
     IronSource.loadISDemandOnlyInterstitial(activity, instanceId);
   }
 
-  void loadRewardedVideo(@NonNull Context context, @NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
+  void loadRewardedVideo(@NonNull Context context, @NonNull String instanceId,
+      @NonNull IronSourceMediationAdapter adapter) {
     if (!(context instanceof Activity)) {
-      String errorMessage = String
-              .format(ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.");
-      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "IronSource requires an Activity context to load ads.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(contextError);
       return;
     }
@@ -131,14 +129,14 @@ class IronSourceManager
 
     if (TextUtils.isEmpty(instanceId)) {
       AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid instance ID.", ERROR_DOMAIN);
+          "Missing or invalid instance ID.", ERROR_DOMAIN);
       adapter.onAdFailedToLoad(loadError);
       return;
     }
 
     if (!canLoadRewardedVideoInstance(instanceId)) {
-      String errorMessage = String
-              .format("An ad is already loading for instance ID: %s", instanceId);
+      String errorMessage = String.format("An ad is already loading for instance ID: %s",
+          instanceId);
       AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
       adapter.onAdFailedToLoad(concurrentError);
       return;
@@ -168,8 +166,8 @@ class IronSourceManager
 
   void showRewardedVideo(@NonNull String instanceId, @NonNull IronSourceMediationAdapter adapter) {
     WeakReference<IronSourceMediationAdapter> adapterReference = availableInstances.get(instanceId);
-    if (adapterReference == null || adapterReference.get() == null || !adapter
-        .equals(adapterReference.get())) {
+    if (adapterReference == null || adapterReference.get() == null ||
+        !adapter.equals(adapterReference.get())) {
       AdError showError = new AdError(ERROR_AD_SHOW_UNAUTHORIZED,
           "IronSource adapter does not have authority to show this instance.", ERROR_DOMAIN);
       adapter.onAdFailedToShow(showError);
@@ -187,8 +185,8 @@ class IronSourceManager
     IronSource.showISDemandOnlyInterstitial(instanceId);
   }
 
-  private void registerISInterstitialAdapter(
-      @NonNull String instanceId, @NonNull WeakReference<IronSourceAdapter> weakAdapter) {
+  private void registerISInterstitialAdapter(@NonNull String instanceId,
+      @NonNull WeakReference<IronSourceAdapter> weakAdapter) {
     IronSourceAdapter ironSourceAdapter = weakAdapter.get();
     if (ironSourceAdapter == null) {
       Log.e(TAG, "IronSource interstitial adapter weak reference has been lost.");
@@ -197,8 +195,8 @@ class IronSourceManager
     availableInterstitialInstances.put(instanceId, weakAdapter);
   }
 
-  private void registerISRewardedVideoAdapter(
-      @NonNull String instanceId, @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
+  private void registerISRewardedVideoAdapter(@NonNull String instanceId,
+      @NonNull WeakReference<IronSourceMediationAdapter> weakAdapter) {
     IronSourceMediationAdapter ironSourceMediationAdapter = weakAdapter.get();
     if (ironSourceMediationAdapter == null) {
       Log.e(TAG, "IronSource rewarded adapter weak reference has been lost.");
