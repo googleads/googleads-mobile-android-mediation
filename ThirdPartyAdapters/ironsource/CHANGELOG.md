@@ -2,7 +2,7 @@
 
 #### Version 7.3.0.0 (In Progress)
 - Verified compatibility with ironSource SDK version 7.3.0.
-- Updated adapter to support new `VersionInfo` class.
+- Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 
 Built and tested with:

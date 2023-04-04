@@ -33,7 +33,7 @@ android {
 dependencies {
     implementation 'com.applovin:applovin-sdk:11.8.2'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:21.5.0'
+    implementation 'com.google.android.gms:play-services-ads:22.0.0'
 }
 
 /**
