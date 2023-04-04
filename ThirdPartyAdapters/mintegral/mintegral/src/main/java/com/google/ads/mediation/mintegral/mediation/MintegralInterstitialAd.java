@@ -30,7 +30,8 @@ import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
 
-public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements MediationInterstitialAd {
+public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements
+    MediationInterstitialAd {
 
   protected final MediationInterstitialAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -61,7 +62,8 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
   }
 
   @Override
-  public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+  public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode,
+      String errorMessage) {
     AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);

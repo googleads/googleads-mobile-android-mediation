@@ -29,7 +29,8 @@ import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoWithCodeListener;
 
-public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener implements MediationRewardedAd {
+public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener implements
+    MediationRewardedAd {
 
   protected final MediationRewardedAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>

@@ -34,8 +34,8 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
 
   public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd,
+          MediationInterstitialAdCallback> callback) {
     super(adConfiguration, callback);
   }
 

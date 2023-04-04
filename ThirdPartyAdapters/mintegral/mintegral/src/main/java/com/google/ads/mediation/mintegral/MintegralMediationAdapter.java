@@ -186,7 +186,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
 
       @Override
       public void onInitFail(String errorMessage) {
-        AdError initError = createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED, errorMessage);
+        AdError initError = createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED,
+            errorMessage);
         initializationCompleteCallback.onInitializationFailed(initError.getMessage());
         Log.w(TAG, initError.toString());
       }

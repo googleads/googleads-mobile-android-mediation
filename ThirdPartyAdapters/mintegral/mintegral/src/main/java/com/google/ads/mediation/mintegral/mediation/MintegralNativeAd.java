@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
-         OnMBMediaViewListener {
+    OnMBMediaViewListener {
 
   protected Campaign campaign;
   protected final MediationNativeAdConfiguration adConfiguration;
@@ -44,14 +44,14 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
       adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
-  public MintegralNativeAdListener nativeAdWithCodeListener;
+  public MintegralNativeAdListener mintegralNativeAdListener;
 
   public MintegralNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
-    nativeAdWithCodeListener = new MintegralNativeAdListener(this);
+    mintegralNativeAdListener = new MintegralNativeAdListener(this);
   }
 
   /**

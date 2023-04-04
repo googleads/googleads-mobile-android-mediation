@@ -36,7 +36,8 @@ import com.mbridge.msdk.out.MBridgeIds;
 
 import java.util.ArrayList;
 
-public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements MediationBannerAd {
+public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements
+    MediationBannerAd {
 
   protected MediationBannerAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -58,7 +59,7 @@ public abstract class MintegralBannerAd extends BannerAdWithCodeListener impleme
 
   @Nullable
   public static BannerSize getMintegralBannerSizeFromAdMobAdSize(@NonNull AdSize adSize,
-                                                                 @NonNull Context context) {
+      @NonNull Context context) {
     ArrayList<AdSize> supportedAdSizes = new ArrayList<>();
     supportedAdSizes.add(new AdSize(320, 50));
     supportedAdSizes.add(new AdSize(300, 250));
@@ -81,7 +82,7 @@ public abstract class MintegralBannerAd extends BannerAdWithCodeListener impleme
     }
     if (bannerSize == null) {
       bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
-              closestSize.getHeight());
+          closestSize.getHeight());
     }
     return bannerSize;
   }
@@ -94,7 +95,7 @@ public abstract class MintegralBannerAd extends BannerAdWithCodeListener impleme
 
   @Override
   public void onLoadFailedWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorCode,errorMessage);
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }

@@ -19,11 +19,11 @@ import java.util.List;
 
 public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
-  protected  MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+  protected MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   private MintegralNativeAd mintegralNativeAd;
 
-  public MintegralNativeAdListener(@NonNull MintegralNativeAd mintegralNativeAd){
+  public MintegralNativeAdListener(@NonNull MintegralNativeAd mintegralNativeAd) {
     this.mintegralNativeAd = mintegralNativeAd;
     this.nativeCallback = mintegralNativeAd.nativeCallback;
     this.adLoadCallback = mintegralNativeAd.adLoadCallback;
@@ -33,7 +33,7 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
   public void onAdLoaded(List<Campaign> list, int template) {
     if (list == null || list.size() == 0) {
       AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL,
-              "Mintegral SDK failed to return a native ad.");
+          "Mintegral SDK failed to return a native ad.");
       Log.w(TAG, adError.toString());
       adLoadCallback.onFailure(adError);
       return;
@@ -43,11 +43,10 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
   }
 
 
-
   @Override
   public void onAdLoadErrorWithCode(int errorCode, String errorMessage) {
     AdError adError = MintegralConstants.createSdkError(errorCode,
-            errorMessage);
+        errorMessage);
     Log.w(TAG, adError.toString());
     adLoadCallback.onFailure(adError);
   }
