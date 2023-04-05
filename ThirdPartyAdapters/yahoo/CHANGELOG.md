@@ -1,8 +1,12 @@
 ## Yahoo Android Mediation Adapter Changelog
 
-### Next Version
+### Version 1.4.1.1 (In progress)
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Yahoo Mobile SDK 1.4.1.
 
 #### Version 1.4.1.0
 - Rebranded Verizon Media adapter to "Yahoo".
