@@ -11,6 +11,7 @@ import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -26,7 +27,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -36,7 +36,7 @@ import com.vungle.ads.BaseAd;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
 import com.vungle.ads.VungleAds;
-import com.vungle.ads.VungleException;
+import com.vungle.ads.VungleError;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.PlacementFinder;
 import java.util.HashSet;
@@ -106,11 +106,11 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   public static final int ERROR_CANNOT_PLAY_AD = 107;
 
   /**
-   * Convert the given Vungle exception into the appropriate custom error code.
+   * Convert the given Vungle error into the appropriate custom error code.
    */
   @NonNull
-  public static AdError getAdError(@NonNull VungleException exception) {
-    return new AdError(exception.getExceptionCode(), exception.getLocalizedMessage(),
+  public static AdError getAdError(@NonNull VungleError error) {
+    return new AdError(error.getCode(), error.getErrorMessage(),
         VUNGLE_SDK_ERROR_DOMAIN);
   }
 
@@ -321,7 +321,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = getAdError(e);
     Log.w(TAG, error.toString());
     if (mediationRewardedAdCallback != null) {
@@ -330,7 +330,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = getAdError(e);
     Log.w(TAG, error.toString());
     if (mediationAdLoadCallback != null) {

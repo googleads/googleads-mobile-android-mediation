@@ -33,7 +33,7 @@ import com.vungle.ads.BannerAdSize;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
-import com.vungle.ads.VungleException;
+import com.vungle.ads.VungleError;
 import java.util.ArrayList;
 
 @Keep
@@ -144,14 +144,14 @@ public class VungleInterstitialAdapter
     }
 
     @Override
-    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
       AdError error = VungleMediationAdapter.getAdError(e);
       Log.w(TAG, error.toString());
       //no-op
     }
 
     @Override
-    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
       AdError error = VungleMediationAdapter.getAdError(e);
       Log.w(TAG, error.toString());
       if (mediationInterstitialListener != null) {
@@ -293,14 +293,14 @@ public class VungleInterstitialAdapter
     }
 
     @Override
-    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
       AdError error = VungleMediationAdapter.getAdError(e);
       Log.w(TAG, error.toString());
       //no-op
     }
 
     @Override
-    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
       AdError error = VungleMediationAdapter.getAdError(e);
       Log.w(TAG, error.toString());
       if (mediationBannerListener != null) {

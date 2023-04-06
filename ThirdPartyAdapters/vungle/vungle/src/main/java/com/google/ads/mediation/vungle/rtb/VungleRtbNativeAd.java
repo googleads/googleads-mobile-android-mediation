@@ -15,9 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -31,10 +29,9 @@ import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.NativeAd;
 import com.vungle.ads.NativeAdListener;
-import com.vungle.ads.VungleException;
+import com.vungle.ads.VungleError;
 import com.vungle.ads.internal.ui.view.MediaView;
 import com.vungle.mediation.PlacementFinder;
-
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -229,13 +226,13 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     callback.onFailure(error);
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     callback.onFailure(error);
   }

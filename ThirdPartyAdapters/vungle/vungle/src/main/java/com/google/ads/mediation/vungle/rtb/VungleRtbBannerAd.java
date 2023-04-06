@@ -26,7 +26,7 @@ import com.vungle.ads.BannerAd;
 import com.vungle.ads.BannerAdListener;
 import com.vungle.ads.BannerAdSize;
 import com.vungle.ads.BaseAd;
-import com.vungle.ads.VungleException;
+import com.vungle.ads.VungleError;
 import com.vungle.mediation.PlacementFinder;
 import com.vungle.mediation.VungleInterstitialAdapter;
 
@@ -131,7 +131,6 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
     return bannerLayout;
   }
 
-  //region VungleBannerAdListener
   @Override
   public void onAdClicked(@NonNull BaseAd baseAd) {
     if (mediationBannerAdCallback != null) {
@@ -163,14 +162,14 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     Log.w(TAG, error.toString());
     // No-op
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     Log.w(TAG, error.toString());
     mediationAdLoadCallback.onFailure(error);
@@ -182,7 +181,6 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
       mediationBannerAdCallback.onAdLeftApplication();
     }
   }
-  //endregion
 
   private void createBanner() {
     RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(

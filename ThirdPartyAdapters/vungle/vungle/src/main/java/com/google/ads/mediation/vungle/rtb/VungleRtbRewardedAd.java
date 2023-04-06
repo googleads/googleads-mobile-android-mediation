@@ -23,7 +23,7 @@ import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
-import com.vungle.ads.VungleException;
+import com.vungle.ads.VungleError;
 import com.vungle.mediation.PlacementFinder;
 
 public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListener {
@@ -151,7 +151,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     Log.w(TAG, error.toString());
     if (mediationRewardedAdCallback != null) {
@@ -160,7 +160,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleException e) {
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
     AdError error = VungleMediationAdapter.getAdError(e);
     Log.w(TAG, error.toString());
     mediationAdLoadCallback.onFailure(error);

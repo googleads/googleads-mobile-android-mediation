@@ -28,14 +28,6 @@ public class VungleConsent {
     VunglePrivacySettings.setCCPAStatus(optedIn);
   }
 
-  public static void setCOPPAStatus(boolean userCoppaStatus) {
-    VunglePrivacySettings.setCOPPAStatus(userCoppaStatus);
-  }
-
-  public static String getCoppaStatus() {
-    return VunglePrivacySettings.getCOPPAStatus();
-  }
-
   public static void publishAndroidId(Boolean publishAndroidId) {
     VunglePrivacySettings.setPublishAndroidId(publishAndroidId);
   }
