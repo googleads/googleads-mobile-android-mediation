@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "DTExchange"
     // String property to store the version name.
-    stringVersion = "8.2.3"
+    stringVersion = "8.2.3.0"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
