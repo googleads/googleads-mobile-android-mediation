@@ -1,3 +1,17 @@
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.pangle;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -7,6 +21,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
@@ -18,6 +33,7 @@ import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -33,7 +49,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -43,12 +58,26 @@ import java.util.List;
 public class PangleMediationAdapter extends RtbAdapter {
 
   public static final String TAG = PangleMediationAdapter.class.getSimpleName();
+  private final PangleInitializer pangleInitializer;
+  private final PangleBannerAdLoader pangleBannerAdLoader;
   private PangleRtbBannerAd bannerAd;
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
   private PangleRtbNativeAd nativeAd;
   private static int gdpr = -1;
   private static int ccpa = -1;
+
+  PangleMediationAdapter() {
+    this.pangleInitializer = PangleInitializer.getInstance();
+    this.pangleBannerAdLoader = new PangleBannerAdLoader();
+  }
+
+  @VisibleForTesting
+  PangleMediationAdapter(
+      PangleInitializer pangleInitializer, PangleBannerAdLoader pangleBannerAdLoader) {
+    this.pangleInitializer = pangleInitializer;
+    this.pangleBannerAdLoader = pangleBannerAdLoader;
+  }
 
   @Override
   public void collectSignals(
@@ -165,7 +194,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerAd = new PangleRtbBannerAd(adConfiguration, callback);
+    bannerAd =
+        new PangleRtbBannerAd(adConfiguration, callback, pangleInitializer, pangleBannerAdLoader);
     bannerAd.render();
   }
 

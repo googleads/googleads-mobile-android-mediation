@@ -1,4 +1,4 @@
-// Copyright 2020 Google Inc.
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ import com.unity3d.ads.IUnityAdsShowListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
+import com.unity3d.ads.UnityAdsLoadOptions;
+import com.unity3d.ads.UnityAdsShowOptions;
+
+import java.util.UUID;
 
 public class UnityRewardedAd implements MediationRewardedAd {
 
@@ -45,8 +49,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
    * Mediation rewarded video ad listener used to forward ad load status to the Google Mobile Ads
    * SDK.
    */
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mediationAdLoadCallback;
+  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback;
 
   /**
    * Mediation rewarded video ad listener used to forward rewarded ad events to the Google Mobile
@@ -60,6 +63,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private String placementId;
 
   /**
+   * Object ID used to track loaded/shown ads.
+   */
+  private String objectId;
+
+  /**
    * UnityRewardedEventAdapter instance to send events from the mediationRewardedAdCallback.
    */
   private UnityRewardedEventAdapter eventAdapter;
@@ -70,8 +78,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
   private final IUnityAdsLoadListener unityLoadListener = new IUnityAdsLoadListener() {
     @Override
     public void onUnityAdsAdLoaded(String placementId) {
-      String logMessage = String
-          .format("Unity Ads rewarded ad successfully loaded placement ID: %s", placementId);
+      String logMessage = String.format(
+          "Unity Ads rewarded ad successfully loaded placement ID: %s", placementId);
       Log.d(TAG, logMessage);
       UnityRewardedAd.this.placementId = placementId;
       sendRewardedLoadSuccess();
@@ -94,6 +102,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     this.mediationAdLoadCallback = callback;
 
     Context context = mediationRewardedAdConfiguration.getContext();
+
     if (!(context instanceof Activity)) {
       sendRewardedLoadFailure(createAdError(ERROR_CONTEXT_NOT_ACTIVITY,
           "Unity Ads requires an Activity context to load ads."));
@@ -101,16 +110,16 @@ public class UnityRewardedAd implements MediationRewardedAd {
     }
 
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
-    String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
+    final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
+    final String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
     if (!UnityAdapter.areValidIds(gameId, placementId)) {
       sendRewardedLoadFailure(
           createAdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid server parameters."));
       return;
     }
 
-    UnityInitializer.getInstance().initializeUnityAds(context, gameId,
-        new IUnityAdsInitializationListener() {
+    UnityInitializer.getInstance()
+        .initializeUnityAds(context, gameId, new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
             String logMessage = String.format("Unity Ads is initialized for game ID '%s' "
@@ -122,15 +131,22 @@ public class UnityRewardedAd implements MediationRewardedAd {
           public void onInitializationFailed(
               UnityAds.UnityAdsInitializationError unityAdsInitializationError,
               String errorMessage) {
-            String adErrorMessage = String
-                .format("Unity Ads initialization failed for game ID '%s' with error message: %s",
-                    gameId, errorMessage);
+            String adErrorMessage = String.format(
+                "Unity Ads initialization failed for game ID '%s' with error message: %s", gameId,
+                errorMessage);
             AdError adError = createSDKError(unityAdsInitializationError, adErrorMessage);
             sendRewardedLoadFailure(adError);
           }
         });
 
-    UnityAds.load(placementId, unityLoadListener);
+    UnityAdsAdapterUtils.setCoppa(
+        mediationRewardedAdConfiguration.taggedForChildDirectedTreatment(), context);
+
+    objectId = UUID.randomUUID().toString();
+    UnityAdsLoadOptions unityAdsLoadOptions = new UnityAdsLoadOptions();
+    unityAdsLoadOptions.setObjectId(objectId);
+
+    UnityAds.load(placementId, unityAdsLoadOptions, unityLoadListener);
   }
 
   @Override
@@ -151,8 +167,11 @@ public class UnityRewardedAd implements MediationRewardedAd {
       Log.w(TAG, "Unity Ads received call to show before successfully loading an ad.");
     }
 
+    UnityAdsShowOptions unityAdsShowOptions = new UnityAdsShowOptions();
+    unityAdsShowOptions.setObjectId(objectId);
+
     // UnityAds can handle a null placement ID so show is always called here.
-    UnityAds.show(activity, placementId, unityShowListener);
+    UnityAds.show(activity, placementId, unityAdsShowOptions, unityShowListener);
   }
 
   /**

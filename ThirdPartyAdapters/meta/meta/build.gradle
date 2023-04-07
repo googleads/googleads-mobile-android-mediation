@@ -7,10 +7,12 @@ apply plugin: 'maven-publish'
 ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Meta Audience Network"
-    // String property to store version name.
-    stringVersion = "6.12.0.0"
-    // String property to store group id.
+    // String property to store the version name.
+    stringVersion = "6.13.7.0"
+    // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
+    // String property to store the artifact id.
+    stringArtifactId = "facebook"
 }
 
 android {
@@ -18,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 6120000
+        versionCode 6130700
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -31,9 +33,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.facebook.android:audience-network-sdk:6.12.0'
+    implementation 'com.facebook.android:audience-network-sdk:6.13.7'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:21.2.0'
+    implementation 'com.google.android.gms:play-services-ads:22.0.0'
 }
 
 /**
@@ -51,8 +53,7 @@ publishing {
     publications {
         adapterPublications(MavenPublication) {
             groupId = stringGroupId
-            // Keep the artifact name as 'facebook' to avoid needing a new maven artifact.
-            artifactId = "facebook"
+            artifactId = stringArtifactId
             version = stringVersion
 
             // Add the aar artifact to publication.
@@ -117,9 +118,9 @@ task copyArtifactsForDistribution(type: Copy) {
  */
 task packageDistribution(type: Zip) {
     from("$buildDir/distribution") {
-        rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
-        rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
-        rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+        rename("${project.name}-release.aar", "${stringArtifactId}-${stringVersion}.aar")
+        rename("${project.name}-sources.jar", "${stringArtifactId}-${stringVersion}-sources.jar")
+        rename("pom-default.xml", "${stringArtifactId}-${stringVersion}.pom")
     }
 
     def trimmedAdapterName = adapterName.replace(' ', '')

@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.vungle;
 
 import android.content.Context;
@@ -52,10 +66,10 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   public static final String KEY_ORIENTATION = "adOrientation";
   public static final String KEY_PLAY_PLACEMENT = "playPlacement";
 
+  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
-  private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbNativeAd rtbNativeAd;
 
   private String placement;
@@ -186,10 +200,12 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
 
     int count = appIDs.size();
     if (count <= 0) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
-          ERROR_DOMAIN);
-      Log.w(TAG, error.toString());
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      if (initializationCompleteCallback != null) {
+        AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.",
+            ERROR_DOMAIN);
+        Log.w(TAG, error.toString());
+        initializationCompleteCallback.onInitializationFailed(error.toString());
+      }
       return;
     } else if (count > 1) {
       String message = String.format("Multiple '%s' entries found: %s.", KEY_APP_ID, appIDs);

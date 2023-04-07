@@ -1,3 +1,17 @@
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_BANNER_SIZE_MISMATCH;
@@ -18,6 +32,7 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
+import com.google.ads.mediation.pangle.PangleBannerAdLoader;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
@@ -35,6 +50,8 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
+  private final PangleInitializer pangleInitializer;
+  private final PangleBannerAdLoader pangleBannerAdLoader;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
 
@@ -42,9 +59,13 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleBannerAdLoader pangleBannerAdLoader) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
+    this.pangleBannerAdLoader = pangleBannerAdLoader;
   }
 
   public void render() {
@@ -75,7 +96,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
 
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
+    pangleInitializer
         .initialize(
             context,
             appId,
@@ -105,7 +126,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
                     new PAGBannerRequest(
                         new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
                 request.setAdString(bidResponse);
-                PAGBannerAd.loadAd(
+                pangleBannerAdLoader.loadAd(
                     placementId,
                     request,
                     new PAGBannerAdLoadListener() {

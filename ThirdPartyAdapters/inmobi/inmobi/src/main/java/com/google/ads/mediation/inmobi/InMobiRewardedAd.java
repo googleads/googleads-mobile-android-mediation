@@ -1,11 +1,22 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.inmobi;
 
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_AD_DISPLAY_FAILED;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INMOBI_NOT_INITIALIZED;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.INMOBI_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_DISPLAY_FAILED;
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INMOBI_NOT_INITIALIZED;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
@@ -23,16 +34,16 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
-import com.inmobi.ads.exceptions.SdkNotInitializedException;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
+import com.inmobi.sdk.InMobiSdk;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InMobiRewardedAd implements MediationRewardedAd {
+public class InMobiRewardedAd extends InterstitialAdEventListener implements MediationRewardedAd {
 
   private InMobiInterstitial inMobiRewardedAd;
 
-  private final MediationRewardedAdConfiguration rewardedAdConfiguration;
+  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
@@ -41,24 +52,22 @@ public class InMobiRewardedAd implements MediationRewardedAd {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback) {
-    this.rewardedAdConfiguration = mediationRewardedAdConfiguration;
+    this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  public void load() {
-    final Context context = rewardedAdConfiguration.getContext();
-    Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
+  public void loadAd() {
+    final Context context = mediationRewardedAdConfiguration.getContext();
+    Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
     String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-    if (TextUtils.isEmpty(accountID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Account ID.",
-          ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
+    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
+    if (error != null) {
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
     InMobiInitializer.getInstance().init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
@@ -67,7 +76,7 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
       @Override
       public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.getMessage());
+        Log.w(TAG, error.toString());
         if (mediationAdLoadCallback != null) {
           mediationAdLoadCallback.onFailure(error);
         }
@@ -77,11 +86,11 @@ public class InMobiRewardedAd implements MediationRewardedAd {
 
   // region MediationRewardedAd implementation.
   @Override
-  public void showAd(@NonNull Context context) {
+  public void showAd(Context context) {
     if (!inMobiRewardedAd.isReady()) {
-      AdError error = new AdError(ERROR_AD_NOT_READY,
-          "InMobi Rewarded ad is not yet ready to be shown.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+      AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
+          "InMobi rewarded ad is not yet ready to be shown.");
+      Log.w(TAG, error.toString());
 
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdFailedToShow(error);
@@ -98,156 +107,156 @@ public class InMobiRewardedAd implements MediationRewardedAd {
       final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
 
-    if (placementId <= 0L) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid Placement ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
+    if (!InMobiSdk.isSDKInitialized()) {
+      AdError error = InMobiConstants.createAdapterError(ERROR_INMOBI_NOT_INITIALIZED,
+          "InMobi SDK failed to request a rewarded ad since it isn't initialized.");
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    try {
-      inMobiRewardedAd = new InMobiInterstitial(context, placementId,
-          new InterstitialAdEventListener() {
-            @Override
-            public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
-                Map<Object, Object> rewards) {
-              Log.d(TAG, "InMobi rewarded ad user earned a reward.");
-              String rewardKey = "";
-              String rewardStringValue = "";
-              int rewardValue = 0;
+    inMobiRewardedAd = new InMobiInterstitial(context, placementId, InMobiRewardedAd.this);
 
-              if (rewards != null) {
-                for (Object reward : rewards.keySet()) {
-                  rewardKey = reward.toString();
-                  rewardStringValue = rewards.get(rewardKey).toString();
-                  if (!TextUtils.isEmpty(rewardKey) &&
-                      !TextUtils.isEmpty(rewardStringValue)) {
-                    break;
-                  }
-                }
-              }
+    // Set the COPPA value in InMobi SDK.
+    InMobiAdapterUtils.setIsAgeRestricted(mediationRewardedAdConfiguration);
 
-              if (!TextUtils.isEmpty(rewardStringValue)) {
-                try {
-                  rewardValue = Integer.parseInt(rewardStringValue);
-                } catch (NumberFormatException e) {
-                  Log.w(TAG, "Expected an integer reward value. Got " +
-                      rewardStringValue + " instead. Using reward value of 1.");
-                  rewardValue = 1;
-                }
-              }
-
-              if (rewardedAdCallback != null) {
-                rewardedAdCallback.onVideoComplete();
-                rewardedAdCallback.onUserEarnedReward(new InMobiReward(rewardKey, rewardValue));
-              }
-            }
-
-            @Override
-            public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
-              AdError error = new AdError(ERROR_AD_DISPLAY_FAILED, "InMobi ad failed to show.",
-                  ERROR_DOMAIN);
-              Log.w(TAG, error.getMessage());
-              if (rewardedAdCallback != null) {
-                rewardedAdCallback.onAdFailedToShow(error);
-              }
-            }
-
-            @Override
-            public void onAdWillDisplay(@NonNull InMobiInterstitial inMobiInterstitial) {
-              Log.d(TAG, "InMobi rewarded ad will be shown.");
-            }
-
-            @Override
-            public void onAdDisplayed(@NonNull InMobiInterstitial inMobiInterstitial,
-                @NonNull AdMetaInfo adMetaInfo) {
-              Log.d(TAG, "InMobi rewarded ad has been shown.");
-              if (rewardedAdCallback != null) {
-                rewardedAdCallback.onAdOpened();
-                rewardedAdCallback.onVideoStart();
-                rewardedAdCallback.reportAdImpression();
-              }
-            }
-
-            @Override
-            public void onAdDismissed(@NonNull InMobiInterstitial inMobiInterstitial) {
-              Log.d(TAG, "InMobi rewarded ad has been dismissed.");
-              if (rewardedAdCallback != null) {
-                rewardedAdCallback.onAdClosed();
-              }
-            }
-
-            @Override
-            public void onAdClicked(@NonNull InMobiInterstitial inMobiInterstitial,
-                Map<Object, Object> parameters) {
-              Log.d(TAG, "InMobi rewarded ad has been clicked.");
-              if (rewardedAdCallback != null) {
-                rewardedAdCallback.reportAdClicked();
-              }
-            }
-
-            @Override
-            public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
-                @NonNull AdMetaInfo adMetaInfo) {
-              Log.d(TAG, "InMobi rewaded ad has been loaded.");
-              if (mediationAdLoadCallback != null) {
-                rewardedAdCallback =
-                    mediationAdLoadCallback.onSuccess(InMobiRewardedAd.this);
-              }
-            }
-
-            @Override
-            public void onAdLoadFailed(@NonNull InMobiInterstitial inMobiInterstitial,
-                @NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
-              AdError error = new AdError(
-                  InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
-                  inMobiAdRequestStatus.getMessage(), INMOBI_SDK_ERROR_DOMAIN);
-              Log.w(TAG, error.getMessage());
-              if (mediationAdLoadCallback != null) {
-                mediationAdLoadCallback.onFailure(error);
-              }
-            }
-
-            @Override
-            public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
-                @NonNull AdMetaInfo adMetaInfo) {
-              Log.d(TAG, "InMobi rewarded ad fetched from server, "
-                  + "but ad contents still need to be loaded.");
-            }
-
-            @Override
-            public void onUserLeftApplication(@NonNull InMobiInterstitial inMobiInterstitial) {
-              Log.d(TAG, "InMobi rewarded ad left application.");
-            }
-
-            @Override
-            public void onRequestPayloadCreated(byte[] payload) {
-              // No op.
-            }
-
-            @Override
-            public void onRequestPayloadCreationFailed(@NonNull InMobiAdRequestStatus status) {
-              // No op.
-            }
-          });
-    } catch (SdkNotInitializedException exception) {
-      AdError error = new AdError(ERROR_INMOBI_NOT_INITIALIZED, exception.getLocalizedMessage(),
-          ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    Bundle extras = rewardedAdConfiguration.getMediationExtras();
     HashMap<String, String> paramMap =
-        InMobiAdapterUtils.createInMobiParameterMap(rewardedAdConfiguration);
+        InMobiAdapterUtils.createInMobiParameterMap(mediationRewardedAdConfiguration);
     inMobiRewardedAd.setExtras(paramMap);
-    InMobiAdapterUtils.configureGlobalTargeting(extras);
+    InMobiAdapterUtils.configureGlobalTargeting(
+        mediationRewardedAdConfiguration.getMediationExtras());
     inMobiRewardedAd.load();
   }
   // endregion
 
+  @Override
+  public void onAdWillDisplay(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi rewarded ad will be shown.");
+  }
+
+  @Override
+  public void onAdDisplayed(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi rewarded ad has been shown.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdOpened();
+      rewardedAdCallback.onVideoStart();
+    }
+  }
+
+  @Override
+  public void onAdDisplayFailed(@NonNull InMobiInterstitial inMobiInterstitial) {
+    AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
+        "InMobi rewarded ad failed to show.");
+    Log.w(TAG, error.toString());
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdFailedToShow(error);
+    }
+  }
+
+  @Override
+  public void onAdDismissed(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi rewarded ad has been dismissed.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
+    }
+  }
+
+  @Override
+  public void onUserLeftApplication(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi rewarded ad left application.");
+  }
+
+  @Override
+  public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
+      Map<Object, Object> rewards) {
+    String rewardKey = "";
+    String rewardStringValue = "";
+    int rewardValue = 0;
+
+    if (rewards != null) {
+      for (Object reward : rewards.keySet()) {
+        rewardKey = reward.toString();
+        rewardStringValue = rewards.get(rewardKey).toString();
+        if (!TextUtils.isEmpty(rewardKey) &&
+            !TextUtils.isEmpty(rewardStringValue)) {
+          break;
+        }
+      }
+    }
+
+    if (!TextUtils.isEmpty(rewardStringValue)) {
+      try {
+        rewardValue = Integer.parseInt(rewardStringValue);
+      } catch (NumberFormatException e) {
+        Log.e(TAG, "Expected an integer reward value. Got " +
+            rewardStringValue + " instead. Using reward value of 1.");
+        rewardValue = 1;
+      }
+    }
+
+    if (rewardedAdCallback != null) {
+      Log.d(TAG, "InMobi rewarded ad credited the user with a reward.");
+      rewardedAdCallback.onVideoComplete();
+      rewardedAdCallback.onUserEarnedReward(new InMobiReward(rewardKey, rewardValue));
+    }
+  }
+
+  @Override
+  public void onAdClicked(@NonNull InMobiInterstitial inMobiInterstitial,
+      Map<Object, Object> parameters) {
+    Log.d(TAG, "InMobi rewarded ad has been clicked.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdClicked();
+    }
+  }
+
+  @Override
+  public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
+    Log.d(TAG, "InMobi rewarded ad has logged an impression.");
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.reportAdImpression();
+    }
+  }
+
+  @Override
+  public void onRequestPayloadCreated(byte[] bytes) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onRequestPayloadCreationFailed(@NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @Override
+  public void onAdFetchSuccessful(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi SDK fetched the rewarded ad successfully, " +
+        "but the ad contents still need to be loaded.");
+  }
+
+  @Override
+  public void onAdLoadFailed(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull InMobiAdRequestStatus inMobiAdRequestStatus) {
+    AdError error = InMobiConstants.createSdkError(
+        InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
+        inMobiAdRequestStatus.getMessage());
+    Log.w(TAG, error.toString());
+    if (mediationAdLoadCallback != null) {
+      mediationAdLoadCallback.onFailure(error);
+    }
+  }
+
+  @Override
+  public void onAdLoadSucceeded(@NonNull InMobiInterstitial inMobiInterstitial,
+      @NonNull AdMetaInfo adMetaInfo) {
+    Log.d(TAG, "InMobi rewarded ad has been loaded.");
+    if (mediationAdLoadCallback != null) {
+      rewardedAdCallback =
+          mediationAdLoadCallback.onSuccess(InMobiRewardedAd.this);
+    }
+  }
 }
 
 class InMobiReward implements RewardItem {

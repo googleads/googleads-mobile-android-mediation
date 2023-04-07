@@ -1,5 +1,51 @@
 ## InMobi Android Mediation Adapter Changelog
 
+### Version 10.5.4.1 (In progress)
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- InMobi Kotlin SDK version 10.5.4.
+
+#### Version 10.5.4.0
+- Verified compatibility with InMobi Kotlin SDK version 10.5.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.4.0.
+- InMobi Kotlin SDK version 10.5.4.
+
+#### Version 10.1.2.1
+- Added support for forwarding the COPPA value to InMobi SDK.
+- Updated the adapter to use the new mediation APIs.
+- Updated the minimum required Google Mobile Ads SDK version to 21.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.4.0.
+- InMobi SDK version 10.1.2.
+
+#### Version 10.1.2.0
+- Verified compatibility with InMobi SDK version 10.1.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.3.0.
+- InMobi SDK version 10.1.2.
+
+#### Version 10.1.1.0
+- Verified compatibility with InMobi SDK version 10.1.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.3.0.
+- InMobi SDK version 10.1.1.
+
+#### Version 10.0.9.0
+- Verified compatibility with InMobi SDK version 10.0.9.
+- Updated the minimum required Google Mobile Ads SDK version to 21.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.3.0.
+- InMobi SDK version 10.0.9.
+
 #### Version 10.0.8.0
 - Verified compatibility with InMobi SDK version 10.0.8.
 - Updated the minimum required Google Mobile Ads SDK version to 21.2.0.

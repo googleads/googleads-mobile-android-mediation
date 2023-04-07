@@ -1,3 +1,17 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
@@ -53,17 +67,18 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
+          "Missing or invalid App ID configured for this ad source instance in the "
+              + "AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     String placementForPlay = PlacementFinder.findPlacement(mediationExtras, serverParameters);
-
     if (TextUtils.isEmpty(placementForPlay)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
+          "Missing or invalid Placement ID configured for this ad source instance in the "
+              + "AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -75,7 +90,8 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
     BannerAdSize bannerAdSize = VungleInterstitialAdapter.hasBannerSizeAd(context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to load ad from Vungle. Invalid banner size.", ERROR_DOMAIN);
+          String.format("The requested banner size: %s is not supported by Vungle SDK.", adSize),
+          ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;

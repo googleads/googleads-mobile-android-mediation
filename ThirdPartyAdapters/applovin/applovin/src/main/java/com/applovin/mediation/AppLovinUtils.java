@@ -1,6 +1,20 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.applovin.mediation;
 
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -182,8 +196,10 @@ public class AppLovinUtils {
       default: // fall out
     }
 
-    return new AdError(applovinErrorCode,
-        "AppLovin SDK returned a load failure callback with reason: " + reason, ERROR_DOMAIN);
+    return new AdError(
+        applovinErrorCode,
+        "AppLovin SDK returned a load failure callback with reason: " + reason,
+        APPLOVIN_SDK_ERROR_DOMAIN);
   }
 
   /**
@@ -195,10 +211,13 @@ public class AppLovinUtils {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (AdSize.BANNER.equals(closestSize)) {
       return AppLovinAdSize.BANNER;
+    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+      return AppLovinAdSize.MREC;
     } else if (AdSize.LEADERBOARD.equals(closestSize)) {
       return AppLovinAdSize.LEADER;
     }

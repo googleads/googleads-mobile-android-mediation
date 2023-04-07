@@ -1,3 +1,17 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.applovin.mediation;
 
 import static android.util.Log.DEBUG;
@@ -29,7 +43,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -39,8 +52,7 @@ import java.util.HashMap;
  * video ads and to mediate the callbacks between the AppLovin SDK and the Google Mobile Ads SDK.
  */
 public class ApplovinAdapter extends AppLovinMediationAdapter
-    implements MediationBannerAdapter, MediationInterstitialAdapter, OnContextChangedListener,
-    MediationRewardedAd {
+    implements MediationBannerAdapter, MediationInterstitialAdapter, OnContextChangedListener {
 
   private static final boolean LOGGING_ENABLED = true;
 

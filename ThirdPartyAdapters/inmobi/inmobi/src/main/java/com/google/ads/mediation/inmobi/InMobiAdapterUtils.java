@@ -1,19 +1,40 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.inmobi;
 
+import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
+
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
@@ -29,7 +50,7 @@ class InMobiAdapterUtils {
   static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
-      Log.w(InMobiMediationAdapter.TAG, "Missing or Invalid Placement ID.");
+      Log.e(InMobiMediationAdapter.TAG, "Missing or invalid Placement ID.");
       return 0L;
     }
 
@@ -37,7 +58,7 @@ class InMobiAdapterUtils {
     try {
       placement = Long.parseLong(placementId);
     } catch (NumberFormatException exception) {
-      Log.w(InMobiMediationAdapter.TAG, "Invalid Placement ID.", exception);
+      Log.e(InMobiMediationAdapter.TAG, "Invalid Placement ID.", exception);
     }
     return placement;
   }
@@ -106,34 +127,32 @@ class InMobiAdapterUtils {
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      if (!Objects.equals(city, "")
-          && !Objects.equals(state, "")
-          && !Objects.equals(country, "")) {
+      if (!Objects.equals(city, "") && !Objects.equals(state, "") && !Objects.equals(country, "")) {
         InMobiSdk.setLocationWithCityStateCountry(city, state, country);
       }
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(MediationAdRequest adRequest) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
-
-    if (adRequest.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
+  static void setIsAgeRestricted(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
+    // be `false`.
+    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      InMobiSdk.setIsAgeRestricted(true);
     } else {
-      map.put("coppa", "0");
+      InMobiSdk.setIsAgeRestricted(false);
     }
-
-    return map;
   }
 
-  static HashMap<String, String> createInMobiParameterMap(MediationAdConfiguration config) {
+  static HashMap<String, String> createInMobiParameterMap(
+      @NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
     map.put("tp", "c_admob");
 
-    if (config.taggedForChildDirectedTreatment()
-        == MediationAdRequest.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
+    // be `0`.
+    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       map.put("coppa", "1");
     } else {
       map.put("coppa", "0");
@@ -193,10 +212,8 @@ class InMobiAdapterUtils {
    * @return {@code true} if the native ad has all the required assets.
    */
   public static boolean isValidNativeAd(InMobiNative nativeAd) {
-    return nativeAd.getAdCtaText() != null
-        && nativeAd.getAdDescription() != null
-        && nativeAd.getAdIconUrl() != null
-        && nativeAd.getAdLandingPageUrl() != null
+    return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
+        && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
         && nativeAd.getAdTitle() != null;
   }
 
@@ -255,4 +272,24 @@ class InMobiAdapterUtils {
     return 99;
   }
 
+  @Nullable
+  public static AdSize findClosestBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials = new ArrayList<>();
+    potentials.add(new AdSize(320, 50));
+    potentials.add(new AdSize(300, 250));
+    potentials.add(new AdSize(728, 90));
+    return MediationUtils.findClosestSize(context, adSize, potentials);
+  }
+
+  @Nullable
+  public static AdError validateInMobiAdLoadParams(@Nullable String accountID, long placementID) {
+    if (TextUtils.isEmpty(accountID) || placementID <= 0L) {
+      AdError parameterError = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid Account ID or Placement ID for this ad source"
+              + " instance in the AdMob or Ad Manager UI.");
+      Log.e(InMobiMediationAdapter.TAG, parameterError.toString());
+      return parameterError;
+    }
+    return null;
+  }
 }

@@ -1,3 +1,17 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.jirbo.adcolony;
 
 import static com.google.ads.mediation.adcolony.AdColonyAdapterUtils.KEY_ADCOLONY_BID_RESPONSE;
@@ -45,7 +59,7 @@ public class AdColonyManager {
       @NonNull InitializationListener listener) {
     if (!(context instanceof Activity || context instanceof Application)) {
       AdError error = createAdapterError(ERROR_CONTEXT_NOT_ACTIVITY,
-              "AdColony SDK requires an Activity context to initialize");
+          "AdColony SDK requires an Activity context to initialize");
       listener.onInitializeFailed(error);
       return;
     }
@@ -120,6 +134,8 @@ public class AdColonyManager {
    * @return a valid {@link AdColonyAppOptions} object.
    */
   private AdColonyAppOptions buildAppOptions(@NonNull MediationAdRequest adRequest) {
+    AdColonyAdapterUtils.setCoppaPrivacyFrameworkRequired(
+        adRequest.taggedForChildDirectedTreatment());
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.
@@ -132,11 +148,13 @@ public class AdColonyManager {
   /**
    * Configure AdColony app options from the provided ad configuration.
    *
-   * @param adConfiguration rewarded ad configuration object.
+   * @param adConfiguration ad configuration object.
    * @return a valid {@link AdColonyAppOptions} object.
    */
-  private AdColonyAppOptions buildAppOptions(
-      @NonNull MediationRewardedAdConfiguration adConfiguration) {
+  @NonNull
+  public AdColonyAppOptions buildAppOptions(@NonNull MediationAdConfiguration adConfiguration) {
+    AdColonyAdapterUtils.setCoppaPrivacyFrameworkRequired(
+        adConfiguration.taggedForChildDirectedTreatment());
     AdColonyAppOptions options = AdColonyMediationAdapter.getAppOptions();
 
     // Enable test ads from AdColony when a Test Ad Request was sent.
@@ -182,12 +200,13 @@ public class AdColonyManager {
       showPostPopup = networkExtras.getBoolean("show_post_popup", false);
     }
     return new AdColonyAdOptions()
-            .enableConfirmationDialog(showPrePopup)
-            .enableResultsDialog(showPostPopup);
+        .enableConfirmationDialog(showPrePopup)
+        .enableResultsDialog(showPostPopup);
   }
 
   public AdColonyAdOptions getAdOptionsFromAdConfig(MediationAdConfiguration adConfiguration) {
-    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(adConfiguration.getMediationExtras());
+    AdColonyAdOptions adColonyAdOptions = getAdOptionsFromExtras(
+        adConfiguration.getMediationExtras());
     String bidResponse = adConfiguration.getBidResponse();
     if (!bidResponse.isEmpty()) {
       adColonyAdOptions.setOption(KEY_ADCOLONY_BID_RESPONSE, bidResponse);
