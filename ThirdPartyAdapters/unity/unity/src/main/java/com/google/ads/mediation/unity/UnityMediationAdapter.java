@@ -27,6 +27,9 @@ import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -124,6 +127,11 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_INITIALIZATION_FAILURE = 111;
 
+  static final String ERROR_MSG_MISSING_PARAMETERS = "Missing or invalid server parameters.";
+
+  static final String ERROR_MSG_NON_ACTIVITY =
+      "Unity Ads requires an Activity context to load ads.";
+
   /**
    * Key to obtain Game ID, required for loading Unity Ads.
    */
@@ -135,6 +143,9 @@ public class UnityMediationAdapter extends Adapter {
    * the key is not changed.
    */
   static final String KEY_PLACEMENT_ID = "zoneId";
+
+  /** UnityBannerAd instance. */
+  private UnityMediationBannerAd bannerAd;
 
   /**
    * UnityRewardedAd instance.
@@ -247,4 +258,11 @@ public class UnityMediationAdapter extends Adapter {
     rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerAd = new UnityMediationBannerAd(mediationBannerAdConfiguration, callback);
+    bannerAd.loadAd();
+  }
 }
