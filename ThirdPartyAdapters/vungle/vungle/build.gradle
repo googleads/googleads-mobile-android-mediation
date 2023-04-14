@@ -31,8 +31,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.vungle:vng-android-sdk:7.0.0-early1-RC6'
-
+    implementation 'com.github.vungle:vng-android-sdk:7.0.0-early1-RC8'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.google.android.gms:play-services-ads:22.0.0'
 }

@@ -79,7 +79,7 @@ public class VungleInterstitialAdapter
 
     this.mediationInterstitialListener = mediationInterstitialListener;
     String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
-    if (placement == null || placement.isEmpty()) {
+    if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
@@ -87,15 +87,15 @@ public class VungleInterstitialAdapter
       return;
     }
 
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
+
     AdConfig adConfig = new AdConfig();
     if (mediationExtras != null && mediationExtras.containsKey(
         VungleMediationAdapter.KEY_ORIENTATION)) {
       adConfig.setAdOrientation(
           mediationExtras.getInt(VungleMediationAdapter.KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
-
-    VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
 
     VungleInitializer.getInstance()
         .initialize(
@@ -125,9 +125,16 @@ public class VungleInterstitialAdapter
   private class VungleInterstitialListener implements InterstitialAdListener {
 
     @Override
-    public void onAdClicked(@NonNull BaseAd baseAd) {
+    public void onAdLoaded(@NonNull BaseAd baseAd) {
       if (mediationInterstitialListener != null) {
-        mediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
+        mediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
+      }
+    }
+
+    @Override
+    public void onAdStart(@NonNull BaseAd baseAd) {
+      if (mediationInterstitialListener != null) {
+        mediationInterstitialListener.onAdOpened(VungleInterstitialAdapter.this);
       }
     }
 
@@ -139,21 +146,16 @@ public class VungleInterstitialAdapter
     }
 
     @Override
-    public void onAdImpression(@NonNull BaseAd baseAd) {
-      //no-op
-    }
-
-    @Override
-    public void onAdLoaded(@NonNull BaseAd baseAd) {
+    public void onAdClicked(@NonNull BaseAd baseAd) {
       if (mediationInterstitialListener != null) {
-        mediationInterstitialListener.onAdLoaded(VungleInterstitialAdapter.this);
+        mediationInterstitialListener.onAdClicked(VungleInterstitialAdapter.this);
       }
     }
 
     @Override
-    public void onAdStart(@NonNull BaseAd baseAd) {
+    public void onAdLeftApplication(@NonNull BaseAd baseAd) {
       if (mediationInterstitialListener != null) {
-        mediationInterstitialListener.onAdOpened(VungleInterstitialAdapter.this);
+        mediationInterstitialListener.onAdLeftApplication(VungleInterstitialAdapter.this);
       }
     }
 
@@ -174,10 +176,8 @@ public class VungleInterstitialAdapter
     }
 
     @Override
-    public void onAdLeftApplication(@NonNull BaseAd baseAd) {
-      if (mediationInterstitialListener != null) {
-        mediationInterstitialListener.onAdLeftApplication(VungleInterstitialAdapter.this);
-      }
+    public void onAdImpression(@NonNull BaseAd baseAd) {
+      // No-op.
     }
   }
 
@@ -225,7 +225,7 @@ public class VungleInterstitialAdapter
         "requestBannerAd for Placement: " + placement + " ### Adapter instance: " + this
             .hashCode());
 
-    if (placement == null || placement.isEmpty()) {
+    if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());

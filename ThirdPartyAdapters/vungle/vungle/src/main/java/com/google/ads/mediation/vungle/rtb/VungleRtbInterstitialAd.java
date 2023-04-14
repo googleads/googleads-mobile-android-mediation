@@ -77,7 +77,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
     }
 
     String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
-    if (placement == null || placement.isEmpty()) {
+    if (TextUtils.isEmpty(placement)) {
       AdError error =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS,
@@ -87,6 +87,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
       mediationAdLoadCallback.onFailure(error);
       return;
     }
+
+    String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
 
     AdConfig adConfig = new AdConfig();
     if (mediationExtras.containsKey(VungleMediationAdapter.KEY_ORIENTATION)) {
@@ -99,7 +101,6 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
     }
 
     Context context = mediationInterstitialAdConfiguration.getContext();
-    String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
 
     VungleInitializer.getInstance()
         .initialize(appID, context,
@@ -125,9 +126,15 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void onAdClicked(@NonNull BaseAd baseAd) {
+  public void onAdLoaded(@NonNull BaseAd baseAd) {
+    mediationInterstitialAdCallback =
+        mediationAdLoadCallback.onSuccess(VungleRtbInterstitialAd.this);
+  }
+
+  @Override
+  public void onAdStart(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
-      mediationInterstitialAdCallback.reportAdClicked();
+      mediationInterstitialAdCallback.onAdOpened();
     }
   }
 
@@ -139,22 +146,16 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void onAdImpression(@NonNull BaseAd baseAd) {
+  public void onAdClicked(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
-      mediationInterstitialAdCallback.reportAdImpression();
+      mediationInterstitialAdCallback.reportAdClicked();
     }
   }
 
   @Override
-  public void onAdLoaded(@NonNull BaseAd baseAd) {
-    mediationInterstitialAdCallback =
-        mediationAdLoadCallback.onSuccess(VungleRtbInterstitialAd.this);
-  }
-
-  @Override
-  public void onAdStart(@NonNull BaseAd baseAd) {
+  public void onAdLeftApplication(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
-      mediationInterstitialAdCallback.onAdOpened();
+      mediationInterstitialAdCallback.onAdLeftApplication();
     }
   }
 
@@ -175,9 +176,10 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void onAdLeftApplication(@NonNull BaseAd baseAd) {
+  public void onAdImpression(@NonNull BaseAd baseAd) {
     if (mediationInterstitialAdCallback != null) {
-      mediationInterstitialAdCallback.onAdLeftApplication();
+      mediationInterstitialAdCallback.reportAdImpression();
     }
   }
+
 }
