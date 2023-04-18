@@ -1,6 +1,6 @@
 ## maio Android Mediation Adapter Changelog
 
-#### Version 1.1.16.2 (In progress)
+#### Version 1.1.16.2
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 
