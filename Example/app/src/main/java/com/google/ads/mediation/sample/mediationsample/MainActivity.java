@@ -45,6 +45,7 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import java.util.Locale;
 
 /**
  * A simple {@link android.app.Activity} that displays adds using the sample adapter and sample
@@ -210,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
               Toast.makeText(MainActivity.this,
-                  String.format("User earned reward. Type: %s, amount: %d",
+
+                  String.format(Locale.getDefault(), "User earned reward. Type: %s, amount: %d",
                       rewardItem.getType(), rewardItem.getAmount()),
                   Toast.LENGTH_SHORT).show();
             }
@@ -229,11 +231,11 @@ public class MainActivity extends AppCompatActivity {
               @Override
               public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
                 FrameLayout nativeContainer = findViewById(R.id.native_container);
-                NativeAdView adView = (NativeAdView) getLayoutInflater()
-                    .inflate(R.layout.native_ad, null);
-                populateNativeAdView(nativeAd, adView);
                 nativeContainer.removeAllViews();
-                nativeContainer.addView(adView);
+                getLayoutInflater().inflate(R.layout.native_ad, nativeContainer, true);
+                NativeAdView adView =
+                    (NativeAdView) nativeContainer.findViewById(R.id.native_ad_view);
+                populateNativeAdView(nativeAd, adView);
               }
             })
             .withAdListener(new AdListener() {

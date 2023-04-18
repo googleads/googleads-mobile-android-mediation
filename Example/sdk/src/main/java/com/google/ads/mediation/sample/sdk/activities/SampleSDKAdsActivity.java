@@ -19,10 +19,10 @@ package com.google.ads.mediation.sample.sdk.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
 import com.google.ads.mediation.sample.sdk.R;
 import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
 import com.google.ads.mediation.sample.sdk.SampleRewardedAdListener;
@@ -132,7 +132,8 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
               isSkippable = true;
               closeAdButton.setVisibility(View.VISIBLE);
             }
-            countdownTimerView.setText(String.format("%d", (millisUntilFinished / 1000)));
+            countdownTimerView.setText(
+                String.format(Locale.getDefault(), "%d", (millisUntilFinished / 1000)));
           }
 
           @Override
