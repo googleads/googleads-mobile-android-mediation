@@ -65,8 +65,8 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(bannerSize.getWidth(),
-        bannerSize.getHeight());
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MintegralUtils.dip2px(adConfiguration.getContext(),bannerSize.getWidth()),
+        MintegralUtils.dip2px(adConfiguration.getContext(),bannerSize.getHeight()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.loadFromBid(bidToken);

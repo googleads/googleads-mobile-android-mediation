@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.mintegral;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -69,6 +71,18 @@ public class MintegralUtils {
       return parameterError;
     }
     return null;
+  }
+
+  public static int dip2px(Context context, float dipValue) {
+    if (context == null){
+      return 0;
+    }
+    Resources resources = context.getResources();
+    if (resources == null){
+      return 0;
+    }
+    float scale = resources.getDisplayMetrics().density;
+    return (int) (dipValue * scale + 0.5f);
   }
 
 }
