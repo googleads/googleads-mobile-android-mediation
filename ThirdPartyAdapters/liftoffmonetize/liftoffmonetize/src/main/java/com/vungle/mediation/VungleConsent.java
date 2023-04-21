@@ -17,7 +17,7 @@ package com.vungle.mediation;
 import com.vungle.warren.Vungle;
 
 /**
- * A public static class used to set Vungle Consent Status.
+ * A public static class used to set Liftoff Monetize Consent Status.
  */
 public class VungleConsent {
 

@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
 import com.vungle.warren.VungleSettings;
 
 /**
- * To apply the Vungle network settings during initialization.
+ * To apply the Liftoff Monetize network settings during initialization.
  */
 public class VungleNetworkSettings {
 
@@ -45,8 +45,8 @@ public class VungleNetworkSettings {
   }
 
   /**
-   * To pass Vungle network setting to SDK. this method must be called before first loadAd. if
-   * called after first loading an ad, settings will not be applied.
+   * To pass Liftoff Monetize network setting to SDK. this method must be called before first
+   * loadAd. if called after first loading an ad, settings will not be applied.
    */
   private static void applySettings() {
     vungleSettings =

@@ -35,7 +35,8 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A helper class to load and show Vungle ads and keep track of {@link VungleBannerAd} instances.
+ * A helper class to load and show Liftoff Monetize ads and keep track of {@link VungleBannerAd}
+ * instances.
  */
 public class VungleManager {
 
@@ -114,8 +115,8 @@ public class VungleManager {
 
     if (activeUniqueRequestId == null) {
       Log.w(TAG, "Ad already loaded for placement ID: " + placementId + ", and cannot "
-          + "determine if this is a refresh. Set Vungle extras when making an ad request to "
-          + "support refresh on Vungle banner ads.");
+          + "determine if this is a refresh. Set Liftoff Monetize extras when making an ad request"
+          + "to support refresh on Liftoff Monetize banner ads.");
       return false;
     }
 

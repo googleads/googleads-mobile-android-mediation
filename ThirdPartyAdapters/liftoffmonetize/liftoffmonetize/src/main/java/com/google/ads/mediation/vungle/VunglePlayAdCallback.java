@@ -23,9 +23,9 @@ import com.vungle.warren.error.VungleException;
 import java.lang.ref.WeakReference;
 
 /**
- * Vungle adapter implementation of {@link PlayAdCallback}. Since the Vungle SDK keeps a strong
- * mapping of ads with strong references to callbacks, this callback class must have no strong
- * references to an adapter object.
+ * Liftoff Monetize adapter implementation of {@link PlayAdCallback}. Since the Vungle SDK keeps a
+ * strong mapping of ads with strong references to callbacks, this callback class must have no
+ * strong references to an adapter object.
  */
 public class VunglePlayAdCallback implements PlayAdCallback {
 

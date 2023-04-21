@@ -26,22 +26,22 @@ import com.vungle.warren.VungleBanner;
 import java.lang.ref.WeakReference;
 
 /**
- * This class is used to represent a Vungle Banner ad.
+ * This class is used to represent a Liftoff Monetize Banner ad.
  */
 public class VungleBannerAd {
 
   /**
-   * Weak reference to the adapter owning this Vungle banner ad.
+   * Weak reference to the adapter owning this Liftoff Monetize banner ad.
    */
   private final WeakReference<VungleBannerAdapter> adapter;
 
   /**
-   * Vungle banner placement ID.
+   * Liftoff Monetize banner placement ID.
    */
   private final String placementId;
 
   /**
-   * Vungle ad object for banner ads.
+   * Liftoff Monetize ad object for banner ads.
    */
   private VungleBanner vungleBanner;
 
@@ -90,7 +90,8 @@ public class VungleBannerAd {
 
   public void destroyAd() {
     if (vungleBanner != null) {
-      Log.d(TAG, "Vungle banner adapter cleanUp: destroyAd # " + vungleBanner.hashCode());
+      Log.d(TAG, "Liftoff Monetize banner adapter cleanUp: destroyAd # "
+          + vungleBanner.hashCode());
       vungleBanner.destroyAd();
       vungleBanner = null;
     }

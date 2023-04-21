@@ -24,7 +24,7 @@ import java.util.UUID;
 
 /**
  * A helper class for creating a network extras bundle that can be passed to the adapter to make
- * customizations specific to Vungle.
+ * customizations specific to Liftoff Monetize.
  */
 public final class VungleExtrasBuilder {
 

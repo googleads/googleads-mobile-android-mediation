@@ -46,19 +46,19 @@ import com.vungle.warren.error.VungleException;
 public class VungleBannerAdapter implements PlayAdCallback {
 
   /**
-   * Vungle banner placement ID.
+   * Liftoff Monetize banner placement ID.
    */
   @NonNull
   private final String placementId;
 
   /**
-   * Vungle ad configuration settings.
+   * Liftoff Monetize ad configuration settings.
    */
   @NonNull
   private final AdConfig adConfig;
 
   /**
-   * Unique Vungle banner request ID.
+   * Unique Liftoff Monetize banner request ID.
    */
   private final String uniqueRequestId;
 
@@ -68,7 +68,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   private MediationBannerAdapter mediationAdapter;
 
   /**
-   * Vungle listener class to forward to the adapter.
+   * Liftoff Monetize listener class to forward to the adapter.
    */
   private MediationBannerListener mediationListener;
 
@@ -78,7 +78,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   private MediationBannerAd mediationBannerAd;
 
   /**
-   * Vungle listener class to forward to the bidding adapter.
+   * Liftoff Monetize listener class to forward to the bidding adapter.
    */
   private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback;
   private MediationBannerAdCallback mediationBannerAdCallback;
@@ -89,28 +89,28 @@ public class VungleBannerAdapter implements PlayAdCallback {
   private String adMarkup;
 
   /**
-   * Wrapper object for Vungle banner ads.
+   * Wrapper object for Liftoff Monetize banner ads.
    */
   private VungleBannerAd vungleBannerAd;
 
   /**
-   * Container for Vungle's banner ad view.
+   * Container for Liftoff Monetize's banner ad view.
    */
   private RelativeLayout adLayout;
 
   /**
-   * Manager to handle Vungle banner ad requests.
+   * Manager to handle Liftoff Monetize banner ad requests.
    */
   @NonNull
   private final VungleManager vungleManager;
 
   /**
-   * Indicates whether a Vungle banner ad request is in progress.
+   * Indicates whether a Liftoff Monetize banner ad request is in progress.
    */
   private boolean pendingRequestBanner = false;
 
   /**
-   * Indicates the Vungle banner ad's visibility.
+   * Indicates the Liftoff Monetize banner ad's visibility.
    */
   private boolean visibility = true;
 
@@ -166,8 +166,8 @@ public class VungleBannerAdapter implements PlayAdCallback {
   }
 
   private void requestBannerAd(Context context, String appId, AdSize adSize) {
-    // Create the adLayout wrapper with the requested ad size, as Vungle's ad uses MATCH_PARENT for
-    // its dimensions.
+    // Create the adLayout wrapper with the requested ad size, as Liftoff Monetize's ad uses
+    // MATCH_PARENT for its dimensions.
     adLayout = new RelativeLayout(context) {
       @Override
       protected void onAttachedToWindow() {
@@ -205,7 +205,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
           public void onInitializeError(AdError error) {
             vungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
             if (!pendingRequestBanner) {
-              Log.w(TAG, "No Vungle banner ad request is made.");
+              Log.w(TAG, "No Liftoff Monetize banner ad request is made.");
               return;
             }
             Log.w(TAG, error.toString());
@@ -220,7 +220,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
   }
 
   void destroy() {
-    Log.d(TAG, "Vungle banner adapter destroy:" + this);
+    Log.d(TAG, "Liftoff Monetize banner adapter destroy:" + this);
     visibility = false;
     vungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
     if (vungleBannerAd != null) {
@@ -259,7 +259,7 @@ public class VungleBannerAdapter implements PlayAdCallback {
       vungleManager.removeActiveBannerAd(placementId, vungleBannerAd);
 
       if (!pendingRequestBanner) {
-        Log.w(TAG, "No Vungle banner ad request is made.");
+        Log.w(TAG, "No Liftoff Monetize banner ad request is made.");
         return;
       }
 

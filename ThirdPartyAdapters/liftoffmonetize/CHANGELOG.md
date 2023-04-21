@@ -1,4 +1,7 @@
-## Vungle Android Mediation Adapter Changelog
+## Liftoff Monetize Android Mediation Adapter Changelog
+
+#### Next Version
+- Rebranded adapter name from Vungle to Liftoff Monetize.
 
 #### Version 6.12.1.1 (In progress)
 - Updated adapter to use new `VersionInfo` class.

@@ -28,7 +28,7 @@ import com.vungle.warren.NativeAdListener;
 import com.vungle.warren.ui.view.MediaView;
 
 /**
- * This class is used to represent a Vungle Native ad.
+ * This class is used to represent a Liftoff Monetize Native ad.
  */
 public class VungleNativeAd {
 
@@ -39,7 +39,7 @@ public class VungleNativeAd {
   private final MediaView mediaView;
 
   /**
-   * Vungle ad object for native ads.
+   * Liftoff Monetize ad object for native ads.
    */
   private final NativeAd nativeAd;
 
@@ -86,7 +86,8 @@ public class VungleNativeAd {
     }
 
     if (nativeAd != null) {
-      Log.d(TAG, "Vungle native adapter cleanUp: destroyAd # " + nativeAd.hashCode());
+      Log.d(TAG, "Liftoff Monetize native adapter cleanUp: destroyAd # "
+          + nativeAd.hashCode());
       nativeAd.unregisterView();
       nativeAd.destroy();
     }

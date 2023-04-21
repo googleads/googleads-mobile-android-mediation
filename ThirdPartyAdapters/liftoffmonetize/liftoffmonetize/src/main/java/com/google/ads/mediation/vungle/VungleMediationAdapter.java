@@ -62,7 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Mediation network adapter for Vungle.
+ * Mediation network adapter for Liftoff Monetize.
  */
 public class VungleMediationAdapter extends RtbAdapter
     implements MediationRewardedAd, LoadAdCallback, PlayAdCallback {
@@ -88,7 +88,7 @@ public class VungleMediationAdapter extends RtbAdapter
   private MediationRewardedAdCallback mediationRewardedAdCallback;
 
   /**
-   * Vungle adapter error domain.
+   * Liftoff Monetize adapter error domain.
    */
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.vungle";
 
@@ -119,12 +119,12 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /**
-   * The requested ad size does not match a Vungle supported banner size.
+   * The requested ad size does not match a Liftoff Monetize supported banner size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
   /**
-   * Vungle requires an {@link android.app.Activity} context to request ads.
+   * Liftoff Monetize requires an {@link android.app.Activity} context to request ads.
    */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
@@ -150,7 +150,7 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final int ERROR_CANNOT_PLAY_AD = 107;
 
   /**
-   * Convert the given Vungle exception into the appropriate custom error code.
+   * Convert the given Liftoff Monetize exception into the appropriate custom error code.
    */
   @NonNull
   public static AdError getAdError(@NonNull VungleException exception) {
@@ -283,7 +283,8 @@ public class VungleMediationAdapter extends RtbAdapter
     placement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or invalid Placement ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or invalid Placement ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -301,7 +302,7 @@ public class VungleMediationAdapter extends RtbAdapter
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid App ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or Invalid App ID.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -348,7 +349,7 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   /**
-   * {@link LoadAdCallback} implementation from Vungle.
+   * {@link LoadAdCallback} implementation from Liftoff Monetize.
    */
   @Override
   public void onAdLoad(final String placementId) {
@@ -365,7 +366,7 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   /**
-   * {@link PlayAdCallback} implementation from Vungle
+   * {@link PlayAdCallback} implementation from Liftoff Monetize.
    */
   @Override
   public void onAdStart(final String placementId) {
@@ -408,8 +409,8 @@ public class VungleMediationAdapter extends RtbAdapter
     // no op
   }
 
-  // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
-  // ad request to Vungle fails, and when an ad fails to play.
+  // Liftoff Monetize's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
+  // ad request to Liftoff Monetize fails, and when an ad fails to play.
   @Override
   public void onError(final String placementId, final VungleException throwable) {
     AdError error = getAdError(throwable);
@@ -429,7 +430,8 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   /**
-   * This class is used to map Vungle rewarded video ad rewards to Google Mobile Ads SDK rewards.
+   * This class is used to map Liftoff Monetize rewarded video ad rewards to Google Mobile Ads SDK
+   * rewards.
    */
   public static class VungleReward implements RewardItem {
 
@@ -470,10 +472,10 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRewardedInterstitialAd()...");
-    Log.d(TAG, "Vungle adapter was asked to load a rewarded interstitial ad. "
+    Log.d(TAG, "Liftoff Monetize adapter was asked to load a rewarded interstitial ad. "
         + "Using the rewarded ad request flow to load the ad to attempt to load a "
-        + "rewarded interstitial ad from Vungle.");
-    // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
+        + "rewarded interstitial ad from Liftoff Monetize.");
+    // Liftoff Monetize Rewarded Interstitial ads use the same Rewarded Video API.
     loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
 
@@ -529,9 +531,9 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     Log.d(TAG, "loadRtbRewardedInterstitialAd()...");
-    Log.d(TAG, "Vungle adapter was asked to load a rewarded interstitial ad. "
+    Log.d(TAG, "Liftoff Monetize adapter was asked to load a rewarded interstitial ad. "
         + "Using the rewarded ad request flow to load the ad to attempt to load a "
-        + "rewarded interstitial ad from Vungle.");
+        + "rewarded interstitial ad from Liftoff Monetize.");
     VungleInitializer.getInstance()
         .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
     // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
