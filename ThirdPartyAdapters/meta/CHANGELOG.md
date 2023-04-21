@@ -1,6 +1,6 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-### 6.13.7.1 (In progress)
+### 6.13.7.1
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 
