@@ -15,6 +15,7 @@
 package com.google.ads.mediation.unity;
 
 import android.content.Context;
+import androidx.annotation.VisibleForTesting;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -24,10 +25,16 @@ import com.unity3d.ads.metadata.MediationMetaData;
  */
 public class UnityInitializer {
 
+  static final String ADMOB = "AdMob";
+
+  static final String KEY_ADAPTER_VERSION = "adapter_version";
+
   /**
    * UnityInitializer instance.
    */
   private static UnityInitializer unityInitializerInstance;
+
+  private final UnityAdsWrapper unityAdsWrapper;
 
   /**
    * Returns a {@link com.google.ads.mediation.unity.UnityInitializer} instance.
@@ -39,6 +46,15 @@ public class UnityInitializer {
       unityInitializerInstance = new UnityInitializer();
     }
     return unityInitializerInstance;
+  }
+
+  private UnityInitializer() {
+    unityAdsWrapper = new UnityAdsWrapper();
+  }
+
+  @VisibleForTesting
+  UnityInitializer(UnityAdsWrapper unityAdsWrapper) {
+    this.unityAdsWrapper = unityAdsWrapper;
   }
 
   /**
@@ -53,19 +69,19 @@ public class UnityInitializer {
   public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
       initializationListener) {
 
-    if (UnityAds.isInitialized()) {
+    if (unityAdsWrapper.isInitialized()) {
       // Unity Ads is already initialized.
       initializationListener.onInitializationComplete();
       return;
     }
 
     // Set mediation meta data before initializing.
-    MediationMetaData mediationMetaData = new MediationMetaData(context);
-    mediationMetaData.setName("AdMob");
-    mediationMetaData.setVersion(UnityAds.getVersion());
-    mediationMetaData.set("adapter_version", BuildConfig.ADAPTER_VERSION);
+    MediationMetaData mediationMetaData = unityAdsWrapper.getMediationMetaData(context);
+    mediationMetaData.setName(ADMOB);
+    mediationMetaData.setVersion(unityAdsWrapper.getVersion());
+    mediationMetaData.set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION);
     mediationMetaData.commit();
 
-    UnityAds.initialize(context, gameId, false, initializationListener);
+    unityAdsWrapper.initialize(context, gameId, initializationListener);
   }
 }

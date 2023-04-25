@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -137,6 +138,8 @@ public class UnityMediationAdapter extends Adapter {
 
   static final String ERROR_MSG_CONTEXT_NULL = "Activity context is null.";
 
+  static final String ERROR_MSG_INITIALIZATION_FAILURE = "Unity Ads initialization failed: [%s] %s";
+
   /**
    * Key to obtain Game ID, required for loading Unity Ads.
    */
@@ -149,6 +152,8 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final String KEY_PLACEMENT_ID = "zoneId";
 
+  private final UnityInitializer unityInitializer;
+
   /** UnityBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
@@ -159,6 +164,15 @@ public class UnityMediationAdapter extends Adapter {
    * UnityRewardedAd instance.
    */
   private UnityRewardedAd rewardedAd;
+
+  public UnityMediationAdapter() {
+    unityInitializer = UnityInitializer.getInstance();
+  }
+
+  @VisibleForTesting
+  UnityMediationAdapter(UnityInitializer unityInitializer) {
+    this.unityInitializer = unityInitializer;
+  }
 
   /**
    * {@link Adapter} implementation
@@ -237,7 +251,9 @@ public class UnityMediationAdapter extends Adapter {
       return;
     }
 
-    UnityInitializer.getInstance().initializeUnityAds(context, gameID,
+    unityInitializer.initializeUnityAds(
+        context,
+        gameID,
         new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
@@ -246,11 +262,16 @@ public class UnityMediationAdapter extends Adapter {
           }
 
           @Override
-          public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-              unityAdsInitializationError, String errorMessage) {
-            AdError adError = createSDKError(unityAdsInitializationError,
-                "Unity Ads initialization failed: [" +
-                    unityAdsInitializationError + "] " + errorMessage);
+          public void onInitializationFailed(
+              UnityAds.UnityAdsInitializationError unityAdsInitializationError,
+              String errorMessage) {
+            AdError adError =
+                createSDKError(
+                    unityAdsInitializationError,
+                    String.format(
+                        ERROR_MSG_INITIALIZATION_FAILURE,
+                        unityAdsInitializationError,
+                        errorMessage));
             Log.d(TAG, adError.toString());
             initializationCompleteCallback.onInitializationFailed(adError.toString());
           }
