@@ -27,6 +27,7 @@ import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.rtb.PangleRtbAppOpenAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbBannerAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbInterstitialAd;
 import com.google.ads.mediation.pangle.rtb.PangleRtbNativeAd;
@@ -36,6 +37,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -64,6 +68,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRtbInterstitialAd interstitialAd;
   private PangleRtbRewardedAd rewardedAd;
   private PangleRtbNativeAd nativeAd;
+  private PangleRtbAppOpenAd appOpenAd;
   private static int gdpr = -1;
   private static int ccpa = -1;
 
@@ -191,7 +196,14 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbBannerAd(
+  public void loadAppOpenAd(@NonNull MediationAppOpenAdConfiguration adConfiguration,
+                            @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    appOpenAd = new PangleRtbAppOpenAd(adConfiguration, callback);
+    appOpenAd.render();
+  }
+
+  @Override
+  public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
@@ -200,7 +212,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbInterstitialAd(
+  public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -210,7 +222,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbNativeAd(
+  public void loadNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     nativeAd = new PangleRtbNativeAd(adConfiguration, callback);
@@ -218,7 +230,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbRewardedAd(
+  public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedAd = new PangleRtbRewardedAd(adConfiguration, callback);

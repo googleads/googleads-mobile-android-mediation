@@ -32,7 +32,6 @@ public class PangleConstants {
   @IntDef(
       value = {ERROR_INVALID_SERVER_PARAMETERS,
           ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_INVALID_BID_RESPONSE,
       })
   public @interface AdapterError {
 
@@ -47,11 +46,6 @@ public class PangleConstants {
    * The requested ad size does not match a Pangle supported banner size.
    */
   public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
-
-  /**
-   * Missing or invalid bid response.
-   */
-  public static final int ERROR_INVALID_BID_RESPONSE = 103;
 
   @NonNull
   public static AdError createAdapterError(@AdapterError int errorCode,

@@ -15,7 +15,6 @@
 package com.google.ads.mediation.pangle.rtb;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
@@ -89,16 +88,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
     }
 
     String bidResponse = adConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(bidResponse)) {
-      AdError error =
-          PangleConstants.createAdapterError(
-              ERROR_INVALID_BID_RESPONSE,
-              "Failed to load banner ad from Pangle. Missing or invalid bid response.");
-      Log.w(TAG, error.toString());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
     pangleInitializer
