@@ -269,7 +269,7 @@ public class VungleInterstitialAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                mediationInterstitialListener
+                mediationBannerListener
                     .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
                 Log.w(TAG, error.toString());
               }
