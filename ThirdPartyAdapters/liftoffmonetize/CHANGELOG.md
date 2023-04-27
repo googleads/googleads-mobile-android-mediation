@@ -3,7 +3,7 @@
 #### Next Version
 - Rebranded adapter name from Vungle to Liftoff Monetize.
 
-#### Version 6.12.1.1 (In progress)
+#### Version 6.12.1.1
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 
