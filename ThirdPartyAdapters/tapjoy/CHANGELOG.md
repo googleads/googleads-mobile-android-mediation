@@ -1,6 +1,6 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
-#### Version 13.0.1.0 (In progress)
+#### Version 13.0.1.0
 - Verified compatibility with Tapjoy SDK version 13.0.1.
 
 Built and tested with:
