@@ -1,6 +1,6 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-### 6.14.0.0 (In progress)
+### 6.14.0.0
 - Verified compatibility with Meta Audience Network SDK v6.14.0.
 
 Built and tested with:
