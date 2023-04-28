@@ -73,7 +73,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or invalid app ID.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
       callback.onFailure(error);
       return;

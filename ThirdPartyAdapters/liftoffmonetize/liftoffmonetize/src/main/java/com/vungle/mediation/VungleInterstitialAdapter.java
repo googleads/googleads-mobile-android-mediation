@@ -50,6 +50,10 @@ import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleError;
 import java.util.ArrayList;
 
+/**
+ * A {@link MediationInterstitialAdapter} used to load and show Liftoff Monetize interstitial ads
+ * using Google Mobile Ads SDK mediation.
+ */
 @Keep
 public class VungleInterstitialAdapter
     implements MediationInterstitialAdapter, MediationBannerAdapter {
@@ -81,7 +85,8 @@ public class VungleInterstitialAdapter
     String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid Placement ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or Invalid Placement ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       this.mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -211,7 +216,8 @@ public class VungleInterstitialAdapter
 
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or invalid app ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or invalid app ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -227,7 +233,8 @@ public class VungleInterstitialAdapter
 
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Missing or Invalid placement ID.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -236,7 +243,7 @@ public class VungleInterstitialAdapter
     BannerAdSize bannerAdSize = hasBannerSizeAd(context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to load ad from Vungle. Invalid banner size.", ERROR_DOMAIN);
+          "Failed to load ad from Liftoff Monetize. Invalid banner size.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;

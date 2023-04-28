@@ -6,7 +6,9 @@ apply plugin: 'maven-publish'
  */
 ext {
     // String property to store the proper name of the mediation network adapter.
-    adapterName = "Vungle"
+    adapterName = "Liftoff Monetize"
+    // String property to store the artifact id.
+    stringArtifactId = "vungle"
     // String property to store version name.
     stringVersion = "7.0.0.0"
     // String property to store group id.
@@ -51,7 +53,9 @@ publishing {
     publications {
         adapterPublications(MavenPublication) {
             groupId = stringGroupId
-            artifactId = project.name
+            // Keep the artifact name as 'vungle' to avoid needing
+            // a new maven artifact.
+            artifactId = stringArtifactId
             version = stringVersion
 
             // Add the aar artifact to publication.
@@ -116,12 +120,13 @@ task copyArtifactsForDistribution(type: Copy) {
  */
 task packageDistribution(type: Zip) {
     from("$buildDir/distribution") {
-        rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
-        rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
-        rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+        rename("${project.name}-release.aar", "${stringArtifactId}-${stringVersion}.aar")
+        rename("${project.name}-sources.jar", "${stringArtifactId}-${stringVersion}-sources.jar")
+        rename("pom-default.xml", "${stringArtifactId}-${stringVersion}.pom")
     }
 
-    archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
+    def trimmedAdapterName = adapterName.replace(' ', '')
+    archiveFileName = "${trimmedAdapterName}AndroidAdapter-${stringVersion}.zip"
     destinationDirectory = file("${rootProject.projectDir}/build/distribution")
 }
 

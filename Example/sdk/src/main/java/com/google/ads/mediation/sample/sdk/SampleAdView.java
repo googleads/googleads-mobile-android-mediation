@@ -16,19 +16,20 @@
 
 package com.google.ads.mediation.sample.sdk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
-import android.widget.TextView;
-
+import androidx.appcompat.widget.AppCompatTextView;
 import java.util.Random;
 
 /**
  * An ad view for the sample ad network. This is an example of an ad view that most ad network SDKs
  * have.
  */
-public class SampleAdView extends TextView {
+@SuppressLint("SetTextI18n")
+public class SampleAdView extends AppCompatTextView {
 
   private SampleAdSize adSize;
   private String adUnit;

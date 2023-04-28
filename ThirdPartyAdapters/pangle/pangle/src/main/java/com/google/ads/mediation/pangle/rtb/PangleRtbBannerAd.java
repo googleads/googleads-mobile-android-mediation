@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
@@ -46,6 +47,10 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
 
 public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
+
+  @VisibleForTesting
+  public static final String ERROR_MESSAGE_BANNER_SIZE_MISMATCH =
+      "Failed to request banner ad from Pangle. Invalid banner size.";
 
   private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -113,8 +118,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
                 if (closestSize == null) {
                   AdError error =
                       PangleConstants.createAdapterError(
-                          ERROR_BANNER_SIZE_MISMATCH,
-                          "Failed to request banner ad from Pangle. Invalid banner size.");
+                          ERROR_BANNER_SIZE_MISMATCH, ERROR_MESSAGE_BANNER_SIZE_MISMATCH);
                   Log.w(TAG, error.toString());
                   adLoadCallback.onFailure(error);
                   return;

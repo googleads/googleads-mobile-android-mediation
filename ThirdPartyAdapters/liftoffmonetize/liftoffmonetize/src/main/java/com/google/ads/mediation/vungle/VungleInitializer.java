@@ -95,9 +95,9 @@ public class VungleInitializer implements InitializationListener {
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:
-        // Vungle's SDK only supports updating a user's COPPA status with true and false
+        // Vungle SDK only supports updating a user's COPPA status with true and false
         // values. If you haven't specified how you would like your content treated with
-        // respect to COPPA in ad requests, you must indicate in the Vungle Publisher
+        // respect to COPPA in ad requests, you must indicate in the Liftoff Monetize Publisher
         // Dashboard whether your app is directed toward children under age 13.
         break;
     }

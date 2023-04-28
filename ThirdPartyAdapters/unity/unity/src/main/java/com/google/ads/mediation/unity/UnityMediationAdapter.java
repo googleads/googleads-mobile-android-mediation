@@ -22,12 +22,19 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -124,6 +131,15 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final int ERROR_INITIALIZATION_FAILURE = 111;
 
+  static final String ERROR_MSG_MISSING_PARAMETERS = "Missing or invalid server parameters.";
+
+  static final String ERROR_MSG_NON_ACTIVITY =
+      "Unity Ads requires an Activity context to load ads.";
+
+  static final String ERROR_MSG_CONTEXT_NULL = "Activity context is null.";
+
+  static final String ERROR_MSG_INITIALIZATION_FAILURE = "Unity Ads initialization failed: [%s] %s";
+
   /**
    * Key to obtain Game ID, required for loading Unity Ads.
    */
@@ -136,10 +152,27 @@ public class UnityMediationAdapter extends Adapter {
    */
   static final String KEY_PLACEMENT_ID = "zoneId";
 
+  private final UnityInitializer unityInitializer;
+
+  /** UnityBannerAd instance. */
+  private UnityMediationBannerAd bannerAd;
+
+  /** UnityInterstitialAd instance. */
+  private UnityInterstitialAd interstitialAd;
+
   /**
    * UnityRewardedAd instance.
    */
   private UnityRewardedAd rewardedAd;
+
+  public UnityMediationAdapter() {
+    unityInitializer = UnityInitializer.getInstance();
+  }
+
+  @VisibleForTesting
+  UnityMediationAdapter(UnityInitializer unityInitializer) {
+    this.unityInitializer = unityInitializer;
+  }
 
   /**
    * {@link Adapter} implementation
@@ -218,7 +251,9 @@ public class UnityMediationAdapter extends Adapter {
       return;
     }
 
-    UnityInitializer.getInstance().initializeUnityAds(context, gameID,
+    unityInitializer.initializeUnityAds(
+        context,
+        gameID,
         new IUnityAdsInitializationListener() {
           @Override
           public void onInitializationComplete() {
@@ -227,11 +262,16 @@ public class UnityMediationAdapter extends Adapter {
           }
 
           @Override
-          public void onInitializationFailed(UnityAds.UnityAdsInitializationError
-              unityAdsInitializationError, String errorMessage) {
-            AdError adError = createSDKError(unityAdsInitializationError,
-                "Unity Ads initialization failed: [" +
-                    unityAdsInitializationError + "] " + errorMessage);
+          public void onInitializationFailed(
+              UnityAds.UnityAdsInitializationError unityAdsInitializationError,
+              String errorMessage) {
+            AdError adError =
+                createSDKError(
+                    unityAdsInitializationError,
+                    String.format(
+                        ERROR_MSG_INITIALIZATION_FAILURE,
+                        unityAdsInitializationError,
+                        errorMessage));
             Log.d(TAG, adError.toString());
             initializationCompleteCallback.onInitializationFailed(adError.toString());
           }
@@ -247,4 +287,19 @@ public class UnityMediationAdapter extends Adapter {
     rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerAd = new UnityMediationBannerAd(mediationBannerAdConfiguration, callback);
+    bannerAd.loadAd();
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      MediationInterstitialAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
+    interstitialAd = new UnityInterstitialAd(adConfiguration, callback);
+    interstitialAd.loadAd();
+  }
 }

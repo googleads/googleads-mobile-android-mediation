@@ -113,7 +113,7 @@ public class InMobiInitializer {
         });
   }
 
-  interface Listener {
+  public interface Listener {
 
     /**
      * Called when the InMobi SDK initializes successfully.

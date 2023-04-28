@@ -32,6 +32,7 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdLoader;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdRequest;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -48,7 +49,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import java.util.List;
 
 /**
