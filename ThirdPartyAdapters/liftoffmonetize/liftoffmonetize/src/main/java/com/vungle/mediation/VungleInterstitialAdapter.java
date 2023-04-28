@@ -68,27 +68,26 @@ public class VungleInterstitialAdapter
 
   @Override
   public void requestInterstitialAd(@NonNull Context context,
-      @NonNull MediationInterstitialListener mediationInterstitialListener,
+      @NonNull MediationInterstitialListener interstitialListener,
       @NonNull Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
       @Nullable Bundle mediationExtras) {
-
+    this.mediationInterstitialListener = interstitialListener;
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid App ID.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
-      mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+      interstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
     }
 
-    this.mediationInterstitialListener = mediationInterstitialListener;
     String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to load ad from Liftoff Monetize. Missing or Invalid Placement ID.",
           ERROR_DOMAIN);
       Log.w(TAG, error.toString());
-      this.mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+      interstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
     }
 
@@ -115,8 +114,10 @@ public class VungleInterstitialAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                mediationInterstitialListener
-                    .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+                if (mediationInterstitialListener != null) {
+                  mediationInterstitialListener
+                      .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+                }
                 Log.w(TAG, error.toString());
               }
             });
@@ -276,8 +277,10 @@ public class VungleInterstitialAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                mediationBannerListener
-                    .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+                if (mediationBannerListener != null) {
+                  mediationBannerListener
+                      .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+                }
                 Log.w(TAG, error.toString());
               }
             });
