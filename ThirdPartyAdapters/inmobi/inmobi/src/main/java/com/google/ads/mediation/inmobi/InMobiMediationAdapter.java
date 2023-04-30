@@ -23,8 +23,10 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbInterstitialAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbRewardedAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallInterstitialAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -58,13 +60,15 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
   public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
-  private InMobiRewardedAd inMobiRewardedAd;
+  private InMobiWaterfallRewardedAd inMobiWaterfallRewardedAd;
 
   private InMobiWaterfallBannerAd inMobiWaterfallBannerAd;
 
   private InMobiWaterfallInterstitialAd inMobiWaterfallInterstitialAd;
 
   private InMobiNativeAd inMobiNativeAd;
+
+  private InMobiRtbRewardedAd inMobiRtbRewardedAd;
 
   private InMobiRtbBannerAd inMobiRtbBannerAd;
 
@@ -103,9 +107,9 @@ public class InMobiMediationAdapter extends RtbAdapter {
       int micro = Integer.parseInt(splits[2]);
       return new VersionInfo(major, minor, micro);
     }
-
-    String logMessage = String.format(
-        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -193,8 +197,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    // todo: @imansi replace with rtb implementations
-    super.loadRewardedAd(adConfiguration, callback);
+    inMobiRtbRewardedAd = new InMobiRtbRewardedAd(adConfiguration, callback);
+    inMobiRtbRewardedAd.loadAd();
   }
 
   @Override
@@ -209,9 +213,9 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-    inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    inMobiRewardedAd.loadAd();
+    inMobiWaterfallRewardedAd =
+        new InMobiWaterfallRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    inMobiWaterfallRewardedAd.loadAd();
   }
 
   @Override
