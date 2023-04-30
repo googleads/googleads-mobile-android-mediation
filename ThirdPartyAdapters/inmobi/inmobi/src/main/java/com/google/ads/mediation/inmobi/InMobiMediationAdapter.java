@@ -22,7 +22,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbInterstitialAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallInterstitialAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -60,11 +62,13 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
   private InMobiWaterfallBannerAd inMobiWaterfallBannerAd;
 
-  private InMobiInterstitialAd inMobiInterstitialAd;
+  private InMobiWaterfallInterstitialAd inMobiWaterfallInterstitialAd;
 
   private InMobiNativeAd inMobiNativeAd;
 
   private InMobiRtbBannerAd inMobiRtbBannerAd;
+
+  private InMobiRtbInterstitialAd inMobiRtbInterstitialAd;
 
   /** {@link Adapter} implementation */
   @NonNull
@@ -181,8 +185,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
-    // todo: @imansi replace with rtb implementations
-    super.loadInterstitialAd(adConfiguration, callback);
+    inMobiRtbInterstitialAd = new InMobiRtbInterstitialAd(adConfiguration, callback);
+    inMobiRtbInterstitialAd.loadAd();
   }
 
   @Override
@@ -222,8 +226,9 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    inMobiInterstitialAd = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
-    inMobiInterstitialAd.loadAd();
+    inMobiWaterfallInterstitialAd =
+        new InMobiWaterfallInterstitialAd(mediationInterstitialAdConfiguration, callback);
+    inMobiWaterfallInterstitialAd.loadAd();
   }
 
   @Override
