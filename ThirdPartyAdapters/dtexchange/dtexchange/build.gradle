@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "DTExchange"
     // String property to store the version name.
-    stringVersion = "8.2.1.0"
+    stringVersion = "8.2.3.0"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
@@ -20,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 8020100
+        versionCode 8020300
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -33,9 +33,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.fyber:marketplace-sdk:8.2.1'
+    implementation 'com.fyber:marketplace-sdk:8.2.3'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'com.google.android.gms:play-services-ads:22.0.0'
 }
 
 /**

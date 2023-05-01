@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.fyber;
 
 import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
@@ -30,6 +44,7 @@ import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -42,7 +57,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -79,6 +93,11 @@ public class FyberMediationAdapter extends Adapter
    * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
    */
   static final String KEY_SPOT_ID = "spotId";
+
+  /**
+   * Key to obtain the mute video state, which enables the publisher to mute interstitial ads
+   */
+  static final String KEY_MUTE_VIDEO = "muteVideo";
 
   /**
    * Requested banner ad size.
@@ -313,7 +332,8 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
@@ -324,7 +344,8 @@ public class FyberMediationAdapter extends Adapter
               "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
               ERROR_DOMAIN);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
@@ -342,7 +363,7 @@ public class FyberMediationAdapter extends Adapter
 
         requestedAdSize = adSize;
 
-        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
+        FyberAdapterUtils.updateFyberExtraParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
         bannerSpot.requestAd(request);
       }
@@ -507,7 +528,8 @@ public class FyberMediationAdapter extends Adapter
         if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
           AdError error = getAdError(fyberInitStatus);
           Log.w(TAG, error.getMessage());
-          FyberMediationAdapter.this.mediationInterstitialListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
+          FyberMediationAdapter.this.mediationInterstitialListener.onAdFailedToLoad(
+              FyberMediationAdapter.this, error);
           return;
         }
 
@@ -548,7 +570,7 @@ public class FyberMediationAdapter extends Adapter
         InneractiveAdSpot.RequestListener requestListener = createFyberInterstitialAdListener();
         interstitialSpot.setRequestListener(requestListener);
 
-        FyberAdapterUtils.updateFyberUserParams(mediationExtras);
+        FyberAdapterUtils.updateFyberExtraParams(mediationExtras);
         InneractiveAdRequest request = new InneractiveAdRequest(spotId);
         interstitialSpot.requestAd(request);
       }

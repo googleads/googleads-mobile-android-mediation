@@ -1,3 +1,17 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.inmobi;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -9,10 +23,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -21,7 +35,6 @@ import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -30,12 +43,15 @@ import java.util.Set;
 /**
  * This class contains the utility methods used by InMobi adapter.
  */
-class InMobiAdapterUtils {
+public class InMobiAdapterUtils {
 
-  static final String KEY_ACCOUNT_ID = "accountid";
-  static final String KEY_PLACEMENT_ID = "placementid";
+  public static final String KEY_ACCOUNT_ID = "accountid";
+  public static final String KEY_PLACEMENT_ID = "placementid";
+  // Protocol values provided by InMobi.
+  public static final String PROTOCOL_WATERFALL = "c_admob";
+  public static final String PROTOCOL_RTB = "c_google";
 
-  static long getPlacementId(@NonNull Bundle serverParameters) {
+  public static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       Log.e(InMobiMediationAdapter.TAG, "Missing or invalid Placement ID.");
@@ -51,7 +67,7 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void configureGlobalTargeting(Bundle extras) {
+  public static void configureGlobalTargeting(Bundle extras) {
     if (extras == null) {
       Log.d(InMobiMediationAdapter.TAG, "Bundle extras are null");
       extras = new Bundle();
@@ -121,7 +137,9 @@ class InMobiAdapterUtils {
     }
   }
 
-  static void setIsAgeRestricted(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+  // todo(imansi): update where COPPA value is read from here
+  public static void setIsAgeRestricted(
+      @NonNull MediationAdConfiguration mediationAdConfiguration) {
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
     // be `false`.
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
@@ -132,10 +150,12 @@ class InMobiAdapterUtils {
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(
+  // Creates the InMobiParameter map only for non refactored waterfall code
+  // todo(imansi): remove this method after all formats are refactored
+  public static HashMap<String, String> createInMobiParameterMap(
       @NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
+    map.put("tp", PROTOCOL_WATERFALL);
 
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
     // be `0`.
@@ -145,8 +165,32 @@ class InMobiAdapterUtils {
     } else {
       map.put("coppa", "0");
     }
-
     return map;
+  }
+
+  @NonNull
+  public static InMobiExtras buildInMobiExtras(@Nullable Bundle extras, @NonNull String protocol) {
+    HashMap<String, String> map = new HashMap<>();
+    // Set keywords as an empty string for now.
+    String keywords = "";
+    if (extras != null && extras.keySet() != null) {
+      for (String key : extras.keySet()) {
+        map.put(key, extras.getString(key));
+      }
+    }
+
+    map.put("tp", protocol);
+    map.put("tp-ver", MobileAds.getVersion().toString());
+    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
+    // be `0`.
+    if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+      map.put("coppa", "1");
+    } else {
+      map.put("coppa", "0");
+    }
+
+    return new InMobiExtras(map, keywords);
   }
 
   private static AgeGroup getAgeGroup(String value) {

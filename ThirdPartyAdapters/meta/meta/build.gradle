@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Meta Audience Network"
     // String property to store the version name.
-    stringVersion = "6.12.0.0"
+    stringVersion = "6.14.0.0"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
@@ -20,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 6120000
+        versionCode 6140000
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -33,9 +33,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.facebook.android:audience-network-sdk:6.12.0'
+    implementation 'com.facebook.android:audience-network-sdk:6.14.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:21.2.0'
+    implementation 'com.google.android.gms:play-services-ads:22.0.0'
 }
 
 /**

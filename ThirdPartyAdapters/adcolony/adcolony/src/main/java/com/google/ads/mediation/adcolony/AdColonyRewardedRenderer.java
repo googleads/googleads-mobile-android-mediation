@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.adcolony;
 
 import static com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
@@ -32,10 +46,8 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
   private final MediationRewardedAdConfiguration adConfiguration;
   private AdColonyInterstitial adColonyInterstitial;
 
-  public AdColonyRewardedRenderer(
-          @NonNull MediationRewardedAdConfiguration adConfiguration,
-          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback
-  ) {
+  public AdColonyRewardedRenderer(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
   }
@@ -48,12 +60,10 @@ public class AdColonyRewardedRenderer implements MediationRewardedAd {
         .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
 
     if (AdColonyRewardedEventForwarder.getInstance().isListenerAvailable(requestedZone)
-            && adConfiguration.getBidResponse().isEmpty()) {
-      AdError error =
-          createAdapterError(
-              ERROR_AD_ALREADY_REQUESTED,
-              "Failed to load ad from AdColony: Only a maximum of one ad can be loaded per Zone"
-                  + " ID.");
+        && adConfiguration.getBidResponse().isEmpty()) {
+      AdError error = createAdapterError(ERROR_AD_ALREADY_REQUESTED,
+          "Failed to load ad from AdColony: "
+              + "Only a maximum of one ad can be loaded per Zone ID.");
       Log.e(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;

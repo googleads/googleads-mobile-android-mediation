@@ -1,3 +1,17 @@
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.pangle;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -6,8 +20,8 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
-import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk.PAGInitCallback;
 import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
@@ -20,6 +34,8 @@ public class PangleInitializer implements PAGInitCallback {
   private boolean isInitialized = false;
   private final ArrayList<Listener> initListeners;
 
+  private final PAGInitWrapper pagInitWrapper;
+
   @NonNull
   public static PangleInitializer getInstance() {
     if (instance == null) {
@@ -30,6 +46,13 @@ public class PangleInitializer implements PAGInitCallback {
 
   private PangleInitializer() {
     initListeners = new ArrayList<>();
+    pagInitWrapper = new PAGInitWrapper();
+  }
+
+  @VisibleForTesting
+  PangleInitializer(PAGInitWrapper pagInitWrapper) {
+    initListeners = new ArrayList<>();
+    this.pagInitWrapper = pagInitWrapper;
   }
 
   public void initialize(@NonNull Context context, @NonNull String appId,
@@ -63,7 +86,7 @@ public class PangleInitializer implements PAGInitCallback {
         .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
         .setDoNotSell(PangleMediationAdapter.getDoNotSell())
         .build();
-    PAGSdk.init(context, adConfig, PangleInitializer.this);
+    pagInitWrapper.init(context, adConfig, PangleInitializer.this);
   }
 
   @Override

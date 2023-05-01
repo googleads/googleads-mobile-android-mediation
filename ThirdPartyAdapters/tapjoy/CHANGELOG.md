@@ -1,5 +1,21 @@
 ## Tapjoy Android Mediation Adapter Changelog
 
+#### Version 13.0.1.0
+- Verified compatibility with Tapjoy SDK version 13.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Tapjoy SDK version 13.0.1.
+
+#### Version 13.0.0.0
+- Verified compatibility with Tapjoy SDK version 13.0.0.
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Tapjoy SDK version 13.0.0.
+
 #### Version 12.11.1.0
 - Verified compatibility with Tapjoy SDK version 12.11.1.
 - Updated the minimum required Google Mobile Ads SDK version to 21.3.0.

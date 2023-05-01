@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.applovin;
 
 import static android.util.Log.ERROR;
@@ -13,7 +27,6 @@ import androidx.annotation.Nullable;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
-import com.applovin.mediation.rtb.AppLovinRtbBannerRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
 import com.applovin.mediation.rtb.AppLovinRtbRewardedRenderer;
 import com.applovin.sdk.AppLovinSdk;
@@ -21,11 +34,9 @@ import com.applovin.sdk.AppLovinSdkSettings;
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAd;
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -33,7 +44,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -50,11 +60,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   @Nullable
   public static AppLovinSdkSettings appLovinSdkSettings;
-
-  /**
-   * AppLovin bidding banner ad renderer.
-   */
-  private AppLovinRtbBannerRenderer rtbBannerRenderer;
 
   /**
    * AppLovin bidding interstitial ad renderer.
@@ -247,13 +252,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     log(INFO, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
-  }
-
-  @Override
-  public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    rtbBannerRenderer = new AppLovinRtbBannerRenderer(adConfiguration, callback);
-    rtbBannerRenderer.loadAd();
   }
 
   @Override
