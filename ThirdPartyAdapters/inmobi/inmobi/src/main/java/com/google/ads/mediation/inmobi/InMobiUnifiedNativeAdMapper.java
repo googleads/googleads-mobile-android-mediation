@@ -30,6 +30,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.renderers.InMobiNativeAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -46,7 +47,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   /**
    * InMobi native ad instance.
@@ -77,7 +78,7 @@ class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   // Map InMobi Native Ad to AdMob Unified Native Ad.
-  void mapUnifiedNativeAd(final Context context) {
+  public void mapUnifiedNativeAd(final Context context) {
     if (!InMobiAdapterUtils.isValidNativeAd(imNative)) {
       AdError error = InMobiConstants.createAdapterError(ERROR_MISSING_NATIVE_ASSETS,
           "InMobi native ad returned with a missing asset.");

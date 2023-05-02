@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package com.google.ads.mediation.inmobi;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -24,9 +23,11 @@ import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbInterstitialAd;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbRewardedAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbNativeAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallInterstitialAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallRewardedAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallNativeAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -66,13 +67,15 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
   private InMobiWaterfallInterstitialAd inMobiWaterfallInterstitialAd;
 
-  private InMobiNativeAd inMobiNativeAd;
+  private InMobiWaterfallNativeAd inMobiWaterfallNativeAd;
 
   private InMobiRtbRewardedAd inMobiRtbRewardedAd;
 
   private InMobiRtbBannerAd inMobiRtbBannerAd;
 
   private InMobiRtbInterstitialAd inMobiRtbInterstitialAd;
+
+  private InMobiRtbNativeAd inMobiRtbNativeAd;
 
   /** {@link Adapter} implementation */
   @NonNull
@@ -205,8 +208,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    // todo: @imansi replace with rtb implementations
-    super.loadNativeAd(adConfiguration, callback);
+    inMobiRtbNativeAd = new InMobiRtbNativeAd(adConfiguration, callback);
+    inMobiRtbNativeAd.loadAd();
   }
 
   @Override
@@ -238,8 +241,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    inMobiNativeAd = new InMobiNativeAd(mediationNativeAdConfiguration, callback);
-    inMobiNativeAd.loadAd();
+    inMobiWaterfallNativeAd = new InMobiWaterfallNativeAd(mediationNativeAdConfiguration, callback);
+    inMobiWaterfallNativeAd.loadAd();
   }
 
 }
