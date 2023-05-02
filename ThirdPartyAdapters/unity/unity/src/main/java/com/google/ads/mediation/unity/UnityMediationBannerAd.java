@@ -55,9 +55,6 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
   /** Game ID, required for loading Unity Ads. */
   private String gameId;
 
-  /** The view for the banner instance. */
-  private BannerView bannerView;
-
   /** Callback object for Google's Banner Lifecycle. */
   @Nullable private MediationBannerAdCallback mediationBannerAdCallback;
 
@@ -67,16 +64,29 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
 
   private final MediationBannerAdConfiguration mediationBannerAdConfiguration;
 
+  private final UnityInitializer unityInitializer;
+
+  private final UnityBannerViewFactory unityBannerViewFactory;
+
+  @Nullable private UnityBannerViewWrapper unityBannerViewWrapper;
+
   static final String ERROR_MSG_NO_MATCHING_AD_SIZE =
       "There is no matching Unity Ads ad size for Google ad size: ";
+
+  static final String ERROR_MSG_INITIALIZATION_FAILED_FOR_GAME_ID =
+      "Unity Ads initialization failed for game ID '%s' with error message: %s";
 
   public UnityMediationBannerAd(
       @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              bannerAdLoadCallback) {
+              bannerAdLoadCallback,
+      @NonNull UnityInitializer unityInitializer,
+      @NonNull UnityBannerViewFactory unityBannerViewFactory) {
     this.mediationBannerAdConfiguration = bannerAdConfiguration;
     this.mediationBannerAdLoadCallback = bannerAdLoadCallback;
+    this.unityBannerViewFactory = unityBannerViewFactory;
+    this.unityInitializer = unityInitializer;
   }
 
   @Override
@@ -172,50 +182,49 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       return;
     }
 
-    UnityInitializer.getInstance()
-        .initializeUnityAds(
-            context,
-            gameId,
-            new IUnityAdsInitializationListener() {
-              @Override
-              public void onInitializationComplete() {
-                String logMessage =
-                    String.format(
-                        "Unity Ads is initialized for game ID '%s' "
-                            + "and can now load banner ad with placement ID: %s",
-                        gameId, bannerPlacementId);
-                Log.d(UnityMediationAdapter.TAG, logMessage);
+    unityInitializer.initializeUnityAds(
+        context,
+        gameId,
+        new IUnityAdsInitializationListener() {
+          @Override
+          public void onInitializationComplete() {
+            String logMessage =
+                String.format(
+                    "Unity Ads is initialized for game ID '%s' "
+                        + "and can now load banner ad with placement ID: %s",
+                    gameId, bannerPlacementId);
+            Log.d(UnityMediationAdapter.TAG, logMessage);
 
-                if (bannerView == null) {
-                  bannerView = new BannerView(activity, bannerPlacementId, unityBannerSize);
-                }
+            UnityAdsAdapterUtils.setCoppa(
+                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
 
-                UnityAdsAdapterUtils.setCoppa(
-                    MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
+            if (unityBannerViewWrapper == null) {
+              unityBannerViewWrapper =
+                  unityBannerViewFactory.createBannerView(
+                      activity, bannerPlacementId, unityBannerSize);
+            }
 
-                bannerView.setListener(UnityMediationBannerAd.this);
-                bannerView.load();
-              }
+            unityBannerViewWrapper.setListener(UnityMediationBannerAd.this);
+            unityBannerViewWrapper.load();
+          }
 
-              @Override
-              public void onInitializationFailed(
-                  UnityAds.UnityAdsInitializationError unityAdsInitializationError,
-                  String errorMessage) {
-                String adErrorMessage =
-                    String.format(
-                        "Unity Ads initialization failed for game ID '%s' with error message: %s",
-                        gameId, errorMessage);
-                AdError adError = createSDKError(unityAdsInitializationError, adErrorMessage);
-                Log.w(UnityMediationAdapter.TAG, adError.toString());
+          @Override
+          public void onInitializationFailed(
+              UnityAds.UnityAdsInitializationError unityAdsInitializationError,
+              String errorMessage) {
+            String adErrorMessage =
+                String.format(ERROR_MSG_INITIALIZATION_FAILED_FOR_GAME_ID, gameId, errorMessage);
+            AdError adError = createSDKError(unityAdsInitializationError, adErrorMessage);
+            Log.w(UnityMediationAdapter.TAG, adError.toString());
 
-                mediationBannerAdLoadCallback.onFailure(adError);
-              }
-            });
+            mediationBannerAdLoadCallback.onFailure(adError);
+          }
+        });
   }
 
   @NonNull
   @Override
   public View getView() {
-    return bannerView;
+    return unityBannerViewWrapper.getBannerView();
   }
 }

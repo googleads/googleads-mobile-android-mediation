@@ -154,6 +154,8 @@ public class UnityMediationAdapter extends Adapter {
 
   private final UnityInitializer unityInitializer;
 
+  private final UnityBannerViewFactory unityBannerViewFactory;
+
   /** UnityBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
@@ -167,11 +169,14 @@ public class UnityMediationAdapter extends Adapter {
 
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
+    unityBannerViewFactory = new UnityBannerViewFactory();
   }
 
   @VisibleForTesting
-  UnityMediationAdapter(UnityInitializer unityInitializer) {
+  UnityMediationAdapter(
+      UnityInitializer unityInitializer, UnityBannerViewFactory unityBannerViewFactory) {
     this.unityInitializer = unityInitializer;
+    this.unityBannerViewFactory = unityBannerViewFactory;
   }
 
   /**
@@ -291,7 +296,9 @@ public class UnityMediationAdapter extends Adapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerAd = new UnityMediationBannerAd(mediationBannerAdConfiguration, callback);
+    bannerAd =
+        new UnityMediationBannerAd(
+            mediationBannerAdConfiguration, callback, unityInitializer, unityBannerViewFactory);
     bannerAd.loadAd();
   }
 
