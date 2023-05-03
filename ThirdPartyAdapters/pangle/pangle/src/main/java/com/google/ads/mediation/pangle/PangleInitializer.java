@@ -50,7 +50,7 @@ public class PangleInitializer implements PAGInitCallback {
   }
 
   @VisibleForTesting
-  PangleInitializer(PAGInitWrapper pagInitWrapper) {
+  public PangleInitializer(PAGInitWrapper pagInitWrapper) {
     initListeners = new ArrayList<>();
     this.pagInitWrapper = pagInitWrapper;
   }

@@ -8,9 +8,9 @@ import com.bytedance.sdk.openadsdk.api.init.PAGSdk.PAGInitCallback;
 /**
  * A wrapper for Pangle's {@link PAGSdk#init(Context, PAGConfig, PAGInitCallback)}.
  */
-class PAGInitWrapper {
+public class PAGInitWrapper {
 
-  void init(Context context, PAGConfig config, PAGSdk.PAGInitCallback callback) {
+  public void init(Context context, PAGConfig config, PAGSdk.PAGInitCallback callback) {
     PAGSdk.init(context, config, callback);
   }
 }
