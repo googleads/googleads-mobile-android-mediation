@@ -73,7 +73,7 @@ public class MintegralUtils {
     return null;
   }
 
-  public static int dip2px(Context context, float dipValue) {
+  public static int convertDipToPixel(Context context, float dipValue) {
     if (context == null){
       return 0;
     }

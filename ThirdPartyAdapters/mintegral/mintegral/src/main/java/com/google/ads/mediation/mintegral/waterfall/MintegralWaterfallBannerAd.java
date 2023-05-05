@@ -65,8 +65,8 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     mbBannerView.init(bannerSize, placementId, adUnitId);
     FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-        MintegralUtils.dip2px(adConfiguration.getContext(), bannerSize.getWidth()),
-        MintegralUtils.dip2px(adConfiguration.getContext(), bannerSize.getHeight()));
+        MintegralUtils.convertDipToPixel(adConfiguration.getContext(), bannerSize.getWidth()),
+        MintegralUtils.convertDipToPixel(adConfiguration.getContext(), bannerSize.getHeight()));
     mbBannerView.setLayoutParams(layoutParams);
     mbBannerView.setBannerAdListener(this);
     mbBannerView.load();
