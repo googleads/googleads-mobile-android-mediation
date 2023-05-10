@@ -67,7 +67,7 @@ task_properties = [
     'error_on_empty_cl': 'true',
     'submit_files_wait_for_review': 'true',
     # TODO(b/279778660) : Update the reviewer with oncall rotation.
-    'submit_files_reviewer' : 'tukn',
+    'submit_files_reviewer' : '{on_behalf_of_or_launched_by}',
     'autosubmit' : 'false'
   ],
 ],
