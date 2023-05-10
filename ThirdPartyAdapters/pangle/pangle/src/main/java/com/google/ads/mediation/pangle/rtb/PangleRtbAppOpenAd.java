@@ -48,7 +48,7 @@ public class PangleRtbAppOpenAd implements MediationAppOpenAd{
       AdError error =
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to load appOpen ad from Pangle. Missing or invalid Placement ID.");
+              "Failed to load app open ad from Pangle. Missing or invalid Placement ID.");
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
