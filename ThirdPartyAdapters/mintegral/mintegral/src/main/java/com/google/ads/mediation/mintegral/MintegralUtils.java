@@ -14,9 +14,15 @@
 
 package com.google.ads.mediation.mintegral;
 
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
@@ -69,6 +75,19 @@ public class MintegralUtils {
       return parameterError;
     }
     return null;
+  }
+
+  public static int convertDipToPixel(Context context, float dipValue) {
+    if (context == null){
+      return 0;
+    }
+    Resources resources = context.getResources();
+    if (resources == null){
+      return 0;
+    }
+    // Convert the dps to pixels, based on density scale
+    return (int) TypedValue.applyDimension(COMPLEX_UNIT_DIP, dipValue + 0.5f,
+            resources.getDisplayMetrics());
   }
 
 }
