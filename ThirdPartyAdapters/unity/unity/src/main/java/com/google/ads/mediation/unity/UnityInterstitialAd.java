@@ -190,6 +190,7 @@ public class UnityInterstitialAd
                         + "and can now load interstitial ad with placement ID: %s",
                     gameId, placementId);
             Log.d(UnityMediationAdapter.TAG, logMessage);
+            // TODO(b/280861464): Add setCoppa test when loading ad
             UnityAdsAdapterUtils.setCoppa(
                 MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
 
