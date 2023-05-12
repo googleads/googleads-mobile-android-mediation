@@ -19,15 +19,16 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbInterstitialAd;
-import com.google.ads.mediation.inmobi.rtb.InMobiRtbRewardedAd;
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbNativeAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbRewardedAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallInterstitialAd;
-import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallRewardedAd;
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallNativeAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -77,7 +78,30 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
   private InMobiRtbNativeAd inMobiRtbNativeAd;
 
+  private InMobiInitializer inMobiInitializer;
+
+  private InMobiAdFactory inMobiAdFactory;
+
+  private InMobiSdkWrapper inMobiSdkWrapper;
+
   /** {@link Adapter} implementation */
+  @VisibleForTesting
+  InMobiMediationAdapter(
+      InMobiInitializer inMobiInitializer,
+      InMobiAdFactory inMobiAdFactory,
+      InMobiSdkWrapper inMobiSdkWrapper) {
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
+    this.inMobiSdkWrapper = inMobiSdkWrapper;
+  }
+
+  InMobiMediationAdapter() {
+    super();
+    this.inMobiInitializer = InMobiInitializer.getInstance();
+    this.inMobiAdFactory = new InMobiAdFactory();
+    this.inMobiSdkWrapper = new InMobiSdkWrapper();
+  }
+
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
@@ -174,7 +198,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
     InMobiExtras inMobiExtras =
         InMobiAdapterUtils.buildInMobiExtras(
             rtbSignalData.getNetworkExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
-    String token = InMobiSdk.getToken(inMobiExtras.getParameterMap(), inMobiExtras.getKeywords());
+    String token =
+        inMobiSdkWrapper.getToken(inMobiExtras.getParameterMap(), inMobiExtras.getKeywords());
     signalCallbacks.onSuccess(token);
   }
 
@@ -182,7 +207,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    inMobiRtbBannerAd = new InMobiRtbBannerAd(adConfiguration, callback);
+    inMobiRtbBannerAd =
+        new InMobiRtbBannerAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
     inMobiRtbBannerAd.loadAd();
   }
 
@@ -225,7 +251,9 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    inMobiWaterfallBannerAd = new InMobiWaterfallBannerAd(mediationBannerAdConfiguration, callback);
+    inMobiWaterfallBannerAd =
+        new InMobiWaterfallBannerAd(
+            mediationBannerAdConfiguration, callback, inMobiInitializer, inMobiAdFactory);
     inMobiWaterfallBannerAd.loadAd();
   }
 

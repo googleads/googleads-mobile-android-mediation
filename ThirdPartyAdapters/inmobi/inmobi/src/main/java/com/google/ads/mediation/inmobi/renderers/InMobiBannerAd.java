@@ -24,7 +24,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
+import com.google.ads.mediation.inmobi.InMobiAdViewHolder;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
+import com.google.ads.mediation.inmobi.InMobiBannerWrapper;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.android.gms.ads.AdError;
@@ -44,20 +47,26 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   protected final MediationBannerAdConfiguration mediationBannerAdConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
-  private FrameLayout wrappedAdView;
   private MediationBannerAdCallback mediationBannerAdCallback;
+  private InMobiAdViewHolder inMobiAdViewHolder;
+  private InMobiInitializer inMobiInitializer;
+  private InMobiAdFactory inMobiAdFactory;
 
   public InMobiBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
     this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the InMobi SDK method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiBanner adView);
+  protected abstract void internalLoadAd(InMobiBannerWrapper adView);
 
   public void loadAd() {
     final Context context = mediationBannerAdConfiguration.getContext();
@@ -85,18 +94,21 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
       return;
     }
 
-    InMobiInitializer.getInstance().init(context, accountId, new InMobiInitializer.Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        createAndLoadBannerAd(context, placementId);
-      }
+    inMobiInitializer.init(
+        context,
+        accountId,
+        new InMobiInitializer.Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            createAndLoadBannerAd(context, placementId);
+          }
 
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.toString());
-        mediationAdLoadCallback.onFailure(error);
-      }
-    });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            mediationAdLoadCallback.onFailure(error);
+          }
+        });
   }
 
   private void createAndLoadBannerAd(final Context context, final long placementId) {
@@ -106,35 +118,38 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationBannerAdConfiguration.getMediationExtras());
 
-    InMobiBanner adView = new InMobiBanner(context, placementId);
+    InMobiBannerWrapper inMobiBannerWrapper =
+        inMobiAdFactory.createInMobiBannerWrapper(context, placementId);
     // Turn off automatic refresh.
-    adView.setEnableAutoRefresh(false);
+    inMobiBannerWrapper.setEnableAutoRefresh(false);
     // Turn off the animation.
-    adView.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
-    adView.setListener(InMobiBannerAd.this);
+    inMobiBannerWrapper.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
+
+    inMobiBannerWrapper.setListener(InMobiBannerAd.this);
 
     /*
      * Wrap InMobi's ad view to limit the dependency on its methods. For example, the method
      * that specifies the width and height for the ad view.
      */
-    wrappedAdView = new FrameLayout(context);
-    wrappedAdView.setLayoutParams(
+    inMobiAdViewHolder = inMobiAdFactory.createInMobiAdViewHolder(context);
+    inMobiAdViewHolder.setLayoutParams(
         new FrameLayout.LayoutParams(
             mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
             mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
 
-    adView.setLayoutParams(new LinearLayout.LayoutParams(
-        mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-        mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
-    wrappedAdView.addView(adView);
+    inMobiBannerWrapper.setLayoutParams(
+        new LinearLayout.LayoutParams(
+            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
+            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+    inMobiAdViewHolder.addView(inMobiBannerWrapper);
 
-    internalLoadAd(adView);
+    internalLoadAd(inMobiBannerWrapper);
   }
 
   @NonNull
   @Override
   public View getView() {
-    return wrappedAdView;
+    return inMobiAdViewHolder.getFrameLayout();
   }
 
   @Override
