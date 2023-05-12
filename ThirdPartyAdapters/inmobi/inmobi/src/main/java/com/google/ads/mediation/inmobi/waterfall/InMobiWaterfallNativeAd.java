@@ -3,6 +3,7 @@ package com.google.ads.mediation.inmobi.waterfall;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiExtras;
+import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.renderers.InMobiNativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -23,7 +24,7 @@ public class InMobiWaterfallNativeAd extends InMobiNativeAd {
   @Override
   public void internalLoadAd(InMobiNative inMobiNative) {
     InMobiExtras inMobiExtras =
-        InMobiAdapterUtils.buildInMobiExtras(
+        InMobiExtrasBuilder.build(
             mediationNativeAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiNative.setExtras(inMobiExtras.getParameterMap());

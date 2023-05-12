@@ -3,6 +3,7 @@ package com.google.ads.mediation.inmobi.rtb;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiExtras;
+import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.renderers.InMobiInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -23,7 +24,7 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
   @Override
   protected void internalLoadAd(InMobiInterstitial inMobiInterstitial) {
     InMobiExtras inMobiExtras =
-        InMobiAdapterUtils.buildInMobiExtras(
+        InMobiExtrasBuilder.build(
             mediationInterstitialAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiInterstitial.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitial.setKeywords(inMobiExtras.getKeywords());

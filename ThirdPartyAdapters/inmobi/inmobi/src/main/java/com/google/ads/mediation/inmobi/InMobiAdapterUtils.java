@@ -50,6 +50,9 @@ public class InMobiAdapterUtils {
   // Protocol values provided by InMobi.
   public static final String PROTOCOL_WATERFALL = "c_admob";
   public static final String PROTOCOL_RTB = "c_google";
+  public static final String THIRD_PARTY_KEY = "tp";
+  public static final String THIRD_PARTY_VERSION = "tp-ver";
+  public static final String COPPA = "coppa";
 
   public static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
@@ -155,44 +158,18 @@ public class InMobiAdapterUtils {
   public static HashMap<String, String> createInMobiParameterMap(
       @NonNull MediationAdConfiguration mediationAdConfiguration) {
     HashMap<String, String> map = new HashMap<>();
-    map.put("tp", PROTOCOL_WATERFALL);
+    map.put(THIRD_PARTY_KEY, PROTOCOL_WATERFALL);
 
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
     // be `0`.
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
+      map.put(COPPA, "1");
     } else {
-      map.put("coppa", "0");
+      map.put(COPPA, "0");
     }
     return map;
   }
-
-  @NonNull
-  public static InMobiExtras buildInMobiExtras(@Nullable Bundle extras, @NonNull String protocol) {
-    HashMap<String, String> map = new HashMap<>();
-    // Set keywords as an empty string for now.
-    String keywords = "";
-    if (extras != null && extras.keySet() != null) {
-      for (String key : extras.keySet()) {
-        map.put(key, extras.getString(key));
-      }
-    }
-
-    map.put("tp", protocol);
-    map.put("tp-ver", MobileAds.getVersion().toString());
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `0`.
-    if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
-    } else {
-      map.put("coppa", "0");
-    }
-
-    return new InMobiExtras(map, keywords);
-  }
-
   private static AgeGroup getAgeGroup(String value) {
     switch (value) {
       case InMobiNetworkValues.ABOVE_65:

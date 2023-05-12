@@ -3,6 +3,7 @@ package com.google.ads.mediation.inmobi.rtb;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiExtras;
+import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.renderers.InMobiRewardedAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -23,7 +24,7 @@ public class InMobiRtbRewardedAd extends InMobiRewardedAd {
   @Override
   protected void internalLoadAd(InMobiInterstitial inMobiRewardedAd) {
     InMobiExtras inMobiExtras =
-        InMobiAdapterUtils.buildInMobiExtras(
+        InMobiExtrasBuilder.build(
             mediationRewardedAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiRewardedAd.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAd.setKeywords(inMobiExtras.getKeywords());

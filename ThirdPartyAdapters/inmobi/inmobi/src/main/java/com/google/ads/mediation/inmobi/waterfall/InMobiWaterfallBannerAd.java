@@ -5,6 +5,7 @@ import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiBannerWrapper;
 import com.google.ads.mediation.inmobi.InMobiExtras;
+import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.renderers.InMobiBannerAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -31,7 +32,7 @@ public class InMobiWaterfallBannerAd extends InMobiBannerAd {
   @Override
   public void internalLoadAd(InMobiBannerWrapper adView) {
     InMobiExtras inMobiExtras =
-        InMobiAdapterUtils.buildInMobiExtras(
+        InMobiExtrasBuilder.build(
             mediationBannerAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     adView.setExtras(inMobiExtras.getParameterMap());
