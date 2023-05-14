@@ -1,4 +1,4 @@
-package com.google.ads.mediation.pangle.rtb;
+package com.google.ads.mediation.pangle.mediation;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
@@ -23,14 +23,14 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 
-public class PangleRtbAppOpenAd implements MediationAppOpenAd{
+public class PangleAppOpenAd implements MediationAppOpenAd{
 
   private final MediationAppOpenAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> adLoadCallback;
   private MediationAppOpenAdCallback appOpenAdCallback;
   private PAGAppOpenAd pagAppOpenAd;
 
-  public PangleRtbAppOpenAd(
+  public PangleAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
@@ -80,7 +80,7 @@ public class PangleRtbAppOpenAd implements MediationAppOpenAd{
                       @Override
                       public void onAdLoaded(PAGAppOpenAd appOpenAd) {
                         appOpenAdCallback =
-                            adLoadCallback.onSuccess(PangleRtbAppOpenAd.this);
+                            adLoadCallback.onSuccess(PangleAppOpenAd.this);
                         pagAppOpenAd = appOpenAd;
                       }
                     });

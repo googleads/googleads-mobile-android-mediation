@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.ads.mediation.pangle.rtb;
+package com.google.ads.mediation.pangle.mediation;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
@@ -23,34 +23,36 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
-import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener;
-import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
-import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardItem;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
 import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAd;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.rewarded.RewardItem;
 
-public class PangleRtbInterstitialAd implements MediationInterstitialAd {
+public class PangleRewardedAd implements MediationRewardedAd {
 
-  private final MediationInterstitialAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+  private final MediationRewardedAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
-  private MediationInterstitialAdCallback interstitialAdCallback;
-  private PAGInterstitialAd pagInterstitialAd;
+  private MediationRewardedAdCallback rewardedAdCallback;
+  private PAGRewardedAd pagRewardedAd;
 
-  public PangleRtbInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+  public PangleRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
-    adConfiguration = mediationInterstitialAdConfiguration;
+    adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
   }
 
@@ -63,7 +65,7 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
       AdError error =
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to load interstitial ad from Pangle. Missing or invalid Placement ID.");
+              "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.");
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -79,12 +81,12 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
             new Listener() {
               @Override
               public void onInitializeSuccess() {
-                PAGInterstitialRequest request = new PAGInterstitialRequest();
+                PAGRewardedRequest request = new PAGRewardedRequest();
                 request.setAdString(bidResponse);
-                PAGInterstitialAd.loadAd(
+                PAGRewardedAd.loadAd(
                     placementId,
                     request,
-                    new PAGInterstitialAdLoadListener() {
+                    new PAGRewardedAdLoadListener() {
                       @Override
                       public void onError(int errorCode, String errorMessage) {
                         AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
@@ -93,10 +95,9 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
                       }
 
                       @Override
-                      public void onAdLoaded(PAGInterstitialAd interstitialAd) {
-                        interstitialAdCallback =
-                            adLoadCallback.onSuccess(PangleRtbInterstitialAd.this);
-                        pagInterstitialAd = interstitialAd;
+                      public void onAdLoaded(PAGRewardedAd rewardedAd) {
+                        rewardedAdCallback = adLoadCallback.onSuccess(PangleRewardedAd.this);
+                        pagRewardedAd = rewardedAd;
                       }
                     });
               }
@@ -111,36 +112,63 @@ public class PangleRtbInterstitialAd implements MediationInterstitialAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    pagInterstitialAd.setAdInteractionListener(
-        new PAGInterstitialAdInteractionListener() {
+    pagRewardedAd.setAdInteractionListener(
+        new PAGRewardedAdInteractionListener() {
           @Override
           public void onAdShowed() {
-            if (interstitialAdCallback != null) {
-              interstitialAdCallback.onAdOpened();
-              interstitialAdCallback.reportAdImpression();
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.onAdOpened();
+              rewardedAdCallback.reportAdImpression();
             }
           }
 
           @Override
           public void onAdClicked() {
-            if (interstitialAdCallback != null) {
-              interstitialAdCallback.reportAdClicked();
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.reportAdClicked();
             }
           }
 
           @Override
           public void onAdDismissed() {
-            if (interstitialAdCallback != null) {
-              interstitialAdCallback.onAdClosed();
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.onAdClosed();
             }
+          }
+
+          @Override
+          public void onUserEarnedReward(final PAGRewardItem pagRewardItem) {
+            RewardItem rewardItem =
+                new RewardItem() {
+                  @NonNull
+                  @Override
+                  public String getType() {
+                    return pagRewardItem.getRewardName();
+                  }
+
+                  @Override
+                  public int getAmount() {
+                    return pagRewardItem.getRewardAmount();
+                  }
+                };
+            if (rewardedAdCallback != null) {
+              rewardedAdCallback.onUserEarnedReward(rewardItem);
+            }
+          }
+
+          @Override
+          public void onUserEarnedRewardFail(int errorCode, String errorMessage) {
+            String rewardErrorMessage = String.format("Failed to reward user: %s", errorMessage);
+            AdError error = PangleConstants.createSdkError(errorCode, rewardErrorMessage);
+            Log.d(TAG, error.toString());
           }
         });
 
     if (context instanceof Activity) {
-      pagInterstitialAd.show((Activity) context);
+      pagRewardedAd.show((Activity) context);
       return;
     }
     // If the context is not an Activity, the application context will be used to render the ad.
-    pagInterstitialAd.show(null);
+    pagRewardedAd.show(null);
   }
 }

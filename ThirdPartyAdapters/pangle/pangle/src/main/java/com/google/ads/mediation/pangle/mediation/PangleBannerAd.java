@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.ads.mediation.pangle.rtb;
+package com.google.ads.mediation.pangle.mediation;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -45,7 +45,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
 
-public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
+public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
 
   @VisibleForTesting
   public static final String ERROR_MESSAGE_BANNER_SIZE_MISMATCH =
@@ -59,7 +59,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
 
-  public PangleRtbBannerAd(
+  public PangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -132,9 +132,9 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
 
                       @Override
                       public void onAdLoaded(PAGBannerAd pagBannerAd) {
-                        pagBannerAd.setAdInteractionListener(PangleRtbBannerAd.this);
+                        pagBannerAd.setAdInteractionListener(PangleBannerAd.this);
                         wrappedAdView.addView(pagBannerAd.getBannerView());
-                        bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
+                        bannerAdCallback = adLoadCallback.onSuccess(PangleBannerAd.this);
                       }
                     });
               }
