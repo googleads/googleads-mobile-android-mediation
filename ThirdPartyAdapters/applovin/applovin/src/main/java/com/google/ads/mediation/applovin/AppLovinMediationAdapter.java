@@ -67,6 +67,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
   private AppLovinBannerAd bannerAd;
 
+  private AppLovinWaterfallInterstitialAd waterfallInterstitialAd;
+
   /**
    * AppLovin bidding interstitial ad renderer.
    */
@@ -288,10 +290,26 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    rtbInterstitialRenderer = new AppLovinRtbInterstitialRenderer(adConfiguration, callback);
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    waterfallInterstitialAd =
+        new AppLovinWaterfallInterstitialAd(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
+    waterfallInterstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    rtbInterstitialRenderer =
+        new AppLovinRtbInterstitialRenderer(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
     rtbInterstitialRenderer.loadAd();
   }
 
