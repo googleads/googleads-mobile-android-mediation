@@ -14,9 +14,10 @@
 
 package com.applovin.mediation.rtb;
 
+import static com.applovin.mediation.AppLovinExtras.Keys.KEY_WATERMARK;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
 import com.google.ads.mediation.applovin.AppLovinAdFactory;
@@ -48,17 +49,14 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
   @Override
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    appLovinSdk =
-        AppLovinInitializer.getInstance()
-            .retrieveSdk(adConfiguration.getServerParameters(), context);
+    appLovinSdk = appLovinInitializer.retrieveSdk(adConfiguration.getServerParameters(), context);
 
     // Create rewarded video object.
-    incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);
-    incentivizedInterstitial.setExtraInfo("google_watermark", adConfiguration.getWatermark());
+    incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
+    incentivizedInterstitial.setExtraInfo(KEY_WATERMARK, adConfiguration.getWatermark());
 
     // Load ad.
-    appLovinSdk.getAdService().loadNextAdForAdToken(
-        adConfiguration.getBidResponse(), AppLovinRtbRewardedRenderer.this);
+    appLovinSdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
   }
 
   @Override
@@ -66,16 +64,14 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
     appLovinSdk.getSettings()
         .setMuted(AppLovinUtils.shouldMuteAudio(adConfiguration.getMediationExtras()));
 
-    incentivizedInterstitial.show(AppLovinRtbRewardedRenderer.this.appLovinAd,
-        context, AppLovinRtbRewardedRenderer.this, AppLovinRtbRewardedRenderer.this,
-        AppLovinRtbRewardedRenderer.this, AppLovinRtbRewardedRenderer.this);
+    incentivizedInterstitial.show(appLovinAd, context, this, this, this, this);
   }
 
   // region AppLovinAdLoadListener implementation
   @Override
   public void adReceived(@NonNull AppLovinAd appLovinAd) {
-    AppLovinRtbRewardedRenderer.this.appLovinAd = appLovinAd;
-    super.adReceived(AppLovinRtbRewardedRenderer.this.appLovinAd);
+    this.appLovinAd = appLovinAd;
+    super.adReceived(this.appLovinAd);
   }
   // endregion
 }
