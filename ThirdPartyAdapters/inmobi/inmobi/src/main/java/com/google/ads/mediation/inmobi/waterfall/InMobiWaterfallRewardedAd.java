@@ -1,15 +1,17 @@
 package com.google.ads.mediation.inmobi.waterfall;
 
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiExtras;
 import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
+import com.google.ads.mediation.inmobi.InMobiInitializer;
+import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
 import com.google.ads.mediation.inmobi.renderers.InMobiRewardedAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.inmobi.ads.InMobiInterstitial;
 
 public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
 
@@ -17,19 +19,25 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
-    super(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+              mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
+    super(
+        mediationRewardedAdConfiguration,
+        mediationAdLoadCallback,
+        inMobiInitializer,
+        inMobiAdFactory);
   }
 
   @Override
-  protected void internalLoadAd(InMobiInterstitial inMobiRewardedAd) {
+  protected void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper) {
     InMobiExtras inMobiExtras =
         InMobiExtrasBuilder.build(
             mediationRewardedAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
-    inMobiRewardedAd.setExtras(inMobiExtras.getParameterMap());
-    inMobiRewardedAd.setKeywords(inMobiExtras.getKeywords());
+    inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
+    inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());
 
-    inMobiRewardedAd.load();
+    inMobiRewardedAdWrapper.load();
   }
 }

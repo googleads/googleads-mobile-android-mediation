@@ -227,7 +227,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    inMobiRtbRewardedAd = new InMobiRtbRewardedAd(adConfiguration, callback);
+    inMobiRtbRewardedAd =
+        new InMobiRtbRewardedAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
     inMobiRtbRewardedAd.loadAd();
   }
 
@@ -244,7 +245,11 @@ public class InMobiMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
     inMobiWaterfallRewardedAd =
-        new InMobiWaterfallRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+        new InMobiWaterfallRewardedAd(
+            mediationRewardedAdConfiguration,
+            mediationAdLoadCallback,
+            inMobiInitializer,
+            inMobiAdFactory);
     inMobiWaterfallRewardedAd.loadAd();
   }
 

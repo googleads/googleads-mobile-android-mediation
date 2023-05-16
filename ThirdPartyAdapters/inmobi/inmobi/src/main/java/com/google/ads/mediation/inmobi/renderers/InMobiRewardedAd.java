@@ -23,10 +23,13 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
+import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -42,23 +45,29 @@ import java.util.Map;
 public abstract class InMobiRewardedAd extends InterstitialAdEventListener
     implements MediationRewardedAd {
 
-  private InMobiInterstitial inMobiRewardedAd;
+  private InMobiInterstitialWrapper inMobiRewardedAdWrapper;
 
   protected final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
+  private InMobiInitializer inMobiInitializer;
+  private InMobiAdFactory inMobiAdFactory;
 
   public InMobiRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+          MediationRewardedAdCallback> mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
     this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the third-party method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiInterstitial inMobiRewardedAd);
+  protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper);
 
   public void loadAd() {
     final Context context = mediationRewardedAdConfiguration.getContext();
@@ -72,7 +81,7 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
       return;
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+    inMobiInitializer.init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
         createAndLoadRewardAd(context, placementId, mediationAdLoadCallback);
@@ -91,7 +100,7 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
   // region MediationRewardedAd implementation.
   @Override
   public void showAd(Context context) {
-    if (!inMobiRewardedAd.isReady()) {
+    if (!inMobiRewardedAdWrapper.isReady()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
           "InMobi rewarded ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
@@ -102,22 +111,23 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
       return;
     }
 
-    inMobiRewardedAd.show();
+    inMobiRewardedAdWrapper.show();
   }
   // endregion
 
   // region Rewarded adapter utility classes.
-  private void createAndLoadRewardAd(Context context, long placementId,
+  @VisibleForTesting
+  public void createAndLoadRewardAd(Context context, long placementId,
       final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    inMobiRewardedAd = new InMobiInterstitial(context, placementId, InMobiRewardedAd.this);
+    inMobiRewardedAdWrapper = inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, InMobiRewardedAd.this);
 
     // Set the COPPA value in InMobi SDK.
     InMobiAdapterUtils.setIsAgeRestricted(mediationRewardedAdConfiguration);
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationRewardedAdConfiguration.getMediationExtras());
-    internalLoadAd(inMobiRewardedAd);
+    internalLoadAd(inMobiRewardedAdWrapper);
   }
   // endregion
 
