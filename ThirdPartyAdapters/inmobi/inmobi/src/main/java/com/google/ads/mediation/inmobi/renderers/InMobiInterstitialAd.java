@@ -22,9 +22,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
+import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -39,22 +42,29 @@ import java.util.Map;
 public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
     implements MediationInterstitialAd {
 
-  private InMobiInterstitial inMobiInterstitial;
+  private InMobiInterstitialWrapper inMobiInterstitialWrapper;
   protected final MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
+  private InMobiInitializer inMobiInitializer;
+
+  private InMobiAdFactory inMobiAdFactory;
 
   public InMobiInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback) {
+          mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
     this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the third-party method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiInterstitial inMobiInterstitial);
+  protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper);
 
   public void loadAd() {
     final Context context = mediationInterstitialAdConfiguration.getContext();
@@ -68,7 +78,7 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
       return;
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new InMobiInitializer.Listener() {
+    inMobiInitializer.init(context, accountID, new InMobiInitializer.Listener() {
       @Override
       public void onInitializeSuccess() {
         createAndLoadInterstitialAd(context, placementId);
@@ -84,27 +94,29 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
     });
   }
 
-  private void createAndLoadInterstitialAd(final Context context, long placementId) {
-    inMobiInterstitial = new InMobiInterstitial(context, placementId, InMobiInterstitialAd.this);
+  @VisibleForTesting
+  public void createAndLoadInterstitialAd(final Context context, long placementId) {
+    inMobiInterstitialWrapper =
+        inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, this);
 
     // Set the COPPA value in InMobi SDK.
     InMobiAdapterUtils.setIsAgeRestricted(mediationInterstitialAdConfiguration);
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationInterstitialAdConfiguration.getMediationExtras());
-    internalLoadAd(inMobiInterstitial);
+    internalLoadAd(inMobiInterstitialWrapper);
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (!inMobiInterstitial.isReady()) {
+    if (!inMobiInterstitialWrapper.isReady()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
           "InMobi interstitial ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
       return;
     }
 
-    inMobiInterstitial.show();
+    inMobiInterstitialWrapper.show();
   }
 
   @Override
