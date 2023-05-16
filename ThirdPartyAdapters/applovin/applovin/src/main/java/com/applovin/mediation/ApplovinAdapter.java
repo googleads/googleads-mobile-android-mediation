@@ -108,7 +108,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             appLovinInterstitialAds.put(zoneId, new WeakReference<>(ApplovinAdapter.this));
 
             // Store parent objects.
-            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            sdk = AppLovinInitializer.getInstance().retrieveSdk(serverParameters, context);
             ApplovinAdapter.this.context = context;
             ApplovinAdapter.this.networkExtras = networkExtras;
             mediationInterstitialListener = interstitialListener;
@@ -226,7 +226,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
           @Override
           public void onInitializeSuccess(@NonNull String sdkKey) {
             // Store parent objects
-            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            sdk = AppLovinInitializer.getInstance().retrieveSdk(serverParameters, context);
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
             log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);

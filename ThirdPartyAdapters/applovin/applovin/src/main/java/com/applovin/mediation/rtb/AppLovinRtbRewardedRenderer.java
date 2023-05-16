@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
+import com.google.ads.mediation.applovin.AppLovinInitializer;
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -41,7 +42,9 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
   @Override
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    appLovinSdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
+    appLovinSdk =
+        AppLovinInitializer.getInstance()
+            .retrieveSdk(adConfiguration.getServerParameters(), context);
 
     // Create rewarded video object.
     incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);

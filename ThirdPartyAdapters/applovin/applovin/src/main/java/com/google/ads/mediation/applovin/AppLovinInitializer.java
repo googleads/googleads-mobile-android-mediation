@@ -18,8 +18,12 @@ import static android.util.Log.DEBUG;
 import static com.applovin.mediation.ApplovinAdapter.log;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
@@ -34,6 +38,7 @@ import java.util.HashMap;
 public class AppLovinInitializer {
 
   private static AppLovinInitializer instance;
+  private final AppLovinSdkWrapper appLovinSdkWrapper;
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
@@ -65,6 +70,14 @@ public class AppLovinInitializer {
   private AppLovinInitializer() {
     initializationStatus = new HashMap<>();
     initializerListeners = new HashMap<>();
+    appLovinSdkWrapper = new AppLovinSdkWrapper();
+  }
+
+  @VisibleForTesting
+  AppLovinInitializer(AppLovinSdkWrapper appLovinSdkWrapper) {
+    initializationStatus = new HashMap<>();
+    initializerListeners = new HashMap<>();
+    this.appLovinSdkWrapper = appLovinSdkWrapper;
   }
 
   public static AppLovinInitializer getInstance() {
@@ -96,8 +109,8 @@ public class AppLovinInitializer {
     String logMessage = String.format("Attempting to initialize SDK with SDK Key: %s", sdkKey);
     log(DEBUG, logMessage);
 
-    AppLovinSdkSettings sdkSettings = AppLovinMediationAdapter.getSdkSettings(context);
-    AppLovinSdk sdk = AppLovinSdk.getInstance(sdkKey, sdkSettings, context);
+    AppLovinSdkSettings sdkSettings = appLovinSdkWrapper.getSdkSettings(context);
+    AppLovinSdk sdk = appLovinSdkWrapper.getInstance(sdkKey, sdkSettings, context);
     sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
     sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
     sdk.initializeSdk(new SdkInitializationListener() {
@@ -116,6 +129,27 @@ public class AppLovinInitializer {
         }
       }
     });
+  }
+
+  /**
+   * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server
+   * parameters, or Android Manifest.
+   */
+  public AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
+    String sdkKey =
+        (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
+    AppLovinSdk sdk;
+
+    AppLovinSdkSettings sdkSettings = appLovinSdkWrapper.getSdkSettings(context);
+    if (!TextUtils.isEmpty(sdkKey)) {
+      sdk = appLovinSdkWrapper.getInstance(sdkKey, sdkSettings, context);
+    } else {
+      sdk = appLovinSdkWrapper.getInstance(sdkSettings, context);
+    }
+
+    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
+    sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
+    return sdk;
   }
 
   public interface OnInitializeSuccessListener {

@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
@@ -37,6 +38,9 @@ import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -61,6 +65,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Nullable
   public static AppLovinSdkSettings appLovinSdkSettings;
 
+  private AppLovinBannerAd bannerAd;
+
   /**
    * AppLovin bidding interstitial ad renderer.
    */
@@ -75,6 +81,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    * AppLovin waterfall rewarded ad renderer.
    */
   private AppLovinWaterfallRewardedRenderer rewardedRenderer;
+
+  /** AppLovinInitializer singleton instance. */
+  private final AppLovinInitializer appLovinInitializer;
+
+  private final AppLovinAdFactory appLovinAdFactory;
 
   /**
    * Applovin adapter errors.
@@ -129,12 +140,22 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
 
-  @NonNull
-  public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
-    if (appLovinSdkSettings == null) {
-      appLovinSdkSettings = new AppLovinSdkSettings(context);
-    }
-    return appLovinSdkSettings;
+  @VisibleForTesting static final String ERROR_MSG_MISSING_SDK = "Missing or invalid SDK Key.";
+
+  @VisibleForTesting
+  static final String ERROR_MSG_BANNER_SIZE_MISMATCH =
+      "Failed to request banner with unsupported size.";
+
+  public AppLovinMediationAdapter() {
+    appLovinInitializer = AppLovinInitializer.getInstance();
+    appLovinAdFactory = new AppLovinAdFactory();
+  }
+
+  @VisibleForTesting
+  AppLovinMediationAdapter(
+      AppLovinInitializer appLovinInitializer, AppLovinAdFactory appLovinAdFactory) {
+    this.appLovinInitializer = appLovinInitializer;
+    this.appLovinAdFactory = appLovinAdFactory;
   }
 
   @Override
@@ -169,8 +190,10 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     final HashSet<String> initializedSdkKeys = new HashSet<>();
 
     for (String sdkKey : sdkKeys) {
-      AppLovinInitializer.getInstance()
-          .initialize(context, sdkKey, new OnInitializeSuccessListener() {
+      appLovinInitializer.initialize(
+          context,
+          sdkKey,
+          new OnInitializeSuccessListener() {
             @Override
             public void onInitializeSuccess(@NonNull String sdkKey) {
               initializedSdkKeys.add(sdkKey);
@@ -238,8 +261,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     // Check if the publisher provided extra parameters
     log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
-    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(config.getServerParameters(),
-        rtbSignalData.getContext());
+    AppLovinSdk sdk =
+        appLovinInitializer.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();
 
     if (TextUtils.isEmpty(bidToken)) {
@@ -252,6 +275,16 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     log(INFO, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
+  }
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerAd =
+        AppLovinBannerAd.newInstance(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
+    bannerAd.loadAd();
   }
 
   @Override

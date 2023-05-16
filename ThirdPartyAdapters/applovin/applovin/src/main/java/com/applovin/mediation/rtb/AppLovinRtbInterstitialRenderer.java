@@ -29,6 +29,7 @@ import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinSdk;
+import com.google.ads.mediation.applovin.AppLovinInitializer;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -70,7 +71,7 @@ public final class AppLovinRtbInterstitialRenderer
     this.callback = callback;
 
     this.sdk =
-        AppLovinUtils.retrieveSdk(
+        AppLovinInitializer.getInstance().retrieveSdk(
             adConfiguration.getServerParameters(), adConfiguration.getContext());
   }
 

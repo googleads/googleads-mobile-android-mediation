@@ -37,6 +37,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class AppLovinWaterfallRewardedRenderer
     extends AppLovinRewardedRenderer implements MediationRewardedAd {
@@ -61,6 +62,7 @@ public class AppLovinWaterfallRewardedRenderer
     super(adConfiguration, callback);
   }
 
+  @Override
   public void loadAd() {
     final Context context = adConfiguration.getContext();
     final Bundle serverParameters = adConfiguration.getServerParameters();
@@ -74,47 +76,54 @@ public class AppLovinWaterfallRewardedRenderer
     }
 
     AppLovinInitializer.getInstance()
-        .initialize(context, sdkKey, new OnInitializeSuccessListener() {
-          @Override
-          public void onInitializeSuccess(@NonNull String sdkKey) {
-            zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-            appLovinSdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+        .initialize(
+            context,
+            sdkKey,
+            new OnInitializeSuccessListener() {
+              @Override
+              public void onInitializeSuccess(@NonNull String sdkKey) {
+                zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
+                appLovinSdk =
+                    AppLovinInitializer.getInstance().retrieveSdk(serverParameters, context);
 
-            String logMessage = String.format("Requesting rewarded video for zone '%s'", zoneId);
-            log(DEBUG, logMessage);
+                String logMessage =
+                    String.format("Requesting rewarded video for zone '%s'", zoneId);
+                log(DEBUG, logMessage);
 
-            // Check if incentivized ad for zone already exists.
-            boolean adAlreadyRequested = false;
-            synchronized (INCENTIVIZED_ADS_LOCK) {
-              if (INCENTIVIZED_ADS.containsKey(zoneId)) {
-                adAlreadyRequested = true;
-              } else {
-                INCENTIVIZED_ADS.put(zoneId,
-                    new WeakReference<>(AppLovinWaterfallRewardedRenderer.this));
+                // Check if incentivized ad for zone already exists.
+                boolean adAlreadyRequested = false;
+                synchronized (INCENTIVIZED_ADS_LOCK) {
+                  if (INCENTIVIZED_ADS.containsKey(zoneId)) {
+                    adAlreadyRequested = true;
+                  } else {
+                    INCENTIVIZED_ADS.put(
+                        zoneId, new WeakReference<>(AppLovinWaterfallRewardedRenderer.this));
+                  }
+                }
+
+                if (adAlreadyRequested) {
+                  AdError error =
+                      new AdError(
+                          ERROR_AD_ALREADY_REQUESTED,
+                          "Cannot load multiple rewarded ads with the same Zone ID. "
+                              + "Display one ad before attempting to load another.",
+                          ERROR_DOMAIN);
+                  log(ERROR, error.toString());
+                  adLoadCallback.onFailure(error);
+                  return;
+                }
+
+                // If this is a default Zone, create the incentivized ad normally.
+                if (Objects.equals(zoneId, DEFAULT_ZONE)) {
+                  incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);
+                } else {
+                  // Otherwise, use the Zones API.
+                  incentivizedInterstitial =
+                      AppLovinIncentivizedInterstitial.create(zoneId, appLovinSdk);
+                }
+                incentivizedInterstitial.preload(AppLovinWaterfallRewardedRenderer.this);
               }
-            }
-
-            if (adAlreadyRequested) {
-              AdError error = new AdError(ERROR_AD_ALREADY_REQUESTED,
-                  "Cannot load multiple rewarded ads with the same Zone ID. "
-                      + "Display one ad before attempting to load another.", ERROR_DOMAIN);
-              log(ERROR, error.toString());
-              adLoadCallback.onFailure(error);
-              return;
-            }
-
-            // If this is a default Zone, create the incentivized ad normally.
-            if (DEFAULT_ZONE.equals(zoneId)) {
-              incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);
-            } else {
-              // Otherwise, use the Zones API.
-              incentivizedInterstitial =
-                  AppLovinIncentivizedInterstitial.create(zoneId, appLovinSdk);
-            }
-            incentivizedInterstitial.preload(AppLovinWaterfallRewardedRenderer.this);
-          }
-        });
-
+            });
   }
 
   @Override
