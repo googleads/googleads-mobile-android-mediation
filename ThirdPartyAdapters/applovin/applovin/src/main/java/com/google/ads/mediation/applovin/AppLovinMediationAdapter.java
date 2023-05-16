@@ -79,15 +79,15 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   private AppLovinRtbRewardedRenderer rtbRewardedRenderer;
 
-  /**
-   * AppLovin waterfall rewarded ad renderer.
-   */
+  /** AppLovin waterfall rewarded ad renderer. */
   private AppLovinWaterfallRewardedRenderer rewardedRenderer;
 
   /** AppLovinInitializer singleton instance. */
   private final AppLovinInitializer appLovinInitializer;
 
   private final AppLovinAdFactory appLovinAdFactory;
+  
+  private final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
 
   /**
    * Applovin adapter errors.
@@ -151,13 +151,14 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   public AppLovinMediationAdapter() {
     appLovinInitializer = AppLovinInitializer.getInstance();
     appLovinAdFactory = new AppLovinAdFactory();
+    appLovinSdkUtilsWrapper = new AppLovinSdkUtilsWrapper();
   }
 
   @VisibleForTesting
-  AppLovinMediationAdapter(
-      AppLovinInitializer appLovinInitializer, AppLovinAdFactory appLovinAdFactory) {
+  AppLovinMediationAdapter(AppLovinInitializer appLovinInitializer, AppLovinAdFactory appLovinAdFactory, AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
     this.appLovinInitializer = appLovinInitializer;
     this.appLovinAdFactory = appLovinAdFactory;
+    this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
   }
 
   @Override
@@ -316,14 +317,16 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedRenderer = new AppLovinWaterfallRewardedRenderer(adConfiguration, callback);
+    rewardedRenderer =
+        new AppLovinWaterfallRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rewardedRenderer.loadAd();
   }
 
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rtbRewardedRenderer = new AppLovinRtbRewardedRenderer(adConfiguration, callback);
+    rtbRewardedRenderer =
+        new AppLovinRtbRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rtbRewardedRenderer.loadAd();
   }
 }

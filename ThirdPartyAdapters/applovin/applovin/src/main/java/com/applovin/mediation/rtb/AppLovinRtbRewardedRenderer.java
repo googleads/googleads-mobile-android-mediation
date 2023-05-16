@@ -19,8 +19,10 @@ import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
+import com.google.ads.mediation.applovin.AppLovinAdFactory;
 import com.google.ads.mediation.applovin.AppLovinInitializer;
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer;
+import com.google.ads.mediation.applovin.AppLovinSdkUtilsWrapper;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -35,8 +37,12 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
 
   public AppLovinRtbRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    super(adConfiguration, callback);
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
+      @NonNull AppLovinInitializer appLovinInitializer,
+      @NonNull AppLovinAdFactory appLovinAdFactory,
+      @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
+    super(
+        adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
   }
 
   @Override

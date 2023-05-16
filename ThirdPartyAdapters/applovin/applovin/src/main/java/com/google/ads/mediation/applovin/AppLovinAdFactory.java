@@ -15,6 +15,7 @@
 package com.google.ads.mediation.applovin;
 
 import android.content.Context;
+import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.sdk.AppLovinAdSize;
@@ -29,5 +30,14 @@ public class AppLovinAdFactory {
 
   public AppLovinInterstitialAdDialog createInterstitialAdDialog(AppLovinSdk sdk, Context context) {
     return AppLovinInterstitialAd.create(sdk, context);
+  }
+
+  public AppLovinIncentivizedInterstitial createIncentivizedInterstitial(AppLovinSdk sdk) {
+    return AppLovinIncentivizedInterstitial.create(sdk);
+  }
+
+  public AppLovinIncentivizedInterstitial createIncentivizedInterstitial(
+      String zoneId, AppLovinSdk sdk) {
+    return AppLovinIncentivizedInterstitial.create(zoneId, sdk);
   }
 }
