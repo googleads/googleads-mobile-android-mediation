@@ -181,8 +181,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     }
 
     if (sdkKeys.isEmpty()) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
-          ERROR_DOMAIN);
+      AdError error =
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
       log(WARN, error.getMessage());
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
