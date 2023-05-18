@@ -3,6 +3,7 @@
 buildscript {
     ext {
         kotlinVersion = '1.7.21'
+        jacocoVersion = '0.8.8'
     }
     repositories {
         google()
@@ -11,6 +12,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jacoco:org.jacoco.core:$jacocoVersion"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }

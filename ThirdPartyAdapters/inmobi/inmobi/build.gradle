@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 apply plugin: 'kotlin-android'
+apply plugin: 'jacoco'
 
 /**
  * Extra properties used by the project.
@@ -15,7 +16,7 @@ ext {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
@@ -23,16 +24,28 @@ android {
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
+        }
+        debug {
+            testCoverageEnabled true
         }
     }
 
     sourceSets {
         test.java.srcDirs += 'src/test/kotlin'
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            unitTests.returnDefaultValues = true
+        }
+    }
+
 }
 
 tasks.withType(Test) {
@@ -40,6 +53,47 @@ tasks.withType(Test) {
         events "PASSED", "SKIPPED", "FAILED"
         exceptionFormat = 'full'
     }
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion= "$jacocoVersion"
+}
+
+task jacocoTestReport(type: JacocoReport,
+        dependsOn: ['testDebugUnitTest',
+                    'createDebugCoverageReport']) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    def fileFilter = ['androidx/**/*.*',
+                      '**/view/*.*',
+                      '**/data/*.*',
+                      '**/data/model/*.*',
+                      '**/generated/callback/*.*',
+                      '**/lambda$*.class',
+                      '**/lambda.class',
+                      '**/*lambda.class',
+                      '**/*lambda*.class']
+
+    def debugTree = fileTree(dir:
+            "${buildDir}/intermediates/javac/debug/classes",
+            excludes: fileFilter
+    )
+
+    def mainSrc = "$project.projectDir/src/main/java"
+
+    getSourceDirectories().setFrom(files([mainSrc]))
+    getClassDirectories().setFrom(files([debugTree]))
+    getExecutionData().setFrom(fileTree(dir: "${buildDir}", includes:[
+            "/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"]))
 }
 
 dependencies {
