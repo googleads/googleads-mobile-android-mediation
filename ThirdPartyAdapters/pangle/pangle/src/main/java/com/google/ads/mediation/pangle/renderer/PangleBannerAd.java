@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.ads.mediation.pangle.rtb;
+package com.google.ads.mediation.pangle.renderer;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
@@ -46,7 +45,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
 
-public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
+public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
 
   @VisibleForTesting
   public static final String ERROR_MESSAGE_BANNER_SIZE_MISMATCH =
@@ -60,7 +59,7 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
 
-  public PangleRtbBannerAd(
+  public PangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
@@ -89,16 +88,6 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
     }
 
     String bidResponse = adConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(bidResponse)) {
-      AdError error =
-          PangleConstants.createAdapterError(
-              ERROR_INVALID_BID_RESPONSE,
-              "Failed to load banner ad from Pangle. Missing or invalid bid response.");
-      Log.w(TAG, error.toString());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
     pangleInitializer
@@ -143,9 +132,9 @@ public class PangleRtbBannerAd implements MediationBannerAd, PAGBannerAdInteract
 
                       @Override
                       public void onAdLoaded(PAGBannerAd pagBannerAd) {
-                        pagBannerAd.setAdInteractionListener(PangleRtbBannerAd.this);
+                        pagBannerAd.setAdInteractionListener(PangleBannerAd.this);
                         wrappedAdView.addView(pagBannerAd.getBannerView());
-                        bannerAdCallback = adLoadCallback.onSuccess(PangleRtbBannerAd.this);
+                        bannerAdCallback = adLoadCallback.onSuccess(PangleBannerAd.this);
                       }
                     });
               }

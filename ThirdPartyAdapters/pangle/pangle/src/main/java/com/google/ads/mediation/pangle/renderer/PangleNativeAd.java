@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.ads.mediation.pangle.rtb;
+package com.google.ads.mediation.pangle.renderer;
 
-import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_BID_RESPONSE;
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.pangle.PangleMediationAdapter.TAG;
 
@@ -48,7 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
+public class PangleNativeAd extends UnifiedNativeAdMapper {
 
   private static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
   private final MediationNativeAdConfiguration adConfiguration;
@@ -57,7 +56,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
   private MediationNativeAdCallback callback;
   private PAGNativeAd pagNativeAd;
 
-  public PangleRtbNativeAd(
+  public PangleNativeAd(
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
@@ -82,16 +81,6 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     String bidResponse = adConfiguration.getBidResponse();
-    if (TextUtils.isEmpty(bidResponse)) {
-      AdError error =
-          PangleConstants.createAdapterError(
-              ERROR_INVALID_BID_RESPONSE,
-              "Failed to load native ad from Pangle. Missing or invalid bid response.");
-      Log.w(TAG, error.toString());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
     PangleInitializer.getInstance()
@@ -117,7 +106,7 @@ public class PangleRtbNativeAd extends UnifiedNativeAdMapper {
                       @Override
                       public void onAdLoaded(PAGNativeAd pagNativeAd) {
                         mapNativeAd(pagNativeAd);
-                        callback = adLoadCallback.onSuccess(PangleRtbNativeAd.this);
+                        callback = adLoadCallback.onSuccess(PangleNativeAd.this);
                       }
                     });
               }
