@@ -1,6 +1,6 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 16.4.41.0 (In progress)
+#### Version 16.4.41.0
 - Fixed an issue where banner ads were rendered with incorrect sizes.
 - Verified compatibility with Mintegral SDK 16.4.41.
 
