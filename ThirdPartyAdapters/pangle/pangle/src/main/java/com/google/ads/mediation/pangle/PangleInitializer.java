@@ -29,7 +29,8 @@ import java.util.ArrayList;
 /**
  * Manages initializing Pangle SDK.
  *
- * <p>The adapter should only use this class for initializing Pangle SDK instead of directly calling
+ * <p>The adapter should only use this class for initializing Pangle SDK instead of directly
+ * calling
  * Pangle SDK's init() method.
  */
 public class PangleInitializer implements PAGInitCallback {
@@ -124,6 +125,7 @@ public class PangleInitializer implements PAGInitCallback {
   }
 
   public interface Listener {
+
     void onInitializeSuccess();
 
     void onInitializeError(@NonNull AdError error);

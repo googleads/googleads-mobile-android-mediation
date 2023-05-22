@@ -18,7 +18,9 @@ import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 
-/** Stores the COPPA setting and configures it on the Pangle SDK. */
+/**
+ * Stores the COPPA setting and configures it on the Pangle SDK.
+ */
 public class PanglePrivacyConfig {
 
   private static int coppa = -1;
@@ -35,10 +37,11 @@ public class PanglePrivacyConfig {
    * <p>Also, caches the COPPA setting in a static field.
    *
    * @param coppa an {@code Integer} value that indicates whether the app should be treated as
-   *     child-directed for purposes of the COPPA. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
+   *              child-directed for purposes of the COPPA.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false.
+   *              {@link RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means
+   *              unspecified.
    */
   public void setCoppa(@TagForChildDirectedTreatment int coppa) {
     switch (coppa) {

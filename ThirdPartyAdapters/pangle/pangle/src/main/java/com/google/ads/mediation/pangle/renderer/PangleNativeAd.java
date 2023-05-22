@@ -60,8 +60,8 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   public PangleNativeAd(
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.panglePrivacyConfig = panglePrivacyConfig;

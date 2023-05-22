@@ -42,8 +42,8 @@ public class PangleSdkWrapper {
     PAGConfig.setChildDirected(childDirectedType);
   }
 
-  public void loadBannerAd(
-      String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
+  public void loadBannerAd(String placementId, PAGBannerRequest request,
+      PAGBannerAdLoadListener listener) {
     PAGBannerAd.loadAd(placementId, request, listener);
   }
 }

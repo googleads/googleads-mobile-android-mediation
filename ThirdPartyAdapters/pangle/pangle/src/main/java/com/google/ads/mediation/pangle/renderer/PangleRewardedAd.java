@@ -51,8 +51,8 @@ public class PangleRewardedAd implements MediationRewardedAd {
   public PangleRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.panglePrivacyConfig = panglePrivacyConfig;

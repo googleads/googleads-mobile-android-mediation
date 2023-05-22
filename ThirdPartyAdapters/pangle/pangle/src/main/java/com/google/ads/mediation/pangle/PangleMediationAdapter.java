@@ -227,8 +227,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-              callback) {
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          callback) {
     interstitialAd = new PangleInterstitialAd(adConfiguration, callback, panglePrivacyConfig);
     interstitialAd.render();
   }
@@ -253,9 +253,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the GDPR setting in Pangle SDK.
    *
    * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *     personal data to serve ads under GDPR. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   *             personal data to serve ads under GDPR. See <a
+   *             href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *             documentation</a> for more information about what values may be provided.
    */
   public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
     if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
@@ -279,9 +279,9 @@ public class PangleMediationAdapter extends RtbAdapter {
    * Set the CCPA setting in Pangle SDK.
    *
    * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *     the "personal information" under CCPA. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   *             the "personal information" under CCPA. See <a
+   *             href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *             documentation</a> for more information about what values may be provided.
    */
   public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
     if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL

@@ -29,10 +29,7 @@ public class PangleConstants {
   public static final String PANGLE_SDK_ERROR_DOMAIN = "com.pangle.ads";
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      value = {ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_BANNER_SIZE_MISMATCH,
-      })
+  @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_BANNER_SIZE_MISMATCH,})
   public @interface AdapterError {
 
   }

@@ -50,7 +50,7 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
   public PangleAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
+      MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
           mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;

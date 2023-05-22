@@ -63,8 +63,8 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   public PangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback,
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
       PanglePrivacyConfig panglePrivacyConfig) {

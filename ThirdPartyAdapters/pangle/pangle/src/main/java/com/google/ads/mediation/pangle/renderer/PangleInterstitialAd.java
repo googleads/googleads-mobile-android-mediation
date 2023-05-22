@@ -49,8 +49,8 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   public PangleInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.panglePrivacyConfig = panglePrivacyConfig;
