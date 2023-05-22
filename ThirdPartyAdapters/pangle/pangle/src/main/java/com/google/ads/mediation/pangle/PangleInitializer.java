@@ -26,6 +26,12 @@ import com.bytedance.sdk.openadsdk.api.init.PAGSdk.PAGInitCallback;
 import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
 
+/**
+ * Manages initializing Pangle SDK.
+ *
+ * <p>The adapter should only use this class for initializing Pangle SDK instead of directly calling
+ * Pangle SDK's init() method.
+ */
 public class PangleInitializer implements PAGInitCallback {
 
   private static PangleInitializer instance;
@@ -34,7 +40,8 @@ public class PangleInitializer implements PAGInitCallback {
   private boolean isInitialized = false;
   private final ArrayList<Listener> initListeners;
 
-  private final PAGInitWrapper pagInitWrapper;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
 
   @NonNull
   public static PangleInitializer getInstance() {
@@ -46,17 +53,19 @@ public class PangleInitializer implements PAGInitCallback {
 
   private PangleInitializer() {
     initListeners = new ArrayList<>();
-    pagInitWrapper = new PAGInitWrapper();
+    pangleSdkWrapper = new PangleSdkWrapper();
+    pangleFactory = new PangleFactory();
   }
 
   @VisibleForTesting
-  public PangleInitializer(PAGInitWrapper pagInitWrapper) {
+  public PangleInitializer(PangleSdkWrapper pangleSdkWrapper, PangleFactory pangleFactory) {
     initListeners = new ArrayList<>();
-    this.pagInitWrapper = pagInitWrapper;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
   }
 
-  public void initialize(@NonNull Context context, @NonNull String appId,
-      @NonNull Listener listener) {
+  public void initialize(
+      @NonNull Context context, @NonNull String appId, @NonNull Listener listener) {
 
     if (TextUtils.isEmpty(appId)) {
       AdError error = PangleConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
@@ -80,13 +89,15 @@ public class PangleInitializer implements PAGInitCallback {
     initListeners.add(listener);
 
     // Pangle SDK is only initialized using a single App ID.
-    PAGConfig adConfig = new PAGConfig.Builder()
-        .appId(appId)
-        .setChildDirected(PangleAdapterUtils.getCoppa())
-        .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
-        .setDoNotSell(PangleMediationAdapter.getDoNotSell())
-        .build();
-    pagInitWrapper.init(context, adConfig, PangleInitializer.this);
+    PAGConfig adConfig =
+        pangleFactory
+            .createPAGConfigBuilder()
+            .appId(appId)
+            .setChildDirected(PanglePrivacyConfig.getCoppa())
+            .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
+            .setDoNotSell(PangleMediationAdapter.getDoNotSell())
+            .build();
+    pangleSdkWrapper.init(context, adConfig, PangleInitializer.this);
   }
 
   @Override

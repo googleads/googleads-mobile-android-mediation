@@ -62,26 +62,37 @@ import java.util.List;
 public class PangleMediationAdapter extends RtbAdapter {
 
   public static final String TAG = PangleMediationAdapter.class.getSimpleName();
+
+  @VisibleForTesting
+  static final String ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID = "Missing or invalid App ID.";
+
   private final PangleInitializer pangleInitializer;
-  private final PangleBannerAdLoader pangleBannerAdLoader;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PanglePrivacyConfig panglePrivacyConfig;
+
   private PangleAppOpenAd appOpenAd;
   private PangleBannerAd bannerAd;
   private PangleInterstitialAd interstitialAd;
   private PangleNativeAd nativeAd;
   private PangleRewardedAd rewardedAd;
+
   private static int gdpr = -1;
   private static int ccpa = -1;
 
   PangleMediationAdapter() {
     this.pangleInitializer = PangleInitializer.getInstance();
-    this.pangleBannerAdLoader = new PangleBannerAdLoader();
+    this.pangleSdkWrapper = new PangleSdkWrapper();
+    panglePrivacyConfig = new PanglePrivacyConfig(pangleSdkWrapper);
   }
 
   @VisibleForTesting
   PangleMediationAdapter(
-      PangleInitializer pangleInitializer, PangleBannerAdLoader pangleBannerAdLoader) {
+      PangleInitializer pangleInitializer,
+      PangleSdkWrapper pangleSdkWrapper,
+      PanglePrivacyConfig panglePrivacyConfig) {
     this.pangleInitializer = pangleInitializer;
-    this.pangleBannerAdLoader = pangleBannerAdLoader;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   @Override
@@ -114,7 +125,7 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (count <= 0) {
       AdError error =
           PangleConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.");
+              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID);
       Log.w(TAG, error.toString());
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
@@ -128,24 +139,23 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, message);
     }
 
-    PangleAdapterUtils.setCoppa(
+    panglePrivacyConfig.setCoppa(
         MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
-    PangleInitializer.getInstance()
-        .initialize(
-            context,
-            appId,
-            new Listener() {
-              @Override
-              public void onInitializeSuccess() {
-                initializationCompleteCallback.onInitializationSucceeded();
-              }
+    pangleInitializer.initialize(
+        context,
+        appId,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
 
-              @Override
-              public void onInitializeError(@NonNull AdError error) {
-                Log.w(TAG, error.toString());
-                initializationCompleteCallback.onInitializationFailed(error.getMessage());
-              }
-            });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+          }
+        });
   }
 
   @NonNull
@@ -196,9 +206,10 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadAppOpenAd(@NonNull MediationAppOpenAdConfiguration adConfiguration,
+  public void loadAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    appOpenAd = new PangleAppOpenAd(adConfiguration, callback);
+    appOpenAd = new PangleAppOpenAd(adConfiguration, callback, panglePrivacyConfig);
     appOpenAd.render();
   }
 
@@ -207,7 +218,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
-        new PangleBannerAd(adConfiguration, callback, pangleInitializer, pangleBannerAdLoader);
+        new PangleBannerAd(
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     bannerAd.render();
   }
 
@@ -216,8 +228,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    interstitialAd = new PangleInterstitialAd(adConfiguration, callback);
+              callback) {
+    interstitialAd = new PangleInterstitialAd(adConfiguration, callback, panglePrivacyConfig);
     interstitialAd.render();
   }
 
@@ -225,7 +237,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    nativeAd = new PangleNativeAd(adConfiguration, callback);
+    nativeAd = new PangleNativeAd(adConfiguration, callback, panglePrivacyConfig);
     nativeAd.render();
   }
 
@@ -233,7 +245,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedAd = new PangleRewardedAd(adConfiguration, callback);
+    rewardedAd = new PangleRewardedAd(adConfiguration, callback, panglePrivacyConfig);
     rewardedAd.render();
   }
 

@@ -15,17 +15,24 @@
 package com.google.ads.mediation.pangle;
 
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
-import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
-import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 
-public class PangleAdapterUtils {
+/** Stores the COPPA setting and configures it on the Pangle SDK. */
+public class PanglePrivacyConfig {
 
   private static int coppa = -1;
 
+  private final PangleSdkWrapper pangleSdkWrapper;
+
+  public PanglePrivacyConfig(PangleSdkWrapper pangleSdkWrapper) {
+    this.pangleSdkWrapper = pangleSdkWrapper;
+  }
+
   /**
-   * Set the COPPA setting in Pangle SDK.
+   * Sets the COPPA setting in Pangle SDK.
+   *
+   * <p>Also, caches the COPPA setting in a static field.
    *
    * @param coppa an {@code Integer} value that indicates whether the app should be treated as
    *     child-directed for purposes of the COPPA. {@link
@@ -33,25 +40,25 @@ public class PangleAdapterUtils {
    *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
    *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
    */
-  public static void setCoppa(@TagForChildDirectedTreatment int coppa) {
+  public void setCoppa(@TagForChildDirectedTreatment int coppa) {
     switch (coppa) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        if (PAGSdk.isInitSuccess()) {
-          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_CHILD);
+        if (pangleSdkWrapper.isInitSuccess()) {
+          pangleSdkWrapper.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_CHILD);
         }
-        PangleAdapterUtils.coppa = 1;
+        PanglePrivacyConfig.coppa = 1;
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        if (PAGSdk.isInitSuccess()) {
-          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_NON_CHILD);
+        if (pangleSdkWrapper.isInitSuccess()) {
+          pangleSdkWrapper.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_NON_CHILD);
         }
-        PangleAdapterUtils.coppa = 0;
+        PanglePrivacyConfig.coppa = 0;
         break;
       default:
-        if (PAGSdk.isInitSuccess()) {
-          PAGConfig.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_DEFAULT);
+        if (pangleSdkWrapper.isInitSuccess()) {
+          pangleSdkWrapper.setChildDirected(PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_DEFAULT);
         }
-        PangleAdapterUtils.coppa = -1;
+        PanglePrivacyConfig.coppa = -1;
         break;
     }
   }

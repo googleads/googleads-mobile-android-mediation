@@ -27,10 +27,10 @@ import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
-import com.google.ads.mediation.pangle.PangleAdapterUtils;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
@@ -41,6 +41,9 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
 
   private final MediationAppOpenAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> adLoadCallback;
+
+  private final PanglePrivacyConfig panglePrivacyConfig;
+
   private MediationAppOpenAdCallback appOpenAdCallback;
   private PAGAppOpenAd pagAppOpenAd;
 
@@ -48,13 +51,14 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
-          mediationAdLoadCallback) {
+          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     final String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

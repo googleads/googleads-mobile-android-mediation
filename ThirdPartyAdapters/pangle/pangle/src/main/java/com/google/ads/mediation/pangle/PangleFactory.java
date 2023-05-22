@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,15 +14,17 @@
 
 package com.google.ads.mediation.pangle;
 
-import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
-import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
-import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
+import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 
-/** Loads Pangle banner ad. */
-public class PangleBannerAdLoader {
+/**
+ * A factory for creating Pangle SDK objects.
+ *
+ * <p>This factory exists to make it possible to replace Pangle SDK objects with mock objects during
+ * unit testing.
+ */
+public class PangleFactory {
 
-  public void loadAd(
-      String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
-    PAGBannerAd.loadAd(placementId, request, listener);
+  PAGConfig.Builder createPAGConfigBuilder() {
+    return new PAGConfig.Builder();
   }
 }

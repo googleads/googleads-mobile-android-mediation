@@ -15,16 +15,35 @@
 package com.google.ads.mediation.pangle;
 
 import android.content.Context;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
-import com.bytedance.sdk.openadsdk.api.init.PAGSdk.PAGInitCallback;
 
 /**
- * A wrapper for Pangle's {@link PAGSdk#init(Context, PAGConfig, PAGInitCallback)}.
+ * A wrapper for Pangle SDK's static methods that the adapter calls.
+ *
+ * <p>This wrapper exists to make it possible to mock Pangle SDK's static methods during unit
+ * testing.
  */
-public class PAGInitWrapper {
+public class PangleSdkWrapper {
 
   public void init(Context context, PAGConfig config, PAGSdk.PAGInitCallback callback) {
     PAGSdk.init(context, config, callback);
+  }
+
+  boolean isInitSuccess() {
+    return PAGSdk.isInitSuccess();
+  }
+
+  void setChildDirected(@PAGChildDirectedType int childDirectedType) {
+    PAGConfig.setChildDirected(childDirectedType);
+  }
+
+  public void loadBannerAd(
+      String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
+    PAGBannerAd.loadAd(placementId, request, listener);
   }
 }

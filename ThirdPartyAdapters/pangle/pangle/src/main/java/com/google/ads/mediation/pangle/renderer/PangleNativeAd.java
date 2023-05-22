@@ -32,7 +32,7 @@ import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
-import com.google.ads.mediation.pangle.PangleAdapterUtils;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
@@ -53,6 +53,7 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
+  private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationNativeAdCallback callback;
   private PAGNativeAd pagNativeAd;
 
@@ -60,13 +61,14 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

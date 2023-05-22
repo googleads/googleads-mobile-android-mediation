@@ -27,7 +27,7 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
-import com.google.ads.mediation.pangle.PangleAdapterUtils;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
@@ -42,6 +42,7 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
+  private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationInterstitialAdCallback interstitialAdCallback;
   private PAGInterstitialAd pagInterstitialAd;
 
@@ -49,13 +50,14 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

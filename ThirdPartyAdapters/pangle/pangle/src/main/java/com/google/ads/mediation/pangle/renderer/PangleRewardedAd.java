@@ -28,7 +28,7 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
-import com.google.ads.mediation.pangle.PangleAdapterUtils;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
@@ -44,6 +44,7 @@ public class PangleRewardedAd implements MediationRewardedAd {
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
+  private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationRewardedAdCallback rewardedAdCallback;
   private PAGRewardedAd pagRewardedAd;
 
@@ -51,13 +52,14 @@ public class PangleRewardedAd implements MediationRewardedAd {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
+              mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    PangleAdapterUtils.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
+    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
