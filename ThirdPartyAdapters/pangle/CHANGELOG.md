@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 5.2.0.3.0 (In Progress)
+#### Version 5.2.0.3.0
 - Added waterfall support for app open, banner (includes MREC), interstitial,
   rewarded and native ad formats.
 - Verified compatibility with Pangle SDK version 5.2.0.3.
