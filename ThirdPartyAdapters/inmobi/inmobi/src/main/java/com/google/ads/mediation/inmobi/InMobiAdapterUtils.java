@@ -220,7 +220,7 @@ public class InMobiAdapterUtils {
    * @param nativeAd the InMobi native ad object.
    * @return {@code true} if the native ad has all the required assets.
    */
-  public static boolean isValidNativeAd(InMobiNative nativeAd) {
+  public static boolean isValidNativeAd(InMobiNativeWrapper nativeAd) {
     return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
         && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
         && nativeAd.getAdTitle() != null;

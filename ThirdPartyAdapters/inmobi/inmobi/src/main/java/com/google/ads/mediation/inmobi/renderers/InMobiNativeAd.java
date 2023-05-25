@@ -20,9 +20,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
+import com.google.ads.mediation.inmobi.InMobiNativeWrapper;
 import com.google.ads.mediation.inmobi.InMobiUnifiedNativeAdMapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -41,17 +44,26 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
   protected final MediationNativeAdConfiguration mediationNativeAdConfiguration;
   protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       mediationAdLoadCallback;
-  private InMobiNative inMobiNative;
+  private InMobiNativeWrapper inMobiNativeWrapper;
   public MediationNativeAdCallback mediationNativeAdCallback;
+  public InMobiInitializer inMobiInitializer;
+  public InMobiAdFactory inMobiAdFactory;
+
+  @VisibleForTesting
+  public InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper;
 
   public InMobiNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback) {
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
     this.mediationNativeAdConfiguration = mediationNativeAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory =  inMobiAdFactory;
   }
 
   /** Invokes the third-party method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiNative inMobiNative);
+  protected abstract void internalLoadAd(InMobiNativeWrapper inMobiNativeWrapper);
 
   public void loadAd() {
     final Context context = mediationNativeAdConfiguration.getContext();
@@ -65,7 +77,7 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
       return;
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new InMobiInitializer.Listener() {
+    inMobiInitializer.init(context, accountID, new InMobiInitializer.Listener() {
       @Override
       public void onInitializeSuccess() {
         createAndLoadNativeAd(context, placementId);
@@ -82,9 +94,10 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
   }
 
   private void createAndLoadNativeAd(final Context context, long placementId) {
-    inMobiNative = new InMobiNative(context, placementId, InMobiNativeAd.this);
+    inMobiNativeWrapper = inMobiAdFactory.createInMobiNativeWrapper
+        (context, placementId, InMobiNativeAd.this);
 
-    inMobiNative.setVideoEventListener(new VideoEventListener() {
+    inMobiNativeWrapper.setVideoEventListener(new VideoEventListener() {
       @Override
       public void onVideoCompleted(final InMobiNative inMobiNative) {
         super.onVideoCompleted(inMobiNative);
@@ -101,12 +114,13 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
       }
     });
 
+    //TODO(b/283282359): Add tests for InMobiAdapterUtils to test the settings.
     // Set the COPPA value in InMobi SDK.
     InMobiAdapterUtils.setIsAgeRestricted(mediationNativeAdConfiguration);
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationNativeAdConfiguration.getMediationExtras());
-    internalLoadAd(inMobiNative);
+    internalLoadAd(inMobiNativeWrapper);
   }
 
   @Override
@@ -121,8 +135,9 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
       isOnlyUrl = nativeAdOptions.shouldReturnUrlsForImageAssets();
     }
 
-    InMobiUnifiedNativeAdMapper inMobiUnifiedNativeAdMapper = new InMobiUnifiedNativeAdMapper(
-        imNativeAd, isOnlyUrl, mediationAdLoadCallback, this);
+    InMobiNativeWrapper wrappedInMobiNativeAd = inMobiAdFactory.createInMobiNativeWrapper(imNativeAd);
+    inMobiUnifiedNativeAdMapper = new InMobiUnifiedNativeAdMapper(
+        wrappedInMobiNativeAd, isOnlyUrl, mediationAdLoadCallback, this);
     inMobiUnifiedNativeAdMapper.mapUnifiedNativeAd(mediationNativeAdConfiguration.getContext());
   }
 
@@ -132,9 +147,7 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
     AdError error = InMobiConstants.createSdkError(
         InMobiAdapterUtils.getMediationErrorCode(requestStatus), requestStatus.getMessage());
     Log.w(TAG, error.toString());
-    if (mediationNativeAdCallback != null) {
-      mediationAdLoadCallback.onFailure(error);
-    }
+    mediationAdLoadCallback.onFailure(error);
   }
 
   @Override

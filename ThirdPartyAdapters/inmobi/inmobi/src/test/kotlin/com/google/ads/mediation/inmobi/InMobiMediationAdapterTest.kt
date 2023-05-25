@@ -20,9 +20,12 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -62,6 +65,10 @@ class InMobiMediationAdapterTest {
   private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>()
   private val rewardedAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+  private val nativeAdConfiguration = mock<MediationNativeAdConfiguration>()
+  private val nativeAdLoadCallback =
+    mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>>()
+  private val inMobiNativeWrapper = mock<InMobiNativeWrapper>()
 
   lateinit var serverParameters: Bundle
   lateinit var adapter: InMobiMediationAdapter
@@ -86,6 +93,10 @@ class InMobiMediationAdapterTest {
 
     whenever(rewardedAdConfiguration.context).thenReturn(context)
     whenever(rewardedAdConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(nativeAdConfiguration.context).thenReturn(context)
+    whenever(nativeAdConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(inMobiAdFactory.createInMobiNativeWrapper(any(), any(), any()))
+      .thenReturn(inMobiNativeWrapper)
 
     adapter = InMobiMediationAdapter(inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper)
   }
@@ -178,18 +189,14 @@ class InMobiMediationAdapterTest {
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
-      assertThat(width)
-        .isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height)
-        .isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
     }
     val linearLayoutParamsCaptor = argumentCaptor<LinearLayout.LayoutParams>()
     verify(inMobiBannerWrapper).setLayoutParams(linearLayoutParamsCaptor.capture())
     linearLayoutParamsCaptor.firstValue.apply {
-      assertThat(width)
-        .isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height)
-        .isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
     }
     verify(inMobiAdViewHolder).addView(eq(inMobiBannerWrapper))
     val extrasCaptor = argumentCaptor<Map<String, String>>()
@@ -278,18 +285,14 @@ class InMobiMediationAdapterTest {
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
-      assertThat(width)
-        .isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height)
-        .isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
     }
     val linearLayoutParamsCaptor = argumentCaptor<LinearLayout.LayoutParams>()
     verify(inMobiBannerWrapper).setLayoutParams(linearLayoutParamsCaptor.capture())
     linearLayoutParamsCaptor.firstValue.apply {
-      assertThat(width)
-        .isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height)
-        .isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
     }
     verify(inMobiAdViewHolder).addView(eq(inMobiBannerWrapper))
     val extrasCaptor = argumentCaptor<Map<String, String>>()
@@ -431,7 +434,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
+    whenever(interstitialAdConfiguration.bidResponse).thenReturn(biddingToken)
 
     adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
 
@@ -574,7 +577,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(rewardedAdConfiguration.bidResponse).thenReturn("BiddingToken")
+    whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
 
     adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
@@ -584,6 +587,137 @@ class InMobiMediationAdapterTest {
     verify(inMobiInterstitialWrapper).setKeywords(anyString())
     val tokenCaptor = argumentCaptor<ByteArray>()
     verify(inMobiInterstitialWrapper).load(tokenCaptor.capture())
+    assertThat(tokenCaptor.firstValue).isEqualTo(biddingToken.toByteArray())
+  }
+
+  @Test
+  fun loadNativeAd_withoutAccountId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
+
+    adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      nativeAdLoadCallback
+    )
+  }
+
+  @Test
+  fun loadNativeAd_withoutPlacementId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
+
+    adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      nativeAdLoadCallback
+    )
+  }
+
+  @Test
+  fun loadNativeAd_invalidPlacementId_invokesFailureCallback() {
+    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
+
+    adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      nativeAdLoadCallback
+    )
+  }
+
+  @Test
+  fun loadNativeAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
+    val error =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
+        "InMobi SDK initialization failed"
+      )
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeError(error)
+    }
+
+    adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    verify(nativeAdLoadCallback).onFailure(error)
+  }
+
+  @Test
+  fun loadNativeAd_ifInMobiSDkInitialized_loadsNativeAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiNativeWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
+    verify(inMobiNativeWrapper).setKeywords(anyString())
+    verify(inMobiNativeWrapper).load()
+  }
+
+  @Test
+  fun loadRtbNativeAd_withoutPlacementId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
+
+    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      nativeAdLoadCallback
+    )
+  }
+
+  @Test
+  fun loadRtbNativeAd_invalidPlacementId_invokesFailureCallback() {
+    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
+
+    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      nativeAdLoadCallback
+    )
+  }
+
+  @Test
+  fun loadRtbNativeAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
+    val error =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
+        "InMobi SDK initialization failed"
+      )
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeError(error)
+    }
+
+    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    verify(nativeAdLoadCallback).onFailure(error)
+  }
+
+  @Test
+  fun loadRtbNativeAd_ifInMobiSDkInitialized_loadsNativeAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+    whenever(nativeAdConfiguration.bidResponse).thenReturn(biddingToken)
+
+    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
+
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiNativeWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_RTB)
+    verify(inMobiNativeWrapper).setKeywords(anyString())
+    val tokenCaptor = argumentCaptor<ByteArray>()
+    verify(inMobiNativeWrapper).load(tokenCaptor.capture())
     assertThat(tokenCaptor.firstValue).isEqualTo(biddingToken.toByteArray())
   }
 

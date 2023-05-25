@@ -236,7 +236,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    inMobiRtbNativeAd = new InMobiRtbNativeAd(adConfiguration, callback);
+    inMobiRtbNativeAd =
+        new InMobiRtbNativeAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
     inMobiRtbNativeAd.loadAd();
   }
 
@@ -276,7 +277,9 @@ public class InMobiMediationAdapter extends RtbAdapter {
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    inMobiWaterfallNativeAd = new InMobiWaterfallNativeAd(mediationNativeAdConfiguration, callback);
+    inMobiWaterfallNativeAd =
+        new InMobiWaterfallNativeAd(
+            mediationNativeAdConfiguration, callback, inMobiInitializer, inMobiAdFactory);
     inMobiWaterfallNativeAd.loadAd();
   }
 
