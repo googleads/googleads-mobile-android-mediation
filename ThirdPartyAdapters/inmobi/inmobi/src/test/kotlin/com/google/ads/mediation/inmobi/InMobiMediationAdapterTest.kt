@@ -76,7 +76,7 @@ class InMobiMediationAdapterTest {
   @Before
   fun setUp() {
     serverParameters = Bundle()
-    serverParameters.putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "12345")
+    serverParameters.putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, accountId)
     serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "67890")
 
     whenever(bannerAdConfiguration.context).thenReturn(context)
@@ -99,6 +99,128 @@ class InMobiMediationAdapterTest {
       .thenReturn(inMobiNativeWrapper)
 
     adapter = InMobiMediationAdapter(inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper)
+  }
+
+  @Test
+  fun getVersionInfo_ifAdapterVersionIsValid_returnsTheSameVersion() {
+    // set a valid version string.
+    val adapterVersion = "10.5.4.1"
+
+    val versionInfo = adapter.getVersionInfo(adapterVersion)
+
+    assertThat(versionInfo.majorVersion).isEqualTo(10)
+    assertThat(versionInfo.minorVersion).isEqualTo(5)
+    assertThat(versionInfo.microVersion).isEqualTo(401)
+  }
+
+  @Test
+  fun getVersionInfo_ifAdapterVersionIsInvalid_returnsZeros() {
+    // set an invalid version string.
+    val adapterVersion = "10.1.2"
+
+    val versionInfo = adapter.getVersionInfo(adapterVersion)
+
+    assertThat(versionInfo.majorVersion).isEqualTo(0)
+    assertThat(versionInfo.minorVersion).isEqualTo(0)
+    assertThat(versionInfo.microVersion).isEqualTo(0)
+  }
+
+  @Test
+  fun getSDKVersionInfo_ifInMobiSDKVersionIsValid_returnSameVersion() {
+    // set a valid InMobi SDK version.
+    whenever(inMobiSdkWrapper.version).thenReturn("10.5.4")
+
+    val versionInfo = adapter.sdkVersionInfo
+
+    assertThat(versionInfo.majorVersion).isEqualTo(10)
+    assertThat(versionInfo.minorVersion).isEqualTo(5)
+    assertThat(versionInfo.microVersion).isEqualTo(4)
+  }
+
+  @Test
+  fun getSDKVersionInfo_ifInMobiSDKVersionIsInvalid_returnsZeros() {
+    // set an invalid InMobi SDK version
+    whenever(inMobiSdkWrapper.version).thenReturn("10.4")
+
+    val versionInfo = adapter.sdkVersionInfo
+
+    assertThat(versionInfo.majorVersion).isEqualTo(0)
+    assertThat(versionInfo.minorVersion).isEqualTo(0)
+    assertThat(versionInfo.microVersion).isEqualTo(0)
+  }
+
+  @Test
+  fun initialize_ifInMobiSDKInitialized_invokesOnInitializationSucceededCallback() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(true)
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    verify(initializationCompleteCallback).onInitializationSucceeded()
+  }
+
+  @Test
+  fun initialize_ifInvalidAccountID_invokesOnInitializationFailedCallback() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    val invalidServerParameters = Bundle()
+    invalidServerParameters.putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "")
+    whenever(mediationConfiguration.serverParameters).thenReturn(invalidServerParameters)
+    // Create an AdError object so that it can be verified that this object's toString() matches the
+    // error string that's passed to the initialization callback.
+    val adError =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        InMobiMediationAdapter.ERROR_MESSAGE_FOR_INVALID_ACCOUNTID
+      )
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    val captor = argumentCaptor<String>()
+    verify(initializationCompleteCallback).onInitializationFailed(captor.capture())
+    assertThat(captor.firstValue).isEqualTo(adError.toString())
+  }
+
+  @Test
+  fun initialize_ifInMobiSDKNotInitialized_invokesInitOnInMobiInitializer() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    verify(inMobiInitializer).init(eq(context), eq(accountId), any())
+  }
+
+  @Test
+  fun initialize_ifInMobiInitializerInitSucceeded_invokesOnInitializationSucceededCallback() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    verify(initializationCompleteCallback).onInitializationSucceeded()
+  }
+
+  @Test
+  fun initialize_ifInMobiInitializerInitFailed_invokesOnInitializationFailedCallback() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
+    // Create an adError that InMobiInitializer will send when InMobi SDK initialization has failed.
+    val adError =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
+        "InMobi SDK initialization failed"
+      )
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeError(adError)
+    }
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
   }
 
   @Test
@@ -732,5 +854,6 @@ class InMobiMediationAdapterTest {
 
   companion object {
     private const val biddingToken = "BiddingToken"
+    private const val accountId = "12345"
   }
 }

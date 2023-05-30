@@ -60,6 +60,11 @@ import java.util.List;
  */
 public class InMobiMediationAdapter extends RtbAdapter {
 
+  @VisibleForTesting
+  public static final String ERROR_MESSAGE_FOR_INVALID_ACCOUNTID =
+      "Missing or invalid Account ID, configured for this ad source instance in the AdMob or Ad"
+          + " Manager UI";
+
   public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
   private InMobiWaterfallRewardedAd inMobiWaterfallRewardedAd;
@@ -105,7 +110,12 @@ public class InMobiMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    return getVersionInfo(BuildConfig.ADAPTER_VERSION);
+  }
+
+  @VisibleForTesting
+  @NonNull
+  VersionInfo getVersionInfo(String versionString) {
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -125,7 +135,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = InMobiSdk.getVersion();
+    String versionString = inMobiSdkWrapper.getVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -146,7 +156,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
       final @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (InMobiSdk.isSDKInitialized()) {
+    if (inMobiSdkWrapper.isSDKInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
@@ -164,8 +174,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
     int count = accountIDs.size();
     if (count <= 0) {
       AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid Account ID."
-              + " configured for this ad source instance in the AdMob or Ad Manager UI");
+          ERROR_MESSAGE_FOR_INVALID_ACCOUNTID);
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
@@ -179,7 +188,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
       Log.w(TAG, message);
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+    inMobiInitializer.init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
         initializationCompleteCallback.onInitializationSucceeded();
