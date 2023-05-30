@@ -13,6 +13,8 @@ ext {
     stringVersion = "10.5.4.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
+    // Jacoco version to generate code coverage data
+    jacocoVersion = '0.8.8'
 }
 
 android {
@@ -102,6 +104,9 @@ dependencies {
 
     // Mobile Ads SDK
     implementation 'com.google.android.gms:play-services-ads:22.0.0'
+
+    // Jacoco
+    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // inMobi SDK
     implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.4'
