@@ -14,13 +14,9 @@
 
 package com.google.ads.mediation.applovin;
 
-import static android.util.Log.ERROR;
-import static android.util.Log.INFO;
-import static android.util.Log.WARN;
-import static com.applovin.mediation.ApplovinAdapter.log;
-
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -97,6 +93,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
   // AppLovin SDK error domain.
   public static final String APPLOVIN_SDK_ERROR_DOMAIN = "com.applovin.sdk";
+
+  private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
@@ -183,7 +181,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     if (sdkKeys.isEmpty()) {
       AdError error =
           new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
-      log(WARN, error.getMessage());
+      Log.w(TAG, error.getMessage());
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
@@ -224,7 +222,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     String logMessage = String.format(
         "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
         versionString);
-    log(WARN, logMessage);
+    Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
@@ -243,7 +241,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     String logMessage = String.format(
         "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
-    log(WARN, logMessage);
+    Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
@@ -257,13 +255,13 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       AdError error = new AdError(ERROR_AD_FORMAT_UNSUPPORTED,
           "Requested to collect signal for unsupported native ad format. Ignoring...",
           ERROR_DOMAIN);
-      log(ERROR, error.getMessage());
+      Log.e(TAG, error.getMessage());
       signalCallbacks.onFailure(error);
       return;
     }
 
     // Check if the publisher provided extra parameters
-    log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
+    Log.i(TAG, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
     AppLovinSdk sdk =
         appLovinInitializer.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();
@@ -271,12 +269,12 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     if (TextUtils.isEmpty(bidToken)) {
       AdError error = new AdError(ERROR_EMPTY_BID_TOKEN, "Failed to generate bid token.",
           ERROR_DOMAIN);
-      log(ERROR, error.getMessage());
+      Log.e(TAG, error.getMessage());
       signalCallbacks.onFailure(error);
       return;
     }
 
-    log(INFO, "Generated bid token: " + bidToken);
+    Log.i(TAG, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
   }
 

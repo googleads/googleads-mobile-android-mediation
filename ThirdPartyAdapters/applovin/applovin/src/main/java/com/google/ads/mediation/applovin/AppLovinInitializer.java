@@ -14,12 +14,10 @@
 
 package com.google.ads.mediation.applovin;
 
-import static android.util.Log.DEBUG;
-import static com.applovin.mediation.ApplovinAdapter.log;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -36,6 +34,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AppLovinInitializer {
+
+  private static final String TAG = AppLovinInitializer.class.getSimpleName();
 
   private static AppLovinInitializer instance;
   private final AppLovinSdkWrapper appLovinSdkWrapper;
@@ -107,7 +107,7 @@ public class AppLovinInitializer {
 
     initializationStatus.put(sdkKey, INITIALIZING);
     String logMessage = String.format("Attempting to initialize SDK with SDK Key: %s", sdkKey);
-    log(DEBUG, logMessage);
+    Log.d(TAG, logMessage);
 
     AppLovinSdkSettings sdkSettings = appLovinSdkWrapper.getSdkSettings(context);
     AppLovinSdk sdk = appLovinSdkWrapper.getInstance(sdkKey, sdkSettings, context);
