@@ -161,7 +161,7 @@ public class UnityInterstitialAd
 
     final String gameId = serverParameters.getString(KEY_GAME_ID);
     placementId = serverParameters.getString(KEY_PLACEMENT_ID);
-    if (!UnityAdapter.areValidIds(gameId, placementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, placementId)) {
       AdError adError =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN);

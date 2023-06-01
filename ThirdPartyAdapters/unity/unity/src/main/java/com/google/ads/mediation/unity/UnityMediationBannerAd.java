@@ -147,7 +147,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
     bannerPlacementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
 
-    if (!UnityAdapter.areValidIds(gameId, bannerPlacementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, bannerPlacementId)) {
       AdError adError =
           new AdError(
               UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,

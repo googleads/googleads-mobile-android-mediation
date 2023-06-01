@@ -128,7 +128,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
     final String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);
-    if (!UnityAdapter.areValidIds(gameId, placementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, placementId)) {
       AdError adError =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN);

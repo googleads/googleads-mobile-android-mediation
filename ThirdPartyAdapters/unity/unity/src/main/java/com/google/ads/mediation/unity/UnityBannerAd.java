@@ -139,7 +139,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     gameId = serverParameters.getString(KEY_GAME_ID);
     bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
-    if (!UnityAdapter.areValidIds(gameId, bannerPlacementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, bannerPlacementId)) {
       sendBannerFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid server parameters.");
       return;
