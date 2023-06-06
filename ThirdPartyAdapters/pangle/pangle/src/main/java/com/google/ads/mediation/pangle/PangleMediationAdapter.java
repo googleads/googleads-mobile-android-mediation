@@ -258,6 +258,11 @@ public class PangleMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
+    setGDPRConsent(gdpr, new PangleSdkWrapper());
+  }
+
+  @VisibleForTesting
+  static void setGDPRConsent(@PAGGDPRConsentType int gdpr, PangleSdkWrapper pangleSdkWrapper) {
     if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
         && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
         && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
@@ -265,8 +270,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (PAGSdk.isInitSuccess()) {
-      PAGConfig.setGDPRConsent(gdpr);
+    if (pangleSdkWrapper.isInitSuccess()) {
+      pangleSdkWrapper.setGdprConsent(gdpr);
     }
     PangleMediationAdapter.gdpr = gdpr;
   }
@@ -284,6 +289,11 @@ public class PangleMediationAdapter extends RtbAdapter {
    *             documentation</a> for more information about what values may be provided.
    */
   public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
+    setDoNotSell(ccpa, new PangleSdkWrapper());
+  }
+
+  @VisibleForTesting
+  static void setDoNotSell(@PAGDoNotSellType int ccpa, PangleSdkWrapper pangleSdkWrapper) {
     if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
         && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL
         && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT) {
@@ -291,8 +301,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, "Invalid CCPA value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (PAGSdk.isInitSuccess()) {
-      PAGConfig.setDoNotSell(ccpa);
+    if (pangleSdkWrapper.isInitSuccess()) {
+      pangleSdkWrapper.setDoNotSell(ccpa);
     }
     PangleMediationAdapter.ccpa = ccpa;
   }

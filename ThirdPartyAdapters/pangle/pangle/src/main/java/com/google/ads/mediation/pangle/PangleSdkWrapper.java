@@ -16,6 +16,8 @@ package com.google.ads.mediation.pangle;
 
 import android.content.Context;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
@@ -42,8 +44,16 @@ public class PangleSdkWrapper {
     PAGConfig.setChildDirected(childDirectedType);
   }
 
-  public void loadBannerAd(String placementId, PAGBannerRequest request,
-      PAGBannerAdLoadListener listener) {
+  void setGdprConsent(@PAGGDPRConsentType int gdpr) {
+    PAGConfig.setGDPRConsent(gdpr);
+  }
+
+  void setDoNotSell(@PAGDoNotSellType int ccpa) {
+    PAGConfig.setDoNotSell(ccpa);
+  }
+
+  public void loadBannerAd(
+      String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
     PAGBannerAd.loadAd(placementId, request, listener);
   }
 }
