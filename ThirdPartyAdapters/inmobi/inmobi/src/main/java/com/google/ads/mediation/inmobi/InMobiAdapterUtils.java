@@ -23,14 +23,13 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
-import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
@@ -170,7 +169,9 @@ public class InMobiAdapterUtils {
     }
     return map;
   }
-  private static AgeGroup getAgeGroup(String value) {
+
+  @VisibleForTesting
+  static AgeGroup getAgeGroup(String value) {
     switch (value) {
       case InMobiNetworkValues.ABOVE_65:
         return AgeGroup.ABOVE_65;
@@ -192,7 +193,8 @@ public class InMobiAdapterUtils {
     return null;
   }
 
-  private static Education getEducation(String value) {
+  @VisibleForTesting
+  static Education getEducation(String value) {
     switch (value) {
       case InMobiNetworkValues.EDUCATION_COLLEGEORGRADUATE:
         return Education.COLLEGE_OR_GRADUATE;
@@ -204,7 +206,8 @@ public class InMobiAdapterUtils {
     return null;
   }
 
-  private static LogLevel getLogLevel(String value) {
+  @VisibleForTesting
+  static LogLevel getLogLevel(String value) {
     if (value.equals(InMobiNetworkValues.LOGLEVEL_DEBUG)) {
       return LogLevel.DEBUG;
     }
