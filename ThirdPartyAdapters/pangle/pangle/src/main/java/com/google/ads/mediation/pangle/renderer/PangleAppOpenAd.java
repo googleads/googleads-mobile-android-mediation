@@ -50,8 +50,9 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
   public PangleAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
-          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+          MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.panglePrivacyConfig = panglePrivacyConfig;
@@ -97,8 +98,7 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
 
                       @Override
                       public void onAdLoaded(PAGAppOpenAd appOpenAd) {
-                        appOpenAdCallback =
-                            adLoadCallback.onSuccess(PangleAppOpenAd.this);
+                        appOpenAdCallback = adLoadCallback.onSuccess(PangleAppOpenAd.this);
                         pagAppOpenAd = appOpenAd;
                       }
                     });
@@ -114,29 +114,30 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    pagAppOpenAd.setAdInteractionListener(new PAGAppOpenAdInteractionListener() {
-      @Override
-      public void onAdShowed() {
-        if (appOpenAdCallback != null) {
-          appOpenAdCallback.onAdOpened();
-          appOpenAdCallback.reportAdImpression();
-        }
-      }
+    pagAppOpenAd.setAdInteractionListener(
+        new PAGAppOpenAdInteractionListener() {
+          @Override
+          public void onAdShowed() {
+            if (appOpenAdCallback != null) {
+              appOpenAdCallback.onAdOpened();
+              appOpenAdCallback.reportAdImpression();
+            }
+          }
 
-      @Override
-      public void onAdClicked() {
-        if (appOpenAdCallback != null) {
-          appOpenAdCallback.reportAdClicked();
-        }
-      }
+          @Override
+          public void onAdClicked() {
+            if (appOpenAdCallback != null) {
+              appOpenAdCallback.reportAdClicked();
+            }
+          }
 
-      @Override
-      public void onAdDismissed() {
-        if (appOpenAdCallback != null) {
-          appOpenAdCallback.onAdClosed();
-        }
-      }
-    });
+          @Override
+          public void onAdDismissed() {
+            if (appOpenAdCallback != null) {
+              appOpenAdCallback.onAdClosed();
+            }
+          }
+        });
     if (context instanceof Activity) {
       pagAppOpenAd.show((Activity) context);
       return;

@@ -227,9 +227,10 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    interstitialAd = new PangleInterstitialAd(adConfiguration, callback, panglePrivacyConfig);
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialAd =
+        new PangleInterstitialAd(adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
     interstitialAd.render();
   }
 
@@ -237,7 +238,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    nativeAd = new PangleNativeAd(adConfiguration, callback, panglePrivacyConfig);
+    nativeAd =
+        new PangleNativeAd(adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
     nativeAd.render();
   }
 
@@ -245,7 +247,8 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedAd = new PangleRewardedAd(adConfiguration, callback, panglePrivacyConfig);
+    rewardedAd =
+        new PangleRewardedAd(adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
     rewardedAd.render();
   }
 

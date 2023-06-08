@@ -28,10 +28,10 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -44,6 +44,7 @@ public class PangleRewardedAd implements MediationRewardedAd {
   private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
+  private final PangleInitializer pangleInitializer;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationRewardedAdCallback rewardedAdCallback;
   private PAGRewardedAd pagRewardedAd;
@@ -51,10 +52,13 @@ public class PangleRewardedAd implements MediationRewardedAd {
   public PangleRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -76,40 +80,39 @@ public class PangleRewardedAd implements MediationRewardedAd {
     String bidResponse = adConfiguration.getBidResponse();
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
-        .initialize(
-            context,
-            appId,
-            new Listener() {
-              @Override
-              public void onInitializeSuccess() {
-                PAGRewardedRequest request = new PAGRewardedRequest();
-                request.setAdString(bidResponse);
-                PAGRewardedAd.loadAd(
-                    placementId,
-                    request,
-                    new PAGRewardedAdLoadListener() {
-                      @Override
-                      public void onError(int errorCode, String errorMessage) {
-                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-                        Log.w(TAG, error.toString());
-                        adLoadCallback.onFailure(error);
-                      }
+    pangleInitializer.initialize(
+        context,
+        appId,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            PAGRewardedRequest request = new PAGRewardedRequest();
+            request.setAdString(bidResponse);
+            PAGRewardedAd.loadAd(
+                placementId,
+                request,
+                new PAGRewardedAdLoadListener() {
+                  @Override
+                  public void onError(int errorCode, String errorMessage) {
+                    AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                    Log.w(TAG, error.toString());
+                    adLoadCallback.onFailure(error);
+                  }
 
-                      @Override
-                      public void onAdLoaded(PAGRewardedAd rewardedAd) {
-                        rewardedAdCallback = adLoadCallback.onSuccess(PangleRewardedAd.this);
-                        pagRewardedAd = rewardedAd;
-                      }
-                    });
-              }
+                  @Override
+                  public void onAdLoaded(PAGRewardedAd rewardedAd) {
+                    rewardedAdCallback = adLoadCallback.onSuccess(PangleRewardedAd.this);
+                    pagRewardedAd = rewardedAd;
+                  }
+                });
+          }
 
-              @Override
-              public void onInitializeError(@NonNull AdError error) {
-                Log.w(TAG, error.toString());
-                adLoadCallback.onFailure(error);
-              }
-            });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
+        });
   }
 
   @Override

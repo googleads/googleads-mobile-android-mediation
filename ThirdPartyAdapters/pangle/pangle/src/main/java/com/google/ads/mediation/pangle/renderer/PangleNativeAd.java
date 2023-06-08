@@ -32,10 +32,10 @@ import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -53,6 +53,7 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
+  private final PangleInitializer pangleInitializer;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationNativeAdCallback callback;
   private PAGNativeAd pagNativeAd;
@@ -60,10 +61,13 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   public PangleNativeAd(
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+          MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -85,40 +89,39 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
     String bidResponse = adConfiguration.getBidResponse();
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
-        .initialize(
-            context,
-            appId,
-            new Listener() {
-              @Override
-              public void onInitializeSuccess() {
-                PAGNativeRequest request = new PAGNativeRequest();
-                request.setAdString(bidResponse);
-                PAGNativeAd.loadAd(
-                    placementId,
-                    request,
-                    new PAGNativeAdLoadListener() {
-                      @Override
-                      public void onError(int errorCode, String message) {
-                        AdError error = PangleConstants.createSdkError(errorCode, message);
-                        Log.w(TAG, error.toString());
-                        adLoadCallback.onFailure(error);
-                      }
+    pangleInitializer.initialize(
+        context,
+        appId,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            PAGNativeRequest request = new PAGNativeRequest();
+            request.setAdString(bidResponse);
+            PAGNativeAd.loadAd(
+                placementId,
+                request,
+                new PAGNativeAdLoadListener() {
+                  @Override
+                  public void onError(int errorCode, String message) {
+                    AdError error = PangleConstants.createSdkError(errorCode, message);
+                    Log.w(TAG, error.toString());
+                    adLoadCallback.onFailure(error);
+                  }
 
-                      @Override
-                      public void onAdLoaded(PAGNativeAd pagNativeAd) {
-                        mapNativeAd(pagNativeAd);
-                        callback = adLoadCallback.onSuccess(PangleNativeAd.this);
-                      }
-                    });
-              }
+                  @Override
+                  public void onAdLoaded(PAGNativeAd pagNativeAd) {
+                    mapNativeAd(pagNativeAd);
+                    callback = adLoadCallback.onSuccess(PangleNativeAd.this);
+                  }
+                });
+          }
 
-              @Override
-              public void onInitializeError(@NonNull AdError error) {
-                Log.w(TAG, error.toString());
-                adLoadCallback.onFailure(error);
-              }
-            });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
+        });
   }
 
   private void mapNativeAd(PAGNativeAd ad) {

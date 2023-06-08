@@ -27,10 +27,10 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -42,6 +42,7 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
+  private final PangleInitializer pangleInitializer;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationInterstitialAdCallback interstitialAdCallback;
   private PAGInterstitialAd pagInterstitialAd;
@@ -49,10 +50,13 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   public PangleInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback, PanglePrivacyConfig panglePrivacyConfig) {
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -74,41 +78,39 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
     String bidResponse = adConfiguration.getBidResponse();
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
-        .initialize(
-            context,
-            appId,
-            new Listener() {
-              @Override
-              public void onInitializeSuccess() {
-                PAGInterstitialRequest request = new PAGInterstitialRequest();
-                request.setAdString(bidResponse);
-                PAGInterstitialAd.loadAd(
-                    placementId,
-                    request,
-                    new PAGInterstitialAdLoadListener() {
-                      @Override
-                      public void onError(int errorCode, String errorMessage) {
-                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-                        Log.w(TAG, error.toString());
-                        adLoadCallback.onFailure(error);
-                      }
+    pangleInitializer.initialize(
+        context,
+        appId,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            PAGInterstitialRequest request = new PAGInterstitialRequest();
+            request.setAdString(bidResponse);
+            PAGInterstitialAd.loadAd(
+                placementId,
+                request,
+                new PAGInterstitialAdLoadListener() {
+                  @Override
+                  public void onError(int errorCode, String errorMessage) {
+                    AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                    Log.w(TAG, error.toString());
+                    adLoadCallback.onFailure(error);
+                  }
 
-                      @Override
-                      public void onAdLoaded(PAGInterstitialAd interstitialAd) {
-                        interstitialAdCallback =
-                            adLoadCallback.onSuccess(PangleInterstitialAd.this);
-                        pagInterstitialAd = interstitialAd;
-                      }
-                    });
-              }
+                  @Override
+                  public void onAdLoaded(PAGInterstitialAd interstitialAd) {
+                    interstitialAdCallback = adLoadCallback.onSuccess(PangleInterstitialAd.this);
+                    pagInterstitialAd = interstitialAd;
+                  }
+                });
+          }
 
-              @Override
-              public void onInitializeError(@NonNull AdError error) {
-                Log.w(TAG, error.toString());
-                adLoadCallback.onFailure(error);
-              }
-            });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
+        });
   }
 
   @Override

@@ -31,10 +31,10 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
+import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -63,11 +63,11 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   public PangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-          mediationAdLoadCallback,
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
-      PanglePrivacyConfig panglePrivacyConfig) {
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
