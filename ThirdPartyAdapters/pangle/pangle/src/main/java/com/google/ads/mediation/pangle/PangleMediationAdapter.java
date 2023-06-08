@@ -24,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
-import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
@@ -101,9 +100,9 @@ public class PangleMediationAdapter extends RtbAdapter {
     // The user data needs to be set for it to be included in the signals.
     Bundle networkExtras = rtbSignalData.getNetworkExtras();
     if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
-      PAGConfig.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
+      pangleSdkWrapper.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
     }
-    String biddingToken = PAGSdk.getBiddingToken();
+    String biddingToken = pangleSdkWrapper.getBiddingToken();
     signalCallbacks.onSuccess(biddingToken);
   }
 

@@ -52,6 +52,14 @@ public class PangleSdkWrapper {
     PAGConfig.setDoNotSell(ccpa);
   }
 
+  void setUserData(String userData) {
+    PAGConfig.setUserData(userData);
+  }
+
+  String getBiddingToken() {
+    return PAGSdk.getBiddingToken();
+  }
+
   public void loadBannerAd(
       String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
     PAGBannerAd.loadAd(placementId, request, listener);
