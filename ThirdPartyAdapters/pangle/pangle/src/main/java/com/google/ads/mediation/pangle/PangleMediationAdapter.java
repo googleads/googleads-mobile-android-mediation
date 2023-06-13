@@ -67,6 +67,7 @@ public class PangleMediationAdapter extends RtbAdapter {
 
   private final PangleInitializer pangleInitializer;
   private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
 
   private PangleAppOpenAd appOpenAd;
@@ -79,8 +80,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   private static int ccpa = -1;
 
   PangleMediationAdapter() {
-    this.pangleInitializer = PangleInitializer.getInstance();
-    this.pangleSdkWrapper = new PangleSdkWrapper();
+    pangleInitializer = PangleInitializer.getInstance();
+    pangleSdkWrapper = new PangleSdkWrapper();
+    pangleFactory = new PangleFactory();
     panglePrivacyConfig = new PanglePrivacyConfig(pangleSdkWrapper);
   }
 
@@ -88,9 +90,11 @@ public class PangleMediationAdapter extends RtbAdapter {
   PangleMediationAdapter(
       PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper,
+      PangleFactory pangleFactory,
       PanglePrivacyConfig panglePrivacyConfig) {
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -218,7 +222,12 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
         new PangleBannerAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration,
+            callback,
+            pangleInitializer,
+            pangleSdkWrapper,
+            pangleFactory,
+            panglePrivacyConfig);
     bannerAd.render();
   }
 

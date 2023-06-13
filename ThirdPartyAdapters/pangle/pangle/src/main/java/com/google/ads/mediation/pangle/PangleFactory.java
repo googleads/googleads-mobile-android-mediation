@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.pangle;
 
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 
 /**
@@ -26,5 +28,9 @@ public class PangleFactory {
 
   PAGConfig.Builder createPAGConfigBuilder() {
     return new PAGConfig.Builder();
+  }
+
+  public PAGBannerRequest createPagBannerRequest(PAGBannerSize pagBannerSize) {
+    return new PAGBannerRequest(pagBannerSize);
   }
 }

@@ -32,6 +32,7 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
@@ -56,6 +57,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
   private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationBannerAdCallback bannerAdCallback;
   private FrameLayout wrappedAdView;
@@ -67,11 +69,13 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PangleFactory pangleFactory,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -118,7 +122,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
             wrappedAdView = new FrameLayout(context);
 
             PAGBannerRequest request =
-                new PAGBannerRequest(
+                pangleFactory.createPagBannerRequest(
                     new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
             request.setAdString(bidResponse);
             pangleSdkWrapper.loadBannerAd(
