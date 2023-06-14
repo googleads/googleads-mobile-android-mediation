@@ -45,6 +45,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
 
@@ -103,13 +104,9 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
-            supportedSizes.add(new AdSize(320, 50));
-            supportedSizes.add(new AdSize(300, 250));
-            supportedSizes.add(new AdSize(728, 90));
             AdSize closestSize =
                 MediationUtils.findClosestSize(
-                    context, adConfiguration.getAdSize(), supportedSizes);
+                    context, adConfiguration.getAdSize(), getSupportedBannerSizes());
             if (closestSize == null) {
               AdError error =
                   PangleConstants.createAdapterError(
@@ -176,5 +173,14 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   @Override
   public void onAdDismissed() {
     // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  @VisibleForTesting
+  static List<AdSize> getSupportedBannerSizes() {
+    ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
+    supportedSizes.add(new AdSize(320, 50));
+    supportedSizes.add(new AdSize(300, 250));
+    supportedSizes.add(new AdSize(728, 90));
+    return supportedSizes;
   }
 }
