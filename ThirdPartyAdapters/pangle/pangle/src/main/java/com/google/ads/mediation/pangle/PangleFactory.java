@@ -19,10 +19,14 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
+import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 
 /**
  * A factory for creating objects for Pangle adapter.
@@ -54,6 +58,20 @@ public class PangleFactory {
         pangleInitializer,
         pangleSdkWrapper,
         this,
+        panglePrivacyConfig);
+  }
+
+  PangleInterstitialAd createPangleInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+    return new PangleInterstitialAd(
+        mediationInterstitialAdConfiguration,
+        mediationAdLoadCallback,
+        pangleInitializer,
         panglePrivacyConfig);
   }
 }
