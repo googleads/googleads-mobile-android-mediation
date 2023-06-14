@@ -14,14 +14,20 @@
 
 package com.google.ads.mediation.pangle;
 
+import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 /**
- * A factory for creating Pangle SDK objects.
+ * A factory for creating objects for Pangle adapter.
  *
- * <p>This factory exists to make it possible to replace Pangle SDK objects with mock objects during
+ * <p>This factory exists to make it possible to replace the real objects with mock objects during
  * unit testing.
  */
 public class PangleFactory {
@@ -32,5 +38,22 @@ public class PangleFactory {
 
   public PAGBannerRequest createPagBannerRequest(PAGBannerSize pagBannerSize) {
     return new PAGBannerRequest(pagBannerSize);
+  }
+
+  PangleBannerAd createPangleBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+    return new PangleBannerAd(
+        mediationBannerAdConfiguration,
+        mediationAdLoadCallback,
+        pangleInitializer,
+        pangleSdkWrapper,
+        this,
+        panglePrivacyConfig);
   }
 }

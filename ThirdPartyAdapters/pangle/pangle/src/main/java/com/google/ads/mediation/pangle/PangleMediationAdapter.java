@@ -221,13 +221,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
-        new PangleBannerAd(
-            adConfiguration,
-            callback,
-            pangleInitializer,
-            pangleSdkWrapper,
-            pangleFactory,
-            panglePrivacyConfig);
+        pangleFactory.createPangleBannerAd(
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     bannerAd.render();
   }
 
