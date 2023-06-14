@@ -60,7 +60,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationBannerAdCallback bannerAdCallback;
-  private FrameLayout wrappedAdView;
+  @VisibleForTesting FrameLayout wrappedAdView;
 
   public PangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
