@@ -2,6 +2,8 @@ package com.google.ads.mediation.inmobi
 
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.sdk.InMobiSdk
 import org.junit.Before
@@ -9,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -48,6 +51,42 @@ class InMobiAdapterUtilsTest {
     val placementID = InMobiAdapterUtils.getPlacementId(serverParameters)
 
     assertThat(placementID).isEqualTo(67890L)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenCOPPASet_setsAgeRestrictedTrueOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(true)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenCOPPANotSet_setsAgeRestrictedFalseOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(false)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenCOPPANotSpecified_setsAgeRestrictedFalseOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(false)
   }
 
   @Test
@@ -238,6 +277,12 @@ class InMobiAdapterUtilsTest {
       )
 
     assertThat(adError).isNull()
+  }
+
+  private fun setCOPPAOnMobileAdsRequestConfiguration(value: Int) {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration().toBuilder().setTagForChildDirectedTreatment(value).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
   }
 
   private fun setupMobiNativeAdWrapper(): Unit {

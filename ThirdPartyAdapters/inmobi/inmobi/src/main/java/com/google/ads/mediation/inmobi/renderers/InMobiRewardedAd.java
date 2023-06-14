@@ -123,7 +123,7 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
     inMobiRewardedAdWrapper = inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, InMobiRewardedAd.this);
 
     // Set the COPPA value in InMobi SDK.
-    InMobiAdapterUtils.setIsAgeRestricted(mediationRewardedAdConfiguration);
+    InMobiAdapterUtils.setIsAgeRestricted();
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationRewardedAdConfiguration.getMediationExtras());

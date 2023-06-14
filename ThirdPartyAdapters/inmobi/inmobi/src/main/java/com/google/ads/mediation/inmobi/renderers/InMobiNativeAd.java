@@ -114,9 +114,8 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
       }
     });
 
-    //TODO(b/283282359): Add tests for InMobiAdapterUtils to test the settings.
     // Set the COPPA value in InMobi SDK.
-    InMobiAdapterUtils.setIsAgeRestricted(mediationNativeAdConfiguration);
+    InMobiAdapterUtils.setIsAgeRestricted();
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationNativeAdConfiguration.getMediationExtras());

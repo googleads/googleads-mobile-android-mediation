@@ -22,4 +22,8 @@ public class InMobiSdkWrapper {
   public boolean isSDKInitialized() {
     return InMobiSdk.isSDKInitialized();
   }
+
+  public void setIsAgeRestricted(Boolean isAgeRestricted) {
+    InMobiSdk.setIsAgeRestricted(isAgeRestricted);
+  }
 }

@@ -113,7 +113,7 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
 
   private void createAndLoadBannerAd(final Context context, final long placementId) {
     // Set the COPPA value in inMobi SDK
-    InMobiAdapterUtils.setIsAgeRestricted(mediationBannerAdConfiguration);
+    InMobiAdapterUtils.setIsAgeRestricted();
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationBannerAdConfiguration.getMediationExtras());

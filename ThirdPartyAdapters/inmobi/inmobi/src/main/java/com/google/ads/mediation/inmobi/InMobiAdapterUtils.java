@@ -27,6 +27,7 @@ import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -35,7 +36,6 @@ import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 
@@ -139,35 +139,20 @@ public class InMobiAdapterUtils {
     }
   }
 
-  // todo(imansi): update where COPPA value is read from here
-  public static void setIsAgeRestricted(
-      @NonNull MediationAdConfiguration mediationAdConfiguration) {
+  @VisibleForTesting
+  static void setIsAgeRestricted(InMobiSdkWrapper inMobiSdkWrapper) {
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
     // be `false`.
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
+    if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      InMobiSdk.setIsAgeRestricted(true);
+      inMobiSdkWrapper.setIsAgeRestricted(true);
     } else {
-      InMobiSdk.setIsAgeRestricted(false);
+      inMobiSdkWrapper.setIsAgeRestricted(false);
     }
   }
 
-  // Creates the InMobiParameter map only for non refactored waterfall code
-  // todo(imansi): remove this method after all formats are refactored
-  public static HashMap<String, String> createInMobiParameterMap(
-      @NonNull MediationAdConfiguration mediationAdConfiguration) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put(THIRD_PARTY_KEY, PROTOCOL_WATERFALL);
-
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `0`.
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put(COPPA, "1");
-    } else {
-      map.put(COPPA, "0");
-    }
-    return map;
+  public static void setIsAgeRestricted() {
+    setIsAgeRestricted(new InMobiSdkWrapper());
   }
 
   @VisibleForTesting
