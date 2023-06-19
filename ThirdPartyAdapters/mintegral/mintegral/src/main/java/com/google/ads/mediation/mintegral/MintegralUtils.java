@@ -35,7 +35,7 @@ public class MintegralUtils {
    * Determines whether the ad should be muted based on the provided network extras.
    */
   public static boolean shouldMuteAudio(@NonNull Bundle networkExtras) {
-    return networkExtras != null && networkExtras.getBoolean(MintegralExtras.Keys.MUTE_AUDIO);
+    return networkExtras.getBoolean(MintegralExtras.Keys.MUTE_AUDIO);
   }
 
   @Nullable
@@ -77,17 +77,15 @@ public class MintegralUtils {
     return null;
   }
 
-  public static int convertDipToPixel(Context context, float dipValue) {
-    if (context == null){
-      return 0;
-    }
+  public static int convertDipToPixel(@NonNull Context context, float dipValue) {
     Resources resources = context.getResources();
-    if (resources == null){
+    if (resources == null) {
       return 0;
     }
-    // Convert the dps to pixels, based on density scale
+    // Convert dip units to pixel units based on density scale, see Android developer documentation:
+    // https://developer.android.com/training/multiscreen/screendensities#dips-pels.
     return (int) TypedValue.applyDimension(COMPLEX_UNIT_DIP, dipValue + 0.5f,
-            resources.getDisplayMetrics());
+        resources.getDisplayMetrics());
   }
 
 }

@@ -1,6 +1,43 @@
 ## Pangle Android Mediation Adapter Changelog
 
-### Version 5.1.0.6.0
+#### Version 5.2.0.6.0
+- Verified compatibility with Pangle SDK version 5.2.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Pangle SDK version 5.2.0.6.
+
+#### Version 5.2.0.5.0
+- Verified compatibility with Pangle SDK version 5.2.0.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Pangle SDK version 5.2.0.5.
+
+#### Version 5.2.0.3.0
+- Added waterfall support for app open, banner (includes MREC), interstitial,
+  rewarded and native ad formats.
+- Verified compatibility with Pangle SDK version 5.2.0.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.2.0.3.
+
+#### Version 5.1.0.9.0
+- Verified compatibility with Pangle SDK version 5.1.0.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.1.0.9.
+
+#### Version 5.1.0.8.0
+- Verified compatibility with Pangle SDK version 5.1.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.1.0.8.
+
+#### Version 5.1.0.6.0
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 

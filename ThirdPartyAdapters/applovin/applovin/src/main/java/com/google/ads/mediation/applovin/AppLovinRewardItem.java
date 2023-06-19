@@ -19,6 +19,9 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 
 public final class AppLovinRewardItem implements RewardItem {
 
+  public static final String KEY_CURRENCY = "currency";
+  public static final String KEY_AMOUNT = "amount";
+
   private final int amount;
   private final String type;
 

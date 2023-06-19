@@ -1,14 +1,17 @@
 package com.google.ads.mediation.inmobi.waterfall;
 
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
+import com.google.ads.mediation.inmobi.InMobiBannerWrapper;
 import com.google.ads.mediation.inmobi.InMobiExtras;
+import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
+import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.renderers.InMobiBannerAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.inmobi.ads.InMobiBanner;
 
 public class InMobiWaterfallBannerAd extends InMobiBannerAd {
 
@@ -16,14 +19,20 @@ public class InMobiWaterfallBannerAd extends InMobiBannerAd {
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
-    super(mediationBannerAdConfiguration, mediationAdLoadCallback);
+              mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
+    super(
+        mediationBannerAdConfiguration,
+        mediationAdLoadCallback,
+        inMobiInitializer,
+        inMobiAdFactory);
   }
 
   @Override
-  public void internalLoadAd(InMobiBanner adView) {
+  public void internalLoadAd(InMobiBannerWrapper adView) {
     InMobiExtras inMobiExtras =
-        InMobiAdapterUtils.buildInMobiExtras(
+        InMobiExtrasBuilder.build(
             mediationBannerAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     adView.setExtras(inMobiExtras.getParameterMap());

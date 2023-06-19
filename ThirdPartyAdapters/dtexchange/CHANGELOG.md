@@ -9,7 +9,7 @@ Built and tested with:
 - DT Exchange SDK version 8.2.3.
 
 #### Version 8.2.2.1
-- Added support for passing `muteAudio` key in mediation extra to mute interstitial ads.
+- Added support for passing `muteVideo` key in mediation extra to mute interstitial ads.
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.5.0.

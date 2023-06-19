@@ -24,7 +24,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.inmobi.InMobiAdFactory;
+import com.google.ads.mediation.inmobi.InMobiAdViewHolder;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
+import com.google.ads.mediation.inmobi.InMobiBannerWrapper;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.android.gms.ads.AdError;
@@ -44,99 +47,113 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   protected final MediationBannerAdConfiguration mediationBannerAdConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
-  private FrameLayout wrappedAdView;
   private MediationBannerAdCallback mediationBannerAdCallback;
+  private InMobiAdViewHolder inMobiAdViewHolder;
+  private InMobiInitializer inMobiInitializer;
+  private InMobiAdFactory inMobiAdFactory;
 
-  public InMobiBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+  public InMobiBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback,
+      @NonNull InMobiInitializer inMobiInitializer,
+      @NonNull InMobiAdFactory inMobiAdFactory) {
     this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the InMobi SDK method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiBanner adView);
+  protected abstract void internalLoadAd(InMobiBannerWrapper adView);
 
   public void loadAd() {
     final Context context = mediationBannerAdConfiguration.getContext();
-    final Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
-
-    final AdSize inMobiMediationAdSize = InMobiAdapterUtils.findClosestBannerSize(context,
-        mediationBannerAdConfiguration.getAdSize());
-    if (inMobiMediationAdSize == null) {
-      AdError mismatchError = InMobiConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH,
-          String.format("The requested banner size: %s is not supported by InMobi SDK.",
-              mediationBannerAdConfiguration.getAdSize()));
-      Log.e(TAG, mismatchError.toString());
-      mediationAdLoadCallback.onFailure(mismatchError);
+    final AdSize closestBannerSize =
+        InMobiAdapterUtils.findClosestBannerSize(
+            context, mediationBannerAdConfiguration.getAdSize());
+    if (closestBannerSize == null) {
+      AdError bannerSizeError =
+          InMobiConstants.createAdapterError(
+              ERROR_BANNER_SIZE_MISMATCH,
+              String.format(
+                  "The requested banner size: %s is not supported by InMobi SDK.",
+                  mediationBannerAdConfiguration.getAdSize()));
+      Log.e(TAG, bannerSizeError.toString());
+      mediationAdLoadCallback.onFailure(bannerSizeError);
       return;
     }
 
-    final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    final Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
+    final String accountId = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
     final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
+    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountId, placementId);
     if (error != null) {
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new InMobiInitializer.Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        createAndLoadBannerAd(context, placementId);
-      }
+    inMobiInitializer.init(
+        context,
+        accountId,
+        new InMobiInitializer.Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            createAndLoadBannerAd(context, placementId);
+          }
 
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.toString());
-        if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(error);
-        }
-      }
-    });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            mediationAdLoadCallback.onFailure(error);
+          }
+        });
   }
 
-  private void createAndLoadBannerAd(Context context, long placementId) {
-    FrameLayout.LayoutParams wrappedLayoutParams = new FrameLayout.LayoutParams(
-        mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-        mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context));
+  private void createAndLoadBannerAd(final Context context, final long placementId) {
+    // Set the COPPA value in inMobi SDK
+    InMobiAdapterUtils.setIsAgeRestricted();
 
-    InMobiBanner adView = new InMobiBanner(context, placementId);
+    InMobiAdapterUtils.configureGlobalTargeting(
+        mediationBannerAdConfiguration.getMediationExtras());
 
+    InMobiBannerWrapper inMobiBannerWrapper =
+        inMobiAdFactory.createInMobiBannerWrapper(context, placementId);
     // Turn off automatic refresh.
-    adView.setEnableAutoRefresh(false);
+    inMobiBannerWrapper.setEnableAutoRefresh(false);
     // Turn off the animation.
-    adView.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
+    inMobiBannerWrapper.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
 
-    // Set the COPPA value in InMobi SDK
-    InMobiAdapterUtils.setIsAgeRestricted(mediationBannerAdConfiguration);
-
-    Bundle mediationExtras = mediationBannerAdConfiguration.getMediationExtras();
-
-    adView.setListener(InMobiBannerAd.this);
+    inMobiBannerWrapper.setListener(InMobiBannerAd.this);
 
     /*
      * Wrap InMobi's ad view to limit the dependency on its methods. For example, the method
      * that specifies the width and height for the ad view.
      */
-    wrappedAdView = new FrameLayout(context);
-    wrappedAdView.setLayoutParams(wrappedLayoutParams);
-    adView.setLayoutParams(new LinearLayout.LayoutParams(
-        mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-        mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
-    wrappedAdView.addView(adView);
-    InMobiAdapterUtils.configureGlobalTargeting(mediationExtras);
-    internalLoadAd(adView);
+    inMobiAdViewHolder = inMobiAdFactory.createInMobiAdViewHolder(context);
+    inMobiAdViewHolder.setLayoutParams(
+        new FrameLayout.LayoutParams(
+            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
+            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+
+    inMobiBannerWrapper.setLayoutParams(
+        new LinearLayout.LayoutParams(
+            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
+            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+    inMobiAdViewHolder.addView(inMobiBannerWrapper);
+
+    internalLoadAd(inMobiBannerWrapper);
   }
 
   @NonNull
   @Override
   public View getView() {
-    return wrappedAdView;
+    return inMobiAdViewHolder.getFrameLayout();
   }
 
   @Override
   public void onUserLeftApplication(@NonNull InMobiBanner inMobiBanner) {
-    Log.d(TAG, "InMobi banner ad has caused the user to leave the application.");
     mediationBannerAdCallback.onAdLeftApplication();
   }
 
@@ -146,12 +163,9 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   }
 
   @Override
-  public void onAdLoadSucceeded(@NonNull InMobiBanner inMobiBanner,
-      @NonNull AdMetaInfo adMetaInfo) {
-    Log.d(TAG, "InMobi banner ad has been loaded.");
-    if (mediationAdLoadCallback != null) {
-      mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this);
-    }
+  public void onAdLoadSucceeded(
+      @NonNull InMobiBanner inMobiBanner, @NonNull AdMetaInfo adMetaInfo) {
+    mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this);
   }
 
   @Override
@@ -160,13 +174,12 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
     AdError error = InMobiConstants.createSdkError(
         InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
         inMobiAdRequestStatus.getMessage());
-    Log.e(TAG, error.toString());
+    Log.w(TAG, error.toString());
     mediationAdLoadCallback.onFailure(error);
   }
 
   @Override
   public void onAdDisplayed(@NonNull InMobiBanner inMobiBanner) {
-    Log.d(TAG, "InMobi banner ad opened a full screen view.");
     if (mediationBannerAdCallback != null) {
       mediationBannerAdCallback.onAdOpened();
     }
@@ -174,7 +187,6 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
 
   @Override
   public void onAdDismissed(@NonNull InMobiBanner inMobiBanner) {
-    Log.d(TAG, "InMobi banner ad has been dismissed.");
     if (mediationBannerAdCallback != null) {
       mediationBannerAdCallback.onAdClosed();
     }
@@ -182,7 +194,6 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
 
   @Override
   public void onAdClicked(@NonNull InMobiBanner inMobiBanner, Map<Object, Object> map) {
-    Log.d(TAG, "InMobi banner ad has been clicked.");
     if (mediationBannerAdCallback != null) {
       mediationBannerAdCallback.reportAdClicked();
     }
@@ -190,7 +201,6 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
 
   @Override
   public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
-    Log.d(TAG, "InMobi banner ad has logged an impression.");
     if (mediationBannerAdCallback != null) {
       mediationBannerAdCallback.reportAdImpression();
     }

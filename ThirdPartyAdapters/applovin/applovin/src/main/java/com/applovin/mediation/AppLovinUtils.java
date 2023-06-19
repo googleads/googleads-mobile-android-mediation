@@ -23,12 +23,9 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
-import com.applovin.sdk.AppLovinMediationProvider;
-import com.applovin.sdk.AppLovinSdk;
-import com.applovin.sdk.AppLovinSdkSettings;
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -41,6 +38,10 @@ public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
+  @VisibleForTesting
+  public static final String ERROR_MSG_REASON_PREFIX =
+      "AppLovin SDK returned a load failure callback with reason: ";
+
   /**
    * Keys for retrieving values from the server parameters.
    */
@@ -52,27 +53,6 @@ public class AppLovinUtils {
     // Private constructor
     private ServerParameterKeys() {
     }
-  }
-
-  /**
-   * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server
-   * parameters, or Android Manifest.
-   */
-  public static AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
-    final String sdkKey =
-        (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
-    final AppLovinSdk sdk;
-
-    AppLovinSdkSettings sdkSettings = AppLovinMediationAdapter.getSdkSettings(context);
-    if (!TextUtils.isEmpty(sdkKey)) {
-      sdk = AppLovinSdk.getInstance(sdkKey, sdkSettings, context);
-    } else {
-      sdk = AppLovinSdk.getInstance(sdkSettings, context);
-    }
-
-    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
-    sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
-    return sdk;
   }
 
   /**
@@ -197,9 +177,7 @@ public class AppLovinUtils {
     }
 
     return new AdError(
-        applovinErrorCode,
-        "AppLovin SDK returned a load failure callback with reason: " + reason,
-        APPLOVIN_SDK_ERROR_DOMAIN);
+        applovinErrorCode, ERROR_MSG_REASON_PREFIX + reason, APPLOVIN_SDK_ERROR_DOMAIN);
   }
 
   /**

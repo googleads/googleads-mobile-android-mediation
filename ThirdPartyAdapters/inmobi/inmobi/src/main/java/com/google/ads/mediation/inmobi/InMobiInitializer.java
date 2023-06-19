@@ -21,15 +21,16 @@ import android.content.Context;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
-import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.SdkInitializationListener;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
-public class InMobiInitializer {
+public class InMobiInitializer implements SdkInitializationListener {
 
   private static InMobiInitializer instance;
 
@@ -57,13 +58,19 @@ public class InMobiInitializer {
    */
   public static final int INITIALIZED = 2;
 
-  private @InitializationStatus
+  @VisibleForTesting
+  @InitializationStatus
   int initializationStatus;
 
-  private final ArrayList<Listener> listeners = new ArrayList<>();
+
+  @VisibleForTesting
+  final ArrayList<Listener> listeners = new ArrayList<>();
+
+  private final InMobiSdkWrapper inMobiSdkWrapper;
 
   private InMobiInitializer() {
-    initializationStatus = UNINITIALIZED;
+    this.initializationStatus = UNINITIALIZED;
+    this.inMobiSdkWrapper = new InMobiSdkWrapper();
   }
 
   public static InMobiInitializer getInstance() {
@@ -71,6 +78,12 @@ public class InMobiInitializer {
       instance = new InMobiInitializer();
     }
     return instance;
+  }
+
+  @VisibleForTesting
+  InMobiInitializer(InMobiSdkWrapper inMobiSdkWrapper) {
+    this.initializationStatus = UNINITIALIZED;
+    this.inMobiSdkWrapper = inMobiSdkWrapper;
   }
 
   public void init(@NonNull final Context context,
@@ -88,29 +101,29 @@ public class InMobiInitializer {
 
     initializationStatus = INITIALIZING;
 
-    InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj(),
-        new SdkInitializationListener() {
-          @Override
-          public void onInitializationComplete(Error error) {
-            if (error == null) {
-              Log.d(TAG, "InMobi SDK initialized.");
+    inMobiSdkWrapper.init(context, accountID, InMobiConsent.getConsentObj(), this);
+  }
 
-              initializationStatus = INITIALIZED;
-              for (Listener initListener : listeners) {
-                initListener.onInitializeSuccess();
-              }
-            } else {
-              initializationStatus = UNINITIALIZED;
+  @Override
+  public void onInitializationComplete(@Nullable Error error) {
+    if (error == null) {
+      Log.d(TAG, "InMobi SDK initialized.");
 
-              AdError initializationError = InMobiConstants.createAdapterError(
-                  ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
-              for (Listener initListener : listeners) {
-                initListener.onInitializeError(initializationError);
-              }
-            }
-            listeners.clear();
-          }
-        });
+      initializationStatus = INITIALIZED;
+      for (Listener initListener : listeners) {
+        initListener.onInitializeSuccess();
+      }
+    } else {
+      initializationStatus = UNINITIALIZED;
+
+      AdError initializationError =
+          InMobiConstants.createAdapterError(
+              ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
+      for (Listener initListener : listeners) {
+        initListener.onInitializeError(initializationError);
+      }
+    }
+    listeners.clear();
   }
 
   public interface Listener {
