@@ -82,7 +82,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
 
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
     if (mbBidNativeHandler != null) {
-      mbBidNativeHandler.registerView(null, assetViews, campaign);
+      mbBidNativeHandler.registerView(view, assetViews, campaign);
     }
   }
 
