@@ -18,6 +18,8 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -26,19 +28,25 @@ import java.util.Map;
 /**
  * This class is used to cache images loaded/shown by InMobi adapter.
  */
-class InMobiMemoryCache {
+public class InMobiMemoryCache {
 
   private static final String TAG = "MemoryCache";
   // Last argument true for LRU
   private final Map<String, Drawable> cache = Collections.synchronizedMap(
       new LinkedHashMap<String, Drawable>(10, 1.5f, true));
   // ordering.
-  private long size = 0; // Current allocated size.
+  @VisibleForTesting
+  long size = 0; // Current allocated size.
   private long limit = 1000000; // Max memory in bytes.
 
   InMobiMemoryCache() {
     // Use 25% of available heap size.
     setLimit(Runtime.getRuntime().maxMemory() / 4);
+  }
+
+  @VisibleForTesting
+  InMobiMemoryCache(@NonNull Long limit) {
+    setLimit(limit);
   }
 
   private void setLimit(long new_limit) {
