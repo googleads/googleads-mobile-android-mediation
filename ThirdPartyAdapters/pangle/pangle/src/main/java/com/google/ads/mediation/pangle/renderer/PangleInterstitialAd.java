@@ -28,9 +28,11 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteraction
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -43,6 +45,8 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationInterstitialAdCallback interstitialAdCallback;
   private PAGInterstitialAd pagInterstitialAd;
@@ -53,10 +57,14 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
+      PangleSdkWrapper pangleSdkWrapper,
+      PangleFactory pangleFactory,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -84,9 +92,9 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            PAGInterstitialRequest request = new PAGInterstitialRequest();
+            PAGInterstitialRequest request = pangleFactory.createPagInterstitialRequest();
             request.setAdString(bidResponse);
-            PAGInterstitialAd.loadAd(
+            pangleSdkWrapper.loadInterstitialAd(
                 placementId,
                 request,
                 new PAGInterstitialAdLoadListener() {

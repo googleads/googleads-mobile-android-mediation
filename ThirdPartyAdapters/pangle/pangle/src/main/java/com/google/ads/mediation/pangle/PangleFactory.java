@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -44,6 +45,10 @@ public class PangleFactory {
     return new PAGBannerRequest(pagBannerSize);
   }
 
+  public PAGInterstitialRequest createPagInterstitialRequest() {
+    return new PAGInterstitialRequest();
+  }
+
   PangleBannerAd createPangleBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
@@ -67,11 +72,14 @@ public class PangleFactory {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
+      PangleSdkWrapper pangleSdkWrapper,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     return new PangleInterstitialAd(
         mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
+        pangleSdkWrapper,
+        this,
         panglePrivacyConfig);
   }
 }

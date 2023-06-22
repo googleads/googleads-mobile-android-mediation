@@ -234,7 +234,7 @@ public class PangleMediationAdapter extends RtbAdapter {
               callback) {
     interstitialAd =
         pangleFactory.createPangleInterstitialAd(
-            adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     interstitialAd.render();
   }
 

@@ -23,6 +23,9 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
 
 /**
  * A wrapper for Pangle SDK's static methods that the adapter calls.
@@ -63,5 +66,10 @@ public class PangleSdkWrapper {
   public void loadBannerAd(
       String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
     PAGBannerAd.loadAd(placementId, request, listener);
+  }
+
+  public void loadInterstitialAd(
+      String placementId, PAGInterstitialRequest request, PAGInterstitialAdLoadListener listener) {
+    PAGInterstitialAd.loadAd(placementId, request, listener);
   }
 }
