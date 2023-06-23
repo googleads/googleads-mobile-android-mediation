@@ -79,7 +79,7 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
 
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
     if (mbNativeHandler != null) {
-      mbNativeHandler.registerView(null, assetViews, campaign);
+      mbNativeHandler.registerView(view, assetViews, campaign);
     }
   }
 
