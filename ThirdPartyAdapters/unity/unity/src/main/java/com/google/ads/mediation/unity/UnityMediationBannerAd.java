@@ -97,8 +97,21 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
             bannerView.getPlacementId());
     Log.d(UnityMediationAdapter.TAG, logMessage);
     mediationBannerAdCallback = mediationBannerAdLoadCallback.onSuccess(this);
-    // TODO(b/276467762): Find a place to call mediatinoBannerAdCallback.reportAdImpression(), if
-    // any.
+  }
+
+  @Override
+  public void onBannerShown(BannerView bannerView) {
+    String logMessage =
+            String.format(
+                    "Unity Ads showing banner ad for placement ID: %s",
+                    bannerView.getPlacementId());
+    Log.d(UnityMediationAdapter.TAG, logMessage);
+
+    if (mediationBannerAdCallback == null) {
+      return;
+    }
+
+    mediationBannerAdCallback.reportAdImpression();
   }
 
   @Override
