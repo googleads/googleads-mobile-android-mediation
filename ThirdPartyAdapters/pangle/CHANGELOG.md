@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 5.2.0.7.0 (In Progress)
+#### Version 5.2.0.7.0
 - Verified compatibility with Pangle SDK version 5.2.0.7.
 
 Built and tested with:
