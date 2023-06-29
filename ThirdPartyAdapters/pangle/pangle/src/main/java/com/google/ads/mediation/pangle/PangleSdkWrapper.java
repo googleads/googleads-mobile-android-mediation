@@ -70,6 +70,10 @@ public class PangleSdkWrapper {
     return PAGSdk.getBiddingToken();
   }
 
+  String getSdkVersion() {
+    return PAGSdk.getSDKVersion();
+  }
+
   public void loadBannerAd(
       String placementId, PAGBannerRequest request, PAGBannerAdLoadListener listener) {
     PAGBannerAd.loadAd(placementId, request, listener);

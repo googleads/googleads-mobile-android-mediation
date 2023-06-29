@@ -24,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
-import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
@@ -164,7 +163,12 @@ public class PangleMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    return getVersionInfo(BuildConfig.ADAPTER_VERSION);
+  }
+
+  @VisibleForTesting
+  @NonNull
+  VersionInfo getVersionInfo(String versionString) {
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -188,7 +192,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = PAGSdk.getSDKVersion();
+    String versionString = pangleSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
