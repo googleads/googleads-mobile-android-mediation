@@ -19,11 +19,16 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
+import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd;
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -46,6 +51,10 @@ public class PangleFactory {
     return new PAGConfig.Builder();
   }
 
+  public PAGAppOpenRequest createPagAppOpenRequest() {
+    return new PAGAppOpenRequest();
+  }
+
   public PAGBannerRequest createPagBannerRequest(PAGBannerSize pagBannerSize) {
     return new PAGBannerRequest(pagBannerSize);
   }
@@ -56,6 +65,23 @@ public class PangleFactory {
 
   public PAGRewardedRequest createPagRewardedRequest() {
     return new PAGRewardedRequest();
+  }
+
+  PangleAppOpenAd createPangleAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+    return new PangleAppOpenAd(
+        mediationAppOpenAdConfiguration,
+        mediationAdLoadCallback,
+        pangleInitializer,
+        pangleSdkWrapper,
+        this,
+        panglePrivacyConfig);
   }
 
   PangleBannerAd createPangleBannerAd(

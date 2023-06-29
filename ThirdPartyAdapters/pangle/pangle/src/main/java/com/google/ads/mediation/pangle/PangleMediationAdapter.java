@@ -212,7 +212,9 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    appOpenAd = new PangleAppOpenAd(adConfiguration, callback, panglePrivacyConfig);
+    appOpenAd =
+        pangleFactory.createPangleAppOpenAd(
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     appOpenAd.render();
   }
 
