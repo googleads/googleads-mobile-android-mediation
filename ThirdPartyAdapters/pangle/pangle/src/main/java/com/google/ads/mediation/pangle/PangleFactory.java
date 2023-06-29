@@ -19,8 +19,10 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd;
+import com.google.ads.mediation.pangle.renderer.PangleRewardedAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -28,6 +30,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationRewardedAd;
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 /**
  * A factory for creating objects for Pangle adapter.
@@ -47,6 +52,10 @@ public class PangleFactory {
 
   public PAGInterstitialRequest createPagInterstitialRequest() {
     return new PAGInterstitialRequest();
+  }
+
+  public PAGRewardedRequest createPagRewardedRequest() {
+    return new PAGRewardedRequest();
   }
 
   PangleBannerAd createPangleBannerAd(
@@ -76,6 +85,23 @@ public class PangleFactory {
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     return new PangleInterstitialAd(
         mediationInterstitialAdConfiguration,
+        mediationAdLoadCallback,
+        pangleInitializer,
+        pangleSdkWrapper,
+        this,
+        panglePrivacyConfig);
+  }
+
+  PangleRewardedAd createPangleRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+    return new PangleRewardedAd(
+        mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,

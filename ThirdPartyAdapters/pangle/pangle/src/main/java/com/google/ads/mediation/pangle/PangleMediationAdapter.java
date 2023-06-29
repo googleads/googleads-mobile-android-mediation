@@ -252,7 +252,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedAd =
-        new PangleRewardedAd(adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
+        pangleFactory.createPangleRewardedAd(
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     rewardedAd.render();
   }
 
