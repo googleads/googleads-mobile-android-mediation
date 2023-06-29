@@ -29,9 +29,11 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -45,6 +47,8 @@ public class PangleRewardedAd implements MediationRewardedAd {
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationRewardedAdCallback rewardedAdCallback;
   private PAGRewardedAd pagRewardedAd;
@@ -55,10 +59,14 @@ public class PangleRewardedAd implements MediationRewardedAd {
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
+      PangleSdkWrapper pangleSdkWrapper,
+      PangleFactory pangleFactory,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -86,9 +94,9 @@ public class PangleRewardedAd implements MediationRewardedAd {
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            PAGRewardedRequest request = new PAGRewardedRequest();
+            PAGRewardedRequest request = pangleFactory.createPagRewardedRequest();
             request.setAdString(bidResponse);
-            PAGRewardedAd.loadAd(
+            pangleSdkWrapper.loadRewardedAd(
                 placementId,
                 request,
                 new PAGRewardedAdLoadListener() {
