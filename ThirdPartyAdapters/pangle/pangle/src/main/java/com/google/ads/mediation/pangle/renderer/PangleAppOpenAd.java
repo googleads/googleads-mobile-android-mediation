@@ -23,14 +23,17 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
@@ -39,9 +42,16 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 
 public class PangleAppOpenAd implements MediationAppOpenAd {
 
-  private final MediationAppOpenAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> adLoadCallback;
+  @VisibleForTesting
+  static final String ERROR_MSG_INVALID_PLACEMENT_ID =
+      "Failed to load app open ad from Pangle. Missing or invalid Placement ID.";
 
+  private final MediationAppOpenAdConfiguration adConfiguration;
+  private final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
+      adLoadCallback;
+  private final PangleInitializer pangleInitializer;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
 
   private MediationAppOpenAdCallback appOpenAdCallback;
@@ -52,9 +62,15 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
               mediationAdLoadCallback,
+      @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PangleFactory pangleFactory,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    this.pangleInitializer = pangleInitializer;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -66,8 +82,7 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
     if (TextUtils.isEmpty(placementId)) {
       AdError error =
           PangleConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to load app open ad from Pangle. Missing or invalid Placement ID.");
+              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_INVALID_PLACEMENT_ID);
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -76,40 +91,39 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
     final String bidResponse = adConfiguration.getBidResponse();
     Context context = adConfiguration.getContext();
     String appId = serverParameters.getString(PangleConstants.APP_ID);
-    PangleInitializer.getInstance()
-        .initialize(
-            context,
-            appId,
-            new Listener() {
-              @Override
-              public void onInitializeSuccess() {
-                PAGAppOpenRequest request = new PAGAppOpenRequest();
-                request.setAdString(bidResponse);
-                PAGAppOpenAd.loadAd(
-                    placementId,
-                    request,
-                    new PAGAppOpenAdLoadListener() {
-                      @Override
-                      public void onError(int errorCode, String errorMessage) {
-                        AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
-                        Log.w(TAG, error.toString());
-                        adLoadCallback.onFailure(error);
-                      }
+    pangleInitializer.initialize(
+        context,
+        appId,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            PAGAppOpenRequest request = pangleFactory.createPagAppOpenRequest();
+            request.setAdString(bidResponse);
+            pangleSdkWrapper.loadAppOpenAd(
+                placementId,
+                request,
+                new PAGAppOpenAdLoadListener() {
+                  @Override
+                  public void onError(int errorCode, String errorMessage) {
+                    AdError error = PangleConstants.createSdkError(errorCode, errorMessage);
+                    Log.w(TAG, error.toString());
+                    adLoadCallback.onFailure(error);
+                  }
 
-                      @Override
-                      public void onAdLoaded(PAGAppOpenAd appOpenAd) {
-                        appOpenAdCallback = adLoadCallback.onSuccess(PangleAppOpenAd.this);
-                        pagAppOpenAd = appOpenAd;
-                      }
-                    });
-              }
+                  @Override
+                  public void onAdLoaded(PAGAppOpenAd appOpenAd) {
+                    appOpenAdCallback = adLoadCallback.onSuccess(PangleAppOpenAd.this);
+                    pagAppOpenAd = appOpenAd;
+                  }
+                });
+          }
 
-              @Override
-              public void onInitializeError(@NonNull AdError error) {
-                Log.w(TAG, error.toString());
-                adLoadCallback.onFailure(error);
-              }
-            });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
+        });
   }
 
   @Override

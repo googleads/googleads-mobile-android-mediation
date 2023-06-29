@@ -15,6 +15,7 @@
 package com.google.ads.mediation.pangle;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
@@ -26,6 +27,9 @@ import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest;
@@ -79,5 +83,12 @@ public class PangleSdkWrapper {
   public void loadRewardedAd(
       String placementId, PAGRewardedRequest request, PAGRewardedAdLoadListener listener) {
     PAGRewardedAd.loadAd(placementId, request, listener);
+  }
+
+  public void loadAppOpenAd(
+      @NonNull String unitId,
+      @NonNull PAGAppOpenRequest request,
+      @NonNull PAGAppOpenAdLoadListener listener) {
+    PAGAppOpenAd.loadAd(unitId, request, listener);
   }
 }
