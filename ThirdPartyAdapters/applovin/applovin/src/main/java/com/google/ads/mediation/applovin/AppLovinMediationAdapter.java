@@ -82,7 +82,9 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   private final AppLovinInitializer appLovinInitializer;
 
   private final AppLovinAdFactory appLovinAdFactory;
-  
+
+  private final AppLovinSdkWrapper appLovinSdkWrapper;
+
   private final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
 
   /**
@@ -149,13 +151,19 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   public AppLovinMediationAdapter() {
     appLovinInitializer = AppLovinInitializer.getInstance();
     appLovinAdFactory = new AppLovinAdFactory();
+    appLovinSdkWrapper = new AppLovinSdkWrapper();
     appLovinSdkUtilsWrapper = new AppLovinSdkUtilsWrapper();
   }
 
   @VisibleForTesting
-  AppLovinMediationAdapter(AppLovinInitializer appLovinInitializer, AppLovinAdFactory appLovinAdFactory, AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
+  AppLovinMediationAdapter(
+      AppLovinInitializer appLovinInitializer,
+      AppLovinAdFactory appLovinAdFactory,
+      AppLovinSdkWrapper appLovinSdkWrapper,
+      AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
     this.appLovinInitializer = appLovinInitializer;
     this.appLovinAdFactory = appLovinAdFactory;
+    this.appLovinSdkWrapper = appLovinSdkWrapper;
     this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
   }
 
@@ -209,7 +217,12 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    return getVersionInfo(BuildConfig.ADAPTER_VERSION);
+  }
+
+  @NonNull
+  @VisibleForTesting
+  VersionInfo getVersionInfo(String versionString) {
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -229,7 +242,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String versionString = AppLovinSdk.VERSION;
+    String versionString = appLovinSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
