@@ -45,4 +45,8 @@ public class AppLovinSdkWrapper {
     }
     return appLovinSdkSettings;
   }
+
+  public String getSdkVersion() {
+    return AppLovinSdk.VERSION;
+  }
 }
