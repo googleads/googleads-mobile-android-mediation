@@ -36,4 +36,5 @@ public interface InMobiNetworkKeys {
   String STATE = "STATE";
   String COUNTRY = "COUNTRY";
   String LOGLEVEL = "LOGLEVEL";
+  String IAB_US_STRING = "IABUSPrivacy_String";
 }

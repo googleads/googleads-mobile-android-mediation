@@ -1,10 +1,18 @@
 package com.google.ads.mediation.inmobi;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
+import com.inmobi.compliance.InMobiPrivacyCompliance;
+
 import java.util.HashMap;
 
 public class InMobiExtrasBuilder {
@@ -15,7 +23,7 @@ public class InMobiExtrasBuilder {
   public static final String COPPA = "coppa";
 
   @NonNull
-  public static InMobiExtras build(@Nullable Bundle mediationExtras, @NonNull String protocol) {
+  public static InMobiExtras build(@NonNull Context context, @Nullable Bundle mediationExtras, @NonNull String protocol) {
     HashMap<String, String> map = new HashMap<>();
     // Set keywords as an empty string for now.
     String keywords = "";
@@ -23,6 +31,18 @@ public class InMobiExtrasBuilder {
       for (String key : mediationExtras.keySet()) {
         map.put(key, mediationExtras.getString(key));
       }
+      //US privacy string from Mediation Extras
+      String iabUSPrivacyString = mediationExtras.getString(InMobiNetworkKeys.IAB_US_STRING);
+      if (iabUSPrivacyString != null) {
+        InMobiPrivacyCompliance.setUSPrivacyString(iabUSPrivacyString);
+      }
+    }
+
+    //US privacy string from SharedPreferences
+    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+    String iabUSPPrivacyStringFromPreferences = sharedPref.getString(InMobiNetworkKeys.IAB_US_STRING, null);
+    if (iabUSPPrivacyStringFromPreferences != null) {
+      InMobiPrivacyCompliance.setUSPrivacyString(iabUSPPrivacyStringFromPreferences);
     }
 
     map.put(THIRD_PARTY_KEY, protocol);
@@ -35,7 +55,6 @@ public class InMobiExtrasBuilder {
     } else {
       map.put(COPPA, "0");
     }
-
     return new InMobiExtras(map, keywords);
   }
 }
