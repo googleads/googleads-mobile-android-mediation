@@ -58,7 +58,6 @@ public class InMobiExtrasBuilder {
     } else {
       map.put(COPPA, "0");
     }
-
     return new InMobiExtras(map, keywords);
   }
 }
