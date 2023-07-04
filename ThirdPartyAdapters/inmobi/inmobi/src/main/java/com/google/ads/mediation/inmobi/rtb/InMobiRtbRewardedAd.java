@@ -32,7 +32,7 @@ public class InMobiRtbRewardedAd extends InMobiRewardedAd {
   @Override
   protected void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationRewardedAdConfiguration.getContext(),
+        InMobiExtrasBuilder.build(
             mediationRewardedAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());

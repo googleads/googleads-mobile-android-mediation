@@ -51,7 +51,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.inmobi.sdk.InMobiSdk;
-
 import java.util.HashSet;
 import java.util.List;
 
@@ -206,7 +205,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(rtbSignalData.getContext(),
+        InMobiExtrasBuilder.build(
             rtbSignalData.getNetworkExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     String token =
         inMobiSdkWrapper.getToken(inMobiExtras.getParameterMap(), inMobiExtras.getKeywords());
