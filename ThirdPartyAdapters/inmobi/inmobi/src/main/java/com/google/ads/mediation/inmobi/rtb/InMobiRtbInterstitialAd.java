@@ -32,7 +32,7 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
   @Override
   protected void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationInterstitialAdConfiguration.getContext(),
+        InMobiExtrasBuilder.build(
             mediationInterstitialAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
