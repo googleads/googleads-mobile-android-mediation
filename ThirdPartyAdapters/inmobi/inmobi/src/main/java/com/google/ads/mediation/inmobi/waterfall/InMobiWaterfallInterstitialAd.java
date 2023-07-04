@@ -32,7 +32,7 @@ public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
   @Override
   protected void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(
+        InMobiExtrasBuilder.build(mediationInterstitialAdConfiguration.getContext(),
             mediationInterstitialAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
