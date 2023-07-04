@@ -32,7 +32,7 @@ public class InMobiWaterfallNativeAd extends InMobiNativeAd {
   @Override
   public void internalLoadAd(InMobiNativeWrapper inMobiNativeWrapper) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationNativeAdConfiguration.getContext(),
+        InMobiExtrasBuilder.build(
             mediationNativeAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiNativeWrapper.setExtras(inMobiExtras.getParameterMap());
