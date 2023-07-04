@@ -205,7 +205,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(
+        InMobiExtrasBuilder.build(rtbSignalData.getContext(),
             rtbSignalData.getNetworkExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     String token =
         inMobiSdkWrapper.getToken(inMobiExtras.getParameterMap(), inMobiExtras.getKeywords());
