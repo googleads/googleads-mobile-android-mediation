@@ -32,7 +32,7 @@ public class InMobiRtbBannerAd extends InMobiBannerAd {
   @Override
   public void internalLoadAd(InMobiBannerWrapper adView) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(
+        InMobiExtrasBuilder.build(mediationBannerAdConfiguration.getContext(),
             mediationBannerAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
     adView.setExtras(inMobiExtras.getParameterMap());
     adView.setKeywords(inMobiExtras.getKeywords());
