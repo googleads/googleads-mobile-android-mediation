@@ -27,24 +27,28 @@ public class InMobiExtrasBuilder {
     HashMap<String, String> map = new HashMap<>();
     // Set keywords as an empty string for now.
     String keywords = "";
+    boolean isIABUSStringAddedFromExtras = false;
     if (mediationExtras != null && mediationExtras.keySet() != null) {
       for (String key : mediationExtras.keySet()) {
-        map.put(key, mediationExtras.getString(key));
+        if(!key.contains(InMobiNetworkKeys.IAB_US_STRING))
+          map.put(key, mediationExtras.getString(key));
       }
       //US privacy string from Mediation Extras
       String iabUSPrivacyString = mediationExtras.getString(InMobiNetworkKeys.IAB_US_STRING);
       if (iabUSPrivacyString != null) {
         InMobiPrivacyCompliance.setUSPrivacyString(iabUSPrivacyString);
+        isIABUSStringAddedFromExtras = true;
       }
     }
 
     //US privacy string from SharedPreferences
-    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-    String iabUSPPrivacyStringFromPreferences = sharedPref.getString(InMobiNetworkKeys.IAB_US_STRING, null);
-    if (iabUSPPrivacyStringFromPreferences != null) {
-      InMobiPrivacyCompliance.setUSPrivacyString(iabUSPPrivacyStringFromPreferences);
+    if(!isIABUSStringAddedFromExtras) {
+      SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+      String iabUSPPrivacyStringFromPreferences = sharedPref.getString(InMobiNetworkKeys.IAB_US_STRING, null);
+      if (iabUSPPrivacyStringFromPreferences != null) {
+        InMobiPrivacyCompliance.setUSPrivacyString(iabUSPPrivacyStringFromPreferences);
+      }
     }
-
     map.put(THIRD_PARTY_KEY, protocol);
     map.put(THIRD_PARTY_VERSION, MobileAds.getVersion().toString());
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
