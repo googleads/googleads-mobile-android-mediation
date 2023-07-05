@@ -26,6 +26,7 @@ public class InMobiExtrasBuilder {
     // Set keywords as an empty string for now.
     String keywords = "";
     boolean isIABUSStringAddedFromExtras = false;
+
     if (mediationExtras != null && mediationExtras.keySet() != null) {
       for (String key : mediationExtras.keySet()) {
         if(!key.contains(InMobiNetworkKeys.IAB_US_STRING))
