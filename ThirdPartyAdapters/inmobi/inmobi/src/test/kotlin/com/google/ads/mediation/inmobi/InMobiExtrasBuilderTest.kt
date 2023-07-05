@@ -1,6 +1,8 @@
 package com.google.ads.mediation.inmobi
 
+import android.content.Context
 import android.os.Bundle
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
@@ -13,10 +15,10 @@ class InMobiExtrasBuilderTest(
   private val mediationExtras: Map<String, String>?,
   private val protocol: String
 ) {
-
+  private val context = ApplicationProvider.getApplicationContext<Context>()
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasWithCorrectProtocol() {
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -27,7 +29,7 @@ class InMobiExtrasBuilderTest(
   fun buildInMobiExtras_returnsInMobiExtrasWithCorrectMobileAdsVersion() {
     val mobileAdsVersion = MobileAds.getVersion().toString()
 
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -45,7 +47,7 @@ class InMobiExtrasBuilderTest(
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -65,7 +67,7 @@ class InMobiExtrasBuilderTest(
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -85,7 +87,7 @@ class InMobiExtrasBuilderTest(
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -95,7 +97,7 @@ class InMobiExtrasBuilderTest(
 
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasMapPopulatedWithMediationExtras() {
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
@@ -104,7 +106,7 @@ class InMobiExtrasBuilderTest(
 
   @Test
   fun buildInMobiExtras_alwaysReturnAnEmptyKeywordsString() {
-    val inMobiExtras = InMobiExtrasBuilder.build(mapToBundle(mediationExtras), protocol)
+    val inMobiExtras = InMobiExtrasBuilder.build(context,mapToBundle(mediationExtras), protocol)
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.keywords).isEmpty()
