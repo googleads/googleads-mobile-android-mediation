@@ -143,7 +143,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
   public void onBannerShown(BannerView bannerView) {
     String logMessage =
         String.format(
-            "Unity Ads banner ad shown for placement ID: %s", bannerView.getPlacementId());
+            "Unity Ads banner ad was shown for placement ID: %s", bannerView.getPlacementId());
     Log.d(UnityMediationAdapter.TAG, logMessage);
 
     if (mediationBannerAdCallback != null) {
