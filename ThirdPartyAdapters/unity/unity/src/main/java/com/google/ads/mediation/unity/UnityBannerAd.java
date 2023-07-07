@@ -105,6 +105,14 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.d(TAG, logMessage);
       eventAdapter.sendAdEvent(AdEvent.LEFT_APPLICATION);
     }
+
+    @Override
+    public void onBannerShown(BannerView bannerView) {
+      String logMessage = String.format("Unity Ads  for placement ID: %s",
+          UnityBannerAd.this.bannerView.getPlacementId());
+      Log.d(TAG, logMessage);
+      eventAdapter.sendAdEvent(AdEvent.IMPRESSION);
+    }
   };
 
   @Override
