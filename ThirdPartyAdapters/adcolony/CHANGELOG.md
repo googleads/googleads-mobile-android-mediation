@@ -1,6 +1,6 @@
 ## AdColony Android Mediation Adapter Changelog
 
-### Version 4.8.0.2
+#### Version 4.8.0.2
 - Updated adapter to use new `VersionInfo` class.
 - Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
 

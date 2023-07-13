@@ -35,4 +35,7 @@ public class InMobiConsent {
   static JSONObject getConsentObj() {
     return consentObj;
   }
+
+  /** A private constructor since this is a utility class which should not be instantiated. */
+  private InMobiConsent() {}
 }

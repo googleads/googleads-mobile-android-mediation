@@ -98,4 +98,7 @@ public class InMobiConstants {
   public static AdError createSdkError(int errorCode, @NonNull String errorMessage) {
     return new AdError(errorCode, errorMessage, INMOBI_SDK_ERROR_DOMAIN);
   }
+
+  /** A private constructor since this is a utility class which should not be instantiated. */
+  private InMobiConstants() {}
 }

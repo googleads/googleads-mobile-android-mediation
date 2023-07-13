@@ -22,12 +22,14 @@ import android.os.Bundle;
  */
 public class AppLovinExtras {
 
-  /**
-   * Class containing keys for the AppLovin extras {@link Bundle}.
-   */
-  static class Keys {
+  /** Class containing keys for the AppLovin extras {@link Bundle}. */
+  public static class Keys {
 
-    static final String MUTE_AUDIO = "mute_audio";
+    private Keys() {}
+
+    public static final String KEY_WATERMARK = "google_watermark";
+
+    public static final String MUTE_AUDIO = "mute_audio";
   }
 
   /**

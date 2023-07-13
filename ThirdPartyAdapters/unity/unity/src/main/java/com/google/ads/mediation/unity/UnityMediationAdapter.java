@@ -154,6 +154,10 @@ public class UnityMediationAdapter extends Adapter {
 
   private final UnityInitializer unityInitializer;
 
+  private final UnityBannerViewFactory unityBannerViewFactory;
+
+  private final UnityAdsLoader unityAdsLoader;
+
   /** UnityBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
@@ -167,11 +171,18 @@ public class UnityMediationAdapter extends Adapter {
 
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
+    unityBannerViewFactory = new UnityBannerViewFactory();
+    this.unityAdsLoader = new UnityAdsLoader();
   }
 
   @VisibleForTesting
-  UnityMediationAdapter(UnityInitializer unityInitializer) {
+  UnityMediationAdapter(
+      UnityInitializer unityInitializer,
+      UnityBannerViewFactory unityBannerViewFactory,
+      UnityAdsLoader unityAdsLoader) {
     this.unityInitializer = unityInitializer;
+    this.unityBannerViewFactory = unityBannerViewFactory;
+    this.unityAdsLoader = unityAdsLoader;
   }
 
   /**
@@ -283,15 +294,22 @@ public class UnityMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new UnityRewardedAd();
-    rewardedAd.load(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd =
+        new UnityRewardedAd(
+            mediationRewardedAdConfiguration,
+            mediationAdLoadCallback,
+            unityInitializer,
+            unityAdsLoader);
+    rewardedAd.loadAd();
   }
 
   @Override
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerAd = new UnityMediationBannerAd(mediationBannerAdConfiguration, callback);
+    bannerAd =
+        new UnityMediationBannerAd(
+            mediationBannerAdConfiguration, callback, unityInitializer, unityBannerViewFactory);
     bannerAd.loadAd();
   }
 
@@ -299,7 +317,8 @@ public class UnityMediationAdapter extends Adapter {
   public void loadInterstitialAd(
       MediationInterstitialAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    interstitialAd = new UnityInterstitialAd(adConfiguration, callback);
+    interstitialAd =
+        new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialAd.loadAd();
   }
 }

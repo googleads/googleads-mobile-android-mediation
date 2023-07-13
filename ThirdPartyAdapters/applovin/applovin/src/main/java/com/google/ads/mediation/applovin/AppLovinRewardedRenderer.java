@@ -14,14 +14,10 @@
 
 package com.google.ads.mediation.applovin;
 
-import static android.util.Log.DEBUG;
-import static android.util.Log.ERROR;
-import static android.util.Log.INFO;
-import static android.util.Log.WARN;
-import static com.applovin.mediation.ApplovinAdapter.log;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
@@ -31,7 +27,6 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinSdk;
-import com.applovin.sdk.AppLovinSdkUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -43,18 +38,27 @@ public abstract class AppLovinRewardedRenderer
     implements MediationRewardedAd, AppLovinAdLoadListener, AppLovinAdRewardListener,
     AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
-  /**
-   * Rewarded ad request configuration.
-   */
-  @NonNull
-  protected MediationRewardedAdConfiguration adConfiguration;
+  protected static final String TAG = AppLovinRewardedRenderer.class.getSimpleName();
 
-  /**
-   * Mediation callback for ad load events.
-   */
-  @NonNull
-  protected MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+  @VisibleForTesting
+  protected static final String ERROR_MSG_MULTIPLE_REWARDED_AD =
+      "Cannot load multiple rewarded ads with the same Zone ID. Display one ad before attempting to"
+          + " load another.";
+
+  @VisibleForTesting protected static final String ERROR_MSG_AD_NOT_READY = "Ad not ready to show.";
+
+  /** Rewarded ad request configuration. */
+  protected final MediationRewardedAdConfiguration adConfiguration;
+
+  /** Mediation callback for ad load events. */
+  protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
+
+  protected final AppLovinInitializer appLovinInitializer;
+
+  protected final AppLovinAdFactory appLovinAdFactory;
+
+  protected final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
 
   /**
    * Mediation callback for rewarded ad events.
@@ -84,10 +88,17 @@ public abstract class AppLovinRewardedRenderer
    */
   private AppLovinRewardItem rewardItem;
 
-  protected AppLovinRewardedRenderer(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+  protected AppLovinRewardedRenderer(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
+      @NonNull AppLovinInitializer appLovinInitializer,
+      @NonNull AppLovinAdFactory appLovinAdFactory,
+      @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
+    this.appLovinInitializer = appLovinInitializer;
+    this.appLovinAdFactory = appLovinAdFactory;
+    this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
   }
 
   /**
@@ -98,8 +109,8 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdLoadListener implementation.
   @Override
   public void adReceived(final @NonNull AppLovinAd appLovinAd) {
-    log(INFO, "Rewarded video did load ad: " + appLovinAd.getAdIdNumber());
-    AppLovinSdkUtils.runOnUiThread(
+    Log.i(TAG, "Rewarded video did load ad: " + appLovinAd.getAdIdNumber());
+    appLovinSdkUtilsWrapper.runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
@@ -111,9 +122,8 @@ public abstract class AppLovinRewardedRenderer
   @Override
   public void failedToReceiveAd(final int code) {
     AdError error = AppLovinUtils.getAdError(code);
-    log(WARN, error.toString());
-
-    AppLovinSdkUtils.runOnUiThread(
+    Log.w(TAG, error.toString());
+    appLovinSdkUtilsWrapper.runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
@@ -126,7 +136,7 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdDisplayListener implementation.
   @Override
   public void adDisplayed(@NonNull AppLovinAd ad) {
-    log(DEBUG, "Rewarded video displayed.");
+    Log.d(TAG, "Rewarded video displayed.");
     if (rewardedAdCallback == null) {
       return;
     }
@@ -137,7 +147,7 @@ public abstract class AppLovinRewardedRenderer
 
   @Override
   public void adHidden(@NonNull AppLovinAd ad) {
-    log(DEBUG, "Rewarded video dismissed.");
+    Log.d(TAG, "Rewarded video dismissed.");
     if (rewardedAdCallback == null) {
       return;
     }
@@ -152,7 +162,7 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdClickListener implementation.
   @Override
   public void adClicked(@NonNull AppLovinAd ad) {
-    log(DEBUG, "Rewarded video clicked.");
+    Log.d(TAG, "Rewarded video clicked.");
     if (rewardedAdCallback != null) {
       rewardedAdCallback.reportAdClicked();
     }
@@ -162,7 +172,7 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdVideoPlaybackListener implementation.
   @Override
   public void videoPlaybackBegan(AppLovinAd ad) {
-    log(DEBUG, "Rewarded video playback began.");
+    Log.d(TAG, "Rewarded video playback began.");
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onVideoStart();
     }
@@ -170,9 +180,9 @@ public abstract class AppLovinRewardedRenderer
 
   @Override
   public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
-    log(DEBUG, "Rewarded video playback ended at playback percent: " + percentViewed + "%.");
+    Log.d(TAG, "Rewarded video playback ended at playback percent: " + percentViewed + "%.");
     this.fullyWatched = fullyWatched;
-    if (fullyWatched) {
+    if (rewardedAdCallback != null && fullyWatched) {
       rewardedAdCallback.onVideoComplete();
     }
   }
@@ -181,18 +191,19 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdRewardListener implementation.
   @Override
   public void userOverQuota(AppLovinAd ad, Map<String, String> response) {
-    log(ERROR,
+    Log.e(
+        TAG,
         "Rewarded video validation request for ad did exceed quota with response: " + response);
   }
 
   @Override
   public void validationRequestFailed(AppLovinAd ad, int code) {
-    log(ERROR, "Rewarded video validation request for ad failed with error code: " + code);
+    Log.e(TAG, "Rewarded video validation request for ad failed with error code: " + code);
   }
 
   @Override
   public void userRewardRejected(AppLovinAd ad, Map<String, String> response) {
-    log(ERROR, "Rewarded video validation request was rejected with response: " + response);
+    Log.e(TAG, "Rewarded video validation request was rejected with response: " + response);
   }
 
   @Override
@@ -203,7 +214,7 @@ public abstract class AppLovinRewardedRenderer
     // AppLovin returns amount as double.
     final int amount = (int) Double.parseDouble(amountStr);
 
-    log(DEBUG, "Rewarded " + amount + " " + currency);
+    Log.d(TAG, "Rewarded " + amount + " " + currency);
     rewardItem = new AppLovinRewardItem(amount, currency);
   }
   // endregion

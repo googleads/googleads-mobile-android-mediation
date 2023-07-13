@@ -105,6 +105,14 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
       Log.d(TAG, logMessage);
       eventAdapter.sendAdEvent(AdEvent.LEFT_APPLICATION);
     }
+
+    @Override
+    public void onBannerShown(BannerView bannerView) {
+      String logMessage = String.format("Unity Ads banner ad was shown for placement ID: %s",
+          UnityBannerAd.this.bannerView.getPlacementId());
+      Log.d(TAG, logMessage);
+      eventAdapter.sendAdEvent(AdEvent.IMPRESSION);
+    }
   };
 
   @Override
@@ -139,7 +147,7 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
     gameId = serverParameters.getString(KEY_GAME_ID);
     bannerPlacementId = serverParameters.getString(KEY_PLACEMENT_ID);
 
-    if (!UnityAdapter.areValidIds(gameId, bannerPlacementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, bannerPlacementId)) {
       sendBannerFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid server parameters.");
       return;

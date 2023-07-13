@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Tapjoy"
     // String property to store version name.
-    stringVersion = "13.0.1.0"
+    stringVersion = "13.1.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 13000100
+        versionCode 13010100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -34,9 +34,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.tapjoy:tapjoy-android-sdk:13.0.1@aar'
+    implementation 'com.tapjoy:tapjoy-android-sdk:13.1.1@aar'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:22.0.0'
+    implementation 'com.google.android.gms:play-services-ads:22.1.0'
 }
 
 /**

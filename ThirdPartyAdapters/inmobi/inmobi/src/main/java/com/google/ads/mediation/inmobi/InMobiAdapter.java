@@ -23,4 +23,19 @@ import androidx.annotation.Keep;
 @Keep
 public final class InMobiAdapter extends InMobiMediationAdapter {
 
+  /**
+   * {@link Adapter} implementation
+   *
+   * @param inMobiInitializer
+   */
+  InMobiAdapter(
+      InMobiInitializer inMobiInitializer,
+      InMobiAdFactory inMobiAdFactory,
+      InMobiSdkWrapper inMobiSdkWrapper) {
+    super(inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
+  }
+
+  InMobiAdapter() {
+    super();
+  }
 }

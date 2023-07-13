@@ -21,7 +21,6 @@ import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
@@ -44,7 +43,6 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
-
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
@@ -112,17 +110,6 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
     }
   };
 
-  /**
-   * Checks whether or not the provided Unity Ads IDs are valid.
-   *
-   * @param gameId      Unity Ads Game ID to be verified.
-   * @param placementId Unity Ads Placement ID to be verified.
-   * @return {@code true} if all the IDs provided are valid.
-   */
-  public static boolean areValidIds(String gameId, String placementId) {
-    return !TextUtils.isEmpty(gameId) && !TextUtils.isEmpty(placementId);
-  }
-
   @Override
   public void requestInterstitialAd(@NonNull Context context,
       @NonNull MediationInterstitialListener mediationInterstitialListener,
@@ -133,7 +120,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
 
     final String gameId = serverParameters.getString(KEY_GAME_ID);
     placementId = serverParameters.getString(KEY_PLACEMENT_ID);
-    if (!areValidIds(gameId, placementId)) {
+    if (!UnityAdsAdapterUtils.areValidIds(gameId, placementId)) {
       sendAdFailedToLoad(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid server parameters.");
       return;
     }

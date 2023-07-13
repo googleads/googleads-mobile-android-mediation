@@ -17,6 +17,7 @@ package com.google.ads.mediation.unity;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN;
 
 import android.content.Context;
+import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
@@ -244,4 +245,14 @@ public class UnityAdsAdapterUtils {
     userMetaData.commit();
   }
 
+  /**
+   * Checks whether or not the provided Unity Ads IDs are valid.
+   *
+   * @param gameId Unity Ads Game ID to be verified.
+   * @param placementId Unity Ads Placement ID to be verified.
+   * @return {@code true} if all the IDs provided are valid.
+   */
+  public static boolean areValidIds(String gameId, String placementId) {
+    return !TextUtils.isEmpty(gameId) && !TextUtils.isEmpty(placementId);
+  }
 }

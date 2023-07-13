@@ -14,12 +14,16 @@
 
 package com.applovin.mediation.rtb;
 
+import static com.applovin.mediation.AppLovinExtras.Keys.KEY_WATERMARK;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
+import com.google.ads.mediation.applovin.AppLovinAdFactory;
+import com.google.ads.mediation.applovin.AppLovinInitializer;
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer;
+import com.google.ads.mediation.applovin.AppLovinSdkUtilsWrapper;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -34,22 +38,25 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
 
   public AppLovinRtbRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    super(adConfiguration, callback);
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
+      @NonNull AppLovinInitializer appLovinInitializer,
+      @NonNull AppLovinAdFactory appLovinAdFactory,
+      @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
+    super(
+        adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
   }
 
   @Override
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    appLovinSdk = AppLovinUtils.retrieveSdk(adConfiguration.getServerParameters(), context);
+    appLovinSdk = appLovinInitializer.retrieveSdk(adConfiguration.getServerParameters(), context);
 
     // Create rewarded video object.
-    incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(appLovinSdk);
-    incentivizedInterstitial.setExtraInfo("google_watermark", adConfiguration.getWatermark());
+    incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
+    incentivizedInterstitial.setExtraInfo(KEY_WATERMARK, adConfiguration.getWatermark());
 
     // Load ad.
-    appLovinSdk.getAdService().loadNextAdForAdToken(
-        adConfiguration.getBidResponse(), AppLovinRtbRewardedRenderer.this);
+    appLovinSdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
   }
 
   @Override
@@ -57,16 +64,14 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
     appLovinSdk.getSettings()
         .setMuted(AppLovinUtils.shouldMuteAudio(adConfiguration.getMediationExtras()));
 
-    incentivizedInterstitial.show(AppLovinRtbRewardedRenderer.this.appLovinAd,
-        context, AppLovinRtbRewardedRenderer.this, AppLovinRtbRewardedRenderer.this,
-        AppLovinRtbRewardedRenderer.this, AppLovinRtbRewardedRenderer.this);
+    incentivizedInterstitial.show(appLovinAd, context, this, this, this, this);
   }
 
   // region AppLovinAdLoadListener implementation
   @Override
   public void adReceived(@NonNull AppLovinAd appLovinAd) {
-    AppLovinRtbRewardedRenderer.this.appLovinAd = appLovinAd;
-    super.adReceived(AppLovinRtbRewardedRenderer.this.appLovinAd);
+    this.appLovinAd = appLovinAd;
+    super.adReceived(this.appLovinAd);
   }
   // endregion
 }

@@ -14,16 +14,13 @@
 
 package com.google.ads.mediation.applovin;
 
-import static android.util.Log.ERROR;
-import static android.util.Log.INFO;
-import static android.util.Log.WARN;
-import static com.applovin.mediation.ApplovinAdapter.log;
-
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
@@ -37,6 +34,9 @@ import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -61,6 +61,10 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Nullable
   public static AppLovinSdkSettings appLovinSdkSettings;
 
+  private AppLovinBannerAd bannerAd;
+
+  private AppLovinWaterfallInterstitialAd waterfallInterstitialAd;
+
   /**
    * AppLovin bidding interstitial ad renderer.
    */
@@ -71,10 +75,17 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   private AppLovinRtbRewardedRenderer rtbRewardedRenderer;
 
-  /**
-   * AppLovin waterfall rewarded ad renderer.
-   */
+  /** AppLovin waterfall rewarded ad renderer. */
   private AppLovinWaterfallRewardedRenderer rewardedRenderer;
+
+  /** AppLovinInitializer singleton instance. */
+  private final AppLovinInitializer appLovinInitializer;
+
+  private final AppLovinAdFactory appLovinAdFactory;
+
+  private final AppLovinSdkWrapper appLovinSdkWrapper;
+
+  private final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
 
   /**
    * Applovin adapter errors.
@@ -84,6 +95,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
   // AppLovin SDK error domain.
   public static final String APPLOVIN_SDK_ERROR_DOMAIN = "com.applovin.sdk";
+
+  private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {
@@ -129,12 +142,29 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
 
-  @NonNull
-  public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
-    if (appLovinSdkSettings == null) {
-      appLovinSdkSettings = new AppLovinSdkSettings(context);
-    }
-    return appLovinSdkSettings;
+  @VisibleForTesting static final String ERROR_MSG_MISSING_SDK = "Missing or invalid SDK Key.";
+
+  @VisibleForTesting
+  static final String ERROR_MSG_BANNER_SIZE_MISMATCH =
+      "Failed to request banner with unsupported size.";
+
+  public AppLovinMediationAdapter() {
+    appLovinInitializer = AppLovinInitializer.getInstance();
+    appLovinAdFactory = new AppLovinAdFactory();
+    appLovinSdkWrapper = new AppLovinSdkWrapper();
+    appLovinSdkUtilsWrapper = new AppLovinSdkUtilsWrapper();
+  }
+
+  @VisibleForTesting
+  AppLovinMediationAdapter(
+      AppLovinInitializer appLovinInitializer,
+      AppLovinAdFactory appLovinAdFactory,
+      AppLovinSdkWrapper appLovinSdkWrapper,
+      AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
+    this.appLovinInitializer = appLovinInitializer;
+    this.appLovinAdFactory = appLovinAdFactory;
+    this.appLovinSdkWrapper = appLovinSdkWrapper;
+    this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
   }
 
   @Override
@@ -157,9 +187,9 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     }
 
     if (sdkKeys.isEmpty()) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
-          ERROR_DOMAIN);
-      log(WARN, error.getMessage());
+      AdError error =
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
+      Log.w(TAG, error.getMessage());
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
     }
@@ -169,8 +199,10 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     final HashSet<String> initializedSdkKeys = new HashSet<>();
 
     for (String sdkKey : sdkKeys) {
-      AppLovinInitializer.getInstance()
-          .initialize(context, sdkKey, new OnInitializeSuccessListener() {
+      appLovinInitializer.initialize(
+          context,
+          sdkKey,
+          new OnInitializeSuccessListener() {
             @Override
             public void onInitializeSuccess(@NonNull String sdkKey) {
               initializedSdkKeys.add(sdkKey);
@@ -185,7 +217,12 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    return getVersionInfo(BuildConfig.ADAPTER_VERSION);
+  }
+
+  @NonNull
+  @VisibleForTesting
+  VersionInfo getVersionInfo(String versionString) {
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -198,14 +235,14 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     String logMessage = String.format(
         "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
         versionString);
-    log(WARN, logMessage);
+    Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
   @Override
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String versionString = AppLovinSdk.VERSION;
+    String versionString = appLovinSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -217,7 +254,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     String logMessage = String.format(
         "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
-    log(WARN, logMessage);
+    Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
 
@@ -231,48 +268,76 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       AdError error = new AdError(ERROR_AD_FORMAT_UNSUPPORTED,
           "Requested to collect signal for unsupported native ad format. Ignoring...",
           ERROR_DOMAIN);
-      log(ERROR, error.getMessage());
+      Log.e(TAG, error.getMessage());
       signalCallbacks.onFailure(error);
       return;
     }
 
     // Check if the publisher provided extra parameters
-    log(INFO, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
-    AppLovinSdk sdk = AppLovinUtils.retrieveSdk(config.getServerParameters(),
-        rtbSignalData.getContext());
+    Log.i(TAG, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
+    AppLovinSdk sdk =
+        appLovinInitializer.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();
 
     if (TextUtils.isEmpty(bidToken)) {
       AdError error = new AdError(ERROR_EMPTY_BID_TOKEN, "Failed to generate bid token.",
           ERROR_DOMAIN);
-      log(ERROR, error.getMessage());
+      Log.e(TAG, error.getMessage());
       signalCallbacks.onFailure(error);
       return;
     }
 
-    log(INFO, "Generated bid token: " + bidToken);
+    Log.i(TAG, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
   }
 
   @Override
-  public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    rtbInterstitialRenderer = new AppLovinRtbInterstitialRenderer(adConfiguration, callback);
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerAd =
+        AppLovinBannerAd.newInstance(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
+    bannerAd.loadAd();
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    waterfallInterstitialAd =
+        new AppLovinWaterfallInterstitialAd(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
+    waterfallInterstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    rtbInterstitialRenderer =
+        new AppLovinRtbInterstitialRenderer(
+            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
     rtbInterstitialRenderer.loadAd();
   }
 
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedRenderer = new AppLovinWaterfallRewardedRenderer(adConfiguration, callback);
+    rewardedRenderer =
+        new AppLovinWaterfallRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rewardedRenderer.loadAd();
   }
 
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rtbRewardedRenderer = new AppLovinRtbRewardedRenderer(adConfiguration, callback);
+    rtbRewardedRenderer =
+        new AppLovinRtbRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rtbRewardedRenderer.loadAd();
   }
 }
