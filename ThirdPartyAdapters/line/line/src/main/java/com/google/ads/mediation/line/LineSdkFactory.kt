@@ -14,35 +14,23 @@
 
 package com.google.ads.mediation.line
 
-import android.content.Context
-import com.five_corp.ad.FiveAd
 import com.five_corp.ad.FiveAdConfig
 
 /**
- * Wrapper singleton to enable mocking of [FiveAd] (Line) for unit testing.
+ * Wrapper singleton to enable mocking of [FiveAd] different ad formats for unit testing.
  *
  * **Note:** It is used as a layer between the Line Adapter's and the FiveAd SDK. It is required to
  * use this class instead of calling the FiveAd SDK methods directly.
  */
-object LineSdkWrapper {
-  /** Delegate used on unit tests to help mock calls to the third party SDK. */
-  internal var delegate =
-    object : SdkWrapper {
-
-      override fun getSdkVersion(): String = FiveAd.getSdkSemanticVersion()
-
-      override fun isInitialized(): Boolean = FiveAd.isInitialized()
-
-      override fun initialize(context: Context, configuration: FiveAdConfig) =
-        FiveAd.initialize(context, configuration)
+object LineSdkFactory {
+  /** Delegate used on unit tests to help mock calls to create [FiveAd] formats. */
+  internal var delegate: SdkFactory =
+    object : SdkFactory {
+      override fun createFiveAdConfig(appId: String): FiveAdConfig = FiveAdConfig(appId)
     }
 }
 
-/** Declares the methods that will invoke the FiveAd SDK */
-interface SdkWrapper {
-  fun getSdkVersion(): String
-
-  fun isInitialized(): Boolean
-
-  fun initialize(context: Context, configuration: FiveAdConfig)
+/** Declares the methods that will invoke the [FiveAd] SDK */
+interface SdkFactory {
+  fun createFiveAdConfig(appId: String): FiveAdConfig
 }
