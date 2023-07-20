@@ -1,8 +1,33 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.ironsource;
 
+import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_REQUIRES_ACTIVITY_CONTEXT;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
+
+import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
@@ -13,24 +38,6 @@ import java.util.ArrayList;
  * IronSource SDK, as well as some helper methods for the IronSource adapters.
  */
 public class IronSourceAdapterUtils {
-
-  /** Adapter class name for logging. */
-  static final String TAG = IronSourceMediationAdapter.class.getSimpleName();
-
-  /** Key to obtain App Key, required for initializing IronSource SDK. */
-  static final String KEY_APP_KEY = "appKey";
-
-  /** Key to obtain the IronSource Instance ID, required to show IronSource ads. */
-  static final String KEY_INSTANCE_ID = "instanceId";
-
-  /** Default IronSource instance ID. */
-  static final String DEFAULT_INSTANCE_ID = "0";
-
-  /** Constant used for IronSource internal reporting. */
-  static final String MEDIATION_NAME = "AdMob";
-
-  /** Constant used for IronSource adapter version internal reporting */
-  static final String ADAPTER_VERSION_NAME = "400";
 
   @Nullable
   public static ISBannerSize getISBannerSize(@NonNull Context context, @NonNull AdSize adSize) {
@@ -50,6 +57,30 @@ public class IronSourceAdapterUtils {
       }
 
       return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
+    } else {
+      return null;
+    }
+  }
+
+  public static AdError checkContextIsActivity(Context context) {
+    if (!(context instanceof Activity)) {
+      String errorMessage =
+          ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.";
+      Log.e(TAG, errorMessage);
+      AdError contextError =
+          new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      return contextError;
+    }
+
+    return null;
+  }
+
+  public static AdError checkInstanceId(String instanceID) {
+    if (TextUtils.isEmpty(instanceID)) {
+      AdError loadError =
+          new AdError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
+      return loadError;
     }
 
     return null;
