@@ -1,5 +1,14 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 4.8.0.0
+- Reports ad impression when Unity Ads SDK invokes its new onBannerShown()
+  callback method.
+- Verified compatibility with Unity Ads SDK 4.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Unity Ads SDK version 4.8.0.
+
 #### Version 4.7.1.0
 - Verified compatibility with Unity Ads SDK 4.7.1.
 
