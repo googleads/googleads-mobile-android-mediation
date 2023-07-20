@@ -139,6 +139,18 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     mediationBannerAdCallback.onAdLeftApplication();
   }
 
+  @Override
+  public void onBannerShown(BannerView bannerView) {
+    String logMessage =
+        String.format(
+            "Unity Ads banner ad was shown for placement ID: %s", bannerView.getPlacementId());
+    Log.d(UnityMediationAdapter.TAG, logMessage);
+
+    if (mediationBannerAdCallback != null) {
+      mediationBannerAdCallback.reportAdImpression();
+    }
+  }
+
   public void loadAd() {
     Context context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
