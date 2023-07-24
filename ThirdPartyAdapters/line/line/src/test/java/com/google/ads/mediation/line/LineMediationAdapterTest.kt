@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.FiveAdConfig
+import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -33,9 +34,12 @@ class LineMediationAdapterTest {
   private var lineMediationAdapter = LineMediationAdapter()
 
   private val mockSdkWrapper = mock<SdkWrapper>()
-  private val mockFiveAdConfig = mock<FiveAdConfig>()
+  private val fiveAdConfig = FiveAdConfig(TEST_APP_ID_1)
   private val mockSdkFactory =
-    mock<SdkFactory> { on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig }
+    mock<SdkFactory> {
+      on { createFiveAdConfig(TEST_APP_ID_1) } doReturn fiveAdConfig
+      on { createFiveAdConfig(TEST_APP_ID_2) } doReturn FiveAdConfig(TEST_APP_ID_2)
+    }
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
@@ -125,7 +129,7 @@ class LineMediationAdapterTest {
 
     verify(mockSdkFactory, times(1)).createFiveAdConfig(eq(TEST_APP_ID_1))
     verify(mockSdkFactory, never()).createFiveAdConfig(eq(TEST_APP_ID_2))
-    verify(mockSdkWrapper, times(1)).initialize(eq(context), eq(mockFiveAdConfig))
+    verify(mockSdkWrapper, times(1)).initialize(eq(context), eq(fiveAdConfig))
   }
 
   @Test
@@ -155,7 +159,7 @@ class LineMediationAdapterTest {
     )
 
     verify(mockSdkFactory).createFiveAdConfig(eq(TEST_APP_ID_1))
-    verify(mockSdkWrapper).initialize(eq(context), eq(mockFiveAdConfig))
+    verify(mockSdkWrapper).initialize(eq(context), eq(fiveAdConfig))
   }
 
   @Test
@@ -175,6 +179,68 @@ class LineMediationAdapterTest {
   }
 
   @Test
+  fun initialize_withTagForChildTreatmentTrue_configuresFiveAdSDKWithTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration)
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment).isEqualTo(NeedChildDirectedTreatment.TRUE)
+  }
+
+  @Test
+  fun initialize_withTagForChildTreatmentFalse_configuresFiveAdSDKWithFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration)
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment).isEqualTo(NeedChildDirectedTreatment.FALSE)
+  }
+
+  @Test
+  fun initialize_withTagForChildTreatmentUnspecified_configuresFiveAdSDKWithUnspecified() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration)
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment)
+      .isEqualTo(NeedChildDirectedTreatment.UNSPECIFIED)
+  }
+
+  @Test
   fun initialize_withTestDevicesIds_configuresTestToTrue() {
     val requestConfiguration =
       RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_DEVICE")).build()
@@ -188,7 +254,7 @@ class LineMediationAdapterTest {
       listOf(mediationConfiguration)
     )
 
-    assertThat(mockFiveAdConfig.isTest).isTrue()
+    assertThat(fiveAdConfig.isTest).isTrue()
   }
 
   @Test
@@ -204,7 +270,7 @@ class LineMediationAdapterTest {
       listOf(mediationConfiguration)
     )
 
-    assertThat(mockFiveAdConfig.isTest).isFalse()
+    assertThat(fiveAdConfig.isTest).isFalse()
   }
 
   private fun createMediationConfiguration(

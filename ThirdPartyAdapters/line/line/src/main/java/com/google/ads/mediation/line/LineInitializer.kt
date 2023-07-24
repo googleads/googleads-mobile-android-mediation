@@ -15,7 +15,9 @@
 package com.google.ads.mediation.line
 
 import android.content.Context
+import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 
 /**
  * Singleton used to initialize [FiveAd] SDK through the [LineSdkWrapper] which facilitates unit
@@ -29,6 +31,16 @@ object LineInitializer {
     }
 
     val config = LineSdkFactory.delegate.createFiveAdConfig(appId)
+
+    config.needChildDirectedTreatment =
+      when (MobileAds.getRequestConfiguration().tagForChildDirectedTreatment) {
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ->
+          NeedChildDirectedTreatment.TRUE
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ->
+          NeedChildDirectedTreatment.FALSE
+        else -> NeedChildDirectedTreatment.UNSPECIFIED
+      }
+
     config.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
     LineSdkWrapper.delegate.initialize(context, config)
   }
