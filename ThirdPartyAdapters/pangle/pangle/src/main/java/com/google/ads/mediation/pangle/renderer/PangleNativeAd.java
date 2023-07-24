@@ -38,6 +38,7 @@ import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleRequestHelper;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
@@ -110,6 +111,7 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
           public void onInitializeSuccess() {
             PAGNativeRequest request = pangleFactory.createPagNativeRequest();
             request.setAdString(bidResponse);
+            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadNativeAd(
                 placementId,
                 request,

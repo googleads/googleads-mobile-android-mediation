@@ -33,6 +33,7 @@ import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleRequestHelper;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -96,6 +97,7 @@ public class PangleRewardedAd implements MediationRewardedAd {
           public void onInitializeSuccess() {
             PAGRewardedRequest request = pangleFactory.createPagRewardedRequest();
             request.setAdString(bidResponse);
+            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadRewardedAd(
                 placementId,
                 request,
