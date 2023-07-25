@@ -29,7 +29,7 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 class LineMediationAdapter : Adapter() {
 
   override fun getSDKVersionInfo(): VersionInfo {
-    val versionString = LineSdkWrapper.getSdkVersion()
+    val versionString = LineSdkWrapper.delegate.getSdkVersion()
     val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
     if (splits.size >= 3) {
@@ -74,13 +74,45 @@ class LineMediationAdapter : Adapter() {
   override fun initialize(
     context: Context,
     initializationCompleteCallback: InitializationCompleteCallback,
-    mediationConfigurations: MutableList<MediationConfiguration>,
+    mediationConfigurations: List<MediationConfiguration>,
   ) {
+    val appIds =
+      mediationConfigurations.mapNotNull {
+        val appId = it.serverParameters.getString(KEY_APP_ID)
+        if (appId.isNullOrEmpty()) {
+          null
+        } else {
+          appId
+        }
+      }
+
+    if (appIds.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
+      return
+    }
+
+    val appIdForInit = appIds[0]
+    if (appIds.size > 1) {
+      val message =
+        "Multiple $KEY_APP_ID entries found: ${appIds}. Using '${appIdForInit}' to initialize the Line SDK"
+      Log.w(TAG, message)
+    }
+
+    try {
+      LineInitializer.initialize(context, appIdForInit)
+    } catch (exception: IllegalArgumentException) {
+      exception.message?.let { initializationCompleteCallback.onInitializationFailed(it) }
+      return
+    }
+
     initializationCompleteCallback.onInitializationSucceeded()
   }
 
   companion object {
     private val TAG = LineMediationAdapter::class.simpleName
     @VisibleForTesting var adapterVersionDelegate: String? = null
+    const val KEY_APP_ID = "application_id"
+    const val ERROR_MSG_MISSING_APP_ID =
+      "Missing or invalid Application ID configured for this ad source instance in the AdMob or Ad Manager UI."
   }
 }
