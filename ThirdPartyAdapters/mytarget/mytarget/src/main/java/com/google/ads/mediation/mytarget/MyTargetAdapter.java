@@ -33,6 +33,7 @@ import com.my.target.ads.InterstitialAd;
 import com.my.target.ads.MyTargetView;
 import com.my.target.ads.MyTargetView.MyTargetViewListener;
 import com.my.target.common.CustomParams;
+import com.my.target.common.models.IAdLoadingError;
 
 /**
  * Mediation adapter for myTarget.
@@ -194,8 +195,9 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     }
 
     @Override
-    public void onNoAd(@NonNull final String reason, @NonNull final MyTargetView view) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
+    public void onNoAd(@NonNull final IAdLoadingError reason, @NonNull final MyTargetView view) {
+      AdError error = 
+          new AdError(ERROR_MY_TARGET_SDK, reason.getMessage(), MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }
@@ -235,8 +237,9 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
     }
 
     @Override
-    public void onNoAd(@NonNull final String reason, @NonNull final InterstitialAd ad) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
+    public void onNoAd(@NonNull final IAdLoadingError reason, @NonNull final InterstitialAd ad) {
+      AdError error = 
+          new AdError(ERROR_MY_TARGET_SDK, reason.getMessage(), MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       listener.onAdFailedToLoad(MyTargetAdapter.this, error);
     }
