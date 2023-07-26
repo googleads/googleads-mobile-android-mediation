@@ -35,6 +35,7 @@ import com.my.target.ads.RewardedAd;
 import com.my.target.ads.RewardedAd.RewardedAdListener;
 import com.my.target.common.CustomParams;
 import com.my.target.common.MyTargetVersion;
+import com.my.target.common.models.IAdLoadingError;
 import java.util.List;
 
 public class MyTargetMediationAdapter extends Adapter
@@ -191,8 +192,9 @@ public class MyTargetMediationAdapter extends Adapter
   }
 
   @Override
-  public void onNoAd(@NonNull final String reason, @NonNull final RewardedAd ad) {
-    AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
+  public void onNoAd(@NonNull final IAdLoadingError reason, @NonNull final RewardedAd ad) {
+    AdError error = 
+        new AdError(ERROR_MY_TARGET_SDK, reason.getMessage(), MY_TARGET_SDK_ERROR_DOMAIN);
     Log.e(TAG, error.getMessage());
     if (mAdLoadCallback != null) {
       mAdLoadCallback.onFailure(error);

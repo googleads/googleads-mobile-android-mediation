@@ -45,6 +45,7 @@ import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.my.target.common.CachePolicy;
 import com.my.target.common.CustomParams;
+import com.my.target.common.models.IAdLoadingError;
 import com.my.target.common.models.ImageData;
 import com.my.target.nativeads.MediationHelper;
 import com.my.target.nativeads.NativeAd;
@@ -303,8 +304,9 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     }
 
     @Override
-    public void onNoAd(@NonNull final String reason, @NonNull final NativeAd nativeAd) {
-      AdError error = new AdError(ERROR_MY_TARGET_SDK, reason, MY_TARGET_SDK_ERROR_DOMAIN);
+    public void onNoAd(@NonNull final IAdLoadingError reason, @NonNull final NativeAd nativeAd) {
+      AdError error = 
+          new AdError(ERROR_MY_TARGET_SDK, reason.getMessage(), MY_TARGET_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       if (nativeListener != null) {
         nativeListener.onAdFailedToLoad(MyTargetNativeAdapter.this, error);
