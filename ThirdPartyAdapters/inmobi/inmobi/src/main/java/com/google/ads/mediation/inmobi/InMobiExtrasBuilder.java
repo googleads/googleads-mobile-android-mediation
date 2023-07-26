@@ -28,17 +28,18 @@ public class InMobiExtrasBuilder {
 
     if (mediationExtras != null && mediationExtras.keySet() != null) {
       for (String key : mediationExtras.keySet()) {
-        if(!key.contains(InMobiNetworkKeys.IAB_US_STRING))
+        if(!key.contains(InMobiNetworkKeys.IAB_US_PRIVACY_STRING))
           map.put(key, mediationExtras.getString(key));
       }
     }
 
-    //US privacy string from SharedPreferences
-      SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-      String iabUSPPrivacyStringFromPreferences = sharedPref.getString(InMobiNetworkKeys.IAB_US_STRING, null);
-      if (iabUSPPrivacyStringFromPreferences != null) {
-        InMobiPrivacyCompliance.setUSPrivacyString(iabUSPPrivacyStringFromPreferences);
-      }
+    // Forward U.S. Privacy String set in SharedPreferences to InMobi SDK.
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String iabUSPrivacyString = sharedPreferences.getString(
+        InMobiNetworkKeys.IAB_US_PRIVACY_STRING, null);
+    if (iabUSPrivacyString != null) {
+      InMobiPrivacyCompliance.setUSPrivacyString(iabUSPrivacyString);
+    }
 
     map.put(THIRD_PARTY_KEY, protocol);
     map.put(THIRD_PARTY_VERSION, MobileAds.getVersion().toString());
