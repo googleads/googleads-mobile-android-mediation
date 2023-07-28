@@ -14,7 +14,9 @@
 
 package com.google.ads.mediation.line
 
+import android.content.Context
 import com.five_corp.ad.FiveAdConfig
+import com.five_corp.ad.FiveAdCustomLayout
 
 /**
  * Wrapper singleton to enable mocking of [FiveAd] different ad formats for unit testing.
@@ -27,10 +29,18 @@ object LineSdkFactory {
   internal var delegate: SdkFactory =
     object : SdkFactory {
       override fun createFiveAdConfig(appId: String): FiveAdConfig = FiveAdConfig(appId)
+
+      override fun createFiveAdCustomLayout(
+        context: Context,
+        slotId: String,
+        width: Int,
+      ): FiveAdCustomLayout = FiveAdCustomLayout(context, slotId, width)
     }
 }
 
 /** Declares the methods that will invoke the [FiveAd] SDK */
 interface SdkFactory {
   fun createFiveAdConfig(appId: String): FiveAdConfig
+
+  fun createFiveAdCustomLayout(context: Context, slotId: String, width: Int): FiveAdCustomLayout
 }

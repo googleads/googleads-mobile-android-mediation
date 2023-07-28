@@ -20,6 +20,10 @@ import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.Adapter
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
 
 /**
@@ -27,6 +31,8 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
  * be used directly by publishers.
  */
 class LineMediationAdapter : Adapter() {
+
+  private lateinit var bannerAd: LineBannerAd
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -108,11 +114,29 @@ class LineMediationAdapter : Adapter() {
     initializationCompleteCallback.onInitializationSucceeded()
   }
 
+  override fun loadBannerAd(
+    mediationBannerAdConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    LineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
+      bannerAd = it
+      bannerAd.loadAd()
+    }
+  }
+
   companion object {
     private val TAG = LineMediationAdapter::class.simpleName
     @VisibleForTesting var adapterVersionDelegate: String? = null
     const val KEY_APP_ID = "application_id"
+    const val KEY_SLOT_ID = "slot_id"
     const val ERROR_MSG_MISSING_APP_ID =
       "Missing or invalid Application ID configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_MSG_MISSING_SLOT_ID =
+      "Missing or invalid Slot ID configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_CODE_MISSING_APP_ID = 101
+    const val ERROR_CODE_MISSING_SLOT_ID = 102
+    const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
+    const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
+    const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
   }
 }
