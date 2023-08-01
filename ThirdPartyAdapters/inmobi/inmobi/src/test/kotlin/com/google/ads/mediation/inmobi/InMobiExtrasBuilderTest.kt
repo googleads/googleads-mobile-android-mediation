@@ -9,12 +9,12 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
-private val context = ApplicationProvider.getApplicationContext<Context>()
 @RunWith(ParameterizedRobolectricTestRunner::class)
 class InMobiExtrasBuilderTest(
   private val mediationExtras: Map<String, String>?,
   private val protocol: String
 ) {
+  private val context = ApplicationProvider.getApplicationContext<Context>()
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasWithCorrectProtocol() {
     val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)

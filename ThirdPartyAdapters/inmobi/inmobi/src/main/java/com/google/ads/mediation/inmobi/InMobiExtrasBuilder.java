@@ -3,8 +3,6 @@ package com.google.ads.mediation.inmobi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.MobileAds;
@@ -34,7 +32,8 @@ public class InMobiExtrasBuilder {
     }
 
     // Forward U.S. Privacy String set in SharedPreferences to InMobi SDK.
-    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences sharedPreferences =
+        context.getSharedPreferences("NonNullPackage", Context.MODE_PRIVATE);
     String iabUSPrivacyString = sharedPreferences.getString(
         InMobiNetworkKeys.IAB_US_PRIVACY_STRING, null);
     if (iabUSPrivacyString != null) {
