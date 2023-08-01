@@ -1,5 +1,6 @@
 package com.google.ads.mediation.line
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import androidx.core.os.bundleOf
@@ -7,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
+import com.five_corp.ad.FiveAdInterstitial
 import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
@@ -20,6 +22,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -36,6 +41,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.robolectric.Robolectric
 
 @RunWith(AndroidJUnit4::class)
 class LineMediationAdapterTest {
@@ -44,19 +50,25 @@ class LineMediationAdapterTest {
   private var lineMediationAdapter = LineMediationAdapter()
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val mockSdkWrapper = mock<SdkWrapper>()
   private val fiveAdConfig = FiveAdConfig(TEST_APP_ID_1)
   private val mockFiveAdCustomLayout = mock<FiveAdCustomLayout>()
+  private val mockFiveAdInterstitial = mock<FiveAdInterstitial>()
   private val mockSdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(TEST_APP_ID_1) } doReturn fiveAdConfig
       on { createFiveAdConfig(TEST_APP_ID_2) } doReturn FiveAdConfig(TEST_APP_ID_2)
       on { createFiveAdCustomLayout(context, TEST_SLOT_ID, AdSize.BANNER.width) } doReturn
         mockFiveAdCustomLayout
+      on { createFiveAdInterstitial(activity, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
     }
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val mockMediationBannerAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
+    mock()
+  private val mockMediationInterstitialAdLoadCallback:
+    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
 
   @Before
@@ -430,21 +442,173 @@ class LineMediationAdapterTest {
 
   // endregion
 
-  companion object {
-    private const val MAJOR_VERSION = 4
-    private const val MINOR_VERSION = 3
-    private const val MICRO_VERSION = 2
-    private const val PATCH_VERSION = 1
-    private const val CORRECT_TEST_VERSION =
+  // region Interstitial Ad Tests
+  @Test
+  fun loadInterstitialAd_withNonActivityContext_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1,
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID
+      )
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockMediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code)
+      .isEqualTo(LineMediationAdapter.ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY)
+    assertThat(capturedError.message)
+      .isEqualTo(LineMediationAdapter.ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_withNullAppId_invokesOnFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(activity, serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockMediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_withEmptyAppId_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to "",
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID
+      )
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(activity, serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockMediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_withNullSlotId_invokesOnFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(activity, serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockMediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1,
+        LineMediationAdapter.KEY_SLOT_ID to ""
+      )
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(activity, serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockMediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_verifiesInitializationAndThenCreatesAndLoadsFiveAdInterstitial() {
+    whenever(mockSdkWrapper.isInitialized()) doReturn false
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1
+      )
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(activity, serverParameters)
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    inOrder(mockSdkWrapper, mockFiveAdInterstitial) {
+      verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
+      verify(mockFiveAdInterstitial).setLoadListener(isA<LineInterstitialAd>())
+      verify(mockFiveAdInterstitial).loadAdAsync()
+    }
+  }
+
+  private fun createMediationInterstitialAdConfiguration(
+    context: Context = this.context,
+    serverParameters: Bundle = Bundle(),
+  ) =
+    MediationInterstitialAdConfiguration(
+      context,
+      /*bidresponse=*/ "",
+      serverParameters,
+      /*mediationExtras=*/ Bundle(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      TEST_WATERMARK,
+    )
+
+  // endregion
+
+  private companion object {
+    const val MAJOR_VERSION = 4
+    const val MINOR_VERSION = 3
+    const val MICRO_VERSION = 2
+    const val PATCH_VERSION = 1
+    const val CORRECT_TEST_VERSION =
       "${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}.${PATCH_VERSION}"
     // Invalid Adapter Version has less than 4 digits
-    private const val INVALID_ADAPTER_VERSION = "${PATCH_VERSION}.${PATCH_VERSION}.${PATCH_VERSION}"
+    const val INVALID_ADAPTER_VERSION = "${PATCH_VERSION}.${PATCH_VERSION}.${PATCH_VERSION}"
     // Invalid Sdk Version has less than 3 digits
-    private const val INVALID_SDK_VERSION = "${PATCH_VERSION}.${PATCH_VERSION}"
-    private const val TEST_APP_ID_1 = "testAppId1"
-    private const val TEST_APP_ID_2 = "testAppId2"
-    private const val TEST_SLOT_ID = "testSlotId"
-    private const val TEST_INITIALIZE_ERROR_MSG = "testInitializeErrorMessage"
-    private const val TEST_WATERMARK = "testWatermark"
+    const val INVALID_SDK_VERSION = "${PATCH_VERSION}.${PATCH_VERSION}"
+    const val TEST_APP_ID_1 = "testAppId1"
+    const val TEST_APP_ID_2 = "testAppId2"
+    const val TEST_SLOT_ID = "testSlotId"
+    const val TEST_INITIALIZE_ERROR_MSG = "testInitializeErrorMessage"
+    const val TEST_WATERMARK = "testWatermark"
   }
 }

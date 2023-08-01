@@ -25,6 +25,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 
 /**
  * Line Adapter for GMA SDK used to initialize and load ads from the Line SDK. This class should not
@@ -33,6 +36,7 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 class LineMediationAdapter : Adapter() {
 
   private lateinit var bannerAd: LineBannerAd
+  private lateinit var interstitialAd: LineInterstitialAd
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -124,6 +128,16 @@ class LineMediationAdapter : Adapter() {
     }
   }
 
+  override fun loadInterstitialAd(
+    mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
+    callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+  ) {
+    LineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
+      interstitialAd = it
+      interstitialAd.loadAd()
+    }
+  }
+
   companion object {
     private val TAG = LineMediationAdapter::class.simpleName
     @VisibleForTesting var adapterVersionDelegate: String? = null
@@ -136,6 +150,12 @@ class LineMediationAdapter : Adapter() {
     const val ERROR_CODE_MISSING_APP_ID = 101
     const val ERROR_CODE_MISSING_SLOT_ID = 102
     const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
+    const val ERROR_MSG_AD_SHOWING = "FiveAd SDK could not show ad with error with code %s."
+    const val ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY = 104
+    const val ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY =
+      "Line Interstitial requires an Activity context to load this ad"
+    const val ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN = 105
+    const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
     const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
   }

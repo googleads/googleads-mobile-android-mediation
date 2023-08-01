@@ -14,9 +14,11 @@
 
 package com.google.ads.mediation.line
 
+import android.app.Activity
 import android.content.Context
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
+import com.five_corp.ad.FiveAdInterstitial
 
 /**
  * Wrapper singleton to enable mocking of [FiveAd] different ad formats for unit testing.
@@ -35,6 +37,11 @@ object LineSdkFactory {
         slotId: String,
         width: Int,
       ): FiveAdCustomLayout = FiveAdCustomLayout(context, slotId, width)
+
+      override fun createFiveAdInterstitial(
+        activity: Activity,
+        slotId: String,
+      ): FiveAdInterstitial = FiveAdInterstitial(activity, slotId)
     }
 }
 
@@ -43,4 +50,6 @@ interface SdkFactory {
   fun createFiveAdConfig(appId: String): FiveAdConfig
 
   fun createFiveAdCustomLayout(context: Context, slotId: String, width: Int): FiveAdCustomLayout
+
+  fun createFiveAdInterstitial(activity: Activity, slotId: String): FiveAdInterstitial
 }
