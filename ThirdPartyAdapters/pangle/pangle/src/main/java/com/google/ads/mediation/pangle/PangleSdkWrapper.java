@@ -27,6 +27,9 @@ import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAd;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
@@ -82,6 +85,11 @@ public class PangleSdkWrapper {
   public void loadInterstitialAd(
       String placementId, PAGInterstitialRequest request, PAGInterstitialAdLoadListener listener) {
     PAGInterstitialAd.loadAd(placementId, request, listener);
+  }
+
+  public void loadNativeAd(
+      String placementId, PAGNativeRequest pagNativeRequest, PAGNativeAdLoadListener listener) {
+    PAGNativeAd.loadAd(placementId, pagNativeRequest, listener);
   }
 
   public void loadRewardedAd(

@@ -27,15 +27,18 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAd;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
 import com.google.ads.mediation.pangle.PangleConstants;
+import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -49,11 +52,17 @@ import java.util.Map;
 
 public class PangleNativeAd extends UnifiedNativeAdMapper {
 
-  private static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
+  @VisibleForTesting static final double PANGLE_SDK_IMAGE_SCALE = 1.0;
+
+  /** ID of Ad Choices text view asset. */
+  @VisibleForTesting static final String ASSET_ID_ADCHOICES_TEXT_VIEW = "3012";
+
   private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
+  private final PangleSdkWrapper pangleSdkWrapper;
+  private final PangleFactory pangleFactory;
   private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationNativeAdCallback callback;
   private PAGNativeAd pagNativeAd;
@@ -64,10 +73,14 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
+      @NonNull PangleSdkWrapper pangleSdkWrapper,
+      @NonNull PangleFactory pangleFactory,
       @NonNull PanglePrivacyConfig panglePrivacyConfig) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
+    this.pangleSdkWrapper = pangleSdkWrapper;
+    this.pangleFactory = pangleFactory;
     this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
@@ -95,9 +108,9 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            PAGNativeRequest request = new PAGNativeRequest();
+            PAGNativeRequest request = pangleFactory.createPagNativeRequest();
             request.setAdString(bidResponse);
-            PAGNativeAd.loadAd(
+            pangleSdkWrapper.loadNativeAd(
                 placementId,
                 request,
                 new PAGNativeAdLoadListener() {
@@ -158,7 +171,7 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
 
     // Exclude Pangle's Privacy Information Icon image and text from click events.
     copyClickableAssetViews.remove(NativeAdAssetNames.ASSET_ADCHOICES_CONTAINER_VIEW);
-    copyClickableAssetViews.remove("3012");
+    copyClickableAssetViews.remove(ASSET_ID_ADCHOICES_TEXT_VIEW);
 
     View creativeBtn = copyClickableAssetViews.get(NativeAdAssetNames.ASSET_CALL_TO_ACTION);
     ArrayList<View> creativeViews = new ArrayList<>();

@@ -249,7 +249,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     nativeAd =
-        new PangleNativeAd(adConfiguration, callback, pangleInitializer, panglePrivacyConfig);
+        pangleFactory.createPangleNativeAd(
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
     nativeAd.render();
   }
 
