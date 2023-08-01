@@ -23,20 +23,23 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbRewardedAdTest {
-  private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>()
+  private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>(){
+    on { context } doReturn context
+  }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiRewardedWrapper = mock<InMobiInterstitialWrapper>()
   private val mediationRewardedAdCallback = mock<MediationRewardedAdCallback>()
-  private val context = ApplicationProvider.getApplicationContext<Context>()
 
   lateinit var rtbRewardedAd: InMobiRtbRewardedAd
   lateinit var adMetaInfo: AdMetaInfo
