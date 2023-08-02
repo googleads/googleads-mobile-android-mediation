@@ -21,6 +21,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
+import androidx.annotation.VisibleForTesting;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -41,14 +42,22 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
 
   static final String KEY_ICON = "icon_key";
 
-  private static final long DRAWABLE_FUTURE_TIMEOUT_SECONDS = 10;
+  private final long drawableFutureTimeoutSeconds;
 
   private final DrawableDownloadListener listener;
 
-  private final InMobiMemoryCache memoryCache = new InMobiMemoryCache();
+  @VisibleForTesting
+  final InMobiMemoryCache memoryCache = new InMobiMemoryCache();
 
   public ImageDownloaderAsyncTask(DrawableDownloadListener listener) {
     this.listener = listener;
+    this.drawableFutureTimeoutSeconds = 10;
+  }
+
+  @VisibleForTesting
+  ImageDownloaderAsyncTask(DrawableDownloadListener listener, Long timeout) {
+    this.listener = listener;
+    this.drawableFutureTimeoutSeconds = timeout;
   }
 
   /**
@@ -75,7 +84,7 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
         iconDrawable = memoryCache.get(String.valueOf(urlsMap.get(KEY_ICON)));
       } else {
         iconDrawable = getDrawableFuture(urlsMap.get(KEY_ICON), executorService).get
-            (DRAWABLE_FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            (drawableFutureTimeoutSeconds, TimeUnit.SECONDS);
         memoryCache.put(String.valueOf(urlsMap.get(KEY_ICON)), iconDrawable);
       }
 
