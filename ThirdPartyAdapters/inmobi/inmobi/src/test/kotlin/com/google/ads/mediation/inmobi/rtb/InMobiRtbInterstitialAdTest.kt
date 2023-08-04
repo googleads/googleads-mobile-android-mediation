@@ -13,9 +13,9 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,9 +31,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbInterstitialAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>(){
-    on { context } doReturn context
-  }
+  private val interstitialAdConfiguration =
+    mock<MediationInterstitialAdConfiguration>() { on { context } doReturn context }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()
@@ -100,8 +99,7 @@ class InMobiRtbInterstitialAdTest {
   fun onAdLoadSucceeded_invokesOnSuccessCallback() {
     rtbInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
 
-    verify(mediationAdLoadCallback)
-      .onSuccess(ArgumentMatchers.any(rtbInterstitialAd::class.java))
+    verify(mediationAdLoadCallback).onSuccess(ArgumentMatchers.any(rtbInterstitialAd::class.java))
   }
 
   @Test

@@ -49,9 +49,7 @@ class InMobiMediationAdapterTest {
   val mediationConfiguration: MediationConfiguration = mock()
   val initializationCompleteCallback: InitializationCompleteCallback = mock()
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val rtbSignalData = mock<RtbSignalData>(){
-    on { context } doReturn context
-  }
+  private val rtbSignalData = mock<RtbSignalData>() { on { context } doReturn context }
   private val signalCallbacks = mock<SignalCallbacks>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()

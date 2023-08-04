@@ -13,9 +13,9 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,9 +31,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiWaterfallInterstitialAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>(){
-    on { context } doReturn context
-  }
+  private val interstitialAdConfiguration =
+    mock<MediationInterstitialAdConfiguration>() { on { context } doReturn context }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()
@@ -87,8 +86,11 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onUserLeftApplication_invokesOnAdLeftApplicationCallback() {
-    //mimic an ad load
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
     waterfallInterstitialAd.onUserLeftApplication(inMobiInterstitialWrapper.inMobiInterstitial)
 
     verify(mediationInterstitialAdCallback).onAdLeftApplication()
@@ -96,16 +98,24 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onAdLoadSucceeded_invokesOnSuccessCallback() {
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
 
-    verify(mediationAdLoadCallback).onSuccess(ArgumentMatchers.any(waterfallInterstitialAd::class.java))
+    verify(mediationAdLoadCallback)
+      .onSuccess(ArgumentMatchers.any(waterfallInterstitialAd::class.java))
   }
 
   @Test
   fun onAdLoadFailed_invokesOnFailureCallback() {
-    var inMobiAdRequestStatus = InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
+    var inMobiAdRequestStatus =
+      InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
 
-    waterfallInterstitialAd.onAdLoadFailed(inMobiInterstitialWrapper.inMobiInterstitial, inMobiAdRequestStatus)
+    waterfallInterstitialAd.onAdLoadFailed(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      inMobiAdRequestStatus
+    )
 
     val captor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(captor.capture())
@@ -116,8 +126,11 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onAdDisplayed_invokesOnAdOpenedCallback() {
-    //mimic an ad load
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
     waterfallInterstitialAd.onAdDisplayed(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
 
     verify(mediationInterstitialAdCallback).onAdOpened()
@@ -125,8 +138,11 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onAdDismissed_invokedOnAdClosedCallback() {
-    //mimic an ad load
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
     waterfallInterstitialAd.onAdDismissed(inMobiInterstitialWrapper.inMobiInterstitial)
 
     verify(mediationInterstitialAdCallback).onAdClosed()
@@ -134,8 +150,11 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onAdClicked_invokedOnAdClickedCallback() {
-    //mimic an ad load
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
     waterfallInterstitialAd.onAdClicked(inMobiInterstitialWrapper.inMobiInterstitial, null)
 
     verify(mediationInterstitialAdCallback).reportAdClicked()
@@ -143,8 +162,11 @@ class InMobiWaterfallInterstitialAdTest {
 
   @Test
   fun onAdImpression_invokesReportAdImpression() {
-    //mimic an ad load
-    waterfallInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
     waterfallInterstitialAd.onAdImpression(inMobiInterstitialWrapper.inMobiInterstitial)
 
     verify(mediationInterstitialAdCallback).reportAdImpression()

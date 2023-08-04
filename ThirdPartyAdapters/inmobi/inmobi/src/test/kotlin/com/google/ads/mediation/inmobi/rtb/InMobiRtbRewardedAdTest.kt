@@ -31,9 +31,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbRewardedAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>(){
-    on { context } doReturn context
-  }
+  private val rewardedAdConfiguration =
+    mock<MediationRewardedAdConfiguration>() { on { context } doReturn context }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()

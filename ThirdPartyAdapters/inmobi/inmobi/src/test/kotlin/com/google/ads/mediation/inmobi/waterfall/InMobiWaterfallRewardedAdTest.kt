@@ -31,9 +31,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiWaterfallRewardedAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>(){
-    on { context } doReturn context
-  }
+  private val rewardedAdConfiguration =
+    mock<MediationRewardedAdConfiguration>() { on { context } doReturn context }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()
@@ -129,7 +128,7 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, null)
 
     verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor =  argumentCaptor<RewardItem>()
+    val captor = argumentCaptor<RewardItem>()
     verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
     assertThat(captor.firstValue.type).isEmpty()
     assertThat(captor.firstValue.amount).isEqualTo(0)
@@ -146,7 +145,7 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, rewards)
 
     verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor =  argumentCaptor<RewardItem>()
+    val captor = argumentCaptor<RewardItem>()
     verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
     assertThat(captor.firstValue.type).isEqualTo(expectedRewardType)
     assertThat(captor.firstValue.amount).isEqualTo(expectedReward.toInt())
@@ -164,7 +163,7 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, rewards)
 
     verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor =  argumentCaptor<RewardItem>()
+    val captor = argumentCaptor<RewardItem>()
     verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
     assertThat(captor.firstValue.type).isEqualTo(expectedRewardType)
     assertThat(captor.firstValue.amount).isEqualTo(defaultReward)
@@ -190,9 +189,13 @@ class InMobiWaterfallRewardedAdTest {
 
   @Test
   fun onAdLoadFailed_invokesOnFailureCallback() {
-    var inMobiAdRequestStatus = InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
+    var inMobiAdRequestStatus =
+      InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
 
-    waterfallRewardedAd.onAdLoadFailed(inMobiRewardedWrapper.inMobiInterstitial, inMobiAdRequestStatus)
+    waterfallRewardedAd.onAdLoadFailed(
+      inMobiRewardedWrapper.inMobiInterstitial,
+      inMobiAdRequestStatus
+    )
 
     val captor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(captor.capture())

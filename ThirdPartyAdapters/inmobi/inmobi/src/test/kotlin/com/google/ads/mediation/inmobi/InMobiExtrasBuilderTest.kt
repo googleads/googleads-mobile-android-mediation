@@ -9,12 +9,14 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
+
 @RunWith(ParameterizedRobolectricTestRunner::class)
 class InMobiExtrasBuilderTest(
   private val mediationExtras: Map<String, String>?,
   private val protocol: String
 ) {
   private val context = ApplicationProvider.getApplicationContext<Context>()
+
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasWithCorrectProtocol() {
     val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
@@ -50,7 +52,7 @@ class InMobiExtrasBuilderTest(
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    //...should set coppa as '1' in the inMobiExtras Map
+    // ...should set coppa as '1' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
   }
 
@@ -70,7 +72,7 @@ class InMobiExtrasBuilderTest(
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    //...should set coppa as '0' in the inMobiExtras Map
+    // ...should set coppa as '0' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
   }
 
@@ -90,7 +92,7 @@ class InMobiExtrasBuilderTest(
 
     assertThat(inMobiExtras).isNotNull()
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    //...should set coppa as '0' in the inMobiExtras Map
+    // ...should set coppa as '0' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
   }
 
