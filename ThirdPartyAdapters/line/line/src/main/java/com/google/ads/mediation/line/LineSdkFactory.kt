@@ -19,6 +19,7 @@ import android.content.Context
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdInterstitial
+import com.five_corp.ad.FiveAdVideoReward
 
 /**
  * Wrapper singleton to enable mocking of [FiveAd] different ad formats for unit testing.
@@ -42,6 +43,9 @@ object LineSdkFactory {
         activity: Activity,
         slotId: String,
       ): FiveAdInterstitial = FiveAdInterstitial(activity, slotId)
+
+      override fun createFiveVideoRewarded(activity: Activity, slotId: String): FiveAdVideoReward =
+        FiveAdVideoReward(activity, slotId)
     }
 }
 
@@ -52,4 +56,6 @@ interface SdkFactory {
   fun createFiveAdCustomLayout(context: Context, slotId: String, width: Int): FiveAdCustomLayout
 
   fun createFiveAdInterstitial(activity: Activity, slotId: String): FiveAdInterstitial
+
+  fun createFiveVideoRewarded(activity: Activity, slotId: String): FiveAdVideoReward
 }

@@ -28,6 +28,9 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 
 /**
  * Line Adapter for GMA SDK used to initialize and load ads from the Line SDK. This class should not
@@ -37,6 +40,7 @@ class LineMediationAdapter : Adapter() {
 
   private lateinit var bannerAd: LineBannerAd
   private lateinit var interstitialAd: LineInterstitialAd
+  private lateinit var rewardedAd: LineRewardedAd
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -135,6 +139,16 @@ class LineMediationAdapter : Adapter() {
     LineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
       interstitialAd.loadAd()
+    }
+  }
+
+  override fun loadRewardedAd(
+    mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    LineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+      rewardedAd = it
+      rewardedAd.loadAd()
     }
   }
 
