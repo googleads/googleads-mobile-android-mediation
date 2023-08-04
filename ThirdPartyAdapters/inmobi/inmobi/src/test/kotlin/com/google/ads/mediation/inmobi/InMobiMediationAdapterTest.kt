@@ -38,6 +38,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -47,7 +48,10 @@ class InMobiMediationAdapterTest {
 
   val mediationConfiguration: MediationConfiguration = mock()
   val initializationCompleteCallback: InitializationCompleteCallback = mock()
-  private val rtbSignalData = mock<RtbSignalData>()
+  private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val rtbSignalData = mock<RtbSignalData>(){
+    on { context } doReturn context
+  }
   private val signalCallbacks = mock<SignalCallbacks>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
@@ -55,7 +59,6 @@ class InMobiMediationAdapterTest {
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
   private val inMobiAdViewHolder = mock<InMobiAdViewHolder>()
   private val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
-  private val context = ApplicationProvider.getApplicationContext<Context>()
   private val bannerAdLoadCallback =
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
   private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>()

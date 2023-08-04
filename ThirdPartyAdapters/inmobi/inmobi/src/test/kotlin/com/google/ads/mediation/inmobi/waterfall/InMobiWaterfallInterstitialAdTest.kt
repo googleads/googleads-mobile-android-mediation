@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -29,14 +30,16 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class InMobiWaterfallInterstitialAdTest {
-  private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>()
+  private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>(){
+    on { context } doReturn context
+  }
   private val mediationAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiInterstitialWrapper = mock<InMobiInterstitialWrapper>()
   private val mediationInterstitialAdCallback = mock<MediationInterstitialAdCallback>()
-  private val context = ApplicationProvider.getApplicationContext<Context>()
 
   lateinit var waterfallInterstitialAd: InMobiWaterfallInterstitialAd
   lateinit var adMetaInfo: AdMetaInfo
