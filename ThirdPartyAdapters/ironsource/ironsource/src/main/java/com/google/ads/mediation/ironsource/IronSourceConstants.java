@@ -7,7 +7,7 @@ public class IronSourceConstants {
   /** Adapter class name for logging. */
   static final String TAG = IronSourceMediationAdapter.class.getSimpleName();
 
-  /** Key to obtain App Key, required for initializing IronSource SDK. */
+  /** Key to obtain App Key, required for initializing ironSource SDK. */
   static final String KEY_APP_KEY = "appKey";
 
   /** Key to obtain the IronSource Instance ID, required to show IronSource ads. */
