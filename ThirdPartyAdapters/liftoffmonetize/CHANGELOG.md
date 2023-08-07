@@ -2,9 +2,10 @@
 
 #### Version 7.0.0.0
 - Rebranded adapter name from Vungle to Liftoff Monetize.
+- Verified compatibility with Vungle SDK 7.0.0.
 
 Built and tested with:
-- Google Mobile Ads SDK version 22.0.0.
+- Google Mobile Ads SDK version 22.2.0.
 - Vungle SDK version 7.0.0.
 
 #### Version 6.12.1.1

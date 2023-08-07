@@ -156,7 +156,7 @@ public class VungleMediationAdapter extends RtbAdapter
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = "7.0.0";//TODO com.vungle.ads.BuildConfig.VERSION_NAME;
+    String versionString = com.vungle.ads.BuildConfig.VERSION_NAME;
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
