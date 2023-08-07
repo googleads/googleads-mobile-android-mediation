@@ -29,7 +29,7 @@ public class IronSourceConstants {
   public static final String IRONSOURCE_SDK_ERROR_DOMAIN = "com.ironsource.mediationsdk";
 
   // region Error codes
-  /** Server parameters (e.g. placement ID) are nil. */
+  /** Server parameters (e.g. instance ID) are nil. */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
   /** IronSource requires an {@link Activity} context to initialize their SDK. */

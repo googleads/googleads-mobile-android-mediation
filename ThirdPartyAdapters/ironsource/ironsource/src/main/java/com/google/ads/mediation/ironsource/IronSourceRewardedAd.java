@@ -25,7 +25,6 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_REQU
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
@@ -45,23 +44,13 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   private static final IronSourceRewardedAdListener ironSourceRewardedListener =
       new IronSourceRewardedAdListener();
 
-  /**
-   * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
-   * SDK while ad is presented
-   */
   private MediationRewardedAdCallback mediationRewardedAdCallback;
 
-  /**
-   * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
-   * SDK for loading phases of the ad.
-   */
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
-  /** IronSource rewarded ad context. */
   private final Context context;
 
-  /** This is the id of the rewarded video instance requested. */
   private final String instanceID;
 
   public IronSourceRewardedAd(
@@ -101,7 +90,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return mediationAdLoadCallback;
   }
 
-  public void loadRewardedVideo() {
+  public void loadAd() {
     if (!isParamsValid()) {
       return;
     }
@@ -114,22 +103,15 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
-    // Check that the context is an Activity.
-    AdError loadError = IronSourceAdapterUtils.checkContextIsActivity(context);
-    if (loadError != null) {
-      onAdFailedToLoad(loadError);
-      return false;
-    }
-
-    // Check that the instance ID is valid.
-    loadError = IronSourceAdapterUtils.checkInstanceId(instanceID);
+    // Check that the context is an Activity and that the instance ID is valid.
+    AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);
       return false;
     }
 
     // Check that an Ad for this instance ID is not already loading.
-    if (!canLoadRewardedVideoInstance(instanceID)) {
+    if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableInstances)) {
       String errorMessage =
           String.format(
               "An IronSource Rewarded ad is already loading for instance ID: %s", instanceID);
@@ -139,11 +121,6 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     }
 
     return true;
-  }
-
-  private boolean canLoadRewardedVideoInstance(@NonNull String instanceId) {
-    IronSourceRewardedAd ironSourceRewardedAd = availableInstances.get(instanceId);
-    return (ironSourceRewardedAd == null);
   }
 
   /** Rewarded Video show Ad. */

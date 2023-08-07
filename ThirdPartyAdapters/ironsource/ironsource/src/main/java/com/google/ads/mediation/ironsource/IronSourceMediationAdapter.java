@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class IronSourceMediationAdapter extends Adapter {
     if (count > 1) {
       String message =
           String.format(
-              "Multiple '%s' entries found: %s. Using '%s' to initialize the IronSource SDK.",
+              "Multiple '%s' entries found: %s. Using app key '%s' to initialize the IronSource SDK.",
               KEY_APP_KEY, appKeys, appKey);
       Log.w(TAG, message);
     }
@@ -180,7 +180,7 @@ public class IronSourceMediationAdapter extends Adapter {
     if (isInitialized.get()) {
       IronSourceRewardedAd ironSourceRewardedAd =
           new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-      ironSourceRewardedAd.loadRewardedVideo();
+      ironSourceRewardedAd.loadAd();
     }
   }
 
@@ -209,7 +209,7 @@ public class IronSourceMediationAdapter extends Adapter {
       IronSourceInterstitialAd ironSourceInterstitialAd =
           new IronSourceInterstitialAd(
               mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-      ironSourceInterstitialAd.loadInterstitial();
+      ironSourceInterstitialAd.loadAd();
     }
   }
 
@@ -222,7 +222,7 @@ public class IronSourceMediationAdapter extends Adapter {
     if (isInitialized.get()) {
       IronSourceBannerAd ironSourceBannerAd =
           new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-      ironSourceBannerAd.loadBanner();
+      ironSourceBannerAd.loadAd();
     }
   }
 }
