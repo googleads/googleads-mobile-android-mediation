@@ -28,9 +28,12 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 
 /**
  * Line Adapter for GMA SDK used to initialize and load ads from the Line SDK. This class should not
@@ -41,6 +44,7 @@ class LineMediationAdapter : Adapter() {
   private lateinit var bannerAd: LineBannerAd
   private lateinit var interstitialAd: LineInterstitialAd
   private lateinit var rewardedAd: LineRewardedAd
+  private lateinit var nativeAd: LineNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -152,6 +156,16 @@ class LineMediationAdapter : Adapter() {
     }
   }
 
+  override fun loadNativeAd(
+    mediationNativeAdConfiguration: MediationNativeAdConfiguration,
+    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+  ) {
+    LineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
+      nativeAd = it
+      nativeAd.loadAd()
+    }
+  }
+
   companion object {
     private val TAG = LineMediationAdapter::class.simpleName
     @VisibleForTesting var adapterVersionDelegate: String? = null
@@ -170,6 +184,9 @@ class LineMediationAdapter : Adapter() {
       "Line Interstitial requires an Activity context to load this ad"
     const val ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN = 105
     const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
+    const val ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED = 106
+    const val ERROR_MSG_MINIMUM_NATIVE_INFO_NOT_RECEIVED =
+      "Complete required data for Native ads was not received. Skipping Ad."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
     const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
   }
