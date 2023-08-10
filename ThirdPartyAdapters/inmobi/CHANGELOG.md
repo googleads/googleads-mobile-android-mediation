@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-### Version 10.5.7.1 (In progress)
+### Version 10.5.7.1
 - Added support to read IAB U.S. Privacy string from shared preferences.
 - Updated the minimum required Google Mobile Ads SDK version to 22.2.0.
 

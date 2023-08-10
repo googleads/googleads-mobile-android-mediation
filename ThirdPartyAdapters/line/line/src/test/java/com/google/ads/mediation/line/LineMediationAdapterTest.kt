@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdInterstitial
+import com.five_corp.ad.FiveAdNative
 import com.five_corp.ad.FiveAdVideoReward
 import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.AdError
@@ -17,6 +18,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
+import com.google.android.gms.ads.VideoOptions
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -26,9 +28,13 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -42,6 +48,7 @@ import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -60,6 +67,7 @@ class LineMediationAdapterTest {
   private val mockFiveAdCustomLayout = mock<FiveAdCustomLayout>()
   private val mockFiveAdInterstitial = mock<FiveAdInterstitial>()
   private val mockFiveAdVideoReward = mock<FiveAdVideoReward>()
+  private val mockFiveAdNative = mock<FiveAdNative>()
   private val mockSdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(TEST_APP_ID_1) } doReturn fiveAdConfig
@@ -68,6 +76,7 @@ class LineMediationAdapterTest {
         mockFiveAdCustomLayout
       on { createFiveAdInterstitial(activity, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
       on { createFiveVideoRewarded(activity, TEST_SLOT_ID) } doReturn mockFiveAdVideoReward
+      on { createFiveAdNative(context, TEST_SLOT_ID) } doReturn mockFiveAdNative
     }
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val mockMediationBannerAdLoadCallback:
@@ -78,6 +87,9 @@ class LineMediationAdapterTest {
     mock()
   private val mockMediationRewardedAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
+    mock()
+  private val mockMediationNativeAdLoadCallback:
+    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
     mock()
 
   @Before
@@ -751,6 +763,155 @@ class LineMediationAdapterTest {
       RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
       /*maxAdContentRating=*/ "",
       TEST_WATERMARK,
+    )
+
+  // endregion
+
+  // region Native Ad Tests
+  @Test
+  fun loadNativeAd_withNullAppId_invokesOnFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    verify(mockMediationNativeAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadNativeAd_withEmptyAppId_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to "",
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID
+      )
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    verify(mockMediationNativeAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadNativeAd_withNullSlotId_invokesOnFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    verify(mockMediationNativeAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadNativeAd_withEmptySlotId_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1,
+        LineMediationAdapter.KEY_SLOT_ID to ""
+      )
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    verify(mockMediationNativeAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val capturedError = adErrorCaptor.firstValue
+    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
+    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
+    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadNativeAd_withMuteNativeAdOptions_setsEnableSound() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1,
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID
+      )
+    val mediationNativeAdConfiguration =
+      spy(createMediationNativeAdConfiguration(serverParameters = serverParameters))
+    val videoOptions = VideoOptions.Builder().setStartMuted(true).build()
+    val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+    whenever(mediationNativeAdConfiguration.nativeAdOptions) doReturn nativeAdOptions
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    verify(mockFiveAdNative).enableSound(false)
+  }
+
+  @Test
+  fun loadNativeAd_verifyInitializationAndThenCreatesAndLoadsFiveAdNative() {
+    whenever(mockSdkWrapper.isInitialized()) doReturn false
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1
+      )
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+
+    lineMediationAdapter.loadNativeAd(
+      mediationNativeAdConfiguration,
+      mockMediationNativeAdLoadCallback
+    )
+
+    inOrder(mockSdkWrapper, mockFiveAdNative) {
+      verify(mockSdkWrapper).initialize(context, fiveAdConfig)
+      verify(mockFiveAdNative).setLoadListener(isA<LineNativeAd>())
+      verify(mockFiveAdNative).loadAdAsync()
+    }
+  }
+
+  private fun createMediationNativeAdConfiguration(
+    context: Context = this.context,
+    serverParameters: Bundle = Bundle()
+  ) =
+    MediationNativeAdConfiguration(
+      context,
+      /*bidresponse=*/ "",
+      serverParameters,
+      /*mediationExtras=*/ Bundle(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      TEST_WATERMARK,
+      /*nativeAdOptions=*/ null
     )
 
   // endregion
