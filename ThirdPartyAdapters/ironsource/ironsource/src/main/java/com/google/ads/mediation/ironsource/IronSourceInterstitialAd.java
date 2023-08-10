@@ -19,13 +19,10 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTAN
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
@@ -44,23 +41,13 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
   private static final IronSourceInterstitialAdListener ironSourceInterstitialListener =
       new IronSourceInterstitialAdListener();
 
-  /**
-   * Mediation listener used to forward interstitial ad events from IronSource SDK to Google Mobile
-   * Ads SDK while ad is presented.
-   */
   private MediationInterstitialAdCallback interstitialAdCallback;
 
-  /**
-   * Mediation listener used to forward interstitial ad events from IronSource SDK to Google Mobile
-   * Ads SDK for loading phases of the ad.
-   */
   public MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationInterstitialAdLoadCallback;
 
-  /** IronSource interstitial context. */
   private final Context context;
 
-  /** IronSource interstitial instance ID. */
   private final String instanceID;
 
   public IronSourceInterstitialAd(
@@ -95,7 +82,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     interstitialAdCallback = adCallback;
   }
   
-  public void loadInterstitial() {
+  public void loadAd() {
     if (!isParamsValid()) {
       return;
     }
@@ -109,22 +96,15 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
-    // Check that the context is an Activity.
-    AdError loadError = IronSourceAdapterUtils.checkContextIsActivity(context);
-    if (loadError != null) {
-      onAdFailedToLoad(loadError);
-      return false;
-    }
-
-    // Check that the instance ID is valid.
-    loadError = IronSourceAdapterUtils.checkInstanceId(instanceID);
+    // Check that the context is an Activity and that the instance ID is valid.
+    AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);
       return false;
     }
 
     // Check that an Ad for this instance ID is not already loading.
-    if (!canLoadInterstitialInstance(instanceID)) {
+    if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableInterstitialInstances)) {
       String errorMessage =
           String.format(
               "An IronSource interstitial ad is already loading for instance ID: %s", instanceID);
@@ -134,12 +114,6 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     }
 
     return true;
-  }
-
-  private boolean canLoadInterstitialInstance(@NonNull String instanceId) {
-    IronSourceInterstitialAd ironSourceInterstitialAd =
-        availableInterstitialInstances.get(instanceId);
-    return (ironSourceInterstitialAd == null);
   }
 
   /** Interstitial show Ad. */

@@ -20,13 +20,10 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -45,38 +42,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceBannerAd implements MediationBannerAd {
 
-  /** A map holding direct reference to each available banner instance by instance ID. */
   private static final ConcurrentHashMap<String, IronSourceBannerAd> availableBannerInstances =
       new ConcurrentHashMap<>();
 
-  /** A single class-level listener for handling IronSource SDK callbacks. */
   private static final IronSourceBannerAdListener ironSourceBannerListener =
       new IronSourceBannerAdListener();
 
-  /**
-   * Mediation listener used to forward banner ad events from IronSource SDK to Google Mobile Ads
-   * SDK while ad is presented.
-   */
   private MediationBannerAdCallback bannerAdCallback;
 
-  /**
-   * Mediation listener used to forward banner ad events from IronSource SDK to Google Mobile Ads
-   * SDK for loading phases of the ad.
-   */
   private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
 
   private FrameLayout ironSourceAdView;
 
-  /** IronSource banner instance view. */
   private ISDemandOnlyBannerLayout ironSourceBannerLayout;
 
-  /** IronSource banner instance ID. */
   private final AdSize adSize;
 
-  /** IronSource banner context. */
   private final Context context;
 
-  /** IronSource banner instance ID. */
   private final String instanceID;
 
   public IronSourceBannerAd(
@@ -125,9 +108,9 @@ public class IronSourceBannerAd implements MediationBannerAd {
    * Removes from the available instances map and destroys all instances except for the instance
    * with the given instance ID.
    */
-  public static void clearAllAvailableInstancesExceptOne(String instanceToKeep) {
+  public static void clearAllAvailableInstancesExceptOne(String instanceID) {
     for (String otherInstanceInMap : availableBannerInstances.keySet()) {
-      if (!otherInstanceInMap.equals(instanceToKeep)) {
+      if (!otherInstanceInMap.equals(instanceID)) {
         Log.d(
             TAG,
             String.format("IronSource Banner Destroy ad with instance ID: %s", otherInstanceInMap));
@@ -137,12 +120,12 @@ public class IronSourceBannerAd implements MediationBannerAd {
     }
   }
 
-  public void loadBanner() {
+  public void loadAd() {
     if (!isParamsValid()) {
       return;
     }
 
-    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSize(context, adSize);
+    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     Activity activity = (Activity) context;
     availableBannerInstances.put(instanceID, this);
     ironSourceAdView = new FrameLayout(context);
@@ -154,22 +137,14 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
   /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
-    // Check that the context is an Activity.
-    AdError loadError = IronSourceAdapterUtils.checkContextIsActivity(context);
-    if (loadError != null) {
-      onAdFailedToLoad(loadError);
-      return false;
-    }
-
-    // Check that the instance ID is valid.
-    loadError = IronSourceAdapterUtils.checkInstanceId(instanceID);
+    AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);
       return false;
     }
 
     // Check that an Ad for this instance ID is not already loading.
-    if (!canLoadBannerInstance(instanceID)) {
+    if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableBannerInstances)) {
       loadError =
           new AdError(
               ERROR_AD_ALREADY_LOADED,
@@ -179,8 +154,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
       return false;
     }
 
-    // Check that there exists an IronSource Banner Size for the requested banner size.
-    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSize(context, adSize);
+    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     if (bannerSize == null) {
       AdError sizeError =
           new AdError(
@@ -195,18 +169,12 @@ public class IronSourceBannerAd implements MediationBannerAd {
     return true;
   }
 
-  private boolean canLoadBannerInstance(@NonNull String instanceId) {
-    IronSourceBannerAd bannerAd = availableBannerInstances.get(instanceID);
-    return (bannerAd == null);
-  }
-
   @NonNull
   @Override
   public View getView() {
     return ironSourceAdView;
   }
 
-  /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.w(TAG, loadError.getMessage());
     if (adLoadCallback != null) {

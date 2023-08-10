@@ -49,7 +49,7 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
             IRONSOURCE_SDK_ERROR_DOMAIN);
     String errorMessage =
         String.format(
-            "IronSource failed to load Interstitial ad for instance ID: %s. Error: %s",
+            "IronSource failed to load interstitial ad for instance ID: %s. Error: %s",
             instanceId, loadError.getMessage());
     Log.w(TAG, errorMessage);
     IronSourceInterstitialAd ironSourceInterstitialAd =
