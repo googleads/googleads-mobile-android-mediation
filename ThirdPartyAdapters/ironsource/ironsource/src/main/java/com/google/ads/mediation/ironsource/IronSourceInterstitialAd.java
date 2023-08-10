@@ -96,7 +96,6 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
-    // Check that the context is an Activity and that the instance ID is valid.
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);

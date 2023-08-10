@@ -95,7 +95,6 @@ public class IronSourceBannerAd implements MediationBannerAd {
     return ironSourceAdView;
   }
 
-  /** Instance map access. */
   public static IronSourceBannerAd getFromAvailableInstances(String instanceId) {
     return availableBannerInstances.get(instanceId);
   }
@@ -113,7 +112,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
       if (!otherInstanceInMap.equals(instanceID)) {
         Log.d(
             TAG,
-            String.format("IronSource Banner Destroy ad with instance ID: %s", otherInstanceInMap));
+            String.format("Remove ironSource banner ad with instance ID: %s from mapping.", otherInstanceInMap));
         IronSource.destroyISDemandOnlyBanner(otherInstanceInMap);
         removeFromAvailableInstances(otherInstanceInMap);
       }
@@ -148,7 +147,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
       loadError =
           new AdError(
               ERROR_AD_ALREADY_LOADED,
-              "An IronSource banner is already loaded for instance ID: " + instanceID,
+              "An IronSource banner ad is already loaded for instance ID: " + instanceID,
               ERROR_DOMAIN);
       onAdFailedToLoad(loadError);
       return false;

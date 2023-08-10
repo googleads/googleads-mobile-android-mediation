@@ -71,9 +71,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
         adLoadCallback.onFailure(loadError);
       }
 
-	    /* In case a banner is already loading or showing we will get one of the following errors.
-         In that case we won't remove the instance from the map.
-         In all other cases we will remove the instance from the map. */
+	    /* If the IronSource SDK is already loading a banner ad with the current instance ID, remove all the other instance IDs from the mapping. */
       if (ironSourceError.getErrorCode() != ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS
           && ironSourceError.getErrorCode() != ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS) {
         IronSourceBannerAd.removeFromAvailableInstances(instanceId);
@@ -85,7 +83,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     Log.d(TAG, String.format("IronSource banner ad shown for instance ID: %s", instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
-
+    // The banner ad instance will be null if it fails to load or another banner ad is showing.
     if (ironSourceBannerAd != null) {
       MediationBannerAdCallback adCallback = ironSourceBannerAd.getBannerAdCallback();
       if (adCallback != null) {
@@ -93,7 +91,6 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
       }
     }
 
-    // Remove from available instances and destroy all other instances
     IronSourceBannerAd.clearAllAvailableInstancesExceptOne(instanceId);
   }
 
