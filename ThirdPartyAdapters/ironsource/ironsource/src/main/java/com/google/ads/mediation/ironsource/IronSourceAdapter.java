@@ -16,5 +16,5 @@ package com.google.ads.mediation.ironsource;
 
 import com.google.android.gms.ads.mediation.Adapter;
 
-/** A {@link Adapter} used to mediate interstitial and banner ads from IronSource. */
+/** A {@link Adapter} used to mediate Interstitial ads from IronSource. */
 public class IronSourceAdapter extends IronSourceMediationAdapter {}

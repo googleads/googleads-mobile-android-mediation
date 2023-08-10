@@ -32,7 +32,7 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
 
   public void onBannerAdLoaded(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource banner ad loaded for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource Banner ad loaded for instance ID: %s", instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
@@ -59,7 +59,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
             IRONSOURCE_SDK_ERROR_DOMAIN);
     String errorMessage =
         String.format(
-            "IronSource failed to load banner ad for instance ID: %s. Error: %s",
+            "IronSource failed to load Banner ad for instance ID: %s. Error: %s",
             instanceId, loadError.getMessage());
     Log.w(TAG, errorMessage);
     IronSourceBannerAd ironSourceBannerAd =
@@ -71,9 +71,6 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
         adLoadCallback.onFailure(loadError);
       }
 
-	    /* In case a banner is already loading or showing we will get one of the following errors.
-         In that case we won't remove the instance from the map.
-         In all other cases we will remove the instance from the map. */
       if (ironSourceError.getErrorCode() != ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS
           && ironSourceError.getErrorCode() != ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS) {
         IronSourceBannerAd.removeFromAvailableInstances(instanceId);
@@ -82,7 +79,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
   }
 
   public void onBannerAdShown(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource banner ad shown for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource Banner AdShown for instance ID: %s", instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
@@ -98,7 +95,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
   }
 
   public void onBannerAdClicked(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource banner ad clicked for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource Banner ad clicked for instance ID: %s", instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
@@ -115,7 +112,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     Log.d(
         TAG,
         String.format(
-            "IronSource banner ad has caused user to leave the application for instance ID: %s", instanceId));
+            "IronSource Banner ad onBanner Ad Left Application for instance ID: %s", instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
