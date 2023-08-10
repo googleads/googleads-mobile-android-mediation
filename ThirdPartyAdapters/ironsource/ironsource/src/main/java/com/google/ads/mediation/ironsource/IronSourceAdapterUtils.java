@@ -65,7 +65,6 @@ public class IronSourceAdapterUtils {
   }
 
   public static AdError validateIronSourceAdLoadParams(Context context, String instanceID) {
-    // Check that context is an Activity.
     if (!(context instanceof Activity)) {
       String errorMessage =
           ERROR_MISSING_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.";
