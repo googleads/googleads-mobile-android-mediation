@@ -29,6 +29,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import kotlin.math.roundToInt
 
 /**
  * Used to load Line banner ads and mediate callbacks between Google Mobile Ads SDK and FiveAd SDK.
@@ -57,7 +58,10 @@ private constructor(
     Log.d(TAG, "Finished loading Line Banner Ad for slotId: ${ad.slotId}")
     val loadedAd = ad as? FiveAdCustomLayout
     loadedAd?.let {
-      val returnedAdSize = AdSize(it.logicalWidth, it.logicalHeight)
+      // Transforming ad size from pixels to dips
+      val density = context.resources.displayMetrics.density
+      val returnedAdSize =
+        AdSize((it.logicalWidth / density).roundToInt(), (it.logicalHeight / density).roundToInt())
       Log.d(
         TAG,
         "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}"
@@ -206,8 +210,13 @@ private constructor(
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
       }
+      // FiveAd SDK requires the size of the banner given in pixels.
       val bannerAdView =
-        LineSdkFactory.delegate.createFiveAdCustomLayout(context, slotId, adSize.width)
+        LineSdkFactory.delegate.createFiveAdCustomLayout(
+          context,
+          slotId,
+          adSize.getWidthInPixels(context)
+        )
       return Result.success(
         LineBannerAd(context, appId, mediationAdLoadCallback, bannerAdView, adSize)
       )
