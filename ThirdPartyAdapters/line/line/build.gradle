@@ -30,7 +30,7 @@ android {
     defaultConfig {
         minSdk 19
         targetSdk 31
-        versionCode 2023060700  // FiveAd SDK patch number with two extra digits
+        versionCode 23060700  // FiveAd SDK patch number YYMMDD + two digits for adapter patch.
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
