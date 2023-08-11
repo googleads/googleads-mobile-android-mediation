@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Line"
     // String property to store version name.
-    stringVersion = "0.0.0.1"
+    stringVersion = "2.6.20230607.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -30,7 +30,7 @@ android {
     defaultConfig {
         minSdk 19
         targetSdk 31
-        versionCode 1
+        versionCode 2023060700  // FiveAd SDK patch number with two extra digits
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
