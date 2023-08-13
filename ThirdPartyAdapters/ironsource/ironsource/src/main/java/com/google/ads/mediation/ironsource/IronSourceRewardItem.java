@@ -15,21 +15,18 @@
 package com.google.ads.mediation.ironsource;
 
 import androidx.annotation.NonNull;
-import com.google.android.gms.ads.AdError;
 
-public interface IronSourceAdapterListener {
+import com.google.android.gms.ads.rewarded.RewardItem;
 
-  /**
-   * Called when the adapter fails to load an ad.
-   *
-   * @param loadError the {@link AdError} object.
-   */
-  void onAdFailedToLoad(@NonNull AdError loadError);
+public class IronSourceRewardItem implements RewardItem {
+  @Override
+  public int getAmount() {
+    return 1;
+  }
 
-  /**
-   * Called when the adapter fails to show an ad.
-   *
-   * @param showError the {@link AdError} object.
-   */
-  void onAdFailedToShow(@NonNull AdError showError);
+  @NonNull
+  @Override
+  public String getType() {
+    return "";
+  }
 }
