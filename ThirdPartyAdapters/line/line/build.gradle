@@ -128,6 +128,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'com.google.android.gms:play-services-ads:22.1.0'
     implementation 'com.linecorp.adsnetwork:fivead:2.6.20230607'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.5.0'
