@@ -17,8 +17,8 @@ package com.google.ads.mediation.ironsource;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_AD_ALREADY_LOADED;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -62,26 +62,26 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
   }
 
   /** Getters and Setters. */
-  public static IronSourceInterstitialAd getFromAvailableInstances(String instanceId) {
+  static IronSourceInterstitialAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableInterstitialInstances.get(instanceId);
   }
 
-  public static void removeFromAvailableInstances(String instanceId) {
+  static void removeFromAvailableInstances(@NonNull String instanceId) {
     availableInterstitialInstances.remove(instanceId);
   }
 
-  public static IronSourceInterstitialAdListener getIronSourceInterstitialListener() {
+  static IronSourceInterstitialAdListener getIronSourceInterstitialListener() {
     return ironSourceInterstitialListener;
   }
 
-  public MediationInterstitialAdCallback getInterstitialAdCallback() {
+  MediationInterstitialAdCallback getInterstitialAdCallback() {
     return interstitialAdCallback;
   }
 
-  public void setInterstitialAdCallback(MediationInterstitialAdCallback adCallback) {
+  void setInterstitialAdCallback(@NonNull MediationInterstitialAdCallback adCallback) {
     interstitialAdCallback = adCallback;
   }
-  
+
   public void loadAd() {
     if (!isParamsValid()) {
       return;
@@ -103,7 +103,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     }
 
     // Check that an Ad for this instance ID is not already loading.
-    if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableInterstitialInstances)) {
+    if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(
+        instanceID, availableInterstitialInstances)) {
       String errorMessage =
           String.format(
               "An IronSource interstitial ad is already loading for instance ID: %s", instanceID);
@@ -123,7 +124,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
-    Log.e(TAG, loadError.getMessage());
+    Log.e(TAG, loadError.toString());
     if (mediationInterstitialAdLoadCallback != null) {
       mediationInterstitialAdLoadCallback.onFailure(loadError);
     }

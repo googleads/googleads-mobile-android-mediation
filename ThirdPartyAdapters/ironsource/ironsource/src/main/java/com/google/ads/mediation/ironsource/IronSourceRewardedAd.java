@@ -17,8 +17,8 @@ package com.google.ads.mediation.ironsource;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_AD_ALREADY_LOADED;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -31,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.ironsource.mediationsdk.IronSource;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceRewardedAd implements MediationRewardedAd {
@@ -63,23 +62,23 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   }
 
   /** Getters and Setters. */
-  public static IronSourceRewardedAd getFromAvailableInstances(String instanceId) {
+  static IronSourceRewardedAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableInstances.get(instanceId);
   }
 
-  public static void removeFromAvailableInstances(String instanceId) {
+  static void removeFromAvailableInstances(@NonNull String instanceId) {
     availableInstances.remove(instanceId);
   }
 
-  public static IronSourceRewardedAdListener getIronSourceRewardedListener() {
+  static IronSourceRewardedAdListener getIronSourceRewardedListener() {
     return ironSourceRewardedListener;
   }
 
-  public MediationRewardedAdCallback getRewardedAdCallback() {
+  MediationRewardedAdCallback getRewardedAdCallback() {
     return mediationRewardedAdCallback;
   }
 
-  public void setRewardedAdCallback(MediationRewardedAdCallback adCallback) {
+  void setRewardedAdCallback(@NonNull MediationRewardedAdCallback adCallback) {
     mediationRewardedAdCallback = adCallback;
   }
 
@@ -131,7 +130,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
-    Log.w(TAG, loadError.getMessage());
+    Log.w(TAG, loadError.toString());
     mediationAdLoadCallback.onFailure(loadError);
   }
 }

@@ -14,19 +14,17 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_MISSING_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -51,29 +49,34 @@ public class IronSourceAdapterUtils {
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize == null) {
       return null;
-	}
+    }
 
-	if (AdSize.BANNER.equals(closestSize)) {
-	return ISBannerSize.BANNER;
-	} else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
-	return ISBannerSize.RECTANGLE;
-	} else if (AdSize.LARGE_BANNER.equals(closestSize)) {
-	return ISBannerSize.LARGE;
-	}
+    if (AdSize.BANNER.equals(closestSize)) {
+      return ISBannerSize.BANNER;
+    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+      return ISBannerSize.RECTANGLE;
+    } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
+      return ISBannerSize.LARGE;
+    }
 
-	return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
+    /* If non of the predefined sizes are matched, return a new IronSource size for the closest size
+    returned by Admob. */
+    return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
   }
 
-  public static AdError validateIronSourceAdLoadParams(Context context, String instanceID) {
+  public static AdError validateIronSourceAdLoadParams(
+      @NonNull Context context, @NonNull String instanceID) {
+    // Check that context is an Activity.
     if (!(context instanceof Activity)) {
       String errorMessage =
-          ERROR_MISSING_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.";
-      Log.e(TAG, errorMessage);
+          ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.";
+      Log.w(TAG, errorMessage);
       AdError contextError =
-          new AdError(ERROR_MISSING_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+          new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
       return contextError;
     }
 
+    // Check validity of instance ID.
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
           new AdError(

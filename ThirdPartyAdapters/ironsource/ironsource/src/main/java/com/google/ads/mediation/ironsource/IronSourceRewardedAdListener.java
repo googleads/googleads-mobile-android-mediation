@@ -15,9 +15,10 @@
 package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.IRONSOURCE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyRewardedVideoListener;
@@ -26,7 +27,7 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoListener {
 
   @Override
-  public void onRewardedVideoAdLoadSuccess(String instanceId) {
+  public void onRewardedVideoAdLoadSuccess(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad loaded for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
@@ -40,17 +41,14 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
+  public void onRewardedVideoAdLoadFailed(
+      @NonNull String instanceId, @NonNull IronSourceError ironSourceError) {
     AdError loadError =
         new AdError(
             ironSourceError.getErrorCode(),
             ironSourceError.getErrorMessage(),
             IRONSOURCE_SDK_ERROR_DOMAIN);
-    String errorMessage =
-        String.format(
-            "IronSource failed to load rewarded ad for instance ID: %s. Error: %s",
-            instanceId, loadError.getMessage());
-    Log.e(TAG, errorMessage);
+    Log.e(TAG, loadError.toString());
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
 
@@ -64,7 +62,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdOpened(final String instanceId) {
+  public void onRewardedVideoAdOpened(@NonNull final String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad opened for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
@@ -80,7 +78,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdClosed(String instanceId) {
+  public void onRewardedVideoAdClosed(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad closed for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
@@ -96,7 +94,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdRewarded(String instanceId) {
+  public void onRewardedVideoAdRewarded(@NonNull String instanceId) {
     final IronSourceRewardItem ironSourceRewardItem = new IronSourceRewardItem();
     Log.d(
         TAG,
@@ -116,17 +114,14 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdShowFailed(String instanceId, IronSourceError ironSourceError) {
+  public void onRewardedVideoAdShowFailed(
+      @NonNull String instanceId, @NonNull IronSourceError ironSourceError) {
     AdError showError =
         new AdError(
             ironSourceError.getErrorCode(),
             ironSourceError.getErrorMessage(),
             IRONSOURCE_SDK_ERROR_DOMAIN);
-    String errorMessage =
-        String.format(
-            "IronSource failed to show rewarded ad for instance ID: %s. Error: %s",
-            instanceId, showError.getMessage());
-    Log.e(TAG, errorMessage);
+    Log.e(TAG, showError.toString());
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
 
@@ -142,7 +137,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   }
 
   @Override
-  public void onRewardedVideoAdClicked(String instanceId) {
+  public void onRewardedVideoAdClicked(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad clicked for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);

@@ -17,9 +17,9 @@ package com.google.ads.mediation.ironsource;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_AD_ALREADY_LOADED;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -37,7 +37,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerLayout;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceBannerAd implements MediationBannerAd {
@@ -50,7 +49,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
   private MediationBannerAdCallback bannerAdCallback;
 
-  private MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
 
   private FrameLayout ironSourceAdView;
 
@@ -75,31 +74,32 @@ public class IronSourceBannerAd implements MediationBannerAd {
   }
 
   /** Getters and Setters. */
-  public MediationBannerAdCallback getBannerAdCallback() {
+  MediationBannerAdCallback getBannerAdCallback() {
     return bannerAdCallback;
   }
 
-  public MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> getAdLoadCallback() {
+  MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> getAdLoadCallback() {
     return adLoadCallback;
   }
 
-  public void setBannerAdCallback(MediationBannerAdCallback adCallback) {
+  void setBannerAdCallback(MediationBannerAdCallback adCallback) {
     bannerAdCallback = adCallback;
   }
 
-  public ISDemandOnlyBannerLayout getIronSourceBannerLayout() {
+  ISDemandOnlyBannerLayout getIronSourceBannerLayout() {
     return ironSourceBannerLayout;
   }
 
-  public FrameLayout getIronSourceAdView() {
+  FrameLayout getIronSourceAdView() {
     return ironSourceAdView;
   }
 
-  public static IronSourceBannerAd getFromAvailableInstances(String instanceId) {
+  /** Instance map access. */
+  static IronSourceBannerAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableBannerInstances.get(instanceId);
   }
 
-  public static void removeFromAvailableInstances(String instanceId) {
+  static void removeFromAvailableInstances(@NonNull String instanceId) {
     availableBannerInstances.remove(instanceId);
   }
 
@@ -107,12 +107,12 @@ public class IronSourceBannerAd implements MediationBannerAd {
    * Removes from the available instances map and destroys all instances except for the instance
    * with the given instance ID.
    */
-  public static void clearAllAvailableInstancesExceptOne(String instanceID) {
+  static void clearAllAvailableInstancesExceptOne(@NonNull String instanceID) {
     for (String otherInstanceInMap : availableBannerInstances.keySet()) {
       if (!otherInstanceInMap.equals(instanceID)) {
         Log.d(
             TAG,
-            String.format("Remove ironSource banner ad with instance ID: %s from mapping.", otherInstanceInMap));
+            String.format("IronSource Banner Destroy ad with instance ID: %s", otherInstanceInMap));
         IronSource.destroyISDemandOnlyBanner(otherInstanceInMap);
         removeFromAvailableInstances(otherInstanceInMap);
       }
@@ -124,7 +124,8 @@ public class IronSourceBannerAd implements MediationBannerAd {
       return;
     }
 
-    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
+    ISBannerSize bannerSize =
+        IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     Activity activity = (Activity) context;
     availableBannerInstances.put(instanceID, this);
     ironSourceAdView = new FrameLayout(context);
@@ -136,6 +137,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
   /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
+    // Check that the context is an Activity and that the instance ID is valid..
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);
@@ -147,13 +149,14 @@ public class IronSourceBannerAd implements MediationBannerAd {
       loadError =
           new AdError(
               ERROR_AD_ALREADY_LOADED,
-              "An IronSource banner ad is already loaded for instance ID: " + instanceID,
+              "An IronSource banner is already loaded for instance ID: " + instanceID,
               ERROR_DOMAIN);
       onAdFailedToLoad(loadError);
       return false;
     }
 
-    ISBannerSize bannerSize = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
+    ISBannerSize bannerSize =
+        IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     if (bannerSize == null) {
       AdError sizeError =
           new AdError(
@@ -175,7 +178,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
   }
 
   private void onAdFailedToLoad(@NonNull AdError loadError) {
-    Log.w(TAG, loadError.getMessage());
+    Log.w(TAG, loadError.toString());
     if (adLoadCallback != null) {
       adLoadCallback.onFailure(loadError);
     }

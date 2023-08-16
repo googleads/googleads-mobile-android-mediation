@@ -15,14 +15,12 @@
 package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.IRONSOURCE_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 import static com.ironsource.mediationsdk.logger.IronSourceError.ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS;
 import static com.ironsource.mediationsdk.logger.IronSourceError.ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -36,17 +34,19 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
-    if (ironSourceBannerAd != null) {
-      if (ironSourceBannerAd.getIronSourceAdView() != null) {
-        ironSourceBannerAd
-            .getIronSourceAdView()
-            .addView(ironSourceBannerAd.getIronSourceBannerLayout());
-      }
+    if (ironSourceBannerAd == null) {
+      return;
+    }
 
-      if (ironSourceBannerAd.getAdLoadCallback() != null) {
-        ironSourceBannerAd.setBannerAdCallback(
-            ironSourceBannerAd.getAdLoadCallback().onSuccess(ironSourceBannerAd));
-      }
+    if (ironSourceBannerAd.getIronSourceAdView() != null) {
+      ironSourceBannerAd
+          .getIronSourceAdView()
+          .addView(ironSourceBannerAd.getIronSourceBannerLayout());
+    }
+
+    if (ironSourceBannerAd.getAdLoadCallback() != null) {
+      ironSourceBannerAd.setBannerAdCallback(
+          ironSourceBannerAd.getAdLoadCallback().onSuccess(ironSourceBannerAd));
     }
   }
 
@@ -57,11 +57,7 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
             ironSourceError.getErrorCode(),
             ironSourceError.getErrorMessage(),
             IRONSOURCE_SDK_ERROR_DOMAIN);
-    String errorMessage =
-        String.format(
-            "IronSource failed to load banner ad for instance ID: %s. Error: %s",
-            instanceId, loadError.getMessage());
-    Log.w(TAG, errorMessage);
+    Log.w(TAG, loadError.toString());
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
@@ -112,7 +108,8 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     Log.d(
         TAG,
         String.format(
-            "IronSource banner ad has caused user to leave the application for instance ID: %s", instanceId));
+            "IronSource banner ad has caused user to leave the application for instance ID: %s",
+            instanceId));
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
