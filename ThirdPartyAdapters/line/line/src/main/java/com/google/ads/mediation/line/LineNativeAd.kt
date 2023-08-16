@@ -18,6 +18,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import androidx.core.graphics.drawable.toDrawable
 import com.five_corp.ad.FiveAdErrorCode
@@ -68,6 +69,8 @@ private constructor(
     setMediaView(nativeAd.adMainView)
     advertiser = nativeAd.advertiserName
 
+    overrideClickHandling = true
+
     val requiredImagesLoaded = loadImages()
     if (!requiredImagesLoaded) {
       val adError =
@@ -100,12 +103,20 @@ private constructor(
     }
   }
 
+  override fun trackViews(
+    containerView: View,
+    clickableAssetViews: MutableMap<String, View>,
+    nonClickableAssetViews: MutableMap<String, View>
+  ) {
+    nativeAd.registerViews(containerView, adChoicesContent, clickableAssetViews.values.toList())
+  }
+
   override fun onFiveAdLoad(ad: FiveAdInterface) {
     Log.d(TAG, "Finished loading Line Native Ad for slotId: ${ad.slotId}")
-    nativeAd.setViewEventListener(this)
     adapterScope.async {
       mapNativeAd()
       mediationNativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this@LineNativeAd)
+      nativeAd.setViewEventListener(this@LineNativeAd)
     }
   }
 
