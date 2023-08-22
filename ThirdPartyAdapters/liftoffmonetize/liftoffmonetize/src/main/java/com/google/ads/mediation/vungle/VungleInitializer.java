@@ -15,28 +15,23 @@
 package com.google.ads.mediation.vungle;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.vungle.mediation.VungleNetworkSettings;
-import com.vungle.warren.InitCallback;
-import com.vungle.warren.Plugin;
-import com.vungle.warren.Vungle;
-import com.vungle.warren.VungleApiClient;
-import com.vungle.warren.VungleSettings;
-import com.vungle.warren.error.VungleException;
+import com.vungle.ads.InitializationListener;
+import com.vungle.ads.VungleAds;
+import com.vungle.ads.VungleAds.WrapperFramework;
+import com.vungle.ads.VungleError;
+import com.vungle.ads.VunglePrivacySettings;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class VungleInitializer implements InitCallback {
+public class VungleInitializer implements InitializationListener {
 
   private static final VungleInitializer instance = new VungleInitializer();
   private final AtomicBoolean isInitializing = new AtomicBoolean(false);
   private final ArrayList<VungleInitializationListener> initListeners;
-  private final Handler handler = new Handler(Looper.getMainLooper());
 
   @NonNull
   public static VungleInitializer getInstance() {
@@ -45,8 +40,8 @@ public class VungleInitializer implements InitCallback {
 
   private VungleInitializer() {
     initListeners = new ArrayList<>();
-    Plugin.addWrapperInfo(
-        VungleApiClient.WrapperFramework.admob,
+    VungleAds.setIntegrationName(
+        WrapperFramework.admob,
         com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
   }
 
@@ -55,7 +50,7 @@ public class VungleInitializer implements InitCallback {
       final @NonNull Context context,
       @NonNull VungleInitializationListener listener) {
 
-    if (Vungle.isInitialized()) {
+    if (VungleAds.isInitialized()) {
       listener.onInitializeSuccess();
       return;
     }
@@ -65,74 +60,38 @@ public class VungleInitializer implements InitCallback {
       return;
     }
 
-    // Keep monitoring VungleSettings in case of any changes we need to re-init SDK to apply
-    // updated settings.
-    VungleNetworkSettings.setVungleSettingsChangedListener(
-        new VungleNetworkSettings.VungleSettingsChangedListener() {
-          @Override
-          public void onVungleSettingsChanged(@NonNull VungleSettings settings) {
-            // Ignore if sdk is yet to initialize, it will get considered while init.
-            if (!Vungle.isInitialized()) {
-              return;
-            }
-
-            // Pass new settings to SDK.
-            updateCoppaStatus(
-                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
-            Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, settings);
-          }
-        });
-
     updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
 
-    VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
-    Vungle.init(appId, context.getApplicationContext(), VungleInitializer.this, vungleSettings);
+    VungleAds.init(context, appId, VungleInitializer.this);
     initListeners.add(listener);
   }
 
   @Override
   public void onSuccess() {
-    handler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            for (VungleInitializationListener listener : initListeners) {
-              listener.onInitializeSuccess();
-            }
-            initListeners.clear();
-          }
-        });
+    for (VungleInitializationListener listener : initListeners) {
+      listener.onInitializeSuccess();
+    }
+    initListeners.clear();
     isInitializing.set(false);
   }
 
   @Override
-  public void onError(final VungleException exception) {
-    final AdError error = VungleMediationAdapter.getAdError(exception);
-    handler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            for (VungleInitializationListener listener : initListeners) {
-              listener.onInitializeError(error);
-            }
-            initListeners.clear();
-          }
-        });
+  public void onError(@NonNull final VungleError e) {
+    final AdError error = VungleMediationAdapter.getAdError(e);
+    for (VungleInitializationListener listener : initListeners) {
+      listener.onInitializeError(error);
+    }
+    initListeners.clear();
     isInitializing.set(false);
-  }
-
-  @Override
-  public void onAutoCacheAdAvailable(String placementId) {
-    // Unused
   }
 
   public void updateCoppaStatus(int configuration) {
     switch (configuration) {
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        Vungle.updateUserCoppaStatus(true);
+        VunglePrivacySettings.setCOPPAStatus(true);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        Vungle.updateUserCoppaStatus(false);
+        VunglePrivacySettings.setCOPPAStatus(false);
         break;
       case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
       default:

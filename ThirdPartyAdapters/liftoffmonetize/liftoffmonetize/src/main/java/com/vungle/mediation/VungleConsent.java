@@ -14,26 +14,36 @@
 
 package com.vungle.mediation;
 
-import com.vungle.warren.Vungle;
+import com.vungle.ads.VunglePrivacySettings;
 
 /**
  * A public static class used to set Liftoff Monetize Consent Status.
  */
 public class VungleConsent {
 
-  /**
-   * Update GDPR consent status and corresponding version number.
-   */
-  public static void updateConsentStatus(
-      Vungle.Consent consentStatus, String consentMessageVersion) {
-    Vungle.updateConsentStatus(consentStatus, consentMessageVersion);
+  public static void setGDPRStatus(
+      Boolean optedIn, String consentMessageVersion) {
+    VunglePrivacySettings.setGDPRStatus(optedIn, consentMessageVersion);
   }
 
-  public static Vungle.Consent getCurrentVungleConsent() {
-    return Vungle.getConsentStatus();
+  public static String getGDPRStatus() {
+    return VunglePrivacySettings.getGDPRStatus();
   }
 
-  public static String getCurrentVungleConsentMessageVersion() {
-    return Vungle.getConsentMessageVersion();
+  public static String getGDPRMessageVersion() {
+    return VunglePrivacySettings.getGDPRMessageVersion();
   }
+
+  public static String getCcpaStatus() {
+    return VunglePrivacySettings.getCCPAStatus();
+  }
+
+  public static void setCCPAStatus(Boolean optedIn) {
+    VunglePrivacySettings.setCCPAStatus(optedIn);
+  }
+
+  public static void publishAndroidId(Boolean publishAndroidId) {
+    VunglePrivacySettings.setPublishAndroidId(publishAndroidId);
+  }
+
 }
