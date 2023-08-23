@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-### Version 10.5.7.1
+#### Version 10.5.7.1
 - Added support to read IAB U.S. Privacy string from shared preferences.
 - Added bidding support for banner (includes MREC), interstitial and rewarded
 ad formats.
