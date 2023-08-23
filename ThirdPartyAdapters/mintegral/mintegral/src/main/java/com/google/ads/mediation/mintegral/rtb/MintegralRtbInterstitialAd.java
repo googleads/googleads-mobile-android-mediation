@@ -29,6 +29,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
   private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
@@ -53,6 +56,13 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
     }
     mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(),
         placementId, adUnitId);
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
+      mbBidNewInterstitialHandler.setExtraInfo(jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     mbBidNewInterstitialHandler.loadFromBid(bidToken);
   }

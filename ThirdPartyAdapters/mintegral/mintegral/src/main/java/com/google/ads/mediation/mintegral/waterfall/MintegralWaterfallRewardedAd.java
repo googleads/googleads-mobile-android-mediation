@@ -27,6 +27,9 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBRewardVideoHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
 
   private MBRewardVideoHandler mbRewardVideoHandler;
@@ -50,6 +53,13 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
     }
     mbRewardVideoHandler = new MBRewardVideoHandler(adConfiguration.getContext(), placementId,
         adUnitId);
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
+      mbRewardVideoHandler.setExtraInfo(jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     mbRewardVideoHandler.setRewardVideoListener(this);
     mbRewardVideoHandler.load();
   }
