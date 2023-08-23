@@ -2,20 +2,22 @@
 
 ### Version 10.5.7.1
 - Added support to read IAB U.S. Privacy string from shared preferences.
+- Added bidding support for banner (includes MREC), interstitial and rewarded
+ad formats.
 - Updated the minimum required Google Mobile Ads SDK version to 22.2.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.2.0.
 - InMobi Kotlin SDK version 10.5.7.
 
-### Version 10.5.7.0
+#### Version 10.5.7.0
 - Verified compatibility with InMobi Kotlin SDK version 10.5.7.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.1.0.
 - InMobi Kotlin SDK version 10.5.7.
 
-### Version 10.5.5.0
+#### Version 10.5.5.0
 - Verified compatibility with InMobi Kotlin SDK version 10.5.5.
 
 Built and tested with:
