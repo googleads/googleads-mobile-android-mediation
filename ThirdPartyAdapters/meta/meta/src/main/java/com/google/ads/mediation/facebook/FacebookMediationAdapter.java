@@ -152,9 +152,13 @@ public class FacebookMediationAdapter extends RtbAdapter {
   // Meta Audience Network SDK error domain.
   public static final String FACEBOOK_SDK_ERROR_DOMAIN = "com.facebook.ads";
 
-  /**
-   * Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}.
-   */
+  private final MetaFactory metaFactory;
+
+  public FacebookMediationAdapter() {
+    metaFactory = new MetaFactory();
+  }
+
+  /** Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}. */
   @NonNull
   public static AdError getAdError(com.facebook.ads.AdError error) {
     return new AdError(error.getErrorCode(), error.getErrorMessage(), FACEBOOK_SDK_ERROR_DOMAIN);
@@ -251,7 +255,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
-    interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
+    interstitial =
+        new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback, metaFactory);
     interstitial.render();
   }
 
