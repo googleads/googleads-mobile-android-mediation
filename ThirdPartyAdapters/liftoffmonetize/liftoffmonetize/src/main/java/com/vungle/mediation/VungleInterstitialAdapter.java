@@ -166,15 +166,15 @@ public class VungleInterstitialAdapter
     }
 
     @Override
-    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-      AdError error = VungleMediationAdapter.getAdError(e);
+    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+      AdError error = VungleMediationAdapter.getAdError(vungleError);
       Log.w(TAG, error.toString());
-      //no-op
+      //Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
-    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-      AdError error = VungleMediationAdapter.getAdError(e);
+    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+      AdError error = VungleMediationAdapter.getAdError(vungleError);
       Log.w(TAG, error.toString());
       if (mediationInterstitialListener != null) {
         mediationInterstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
@@ -183,7 +183,7 @@ public class VungleInterstitialAdapter
 
     @Override
     public void onAdImpression(@NonNull BaseAd baseAd) {
-      // No-op.
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
   }
 
@@ -298,12 +298,12 @@ public class VungleInterstitialAdapter
 
     @Override
     public void onAdEnd(@NonNull BaseAd baseAd) {
-      // no-op
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
     public void onAdImpression(@NonNull BaseAd baseAd) {
-      // no-op
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
@@ -313,19 +313,19 @@ public class VungleInterstitialAdapter
 
     @Override
     public void onAdStart(@NonNull BaseAd baseAd) {
-      // no-op
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
-    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-      AdError error = VungleMediationAdapter.getAdError(e);
+    public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+      AdError error = VungleMediationAdapter.getAdError(vungleError);
       Log.w(TAG, error.toString());
-      //no-op
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
-    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-      AdError error = VungleMediationAdapter.getAdError(e);
+    public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+      AdError error = VungleMediationAdapter.getAdError(vungleError);
       Log.w(TAG, error.toString());
       if (mediationBannerListener != null) {
         mediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);

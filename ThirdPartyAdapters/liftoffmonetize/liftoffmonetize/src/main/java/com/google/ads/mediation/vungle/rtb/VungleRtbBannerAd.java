@@ -157,7 +157,7 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
   @Override
   public void onAdEnd(@NonNull BaseAd baseAd) {
-    // No-op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
@@ -174,19 +174,19 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
   @Override
   public void onAdStart(@NonNull BaseAd baseAd) {
-    // No-op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     Log.w(TAG, error.toString());
-    // No-op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     Log.w(TAG, error.toString());
     mediationAdLoadCallback.onFailure(error);
   }
@@ -212,6 +212,7 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
           "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
           ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
     }
   }

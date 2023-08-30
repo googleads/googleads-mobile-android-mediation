@@ -142,14 +142,14 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     callback.onFailure(error);
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     callback.onFailure(error);
   }
 
@@ -177,12 +177,12 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
 
   @Override
   public void onAdStart(@NonNull BaseAd baseAd) {
-    // no-op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
   public void onAdEnd(@NonNull BaseAd baseAd) {
-    // no-op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override

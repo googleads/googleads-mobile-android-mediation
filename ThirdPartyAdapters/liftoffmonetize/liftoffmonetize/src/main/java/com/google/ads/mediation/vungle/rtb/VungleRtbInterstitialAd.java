@@ -160,8 +160,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     Log.w(TAG, error.toString());
     if (mediationInterstitialAdCallback != null) {
       mediationInterstitialAdCallback.onAdFailedToShow(error);
@@ -169,8 +169,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = VungleMediationAdapter.getAdError(e);
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     Log.w(TAG, error.toString());
     mediationAdLoadCallback.onFailure(error);
   }

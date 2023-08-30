@@ -76,8 +76,8 @@ public class VungleInitializer implements InitializationListener {
   }
 
   @Override
-  public void onError(@NonNull final VungleError e) {
-    final AdError error = VungleMediationAdapter.getAdError(e);
+  public void onError(@NonNull final VungleError vungleError) {
+    final AdError error = VungleMediationAdapter.getAdError(vungleError);
     for (VungleInitializationListener listener : initListeners) {
       listener.onInitializeError(error);
     }

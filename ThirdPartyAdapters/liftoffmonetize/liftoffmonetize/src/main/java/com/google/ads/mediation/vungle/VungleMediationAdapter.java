@@ -127,8 +127,8 @@ public class VungleMediationAdapter extends RtbAdapter
    * Convert the given Liftoff Monetize exception into the appropriate custom error code.
    */
   @NonNull
-  public static AdError getAdError(@NonNull VungleError error) {
-    return new AdError(error.getCode(), error.getErrorMessage(),
+  public static AdError getAdError(@NonNull VungleError vungleError) {
+    return new AdError(vungleError.getCode(), vungleError.getErrorMessage(),
         VUNGLE_SDK_ERROR_DOMAIN);
   }
 
@@ -156,7 +156,7 @@ public class VungleMediationAdapter extends RtbAdapter
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = com.vungle.ads.BuildConfig.VERSION_NAME;
+    String versionString = VungleAds.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -356,8 +356,8 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = getAdError(e);
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = getAdError(vungleError);
     Log.w(TAG, error.toString());
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onAdFailedToShow(error);
@@ -365,8 +365,8 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
-  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError e) {
-    AdError error = getAdError(e);
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = getAdError(vungleError);
     Log.w(TAG, error.toString());
     if (mediationAdLoadCallback != null) {
       mediationAdLoadCallback.onFailure(error);
