@@ -1,6 +1,6 @@
 package com.vungle.mediation;
 
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_PLAY_PLACEMENT;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLAY_PLACEMENT;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.os.Bundle;

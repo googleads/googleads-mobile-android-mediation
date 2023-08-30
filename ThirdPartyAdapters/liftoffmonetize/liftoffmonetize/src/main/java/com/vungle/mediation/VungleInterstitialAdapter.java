@@ -14,11 +14,12 @@
 
 package com.vungle.mediation;
 
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_VUNGLE_BANNER_NULL;
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
@@ -95,10 +96,9 @@ public class VungleInterstitialAdapter
         .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
 
     AdConfig adConfig = new AdConfig();
-    if (mediationExtras != null && mediationExtras.containsKey(
-        VungleMediationAdapter.KEY_ORIENTATION)) {
+    if (mediationExtras != null && mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(
-          mediationExtras.getInt(VungleMediationAdapter.KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
+          mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
 
     VungleInitializer.getInstance()

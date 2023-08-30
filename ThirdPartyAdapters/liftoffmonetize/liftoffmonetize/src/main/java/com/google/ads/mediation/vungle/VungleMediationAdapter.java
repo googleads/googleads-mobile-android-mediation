@@ -14,6 +14,10 @@
 
 package com.google.ads.mediation.vungle;
 
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -63,10 +67,6 @@ public class VungleMediationAdapter extends RtbAdapter
     implements MediationRewardedAd, RewardedAdListener {
 
   public static final String TAG = VungleMediationAdapter.class.getSimpleName();
-  public static final String KEY_APP_ID = "appid";
-  public static final String KEY_USER_ID = "userId";
-  public static final String KEY_ORIENTATION = "adOrientation";
-  public static final String KEY_PLAY_PLACEMENT = "playPlacement";
 
   private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbInterstitialAd rtbInterstitialAd;

@@ -14,9 +14,11 @@
 
 package com.google.ads.mediation.vungle.rtb;
 
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
@@ -67,7 +69,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
-    String userId = mediationExtras.getString(VungleMediationAdapter.KEY_USER_ID);
+    String userId = mediationExtras.getString(KEY_USER_ID);
 
     String appID = serverParameters.getString(KEY_APP_ID);
 
@@ -94,9 +96,8 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
     String adMarkup = mediationRewardedAdConfiguration.getBidResponse();
 
     AdConfig adConfig = new AdConfig();
-    if (mediationExtras.containsKey(VungleMediationAdapter.KEY_ORIENTATION)) {
-      adConfig.setAdOrientation(
-          mediationExtras.getInt(VungleMediationAdapter.KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
+    if (mediationExtras.containsKey(KEY_ORIENTATION)) {
+      adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
     String watermark = mediationRewardedAdConfiguration.getWatermark();
     if (!TextUtils.isEmpty(watermark)) {

@@ -14,9 +14,10 @@
 
 package com.google.ads.mediation.vungle.rtb;
 
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
@@ -91,9 +92,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
     String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
 
     AdConfig adConfig = new AdConfig();
-    if (mediationExtras.containsKey(VungleMediationAdapter.KEY_ORIENTATION)) {
-      adConfig.setAdOrientation(
-          mediationExtras.getInt(VungleMediationAdapter.KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
+    if (mediationExtras.containsKey(KEY_ORIENTATION)) {
+      adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
     String watermark = mediationInterstitialAdConfiguration.getWatermark();
     if (!TextUtils.isEmpty(watermark)) {
