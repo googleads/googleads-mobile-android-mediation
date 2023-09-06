@@ -22,6 +22,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
@@ -57,6 +58,8 @@ import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleError;
 import com.vungle.mediation.BuildConfig;
 import com.vungle.mediation.PlacementFinder;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 
@@ -92,6 +95,22 @@ public class VungleMediationAdapter extends RtbAdapter
    */
   public static final String VUNGLE_SDK_ERROR_DOMAIN = "com.vungle.warren";
 
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+      value = {
+          ERROR_INVALID_SERVER_PARAMETERS,
+          ERROR_BANNER_SIZE_MISMATCH,
+          ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          ERROR_VUNGLE_BANNER_NULL,
+          ERROR_INITIALIZATION_FAILURE,
+          ERROR_CANNOT_PLAY_AD,
+          ERROR_CANNOT_GET_BID_TOKEN
+      })
+
+  public @interface AdapterError {
+
+  }
+
   /**
    * Server parameters, such as app ID or placement ID, are invalid.
    */
@@ -122,6 +141,11 @@ public class VungleMediationAdapter extends RtbAdapter
    * Vungle SDK is not ready to play the ad.
    */
   public static final int ERROR_CANNOT_PLAY_AD = 107;
+
+  /**
+   * Vungle SDK returned null or empty bid token.
+   */
+  public static final int ERROR_CANNOT_GET_BID_TOKEN = 108;
 
   /**
    * Convert the given Liftoff Monetize exception into the appropriate custom error code.
@@ -177,9 +201,15 @@ public class VungleMediationAdapter extends RtbAdapter
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
     String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
-    token = token == null ? "" : token;
     Log.d(TAG, "token=" + token);
-    signalCallbacks.onSuccess(token);
+    if (TextUtils.isEmpty(token)) {
+      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN, "The bid token is empty: " + token,
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      signalCallbacks.onFailure(error);
+    } else {
+      signalCallbacks.onSuccess(token);
+    }
   }
 
   @Override
@@ -307,7 +337,9 @@ public class VungleMediationAdapter extends RtbAdapter
 
   @Override
   public void showAd(@NonNull Context context) {
-    rewardedAd.play();
+    if (rewardedAd != null) {
+      rewardedAd.play();
+    }
   }
 
   /**
@@ -352,7 +384,7 @@ public class VungleMediationAdapter extends RtbAdapter
 
   @Override
   public void onAdLeftApplication(@NonNull BaseAd baseAd) {
-    // no op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override

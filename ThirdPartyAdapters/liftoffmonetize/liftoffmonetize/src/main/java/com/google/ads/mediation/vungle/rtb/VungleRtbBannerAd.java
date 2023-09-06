@@ -199,22 +199,23 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   }
 
   private void createBanner() {
-    RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
-        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-    adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-    adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
     View bannerView = bannerAd.getBannerView();
-    if (bannerView != null) {
-      bannerView.setLayoutParams(adParams);
-      bannerLayout.addView(bannerView);
-      mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this);
-    } else {
+    if (bannerView == null) {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
           "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
           ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
+      return;
     }
+
+    RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+    adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+    adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+    bannerView.setLayoutParams(adParams);
+    bannerLayout.addView(bannerView);
+    mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this);
   }
 
 }

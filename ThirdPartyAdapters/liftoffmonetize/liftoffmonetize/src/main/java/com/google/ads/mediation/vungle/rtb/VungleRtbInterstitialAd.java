@@ -122,7 +122,9 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
 
   @Override
   public void showAd(@NonNull Context context) {
-    interstitialAd.play();
+    if (interstitialAd != null) {
+      interstitialAd.play();
+    }
   }
 
   @Override

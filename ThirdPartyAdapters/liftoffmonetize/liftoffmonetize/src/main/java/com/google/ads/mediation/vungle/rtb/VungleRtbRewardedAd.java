@@ -169,7 +169,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
 
   @Override
   public void onAdLeftApplication(@NonNull BaseAd baseAd) {
-    // no op
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override

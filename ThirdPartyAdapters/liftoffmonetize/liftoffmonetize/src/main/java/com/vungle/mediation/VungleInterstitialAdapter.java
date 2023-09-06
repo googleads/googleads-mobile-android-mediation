@@ -114,10 +114,8 @@ public class VungleInterstitialAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                if (mediationInterstitialListener != null) {
-                  mediationInterstitialListener
-                      .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
-                }
+                interstitialListener
+                    .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
                 Log.w(TAG, error.toString());
               }
             });
@@ -125,7 +123,9 @@ public class VungleInterstitialAdapter
 
   @Override
   public void showInterstitial() {
-    interstitialAd.play();
+    if (interstitialAd != null) {
+      interstitialAd.play();
+    }
   }
 
   private class VungleInterstitialListener implements InterstitialAdListener {
@@ -169,7 +169,7 @@ public class VungleInterstitialAdapter
     public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
       AdError error = VungleMediationAdapter.getAdError(vungleError);
       Log.w(TAG, error.toString());
-      //Google Mobile Ads SDK doesn't have a matching event.
+      // Google Mobile Ads SDK doesn't have a matching event.
     }
 
     @Override
@@ -341,18 +341,19 @@ public class VungleInterstitialAdapter
   }
 
   private void createBanner() {
-    RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
-        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-    adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-    adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-    View bannerView = bannerAd.getBannerView();
-    if (bannerView != null) {
-      bannerView.setLayoutParams(adParams);
-      bannerLayout.addView(bannerView);
+    if (bannerAd == null) {
+      AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
+          "Try to play banner ad but the Vungle BannerAd instance not created.",
+          ERROR_DOMAIN);
+      Log.d(TAG, error.toString());
       if (mediationBannerListener != null) {
-        mediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
+        mediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       }
-    } else {
+      return;
+    }
+
+    View bannerView = bannerAd.getBannerView();
+    if (bannerView == null) {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
           "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
           ERROR_DOMAIN);
@@ -360,6 +361,17 @@ public class VungleInterstitialAdapter
       if (mediationBannerListener != null) {
         mediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       }
+      return;
+    }
+
+    RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+    adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+    adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+    bannerView.setLayoutParams(adParams);
+    bannerLayout.addView(bannerView);
+    if (mediationBannerListener != null) {
+      mediationBannerListener.onAdLoaded(VungleInterstitialAdapter.this);
     }
   }
 
