@@ -100,7 +100,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
     this.inMobiSdkWrapper = inMobiSdkWrapper;
   }
 
-  InMobiMediationAdapter() {
+  public InMobiMediationAdapter() {
     super();
     this.inMobiInitializer = InMobiInitializer.getInstance();
     this.inMobiAdFactory = new InMobiAdFactory();

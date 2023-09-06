@@ -15,6 +15,8 @@
 package com.google.ads.mediation.inmobi;
 
 import androidx.annotation.Keep;
+import androidx.annotation.VisibleForTesting;
+import com.google.android.gms.ads.mediation.Adapter;
 
 /**
  * InMobi Adapter for AdMob Mediation used to load and show banner, interstitial and native ads.
@@ -28,6 +30,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter {
    *
    * @param inMobiInitializer
    */
+  @VisibleForTesting
   InMobiAdapter(
       InMobiInitializer inMobiInitializer,
       InMobiAdFactory inMobiAdFactory,
@@ -35,7 +38,7 @@ public final class InMobiAdapter extends InMobiMediationAdapter {
     super(inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
   }
 
-  InMobiAdapter() {
+  public InMobiAdapter() {
     super();
   }
 }
