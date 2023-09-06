@@ -1,8 +1,13 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 6.16.0.0
 - Updated the adapter to call MediationInterstitialAdCallback#onAdFailedToShow()
   when Meta SDK reports that interstitial ad show failed.
+- Verified compatibility with Meta Audience Network SDK v6.16.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Meta Audience Network SDK version 6.16.0.
 
 #### Version 6.15.0.0
 - Verified compatibility with Meta Audience Network SDK v6.15.0.
