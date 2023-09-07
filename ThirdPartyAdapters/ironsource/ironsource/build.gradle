@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "IronSource"
     // String property to store version name.
-    stringVersion = "7.4.0.0"
+    stringVersion = "7.5.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 704000000
+        versionCode 705000000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -31,9 +31,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.ironsource.sdk:mediationsdk:7.4.0'
+    implementation 'com.ironsource.sdk:mediationsdk:7.5.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:22.2.0'
+    implementation 'com.google.android.gms:play-services-ads:22.3.0'
 }
 
 /**

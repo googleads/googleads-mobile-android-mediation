@@ -32,9 +32,9 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
-      if (ironSourceInterstitialAd.mediationInterstitialAdLoadCallback != null) {
+      if (ironSourceInterstitialAd.getMediationAdLoadCallback() != null) {
         ironSourceInterstitialAd.setInterstitialAdCallback(
-            ironSourceInterstitialAd.mediationInterstitialAdLoadCallback.onSuccess(
+            ironSourceInterstitialAd.getMediationAdLoadCallback().onSuccess(
                 ironSourceInterstitialAd));
       }
     }
@@ -53,8 +53,8 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
-      if (ironSourceInterstitialAd.mediationInterstitialAdLoadCallback != null) {
-        ironSourceInterstitialAd.mediationInterstitialAdLoadCallback.onFailure(loadError);
+      if (ironSourceInterstitialAd.getMediationAdLoadCallback() != null) {
+        ironSourceInterstitialAd.getMediationAdLoadCallback().onFailure(loadError);
       }
     }
 

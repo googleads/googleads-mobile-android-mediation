@@ -207,18 +207,19 @@ public class IronSourceMediationAdapter extends Adapter {
       @NonNull
           final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
-    if (isInitialized.get()) {
-      IronSourceRewardedAd ironSourceRewardedAd =
-          new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-      ironSourceRewardedAd.loadAd();
-    } else {
+    if (!isInitialized.get()) {
       AdError adError =
           new AdError(
               ERROR_SDK_NOT_INITIALIZED,
               "Cannot load rewarded ad when the IronSource SDK is not initialized.",
               ERROR_DOMAIN);
       mediationAdLoadCallback.onFailure(adError);
+      return;
     }
+
+    IronSourceRewardedAd ironSourceRewardedAd =
+        new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    ironSourceRewardedAd.loadAd();
   }
 
   @Override
@@ -242,19 +243,19 @@ public class IronSourceMediationAdapter extends Adapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback) {
-    if (isInitialized.get()) {
-      IronSourceInterstitialAd ironSourceInterstitialAd =
-          new IronSourceInterstitialAd(
-              mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-      ironSourceInterstitialAd.loadAd();
-    } else {
+    if (!isInitialized.get()) {
       AdError loadError =
           new AdError(
               ERROR_SDK_NOT_INITIALIZED,
               "Cannot load interstitial ad when the IronSource SDK is not initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
       mediationAdLoadCallback.onFailure(loadError);
+      return;
     }
+
+    IronSourceInterstitialAd ironSourceInterstitialAd =
+        new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    ironSourceInterstitialAd.loadAd();
   }
 
   @Override
@@ -263,17 +264,18 @@ public class IronSourceMediationAdapter extends Adapter {
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
-    if (isInitialized.get()) {
-      IronSourceBannerAd ironSourceBannerAd =
-          new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-      ironSourceBannerAd.loadAd();
-    } else {
+    if (!isInitialized.get()) {
       AdError loadError =
           new AdError(
               ERROR_SDK_NOT_INITIALIZED,
               "Cannot load banner ad when the IronSource SDK is not initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
       mediationAdLoadCallback.onFailure(loadError);
+      return;
     }
+
+    IronSourceBannerAd ironSourceBannerAd =
+        new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    ironSourceBannerAd.loadAd();
   }
 }

@@ -34,15 +34,13 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
-    if (ironSourceBannerAd == null) {
+    if (ironSourceBannerAd == null || ironSourceBannerAd.getIronSourceAdView() == null) {
       return;
     }
 
-    if (ironSourceBannerAd.getIronSourceAdView() != null) {
-      ironSourceBannerAd
-          .getIronSourceAdView()
-          .addView(ironSourceBannerAd.getIronSourceBannerLayout());
-    }
+    ironSourceBannerAd
+        .getIronSourceAdView()
+        .addView(ironSourceBannerAd.getIronSourceBannerLayout());
 
     if (ironSourceBannerAd.getAdLoadCallback() != null) {
       ironSourceBannerAd.setBannerAdCallback(
@@ -61,17 +59,19 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     IronSourceBannerAd ironSourceBannerAd =
         IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
-    if (ironSourceBannerAd != null) {
-      MediationAdLoadCallback adLoadCallback = ironSourceBannerAd.getAdLoadCallback();
-      if (adLoadCallback != null) {
-        adLoadCallback.onFailure(loadError);
-      }
+    if (ironSourceBannerAd == null) {
+      return;
+    }
 
-	    /* If the IronSource SDK is already loading a banner ad with the current instance ID, remove all the other instance IDs from the mapping. */
-      if (ironSourceError.getErrorCode() != ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS
-          && ironSourceError.getErrorCode() != ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS) {
-        IronSourceBannerAd.removeFromAvailableInstances(instanceId);
-      }
+    MediationAdLoadCallback adLoadCallback = ironSourceBannerAd.getAdLoadCallback();
+    if (adLoadCallback != null) {
+      adLoadCallback.onFailure(loadError);
+    }
+
+      /* If the IronSource SDK is already loading a banner ad with the current instance ID, remove all the other instance IDs from the mapping. */
+    if (ironSourceError.getErrorCode() != ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS
+        && ironSourceError.getErrorCode() != ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS) {
+      IronSourceBannerAd.removeFromAvailableInstances(instanceId);
     }
   }
 

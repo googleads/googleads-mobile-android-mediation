@@ -43,8 +43,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   private MediationInterstitialAdCallback interstitialAdCallback;
 
-  public MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-      mediationInterstitialAdLoadCallback;
+  private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      mediationAdLoadCallback;
 
   private final Context context;
 
@@ -58,7 +58,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     Bundle serverParameters = interstitialAdConfig.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = interstitialAdConfig.getContext();
-    this.mediationInterstitialAdLoadCallback = mediationInterstitialAdLoadCallback;
+    this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
   /** Getters and Setters. */
@@ -80,6 +80,11 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   void setInterstitialAdCallback(@NonNull MediationInterstitialAdCallback adCallback) {
     interstitialAdCallback = adCallback;
+  }
+
+  public MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+      getMediationAdLoadCallback() {
+    return mediationAdLoadCallback;
   }
 
   public void loadAd() {
@@ -125,8 +130,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
   /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.e(TAG, loadError.toString());
-    if (mediationInterstitialAdLoadCallback != null) {
-      mediationInterstitialAdLoadCallback.onFailure(loadError);
+    if (mediationAdLoadCallback != null) {
+      mediationAdLoadCallback.onFailure(loadError);
     }
   }
 }

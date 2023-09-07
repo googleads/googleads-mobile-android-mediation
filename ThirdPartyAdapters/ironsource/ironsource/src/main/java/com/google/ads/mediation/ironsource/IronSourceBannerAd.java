@@ -49,13 +49,16 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
   private MediationBannerAdCallback bannerAdCallback;
 
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      adLoadCallback;
 
   private FrameLayout ironSourceAdView;
 
   private ISDemandOnlyBannerLayout ironSourceBannerLayout;
 
   private final AdSize adSize;
+
+  private ISBannerSize bannerSizeIronSource;
 
   private final Context context;
 
@@ -124,14 +127,13 @@ public class IronSourceBannerAd implements MediationBannerAd {
       return;
     }
 
-    ISBannerSize bannerSize =
-        IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     Activity activity = (Activity) context;
     availableBannerInstances.put(instanceID, this);
     ironSourceAdView = new FrameLayout(context);
-    ironSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSize);
+    ironSourceBannerLayout = IronSource.createBannerForDemandOnly(activity, bannerSizeIronSource);
     ironSourceBannerLayout.setBannerDemandOnlyListener(ironSourceBannerListener);
     Log.d(TAG, String.format("Loading IronSource banner ad with instance ID: %s", instanceID));
+    IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout, instanceID);
     IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout, instanceID);
   }
 
@@ -155,9 +157,8 @@ public class IronSourceBannerAd implements MediationBannerAd {
       return false;
     }
 
-    ISBannerSize bannerSize =
-        IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
-    if (bannerSize == null) {
+    bannerSizeIronSource = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
+    if (bannerSizeIronSource == null) {
       AdError sizeError =
           new AdError(
               ERROR_BANNER_SIZE_MISMATCH,
