@@ -78,7 +78,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   private static int gdpr = -1;
   private static int ccpa = -1;
 
-  PangleMediationAdapter() {
+  public PangleMediationAdapter() {
     pangleInitializer = PangleInitializer.getInstance();
     pangleSdkWrapper = new PangleSdkWrapper();
     pangleFactory = new PangleFactory();

@@ -3,6 +3,7 @@ package com.google.ads.mediation.line
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -29,6 +30,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -77,6 +79,7 @@ class LineNativeAdTest {
       spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
 
       with(spiedLineNativeAd) {
+        assertThat(lineNativeAd.overrideClickHandling).isTrue()
         verify(mockFiveAdNative).setViewEventListener(this)
         assertThat(headline).isEqualTo(mockFiveAdNative.adTitle)
         assertThat(body).isEqualTo(mockFiveAdNative.descriptionText)
@@ -175,6 +178,21 @@ class LineNativeAdTest {
   @Test
   fun onFiveAdRecover_throwsNoException() {
     lineNativeAd.onFiveAdRecover(mockFiveAdNative)
+  }
+
+  @Test
+  fun trackViews_invokesRegisterViews() {
+    lineNativeAd.adChoicesContent = View(context)
+    val viewContainer = View(context)
+
+    lineNativeAd.trackViews(
+      viewContainer,
+      /* clickableAssetViews= */ mock(),
+      /* nonClickableAssetViews= */ mock()
+    )
+
+    verify(mockFiveAdNative)
+      .registerViews(eq(viewContainer), eq(lineNativeAd.adChoicesContent), any())
   }
 
   private fun initiateImageLoadCallbacks(
