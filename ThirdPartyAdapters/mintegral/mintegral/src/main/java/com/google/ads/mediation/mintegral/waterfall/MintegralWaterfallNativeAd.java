@@ -31,8 +31,6 @@ import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 import com.mbridge.msdk.out.MBNativeHandler;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,13 +65,6 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbNativeHandler = new MBNativeHandler(nativeProperties, adConfiguration.getContext());
-    try {
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
-      mbNativeHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
     mbNativeHandler.setAdListener(mintegralNativeAdListener);
     mbNativeHandler.load();
   }

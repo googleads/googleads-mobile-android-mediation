@@ -71,7 +71,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
     try {
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidNativeHandler.setExtraInfo(jsonObject);
     } catch (JSONException e) {
       e.printStackTrace();

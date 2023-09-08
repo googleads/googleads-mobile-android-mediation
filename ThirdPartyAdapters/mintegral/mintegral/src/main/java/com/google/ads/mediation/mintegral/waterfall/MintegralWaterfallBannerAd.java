@@ -28,12 +28,9 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
@@ -67,13 +64,6 @@ public class MintegralWaterfallBannerAd extends MintegralBannerAd {
       return;
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
-    try {
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
-      mbBannerView.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
     mbBannerView.init(bannerSize, placementId, adUnitId);
     FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
         MintegralUtils.convertDipToPixel(adConfiguration.getContext(), bannerSize.getWidth()),

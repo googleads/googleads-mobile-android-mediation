@@ -27,8 +27,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
@@ -54,13 +52,6 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
     }
     mbNewInterstitialHandler = new MBNewInterstitialHandler(adConfiguration.getContext(),
         placementId, adUnitId);
-    try {
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
-      mbNewInterstitialHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
     mbNewInterstitialHandler.setInterstitialVideoListener(this);
     mbNewInterstitialHandler.load();
   }

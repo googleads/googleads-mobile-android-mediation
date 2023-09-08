@@ -70,7 +70,7 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     mbBannerView = new MBBannerView(adConfiguration.getContext());
     try {
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBannerView.setExtraInfo(jsonObject);
     } catch (JSONException e) {
       e.printStackTrace();

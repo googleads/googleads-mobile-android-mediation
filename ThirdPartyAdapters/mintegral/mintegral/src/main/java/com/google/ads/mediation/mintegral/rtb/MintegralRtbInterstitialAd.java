@@ -58,7 +58,7 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
         placementId, adUnitId);
     try {
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM,adConfiguration.getWatermark());
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidNewInterstitialHandler.setExtraInfo(jsonObject);
     } catch (JSONException e) {
       e.printStackTrace();
