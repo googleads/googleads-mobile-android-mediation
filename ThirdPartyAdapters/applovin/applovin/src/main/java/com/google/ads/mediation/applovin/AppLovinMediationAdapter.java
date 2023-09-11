@@ -167,6 +167,20 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
   }
 
+  /**
+   * Called to initialize or get the existing instance of the {@link AppLovinSdkSettings} sent to
+   * the AppLovin Sdk.
+   *
+   * <p>Used to configure AppLovin SDK with specific requirements.
+   */
+  @NonNull
+  public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
+    if (appLovinSdkSettings == null) {
+      appLovinSdkSettings = new AppLovinSdkSettings(context);
+    }
+    return appLovinSdkSettings;
+  }
+
   @Override
   public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
