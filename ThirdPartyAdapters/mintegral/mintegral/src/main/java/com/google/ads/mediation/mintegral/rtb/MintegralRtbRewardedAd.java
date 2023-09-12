@@ -27,6 +27,9 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MintegralRtbRewardedAd extends MintegralRewardedAd {
 
   private MBBidRewardVideoHandler mbBidRewardVideoHandler;
@@ -51,6 +54,13 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
     }
     mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId,
         adUnitId);
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
+      mbBidRewardVideoHandler.setExtraInfo(jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     mbBidRewardVideoHandler.loadFromBid(bidToken);
   }

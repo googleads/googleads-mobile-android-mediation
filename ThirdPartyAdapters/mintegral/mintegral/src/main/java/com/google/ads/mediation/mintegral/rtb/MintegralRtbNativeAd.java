@@ -32,6 +32,9 @@ import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +69,13 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
+      mbBidNativeHandler.setExtraInfo(jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     mbBidNativeHandler.setAdListener(mintegralNativeAdListener);
     mbBidNativeHandler.bidLoad(bidToken);
   }

@@ -27,6 +27,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBRewardVideoHandler;
 
+
 public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
 
   private MBRewardVideoHandler mbRewardVideoHandler;
