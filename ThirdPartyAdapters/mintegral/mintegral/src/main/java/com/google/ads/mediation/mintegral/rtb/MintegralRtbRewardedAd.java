@@ -58,8 +58,8 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidRewardVideoHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException exception) {
+      exception.printStackTrace();
     }
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     mbBidRewardVideoHandler.loadFromBid(bidToken);

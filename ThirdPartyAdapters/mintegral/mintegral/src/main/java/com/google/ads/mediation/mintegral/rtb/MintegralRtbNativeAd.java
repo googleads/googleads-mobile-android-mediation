@@ -73,8 +73,8 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidNativeHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException exception) {
+      exception.printStackTrace();
     }
     mbBidNativeHandler.setAdListener(mintegralNativeAdListener);
     mbBidNativeHandler.bidLoad(bidToken);
