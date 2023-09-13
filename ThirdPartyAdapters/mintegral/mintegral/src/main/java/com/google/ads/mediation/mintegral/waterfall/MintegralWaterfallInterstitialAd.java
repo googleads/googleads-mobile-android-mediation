@@ -27,7 +27,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 
-
 public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
   private MBNewInterstitialHandler mbNewInterstitialHandler;

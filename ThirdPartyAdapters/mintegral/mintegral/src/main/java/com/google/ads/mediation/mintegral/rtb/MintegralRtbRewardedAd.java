@@ -14,7 +14,10 @@
 
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
 import android.content.Context;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
@@ -58,8 +61,9 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidRewardVideoHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding rewarded video ad.",
+          jsonException);
     }
     mbBidRewardVideoHandler.setRewardVideoListener(this);
     mbBidRewardVideoHandler.loadFromBid(bidToken);

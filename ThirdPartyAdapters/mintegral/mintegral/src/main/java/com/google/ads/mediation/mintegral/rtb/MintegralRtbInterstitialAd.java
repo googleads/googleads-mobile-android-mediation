@@ -14,8 +14,11 @@
 
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
 import android.content.Context;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.mintegral.MintegralConstants;
@@ -60,8 +63,9 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidNewInterstitialHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding interstitial ad.",
+          jsonException);
     }
     mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
     mbBidNewInterstitialHandler.loadFromBid(bidToken);

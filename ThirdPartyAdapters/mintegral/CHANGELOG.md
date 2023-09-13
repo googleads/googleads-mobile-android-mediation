@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Added watermark support for bidding ads.
+
 #### Version 16.4.91.0
 - Verified compatibility with Mintegral SDK 16.4.91.
 

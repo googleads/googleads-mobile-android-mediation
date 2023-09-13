@@ -31,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
 
-
 public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
   public MintegralWaterfallBannerAd(

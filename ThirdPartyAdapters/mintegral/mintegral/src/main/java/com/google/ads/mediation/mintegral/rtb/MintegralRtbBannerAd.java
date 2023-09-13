@@ -72,8 +72,8 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBannerView.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding banner ad.", jsonException);
     }
     mbBannerView.init(bannerSize, placementId, adUnitId);
     FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(

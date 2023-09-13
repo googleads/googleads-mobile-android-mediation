@@ -14,8 +14,10 @@
 
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -73,8 +75,8 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
       mbBidNativeHandler.setExtraInfo(jsonObject);
-    } catch (JSONException e) {
-      e.printStackTrace();
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding native ad.", jsonException);
     }
     mbBidNativeHandler.setAdListener(mintegralNativeAdListener);
     mbBidNativeHandler.bidLoad(bidToken);
