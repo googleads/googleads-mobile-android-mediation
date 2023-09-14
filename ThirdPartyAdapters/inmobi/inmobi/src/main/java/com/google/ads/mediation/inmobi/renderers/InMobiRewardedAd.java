@@ -39,6 +39,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
+import com.inmobi.ads.WatermarkData;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import java.util.Map;
 
@@ -127,6 +128,12 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationRewardedAdConfiguration.getMediationExtras());
+
+    String watermark = mediationRewardedAdConfiguration.getWatermark();
+    if(watermark != null) {
+      inMobiRewardedAdWrapper.setWatermarkData(new WatermarkData(watermark, 0.3F));
+    }
+
     internalLoadAd(inMobiRewardedAdWrapper);
   }
   // endregion

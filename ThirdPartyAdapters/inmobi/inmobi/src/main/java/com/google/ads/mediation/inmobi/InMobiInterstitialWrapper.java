@@ -2,6 +2,8 @@ package com.google.ads.mediation.inmobi;
 
 import androidx.annotation.VisibleForTesting;
 import com.inmobi.ads.InMobiInterstitial;
+import com.inmobi.ads.WatermarkData;
+
 import java.util.Map;
 
 /** Wrapper around InMobiInterstitial class. */
@@ -20,6 +22,10 @@ public class InMobiInterstitialWrapper {
 
   public void setExtras(final Map<String, String> extras) {
     inMobiInterstitial.setExtras(extras);
+  }
+
+  public void setWatermarkData(final WatermarkData watermarkData) {
+    inMobiInterstitial.setWatermarkData(watermarkData);
   }
 
   public void setKeywords(final String keywords) {
