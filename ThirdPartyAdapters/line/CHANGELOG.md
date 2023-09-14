@@ -1,6 +1,6 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Version 2.6.20230607.0 (In progress)
+#### Version 2.6.20230607.0
 - Initial release.
 - Adds support for banner, interstitial, rewarded and native ad formats.
 - Verified compatibility with FiveAd SDK version 2.6.20230607.
