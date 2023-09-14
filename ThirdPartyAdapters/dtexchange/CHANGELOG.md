@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.2.4.0 (In Progress)
+#### Version 8.2.4.0
 - Verified compatibility with DT Exchange SDK 8.2.4.
 
 Built and tested with:
