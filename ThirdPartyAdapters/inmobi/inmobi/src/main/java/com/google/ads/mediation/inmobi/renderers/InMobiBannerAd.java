@@ -39,6 +39,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiBanner;
+import com.inmobi.ads.WatermarkData;
 import com.inmobi.ads.listeners.BannerAdEventListener;
 import java.util.Map;
 
@@ -126,6 +127,11 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
     inMobiBannerWrapper.setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF);
 
     inMobiBannerWrapper.setListener(InMobiBannerAd.this);
+
+    String watermark = mediationBannerAdConfiguration.getWatermark();
+    if(watermark != null) {
+      inMobiBannerWrapper.setWatermarkData(new WatermarkData(watermark, 0.3F));
+    }
 
     /*
      * Wrap InMobi's ad view to limit the dependency on its methods. For example, the method

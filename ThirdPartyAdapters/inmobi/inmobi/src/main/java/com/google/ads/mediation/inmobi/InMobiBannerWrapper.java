@@ -3,6 +3,7 @@ package com.google.ads.mediation.inmobi;
 import android.view.ViewGroup;
 
 import com.inmobi.ads.InMobiBanner;
+import com.inmobi.ads.WatermarkData;
 import com.inmobi.ads.listeners.BannerAdEventListener;
 
 import java.util.Map;
@@ -29,6 +30,10 @@ public class InMobiBannerWrapper {
 
   public void setListener(final BannerAdEventListener listener) {
     inMobiBanner.setListener(listener);
+  }
+
+  public void setWatermarkData(final WatermarkData watermarkData) {
+    inMobiBanner.setWatermarkData(watermarkData);
   }
 
   public void setLayoutParams(final ViewGroup.LayoutParams layoutParams) {

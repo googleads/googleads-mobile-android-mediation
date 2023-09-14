@@ -109,7 +109,7 @@ dependencies {
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.7'
+    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.8'
 
     // Unit tests
     testImplementation 'junit:junit:4.12'
