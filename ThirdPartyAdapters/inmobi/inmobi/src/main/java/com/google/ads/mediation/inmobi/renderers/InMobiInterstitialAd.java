@@ -16,6 +16,7 @@ package com.google.ads.mediation.inmobi.renderers;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_DISPLAY_FAILED;
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
@@ -108,7 +109,7 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
 
     String watermark = mediationInterstitialAdConfiguration.getWatermark();
     if(watermark != null) {
-      inMobiInterstitialWrapper.setWatermarkData(new WatermarkData(watermark, 0.3F));
+      inMobiInterstitialWrapper.setWatermarkData(new WatermarkData(watermark, WATERMARK_ALPHA));
     }
 
     internalLoadAd(inMobiInterstitialWrapper);

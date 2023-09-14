@@ -15,6 +15,7 @@
 package com.google.ads.mediation.inmobi.renderers;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_BANNER_SIZE_MISMATCH;
+import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
@@ -130,7 +131,7 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
 
     String watermark = mediationBannerAdConfiguration.getWatermark();
     if(watermark != null) {
-      inMobiBannerWrapper.setWatermarkData(new WatermarkData(watermark, 0.3F));
+      inMobiBannerWrapper.setWatermarkData(new WatermarkData(watermark, WATERMARK_ALPHA));
     }
 
     /*
