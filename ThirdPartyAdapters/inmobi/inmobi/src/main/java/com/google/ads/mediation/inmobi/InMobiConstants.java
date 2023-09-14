@@ -29,6 +29,9 @@ public class InMobiConstants {
   // InMobi SDK error domain.
   public static final String INMOBI_SDK_ERROR_DOMAIN = "com.inmobi.sdk";
 
+  // Alpha value of watermark
+  public static final float WATERMARK_ALPHA = 0.3F;
+
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_INMOBI_FAILED_INITIALIZATION,
       ERROR_BANNER_SIZE_MISMATCH, ERROR_NON_UNIFIED_NATIVE_REQUEST, ERROR_INMOBI_NOT_INITIALIZED,

@@ -16,6 +16,7 @@ package com.google.ads.mediation.inmobi.renderers;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_DISPLAY_FAILED;
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_AD_NOT_READY;
+import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
@@ -36,6 +37,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
+import com.inmobi.ads.WatermarkData;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import java.util.Map;
 
@@ -104,6 +106,12 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationInterstitialAdConfiguration.getMediationExtras());
+
+    String watermark = mediationInterstitialAdConfiguration.getWatermark();
+    if(watermark != null) {
+      inMobiInterstitialWrapper.setWatermarkData(new WatermarkData(watermark, WATERMARK_ALPHA));
+    }
+
     internalLoadAd(inMobiInterstitialWrapper);
   }
 
