@@ -2,6 +2,8 @@
 
 #### Next Version
 - Fixed an issue where the adapter fails to initialize.
+- Updated dependencies to resolve class path conflicts.
+- Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
 
 #### Version 10.5.7.1
 - Added support to read IAB U.S. Privacy string from shared preferences.
