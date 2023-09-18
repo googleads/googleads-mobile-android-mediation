@@ -42,7 +42,8 @@ public class PlacementFinder {
       placement = serverParameters.getString(PLAYING_PLACEMENT);
     }
     if (placement == null) {
-      Log.e(TAG, "placementID not provided from serverParameters.");
+      Log.e(TAG, "Missing or invalid placement ID configured for this ad source instance "
+          + "in the AdMob or Ad Manager UI.");
     }
     Log.d(TAG, "Find the placement prepare to load: " + placement);
     return placement;
