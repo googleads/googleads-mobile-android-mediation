@@ -1,9 +1,13 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 10.5.8.0 (In Progress)
 - Fixed an issue where the adapter fails to initialize.
 - Updated dependencies to resolve class path conflicts.
 - Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- InMobi Kotlin SDK version 10.5.8.
 
 #### Version 10.5.7.1
 - Added support to read IAB U.S. Privacy string from shared preferences.
