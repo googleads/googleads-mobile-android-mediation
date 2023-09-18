@@ -99,7 +99,6 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     IronSource.loadISDemandOnlyInterstitial(activity, instanceID);
   }
 
-  /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
@@ -121,13 +120,14 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     return true;
   }
 
-  /** Interstitial show Ad. */
   @Override
   public void showAd(@NonNull Context context) {
     IronSource.showISDemandOnlyInterstitial(instanceID);
   }
 
-  /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
+  /**
+   * Forward ad load failure event to Google Mobile Ads SDK.
+   */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.e(TAG, loadError.toString());
     if (mediationAdLoadCallback != null) {

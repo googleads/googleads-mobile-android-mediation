@@ -53,15 +53,17 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   public IronSourceRewardedAd(
       @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  /** Getters and Setters. */
+  /**
+   * Getters and Setters.
+   */
   static IronSourceRewardedAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableInstances.get(instanceId);
   }
@@ -83,7 +85,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   }
 
   public MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      getMediationAdLoadCallback() {
+  getMediationAdLoadCallback() {
     return mediationAdLoadCallback;
   }
 
@@ -98,7 +100,6 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
   }
 
-  /** Checks if the parameters for loading this instance are valid. */
   private boolean isParamsValid() {
     // Check that the context is an Activity and that the instance ID is valid.
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
@@ -120,7 +121,6 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return true;
   }
 
-  /** Rewarded Video show Ad. */
   @Override
   public void showAd(@NonNull Context context) {
     Log.d(
@@ -128,7 +128,9 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     IronSource.showISDemandOnlyRewardedVideo(this.instanceID);
   }
 
-  /** Pass Load Fail from IronSource SDK to Google Mobile Ads. */
+  /**
+   * Forward ad load failure event to Google Mobile Ads SDK.
+   */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.w(TAG, loadError.toString());
     mediationAdLoadCallback.onFailure(loadError);

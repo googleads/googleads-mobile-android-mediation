@@ -25,29 +25,28 @@ import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 
 public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitialListener {
+
   @Override
   public void onInterstitialAdReady(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource interstitial is ready for instance ID: %s", instanceId));
+    Log.d(TAG,
+        String.format("IronSource interstitial ad is ready for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       if (ironSourceInterstitialAd.getMediationAdLoadCallback() != null) {
         ironSourceInterstitialAd.setInterstitialAdCallback(
-            ironSourceInterstitialAd.getMediationAdLoadCallback().onSuccess(
-                ironSourceInterstitialAd));
+            ironSourceInterstitialAd.getMediationAdLoadCallback()
+                .onSuccess(ironSourceInterstitialAd));
       }
     }
   }
 
   @Override
-  public void onInterstitialAdLoadFailed(
-      @NonNull String instanceId, @NonNull IronSourceError ironSourceError) {
-    final AdError loadError =
-        new AdError(
-            ironSourceError.getErrorCode(),
-            ironSourceError.getErrorMessage(),
-            IRONSOURCE_SDK_ERROR_DOMAIN);
+  public void onInterstitialAdLoadFailed(@NonNull String instanceId,
+      @NonNull IronSourceError ironSourceError) {
+    final AdError loadError = new AdError(ironSourceError.getErrorCode(),
+        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.w(TAG, loadError.toString());
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
@@ -63,7 +62,7 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
 
   @Override
   public void onInterstitialAdOpened(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource interstitial opened for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource interstitial ad opened for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
@@ -79,7 +78,7 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
 
   @Override
   public void onInterstitialAdClosed(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource interstitial closed for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource interstitial ad closed for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
@@ -95,13 +94,10 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
   }
 
   @Override
-  public void onInterstitialAdShowFailed(
-      @NonNull String instanceId, @NonNull IronSourceError ironSourceError) {
-    AdError showError =
-        new AdError(
-            ironSourceError.getErrorCode(),
-            ironSourceError.getErrorMessage(),
-            IRONSOURCE_SDK_ERROR_DOMAIN);
+  public void onInterstitialAdShowFailed(@NonNull String instanceId,
+      @NonNull IronSourceError ironSourceError) {
+    AdError showError = new AdError(ironSourceError.getErrorCode(),
+        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.w(TAG, showError.toString());
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
@@ -119,7 +115,7 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
 
   @Override
   public void onInterstitialAdClicked(@NonNull String instanceId) {
-    Log.d(TAG, String.format("IronSource interstitial clicked for instance ID: %s", instanceId));
+    Log.d(TAG, String.format("IronSource interstitial ad clicked for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
         IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 

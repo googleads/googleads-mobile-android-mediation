@@ -39,8 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IronSourceAdapterUtils {
 
   @Nullable
-  public static ISBannerSize getISBannerSizeFromGoogleAdSize(
-      @NonNull Context context, @NonNull AdSize adSize) {
+  public static ISBannerSize getISBannerSizeFromGoogleAdSize(@NonNull Context context,
+      @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.MEDIUM_RECTANGLE);
@@ -59,36 +59,32 @@ public class IronSourceAdapterUtils {
       return ISBannerSize.LARGE;
     }
 
-    /* If non of the predefined sizes are matched, return a new IronSource size for the closest size
-    returned by Admob. */
+    // If none of the predefined sizes are matched, return a new IronSource size for the closest
+    // size returned by Admob
     return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
   }
 
-  public static AdError validateIronSourceAdLoadParams(
-      @NonNull Context context, @NonNull String instanceID) {
+  public static AdError validateIronSourceAdLoadParams(@NonNull Context context,
+      @NonNull String instanceID) {
     // Check that context is an Activity.
     if (!(context instanceof Activity)) {
-      String errorMessage =
-          ERROR_REQUIRES_ACTIVITY_CONTEXT + "IronSource requires an Activity context to load ads.";
-      Log.w(TAG, errorMessage);
-      AdError contextError =
-          new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, errorMessage, ERROR_DOMAIN);
+      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
+          "IronSource requires an Activity context to load ads.", ERROR_DOMAIN);
       return contextError;
     }
 
     // Check validity of instance ID.
     if (TextUtils.isEmpty(instanceID)) {
-      AdError loadError =
-          new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
+      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid instance ID.", ERROR_DOMAIN);
       return loadError;
     }
 
     return null;
   }
 
-  public static <T> boolean canLoadIronSourceAdInstance(
-      @NonNull String instanceId, @NonNull ConcurrentHashMap<String, T> instanceMap) {
+  public static <T> boolean canLoadIronSourceAdInstance(@NonNull String instanceId,
+      @NonNull ConcurrentHashMap<String, T> instanceMap) {
     T adUnit = instanceMap.get(instanceId);
     return (adUnit == null);
   }

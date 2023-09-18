@@ -67,8 +67,8 @@ public class IronSourceBannerAd implements MediationBannerAd {
   public IronSourceBannerAd(
       @NonNull MediationBannerAdConfiguration bannerAdConfig,
       @NonNull
-          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
     Bundle serverParameters = bannerAdConfig.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = bannerAdConfig.getContext();
@@ -76,7 +76,9 @@ public class IronSourceBannerAd implements MediationBannerAd {
     adLoadCallback = mediationAdLoadCallback;
   }
 
-  /** Getters and Setters. */
+  /**
+   * Getters and Setters.
+   */
   MediationBannerAdCallback getBannerAdCallback() {
     return bannerAdCallback;
   }
@@ -97,7 +99,9 @@ public class IronSourceBannerAd implements MediationBannerAd {
     return ironSourceAdView;
   }
 
-  /** Instance map access. */
+  /**
+   * Instance map access.
+   */
   static IronSourceBannerAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableBannerInstances.get(instanceId);
   }
@@ -137,7 +141,9 @@ public class IronSourceBannerAd implements MediationBannerAd {
     IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout, instanceID);
   }
 
-  /** Checks if the parameters for loading this instance are valid. */
+  /**
+   * Checks if the parameters for loading this instance are valid.
+   */
   private boolean isParamsValid() {
     // Check that the context is an Activity and that the instance ID is valid..
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
@@ -148,12 +154,12 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
     // Check that an Ad for this instance ID is not already loading.
     if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableBannerInstances)) {
-      loadError =
+      AdError adError =
           new AdError(
               ERROR_AD_ALREADY_LOADED,
               "An IronSource banner is already loaded for instance ID: " + instanceID,
               ERROR_DOMAIN);
-      onAdFailedToLoad(loadError);
+      onAdFailedToLoad(adError);
       return false;
     }
 
@@ -162,9 +168,8 @@ public class IronSourceBannerAd implements MediationBannerAd {
       AdError sizeError =
           new AdError(
               ERROR_BANNER_SIZE_MISMATCH,
-              "There is no matching IronSource banner ad size for Google ad size: %s" + adSize,
-              ERROR_DOMAIN);
-      Log.e(TAG, sizeError.toString());
+              "There is no matching IronSource banner ad size for Google ad size: %s" +
+                  adSize, ERROR_DOMAIN);
       onAdFailedToLoad(sizeError);
       return false;
     }
@@ -178,6 +183,9 @@ public class IronSourceBannerAd implements MediationBannerAd {
     return ironSourceAdView;
   }
 
+  /**
+   * Forward ad load failure event to Google Mobile Ads SDK.
+   */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.w(TAG, loadError.toString());
     if (adLoadCallback != null) {
