@@ -27,6 +27,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.applovin.mediation.AppLovinUtils;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
 import com.google.android.gms.ads.AdError;
@@ -68,7 +69,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
   public void loadAd() {
     final Context context = adConfiguration.getContext();
     final Bundle serverParameters = adConfiguration.getServerParameters();
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
           new AdError(

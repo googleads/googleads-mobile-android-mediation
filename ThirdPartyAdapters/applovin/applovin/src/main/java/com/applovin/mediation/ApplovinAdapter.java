@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
@@ -82,7 +83,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
       @Nullable final Bundle networkExtras) {
 
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
           ERROR_DOMAIN);
@@ -201,7 +202,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle networkExtras) {
 
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
           ERROR_DOMAIN);

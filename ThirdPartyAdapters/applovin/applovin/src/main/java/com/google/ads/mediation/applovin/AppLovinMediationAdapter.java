@@ -21,7 +21,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
 import com.applovin.mediation.rtb.AppLovinRtbInterstitialRenderer;
@@ -192,12 +191,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       if (!TextUtils.isEmpty(sdkKey)) {
         sdkKeys.add(sdkKey);
       }
-    }
-
-    // Include the SDK key declared in the AndroidManifest.xml file.
-    String manifestSdkKey = AppLovinUtils.retrieveSdkKey(context, null);
-    if (!TextUtils.isEmpty(manifestSdkKey)) {
-      sdkKeys.add(manifestSdkKey);
     }
 
     if (sdkKeys.isEmpty()) {

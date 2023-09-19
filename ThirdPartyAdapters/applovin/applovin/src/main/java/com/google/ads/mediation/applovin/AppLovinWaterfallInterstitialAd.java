@@ -28,6 +28,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.mediation.AppLovinUtils;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinSdk;
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
@@ -69,7 +70,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
   public void loadAd() {
     context = interstitialAdConfiguration.getContext();
     Bundle serverParameters = interstitialAdConfiguration.getServerParameters();
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
           new AdError(

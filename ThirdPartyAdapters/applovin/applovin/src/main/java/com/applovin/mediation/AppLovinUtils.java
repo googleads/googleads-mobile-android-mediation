@@ -17,10 +17,7 @@ package com.applovin.mediation;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -53,48 +50,6 @@ public class AppLovinUtils {
     // Private constructor
     private ServerParameterKeys() {
     }
-  }
-
-  /**
-   * Retrieves the AppLovin SDK key.
-   *
-   * @param context          the context object.
-   * @param serverParameters the ad request's server parameters.
-   * @return the AppLovin SDK key.
-   */
-  @Nullable
-  public static String retrieveSdkKey(@NonNull Context context, @Nullable Bundle serverParameters) {
-    String sdkKey = null;
-
-    // Prioritize the SDK Key contained in the server parameters, if any.
-    if (serverParameters != null) {
-      sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
-    }
-
-    // Fetch the SDK key in the AndroidManifest.xml file if no SDK key is found in the server
-    // parameters.
-    if (TextUtils.isEmpty(sdkKey)) {
-      final Bundle metaData = retrieveMetadata(context);
-      if (metaData != null) {
-        sdkKey = metaData.getString("applovin.sdk.key");
-      }
-    }
-
-    return sdkKey;
-  }
-
-  private static Bundle retrieveMetadata(Context context) {
-    try {
-      final PackageManager pm = context.getPackageManager();
-      final ApplicationInfo ai =
-          pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-
-      return ai.metaData;
-    } catch (PackageManager.NameNotFoundException ignored) {
-      // Metadata not found. Just continue and return null.
-    }
-
-    return null;
   }
 
   /**

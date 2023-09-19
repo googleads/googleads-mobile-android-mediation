@@ -30,6 +30,7 @@ import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinAdViewDisplayErrorCode;
 import com.applovin.adview.AppLovinAdViewEventListener;
 import com.applovin.mediation.AppLovinUtils;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
@@ -109,7 +110,7 @@ public class AppLovinBannerAd
     context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
           new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
