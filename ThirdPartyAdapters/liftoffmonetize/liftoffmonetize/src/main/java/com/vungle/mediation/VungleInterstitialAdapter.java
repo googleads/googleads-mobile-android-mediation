@@ -241,7 +241,7 @@ public class VungleInterstitialAdapter
       return;
     }
 
-    BannerAdSize bannerAdSize = hasBannerSizeAd(context, adSize);
+    BannerAdSize bannerAdSize = getVungleBannerAdSizeFromGoogleAdSize(context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
           "Failed to load ad from Liftoff Monetize. Invalid banner size.", ERROR_DOMAIN);
@@ -353,6 +353,9 @@ public class VungleInterstitialAdapter
     }
 
     View bannerView = bannerAd.getBannerView();
+    // The Vungle SDK performs an internal check to determine if a banner ad is playable.
+    // If the ad is not playable, such as if it has expired, the SDK will return `null` for the
+    // banner view.
     if (bannerView == null) {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
           "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
@@ -364,6 +367,7 @@ public class VungleInterstitialAdapter
       return;
     }
 
+    // Add rules to ensure the banner ad is located at the center of the layout.
     RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
         RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
@@ -382,7 +386,7 @@ public class VungleInterstitialAdapter
     return bannerLayout;
   }
 
-  public static com.vungle.ads.BannerAdSize hasBannerSizeAd(Context context, AdSize adSize) {
+  public static BannerAdSize getVungleBannerAdSizeFromGoogleAdSize(Context context, AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(new AdSize(com.vungle.ads.BannerAdSize.BANNER_SHORT.getWidth(),
         com.vungle.ads.BannerAdSize.BANNER_SHORT.getHeight()));

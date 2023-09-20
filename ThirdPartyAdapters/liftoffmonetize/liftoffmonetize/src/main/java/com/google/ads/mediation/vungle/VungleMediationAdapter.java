@@ -203,7 +203,7 @@ public class VungleMediationAdapter extends RtbAdapter
     String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
     Log.d(TAG, "token=" + token);
     if (TextUtils.isEmpty(token)) {
-      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN, "The bid token is empty: " + token,
+      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN, "Liftoff Monetize returned an empty bid token.",
           ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       signalCallbacks.onFailure(error);

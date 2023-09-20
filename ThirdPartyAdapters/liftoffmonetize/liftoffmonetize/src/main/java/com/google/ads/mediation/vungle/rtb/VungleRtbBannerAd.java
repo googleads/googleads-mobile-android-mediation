@@ -87,7 +87,7 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
     Context context = mediationBannerAdConfiguration.getContext();
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();
 
-    BannerAdSize bannerAdSize = VungleInterstitialAdapter.hasBannerSizeAd(context, adSize);
+    BannerAdSize bannerAdSize = VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
           String.format("The requested banner size: %s is not supported by Vungle SDK.", adSize),
@@ -200,6 +200,9 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
   private void createBanner() {
     View bannerView = bannerAd.getBannerView();
+    // The Vungle SDK performs an internal check to determine if a banner ad is playable.
+    // If the ad is not playable, such as if it has expired, the SDK will return `null` for the
+    // banner view.
     if (bannerView == null) {
       AdError error = new AdError(ERROR_VUNGLE_BANNER_NULL,
           "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
@@ -209,6 +212,7 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
       return;
     }
 
+    // Add rules to ensure the banner ad is located at the center of the layout.
     RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
         RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
     adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
