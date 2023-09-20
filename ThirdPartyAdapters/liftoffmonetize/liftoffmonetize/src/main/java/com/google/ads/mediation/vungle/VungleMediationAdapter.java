@@ -93,7 +93,7 @@ public class VungleMediationAdapter extends RtbAdapter
   /**
    * Vungle SDK error domain.
    */
-  public static final String VUNGLE_SDK_ERROR_DOMAIN = "com.vungle.warren";
+  public static final String VUNGLE_SDK_ERROR_DOMAIN = "com.vungle.ads";
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(

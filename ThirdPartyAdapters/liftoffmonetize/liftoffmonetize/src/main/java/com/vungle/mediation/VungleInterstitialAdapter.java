@@ -388,34 +388,33 @@ public class VungleInterstitialAdapter
 
   public static BannerAdSize getVungleBannerAdSizeFromGoogleAdSize(Context context, AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
-    potentials.add(new AdSize(com.vungle.ads.BannerAdSize.BANNER_SHORT.getWidth(),
-        com.vungle.ads.BannerAdSize.BANNER_SHORT.getHeight()));
-    potentials.add(new AdSize(com.vungle.ads.BannerAdSize.BANNER.getWidth(),
-        com.vungle.ads.BannerAdSize.BANNER.getHeight()));
-    potentials.add(new AdSize(com.vungle.ads.BannerAdSize.BANNER_LEADERBOARD.getWidth(),
-        com.vungle.ads.BannerAdSize.BANNER_LEADERBOARD.getHeight()));
-    potentials.add(new AdSize(com.vungle.ads.BannerAdSize.VUNGLE_MREC.getWidth(),
-        com.vungle.ads.BannerAdSize.VUNGLE_MREC.getHeight()));
+    potentials.add(new AdSize(BannerAdSize.BANNER_SHORT.getWidth(),
+        BannerAdSize.BANNER_SHORT.getHeight()));
+    potentials.add(new AdSize(BannerAdSize.BANNER.getWidth(),
+        BannerAdSize.BANNER.getHeight()));
+    potentials.add(new AdSize(BannerAdSize.BANNER_LEADERBOARD.getWidth(),
+        BannerAdSize.BANNER_LEADERBOARD.getHeight()));
+    potentials.add(new AdSize(BannerAdSize.VUNGLE_MREC.getWidth(),
+        BannerAdSize.VUNGLE_MREC.getHeight()));
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize == null) {
-      Log.i(TAG, "Not found closest ad size: " + adSize);
       return null;
     }
-    Log.i(TAG, "Found closest ad size: " + closestSize + " for requested ad size: " + adSize);
+    Log.d(TAG, "Found closest Liftoff Monetize banner ad size: " + closestSize + " for requested ad size: " + adSize);
 
-    if (closestSize.getWidth() == com.vungle.ads.BannerAdSize.BANNER_SHORT.getWidth()
-        && closestSize.getHeight() == com.vungle.ads.BannerAdSize.BANNER_SHORT.getHeight()) {
-      return com.vungle.ads.BannerAdSize.BANNER_SHORT;
-    } else if (closestSize.getWidth() == com.vungle.ads.BannerAdSize.BANNER.getWidth()
-        && closestSize.getHeight() == com.vungle.ads.BannerAdSize.BANNER.getHeight()) {
-      return com.vungle.ads.BannerAdSize.BANNER;
-    } else if (closestSize.getWidth() == com.vungle.ads.BannerAdSize.BANNER_LEADERBOARD.getWidth()
-        && closestSize.getHeight() == com.vungle.ads.BannerAdSize.BANNER_LEADERBOARD.getHeight()) {
-      return com.vungle.ads.BannerAdSize.BANNER_LEADERBOARD;
-    } else if (closestSize.getWidth() == com.vungle.ads.BannerAdSize.VUNGLE_MREC.getWidth()
-        && closestSize.getHeight() == com.vungle.ads.BannerAdSize.VUNGLE_MREC.getHeight()) {
-      return com.vungle.ads.BannerAdSize.VUNGLE_MREC;
+    if (closestSize.getWidth() == BannerAdSize.BANNER_SHORT.getWidth()
+        && closestSize.getHeight() == BannerAdSize.BANNER_SHORT.getHeight()) {
+      return BannerAdSize.BANNER_SHORT;
+    } else if (closestSize.getWidth() == BannerAdSize.BANNER.getWidth()
+        && closestSize.getHeight() == BannerAdSize.BANNER.getHeight()) {
+      return BannerAdSize.BANNER;
+    } else if (closestSize.getWidth() == BannerAdSize.BANNER_LEADERBOARD.getWidth()
+        && closestSize.getHeight() == BannerAdSize.BANNER_LEADERBOARD.getHeight()) {
+      return BannerAdSize.BANNER_LEADERBOARD;
+    } else if (closestSize.getWidth() == BannerAdSize.VUNGLE_MREC.getWidth()
+        && closestSize.getHeight() == BannerAdSize.VUNGLE_MREC.getHeight()) {
+      return BannerAdSize.VUNGLE_MREC;
     }
 
     return null;

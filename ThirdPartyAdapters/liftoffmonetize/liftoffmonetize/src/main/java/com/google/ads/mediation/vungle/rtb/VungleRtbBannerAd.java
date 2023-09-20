@@ -117,21 +117,21 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   }
 
   private void loadBanner(Context context, String placementId, AdSize gAdSize,
-      BannerAdSize loAdSize, String adMarkup, String watermark) {
+      BannerAdSize bannerAdSize, String adMarkup, String watermark) {
     bannerLayout = new RelativeLayout(context);
     int adLayoutHeight = gAdSize.getHeightInPixels(context);
     // If the height is 0 (e.g. for inline adaptive banner requests), use the closest supported size
     // as the height of the adLayout wrapper.
     if (adLayoutHeight <= 0) {
       float density = context.getResources().getDisplayMetrics().density;
-      adLayoutHeight = Math.round(loAdSize.getHeight() * density);
+      adLayoutHeight = Math.round(bannerAdSize.getHeight() * density);
     }
     RelativeLayout.LayoutParams adViewLayoutParams =
         new RelativeLayout.LayoutParams(gAdSize.getWidthInPixels(context),
             adLayoutHeight);
     bannerLayout.setLayoutParams(adViewLayoutParams);
 
-    bannerAd = new BannerAd(context, placementId, loAdSize);
+    bannerAd = new BannerAd(context, placementId, bannerAdSize);
     bannerAd.setAdListener(VungleRtbBannerAd.this);
 
     if (!TextUtils.isEmpty(watermark)) {
