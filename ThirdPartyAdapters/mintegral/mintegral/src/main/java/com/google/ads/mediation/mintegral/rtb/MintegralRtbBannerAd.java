@@ -68,6 +68,7 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
       return;
     }
     mbBannerView = new MBBannerView(adConfiguration.getContext());
+    mbBannerView.init(bannerSize, placementId, adUnitId);
     try {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
@@ -75,7 +76,6 @@ public class MintegralRtbBannerAd extends MintegralBannerAd {
     } catch (JSONException jsonException) {
       Log.w(TAG, "Failed to apply watermark to Mintegral bidding banner ad.", jsonException);
     }
-    mbBannerView.init(bannerSize, placementId, adUnitId);
     FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
         MintegralUtils.convertDipToPixel(adConfiguration.getContext(), bannerSize.getWidth()),
         MintegralUtils.convertDipToPixel(adConfiguration.getContext(), bannerSize.getHeight()));
