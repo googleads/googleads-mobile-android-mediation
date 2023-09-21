@@ -15,6 +15,7 @@
 package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -41,7 +42,6 @@ import com.vungle.ads.BannerAdListener;
 import com.vungle.ads.BannerAdSize;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.VungleError;
-import com.vungle.mediation.PlacementFinder;
 import com.vungle.mediation.VungleInterstitialAdapter;
 
 public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
@@ -60,25 +60,26 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   }
 
   public void render() {
-    Bundle mediationExtras = mediationBannerAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
 
     String appID = serverParameters.getString(KEY_APP_ID);
 
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid App ID configured for this ad source instance in the "
-              + "AdMob or Ad Manager UI.", ERROR_DOMAIN);
+          "Failed to load bidding banner ad from Liftoff Monetize. "
+              + "Missing or invalid App ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    String placementForPlay = PlacementFinder.findPlacement(mediationExtras, serverParameters);
+    String placementForPlay = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementForPlay)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid Placement ID configured for this ad source instance in the "
-              + "AdMob or Ad Manager UI.", ERROR_DOMAIN);
+          "Failed to load bidding banner ad from Liftoff Monetize. "
+              + "Missing or Invalid Placement ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       mediationAdLoadCallback.onFailure(error);
       return;

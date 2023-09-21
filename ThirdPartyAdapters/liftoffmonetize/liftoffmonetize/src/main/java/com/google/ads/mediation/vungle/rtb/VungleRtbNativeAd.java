@@ -15,6 +15,7 @@
 package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
@@ -45,7 +46,6 @@ import com.vungle.ads.NativeAd;
 import com.vungle.ads.NativeAdListener;
 import com.vungle.ads.VungleError;
 import com.vungle.ads.internal.ui.view.MediaView;
-import com.vungle.mediation.PlacementFinder;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -65,7 +65,6 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   }
 
   public void render() {
-    Bundle mediationExtras = adConfiguration.getMediationExtras();
     Bundle serverParameters = adConfiguration.getServerParameters();
     NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
     final Context context = adConfiguration.getContext();
@@ -73,16 +72,20 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or invalid app ID.", ERROR_DOMAIN);
+          "Failed to load native ad from Liftoff Monetize. "
+              + "Missing or invalid app ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
     }
 
-    String placementId = PlacementFinder.findPlacement(mediationExtras, serverParameters);
+    String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Vungle. Missing or Invalid placement ID.", ERROR_DOMAIN);
+          "Failed to load native ad from Liftoff Monetize. "
+              + "Missing or Invalid placement ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;

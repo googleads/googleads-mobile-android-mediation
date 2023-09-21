@@ -16,6 +16,7 @@ package com.vungle.mediation;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -76,17 +77,20 @@ public class VungleInterstitialAdapter
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid App ID.", ERROR_DOMAIN);
+          "Failed to load waterfall interstitial ad from Liftoff Monetize. "
+              + "Missing or invalid App ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       interstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
     }
 
-    String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
+    String placement = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or Invalid Placement ID.",
-          ERROR_DOMAIN);
+          "Failed to load waterfall interstitial ad from Liftoff Monetize. "
+              + "Missing or invalid Placement ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       interstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -214,11 +218,11 @@ public class VungleInterstitialAdapter
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
     mediationBannerListener = bannerListener;
     String appID = serverParameters.getString(KEY_APP_ID);
-
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or invalid app ID.",
-          ERROR_DOMAIN);
+          "Failed to load waterfall banner ad from Liftoff Monetize. "
+              + "Missing or invalid App ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -227,15 +231,12 @@ public class VungleInterstitialAdapter
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
 
-    String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
-    Log.d(TAG,
-        "requestBannerAd for Placement: " + placement + " ### Adapter instance: " + this
-            .hashCode());
-
+    String placement = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or Invalid placement ID.",
-          ERROR_DOMAIN);
+          "Failed to load waterfall banner ad from Liftoff Monetize. "
+              + "Missing or invalid Placement ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -249,6 +250,10 @@ public class VungleInterstitialAdapter
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
     }
+
+    Log.d(TAG,
+        "requestBannerAd for Placement: " + placement + " ### Adapter instance: " + this
+            .hashCode());
 
     VungleInitializer.getInstance()
         .initialize(
@@ -277,11 +282,11 @@ public class VungleInterstitialAdapter
 
               @Override
               public void onInitializeError(AdError error) {
+                Log.w(TAG, error.toString());
                 if (mediationBannerListener != null) {
                   mediationBannerListener
                       .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
                 }
-                Log.w(TAG, error.toString());
               }
             });
   }

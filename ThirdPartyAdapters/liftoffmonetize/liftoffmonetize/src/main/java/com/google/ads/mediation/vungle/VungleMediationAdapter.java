@@ -16,6 +16,7 @@ package com.google.ads.mediation.vungle;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID;
 
 import android.content.Context;
@@ -57,7 +58,6 @@ import com.vungle.ads.RewardedAdListener;
 import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleError;
 import com.vungle.mediation.BuildConfig;
-import com.vungle.mediation.PlacementFinder;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
@@ -79,7 +79,6 @@ public class VungleMediationAdapter extends RtbAdapter
 
   private AdConfig adConfig;
   private String userId;
-  private String placement;
   private RewardedAd rewardedAd;
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
@@ -143,7 +142,7 @@ public class VungleMediationAdapter extends RtbAdapter
   public static final int ERROR_CANNOT_PLAY_AD = 107;
 
   /**
-   * Vungle SDK returned null or empty bid token.
+   * Vungle SDK returned invalid bidding token.
    */
   public static final int ERROR_CANNOT_GET_BID_TOKEN = 108;
 
@@ -201,13 +200,13 @@ public class VungleMediationAdapter extends RtbAdapter
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
     String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
-    Log.d(TAG, "token=" + token);
     if (TextUtils.isEmpty(token)) {
-      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN, "Liftoff Monetize returned an empty bid token.",
-          ERROR_DOMAIN);
+      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN,
+          "Liftoff Monetize returned an empty bid token.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       signalCallbacks.onFailure(error);
     } else {
+      Log.d(TAG, "Liftoff Monetize bidding token=" + token);
       signalCallbacks.onSuccess(token);
     }
   }
@@ -284,20 +283,23 @@ public class VungleMediationAdapter extends RtbAdapter
       userId = mediationExtras.getString(KEY_USER_ID);
     }
 
-    placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
-    if (TextUtils.isEmpty(placement)) {
+    String appID = serverParameters.getString(KEY_APP_ID);
+    if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or invalid Placement ID.",
-          ERROR_DOMAIN);
+          "Failed to load waterfall rewarded ad from Liftoff Monetize. "
+              + "Missing or invalid App ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    String appID = serverParameters.getString(KEY_APP_ID);
-    if (TextUtils.isEmpty(appID)) {
+    String placement = serverParameters.getString(KEY_PLACEMENT_ID);
+    if (TextUtils.isEmpty(placement)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load ad from Liftoff Monetize. Missing or Invalid App ID.", ERROR_DOMAIN);
+          "Failed to load waterfall rewarded ad from Liftoff Monetize. "
+              + "Missing or Invalid Placement ID configured for this ad source instance "
+              + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;

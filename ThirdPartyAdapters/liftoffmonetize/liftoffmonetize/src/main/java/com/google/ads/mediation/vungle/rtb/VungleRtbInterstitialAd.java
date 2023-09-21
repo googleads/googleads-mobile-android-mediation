@@ -16,6 +16,7 @@ package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
@@ -38,7 +39,6 @@ import com.vungle.ads.BaseAd;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleError;
-import com.vungle.mediation.PlacementFinder;
 
 public class VungleRtbInterstitialAd implements MediationInterstitialAd, InterstitialAdListener {
 
@@ -71,19 +71,23 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
 
     if (TextUtils.isEmpty(appID)) {
       AdError error =
-          new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.", ERROR_DOMAIN);
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load bidding interstitial ad from Liftoff Monetize. "
+                  + "Missing or invalid App ID configured for this ad source instance "
+                  + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    String placement = PlacementFinder.findPlacement(mediationExtras, serverParameters);
+    String placement = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placement)) {
       AdError error =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to load ad from Vungle. Missing or Invalid Placement ID.",
-              ERROR_DOMAIN);
+              "Failed to load bidding interstitial ad from Liftoff Monetize. "
+                  + "Missing or Invalid Placement ID configured for this ad source instance "
+                  + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
