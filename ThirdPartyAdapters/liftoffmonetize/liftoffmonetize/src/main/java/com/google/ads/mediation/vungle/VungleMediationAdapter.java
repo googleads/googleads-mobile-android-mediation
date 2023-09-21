@@ -341,6 +341,11 @@ public class VungleMediationAdapter extends RtbAdapter
   public void showAd(@NonNull Context context) {
     if (rewardedAd != null) {
       rewardedAd.play();
+    } else if (mediationRewardedAdCallback != null) {
+      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to present rewarded ad.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      mediationRewardedAdCallback.onAdFailedToShow(error);
     }
   }
 
