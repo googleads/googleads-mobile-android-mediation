@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.vungle.mediation;
+package com.google.ads.mediation.vungle;
 
-import androidx.annotation.Keep;
-import com.google.ads.mediation.vungle.VungleMediationAdapter;
+public class VungleConstants {
 
-/**
- * Adapter to load and show Vungle rewarded video ads using Google Mobile Ads SDK mediation.
- */
-@Keep
-public class VungleAdapter extends VungleMediationAdapter {
+  public static final String KEY_APP_ID = "appid";
+  public static final String KEY_USER_ID = "userId";
+  public static final String KEY_ORIENTATION = "adOrientation";
+  public static final String KEY_PLACEMENT_ID = "placementID";
 
 }

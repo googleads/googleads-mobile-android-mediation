@@ -14,9 +14,13 @@
 
 package com.google.ads.mediation.vungle.rtb;
 
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID;
+import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.vungle.VungleMediationAdapter.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
 
 import android.content.Context;
@@ -33,15 +37,13 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.vungle.mediation.VungleExtrasBuilder;
-import com.vungle.mediation.VungleManager;
-import com.vungle.warren.AdConfig;
-import com.vungle.warren.LoadAdCallback;
-import com.vungle.warren.PlayAdCallback;
-import com.vungle.warren.Vungle;
-import com.vungle.warren.error.VungleException;
+import com.vungle.ads.AdConfig;
+import com.vungle.ads.BaseAd;
+import com.vungle.ads.RewardedAd;
+import com.vungle.ads.RewardedAdListener;
+import com.vungle.ads.VungleError;
 
-public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback, PlayAdCallback {
+public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListener {
 
   @NonNull
   private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
@@ -53,16 +55,13 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
   @Nullable
   private MediationRewardedAdCallback mediationRewardedAdCallback;
 
-  private AdConfig adConfig;
-  private String placement;
-  private String adMarkup;
-  private String userId;
+  private RewardedAd rewardedAd;
 
   public VungleRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          mediationAdLoadCallback) {
     this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
@@ -71,57 +70,58 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
-    if (mediationExtras != null) {
-      userId = mediationExtras.getString(VungleExtrasBuilder.EXTRA_USER_ID);
-    }
+    String userId = mediationExtras.getString(KEY_USER_ID);
 
     String appID = serverParameters.getString(KEY_APP_ID);
 
     if (TextUtils.isEmpty(appID)) {
       AdError error =
-          new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid App ID.", ERROR_DOMAIN);
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS,
+              "Failed to load bidding rewarded ad from Liftoff Monetize. "
+                  + "Missing or invalid App ID configured for this ad source instance "
+                  + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    placement = VungleManager.getInstance().findPlacement(mediationExtras, serverParameters);
+    String placement = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placement)) {
       AdError error =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS,
-              "Failed to load ad from Vungle. Missing or invalid Placement ID.",
-              ERROR_DOMAIN);
+              "Failed to load bidding rewarded ad from Liftoff Monetize. "
+                  + "Missing or invalid Placement ID configured for this ad source instance "
+                  + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
-    adMarkup = mediationRewardedAdConfiguration.getBidResponse();
-    Log.d(TAG, "Render rewarded mAdMarkup=" + adMarkup);
+    String adMarkup = mediationRewardedAdConfiguration.getBidResponse();
 
-    // Unmute full-screen ads by default.
-    adConfig = VungleExtrasBuilder.adConfigWithNetworkExtras(mediationExtras, false);
+    AdConfig adConfig = new AdConfig();
+    if (mediationExtras.containsKey(KEY_ORIENTATION)) {
+      adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
+    }
+    String watermark = mediationRewardedAdConfiguration.getWatermark();
+    if (!TextUtils.isEmpty(watermark)) {
+      adConfig.setWatermark(watermark);
+    }
+
+    Context context = mediationRewardedAdConfiguration.getContext();
 
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
-
-    VungleInitializer.getInstance()
-        .initialize(
-            appID,
-            mediationRewardedAdConfiguration.getContext(),
+        .initialize(appID, context,
             new VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                Vungle.setIncentivizedFields(userId, null, null, null, null);
-
-                if (Vungle.canPlayAd(placement, adMarkup)) {
-                  mediationRewardedAdCallback =
-                      mediationAdLoadCallback.onSuccess(VungleRtbRewardedAd.this);
-                  return;
+                rewardedAd = new RewardedAd(context, placement, adConfig);
+                rewardedAd.setAdListener(VungleRtbRewardedAd.this);
+                if (!TextUtils.isEmpty(userId)) {
+                  rewardedAd.setUserId(userId);
                 }
-
-                Vungle.loadAd(placement, adMarkup, adConfig, VungleRtbRewardedAd.this);
+                rewardedAd.load(adMarkup);
               }
 
               @Override
@@ -134,53 +134,44 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
 
   @Override
   public void showAd(@NonNull Context context) {
-    Vungle.playAd(placement, adMarkup, adConfig, VungleRtbRewardedAd.this);
-  }
-
-  /** {@link LoadAdCallback} implementation from Vungle. */
-  @Override
-  public void onAdLoad(final String placementId) {
-    if (mediationAdLoadCallback != null) {
-      mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(VungleRtbRewardedAd.this);
+    if (rewardedAd != null) {
+      rewardedAd.play();
+    } else if (mediationRewardedAdCallback != null) {
+      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to present rewarded ad.",
+          ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      mediationRewardedAdCallback.onAdFailedToShow(error);
     }
   }
 
   @Override
-  public void creativeId(String creativeId) {
-    // no-op
+  public void onAdLoaded(@NonNull BaseAd baseAd) {
+    mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(VungleRtbRewardedAd.this);
   }
 
-  /** {@link PlayAdCallback} implementation from Vungle */
   @Override
-  public void onAdStart(final String placementId) {
+  public void onAdStart(@NonNull BaseAd baseAd) {
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onAdOpened();
     }
   }
 
   @Override
-  @Deprecated
-  public void onAdEnd(
-      final String placementId,
-      final boolean wasSuccessfulView,
-      final boolean wasCallToActionClicked) {}
-
-  @Override
-  public void onAdEnd(final String placementId) {
+  public void onAdEnd(@NonNull BaseAd baseAd) {
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onAdClosed();
     }
   }
 
   @Override
-  public void onAdClick(String placementId) {
+  public void onAdClicked(@NonNull BaseAd baseAd) {
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.reportAdClicked();
     }
   }
 
   @Override
-  public void onAdRewarded(String placementId) {
+  public void onAdRewarded(@NonNull BaseAd baseAd) {
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onVideoComplete();
       mediationRewardedAdCallback.onUserEarnedReward(
@@ -189,26 +180,32 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, LoadAdCallback,
   }
 
   @Override
-  public void onAdLeftApplication(String placementId) {
-    // no op
+  public void onAdLeftApplication(@NonNull BaseAd baseAd) {
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  // Vungle's LoadAdCallback and PlayAdCallback shares the same onError() call; when an
-  // ad request to Vungle fails, and when an ad fails to play.
   @Override
-  public void onError(final String placementId, final VungleException throwable) {
-    AdError error = VungleMediationAdapter.getAdError(throwable);
+  public void onAdFailedToPlay(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
     Log.w(TAG, error.toString());
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onAdFailedToShow(error);
-    } else if (mediationAdLoadCallback != null) {
-      mediationAdLoadCallback.onFailure(error);
     }
   }
 
   @Override
-  public void onAdViewed(String placementId) {
-    mediationRewardedAdCallback.onVideoStart();
-    mediationRewardedAdCallback.reportAdImpression();
+  public void onAdFailedToLoad(@NonNull BaseAd baseAd, @NonNull VungleError vungleError) {
+    AdError error = VungleMediationAdapter.getAdError(vungleError);
+    Log.w(TAG, error.toString());
+    mediationAdLoadCallback.onFailure(error);
   }
+
+  @Override
+  public void onAdImpression(@NonNull BaseAd baseAd) {
+    if (mediationRewardedAdCallback != null) {
+      mediationRewardedAdCallback.onVideoStart();
+      mediationRewardedAdCallback.reportAdImpression();
+    }
+  }
+
 }
