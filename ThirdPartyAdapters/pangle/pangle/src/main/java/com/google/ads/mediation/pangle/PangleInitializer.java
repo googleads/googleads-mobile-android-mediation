@@ -97,6 +97,9 @@ public class PangleInitializer implements PAGInitCallback {
             .setChildDirected(PanglePrivacyConfig.getCoppa())
             .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
             .setDoNotSell(PangleMediationAdapter.getDoNotSell())
+            .setUserData(String.format(
+                "[{\"name\":\"mediation\",\"value\":\"google\"},{\"name\":\"adapter_version\",\"value\":\"%s\"}]",
+                BuildConfig.ADAPTER_VERSION))
             .build();
     pangleSdkWrapper.init(context, adConfig, PangleInitializer.this);
   }
