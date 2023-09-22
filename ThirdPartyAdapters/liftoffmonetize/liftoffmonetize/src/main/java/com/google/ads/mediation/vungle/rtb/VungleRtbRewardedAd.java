@@ -137,7 +137,8 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
     if (rewardedAd != null) {
       rewardedAd.play();
     } else if (mediationRewardedAdCallback != null) {
-      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to present rewarded ad.",
+      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to show bidding rewarded"
+          + "ad from Liftoff Monetize.",
           ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationRewardedAdCallback.onAdFailedToShow(error);

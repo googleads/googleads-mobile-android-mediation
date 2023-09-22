@@ -47,14 +47,16 @@ import com.vungle.mediation.VungleInterstitialAdapter;
 public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
   private final MediationBannerAdConfiguration mediationBannerAdConfiguration;
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback;
+  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+      mediationAdLoadCallback;
   private MediationBannerAdCallback mediationBannerAdCallback;
 
   private BannerAd bannerAd;
   private RelativeLayout bannerLayout;
 
   public VungleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
+      @NonNull MediationAdLoadCallback<MediationBannerAd,
+          MediationBannerAdCallback> mediationAdLoadCallback) {
     this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
@@ -88,7 +90,8 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
     Context context = mediationBannerAdConfiguration.getContext();
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();
 
-    BannerAdSize bannerAdSize = VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(context, adSize);
+    BannerAdSize bannerAdSize = VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(
+        context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
           String.format("The requested banner size: %s is not supported by Vungle SDK.", adSize),

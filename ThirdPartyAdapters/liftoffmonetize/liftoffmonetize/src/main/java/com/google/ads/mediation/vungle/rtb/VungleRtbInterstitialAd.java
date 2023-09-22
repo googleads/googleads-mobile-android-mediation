@@ -130,7 +130,8 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
     if (interstitialAd != null) {
       interstitialAd.play();
     } else if (mediationInterstitialAdCallback != null) {
-      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to present interstitial ad.",
+      AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to show bidding rewarded"
+          + " ad from Liftoff Monetize.",
           ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       mediationInterstitialAdCallback.onAdFailedToShow(error);

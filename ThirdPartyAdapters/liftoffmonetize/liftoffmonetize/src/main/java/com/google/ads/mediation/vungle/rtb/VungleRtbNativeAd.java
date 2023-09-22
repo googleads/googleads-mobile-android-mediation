@@ -52,7 +52,8 @@ import java.util.Map;
 public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAdListener {
 
   private final MediationNativeAdConfiguration adConfiguration;
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
+  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+      adLoadCallback;
   private MediationNativeAdCallback nativeAdCallback;
 
   private NativeAd nativeAd;
@@ -72,7 +73,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String appID = serverParameters.getString(KEY_APP_ID);
     if (TextUtils.isEmpty(appID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load native ad from Liftoff Monetize. "
+          "Failed to load bidding native ad from Liftoff Monetize. "
               + "Missing or invalid app ID configured for this ad source instance "
               + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
@@ -83,7 +84,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Failed to load native ad from Liftoff Monetize. "
+          "Failed to load bidding native ad from Liftoff Monetize. "
               + "Missing or Invalid placement ID configured for this ad source instance "
               + "in the AdMob or Ad Manager UI.", ERROR_DOMAIN);
       Log.d(TAG, error.toString());
@@ -114,28 +115,25 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String watermark = adConfiguration.getWatermark();
 
     VungleInitializer.getInstance()
-        .initialize(
-            appID,
-            context,
-            new VungleInitializer.VungleInitializationListener() {
-              @Override
-              public void onInitializeSuccess() {
-                nativeAd = new NativeAd(context, placementId);
-                nativeAd.setAdOptionsPosition(adOptionsPosition);
-                nativeAd.setAdListener(VungleRtbNativeAd.this);
-                mediaView = new MediaView(context);
-                if (!TextUtils.isEmpty(watermark)) {
-                  nativeAd.getAdConfig().setWatermark(watermark);
-                }
-                nativeAd.load(adMarkup);
-              }
+        .initialize(appID, context, new VungleInitializer.VungleInitializationListener() {
+          @Override
+          public void onInitializeSuccess() {
+            nativeAd = new NativeAd(context, placementId);
+            nativeAd.setAdOptionsPosition(adOptionsPosition);
+            nativeAd.setAdListener(VungleRtbNativeAd.this);
+            mediaView = new MediaView(context);
+            if (!TextUtils.isEmpty(watermark)) {
+              nativeAd.getAdConfig().setWatermark(watermark);
+            }
+            nativeAd.load(adMarkup);
+          }
 
-              @Override
-              public void onInitializeError(AdError error) {
-                Log.d(TAG, error.toString());
-                adLoadCallback.onFailure(error);
-              }
-            });
+          @Override
+          public void onInitializeError(AdError error) {
+            Log.d(TAG, error.toString());
+            adLoadCallback.onFailure(error);
+          }
+        });
   }
 
   @Override

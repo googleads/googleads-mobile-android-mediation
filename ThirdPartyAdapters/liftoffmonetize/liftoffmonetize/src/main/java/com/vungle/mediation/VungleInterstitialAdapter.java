@@ -245,7 +245,8 @@ public class VungleInterstitialAdapter
     BannerAdSize bannerAdSize = getVungleBannerAdSizeFromGoogleAdSize(context, adSize);
     if (bannerAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
-          "Failed to load ad from Liftoff Monetize. Invalid banner size.", ERROR_DOMAIN);
+          "Failed to load waterfall banner ad from Liftoff Monetize. Invalid banner size.",
+          ERROR_DOMAIN);
       Log.w(TAG, error.toString());
       bannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
       return;
@@ -406,7 +407,9 @@ public class VungleInterstitialAdapter
     if (closestSize == null) {
       return null;
     }
-    Log.d(TAG, "Found closest Liftoff Monetize banner ad size: " + closestSize + " for requested ad size: " + adSize);
+    Log.d(TAG,
+        "Found closest Liftoff Monetize banner ad size: " + closestSize + " for requested ad size: "
+            + adSize);
 
     if (closestSize.getWidth() == BannerAdSize.BANNER_SHORT.getWidth()
         && closestSize.getHeight() == BannerAdSize.BANNER_SHORT.getHeight()) {
