@@ -36,6 +36,7 @@ import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.PanglePrivacyConfig;
+import com.google.ads.mediation.pangle.PangleRequestHelper;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
@@ -122,6 +123,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
                 pangleFactory.createPagBannerRequest(
                     new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
             request.setAdString(bidResponse);
+            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadBannerAd(
                 placementId,
                 request,
