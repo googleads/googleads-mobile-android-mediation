@@ -7,22 +7,22 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError.AD_PRESENTATION_ERROR
 import com.facebook.ads.InterstitialAd
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -56,24 +56,12 @@ class FacebookRtbInterstitialAdTest {
     on { createInterstitialAd(any(), any()) } doReturn metaInterstitialAd
   }
   private val metaAd: Ad = mock()
-  private val adErrorCaptor = argumentCaptor<AdError>()
 
   @Before
   fun setUp() {
-    serverParameters.putString(RTB_PLACEMENT_PARAMETER, PLACEMENT_ID)
+    serverParameters.putString(RTB_PLACEMENT_PARAMETER, TEST_AD_UNIT)
     mediationInterstitialAdConfig =
-      MediationInterstitialAdConfiguration(
-        context,
-        BID_RESONSE,
-        serverParameters,
-        /*mediationExtras=*/ Bundle(),
-        /*isTesting=*/ true,
-        /*location=*/ null,
-        TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
-        TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
-        /*maxAdContentRating=*/ null,
-        WATERMARK
-      )
+      createMediationInterstitialAdConfiguration(context, serverParameters = serverParameters)
     adapterInterstitialAd =
       FacebookRtbInterstitialAd(mediationInterstitialAdConfig, mediationAdLoadCallback, metaFactory)
   }
@@ -93,16 +81,13 @@ class FacebookRtbInterstitialAdTest {
     // Simulate Meta reporting a show error.
     adapterInterstitialAd.onError(metaAd, AD_PRESENTATION_ERROR)
 
-    verify(mediationInterstitialAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(AD_PRESENTATION_ERROR.errorCode)
-    assertThat(adError.message).isEqualTo(AD_PRESENTATION_ERROR.errorMessage)
-    assertThat(adError.domain).isEqualTo(FACEBOOK_SDK_ERROR_DOMAIN)
-  }
-
-  private companion object {
-    const val BID_RESONSE = "sample_bid_response"
-    const val PLACEMENT_ID = "sample_placement_id"
-    const val WATERMARK = "sample_watermark"
+    val expectedAdError =
+      AdError(
+        AD_PRESENTATION_ERROR.errorCode,
+        AD_PRESENTATION_ERROR.errorMessage,
+        FACEBOOK_SDK_ERROR_DOMAIN
+      )
+    verify(mediationInterstitialAdCallback)
+      .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
   }
 }

@@ -100,4 +100,10 @@ fun createMediationConfiguration(
 ): MediationConfiguration {
   return MediationConfiguration(adFormat, serverParameters)
 }
+
 // endregion
+
+object AdapterTestKitConstants {
+  const val TEST_AD_UNIT = "testAdUnit"
+  const val TEST_APP_ID = "testAppId"
+}
