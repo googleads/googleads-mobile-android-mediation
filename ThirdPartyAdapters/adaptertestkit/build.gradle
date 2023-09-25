@@ -1,0 +1,35 @@
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.android'
+}
+
+android {
+  namespace 'com.google.ads.mediation.adaptertestkit'
+  compileSdk 32
+
+  defaultConfig {
+    minSdk 19
+    versionCode 1
+    versionName "0.0.1"
+    multiDexEnabled true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
+
+  kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
+  }
+
+}
+
+dependencies {
+  implementation 'androidx.core:core-ktx:1.8.0'
+  implementation 'com.google.android.gms:play-services-ads:22.3.0'
+  implementation 'junit:junit:4.13.2'
+  implementation "com.google.truth:truth:1.1.5"
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
+  implementation 'org.mockito.kotlin:mockito-kotlin:5.0.0'
+}

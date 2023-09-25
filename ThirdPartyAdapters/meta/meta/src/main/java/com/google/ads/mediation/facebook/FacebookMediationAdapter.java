@@ -167,7 +167,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = FacebookAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -186,7 +186,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String versionString = com.facebook.ads.BuildConfig.VERSION_NAME;
+    String versionString = FacebookSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
