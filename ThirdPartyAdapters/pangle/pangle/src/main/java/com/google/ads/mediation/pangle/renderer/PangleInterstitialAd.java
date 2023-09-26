@@ -95,7 +95,7 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
           public void onInitializeSuccess() {
             PAGInterstitialRequest request = pangleFactory.createPagInterstitialRequest();
             request.setAdString(bidResponse);
-            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
+            PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadInterstitialAd(
                 placementId,
                 request,

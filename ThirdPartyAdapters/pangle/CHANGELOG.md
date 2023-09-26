@@ -1,5 +1,8 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next version
+- Added watermark support for bidding ads.
+
 #### Version 5.4.1.1.0
 - Fixed an issue where the adapter fails to initialize.
 - Verified compatibility with Pangle SDK version 5.4.1.1.

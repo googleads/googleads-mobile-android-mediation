@@ -123,7 +123,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
                 pangleFactory.createPagBannerRequest(
                     new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
             request.setAdString(bidResponse);
-            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
+            PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadBannerAd(
                 placementId,
                 request,

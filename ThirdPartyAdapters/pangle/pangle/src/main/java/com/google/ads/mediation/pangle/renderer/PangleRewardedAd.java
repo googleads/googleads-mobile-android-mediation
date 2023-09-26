@@ -97,7 +97,7 @@ public class PangleRewardedAd implements MediationRewardedAd {
           public void onInitializeSuccess() {
             PAGRewardedRequest request = pangleFactory.createPagRewardedRequest();
             request.setAdString(bidResponse);
-            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
+            PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadRewardedAd(
                 placementId,
                 request,

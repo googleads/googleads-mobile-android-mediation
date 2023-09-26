@@ -111,7 +111,7 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
           public void onInitializeSuccess() {
             PAGNativeRequest request = pangleFactory.createPagNativeRequest();
             request.setAdString(bidResponse);
-            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
+            PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadNativeAd(
                 placementId,
                 request,

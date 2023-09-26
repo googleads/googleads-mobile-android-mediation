@@ -100,7 +100,7 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
           public void onInitializeSuccess() {
             PAGAppOpenRequest request = pangleFactory.createPagAppOpenRequest();
             request.setAdString(bidResponse);
-            PangleRequestHelper.fillWaterCoverParam(request, bidResponse, adConfiguration);
+            PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadAppOpenAd(
                 placementId,
                 request,
