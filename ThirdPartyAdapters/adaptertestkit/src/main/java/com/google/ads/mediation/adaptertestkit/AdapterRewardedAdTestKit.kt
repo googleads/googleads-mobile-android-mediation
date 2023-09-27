@@ -9,47 +9,45 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.Adapter
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.MediationInterstitialAd
-import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
-import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.verify
 
 /**
- * Calls [Adapter.loadInterstitialAd] with the given [MediationInterstitialAdConfiguration] and
+ * Calls [Adapter.loadRewardedAd] with the given [MediationRewardedAdConfiguration] and verifies
+ * [MediationAdLoadCallback.onFailure] with the expected [AdError].
+ */
+fun Adapter.loadRewardedAdWithFailure(
+  configuration: MediationRewardedAdConfiguration,
+  callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  expectedAdError: AdError,
+) {
+
+  this.loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback)
+
+  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+}
+
+/**
+ * Calls [RtbAdapter.loadRtbRewardedAd] with the given [MediationRewardedAdConfiguration] and
  * verifies [MediationAdLoadCallback.onFailure] with the expected [AdError].
  */
-fun Adapter.loadInterstitialAdWithFailure(
-  configuration: MediationInterstitialAdConfiguration,
-  callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+fun RtbAdapter.loadRtbRewardedAdWithFailure(
+  configuration: MediationRewardedAdConfiguration,
+  callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   expectedAdError: AdError,
 ) {
 
-  this.loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback)
+  this.loadRtbRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback)
 
   verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
-/**
- * Calls [RtbAdapter.loadRtbInterstitialAd] with the given [MediationInterstitialAdConfiguration]
- * and verifies [MediationAdLoadCallback.onFailure] with the expected [AdError].
- */
-fun RtbAdapter.loadRtbInterstitialAdWithFailure(
-  configuration: MediationInterstitialAdConfiguration,
-  callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
-  expectedAdError: AdError,
-) {
-
-  this.loadRtbInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback)
-
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-}
-
-/**
- * Returns a [MediationInterstitialAdConfiguration] used to initialize [MediationInterstitialAd].
- */
-fun createMediationInterstitialAdConfiguration(
+/** Returns a [MediationRewardedAdConfiguration] used to initialize [MediationRewardedAd]. */
+fun createMediationRewardedAdConfiguration(
   context: Context,
   bidResponse: String = "",
   serverParameters: Bundle = bundleOf(),
@@ -60,8 +58,8 @@ fun createMediationInterstitialAdConfiguration(
   taggedForUnderAgeTreatment: Int = TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
   maxAdContentRating: String? = null,
   watermark: String = ""
-): MediationInterstitialAdConfiguration =
-  MediationInterstitialAdConfiguration(
+): MediationRewardedAdConfiguration =
+  MediationRewardedAdConfiguration(
     context,
     bidResponse,
     serverParameters,
