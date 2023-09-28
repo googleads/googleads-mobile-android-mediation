@@ -2,6 +2,7 @@
 
 #### Next version
 - Added watermark support for bidding ads.
+- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
 
 #### Version 5.4.1.1.0
 - Fixed an issue where the adapter fails to initialize.

@@ -25,11 +25,11 @@ kotlin {
 
 android {
     namespace 'com.google.ads.mediation.line'
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         minSdk 19
-        targetSdk 31
+        targetSdk 33
         versionCode 23060700  // FiveAd SDK patch number YYMMDD + two digits for adapter patch.
         versionName stringVersion
         multiDexEnabled true
@@ -126,7 +126,7 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'com.google.android.gms:play-services-ads:22.1.0'
+    implementation 'com.google.android.gms:play-services-ads:22.4.0'
     implementation 'com.linecorp.adsnetwork:fivead:2.6.20230607'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
