@@ -138,7 +138,6 @@ public class IronSourceBannerAd implements MediationBannerAd {
     ironSourceBannerLayout.setBannerDemandOnlyListener(ironSourceBannerListener);
     Log.d(TAG, String.format("Loading IronSource banner ad with instance ID: %s", instanceID));
     IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout, instanceID);
-    IronSource.loadISDemandOnlyBanner(activity, ironSourceBannerLayout, instanceID);
   }
 
   /**
