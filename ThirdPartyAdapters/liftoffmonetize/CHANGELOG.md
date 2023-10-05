@@ -1,6 +1,6 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Version 7.0.0.0 (In progress)
+#### Version 7.0.0.0
 - Added support to load multiple ads with the same placement ID for all waterfall ad formats.
 - Rebranded adapter name from Vungle to Liftoff Monetize.
 - Verified compatibility with Vungle SDK 7.0.0.
