@@ -26,9 +26,9 @@ fun Adapter.loadInterstitialAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback)
+  this.loadInterstitialAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /**
@@ -41,9 +41,9 @@ fun RtbAdapter.loadRtbInterstitialAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadRtbInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback)
+  this.loadRtbInterstitialAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /**

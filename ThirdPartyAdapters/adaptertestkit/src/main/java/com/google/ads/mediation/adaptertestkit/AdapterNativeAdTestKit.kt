@@ -25,9 +25,9 @@ fun Adapter.loadNativeAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback)
+  this.loadNativeAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /**
@@ -40,9 +40,9 @@ fun RtbAdapter.loadRtbNativeAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback)
+  this.loadRtbNativeAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /** Returns a [MediationNativeAdConfiguration] used to initialize [UnifiedNativeAdMapper]. */

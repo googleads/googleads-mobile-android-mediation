@@ -26,9 +26,9 @@ fun Adapter.loadBannerAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback)
+  this.loadBannerAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /**
@@ -41,9 +41,9 @@ fun RtbAdapter.loadRtbBannerAdWithFailure(
   expectedAdError: AdError,
 ) {
 
-  this.loadRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback)
+  this.loadRtbBannerAd(configuration, callback)
 
-  verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
 /** Returns a [MediationBannerAdConfiguration] used to initialize [MediationBannerAd]. */
