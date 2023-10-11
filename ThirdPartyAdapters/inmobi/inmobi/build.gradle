@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "InMobi"
     // String property to store version name.
-    stringVersion = "10.5.8.0"
+    stringVersion = "10.5.9.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -18,11 +18,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 10050800
+        versionCode 10050900
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -108,7 +108,7 @@ dependencies {
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.8'
+    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.5.9'
 
     // Unit tests
     testImplementation 'junit:junit:4.12'
