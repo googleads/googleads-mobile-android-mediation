@@ -54,6 +54,11 @@ class InMobiMediationAdapterTest {
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val bannerAdConfiguration = mock<MediationBannerAdConfiguration>()
+  // The banner size to be returned by bannerAdConfiguration. For effective testing, let it be an ad
+  // size that's close to but not exactly a banner size that's supported by InMobi.
+  private val originalBannerSize = AdSize(417, 65)
+  // The banner size that's expected to be passed to InMobi for the above original banner size.
+  private val expectedMediationBannerSize = AdSize(320, 50)
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
   private val inMobiAdViewHolder = mock<InMobiAdViewHolder>()
   private val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
@@ -81,7 +86,7 @@ class InMobiMediationAdapterTest {
     serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "67890")
 
     whenever(bannerAdConfiguration.context).thenReturn(context)
-    whenever(bannerAdConfiguration.adSize).thenReturn(AdSize(350, 50))
+    whenever(bannerAdConfiguration.adSize).thenReturn(originalBannerSize)
     whenever(bannerAdConfiguration.serverParameters).thenReturn(serverParameters)
     whenever(inMobiAdFactory.createInMobiBannerWrapper(any(), any()))
       .thenReturn(inMobiBannerWrapper)
@@ -312,14 +317,14 @@ class InMobiMediationAdapterTest {
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
-      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(expectedMediationBannerSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(expectedMediationBannerSize.getHeightInPixels(context))
     }
     val linearLayoutParamsCaptor = argumentCaptor<LinearLayout.LayoutParams>()
     verify(inMobiBannerWrapper).setLayoutParams(linearLayoutParamsCaptor.capture())
     linearLayoutParamsCaptor.firstValue.apply {
-      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(expectedMediationBannerSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(expectedMediationBannerSize.getHeightInPixels(context))
     }
     verify(inMobiAdViewHolder).addView(eq(inMobiBannerWrapper))
     val extrasCaptor = argumentCaptor<Map<String, String>>()
@@ -408,14 +413,14 @@ class InMobiMediationAdapterTest {
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
-      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(expectedMediationBannerSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(expectedMediationBannerSize.getHeightInPixels(context))
     }
     val linearLayoutParamsCaptor = argumentCaptor<LinearLayout.LayoutParams>()
     verify(inMobiBannerWrapper).setLayoutParams(linearLayoutParamsCaptor.capture())
     linearLayoutParamsCaptor.firstValue.apply {
-      assertThat(width).isEqualTo(bannerAdConfiguration.adSize.getWidthInPixels(context))
-      assertThat(height).isEqualTo(bannerAdConfiguration.adSize.getHeightInPixels(context))
+      assertThat(width).isEqualTo(expectedMediationBannerSize.getWidthInPixels(context))
+      assertThat(height).isEqualTo(expectedMediationBannerSize.getHeightInPixels(context))
     }
     verify(inMobiAdViewHolder).addView(eq(inMobiBannerWrapper))
     val extrasCaptor = argumentCaptor<Map<String, String>>()

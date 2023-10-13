@@ -100,7 +100,7 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
         new InMobiInitializer.Listener() {
           @Override
           public void onInitializeSuccess() {
-            createAndLoadBannerAd(context, placementId);
+            createAndLoadBannerAd(context, placementId, closestBannerSize);
           }
 
           @Override
@@ -111,7 +111,8 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
         });
   }
 
-  private void createAndLoadBannerAd(final Context context, final long placementId) {
+  private void createAndLoadBannerAd(final Context context, final long placementId,
+      AdSize mediationBannerSize) {
     // Set the COPPA value in inMobi SDK
     InMobiAdapterUtils.setIsAgeRestricted();
 
@@ -134,13 +135,13 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
     inMobiAdViewHolder = inMobiAdFactory.createInMobiAdViewHolder(context);
     inMobiAdViewHolder.setLayoutParams(
         new FrameLayout.LayoutParams(
-            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+            mediationBannerSize.getWidthInPixels(context),
+            mediationBannerSize.getHeightInPixels(context)));
 
     inMobiBannerWrapper.setLayoutParams(
         new LinearLayout.LayoutParams(
-            mediationBannerAdConfiguration.getAdSize().getWidthInPixels(context),
-            mediationBannerAdConfiguration.getAdSize().getHeightInPixels(context)));
+            mediationBannerSize.getWidthInPixels(context),
+            mediationBannerSize.getHeightInPixels(context)));
     inMobiAdViewHolder.addView(inMobiBannerWrapper);
 
     internalLoadAd(inMobiBannerWrapper);
