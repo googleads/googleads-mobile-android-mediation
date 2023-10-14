@@ -5,7 +5,7 @@ plugins {
 
 android {
   namespace 'com.google.ads.mediation.adaptertestkit'
-  compileSdk 32
+  compileSdk 33
 
   defaultConfig {
     minSdk 19
@@ -26,10 +26,10 @@ android {
 }
 
 dependencies {
-  implementation 'androidx.core:core-ktx:1.8.0'
+  implementation 'androidx.core:core-ktx:1.10.0'
   implementation 'com.google.android.gms:play-services-ads:22.4.0'
   implementation 'junit:junit:4.13.2'
   implementation "com.google.truth:truth:1.1.5"
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
-  implementation 'org.mockito.kotlin:mockito-kotlin:5.0.0'
+  implementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 }

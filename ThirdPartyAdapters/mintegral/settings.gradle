@@ -1,1 +1,3 @@
 include ':mintegral'
+include 'adaptertestkit'
+project(':adaptertestkit').projectDir = file('../adaptertestkit')

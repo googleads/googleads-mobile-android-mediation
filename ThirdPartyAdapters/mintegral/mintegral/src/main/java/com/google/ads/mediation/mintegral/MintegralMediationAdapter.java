@@ -21,13 +21,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbBannerAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbInterstitialAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbNativeAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbRewardedAd;
+import com.google.ads.mediation.mintegral.waterfall.MintegralWaterfallAppOpenAd;
 import com.google.ads.mediation.mintegral.waterfall.MintegralWaterfallBannerAd;
 import com.google.ads.mediation.mintegral.waterfall.MintegralWaterfallInterstitialAd;
 import com.google.ads.mediation.mintegral.waterfall.MintegralWaterfallNativeAd;
@@ -36,6 +35,9 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -58,7 +60,6 @@ import com.mbridge.msdk.mbbid.out.BidManager;
 import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
-
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +73,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   private MintegralWaterfallInterstitialAd mintegralInterstitialAd;
   private MintegralWaterfallRewardedAd mintegralRewardedAd;
   private MintegralWaterfallNativeAd mintegralNativeAd;
+  private MintegralWaterfallAppOpenAd mintegralWaterfallAppOpenAd;
   private MintegralRtbBannerAd mintegralRtbBannerAd;
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
@@ -251,5 +253,14 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRewardedAd = new MintegralWaterfallRewardedAd(adConfiguration, callback);
     mintegralRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    mintegralWaterfallAppOpenAd =
+        new MintegralWaterfallAppOpenAd(mediationAppOpenAdConfiguration, callback);
+    mintegralWaterfallAppOpenAd.loadAd();
   }
 }

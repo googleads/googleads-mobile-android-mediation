@@ -119,5 +119,7 @@ fun createMediationConfiguration(
 
 object AdapterTestKitConstants {
   const val TEST_AD_UNIT = "testAdUnit"
+  const val TEST_PLACEMENT_ID = "testPlacementId"
   const val TEST_APP_ID = "testAppId"
+  const val TEST_ERROR_MESSAGE = "testErrorMessage"
 }
