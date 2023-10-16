@@ -61,6 +61,7 @@ public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
       return;
     }
     splashAdWrapper = MintegralFactory.createSplashAdWrapper();
+    splashAdWrapper.createAd(placementId, adUnitId);
     splashAdWrapper.setSplashLoadListener(this);
     splashAdWrapper.setSplashShowListener(this);
     splashAdWrapper.preLoad();

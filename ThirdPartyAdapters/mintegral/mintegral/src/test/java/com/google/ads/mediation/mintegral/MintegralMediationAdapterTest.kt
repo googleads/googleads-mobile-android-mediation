@@ -149,6 +149,7 @@ class MintegralMediationAdapterTest {
         mockAppOpenAdLoadCallback
       )
 
+      verify(mockSplashAd).createAd(TEST_PLACEMENT_ID, TEST_AD_UNIT)
       verify(mockSplashAd).setSplashLoadListener(any())
       verify(mockSplashAd).setSplashShowListener(any())
       verify(mockSplashAd).preLoad()
