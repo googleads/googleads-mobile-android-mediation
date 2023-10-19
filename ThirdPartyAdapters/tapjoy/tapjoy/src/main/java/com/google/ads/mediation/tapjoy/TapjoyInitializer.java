@@ -21,7 +21,7 @@ import com.tapjoy.Tapjoy;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class TapjoyInitializer implements TJConnectListener {
+public class TapjoyInitializer extends TJConnectListener {
 
   private static TapjoyInitializer instance;
   private InitStatus status;
@@ -73,11 +73,11 @@ public class TapjoyInitializer implements TJConnectListener {
   }
 
   @Override
-  public void onConnectFailure() {
+  public void onConnectFailure(int code, String message) {
     status = InitStatus.UNINITIALIZED;
 
     for (Listener listener : initListeners) {
-      listener.onInitializeFailed("Tapjoy failed to connect.");
+      listener.onInitializeFailed("Tapjoy failed to connect. Error code "+ code + ": " + message);
     }
     initListeners.clear();
   }
