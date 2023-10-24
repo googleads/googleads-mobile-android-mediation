@@ -1,7 +1,12 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.5.0.0
 - Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+- Verified compatibility with Chartboost SDK version 9.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Chartboost SDK version 9.5.0.
 
 #### Version 9.4.1.0
 - Verified compatibility with Chartboost SDK version 9.4.1.
