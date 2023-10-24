@@ -1,7 +1,16 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 16.5.31.0
+- Verified compatibility with Mintegral SDK 16.5.31.
+- Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Mintegral SDK version 16.5.31.
+
 #### Version 16.5.21.0
 - Verified compatibility with Mintegral SDK 16.5.21.
+- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.4.0.
