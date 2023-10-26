@@ -1,5 +1,13 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Version 5.5.0.6.0
+- Bidding app open ad format isn't supported in this version as this adapter version was reverted to depend on Google Mobile Ads SDK version 22.3.0.
+- Verified compatibility with Pangle SDK version 5.5.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.5.0.6.
+
 #### Version 5.5.0.4.0
 - Added bidding support for app open ad format.
 - Added watermark support for bidding ads.
