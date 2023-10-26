@@ -1,7 +1,12 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
+#### Version 4.9.1.0
+- Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+- Verified compatibility with Unity Ads SDK 4.9.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Unity Ads SDK version 4.9.1.
 
 #### Version 4.8.0.0
 - Reports ad impression when Unity Ads SDK invokes its new onBannerShown()
