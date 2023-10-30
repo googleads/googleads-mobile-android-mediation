@@ -58,6 +58,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
 
   private NativeAd nativeAd;
   private MediaView mediaView;
+  private String adMarkup;
 
   public VungleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
@@ -92,7 +93,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       return;
     }
 
-    String adMarkup = adConfiguration.getBidResponse();
+    adMarkup = adConfiguration.getBidResponse();
 
     int privacyIconPlacement = nativeAdOptions.getAdChoicesPlacement();
     int adOptionsPosition;
@@ -257,7 +258,9 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
 
-    setOverrideImpressionRecording(true);
+    if (TextUtils.isEmpty(adMarkup)) {
+      setOverrideImpressionRecording(true);
+    }
     setOverrideClickHandling(true);
   }
 

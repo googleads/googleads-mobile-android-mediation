@@ -1,5 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where Google Mobile Ads SDK was not recording impressions for bidding native ads.
+
 #### Version 7.0.0.0
 - Added support to load multiple ads with the same placement ID for all waterfall ad formats.
 - Rebranded adapter name from Vungle to Liftoff Monetize.
