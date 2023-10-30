@@ -2,6 +2,7 @@
 
 #### Version 10.5.9.0
 - Verified compatibility with InMobi Kotlin SDK version 10.5.9.
+- Updated the adapter to load InMobi banner ads with the closest supported banner ad sizes instead of the requested ad sizes. This will help reduce InMobi no-fills.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.3.0.
