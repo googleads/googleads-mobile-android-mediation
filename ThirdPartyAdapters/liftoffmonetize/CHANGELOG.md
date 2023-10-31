@@ -2,6 +2,11 @@
 
 #### Next Version
 - Fixed an issue where Google Mobile Ads SDK was not recording impressions for bidding native ads.
+- Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Vungle SDK version 7.0.0.
 
 #### Version 7.0.0.0
 - Added support to load multiple ads with the same placement ID for all waterfall ad formats.
