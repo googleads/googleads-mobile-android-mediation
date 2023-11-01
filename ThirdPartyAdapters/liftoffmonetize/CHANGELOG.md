@@ -1,6 +1,6 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 7.0.0.1
 - Fixed an issue where Google Mobile Ads SDK was not recording impressions for bidding native ads.
 - Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
 
