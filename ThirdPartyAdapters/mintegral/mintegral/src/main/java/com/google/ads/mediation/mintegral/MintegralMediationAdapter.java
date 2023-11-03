@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.rtb.MintegralRtbAppOpenAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbBannerAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbInterstitialAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbNativeAd;
@@ -78,6 +79,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   private MintegralRtbInterstitialAd mintegralRtbInterstitialAd;
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
+  private MintegralRtbAppOpenAd mintegralRtbAppOpenAd;
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -224,6 +226,15 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
     mintegralRtbRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    mintegralRtbAppOpenAd =
+        new MintegralRtbAppOpenAd(mediationAppOpenAdConfiguration, callback);
+    mintegralRtbAppOpenAd.loadAd();
   }
 
   @Override

@@ -17,9 +17,11 @@ package com.google.ads.mediation.mintegral
 import android.app.Activity
 import androidx.core.os.bundleOf
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadAppOpenAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbAppOpenAdWithFailure
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
 import com.google.android.gms.ads.AdError
@@ -153,6 +155,128 @@ class MintegralMediationAdapterTest {
       verify(mockSplashAd).setSplashLoadListener(any())
       verify(mockSplashAd).setSplashShowListener(any())
       verify(mockSplashAd).preLoad()
+    }
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withoutAdUnitId_invokesOnFailure() {
+    val mediationAppOpenAdConfiguration = createMediationAppOpenAdConfiguration(context = context)
+    val expectedError =
+      AdError(
+        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        ("Missing or invalid ad Unit ID configured for this ad source instance in the AdMob or Ad" +
+          " Manager UI."),
+        MintegralConstants.ERROR_DOMAIN
+      )
+
+    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+      mediationAppOpenAdConfiguration,
+      mockAppOpenAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withEmptyAdUnitId_invokesOnFailure() {
+    val serverParameters = bundleOf(AD_UNIT_ID to "")
+    val mediationAppOpenAdConfiguration =
+      createMediationAppOpenAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        ("Missing or invalid ad Unit ID configured for this ad source instance in the AdMob or Ad" +
+          " Manager UI."),
+        MintegralConstants.ERROR_DOMAIN
+      )
+
+    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+      mediationAppOpenAdConfiguration,
+      mockAppOpenAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withoutPlacementId_invokesOnFailure() {
+    val serverParameters = bundleOf(AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationAppOpenAdConfiguration =
+      createMediationAppOpenAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        ("Missing or invalid Placement ID configured for this ad source instance in the" +
+          " AdMob or Ad Manager UI."),
+        MintegralConstants.ERROR_DOMAIN
+      )
+
+    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+      mediationAppOpenAdConfiguration,
+      mockAppOpenAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withEmptyPlacementId_invokesOnFailure() {
+    val serverParameters = bundleOf(AD_UNIT_ID to TEST_AD_UNIT, PLACEMENT_ID to "")
+    val mediationAppOpenAdConfiguration =
+      createMediationAppOpenAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        ("Missing or invalid Placement ID configured for this ad source instance in the" +
+          " AdMob or Ad Manager UI."),
+        MintegralConstants.ERROR_DOMAIN
+      )
+
+    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+      mediationAppOpenAdConfiguration,
+      mockAppOpenAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withEmptyBidResponse_invokesOnFailure() {
+    val serverParameters = bundleOf(AD_UNIT_ID to TEST_AD_UNIT, PLACEMENT_ID to TEST_PLACEMENT_ID)
+    val mediationAppOpenAdConfiguration =
+      createMediationAppOpenAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        MintegralConstants.ERROR_INVALID_BID_RESPONSE,
+        ("Missing or invalid Mintegral bidding signal in this ad request."),
+        MintegralConstants.ERROR_DOMAIN
+      )
+
+    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+      mediationAppOpenAdConfiguration,
+      mockAppOpenAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_invokesPreLoadByToken() {
+    mockStatic(MintegralFactory::class.java).use {
+      val mockSplashAd = mock<MintegralSplashAdWrapper>()
+      whenever(MintegralFactory.createSplashAdWrapper()) doReturn mockSplashAd
+      val serverParameters = bundleOf(AD_UNIT_ID to TEST_AD_UNIT, PLACEMENT_ID to TEST_PLACEMENT_ID)
+      val mediationAppOpenAdConfiguration =
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters = serverParameters,
+          bidResponse = TEST_BID_RESPONSE
+        )
+
+      mintegralMediationAdapter.loadRtbAppOpenAd(
+        mediationAppOpenAdConfiguration,
+        mockAppOpenAdLoadCallback
+      )
+
+      verify(mockSplashAd).createAd(TEST_PLACEMENT_ID, TEST_AD_UNIT)
+      verify(mockSplashAd).setSplashLoadListener(any())
+      verify(mockSplashAd).setSplashShowListener(any())
+      verify(mockSplashAd).preLoadByToken(TEST_BID_RESPONSE)
     }
   }
 

@@ -48,6 +48,10 @@ object MintegralFactory {
         instance?.preLoad()
       }
 
+      override fun preLoadByToken(token: String) {
+        instance?.preLoadByToken(token)
+      }
+
       override fun show(group: ViewGroup) {
         instance?.show(group)
       }
@@ -67,6 +71,8 @@ interface MintegralSplashAdWrapper {
   fun setSplashShowListener(listener: MBSplashShowListener)
 
   fun preLoad()
+
+  fun preLoadByToken(token: String)
 
   fun show(group: ViewGroup)
 

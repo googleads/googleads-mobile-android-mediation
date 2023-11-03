@@ -122,4 +122,5 @@ object AdapterTestKitConstants {
   const val TEST_PLACEMENT_ID = "testPlacementId"
   const val TEST_APP_ID = "testAppId"
   const val TEST_ERROR_MESSAGE = "testErrorMessage"
+  const val TEST_BID_RESPONSE = "testBidResponse"
 }
