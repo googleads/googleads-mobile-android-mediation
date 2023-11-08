@@ -10,7 +10,7 @@ ext {
     // String property to store the artifact id.
     stringArtifactId = "vungle"
     // String property to store version name.
-    stringVersion = "7.0.0.1"
+    stringVersion = "7.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -20,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 7000001
+        versionCode 7010000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
@@ -33,9 +33,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.vungle:vungle-ads:7.0.0'
+    implementation 'com.github.vungle:vng-android-sdk:7.1.0-QA3'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:22.3.0'
+    implementation 'com.google.android.gms:play-services-ads:22.5.0'
 }
 
 /**

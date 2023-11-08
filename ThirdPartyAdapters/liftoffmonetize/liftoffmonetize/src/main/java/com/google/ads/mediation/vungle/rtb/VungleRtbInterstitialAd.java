@@ -128,7 +128,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
   @Override
   public void showAd(@NonNull Context context) {
     if (interstitialAd != null) {
-      interstitialAd.play();
+      interstitialAd.play(context);
     } else if (mediationInterstitialAdCallback != null) {
       AdError error = new AdError(ERROR_CANNOT_PLAY_AD, "Failed to show bidding rewarded"
           + " ad from Liftoff Monetize.",

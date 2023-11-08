@@ -323,7 +323,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @Override
   public void showAd(@NonNull Context context) {
     if (rewardedAd != null) {
-      rewardedAd.play();
+      rewardedAd.play(context);
     } else if (mediationRewardedAdCallback != null) {
       AdError error = new AdError(ERROR_CANNOT_PLAY_AD,
           "Failed to show waterfall rewarded" + " ad from Liftoff Monetize.", ERROR_DOMAIN);
