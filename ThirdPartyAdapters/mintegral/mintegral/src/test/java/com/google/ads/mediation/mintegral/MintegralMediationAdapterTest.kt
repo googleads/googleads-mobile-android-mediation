@@ -19,6 +19,7 @@ import androidx.core.os.bundleOf
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadAppOpenAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbAppOpenAdWithFailure
@@ -265,7 +266,8 @@ class MintegralMediationAdapterTest {
         createMediationAppOpenAdConfiguration(
           context = context,
           serverParameters = serverParameters,
-          bidResponse = TEST_BID_RESPONSE
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK
         )
 
       mintegralMediationAdapter.loadRtbAppOpenAd(
@@ -273,6 +275,7 @@ class MintegralMediationAdapterTest {
         mockAppOpenAdLoadCallback
       )
 
+      verify(mockSplashAd).setExtraInfo(any())
       verify(mockSplashAd).createAd(TEST_PLACEMENT_ID, TEST_AD_UNIT)
       verify(mockSplashAd).setSplashLoadListener(any())
       verify(mockSplashAd).setSplashShowListener(any())

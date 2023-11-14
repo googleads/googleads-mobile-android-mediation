@@ -14,8 +14,12 @@
 
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
@@ -26,6 +30,9 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
+import com.mbridge.msdk.MBridgeConstans;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Serves to show Mintegral splash ads and mediate callbacks between Google Mobile Ads SDK and
@@ -52,9 +59,23 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
       return;
     }
     splashAdWrapper = MintegralFactory.createSplashAdWrapper();
+    String watermark = adConfiguration.getWatermark();
+    if(!TextUtils.isEmpty(watermark)) {
+      setWatermark(watermark);
+    }
     splashAdWrapper.createAd(placementId, adUnitId);
     splashAdWrapper.setSplashLoadListener(this);
     splashAdWrapper.setSplashShowListener(this);
     splashAdWrapper.preLoadByToken(bidToken);
+  }
+  
+  private void setWatermark(String watermark) {
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, watermark);
+      splashAdWrapper.setExtraInfo(jsonObject);
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding app open ad.", jsonException);
+    }
   }
 }

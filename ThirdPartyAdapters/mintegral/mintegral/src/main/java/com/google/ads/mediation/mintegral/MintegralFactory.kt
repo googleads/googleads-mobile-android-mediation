@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import com.mbridge.msdk.out.MBSplashHandler
 import com.mbridge.msdk.out.MBSplashLoadWithCodeListener
 import com.mbridge.msdk.out.MBSplashShowListener
+import org.json.JSONObject
 
 /**
  * Wrapper singleton to enable mocking of Mintegral's different ad formats for unit testing.
@@ -42,6 +43,10 @@ object MintegralFactory {
 
       override fun setSplashShowListener(listener: MBSplashShowListener) {
         instance?.setSplashShowListener(listener)
+      }
+
+      override fun setExtraInfo(jsonObject: JSONObject) {
+        instance?.setExtraInfo(jsonObject)
       }
 
       override fun preLoad() {
@@ -69,6 +74,8 @@ interface MintegralSplashAdWrapper {
   fun setSplashLoadListener(listener: MBSplashLoadWithCodeListener)
 
   fun setSplashShowListener(listener: MBSplashShowListener)
+
+  fun setExtraInfo(jsonObject: JSONObject)
 
   fun preLoad()
 
