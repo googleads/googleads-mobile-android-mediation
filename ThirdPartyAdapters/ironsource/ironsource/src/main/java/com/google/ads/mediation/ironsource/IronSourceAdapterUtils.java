@@ -88,4 +88,8 @@ public class IronSourceAdapterUtils {
     T adUnit = instanceMap.get(instanceId);
     return (adUnit == null);
   }
+
+  public static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
 }

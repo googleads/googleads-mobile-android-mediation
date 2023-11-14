@@ -131,7 +131,7 @@ public class IronSourceMediationAdapter extends Adapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = IronSourceAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
