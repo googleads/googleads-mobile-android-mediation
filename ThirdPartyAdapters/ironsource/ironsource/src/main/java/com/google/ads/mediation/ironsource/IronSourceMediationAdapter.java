@@ -295,7 +295,7 @@ public class IronSourceMediationAdapter extends Adapter {
               "Failed to load IronSource banner ad since IronSource SDK is not "
                   + "initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
-      Log.w(TAG,loadError.getMessage());
+      Log.w(TAG, loadError.getMessage());
       mediationAdLoadCallback.onFailure(loadError);
       return;
     }
