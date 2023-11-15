@@ -10,6 +10,8 @@ import com.facebook.ads.InterstitialAd
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.MetaFactory
@@ -25,6 +27,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -89,5 +92,63 @@ class FacebookRtbInterstitialAdTest {
       )
     verify(mediationInterstitialAdCallback)
       .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onShowAd_ifInterstitialAdShowFailed_callsOnAdFailedToShow() {
+    // As part of setting this test up, render the ad.
+    adapterInterstitialAd.render()
+    // Simulate Meta ad load success.
+    adapterInterstitialAd.onAdLoaded(metaAd)
+    // Stub metaInterstitialAd.show() to return false (i.e. we are able to unsuccessful in Meta's
+    // interstitial ad to be shown).
+    whenever(metaInterstitialAd.show()) doReturn false
+    val expectedAdError =
+      AdError(ERROR_FAILED_TO_PRESENT_AD, "Failed to present interstitial ad.", ERROR_DOMAIN)
+
+    // invoke the showAd callback
+    adapterInterstitialAd.showAd(context)
+
+    verify(mediationInterstitialAdCallback)
+      .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onInterstitialDisplayed_invokesOnAdOpenedCallback() {
+    // As part of setting this test up, render the ad.
+    adapterInterstitialAd.render()
+    // Simulate Meta ad load success.
+    adapterInterstitialAd.onAdLoaded(metaAd)
+
+    adapterInterstitialAd.onInterstitialDisplayed(metaAd)
+
+    verify(mediationInterstitialAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun onInterstitialDismissed_invokesOnAdClosedCallback() {
+    // As part of setting this test up, render the ad.
+    adapterInterstitialAd.render()
+    // Simulate Meta ad load success.
+    adapterInterstitialAd.onAdLoaded(metaAd)
+
+    adapterInterstitialAd.onInterstitialDismissed(metaAd)
+
+    verify(mediationInterstitialAdCallback).onAdClosed()
+  }
+
+  @Test
+  fun onInterstitialDismissed_adAlreadyClosed_doesNotInvokeOnAdClosedCallbackTwice() {
+    // As part of setting this test up, render the ad.
+    adapterInterstitialAd.render()
+    // Simulate Meta ad load success.
+    adapterInterstitialAd.onAdLoaded(metaAd)
+
+    // simulate dismissed already called.
+    adapterInterstitialAd.onInterstitialDismissed(metaAd)
+    // make a second dismissed call.
+    adapterInterstitialAd.onInterstitialDismissed(metaAd)
+
+    verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
   }
 }
