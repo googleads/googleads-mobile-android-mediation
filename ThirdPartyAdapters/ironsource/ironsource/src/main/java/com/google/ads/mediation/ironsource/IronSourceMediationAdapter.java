@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -233,7 +234,7 @@ public class IronSourceMediationAdapter extends Adapter {
                   + "initialized.",
               ERROR_DOMAIN);
 
-      Log.w(TAG,adError.getMessage());
+      Log.w(TAG, adError.getMessage());
       mediationAdLoadCallback.onFailure(adError);
       return;
     }
@@ -302,5 +303,10 @@ public class IronSourceMediationAdapter extends Adapter {
     IronSourceBannerAd ironSourceBannerAd =
         new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
     ironSourceBannerAd.loadAd();
+  }
+
+  @VisibleForTesting
+  public void setIsInitialized(boolean isInitializedValue) {
+    isInitialized.set(isInitializedValue);
   }
 }
