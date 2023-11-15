@@ -183,4 +183,8 @@ class ChartboostAdapterUtils {
         break;
     }
   }
+
+  static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
 }
