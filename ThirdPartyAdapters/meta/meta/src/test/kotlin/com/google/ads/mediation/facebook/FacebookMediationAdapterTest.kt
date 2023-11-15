@@ -6,6 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.AdSettings
 import com.facebook.ads.AudienceNetworkAds
+import com.facebook.ads.BidderTokenProvider
+import com.facebook.ads.BidderTokenProvider.getBidderToken
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
@@ -25,6 +28,8 @@ import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -42,6 +47,8 @@ class FacebookMediationAdapterTest {
   private var facebookMediationAdapter: FacebookMediationAdapter = FacebookMediationAdapter()
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val rtbSignalData = mock<RtbSignalData>() { on { context } doReturn context }
+  private val signalCallbacks = mock<SignalCallbacks>()
   private val mockInitializationCompleteCallback: InitializationCompleteCallback = mock()
   private val mockInterstitialAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
@@ -87,6 +94,20 @@ class FacebookMediationAdapterTest {
       whenever(sdkVersion) doReturn "1.0"
 
       facebookMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  // endregion
+
+  // region signal collection tests
+  @Test
+  fun collectSignals_invokesOnSuccessCallbackWithBiddingToken() {
+    mockStatic(BidderTokenProvider::class.java).use {
+      whenever(getBidderToken(any())) doReturn (AdapterTestKitConstants.TEST_BID_RESPONSE)
+
+      facebookMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
+
+      verify(signalCallbacks).onSuccess(AdapterTestKitConstants.TEST_BID_RESPONSE)
     }
   }
 
