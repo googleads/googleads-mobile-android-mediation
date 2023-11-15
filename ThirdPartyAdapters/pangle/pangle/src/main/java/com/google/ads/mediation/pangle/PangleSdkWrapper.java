@@ -22,7 +22,6 @@ import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
-import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd;
@@ -70,8 +69,8 @@ public class PangleSdkWrapper {
     PAGConfig.setUserData(userData);
   }
 
-  void getBiddingToken(BiddingTokenCallback biddingTokenCallback) {
-    PAGSdk.getBiddingToken(biddingTokenCallback);
+  String getBiddingToken() {
+    return PAGSdk.getBiddingToken();
   }
 
   String getSdkVersion() {

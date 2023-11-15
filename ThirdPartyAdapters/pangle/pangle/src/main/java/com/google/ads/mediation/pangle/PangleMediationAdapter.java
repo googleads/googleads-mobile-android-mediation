@@ -24,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
-import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
@@ -106,12 +105,8 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
       pangleSdkWrapper.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
     }
-    pangleSdkWrapper.getBiddingToken(new BiddingTokenCallback() {
-      @Override
-      public void onBiddingTokenCollected(String biddingToken) {
-        signalCallbacks.onSuccess(biddingToken);
-      }
-    });
+    String biddingToken = pangleSdkWrapper.getBiddingToken();
+    signalCallbacks.onSuccess(biddingToken);
   }
 
   @Override
