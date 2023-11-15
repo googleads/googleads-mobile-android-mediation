@@ -158,6 +158,10 @@ public class FacebookMediationAdapter extends RtbAdapter {
     metaFactory = new MetaFactory();
   }
 
+  FacebookMediationAdapter(MetaFactory metaFactory) {
+    this.metaFactory = metaFactory;
+  }
+
   /** Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}. */
   @NonNull
   public static AdError getAdError(com.facebook.ads.AdError error) {

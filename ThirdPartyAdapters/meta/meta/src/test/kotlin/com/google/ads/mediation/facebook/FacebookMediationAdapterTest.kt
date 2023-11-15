@@ -8,6 +8,7 @@ import com.facebook.ads.AdSettings
 import com.facebook.ads.AudienceNetworkAds
 import com.facebook.ads.BidderTokenProvider
 import com.facebook.ads.BidderTokenProvider.getBidderToken
+import com.facebook.ads.InterstitialAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
@@ -49,15 +50,26 @@ class FacebookMediationAdapterTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val rtbSignalData = mock<RtbSignalData>() { on { context } doReturn context }
   private val signalCallbacks = mock<SignalCallbacks>()
+  private val metaFactory = mock<MetaFactory>()
   private val mockInitializationCompleteCallback: InitializationCompleteCallback = mock()
   private val mockInterstitialAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
+  private val metaInterstitialAdLoadConfig: InterstitialAd.InterstitialLoadAdConfig = mock()
+  private val metaInterstitialAdLoadConfigBuilder: InterstitialAd.InterstitialAdLoadConfigBuilder =
+    mock {
+      on { withBid(any()) } doReturn this.mock
+      on { withAdListener(any()) } doReturn this.mock
+      on { build() } doReturn metaInterstitialAdLoadConfig
+    }
+  private val metaInterstitialAd: InterstitialAd = mock {
+    on { buildLoadAdConfig() } doReturn metaInterstitialAdLoadConfigBuilder
+  }
   val mediationAdConfiguration: MediationAdConfiguration = mock()
 
   @Before
   fun setUp() {
-    facebookMediationAdapter = FacebookMediationAdapter()
+    facebookMediationAdapter = FacebookMediationAdapter(metaFactory)
   }
 
   // region Version Tests
@@ -235,6 +247,27 @@ class FacebookMediationAdapterTest {
       mockInterstitialAdLoadCallback,
       expectedError
     )
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_loadsAd() {
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters
+      )
+    whenever(
+      metaFactory.createInterstitialAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    ) doReturn metaInterstitialAd
+
+    facebookMediationAdapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockInterstitialAdLoadCallback
+    )
+
+    verify(metaInterstitialAd).loadAd(metaInterstitialAdLoadConfig)
   }
 
   // endregion
