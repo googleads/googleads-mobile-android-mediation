@@ -71,10 +71,7 @@ class FacebookRtbInterstitialAdTest {
 
   @Test
   fun onError_ifMetaReportsShowError_callsOnAdFailedToShow() {
-    // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
-    // Simulate Meta ad load success.
-    adapterInterstitialAd.onAdLoaded(metaAd)
+    renderAndLoadSuccessfully()
     // Stub metaInterstitialAd.show() to return true (i.e. we are able to successfully ask Meta's
     // interstitial ad to be shown).
     whenever(metaInterstitialAd.show()) doReturn true
@@ -96,10 +93,7 @@ class FacebookRtbInterstitialAdTest {
 
   @Test
   fun onShowAd_ifInterstitialAdShowFailed_callsOnAdFailedToShow() {
-    // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
-    // Simulate Meta ad load success.
-    adapterInterstitialAd.onAdLoaded(metaAd)
+    renderAndLoadSuccessfully()
     // Stub metaInterstitialAd.show() to return false (i.e. we are able to unsuccessful in Meta's
     // interstitial ad to be shown).
     whenever(metaInterstitialAd.show()) doReturn false
@@ -115,10 +109,7 @@ class FacebookRtbInterstitialAdTest {
 
   @Test
   fun onInterstitialDisplayed_invokesOnAdOpenedCallback() {
-    // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
-    // Simulate Meta ad load success.
-    adapterInterstitialAd.onAdLoaded(metaAd)
+    renderAndLoadSuccessfully()
 
     adapterInterstitialAd.onInterstitialDisplayed(metaAd)
 
@@ -127,10 +118,7 @@ class FacebookRtbInterstitialAdTest {
 
   @Test
   fun onInterstitialDismissed_invokesOnAdClosedCallback() {
-    // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
-    // Simulate Meta ad load success.
-    adapterInterstitialAd.onAdLoaded(metaAd)
+    renderAndLoadSuccessfully()
 
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
@@ -139,10 +127,7 @@ class FacebookRtbInterstitialAdTest {
 
   @Test
   fun onInterstitialDismissed_adAlreadyClosed_doesNotInvokeOnAdClosedCallbackTwice() {
-    // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
-    // Simulate Meta ad load success.
-    adapterInterstitialAd.onAdLoaded(metaAd)
+    renderAndLoadSuccessfully()
 
     // simulate dismissed already called.
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
@@ -150,5 +135,52 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
     verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+  }
+
+  @Test
+  fun onAdClicked_invokesReportAdClickedAndOnAdLeftApplicationCallback() {
+    renderAndLoadSuccessfully()
+
+    adapterInterstitialAd.onAdClicked(metaAd)
+
+    verify(mediationInterstitialAdCallback).reportAdClicked()
+    verify(mediationInterstitialAdCallback).onAdLeftApplication()
+  }
+
+  @Test
+  fun onLoggingImpression_invokesReportAdImpressionCallback() {
+    renderAndLoadSuccessfully()
+
+    adapterInterstitialAd.onLoggingImpression(metaAd)
+
+    verify(mediationInterstitialAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun onInterstitialActivityDestroyed_invokesOnAdClosed() {
+    renderAndLoadSuccessfully()
+
+    adapterInterstitialAd.onInterstitialActivityDestroyed()
+
+    verify(mediationInterstitialAdCallback).onAdClosed()
+  }
+
+  @Test
+  fun onInterstitialActivityDestroyed_adAlreadyClosed_doesNotInvokeOnAdClosedCallbackTwice() {
+    renderAndLoadSuccessfully()
+
+    // simulate activity destroyed call
+    adapterInterstitialAd.onInterstitialActivityDestroyed()
+    // make a second destroyed call
+    adapterInterstitialAd.onInterstitialActivityDestroyed()
+
+    verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+  }
+
+  private fun renderAndLoadSuccessfully() {
+    // As part of setting this test up, render the ad.
+    adapterInterstitialAd.render()
+    // Simulate Meta ad load success.
+    adapterInterstitialAd.onAdLoaded(metaAd)
   }
 }
