@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.facebook.ads.AdSettings
 import com.facebook.ads.AudienceNetworkAds
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
@@ -15,12 +16,16 @@ import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyN
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.facebook.FacebookAdapterUtils.adapterVersion
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience
 import com.google.ads.mediation.facebook.FacebookSdkWrapper.sdkVersion
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,6 +46,7 @@ class FacebookMediationAdapterTest {
   private val mockInterstitialAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
+  val mediationAdConfiguration: MediationAdConfiguration = mock()
 
   @Before
   fun setUp() {
@@ -85,6 +91,26 @@ class FacebookMediationAdapterTest {
   }
 
   // endregion
+
+  @Test
+  fun setMixedAudience_whenTfcdTrue_setsMixedAudienceTrue() {
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+
+    setMixedAudience(mediationAdConfiguration)
+
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+  }
+
+  @Test
+  fun setMixedAudience_whenTfcdFalse_setsMixedAudienceFalse() {
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+
+    setMixedAudience(mediationAdConfiguration)
+
+    assertThat(AdSettings.isMixedAudience()).isFalse()
+  }
 
   // region Initialize Tests
   @Test
