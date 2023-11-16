@@ -181,4 +181,8 @@ class YahooAdapterUtils {
   static String getAdapterVersion() {
     return com.google.ads.mediation.yahoo.BuildConfig.ADAPTER_VERSION;
   }
+
+  static String getSDKVersionInfo() {
+    return YASAds.getSDKInfo().version;
+  }
 }

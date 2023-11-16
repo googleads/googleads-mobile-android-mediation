@@ -161,7 +161,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = YASAds.getSDKInfo().version;
+    String versionString = YahooAdapterUtils.getSDKVersionInfo();
     String[] splits = versionString.split("\\.");
     if (splits.length >= 3) {
       int major = Integer.parseInt(splits[0]);

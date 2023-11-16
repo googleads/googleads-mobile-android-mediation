@@ -1,8 +1,10 @@
 package com.google.ads.mediation.yahoo
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.yahoo.YahooAdapterUtils.getAdapterVersion
+import com.google.ads.mediation.yahoo.YahooAdapterUtils.getSDKVersionInfo
 import com.google.android.gms.ads.mediation.Adapter
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -61,6 +63,42 @@ class YahooAdapterTest {
       whenever(getAdapterVersion()) doReturn "1.2.3.4.5"
 
       adapter.assertGetVersionInfo(expectedValue = "1.2.304")
+    }
+  }
+
+  @Test
+  fun getSDKVersionInfo_5Digits_returnsValid() {
+    mockStatic(YahooAdapterUtils::class.java).use {
+      whenever(getSDKVersionInfo()) doReturn "1.2.3.4.5"
+
+      adapter.assertGetSdkVersion(expectedValue = "1.2.3")
+    }
+  }
+
+  @Test
+  fun getSDKVersionInfo_3Digits_returnsValid() {
+    mockStatic(YahooAdapterUtils::class.java).use {
+      whenever(getSDKVersionInfo()) doReturn "3.2.1"
+
+      adapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSDKVersionInfo_invalid2Digits_returnsZeros() {
+    mockStatic(YahooAdapterUtils::class.java).use {
+      whenever(getSDKVersionInfo()) doReturn "1.2"
+
+      adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  @Test
+  fun getSDKVersionInfo_invalidString_returnsZeros() {
+    mockStatic(YahooAdapterUtils::class.java).use {
+      whenever(getSDKVersionInfo()) doReturn "foobar"
+
+      adapter.assertGetSdkVersion(expectedValue = "0.0.0")
     }
   }
 }
