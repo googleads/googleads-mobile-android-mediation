@@ -178,4 +178,7 @@ class YahooAdapterUtils {
     return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
+  static String getAdapterVersion() {
+    return com.google.ads.mediation.yahoo.BuildConfig.ADAPTER_VERSION;
+  }
 }

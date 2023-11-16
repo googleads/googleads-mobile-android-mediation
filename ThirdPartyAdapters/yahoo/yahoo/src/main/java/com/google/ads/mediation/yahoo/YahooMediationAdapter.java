@@ -142,7 +142,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = YahooAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
     if (splits.length >= 4) {
       int major = Integer.parseInt(splits[0]);
