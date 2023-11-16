@@ -9,7 +9,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadBannerAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVersion
@@ -29,6 +31,8 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.IronSource.createBannerForDemandOnly
 import com.ironsource.mediationsdk.IronSource.initISDemandOnly
@@ -61,6 +65,8 @@ class IronSourceMediationAdapterTest {
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val bannerAdLoadCallback =
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+  private val interstitialAdLoadCallback =
+    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
 
   @Before
   fun setUp() {
@@ -205,7 +211,7 @@ class IronSourceMediationAdapterTest {
       bannerAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
-        "Failed to load IronSource banner ad since IronSource SDK is not initialized.",
+        getUninitializedErrorMessage(adFormat = "banner"),
         IRONSOURCE_SDK_ERROR_DOMAIN
       )
     )
@@ -219,11 +225,7 @@ class IronSourceMediationAdapterTest {
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
       bannerAdLoadCallback,
-      AdError(
-        ERROR_REQUIRES_ACTIVITY_CONTEXT,
-        "IronSource requires an Activity context to load ads.",
-        ERROR_DOMAIN
-      )
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN)
     )
   }
 
@@ -239,7 +241,7 @@ class IronSourceMediationAdapterTest {
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
       bannerAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN)
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN)
     )
   }
 
@@ -291,10 +293,83 @@ class IronSourceMediationAdapterTest {
     }
   }
 
+  @Test
+  fun loadInterstitialAd_notInitialized_expectOnFailureCallbackWithAdError() {
+    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
+
+    adapter.loadInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(
+        ERROR_SDK_NOT_INITIALIZED,
+        getUninitializedErrorMessage(adFormat = "interstitial"),
+        IRONSOURCE_SDK_ERROR_DOMAIN
+      )
+    )
+  }
+
+  @Test
+  fun loadInterstitialAd_invalidContext_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
+
+    adapter.loadInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN)
+    )
+  }
+
+  @Test
+  fun loadInterstitialAd_emptyInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        activity,
+        serverParameters = bundleOf(IronSourceConstants.KEY_INSTANCE_ID to "")
+      )
+
+    adapter.loadInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN)
+    )
+  }
+
+  @Test
+  fun loadInterstitialAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
+    adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+
+    adapter.loadInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(
+        ERROR_AD_ALREADY_LOADED,
+        "An IronSource interstitial ad is already loading for instance ID: 0",
+        ERROR_DOMAIN
+      )
+    )
+  }
+
+  @Test
+  fun loadInterstitialAd_validInput_loadsSuccessfully() {
+    mockStatic(IronSource::class.java).use {
+      adapter.setIsInitialized(true)
+      val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
+
+      adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+
+      it.verify { IronSource.loadISDemandOnlyInterstitial(activity, "0") }
+    }
+  }
+
   @After
   fun tearDown() {
     adapter.setIsInitialized(false)
     IronSourceBannerAd.removeFromAvailableInstances(/* instanceId= */ "0")
+    IronSourceInterstitialAd.removeFromAvailableInstances(/* instanceId= */ "0")
   }
 
   private fun createMediationConfiguration(
@@ -302,9 +377,14 @@ class IronSourceMediationAdapterTest {
     serverParameters: Bundle = bundleOf(),
   ) = MediationConfiguration(adFormat, serverParameters)
 
+  private fun getUninitializedErrorMessage(adFormat: String) =
+    "Failed to load IronSource $adFormat ad since IronSource SDK is not initialized."
+
   private companion object {
     const val TEST_APP_ID_1 = "testAppId1"
     const val TEST_APP_ID_2 = "testAppId2"
     const val MISSING_OR_INVALID_APP_KEY_MESSAGE = "Missing or invalid app key."
+    const val INVALID_CONTEXT_MESSAGE = "IronSource requires an Activity context to load ads."
+    const val INVALID_INSTANCE_ID_MESSAGE = "Missing or invalid instance ID."
   }
 }
