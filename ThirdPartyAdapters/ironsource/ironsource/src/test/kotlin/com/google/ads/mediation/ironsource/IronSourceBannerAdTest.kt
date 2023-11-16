@@ -142,6 +142,70 @@ class IronSourceBannerAdTest {
     }
   }
 
+  @Test
+  fun onBannerAdShown_withValidBannerAd_expectReportAdImpression() {
+    mockStatic(IronSource::class.java).use {
+      val ironSourceBannerListener = loadBannerAd()
+      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
+      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
+      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
+      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+
+      ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
+
+      verify(mockBannerAdCallback).reportAdImpression()
+    }
+  }
+
+  @Test
+  fun onBannerAdClicked_withValidBannerAd_expectOnBannerAdClickedCallbacks() {
+    mockStatic(IronSource::class.java).use {
+      val ironSourceBannerListener = loadBannerAd()
+      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
+      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
+      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
+      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+
+      ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
+
+      verify(mockBannerAdCallback).onAdOpened()
+      verify(mockBannerAdCallback).reportAdClicked()
+    }
+  }
+
+  @Test
+  fun onBannerAdLeftApplication_withValidBannerAd_expectOnAdLeftApplicationCallback() {
+    mockStatic(IronSource::class.java).use {
+      val ironSourceBannerListener = loadBannerAd()
+      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
+      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
+      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
+      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+
+      ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
+
+      verify(mockBannerAdCallback).onAdLeftApplication()
+    }
+  }
+
+  @Test
+  fun onEventCallbacks_withoutBannerAd_expectNoEventCallbacks() {
+    mockStatic(IronSource::class.java).use {
+      val ironSourceBannerListener = loadBannerAd()
+      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
+      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
+      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
+      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      IronSourceBannerAd.removeFromAvailableInstances(/* instanceId= */ "0")
+
+      ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
+      ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
+      ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
+
+      verifyNoInteractions(mockBannerAdCallback)
+    }
+  }
+
   private fun loadBannerAd(): IronSourceBannerAdListener {
     val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
     ironSourceBannerAd = IronSourceBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
