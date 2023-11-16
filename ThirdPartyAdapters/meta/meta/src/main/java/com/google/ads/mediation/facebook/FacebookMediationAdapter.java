@@ -251,7 +251,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
+    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback, metaFactory);
     banner.render();
   }
 

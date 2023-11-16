@@ -1,45 +1,58 @@
 package com.google.ads.mediation.facebook
 
 import android.content.Context
+import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.AdSettings
+import com.facebook.ads.AdView
 import com.facebook.ads.AudienceNetworkAds
 import com.facebook.ads.BidderTokenProvider
 import com.facebook.ads.BidderTokenProvider.getBidderToken
+import com.facebook.ads.ExtraHints
 import com.facebook.ads.InterstitialAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyNoFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.facebook.FacebookAdapterUtils.adapterVersion
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience
 import com.google.ads.mediation.facebook.FacebookSdkWrapper.sdkVersion
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
+import java.lang.Exception
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -55,6 +68,18 @@ class FacebookMediationAdapterTest {
   private val mockInterstitialAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
+  private val mockBannerAdLoadCallback:
+    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
+    mock()
+  private val metaBannerAdLoadConfig: AdView.AdViewLoadConfig = mock()
+  private val metaBannerAdLoadConfigBuilder: AdView.AdViewLoadConfigBuilder = mock {
+    on { withBid(any()) } doReturn this.mock
+    on { withAdListener(any()) } doReturn this.mock
+    on { build() } doReturn metaBannerAdLoadConfig
+  }
+  private val metaBannerAd: AdView = mock {
+    on { buildLoadAdConfig() } doReturn metaBannerAdLoadConfigBuilder
+  }
   private val metaInterstitialAdLoadConfig: InterstitialAd.InterstitialLoadAdConfig = mock()
   private val metaInterstitialAdLoadConfigBuilder: InterstitialAd.InterstitialAdLoadConfigBuilder =
     mock {
@@ -204,6 +229,108 @@ class FacebookMediationAdapterTest {
       bundleOf(RTB_PLACEMENT_PARAMETER to ""),
       "Initialization failed. No placement IDs found."
     )
+  }
+
+  // endregion
+
+  // region banner Ad Tests
+  @Test
+  fun loadRtbBannerAd_withoutPlacementId_invokesOnFailureCallback() {
+    val mediationBannerAdConfiguration = createMediationBannerAdConfiguration(context = context)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbBannerAdWithFailure(
+      mediationBannerAdConfiguration,
+      mockBannerAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadBannerAd_withEmptyPlacementId_invokesOnFailureCallback() {
+    val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbBannerAdWithFailure(
+      mediationBannerAdConfiguration,
+      mockBannerAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbBannerAd_adViewCreationException_invokesOnFailureCallback() {
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
+    val exception = Exception("foo error")
+    whenever(
+      metaFactory.createMetaAdView(
+        context,
+        AdapterTestKitConstants.TEST_PLACEMENT_ID,
+        mediationBannerAdConfiguration.bidResponse
+      )
+    ) doThrow exception
+    val expectedAdError =
+      AdError(
+        FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
+        "Failed to create banner ad: " + exception.message,
+        ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbBannerAdWithFailure(
+      mediationBannerAdConfiguration,
+      mockBannerAdLoadCallback,
+      expectedAdError
+    )
+  }
+
+  @Test
+  fun loadRtbBannerAd_loadsAd() {
+    val WATERMARK = "meta"
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        watermark = WATERMARK
+      )
+    whenever(
+      metaFactory.createMetaAdView(
+        context,
+        AdapterTestKitConstants.TEST_PLACEMENT_ID,
+        mediationBannerAdConfiguration.bidResponse
+      )
+    ) doReturn metaBannerAd
+
+    facebookMediationAdapter.loadRtbBannerAd(
+      mediationBannerAdConfiguration,
+      mockBannerAdLoadCallback
+    )
+
+    val extraHintsCaptor = argumentCaptor<ExtraHints>()
+    verify(metaBannerAd).setExtraHints(extraHintsCaptor.capture())
+    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
+    verify(metaBannerAd, times(2)).setLayoutParams(frameLayoutParamsCaptor.capture())
+    frameLayoutParamsCaptor.firstValue.apply {
+      assertThat(width).isEqualTo(AdSize.BANNER.getWidthInPixels(context))
+    }
+    verify(metaBannerAd).loadAd(metaBannerAdLoadConfig)
   }
 
   // endregion
