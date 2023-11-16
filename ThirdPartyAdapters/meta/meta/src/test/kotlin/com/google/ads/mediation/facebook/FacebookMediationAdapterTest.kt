@@ -5,6 +5,7 @@ import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.facebook.ads.AdExperienceType
 import com.facebook.ads.AdSettings
 import com.facebook.ads.AdView
 import com.facebook.ads.AudienceNetworkAds
@@ -12,14 +13,17 @@ import com.facebook.ads.BidderTokenProvider
 import com.facebook.ads.BidderTokenProvider.getBidderToken
 import com.facebook.ads.ExtraHints
 import com.facebook.ads.InterstitialAd
+import com.facebook.ads.RewardedVideoAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyNoFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
@@ -38,6 +42,8 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -45,8 +51,8 @@ import java.lang.Exception
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -91,6 +97,20 @@ class FacebookMediationAdapterTest {
     on { buildLoadAdConfig() } doReturn metaInterstitialAdLoadConfigBuilder
   }
   val mediationAdConfiguration: MediationAdConfiguration = mock()
+  private val mockRewardedAdLoadCallback:
+    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
+    mock()
+  private val metaRewardedAdLoadConfig: RewardedVideoAd.RewardedVideoLoadAdConfig = mock()
+  private val metaRewardedAdLoadConfigBuilder: RewardedVideoAd.RewardedVideoAdLoadConfigBuilder =
+    mock {
+      on { withBid(any()) } doReturn this.mock
+      on { withAdListener(any()) } doReturn this.mock
+      on { withAdExperience(any()) } doReturn this.mock
+      on { build() } doReturn metaRewardedAdLoadConfig
+    }
+  private val metaRewardedAd: RewardedVideoAd = mock {
+    on { buildLoadAdConfig() } doReturn metaRewardedAdLoadConfigBuilder
+  }
 
   @Before
   fun setUp() {
@@ -398,4 +418,80 @@ class FacebookMediationAdapterTest {
   }
 
   // endregion
+
+  // region Rewarded Ad Tests
+
+  @Test
+  fun loadRtbRewardedAd_withoutPlacementId_invokesOnFailureCallback() {
+    val mediationRewardedAdConfiguration = createMediationRewardedAdConfiguration(context = context)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbRewardedAdWithFailure(
+      mediationRewardedAdConfiguration,
+      mockRewardedAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedAd_emptyPlacementId_invokesOnFailureCallback() {
+    val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbRewardedAdWithFailure(
+      mediationRewardedAdConfiguration,
+      mockRewardedAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedAd_loadsAd() {
+    AdSettings.setMixedAudience(false)
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = 1,
+        watermark = WATERMARK,
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+      )
+    whenever(
+      metaFactory.createRewardedAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    ) doReturn metaRewardedAd
+
+    facebookMediationAdapter.loadRtbRewardedAd(
+      mediationRewardedAdConfiguration,
+      mockRewardedAdLoadCallback
+    )
+
+    val extraHintsCaptor = argumentCaptor<ExtraHints>()
+    verify(metaRewardedAd).setExtraHints(extraHintsCaptor.capture())
+    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+    verify(metaRewardedAdLoadConfigBuilder).apply {
+      withAdListener(any(FacebookRewardedAd::class.java))
+      withBid(mediationRewardedAdConfiguration.bidResponse)
+      withAdExperience(AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED)
+    }
+    verify(metaRewardedAd).loadAd(metaRewardedAdLoadConfig)
+  }
+
+  companion object {
+    private const val WATERMARK = "meta"
+  }
 }

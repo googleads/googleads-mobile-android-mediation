@@ -23,9 +23,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 public class FacebookRewardedInterstitialAd extends FacebookRewardedAd {
 
-  public FacebookRewardedInterstitialAd(MediationRewardedAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    super(adConfiguration, callback);
+  public FacebookRewardedInterstitialAd(
+      MediationRewardedAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
+      MetaFactory metaFactory) {
+    super(adConfiguration, callback, metaFactory);
   }
 
   @NonNull

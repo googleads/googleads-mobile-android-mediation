@@ -269,7 +269,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback, metaFactory);
     rewardedAd.render();
   }
 
@@ -287,7 +287,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
+        mediationAdLoadCallback, metaFactory);
     rewardedInterstitialAd.render();
   }
 
