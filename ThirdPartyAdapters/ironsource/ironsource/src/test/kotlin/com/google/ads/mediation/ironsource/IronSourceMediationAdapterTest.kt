@@ -10,8 +10,10 @@ import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadInterstitialAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVersion
@@ -33,6 +35,8 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.IronSource.createBannerForDemandOnly
 import com.ironsource.mediationsdk.IronSource.initISDemandOnly
@@ -67,6 +71,8 @@ class IronSourceMediationAdapterTest {
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
   private val interstitialAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+  private val rewardedAdLoadCallback =
+    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
 
   @Before
   fun setUp() {
@@ -365,11 +371,84 @@ class IronSourceMediationAdapterTest {
     }
   }
 
+  @Test
+  fun loadRewardedAd_notInitialized_expectOnFailureCallbackWithAdError() {
+    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
+
+    adapter.loadRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(
+        ERROR_SDK_NOT_INITIALIZED,
+        getUninitializedErrorMessage(adFormat = "rewarded"),
+        ERROR_DOMAIN
+      )
+    )
+  }
+
+  @Test
+  fun loadRewardedAd_invalidContext_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
+
+    adapter.loadRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN)
+    )
+  }
+
+  @Test
+  fun loadRewardedAd_emptyInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        activity,
+        serverParameters = bundleOf(IronSourceConstants.KEY_INSTANCE_ID to "")
+      )
+
+    adapter.loadRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN)
+    )
+  }
+
+  @Test
+  fun loadRewardedAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
+    adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+
+    adapter.loadRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(
+        ERROR_AD_ALREADY_LOADED,
+        "An IronSource Rewarded ad is already loading for instance ID: 0",
+        ERROR_DOMAIN
+      )
+    )
+  }
+
+  @Test
+  fun loadRewardedAd_validInput_loadsSuccessfully() {
+    mockStatic(IronSource::class.java).use {
+      adapter.setIsInitialized(true)
+      val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
+
+      adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+
+      it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
+    }
+  }
+
   @After
   fun tearDown() {
     adapter.setIsInitialized(false)
     IronSourceBannerAd.removeFromAvailableInstances(/* instanceId= */ "0")
     IronSourceInterstitialAd.removeFromAvailableInstances(/* instanceId= */ "0")
+    IronSourceRewardedAd.removeFromAvailableInstances(/* instanceId= */ "0")
   }
 
   private fun createMediationConfiguration(
