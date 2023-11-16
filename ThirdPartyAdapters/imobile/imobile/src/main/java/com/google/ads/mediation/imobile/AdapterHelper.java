@@ -70,4 +70,8 @@ public final class AdapterHelper {
     return new AdError(code, "Failed to request ad from Imobile: " + reason,
         IMOBILE_SDK_ERROR_DOMAIN);
   }
+
+  static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
 }

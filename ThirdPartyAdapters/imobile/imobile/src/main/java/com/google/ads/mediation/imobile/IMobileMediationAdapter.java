@@ -106,7 +106,7 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = AdapterHelper.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
