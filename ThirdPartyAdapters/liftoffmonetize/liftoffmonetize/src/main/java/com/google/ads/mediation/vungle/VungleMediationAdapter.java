@@ -170,7 +170,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = VungleAds.getSdkVersion();
+    String versionString = VungleSdkWrapper.delegate.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
