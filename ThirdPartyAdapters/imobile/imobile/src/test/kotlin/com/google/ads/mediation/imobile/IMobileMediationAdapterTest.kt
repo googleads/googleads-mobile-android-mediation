@@ -1,16 +1,22 @@
 package com.google.ads.mediation.imobile
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.imobile.AdapterHelper.getAdapterVersion
 import com.google.android.gms.ads.mediation.Adapter
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
+import org.mockito.Mockito.verify
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 /** Tests for [IMobileMediationAdapter]. */
@@ -18,6 +24,10 @@ import org.mockito.kotlin.whenever
 class IMobileMediationAdapterTest {
 
   private lateinit var adapter: IMobileMediationAdapter
+  
+  private val initializationCompleteCallback: InitializationCompleteCallback = mock()
+  private val mediationConfiguration: MediationConfiguration = mock()
+  private val context = ApplicationProvider.getApplicationContext<Context>()
 
   @Before
   fun setUp() {
@@ -68,5 +78,11 @@ class IMobileMediationAdapterTest {
   @Test
   fun getSDKVersionInfo_returnsDefault() {
     adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+  }
+
+  @Test
+  fun initialize_success() {
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+    verify(initializationCompleteCallback).onInitializationSucceeded()
   }
 }
