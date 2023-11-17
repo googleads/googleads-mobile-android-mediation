@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.chartboost.sdk.Chartboost;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
@@ -46,6 +47,12 @@ import java.util.List;
  * Chartboost banner, interstitial and rewarded video ads.
  */
 public class ChartboostMediationAdapter extends Adapter {
+
+  @VisibleForTesting
+  static final String ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID = "Missing or invalid App ID.";
+
+  @VisibleForTesting
+  static final String ERROR_MESSAGE_INVALID_SERVER_PARAMETERS = "Invalid server parameters.";
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
 
@@ -141,8 +148,7 @@ public class ChartboostMediationAdapter extends Adapter {
       if (count <= 0) {
         AdError error =
             ChartboostConstants.createAdapterError(
-                ERROR_INVALID_SERVER_PARAMETERS,
-                "Missing or invalid App ID.");
+                ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID);
         initializationCompleteCallback.onInitializationFailed(error.toString());
         Log.e(TAG, error.toString());
         return;
@@ -164,8 +170,7 @@ public class ChartboostMediationAdapter extends Adapter {
         // Invalid server parameters, send initialization failed event.
         AdError error =
             ChartboostConstants.createAdapterError(
-                ERROR_INVALID_SERVER_PARAMETERS,
-                "Invalid server parameters.");
+                ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
         initializationCompleteCallback.onInitializationFailed(error.toString());
         Log.e(TAG, error.toString());
         return;
@@ -182,8 +187,7 @@ public class ChartboostMediationAdapter extends Adapter {
       // Invalid server parameters, send initialization failed event.
       AdError error =
           ChartboostConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Invalid server parameters.");
+              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
       initializationCompleteCallback.onInitializationFailed(error.toString());
       Log.e(TAG, error.toString());
       return;
