@@ -189,7 +189,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
-    String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
+    String token = VungleSdkWrapper.delegate.getBiddingToken(rtbSignalData.getContext());
     if (TextUtils.isEmpty(token)) {
       AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN,
           "Liftoff Monetize returned an empty bid token.", ERROR_DOMAIN);
