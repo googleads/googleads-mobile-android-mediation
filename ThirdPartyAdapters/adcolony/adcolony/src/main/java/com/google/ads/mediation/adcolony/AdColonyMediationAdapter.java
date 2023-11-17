@@ -144,7 +144,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = AdColonyAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
