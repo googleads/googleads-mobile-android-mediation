@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.mytarget.MyTargetAdapterUtils.adapterVersion
+import com.google.ads.mediation.mytarget.MyTargetSdkWrapper.sdkVersion
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import org.junit.Before
 import org.junit.Test
@@ -59,6 +61,46 @@ class MyTargetMediationAdapterTest {
       whenever(adapterVersion) doReturn "3.2.1"
 
       myTargetMediationAdapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    }
+  }
+
+  // endregion
+
+  // region SDK Version  Tests
+
+  @Test
+  fun getSdkVersion_returnsCorrectSdkVersionInfo() {
+    mockStatic(MyTargetSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "3.2.1"
+
+      myTargetMediationAdapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenPatchVersion_returnsCorrectSdkVersionInfo() {
+    mockStatic(MyTargetSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "3.2.1.0"
+
+      myTargetMediationAdapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenLongerVersion_returnsCorrectSdkVersionInfo() {
+    mockStatic(MyTargetSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "5.4.3.2.1.0"
+
+      myTargetMediationAdapter.assertGetSdkVersion(expectedValue = "5.4.3")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenUnexpectedVersionFormat_returnsZerosVersionInfo() {
+    mockStatic(MyTargetSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "1.0"
+
+      myTargetMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
     }
   }
 

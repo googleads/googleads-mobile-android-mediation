@@ -34,7 +34,6 @@ import com.my.target.ads.Reward;
 import com.my.target.ads.RewardedAd;
 import com.my.target.ads.RewardedAd.RewardedAdListener;
 import com.my.target.common.CustomParams;
-import com.my.target.common.MyTargetVersion;
 import com.my.target.common.models.IAdLoadingError;
 import java.util.List;
 
@@ -113,7 +112,7 @@ public class MyTargetMediationAdapter extends Adapter
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = MyTargetVersion.VERSION;
+    String versionString = MyTargetSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
