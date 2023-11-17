@@ -1,5 +1,8 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated Bidding Token collection to use BiddingTokenCallback.
+
 #### Version 5.5.0.8.0
 - Verified compatibility with Pangle SDK version 5.5.0.8.
 
