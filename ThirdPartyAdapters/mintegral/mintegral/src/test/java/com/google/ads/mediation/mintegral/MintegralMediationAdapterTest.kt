@@ -20,11 +20,15 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_U
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
+import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadAppOpenAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbAppOpenAdWithFailure
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
+import com.google.ads.mediation.mintegral.MintegralUtils.getAdapterVersion
+import com.google.ads.mediation.mintegral.MintegralUtils.getSdkVersion
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
@@ -55,6 +59,54 @@ class MintegralMediationAdapterTest {
   fun setUp() {
     mintegralMediationAdapter = MintegralMediationAdapter()
   }
+
+  // region version tests
+  @Test
+  fun getSdkVersion_returnsCorrectVersion() {
+    mockStatic(MintegralUtils::class.java).use {
+      whenever(getSdkVersion()) doReturn "TEST_3.2.1"
+
+      mintegralMediationAdapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_withoutUnderscoreDivider_returnsZeroes() {
+    mockStatic(MintegralUtils::class.java).use {
+      whenever(getSdkVersion()) doReturn "3.2.1"
+
+      mintegralMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_withInvalidValues_returnsZeroes() {
+    mockStatic(MintegralUtils::class.java).use {
+      whenever(getSdkVersion()) doReturn "TEST_3.2"
+
+      mintegralMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  @Test
+  fun getVersionInfo_returnsTheSameVersion() {
+    mockStatic(MintegralUtils::class.java).use {
+      whenever(getAdapterVersion()) doReturn "3.2.1.0"
+
+      mintegralMediationAdapter.assertGetVersionInfo(expectedValue = "3.2.100")
+    }
+  }
+
+  @Test
+  fun getVersionInfo_withInvalidValue_returnsZeroes() {
+    mockStatic(MintegralUtils::class.java).use {
+      whenever(getAdapterVersion()) doReturn "3.2.1"
+
+      mintegralMediationAdapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    }
+  }
+
+  // endregion
 
   // region AppOpen Ad Tests
   @Test
