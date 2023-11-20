@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.nend.NendAdapterUtils.adapterVersion
+import com.google.ads.mediation.nend.NendSdkWrapper.sdkVersion
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import org.junit.Before
 import org.junit.Test
@@ -60,6 +62,46 @@ class NendMediationAdapterTest {
       whenever(adapterVersion) doReturn "3.2.1"
 
       nendMediationAdapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    }
+  }
+
+  // endregion
+
+  // region SDK Version  Tests
+
+  @Test
+  fun getSdkVersion_returnsCorrectSdkVersionInfo() {
+    mockStatic(NendSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "3.2.1"
+
+      nendMediationAdapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenPatchVersionIsPresent_ignoresPatchVersion() {
+    mockStatic(NendSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "3.2.1.0"
+
+      nendMediationAdapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenLongerVersion_returnsCorrectSdkVersionInfo() {
+    mockStatic(NendSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "5.4.3.2.1.0"
+
+      nendMediationAdapter.assertGetSdkVersion(expectedValue = "5.4.3")
+    }
+  }
+
+  @Test
+  fun getSdkVersion_whenUnexpectedVersionFormat_returnsZerosVersionInfo() {
+    mockStatic(NendSdkWrapper::class.java).use {
+      whenever(sdkVersion) doReturn "1.0"
+
+      nendMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
     }
   }
 
