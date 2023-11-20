@@ -133,6 +133,42 @@ class IronSourceRewardedAdTest {
     verifyNoInteractions(mockRewardedAdCallback)
   }
 
+  @Test
+  fun onRewardedVideoAdOpened_withRewardedVideoAd_verifyOnRewardedVideoAdOpenedCallbacks() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess(/* instanceId= */ "0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdOpened(/* instanceId= */ "0")
+
+    verify(mockRewardedAdCallback).onAdOpened()
+    verify(mockRewardedAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun onRewardedVideoAdClosed_withRewardedAd_verifyOnAdClosedCallback() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess(/* instanceId= */ "0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdClosed(/* instanceId= */ "0")
+
+    verify(mockRewardedAdCallback).onAdClosed()
+    assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
+  }
+
+  @Test
+  fun onAdEvents_withoutRewardedAd_verifyNoCallbacks() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+
+    ironSourceRewardedAdListener.onRewardedVideoAdOpened(/* instanceId= */ "1")
+    ironSourceRewardedAdListener.onRewardedVideoAdClosed(/* instanceId= */ "1")
+
+    verifyNoInteractions(mockRewardedAdCallback)
+    assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceRewardedAd)
+  }
+
   private fun loadRewardedAd() {
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
     ironSourceRewardedAd = IronSourceRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
