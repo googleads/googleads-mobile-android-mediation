@@ -139,6 +139,13 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
    */
   private YahooNativeRenderer yahooNativeRenderer;
 
+  /** The Yahoo ad object factory. */
+  private final YahooFactory yahooFactory;
+
+  public YahooMediationAdapter() {
+    this.yahooFactory = new YahooFactory();
+  }
+
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
@@ -226,7 +233,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationBannerListener listener, @NonNull final Bundle serverParameters,
       @NonNull AdSize adSize, @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    yahooBannerRenderer = new YahooBannerRenderer(YahooMediationAdapter.this);
+    yahooBannerRenderer = new YahooBannerRenderer(YahooMediationAdapter.this, yahooFactory);
     yahooBannerRenderer.render(context, listener, serverParameters, adSize, mediationAdRequest,
         mediationExtras);
   }
@@ -243,7 +250,8 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
     setContext(context);
-    yahooInterstitialRenderer = new YahooInterstitialRenderer(YahooMediationAdapter.this);
+    yahooInterstitialRenderer =
+        new YahooInterstitialRenderer(YahooMediationAdapter.this, yahooFactory);
     yahooInterstitialRenderer.render(context, listener, mediationAdRequest, serverParameters,
         mediationExtras);
   }
@@ -263,8 +271,9 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    yahooRewardedRenderer = new YahooRewardedRenderer(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
+    yahooRewardedRenderer =
+        new YahooRewardedRenderer(
+            mediationRewardedAdConfiguration, mediationAdLoadCallback, yahooFactory);
     yahooRewardedRenderer.render();
   }
 
@@ -273,7 +282,7 @@ public class YahooMediationAdapter extends Adapter implements MediationBannerAda
       @NonNull final MediationNativeListener listener, @NonNull final Bundle serverParameters,
       @NonNull final NativeMediationAdRequest mediationAdRequest,
       @Nullable final Bundle mediationExtras) {
-    yahooNativeRenderer = new YahooNativeRenderer(YahooMediationAdapter.this);
+    yahooNativeRenderer = new YahooNativeRenderer(YahooMediationAdapter.this, yahooFactory);
     yahooNativeRenderer.render(context, listener, serverParameters, mediationAdRequest,
         mediationExtras);
   }

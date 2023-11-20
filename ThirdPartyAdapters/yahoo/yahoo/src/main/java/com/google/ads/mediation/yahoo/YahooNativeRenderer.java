@@ -60,8 +60,12 @@ final class YahooNativeRenderer implements NativeAdListener {
    */
   private NativeAd nativeAd;
 
-  public YahooNativeRenderer(MediationNativeAdapter adapter) {
+  /** Yahoo Factory to create ad objects. */
+  private final YahooFactory yahooFactory;
+
+  public YahooNativeRenderer(MediationNativeAdapter adapter, YahooFactory yahooFactory) {
     this.nativeAdapterWeakRef = new WeakReference<>(adapter);
+    this.yahooFactory = yahooFactory;
   }
 
   public void render(@NonNull Context context, @NonNull MediationNativeListener listener,
@@ -105,10 +109,10 @@ final class YahooNativeRenderer implements NativeAdListener {
     YahooAdapterUtils.setCoppaValue(mediationAdRequest);
 
     String[] adTypes = new String[]{"100", "simpleImage"};
-    NativePlacementConfig placementConfig = new NativePlacementConfig(placementId,
-        YahooAdapterUtils.getRequestMetadata(mediationAdRequest), adTypes);
+    NativePlacementConfig placementConfig =
+        yahooFactory.createNativePlacementConfig(placementId, mediationAdRequest, adTypes);
     placementConfig.skipAssets = true;
-    nativeAd = new NativeAd(this.context, placementId, YahooNativeRenderer.this);
+    nativeAd = yahooFactory.createNativeAd(this.context, placementId, YahooNativeRenderer.this);
     nativeAd.load(placementConfig);
   }
 
