@@ -11,13 +11,18 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.common.truth.Truth.assertThat
+import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.ironsource.mediationsdk.logger.IronSourceError.ERROR_CODE_DECRYPT_FAILED
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.robolectric.Robolectric
@@ -29,8 +34,12 @@ class IronSourceRewardedAdTest {
   private lateinit var ironSourceRewardedAd: IronSourceRewardedAd
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-  private val rewardedAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+  private val mockRewardedAdCallback = mock<MediationRewardedAdCallback>()
+  private val rewardedAdLoadCallback:
+    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
+    mock {
+      on { onSuccess(any()) } doReturn mockRewardedAdCallback
+    }
 
   @After
   fun tearDown() {
@@ -81,6 +90,47 @@ class IronSourceRewardedAdTest {
 
     verifyNoInteractions(rewardedAdLoadCallback)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceRewardedAd)
+  }
+
+  @Test
+  fun showAd_verifyShowAdInvoked() {
+    mockStatic(IronSource::class.java).use {
+      loadRewardedAd()
+
+      ironSourceRewardedAd.showAd(activity)
+
+      it.verify { IronSource.showISDemandOnlyRewardedVideo("0") }
+    }
+  }
+
+  @Test
+  fun onRewardedAdShowFailed_withRewardedAd_verifyOnAdFailedToShow() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess("0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdShowFailed(/* instanceId= */ "0", ironSourceError)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(mockRewardedAdCallback).onAdFailedToShow(adErrorCaptor.capture())
+    with(adErrorCaptor.firstValue) {
+      assertThat(code).isEqualTo(ERROR_CODE_DECRYPT_FAILED)
+      assertThat(message).isEqualTo("Decrypt failed.")
+      assertThat(domain).isEqualTo(IRONSOURCE_SDK_ERROR_DOMAIN)
+    }
+    assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
+  }
+
+  @Test
+  fun onRewardedAdShowFailed_withoutRewardedAd_verifyOnAdFailedToShow() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdShowFailed(/* instanceId= */ "1", ironSourceError)
+
+    verifyNoInteractions(mockRewardedAdCallback)
   }
 
   private fun loadRewardedAd() {
