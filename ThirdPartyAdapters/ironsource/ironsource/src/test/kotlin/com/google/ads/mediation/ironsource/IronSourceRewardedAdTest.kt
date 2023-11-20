@@ -158,12 +158,37 @@ class IronSourceRewardedAdTest {
   }
 
   @Test
+  fun onRewardedVideoAdRewarded_withRewardedAd_verifyOnRewardedCallbacks() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess(/* instanceId= */ "0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdRewarded(/* instanceId= */ "0")
+
+    verify(mockRewardedAdCallback).onVideoComplete()
+    verify(mockRewardedAdCallback).onUserEarnedReward(any<IronSourceRewardItem>())
+  }
+
+  @Test
+  fun onRewardedVideoAdClicked_withRewardedAd_verifyReportAdClicked() {
+    loadRewardedAd()
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess(/* instanceId= */ "0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdClicked(/* instanceId= */ "0")
+
+    verify(mockRewardedAdCallback).reportAdClicked()
+  }
+
+  @Test
   fun onAdEvents_withoutRewardedAd_verifyNoCallbacks() {
     loadRewardedAd()
     val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
 
     ironSourceRewardedAdListener.onRewardedVideoAdOpened(/* instanceId= */ "1")
     ironSourceRewardedAdListener.onRewardedVideoAdClosed(/* instanceId= */ "1")
+    ironSourceRewardedAdListener.onRewardedVideoAdRewarded(/* instanceId= */ "1")
+    ironSourceRewardedAdListener.onRewardedVideoAdClicked(/* instanceId= */ "1")
 
     verifyNoInteractions(mockRewardedAdCallback)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceRewardedAd)
