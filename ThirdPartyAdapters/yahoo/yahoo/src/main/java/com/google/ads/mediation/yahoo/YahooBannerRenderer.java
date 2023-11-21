@@ -130,8 +130,8 @@ final class YahooBannerRenderer implements InlineAdListener {
 
     YahooAdapterUtils.setCoppaValue(mediationAdRequest);
 
-    com.yahoo.ads.inlineplacement.AdSize yahooAdSize = new com.yahoo.ads.inlineplacement.AdSize(
-        normalizedSize.getWidth(), normalizedSize.getHeight());
+    com.yahoo.ads.inlineplacement.AdSize yahooAdSize =
+        yahooFactory.createYahooAdSize(normalizedSize);
     InlinePlacementConfig placementConfig =
         yahooFactory.createInlinePlacementConfig(placementId, mediationAdRequest, yahooAdSize);
     inlineAdView = yahooFactory.createInlineAd(context, placementId, YahooBannerRenderer.this);

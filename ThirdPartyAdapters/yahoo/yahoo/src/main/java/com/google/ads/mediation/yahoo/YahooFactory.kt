@@ -82,4 +82,8 @@ class YahooFactory {
       Collections.singletonList(yahooAdSize)
     )
   }
+
+  fun createYahooAdSize(normalizedSize: com.google.android.gms.ads.AdSize): AdSize {
+    return AdSize(/* width= */ normalizedSize.getWidth(), /* height= */ normalizedSize.getHeight())
+  }
 }
