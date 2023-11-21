@@ -33,9 +33,9 @@ class YahooAdapterUtils {
 
   private static final String PLACEMENT_KEY = "placement_id";
   private static final String ORANGE_PLACEMENT_KEY = "position";
-  private static final String DCN_KEY = "dcn";
   private static final String MEDIATOR_ID = "AdMobYAS-" + BuildConfig.VERSION_NAME;
 
+  static final String DCN_KEY = "dcn";
   static final String SITE_KEY = "site_id";
 
   /**
