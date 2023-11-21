@@ -24,6 +24,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
 /** Tests for [IronSourceInterstitialAd]. */
@@ -144,6 +145,23 @@ class IronSourceInterstitialAdTest {
   }
 
   @Test
+  fun onInterstitialAdShowFailed_withoutInterstitialAdCallbackInstance_verifyOnAdFailedToShow() {
+    loadInterstitialAd()
+    whenever(interstitialAdLoadCallback.onSuccess(any())).thenReturn(null)
+    val ironSourceInterstitialAdListener =
+      IronSourceInterstitialAd.getIronSourceInterstitialListener()
+    val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
+    ironSourceInterstitialAdListener.onInterstitialAdReady("0")
+
+    ironSourceInterstitialAdListener.onInterstitialAdShowFailed(
+      /* instanceId= */ "0",
+      ironSourceError
+    )
+
+    verifyNoInteractions(mockInterstitialAdCallback)
+  }
+
+  @Test
   fun onInterstitialAdOpened_withInterstitialAd_verifyOnInterstitialAdOpenedCallbacks() {
     loadInterstitialAd()
     val ironSourceInterstitialAdListener =
@@ -193,6 +211,21 @@ class IronSourceInterstitialAdTest {
 
     verifyNoInteractions(mockInterstitialAdCallback)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceInterstitialAd)
+  }
+
+  @Test
+  fun onAdEvents_withoutInterstitialAdCallbackInstance_verifyNoCallbacks() {
+    loadInterstitialAd()
+    whenever(interstitialAdLoadCallback.onSuccess(any())).thenReturn(null)
+    val ironSourceInterstitialAdListener =
+      IronSourceInterstitialAd.getIronSourceInterstitialListener()
+    ironSourceInterstitialAdListener.onInterstitialAdReady("0")
+
+    ironSourceInterstitialAdListener.onInterstitialAdOpened(/* instanceId= */ "0")
+    ironSourceInterstitialAdListener.onInterstitialAdClicked(/* instanceId= */ "0")
+    ironSourceInterstitialAdListener.onInterstitialAdClosed(/* instanceId= */ "0")
+
+    verifyNoInteractions(mockInterstitialAdCallback)
   }
 
   private fun loadInterstitialAd() {

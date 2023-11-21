@@ -206,6 +206,23 @@ class IronSourceBannerAdTest {
     }
   }
 
+  @Test
+  fun onEventCallbacks_withoutBannerAdCallbackInstance_expectNoEventCallbacks() {
+    mockStatic(IronSource::class.java).use {
+      val ironSourceBannerListener = loadBannerAd()
+      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
+      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)).thenReturn(null)
+      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
+      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+
+      ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
+      ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
+      ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
+
+      verifyNoInteractions(mockBannerAdCallback)
+    }
+  }
+
   private fun loadBannerAd(): IronSourceBannerAdListener {
     val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
     ironSourceBannerAd = IronSourceBannerAd(mediationAdConfiguration, bannerAdLoadCallback)

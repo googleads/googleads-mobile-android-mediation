@@ -25,6 +25,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
 /** Tests for [IronSourceRewardedAd]. */
@@ -134,6 +135,18 @@ class IronSourceRewardedAdTest {
   }
 
   @Test
+  fun onRewardedAdShowFailed_withoutRewardedAdCallbackInstance_verifyOnAdFailedToShow() {
+    loadRewardedAd()
+    whenever(rewardedAdLoadCallback.onSuccess(any())).thenReturn(null)
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdShowFailed(/* instanceId= */ "0", ironSourceError)
+
+    verifyNoInteractions(mockRewardedAdCallback)
+  }
+
+  @Test
   fun onRewardedVideoAdOpened_withRewardedVideoAd_verifyOnRewardedVideoAdOpenedCallbacks() {
     loadRewardedAd()
     val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
@@ -192,6 +205,21 @@ class IronSourceRewardedAdTest {
 
     verifyNoInteractions(mockRewardedAdCallback)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceRewardedAd)
+  }
+
+  @Test
+  fun onAdEvents_withoutRewardedAdCallbackInstance_verifyNoCallbacks() {
+    loadRewardedAd()
+    whenever(rewardedAdLoadCallback.onSuccess(any())).thenReturn(null)
+    val ironSourceRewardedAdListener = IronSourceRewardedAd.getIronSourceRewardedListener()
+    ironSourceRewardedAdListener.onRewardedVideoAdLoadSuccess("0")
+
+    ironSourceRewardedAdListener.onRewardedVideoAdOpened(/* instanceId= */ "0")
+    ironSourceRewardedAdListener.onRewardedVideoAdRewarded(/* instanceId= */ "0")
+    ironSourceRewardedAdListener.onRewardedVideoAdClicked(/* instanceId= */ "0")
+    ironSourceRewardedAdListener.onRewardedVideoAdClosed(/* instanceId= */ "0")
+
+    verifyNoInteractions(mockRewardedAdCallback)
   }
 
   private fun loadRewardedAd() {
