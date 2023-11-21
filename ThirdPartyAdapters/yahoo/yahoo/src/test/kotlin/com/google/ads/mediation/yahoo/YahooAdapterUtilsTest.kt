@@ -7,6 +7,7 @@ import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -85,5 +86,35 @@ class YahooAdapterUtilsTest {
     whenever(mockMediationAdConfiguration.mediationExtras) doReturn mediationExtras
 
     assertThat(YahooAdapterUtils.getSiteId(null, mockMediationAdConfiguration)).isEqualTo("foobar")
+  }
+
+  @Test
+  fun getPlacementId_nullServerParams_returnsNull() {
+    assertThat(YahooAdapterUtils.getPlacementId(null)).isNull()
+  }
+
+  @Test
+  fun getPlacementId_serverParamPlacementKey_returnsPlacementKey() {
+    val serverParams = bundleOf(YahooAdapterUtils.PLACEMENT_KEY to "barfoo")
+
+    assertThat(YahooAdapterUtils.getPlacementId(serverParams)).isEqualTo("barfoo")
+  }
+
+  @Test
+  fun getPlacementId_serverParamOrangePlacementKey_returnsOrangePlacementKey() {
+    val serverParams = bundleOf(YahooAdapterUtils.ORANGE_PLACEMENT_KEY to "foobar")
+
+    assertThat(YahooAdapterUtils.getPlacementId(serverParams)).isEqualTo("foobar")
+  }
+
+  @Test
+  fun getPlacementId_serverParamBothKeys_returnsPlacementKey() {
+    val serverParams =
+      bundleOf(
+        YahooAdapterUtils.ORANGE_PLACEMENT_KEY to "foobar",
+        YahooAdapterUtils.PLACEMENT_KEY to "barfoo"
+      )
+
+    assertThat(YahooAdapterUtils.getPlacementId(serverParams)).isEqualTo("barfoo")
   }
 }

@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -31,12 +32,12 @@ import java.util.Set;
 
 class YahooAdapterUtils {
 
-  private static final String PLACEMENT_KEY = "placement_id";
-  private static final String ORANGE_PLACEMENT_KEY = "position";
   private static final String MEDIATOR_ID = "AdMobYAS-" + BuildConfig.VERSION_NAME;
 
-  static final String DCN_KEY = "dcn";
-  static final String SITE_KEY = "site_id";
+  @VisibleForTesting static final String DCN_KEY = "dcn";
+  @VisibleForTesting static final String SITE_KEY = "site_id";
+  @VisibleForTesting static final String PLACEMENT_KEY = "placement_id";
+  @VisibleForTesting static final String ORANGE_PLACEMENT_KEY = "position";
 
   /**
    * Gets the ad request metadata.
