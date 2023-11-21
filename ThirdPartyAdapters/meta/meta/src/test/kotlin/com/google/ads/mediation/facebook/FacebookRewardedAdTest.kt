@@ -195,6 +195,46 @@ class FacebookRewardedAdTest {
     verify(mediationRewardedAdCallback).reportAdImpression()
   }
 
+  @Test
+  fun onError_onShowAdAlreadyCalled_invokesOnAdFailedToShowCallback() {
+    val metaAdError = com.facebook.ads.AdError(101, "Error from meta")
+    val expectedAdError =
+      AdError(
+        metaAdError.errorCode,
+        metaAdError.errorMessage,
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+      )
+    whenever(facebookRewardedAd.show()) doReturn true
+
+    // need to mimic a successful render and load in order for show
+    // to be able to be called
+    renderAndLoadSuccessfully()
+    // simulate show ad called
+    adapterRewardedAd.showAd(context)
+    // invoke onError callback
+    adapterRewardedAd.onError(facebookAd, metaAdError)
+
+    verify(mediationRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onError_onShowAdNotYetCalled_invokesAdLoadCallbackWithFailure() {
+    val metaAdError = com.facebook.ads.AdError(101, "Error from meta")
+    val expectedAdError =
+      AdError(
+        metaAdError.errorCode,
+        metaAdError.errorMessage,
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+      )
+
+    // mimic an ad render
+    adapterRewardedAd.render()
+    // invoke onError callback
+    adapterRewardedAd.onError(facebookAd, metaAdError)
+
+    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
   private fun renderAndLoadSuccessfully() {
     adapterRewardedAd.render()
 
