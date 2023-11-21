@@ -1,6 +1,5 @@
 package com.google.ads.mediation.adcolony
 
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -9,14 +8,22 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.adcolony.sdk.AdColony
 import com.adcolony.sdk.AdColony.getSDKVersion
 import com.adcolony.sdk.AdColonyAppOptions
+import com.adcolony.sdk.AdColonyInterstitial
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.adcolony.AdColonyAdapterUtils.getAdapterVersion
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_ADCOLONY_NOT_INITIALIZED
 import com.google.ads.mediation.adcolony.AdColonyMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.jirbo.adcolony.AdColonyManager
 import com.jirbo.adcolony.AdColonyManager.getInstance
 import junit.framework.TestCase.assertEquals
@@ -41,6 +48,14 @@ class AdColonyMediationAdapterTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val invalidContext: Context = mock()
   private val adColonyManager: AdColonyManager = mock()
+  private val adColonyInterstitial: AdColonyInterstitial = mock()
+  private val mediationInterstitialAdLoadCallback:
+    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
+    mock()
+  private val mediationBannerAdLoadCallback:
+    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
+    mock()
+  private val adColonyWrapper: AdColonyWrapper = mock()
 
   @Before
   fun setUp() {
@@ -123,9 +138,16 @@ class AdColonyMediationAdapterTest {
       bundleOf(AdColonyAdapterUtils.KEY_APP_ID to AdapterTestKitConstants.TEST_APP_ID)
     whenever(mediationConfiguration.serverParameters).doReturn(validServerParameters)
     val adError =
-      AdColonyMediationAdapter.createAdapterError(AdColonyMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY,"AdColony SDK requires an Activity or Application context to initialize.");
+      AdColonyMediationAdapter.createAdapterError(
+        AdColonyMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY,
+        "AdColony SDK requires an Activity or Application context to initialize."
+      )
 
-    adapter.initialize(invalidContext, initializationCompleteCallback, listOf(mediationConfiguration))
+    adapter.initialize(
+      invalidContext,
+      initializationCompleteCallback,
+      listOf(mediationConfiguration)
+    )
 
     verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
   }
@@ -147,7 +169,6 @@ class AdColonyMediationAdapterTest {
     verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
   }
 
-
   @Test
   fun initializationSuccess_onInitializeSuccessCallback() {
     val validServerParameters =
@@ -167,8 +188,8 @@ class AdColonyMediationAdapterTest {
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
     }
     val mediationInfo = AdColonyMediationAdapter.getAppOptions().getMediationInfo()
-    assertEquals(AdColonyAppOptions.ADMOB, mediationInfo.optString("name"));
-    assertEquals(getAdapterVersion(), mediationInfo.optString("version"));
+    assertEquals(AdColonyAppOptions.ADMOB, mediationInfo.optString("name"))
+    assertEquals(getAdapterVersion(), mediationInfo.optString("version"))
     verify(initializationCompleteCallback).onInitializationSucceeded()
   }
 
@@ -196,5 +217,40 @@ class AdColonyMediationAdapterTest {
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
     }
     verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
+  }
+
+  @Test
+  fun loadInterstitialAd_successful() {
+    val validServerParameters =
+      bundleOf(
+        AdColonyAdapterUtils.KEY_APP_ID to AdapterTestKitConstants.TEST_APP_ID,
+        AdColonyAdapterUtils.KEY_ZONE_ID to "123;456"
+      )
+    val mediationBannerAdConfiguration =
+      createMediationInterstitialAdConfiguration(context, serverParameters = validServerParameters)
+    mockStatic(AdColonyWrapper::class.java).use {
+      whenever(AdColonyWrapper.getInstance()) doReturn adColonyWrapper
+      adapter.loadRtbInterstitialAd(
+        mediationBannerAdConfiguration,
+        mediationInterstitialAdLoadCallback
+      )
+    }
+    verify(adColonyWrapper).requestInterstitial(any(), any(), any())
+  }
+
+  @Test
+  fun loadBannerAd_successful() {
+    val validServerParameters =
+      bundleOf(
+        AdColonyAdapterUtils.KEY_APP_ID to AdapterTestKitConstants.TEST_APP_ID,
+        AdColonyAdapterUtils.KEY_ZONE_ID to "123;456"
+      )
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, serverParameters = validServerParameters)
+    mockStatic(AdColonyWrapper::class.java).use {
+      whenever(AdColonyWrapper.getInstance()) doReturn adColonyWrapper
+      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mediationBannerAdLoadCallback)
+    }
+    verify(adColonyWrapper).requestAdView(any(), any(), any(), any())
   }
 }
