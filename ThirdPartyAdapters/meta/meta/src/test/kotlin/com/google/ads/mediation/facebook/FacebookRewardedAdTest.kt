@@ -13,6 +13,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.rewarded.RewardItem
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,6 +22,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -104,6 +106,71 @@ class FacebookRewardedAdTest {
 
     verify(mediationRewardedAdCallback).onVideoStart()
     verify(mediationRewardedAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun onRewardedVideoCompleted_invokesOnVideoCompleteAndOnUserEarnedRewardCallback() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the onRewardedVideoCompleted callback
+    adapterRewardedAd.onRewardedVideoCompleted()
+
+    verify(mediationRewardedAdCallback).onVideoComplete()
+    verify(mediationRewardedAdCallback)
+      .onUserEarnedReward(ArgumentMatchers.any(RewardItem::class.java))
+  }
+
+  @Test
+  fun onRewardedVideoClosed_invokesOnAdClosedCallback() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the onRewardedVideoClpsed callback
+    adapterRewardedAd.onRewardedVideoClosed()
+
+    verify(mediationRewardedAdCallback).onAdClosed()
+    verify(facebookRewardedAd).destroy()
+  }
+
+  @Test
+  fun onRewardedVideoClosed_videoAlreadyClosed_invokesOnAdClosedCallbackOnlyOnce() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the onRewardedVideoClpsed callback
+    adapterRewardedAd.onRewardedVideoClosed()
+    // make a second callback
+    adapterRewardedAd.onRewardedVideoClosed()
+
+    verify(mediationRewardedAdCallback, times(1)).onAdClosed()
+    verify(facebookRewardedAd, times(2)).destroy()
+  }
+
+  @Test
+  fun onRewardedVideoActivityDestroyed_invokesOnAdClosedCallback() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the onRewardedVideoActivity destroyed callback
+    adapterRewardedAd.onRewardedVideoActivityDestroyed()
+
+    verify(mediationRewardedAdCallback).onAdClosed()
+    verify(facebookRewardedAd).destroy()
+  }
+
+  @Test
+  fun onRewardedVideoActivityDestroyed_videoAlreadyClosed_invokesOnAdClosedCallbackOnlyOnce() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the onRewardedVideoActivity destroyed callback
+    adapterRewardedAd.onRewardedVideoActivityDestroyed()
+    // make a second callback
+    adapterRewardedAd.onRewardedVideoActivityDestroyed()
+
+    verify(mediationRewardedAdCallback, times(1)).onAdClosed()
+    verify(facebookRewardedAd, times(2)).destroy()
   }
 
   private fun renderAndLoadSuccessfully() {
