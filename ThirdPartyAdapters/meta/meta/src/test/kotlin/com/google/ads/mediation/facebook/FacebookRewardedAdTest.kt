@@ -173,6 +173,28 @@ class FacebookRewardedAdTest {
     verify(facebookRewardedAd, times(2)).destroy()
   }
 
+  @Test
+  fun onAdClicked_invokesReportAdClickedCallback() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the Ad clicked callback
+    adapterRewardedAd.onAdClicked(facebookAd)
+
+    verify(mediationRewardedAdCallback).reportAdClicked()
+  }
+
+  @Test
+  fun onLoggingImpression_invokesReportAdImpression() {
+    // simulate a successful render and show
+    renderAndLoadSuccessfully()
+
+    // invoke the logging impression callback
+    adapterRewardedAd.onLoggingImpression(facebookAd)
+
+    verify(mediationRewardedAdCallback).reportAdImpression()
+  }
+
   private fun renderAndLoadSuccessfully() {
     adapterRewardedAd.render()
 
