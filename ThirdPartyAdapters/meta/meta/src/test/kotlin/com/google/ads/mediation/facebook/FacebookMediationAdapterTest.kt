@@ -13,6 +13,9 @@ import com.facebook.ads.BidderTokenProvider
 import com.facebook.ads.BidderTokenProvider.getBidderToken
 import com.facebook.ads.ExtraHints
 import com.facebook.ads.InterstitialAd
+import com.facebook.ads.NativeAdBase
+import com.facebook.ads.NativeAdBase.fromBidPayload
+import com.facebook.ads.NativeAdListener
 import com.facebook.ads.RewardedVideoAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
@@ -20,9 +23,11 @@ import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbNativeAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyNoFailure
@@ -42,12 +47,13 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
-import java.lang.Exception
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -110,6 +116,25 @@ class FacebookMediationAdapterTest {
     }
   private val metaRewardedAd: RewardedVideoAd = mock {
     on { buildLoadAdConfig() } doReturn metaRewardedAdLoadConfigBuilder
+  }
+  private val mockNativeAdLoadCallback:
+    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
+    mock()
+  private val metaNativeAdLoadConfig: NativeAdBase.NativeLoadAdConfig = mock()
+  private val metaNativeAdLoadConfigBuilder: NativeAdBase.NativeAdLoadConfigBuilder = mock {
+    on { withBid(any()) } doReturn this.mock
+    on { withAdListener(any()) } doReturn this.mock
+    on { withMediaCacheFlag(any()) } doReturn this.mock
+    on {
+      withPreloadedIconView(
+        NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+        NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+      )
+    } doReturn this.mock
+    on { build() } doReturn metaNativeAdLoadConfig
+  }
+  private val metaNativeAd: NativeAdBase = mock {
+    on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder
   }
 
   @Before
@@ -489,6 +514,104 @@ class FacebookMediationAdapterTest {
       withAdExperience(AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED)
     }
     verify(metaRewardedAd).loadAd(metaRewardedAdLoadConfig)
+  }
+
+  @Test
+  fun loadRtbNativeAd_withoutPlacementId_invokesOnFailureCallback() {
+    val mediationNativeAdConfiguration = createMediationNativeAdConfiguration(context = context)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbNativeAdWithFailure(
+      mediationNativeAdConfiguration,
+      mockNativeAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbNativeAd_emptyPlacementId_invokesOnFailureCallback() {
+    val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbNativeAdWithFailure(
+      mediationNativeAdConfiguration,
+      mockNativeAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbNativeAd_errorCreatingNativeAdBase_invokesOnFailureCallback() {
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(context = context, serverParameters = serverParameters)
+    val exception = Exception("error foo")
+    val expectedAdError =
+      AdError(
+        FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
+        "Failed to create native ad from bid payload: " + exception.message,
+        ERROR_DOMAIN
+      )
+    mockStatic(NativeAdBase::class.java).use {
+      whenever(fromBidPayload(any(), any(), any())) doThrow exception
+
+      facebookMediationAdapter.loadRtbNativeAdWithFailure(
+        mediationNativeAdConfiguration,
+        mockNativeAdLoadCallback,
+        expectedAdError
+      )
+    }
+  }
+
+  @Test
+  fun loadRtbNativeAd_loadsAd() {
+    AdSettings.setMixedAudience(false)
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = 1,
+        watermark = WATERMARK,
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+      )
+    mockStatic(NativeAdBase::class.java).use {
+      whenever(fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+
+      facebookMediationAdapter.loadRtbNativeAd(
+        mediationNativeAdConfiguration,
+        mockNativeAdLoadCallback
+      )
+
+      val extraHintsCaptor = argumentCaptor<ExtraHints>()
+      verify(metaNativeAd).setExtraHints(extraHintsCaptor.capture())
+      extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+      assertThat(AdSettings.isMixedAudience()).isTrue()
+      verify(metaNativeAdLoadConfigBuilder).apply {
+        withAdListener(any(NativeAdListener::class.java))
+        withBid(mediationAdConfiguration.bidResponse)
+        withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+        withPreloadedIconView(
+          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE
+        )
+      }
+      verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
+    }
   }
 
   companion object {
