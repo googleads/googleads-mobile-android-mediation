@@ -1,8 +1,11 @@
 package com.google.ads.mediation.yahoo
 
+import android.content.Context
 import android.os.Bundle
 import androidx.core.os.bundleOf
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -17,6 +20,8 @@ import org.mockito.kotlin.whenever
 class YahooAdapterUtilsTest {
 
   private val mockMediationAdConfiguration = mock<MediationAdConfiguration>()
+
+  private val context = ApplicationProvider.getApplicationContext<Context>()
 
   @Test
   fun getSiteId_mediationExtras_returnsSiteId() {
@@ -116,5 +121,27 @@ class YahooAdapterUtilsTest {
       )
 
     assertThat(YahooAdapterUtils.getPlacementId(serverParams)).isEqualTo("barfoo")
+  }
+
+  @Test
+  fun normalizeSize_banner_returnsBannerAdSize() {
+    assertThat(YahooAdapterUtils.normalizeSize(context, AdSize.BANNER)).isEqualTo(AdSize.BANNER)
+  }
+
+  @Test
+  fun normalizeSize_leaderboard_returnsLeaderboardAdSize() {
+    assertThat(YahooAdapterUtils.normalizeSize(context, AdSize.LEADERBOARD))
+      .isEqualTo(AdSize.LEADERBOARD)
+  }
+
+  @Test
+  fun normalizeSize_mediumRectangle_returnsMediumRectangleAdSize() {
+    assertThat(YahooAdapterUtils.normalizeSize(context, AdSize.MEDIUM_RECTANGLE))
+      .isEqualTo(AdSize.MEDIUM_RECTANGLE)
+  }
+
+  @Test
+  fun normalizeSize_wideSkyscraper_returnsNull() {
+    assertThat(YahooAdapterUtils.normalizeSize(context, AdSize.WIDE_SKYSCRAPER)).isNull()
   }
 }
