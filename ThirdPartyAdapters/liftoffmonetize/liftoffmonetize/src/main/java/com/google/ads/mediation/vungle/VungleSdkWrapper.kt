@@ -33,6 +33,8 @@ object VungleSdkWrapper {
       override fun getBiddingToken(context: Context): String? = VungleAds.getBiddingToken(context)
 
       override fun getSdkVersion(): String = VungleAds.getSdkVersion()
+
+      override fun isInitialized(): Boolean = VungleAds.isInitialized()
     }
 }
 
@@ -41,4 +43,6 @@ interface SdkWrapper {
   fun getBiddingToken(context: Context): String?
 
   fun getSdkVersion(): String
+
+  fun isInitialized(): Boolean
 }

@@ -55,7 +55,6 @@ import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
-import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleError;
 import com.vungle.mediation.BuildConfig;
 import java.lang.annotation.Retention;
@@ -206,7 +205,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (VungleAds.isInitialized()) {
+    if (VungleSdkWrapper.delegate.isInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
