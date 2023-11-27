@@ -15,6 +15,7 @@
 package com.google.ads.mediation.vungle
 
 import android.content.Context
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.VungleAds
 
 /**
@@ -34,6 +35,12 @@ object VungleSdkWrapper {
 
       override fun getSdkVersion(): String = VungleAds.getSdkVersion()
 
+      override fun init(
+        context: Context,
+        appId: String,
+        initializationListener: InitializationListener
+      ): Unit = VungleAds.init(context, appId, initializationListener)
+
       override fun isInitialized(): Boolean = VungleAds.isInitialized()
     }
 }
@@ -43,6 +50,8 @@ interface SdkWrapper {
   fun getBiddingToken(context: Context): String?
 
   fun getSdkVersion(): String
+
+  fun init(context: Context, appId: String, initializationListener: InitializationListener)
 
   fun isInitialized(): Boolean
 }
