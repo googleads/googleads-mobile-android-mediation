@@ -1,7 +1,12 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated Bidding Token collection to use BiddingTokenCallback.
+#### Version 5.5.0.9.0
+- Updated the minimum required Google Mobile Ads SDK version to 22.5.0.
+- Verified compatibility with Pangle SDK version 5.5.0.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.5.0.
+- Pangle SDK version 5.5.0.9.
 
 #### Version 5.5.0.8.0
 - Verified compatibility with Pangle SDK version 5.5.0.8.
