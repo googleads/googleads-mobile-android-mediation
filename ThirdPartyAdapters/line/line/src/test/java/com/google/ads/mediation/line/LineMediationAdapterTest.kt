@@ -12,6 +12,7 @@ import com.five_corp.ad.FiveAdInterstitial
 import com.five_corp.ad.FiveAdNative
 import com.five_corp.ad.FiveAdVideoReward
 import com.five_corp.ad.NeedChildDirectedTreatment
+import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
@@ -439,19 +440,44 @@ class LineMediationAdapterTest {
     inOrder(mockSdkWrapper, mockFiveAdCustomLayout) {
       verify(mockSdkWrapper).initialize(context, fiveAdConfig)
       verify(mockFiveAdCustomLayout).setLoadListener(isA<LineBannerAd>())
+      verify(mockFiveAdCustomLayout).enableSound(false)
       verify(mockFiveAdCustomLayout).loadAdAsync()
     }
   }
 
+  @Test
+  fun loadBannerAd_withExtras_modifiesEnablesSound() {
+    whenever(mockSdkWrapper.isInitialized()) doReturn false
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1
+      )
+    val mediationExtras = bundleOf(KEY_ENABLE_AD_SOUND to true)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(
+        serverParameters = serverParameters,
+        mediationExtras = mediationExtras
+      )
+
+    lineMediationAdapter.loadBannerAd(
+      mediationBannerAdConfiguration,
+      mockMediationBannerAdLoadCallback
+    )
+
+    verify(mockFiveAdCustomLayout).enableSound(true)
+  }
+
   private fun createMediationBannerAdConfiguration(
-    serverParameters: Bundle = Bundle(),
+    serverParameters: Bundle = bundleOf(),
     adSize: AdSize = AdSize.BANNER,
+    mediationExtras: Bundle = bundleOf(),
   ) =
     MediationBannerAdConfiguration(
       context,
       /*bidresponse=*/ "",
       serverParameters,
-      /*mediationExtras=*/ Bundle(),
+      mediationExtras,
       /*isTesting=*/ true,
       /*location=*/ null,
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
@@ -592,19 +618,45 @@ class LineMediationAdapterTest {
     inOrder(mockSdkWrapper, mockFiveAdInterstitial) {
       verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
       verify(mockFiveAdInterstitial).setLoadListener(isA<LineInterstitialAd>())
+      verify(mockFiveAdInterstitial).enableSound(true)
       verify(mockFiveAdInterstitial).loadAdAsync()
     }
   }
 
+  @Test
+  fun loadInterstitialAd_withExtras_modifiesEnableSound() {
+    whenever(mockSdkWrapper.isInitialized()) doReturn false
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1
+      )
+    val mediationExtras = bundleOf(KEY_ENABLE_AD_SOUND to false)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        activity,
+        serverParameters = serverParameters,
+        mediationExtras = mediationExtras
+      )
+
+    lineMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback
+    )
+
+    verify(mockFiveAdInterstitial).enableSound(false)
+  }
+
   private fun createMediationInterstitialAdConfiguration(
     context: Context = this.context,
-    serverParameters: Bundle = Bundle(),
+    serverParameters: Bundle = bundleOf(),
+    mediationExtras: Bundle = bundleOf(),
   ) =
     MediationInterstitialAdConfiguration(
       context,
       /*bidresponse=*/ "",
       serverParameters,
-      /*mediationExtras=*/ Bundle(),
+      mediationExtras,
       /*isTesting=*/ true,
       /*location=*/ null,
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
@@ -744,6 +796,36 @@ class LineMediationAdapterTest {
     inOrder(mockSdkWrapper, mockFiveAdVideoReward) {
       verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
       verify(mockFiveAdVideoReward).setLoadListener(isA<LineRewardedAd>())
+      verify(mockFiveAdVideoReward).enableSound(true)
+      verify(mockFiveAdVideoReward).loadAdAsync()
+    }
+  }
+
+  @Test
+  fun loadRewardedAd_withExtras_modifiesEnableSound() {
+    whenever(mockSdkWrapper.isInitialized()) doReturn false
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID_1
+      )
+    val mediationExtras: Bundle = bundleOf(KEY_ENABLE_AD_SOUND to false)
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        activity,
+        serverParameters = serverParameters,
+        mediationExtras = mediationExtras
+      )
+
+    lineMediationAdapter.loadRewardedAd(
+      mediationRewardedAdConfiguration,
+      mockMediationRewardedAdLoadCallback
+    )
+
+    inOrder(mockSdkWrapper, mockFiveAdVideoReward) {
+      verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
+      verify(mockFiveAdVideoReward).setLoadListener(isA<LineRewardedAd>())
+      verify(mockFiveAdVideoReward).enableSound(false)
       verify(mockFiveAdVideoReward).loadAdAsync()
     }
   }
@@ -751,12 +833,13 @@ class LineMediationAdapterTest {
   private fun createMediationRewardedAdConfiguration(
     context: Context = this.context,
     serverParameters: Bundle = Bundle(),
+    mediationExtras: Bundle = bundleOf(),
   ) =
     MediationRewardedAdConfiguration(
       context,
       /*bidresponse=*/ "",
       serverParameters,
-      /*mediationExtras=*/ Bundle(),
+      mediationExtras,
       /*isTesting=*/ true,
       /*location=*/ null,
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,

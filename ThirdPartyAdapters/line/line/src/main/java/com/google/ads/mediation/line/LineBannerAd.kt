@@ -15,6 +15,7 @@
 package com.google.ads.mediation.line
 
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.five_corp.ad.FiveAdCustomLayout
@@ -22,6 +23,7 @@ import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdViewEventListener
+import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MediationUtils
@@ -42,6 +44,7 @@ private constructor(
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val adView: FiveAdCustomLayout,
   private val adSize: AdSize,
+  private val networkExtras: Bundle?,
 ) : MediationBannerAd, FiveAdLoadListener, FiveAdViewEventListener {
 
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
@@ -49,6 +52,9 @@ private constructor(
   fun loadAd() {
     LineInitializer.initialize(context, appId)
     adView.setLoadListener(this)
+    if (networkExtras != null) {
+      adView.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, false))
+    }
     adView.loadAdAsync()
   }
 
@@ -218,7 +224,14 @@ private constructor(
           adSize.getWidthInPixels(context)
         )
       return Result.success(
-        LineBannerAd(context, appId, mediationAdLoadCallback, bannerAdView, adSize)
+        LineBannerAd(
+          context,
+          appId,
+          mediationAdLoadCallback,
+          bannerAdView,
+          adSize,
+          mediationBannerAdConfiguration.mediationExtras,
+        )
       )
     }
   }

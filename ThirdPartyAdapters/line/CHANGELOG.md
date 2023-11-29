@@ -1,6 +1,7 @@
 ## LINE Android Mediation Adapter Changelog
 
 #### Next Version
+- Added LineExtras to enable sound per ad request.
 - Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
 
 #### Version 2.6.20230607.0

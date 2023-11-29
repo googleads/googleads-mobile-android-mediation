@@ -16,12 +16,14 @@ package com.google.ads.mediation.line
 
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdInterstitial
 import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdViewEventListener
+import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -40,6 +42,7 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val interstitialAd: FiveAdInterstitial,
+  private val networkExtras: Bundle?,
 ) : MediationInterstitialAd, FiveAdLoadListener, FiveAdViewEventListener {
 
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
@@ -48,6 +51,9 @@ private constructor(
     val activity = activityReference.get() ?: return
     LineInitializer.initialize(activity, appId)
     interstitialAd.setLoadListener(this)
+    if (networkExtras != null) {
+      interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+    }
     interstitialAd.loadAdAsync()
   }
 
@@ -201,7 +207,8 @@ private constructor(
           WeakReference(activity),
           appId,
           mediationAdLoadCallback,
-          fiveAdInterstitialAd
+          fiveAdInterstitialAd,
+          mediationInterstitialAdConfiguration.mediationExtras,
         )
       )
     }

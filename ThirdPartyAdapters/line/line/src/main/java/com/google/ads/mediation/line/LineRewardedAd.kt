@@ -16,6 +16,7 @@ package com.google.ads.mediation.line
 
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
@@ -23,6 +24,7 @@ import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdState
 import com.five_corp.ad.FiveAdVideoReward
 import com.five_corp.ad.FiveAdViewEventListener
+import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -42,6 +44,7 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val rewardedAd: FiveAdVideoReward,
+  private val networkExtras: Bundle?,
 ) : MediationRewardedAd, FiveAdLoadListener, FiveAdViewEventListener {
 
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
@@ -50,6 +53,9 @@ private constructor(
     val activity = activityReference.get() ?: return
     LineInitializer.initialize(activity, appId)
     rewardedAd.setLoadListener(this)
+    if (networkExtras != null) {
+      rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+    }
     rewardedAd.loadAdAsync()
   }
 
@@ -207,7 +213,13 @@ private constructor(
       val fiveAdVideoRewarded = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
 
       return Result.success(
-        LineRewardedAd(WeakReference(activity), appId, mediationAdLoadCallback, fiveAdVideoRewarded)
+        LineRewardedAd(
+          WeakReference(activity),
+          appId,
+          mediationAdLoadCallback,
+          fiveAdVideoRewarded,
+          mediationRewardedAdConfiguration.mediationExtras
+        )
       )
     }
   }
