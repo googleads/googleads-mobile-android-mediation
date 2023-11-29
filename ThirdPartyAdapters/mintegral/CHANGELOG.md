@@ -10,6 +10,7 @@ Built and tested with:
 #### Version 16.5.31.0
 - Verified compatibility with Mintegral SDK 16.5.31.
 - Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
+- Added waterfall support for app open ad format.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.3.0.
