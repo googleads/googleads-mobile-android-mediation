@@ -204,7 +204,7 @@ public class NendMediationAdapter extends Adapter
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = NendAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -225,7 +225,7 @@ public class NendMediationAdapter extends Adapter
   @Override
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String versionString = net.nend.android.BuildConfig.NEND_SDK_VERSION;
+    String versionString = NendSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {

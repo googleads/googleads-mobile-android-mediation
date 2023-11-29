@@ -24,6 +24,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
+import com.jirbo.adcolony.BuildConfig;
 import java.util.ArrayList;
 
 public class AdColonyAdapterUtils {
@@ -82,5 +83,9 @@ public class AdColonyAdapterUtils {
       default:
         break;
     }
+  }
+
+  static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
   }
 }

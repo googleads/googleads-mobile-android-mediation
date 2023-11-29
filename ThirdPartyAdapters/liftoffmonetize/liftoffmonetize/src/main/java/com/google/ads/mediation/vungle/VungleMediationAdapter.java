@@ -55,7 +55,6 @@ import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
-import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleError;
 import com.vungle.mediation.BuildConfig;
 import java.lang.annotation.Retention;
@@ -150,7 +149,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -170,7 +169,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = VungleAds.getSdkVersion();
+    String versionString = VungleSdkWrapper.delegate.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -189,7 +188,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
-    String token = VungleAds.getBiddingToken(rtbSignalData.getContext());
+    String token = VungleSdkWrapper.delegate.getBiddingToken(rtbSignalData.getContext());
     if (TextUtils.isEmpty(token)) {
       AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN,
           "Liftoff Monetize returned an empty bid token.", ERROR_DOMAIN);
@@ -206,7 +205,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (VungleAds.isInitialized()) {
+    if (VungleSdkWrapper.delegate.isInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
@@ -515,4 +514,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     rtbRewardedInterstitialAd.render();
   }
 
+  static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
 }

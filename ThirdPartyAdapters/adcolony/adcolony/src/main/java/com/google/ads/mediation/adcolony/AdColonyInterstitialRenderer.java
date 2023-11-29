@@ -41,12 +41,14 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
       adLoadCallback;
   private AdColonyInterstitial adColonyInterstitial;
   private final MediationInterstitialAdConfiguration adConfiguration;
+  private final AdColonyWrapper adColonyWrapper;
 
   AdColonyInterstitialRenderer(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
     this.adLoadCallback = callback;
     this.adConfiguration = adConfiguration;
+    adColonyWrapper = AdColonyWrapper.getInstance();
   }
 
   public void render() {
@@ -57,7 +59,7 @@ public class AdColonyInterstitialRenderer extends AdColonyInterstitialListener i
         .parseZoneList(adConfiguration.getServerParameters());
     String requestedZone = AdColonyManager.getInstance()
         .getZoneFromRequest(listFromServerParams, adConfiguration.getMediationExtras());
-    AdColony.requestInterstitial(requestedZone, this, adOptions);
+    adColonyWrapper.requestInterstitial(requestedZone, this, adOptions);
   }
 
   @Override

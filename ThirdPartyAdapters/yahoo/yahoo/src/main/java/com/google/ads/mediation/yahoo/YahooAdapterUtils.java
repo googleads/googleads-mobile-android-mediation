@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -31,12 +32,12 @@ import java.util.Set;
 
 class YahooAdapterUtils {
 
-  private static final String PLACEMENT_KEY = "placement_id";
-  private static final String ORANGE_PLACEMENT_KEY = "position";
-  private static final String DCN_KEY = "dcn";
   private static final String MEDIATOR_ID = "AdMobYAS-" + BuildConfig.VERSION_NAME;
 
-  static final String SITE_KEY = "site_id";
+  @VisibleForTesting static final String DCN_KEY = "dcn";
+  @VisibleForTesting static final String SITE_KEY = "site_id";
+  @VisibleForTesting static final String PLACEMENT_KEY = "placement_id";
+  @VisibleForTesting static final String ORANGE_PLACEMENT_KEY = "position";
 
   /**
    * Gets the ad request metadata.
@@ -123,31 +124,9 @@ class YahooAdapterUtils {
   @Nullable
   public static String getSiteId(@Nullable final Bundle serverParams,
       @Nullable final MediationAdConfiguration mediationAdConfiguration) {
-    String siteId = null;
-    if (mediationAdConfiguration != null &&
-        mediationAdConfiguration.getMediationExtras().containsKey(SITE_KEY)) {
-      siteId = mediationAdConfiguration.getMediationExtras().getString(SITE_KEY);
-    }
-
-    // If we get site ID from the serverParams (not yet implemented), overwrite
-    // everything!
-    if (serverParams != null && serverParams.containsKey(SITE_KEY)) {
-      siteId = serverParams.getString(SITE_KEY);
-    }
-
-    // Support for legacy Nexage and MM mediation
-    if (TextUtils.isEmpty(siteId)) {
-      if (mediationAdConfiguration != null &&
-          mediationAdConfiguration.getMediationExtras().containsKey(DCN_KEY)) {
-        siteId = mediationAdConfiguration.getMediationExtras().getString(DCN_KEY);
-      }
-      // If we get site ID from the serverParams (not yet implemented), overwrite
-      // everything!
-      if (serverParams != null && serverParams.containsKey(DCN_KEY)) {
-        siteId = serverParams.getString(DCN_KEY);
-      }
-    }
-    return siteId;
+    return getSiteId(
+        serverParams,
+        mediationAdConfiguration == null ? null : mediationAdConfiguration.getMediationExtras());
   }
 
   /**
@@ -178,4 +157,11 @@ class YahooAdapterUtils {
     return MediationUtils.findClosestSize(context, adSize, potentials);
   }
 
+  static String getAdapterVersion() {
+    return com.google.ads.mediation.yahoo.BuildConfig.ADAPTER_VERSION;
+  }
+
+  static String getSDKVersionInfo() {
+    return YASAds.getSDKInfo().version;
+  }
 }

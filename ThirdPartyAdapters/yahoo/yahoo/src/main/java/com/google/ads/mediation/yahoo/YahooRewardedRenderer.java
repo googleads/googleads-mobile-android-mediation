@@ -74,12 +74,18 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
    */
   private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
+  /** Yahoo Factory to create ad objects. */
+  private final YahooFactory yahooFactory;
+
   public YahooRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback,
+      @NonNull YahooFactory yahooFactory) {
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
+    this.yahooFactory = yahooFactory;
   }
 
   public void render() {
@@ -113,9 +119,10 @@ final class YahooRewardedRenderer implements InterstitialAdListener,
 
     YahooAdapterUtils.setCoppaValue(mediationRewardedAdConfiguration);
 
-    InterstitialPlacementConfig placementConfig = new InterstitialPlacementConfig(placementId,
-        YahooAdapterUtils.getRequestMetaData(mediationRewardedAdConfiguration));
-    rewardedAd = new InterstitialAd(context, placementId, YahooRewardedRenderer.this);
+    InterstitialPlacementConfig placementConfig =
+        yahooFactory.createRewardedPlacementConfig(placementId, mediationRewardedAdConfiguration);
+    rewardedAd =
+        yahooFactory.createInterstitialAd(context, placementId, YahooRewardedRenderer.this);
     rewardedAd.load(placementConfig);
   }
 

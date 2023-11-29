@@ -56,8 +56,13 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
    */
   private InterstitialAd interstitialAd;
 
-  public YahooInterstitialRenderer(final MediationInterstitialAdapter adapter) {
+  /** Yahoo Factory to create ad objects. */
+  private final YahooFactory yahooFactory;
+
+  public YahooInterstitialRenderer(
+      final MediationInterstitialAdapter adapter, final YahooFactory yahooFactory) {
     interstitialAdapterWeakRef = new WeakReference<>(adapter);
+    this.yahooFactory = yahooFactory;
   }
 
   public void render(@NonNull Context context, @NonNull MediationInterstitialListener listener,
@@ -98,10 +103,10 @@ final class YahooInterstitialRenderer implements InterstitialAdListener {
 
     YahooAdapterUtils.setCoppaValue(mediationAdRequest);
 
-    InterstitialPlacementConfig placementConfig = new InterstitialPlacementConfig(placementId,
-        YahooAdapterUtils.getRequestMetadata(mediationAdRequest));
-    interstitialAd = new InterstitialAd(context, placementId,
-        YahooInterstitialRenderer.this);
+    InterstitialPlacementConfig placementConfig =
+        yahooFactory.createInterstitialPlacementConfig(placementId, mediationAdRequest);
+    interstitialAd =
+        yahooFactory.createInterstitialAd(context, placementId, YahooInterstitialRenderer.this);
     interstitialAd.load(placementConfig);
   }
 

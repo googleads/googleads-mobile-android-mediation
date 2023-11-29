@@ -62,10 +62,13 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   private final AtomicBoolean didRewardedAdClose = new AtomicBoolean();
 
+  private final MetaFactory metaFactory;
+
   public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback, MetaFactory metaFactory) {
     this.adConfiguration = adConfiguration;
     this.mediationAdLoadCallback = callback;
+    this.metaFactory = metaFactory;
   }
 
   public void render() {
@@ -83,7 +86,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
     setMixedAudience(adConfiguration);
 
-    rewardedAd = new RewardedVideoAd(context, placementID);
+    rewardedAd = metaFactory.createRewardedAd(context, placementID);
     if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
       rewardedAd.setExtraHints(new ExtraHints.Builder()
               .mediationData(adConfiguration.getWatermark()).build());

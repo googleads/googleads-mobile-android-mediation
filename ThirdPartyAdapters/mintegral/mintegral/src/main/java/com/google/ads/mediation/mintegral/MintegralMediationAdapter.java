@@ -58,7 +58,6 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.foundation.same.net.Aa;
 import com.mbridge.msdk.mbbid.out.BidManager;
-import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
 import java.lang.reflect.Method;
@@ -92,7 +91,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public VersionInfo getSDKVersionInfo() {
     // Mintegral SDK returns the SDK version in "MAL_x.y.z" format.
-    String versionString = MBConfiguration.SDK_VERSION;
+    String versionString = MintegralUtils.getSdkVersion();
     String[] versionSplits = versionString.split("_");
     if (versionSplits.length > 1) {
       String[] splits = versionSplits[1].split("\\.");
@@ -114,7 +113,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = MintegralUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

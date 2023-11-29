@@ -34,6 +34,7 @@ import com.facebook.ads.AdListener;
 import com.facebook.ads.AdView;
 import com.facebook.ads.ExtraHints;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.ads.mediation.facebook.MetaFactory;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -48,10 +49,13 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
   private FrameLayout wrappedAdView;
   private MediationBannerAdCallback bannerAdCallback;
 
+  private final MetaFactory metaFactory;
+
   public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback, MetaFactory metaFactory) {
     this.adConfiguration = adConfiguration;
     this.callback = callback;
+    this.metaFactory = metaFactory;
   }
 
   public void render() {
@@ -67,7 +71,7 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
     setMixedAudience(adConfiguration);
     try {
-      adView = new AdView(adConfiguration.getContext(), placementID,
+      adView = metaFactory.createMetaAdView(adConfiguration.getContext(), placementID,
           adConfiguration.getBidResponse());
     } catch (Exception exception) {
       AdError error = new AdError(ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,

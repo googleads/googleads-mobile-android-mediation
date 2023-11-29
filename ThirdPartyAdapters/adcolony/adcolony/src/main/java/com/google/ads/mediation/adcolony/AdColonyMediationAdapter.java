@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonySignalsListener;
@@ -55,7 +56,9 @@ import java.util.List;
 public class AdColonyMediationAdapter extends RtbAdapter {
 
   public static final String TAG = AdColonyMediationAdapter.class.getSimpleName();
-  private static final AdColonyAppOptions appOptions = new AdColonyAppOptions();
+
+  @VisibleForTesting
+  static final AdColonyAppOptions appOptions = new AdColonyAppOptions();
 
   // Keeps a strong reference to the banner ad renderer, which loads ads asynchronously.
   private AdColonyBannerRenderer adColonyBannerRenderer;
@@ -144,7 +147,7 @@ public class AdColonyMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = AdColonyAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

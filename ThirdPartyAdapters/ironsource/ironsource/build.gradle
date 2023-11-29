@@ -1,5 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+apply plugin: 'jacoco'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 /**
  * Extra properties used by the project.
@@ -11,29 +13,121 @@ ext {
     stringVersion = "7.5.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
+    // Jacoco version to generate code coverage data
+    jacocoVersion = '0.8.8'
 }
 
 android {
-    compileSdkVersion 31
     defaultConfig {
+        compileSdk 33
         minSdkVersion 19
         targetSdkVersion 31
         versionCode 705020000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+    sourceSets {
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
+        }
+        unitTests {
+            includeAndroidResources = true
+            unitTests.returnDefaultValues = true
+        }
+    }
+}
+
+tasks.withType(Test) {
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED"
+        exceptionFormat = 'full'
+    }
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion= "$jacocoVersion"
+}
+
+task jacocoTestReport(type: JacocoReport,
+        dependsOn: ['testDebugUnitTest',
+                    'createDebugCoverageReport']) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    def fileFilter = ['androidx/**/*.*',
+                      '**/view/*.*',
+                      '**/data/*.*',
+                      '**/data/model/*.*',
+                      '**/generated/callback/*.*',
+                      '**/lambda$*.class',
+                      '**/lambda.class',
+                      '**/*lambda.class',
+                      '**/*lambda*.class']
+
+    def debugTree = fileTree(dir:
+            "${buildDir}/intermediates/javac/debug/classes",
+            excludes: fileFilter
+    )
+    def debugKotlinTree = fileTree(dir:
+            "${buildDir}/tmp/kotlin-classes/debug",
+            excludes: fileFilter
+    )
+
+    def mainSrc = "$project.projectDir/src/main/java"
+
+    getSourceDirectories().setFrom(files([mainSrc]))
+    getClassDirectories().setFrom(files([debugTree, debugKotlinTree]))
+    getExecutionData().setFrom(fileTree(dir: "${buildDir}", includes:[
+            "/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"]))
 }
 
 dependencies {
     implementation 'com.ironsource.sdk:mediationsdk:7.5.2'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.google.android.gms:play-services-ads:22.3.0'
+
+    testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
+    testImplementation 'com.google.truth:truth:1.1.5'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.robolectric:robolectric:4.9'
+    testImplementation 'androidx.core:core-ktx:1.10.0'
+    testImplementation 'androidx.test.ext:junit:1.1.5'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
+    testImplementation project(':adaptertestkit')
 }
 
 /**

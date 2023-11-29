@@ -20,7 +20,7 @@ ext {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
@@ -83,8 +83,8 @@ task jacocoTestReport(type: JacocoReport,
     description = "Generate Jacoco coverage reports after running tests."
 
     reports {
-        xml.enabled = true
-        html.enabled = true
+        xml.required = true
+        html.required = true
     }
 
     def fileFilter = ['androidx/**/*.*',

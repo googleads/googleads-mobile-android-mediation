@@ -50,7 +50,7 @@ public class VungleInitializer implements InitializationListener {
       final @NonNull Context context,
       @NonNull VungleInitializationListener listener) {
 
-    if (VungleAds.isInitialized()) {
+    if (VungleSdkWrapper.delegate.isInitialized()) {
       listener.onInitializeSuccess();
       return;
     }
@@ -62,7 +62,7 @@ public class VungleInitializer implements InitializationListener {
 
     updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
 
-    VungleAds.init(context, appId, VungleInitializer.this);
+    VungleSdkWrapper.delegate.init(context, appId, VungleInitializer.this);
     initListeners.add(listener);
   }
 

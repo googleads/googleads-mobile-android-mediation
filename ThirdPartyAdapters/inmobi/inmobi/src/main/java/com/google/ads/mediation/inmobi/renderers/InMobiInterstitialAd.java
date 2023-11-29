@@ -113,6 +113,9 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
       AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
           "InMobi interstitial ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.onAdFailedToShow(error);
+      }
       return;
     }
 
@@ -138,6 +141,9 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
     AdError error = InMobiConstants.createAdapterError(ERROR_AD_DISPLAY_FAILED,
         "InMobi SDK failed to display an interstitial ad.");
     Log.e(TAG, error.toString());
+    if (interstitialAdCallback != null) {
+      interstitialAdCallback.onAdFailedToShow(error);
+    }
   }
 
   @Override

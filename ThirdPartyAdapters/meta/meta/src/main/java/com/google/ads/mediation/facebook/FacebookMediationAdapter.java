@@ -158,6 +158,10 @@ public class FacebookMediationAdapter extends RtbAdapter {
     metaFactory = new MetaFactory();
   }
 
+  FacebookMediationAdapter(MetaFactory metaFactory) {
+    this.metaFactory = metaFactory;
+  }
+
   /** Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}. */
   @NonNull
   public static AdError getAdError(com.facebook.ads.AdError error) {
@@ -247,7 +251,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
+    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback, metaFactory);
     banner.render();
   }
 
@@ -265,7 +269,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback, metaFactory);
     rewardedAd.render();
   }
 
@@ -283,7 +287,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
+        mediationAdLoadCallback, metaFactory);
     rewardedInterstitialAd.render();
   }
 

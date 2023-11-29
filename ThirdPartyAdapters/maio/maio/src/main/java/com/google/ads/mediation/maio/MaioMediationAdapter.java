@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import jp.maio.sdk.android.FailNotificationReason;
 import jp.maio.sdk.android.MaioAds;
-import jp.maio.sdk.android.mediation.admob.adapter.BuildConfig;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 
 public class MaioMediationAdapter extends Adapter
@@ -120,7 +119,7 @@ public class MaioMediationAdapter extends Adapter
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = MaioUtils.getVersionInfo();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {

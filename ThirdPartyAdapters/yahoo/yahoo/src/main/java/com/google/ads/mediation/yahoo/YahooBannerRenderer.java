@@ -41,7 +41,6 @@ import com.yahoo.ads.inlineplacement.InlineAdView.InlineAdListener;
 import com.yahoo.ads.inlineplacement.InlinePlacementConfig;
 import com.yahoo.ads.utils.ThreadUtils;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
 import java.util.Map;
 
 final class YahooBannerRenderer implements InlineAdListener {
@@ -66,8 +65,12 @@ final class YahooBannerRenderer implements InlineAdListener {
    */
   private InlineAdView inlineAdView;
 
-  public YahooBannerRenderer(MediationBannerAdapter adapter) {
+  /** Yahoo Factory to create ad objects. */
+  private final YahooFactory yahooFactory;
+
+  public YahooBannerRenderer(MediationBannerAdapter adapter, YahooFactory yahooFactory) {
     bannerAdapterWeakRef = new WeakReference<>(adapter);
+    this.yahooFactory = yahooFactory;
   }
 
   public void render(@NonNull Context context, @NonNull MediationBannerListener listener,
@@ -127,12 +130,11 @@ final class YahooBannerRenderer implements InlineAdListener {
 
     YahooAdapterUtils.setCoppaValue(mediationAdRequest);
 
-    com.yahoo.ads.inlineplacement.AdSize yahooAdSize = new com.yahoo.ads.inlineplacement.AdSize(
-        normalizedSize.getWidth(), normalizedSize.getHeight());
-    InlinePlacementConfig placementConfig = new InlinePlacementConfig(placementId,
-        YahooAdapterUtils.getRequestMetadata(mediationAdRequest),
-        Collections.singletonList(yahooAdSize));
-    inlineAdView = new InlineAdView(context, placementId, YahooBannerRenderer.this);
+    com.yahoo.ads.inlineplacement.AdSize yahooAdSize =
+        yahooFactory.createYahooAdSize(normalizedSize);
+    InlinePlacementConfig placementConfig =
+        yahooFactory.createInlinePlacementConfig(placementId, mediationAdRequest, yahooAdSize);
+    inlineAdView = yahooFactory.createInlineAd(context, placementId, YahooBannerRenderer.this);
     inlineAdView.load(placementConfig);
   }
 

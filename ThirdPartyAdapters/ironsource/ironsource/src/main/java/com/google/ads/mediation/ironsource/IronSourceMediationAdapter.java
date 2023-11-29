@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -131,7 +132,7 @@ public class IronSourceMediationAdapter extends Adapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = IronSourceAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -233,7 +234,7 @@ public class IronSourceMediationAdapter extends Adapter {
                   + "initialized.",
               ERROR_DOMAIN);
 
-      Log.w(TAG,adError.getMessage());
+      Log.w(TAG, adError.getMessage());
       mediationAdLoadCallback.onFailure(adError);
       return;
     }
@@ -271,7 +272,7 @@ public class IronSourceMediationAdapter extends Adapter {
               "Failed to load IronSource interstitial ad since IronSource SDK is not "
                   + "initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
-      Log.w(TAG,loadError.getMessage());
+      Log.w(TAG, loadError.getMessage());
       mediationAdLoadCallback.onFailure(loadError);
       return;
     }
@@ -294,7 +295,7 @@ public class IronSourceMediationAdapter extends Adapter {
               "Failed to load IronSource banner ad since IronSource SDK is not "
                   + "initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
-      Log.w(TAG,loadError.getMessage());
+      Log.w(TAG, loadError.getMessage());
       mediationAdLoadCallback.onFailure(loadError);
       return;
     }
@@ -302,5 +303,10 @@ public class IronSourceMediationAdapter extends Adapter {
     IronSourceBannerAd ironSourceBannerAd =
         new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
     ironSourceBannerAd.loadAd();
+  }
+
+  @VisibleForTesting
+  public void setIsInitialized(boolean isInitializedValue) {
+    isInitialized.set(isInitializedValue);
   }
 }

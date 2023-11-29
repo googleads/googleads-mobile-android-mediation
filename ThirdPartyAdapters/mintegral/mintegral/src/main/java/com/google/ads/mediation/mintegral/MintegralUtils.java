@@ -26,10 +26,19 @@ import android.util.TypedValue;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
+import com.mbridge.msdk.out.MBConfiguration;
 
 public class MintegralUtils {
 
   public static final String TAG = MintegralUtils.class.getSimpleName();
+
+  public static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
+
+  public static String getSdkVersion() {
+    return MBConfiguration.SDK_VERSION;
+  }
 
   /**
    * Determines whether the ad should be muted based on the provided network extras.

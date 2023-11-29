@@ -1,5 +1,9 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next release
+- Added calls to Google Mobile Ads SDK's mediation callback onAdFailedToShow
+when InMobi interstitial ads fail to display.
+
 #### Version 10.6.0.0
 - Verified compatibility with InMobi Kotlin SDK version 10.6.0.
 

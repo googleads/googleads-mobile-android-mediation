@@ -44,6 +44,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
       adLoadCallback;
   private AdColonyAdView adColonyAdView;
   private final MediationBannerAdConfiguration adConfiguration;
+  private final AdColonyWrapper adColonyWrapper;
 
   public AdColonyBannerRenderer(
       @NonNull MediationBannerAdConfiguration adConfiguration,
@@ -51,6 +52,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
   ) {
     this.adLoadCallback = callback;
     this.adConfiguration = adConfiguration;
+    adColonyWrapper = AdColonyWrapper.getInstance();
   }
 
   public void render() {
@@ -74,7 +76,7 @@ public class AdColonyBannerRenderer extends AdColonyAdViewListener implements Me
         adConfiguration.getAdSize().getWidthInPixels(adConfiguration.getContext())),
         convertPixelsToDp(
             adConfiguration.getAdSize().getHeightInPixels(adConfiguration.getContext())));
-    AdColony.requestAdView(requestedZone, this, adSize, adOptions);
+    adColonyWrapper.requestAdView(requestedZone, this, adSize, adOptions);
   }
 
   @Override

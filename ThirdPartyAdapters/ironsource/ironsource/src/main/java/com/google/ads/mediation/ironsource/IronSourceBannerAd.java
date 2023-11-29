@@ -167,7 +167,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
       AdError sizeError =
           new AdError(
               ERROR_BANNER_SIZE_MISMATCH,
-              "There is no matching IronSource banner ad size for Google ad size: %s" +
+              "There is no matching IronSource banner ad size for Google ad size: " +
                   adSize, ERROR_DOMAIN);
       onAdFailedToLoad(sizeError);
       return false;

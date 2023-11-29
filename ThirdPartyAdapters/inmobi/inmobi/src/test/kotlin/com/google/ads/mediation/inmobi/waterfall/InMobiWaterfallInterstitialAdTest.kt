@@ -72,15 +72,24 @@ class InMobiWaterfallInterstitialAdTest {
   }
 
   @Test
-  fun onShowAd_ifInterstitialAdNotReady_DoNothing() {
+  fun onShowAd_ifInterstitialAdNotReady_invokesOnAdFailedToShowCallback() {
     whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
       .thenReturn(inMobiInterstitialWrapper)
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(false)
-
     val placementId = 67890L
     waterfallInterstitialAd.createAndLoadInterstitialAd(context, placementId)
+    // mimic an ad load.
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
+
     waterfallInterstitialAd.showAd(context)
 
+    val captor = argumentCaptor<AdError>()
+    verify(mediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
+    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_AD_NOT_READY)
+    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
     verify(inMobiInterstitialWrapper, never()).show()
   }
 
@@ -134,6 +143,22 @@ class InMobiWaterfallInterstitialAdTest {
     waterfallInterstitialAd.onAdDisplayed(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
 
     verify(mediationInterstitialAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun onAdDisplayFailed_invokesOnAdFailedToShowCallback() {
+    // mimic an ad load
+    waterfallInterstitialAd.onAdLoadSucceeded(
+      inMobiInterstitialWrapper.inMobiInterstitial,
+      adMetaInfo
+    )
+
+    waterfallInterstitialAd.onAdDisplayFailed(inMobiInterstitialWrapper.inMobiInterstitial)
+
+    val captor = argumentCaptor<AdError>()
+    verify(mediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
+    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_AD_DISPLAY_FAILED)
+    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
   }
 
   @Test
