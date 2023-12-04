@@ -128,7 +128,7 @@ public class VungleInterstitialAdapter
   @Override
   public void showInterstitial() {
     if (interstitialAd != null) {
-      interstitialAd.play();
+      interstitialAd.play(null);
     }
   }
 
