@@ -78,17 +78,13 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
   private BannerView.IListener unityBannerListener = new BannerView.Listener() {
     @Override
     public void onBannerLoaded(BannerView bannerView) {
-      String logMessage = String.format("Unity Ads finished loading banner ad for placement ID: %s",
-          UnityBannerAd.this.bannerView.getPlacementId());
-      Log.d(TAG, logMessage);
+      logBannerMessage("Unity Ads finished loading banner ad for placement ID: %s", bannerView);
       eventAdapter.sendAdEvent(AdEvent.LOADED);
     }
 
     @Override
     public void onBannerClick(BannerView bannerView) {
-      String logMessage = String.format("Unity Ads banner ad was clicked for placement ID: %s",
-          UnityBannerAd.this.bannerView.getPlacementId());
-      Log.d(TAG, logMessage);
+      logBannerMessage("Unity Ads banner ad was clicked for placement ID: %s", bannerView);
       eventAdapter.sendAdEvent(AdEvent.CLICKED);
       eventAdapter.sendAdEvent(AdEvent.OPENED);
     }
@@ -100,18 +96,21 @@ public class UnityBannerAd extends UnityMediationAdapter implements MediationBan
 
     @Override
     public void onBannerLeftApplication(BannerView bannerView) {
-      String logMessage = String.format("Unity Ads banner ad left application for placement ID: %s",
-          UnityBannerAd.this.bannerView.getPlacementId());
-      Log.d(TAG, logMessage);
+      logBannerMessage("Unity Ads banner ad left application for placement ID: %s", bannerView);
       eventAdapter.sendAdEvent(AdEvent.LEFT_APPLICATION);
     }
 
     @Override
     public void onBannerShown(BannerView bannerView) {
-      String logMessage = String.format("Unity Ads banner ad was shown for placement ID: %s",
-          UnityBannerAd.this.bannerView.getPlacementId());
-      Log.d(TAG, logMessage);
+      logBannerMessage("Unity Ads banner ad was shown for placement ID: %s", bannerView);
       eventAdapter.sendAdEvent(AdEvent.IMPRESSION);
+    }
+
+    private void logBannerMessage(String message, BannerView bannerView) {
+      if (bannerView != null) {
+        String logMessage = String.format(message, bannerView.getPlacementId());
+        Log.d(TAG, logMessage);
+      }
     }
   };
 
