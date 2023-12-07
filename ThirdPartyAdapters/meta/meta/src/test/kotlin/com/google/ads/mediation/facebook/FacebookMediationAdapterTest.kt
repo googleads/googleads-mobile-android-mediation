@@ -516,6 +516,10 @@ class FacebookMediationAdapterTest {
     verify(metaRewardedAd).loadAd(metaRewardedAdLoadConfig)
   }
 
+  // endregion
+
+  // region Native Ad Tests
+
   @Test
   fun loadRtbNativeAd_withoutPlacementId_invokesOnFailureCallback() {
     val mediationNativeAdConfiguration = createMediationNativeAdConfiguration(context = context)
@@ -613,6 +617,8 @@ class FacebookMediationAdapterTest {
       verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
     }
   }
+
+  // endregion
 
   companion object {
     private const val WATERMARK = "meta"
