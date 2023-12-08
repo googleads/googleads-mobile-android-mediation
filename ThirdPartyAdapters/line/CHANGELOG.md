@@ -1,8 +1,13 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Next Version
-- Added LineExtras to enable sound per ad request.
+#### Version 2.6.20230607.1
+- Added `LineExtras` class for publishers to define default sound settings for
+banner, interstitial and rewarded ad formats.
 - Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.4.0.
+- FiveAd SDK version 2.6.20230607.
 
 #### Version 2.6.20230607.0
 - Initial release.
