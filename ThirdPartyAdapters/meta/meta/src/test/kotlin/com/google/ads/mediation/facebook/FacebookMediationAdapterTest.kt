@@ -29,6 +29,7 @@ import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbNativeAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbRewardedAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbRewardedInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyNoFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
@@ -278,7 +279,7 @@ class FacebookMediationAdapterTest {
 
   // endregion
 
-  // region banner Ad Tests
+  // region Banner Ad load tests
   @Test
   fun loadRtbBannerAd_withoutPlacementId_invokesOnFailureCallback() {
     val mediationBannerAdConfiguration = createMediationBannerAdConfiguration(context = context)
@@ -297,7 +298,7 @@ class FacebookMediationAdapterTest {
   }
 
   @Test
-  fun loadBannerAd_withEmptyPlacementId_invokesOnFailureCallback() {
+  fun loadRtbBannerAd_withEmptyPlacementId_invokesOnFailureCallback() {
     val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
     val mediationBannerAdConfiguration =
       createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
@@ -380,7 +381,7 @@ class FacebookMediationAdapterTest {
 
   // endregion
 
-  // region Interstitial Ad Tests
+  // region Interstitial Ad load tests
   @Test
   fun loadRtbInterstitialAd_withoutPlacementId_invokesOnFailure() {
     val mediationInterstitialAdConfiguration =
@@ -444,7 +445,7 @@ class FacebookMediationAdapterTest {
 
   // endregion
 
-  // region Rewarded Ad Tests
+  // region Rewarded Ad load tests
 
   @Test
   fun loadRtbRewardedAd_withoutPlacementId_invokesOnFailureCallback() {
@@ -518,7 +519,7 @@ class FacebookMediationAdapterTest {
 
   // endregion
 
-  // region Native Ad Tests
+  // region Native Ad load tests
 
   @Test
   fun loadRtbNativeAd_withoutPlacementId_invokesOnFailureCallback() {
@@ -616,6 +617,81 @@ class FacebookMediationAdapterTest {
       }
       verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
     }
+  }
+
+  // endregion
+
+  // region Rewarded Interstitial Ad load tests
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_withoutPlacementId_invokesOnFailureCallback() {
+    val rewardedInterstitialAdConfiguration =
+      createMediationRewardedAdConfiguration(context = context)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbRewardedInterstitialAdWithFailure(
+      rewardedInterstitialAdConfiguration,
+      mockRewardedAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_emptyPlacementId_invokesOnFailureCallback() {
+    val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
+    val rewardedInterstitialAdConfiguration =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedError =
+      AdError(
+        FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to request ad. PlacementID is null or empty.",
+        FacebookMediationAdapter.ERROR_DOMAIN
+      )
+
+    facebookMediationAdapter.loadRtbRewardedInterstitialAdWithFailure(
+      rewardedInterstitialAdConfiguration,
+      mockRewardedAdLoadCallback,
+      expectedError
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_loadsAd() {
+    AdSettings.setMixedAudience(false)
+    val serverParameters =
+      bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    val rewardedInterstitialAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = 1,
+        watermark = WATERMARK,
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+      )
+    whenever(
+      metaFactory.createRewardedAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
+    ) doReturn metaRewardedAd
+
+    facebookMediationAdapter.loadRtbRewardedInterstitialAd(
+      rewardedInterstitialAdConfiguration,
+      mockRewardedAdLoadCallback
+    )
+
+    val extraHintsCaptor = argumentCaptor<ExtraHints>()
+    verify(metaRewardedAd).setExtraHints(extraHintsCaptor.capture())
+    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+    verify(metaRewardedAdLoadConfigBuilder)
+      .withAdListener(any(FacebookRewardedInterstitialAd::class.java))
+    verify(metaRewardedAdLoadConfigBuilder).withBid(AdapterTestKitConstants.TEST_BID_RESPONSE)
+    verify(metaRewardedAdLoadConfigBuilder)
+      .withAdExperience(AdExperienceType.AD_EXPERIENCE_TYPE_REWARDED_INTERSTITIAL)
+    verify(metaRewardedAd).loadAd(metaRewardedAdLoadConfig)
   }
 
   // endregion

@@ -75,6 +75,22 @@ fun RtbAdapter.loadRtbRewardedAdWithFailure(
   verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 }
 
+/**
+ * Calls [RtbAdapter.loadRtbRewardedInterstitialAd] with the given
+ * [MediationRewardedAdConfiguration] and verifies [MediationAdLoadCallback.onFailure] with the
+ * expected [AdError].
+ */
+fun RtbAdapter.loadRtbRewardedInterstitialAdWithFailure(
+  configuration: MediationRewardedAdConfiguration,
+  callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  expectedAdError: AdError,
+) {
+
+  this.loadRtbRewardedInterstitialAd(configuration, callback)
+
+  verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+}
+
 /** Returns a [MediationRewardedAdConfiguration] used to initialize [MediationRewardedAd]. */
 fun createMediationRewardedAdConfiguration(
   context: Context,
