@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError.AD_PRESENTATION_ERROR
+import com.facebook.ads.AdError.NO_FILL
 import com.facebook.ads.InterstitialAd
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
@@ -70,7 +71,7 @@ class FacebookRtbInterstitialAdTest {
   }
 
   @Test
-  fun onError_ifMetaReportsShowError_callsOnAdFailedToShow() {
+  fun onError_onShowAdAlreadyCalled_invokesOnAdFailedToShowCallback() {
     renderAndLoadSuccessfully()
     // Stub metaInterstitialAd.show() to return true (i.e. we are able to successfully ask Meta's
     // interstitial ad to be shown).
@@ -89,6 +90,18 @@ class FacebookRtbInterstitialAdTest {
       )
     verify(mediationInterstitialAdCallback)
       .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onError_onShowAdNotYetCalled_invokesAdLoadCallbackWithFailure() {
+    renderAndLoadSuccessfully()
+
+    // Simulate a no-fill error.
+    adapterInterstitialAd.onError(metaAd, NO_FILL)
+
+    val expectedAdError =
+      AdError(NO_FILL.errorCode, NO_FILL.errorMessage, FACEBOOK_SDK_ERROR_DOMAIN)
+    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
@@ -175,6 +188,17 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialActivityDestroyed()
 
     verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+  }
+
+  /**
+   * Verify there are no exceptions when onRewardedAd callbacks are invoked. Note: All onRewardedAd
+   * callbacks are no-ops since this is interstitial ad.
+   */
+  @Test
+  fun onRewardedAdCallbacks_noException() {
+    adapterInterstitialAd.onRewardedAdCompleted()
+    adapterInterstitialAd.onRewardedAdServerSucceeded()
+    adapterInterstitialAd.onRewardedAdServerFailed()
   }
 
   private fun renderAndLoadSuccessfully() {

@@ -429,7 +429,8 @@ class FacebookMediationAdapterTest {
     val mediationInterstitialAdConfiguration =
       createMediationInterstitialAdConfiguration(
         context = context,
-        serverParameters = serverParameters
+        serverParameters = serverParameters,
+        watermark = WATERMARK,
       )
     whenever(
       metaFactory.createInterstitialAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
@@ -440,6 +441,9 @@ class FacebookMediationAdapterTest {
       mockInterstitialAdLoadCallback
     )
 
+    val extraHintsCaptor = argumentCaptor<ExtraHints>()
+    verify(metaInterstitialAd).setExtraHints(extraHintsCaptor.capture())
+    assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
     verify(metaInterstitialAd).loadAd(metaInterstitialAdLoadConfig)
   }
 
