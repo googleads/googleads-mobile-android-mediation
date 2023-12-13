@@ -1,11 +1,13 @@
 package com.google.ads.mediation.facebook.rtb
 
 import android.content.Context
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError
+import com.facebook.ads.AdView
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -14,14 +16,18 @@ import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /** Unit tests for [FacebookRtbBannerAd]. */
 @RunWith(AndroidJUnit4::class)
@@ -36,9 +42,19 @@ class FacebookRtbBannerAdTest {
     }
   private val metaFactory: MetaFactory = mock()
   private val metaAd: Ad = mock()
+  private val metaBannerAdLoadConfig: AdView.AdViewLoadConfig = mock()
+  private val metaBannerAdLoadConfigBuilder: AdView.AdViewLoadConfigBuilder = mock {
+    on { withBid(ArgumentMatchers.any()) } doReturn this.mock
+    on { withAdListener(ArgumentMatchers.any()) } doReturn this.mock
+    on { build() } doReturn metaBannerAdLoadConfig
+  }
+  private val metaBannerAdView: AdView = mock {
+    on { buildLoadAdConfig() } doReturn metaBannerAdLoadConfigBuilder
+  }
 
   /** The unit under test. */
   private lateinit var adapterBannerAd: FacebookRtbBannerAd
+  private lateinit var mediationBannerAdConfiguration: MediationBannerAdConfiguration
 
   @Before
   fun setup() {
@@ -47,7 +63,7 @@ class FacebookRtbBannerAdTest {
         FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to
           AdapterTestKitConstants.TEST_PLACEMENT_ID
       )
-    val mediationBannerAdConfiguration =
+    mediationBannerAdConfiguration =
       createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
 
     adapterBannerAd =
@@ -100,5 +116,22 @@ class FacebookRtbBannerAdTest {
     adapterBannerAd.onLoggingImpression(metaAd)
 
     verify(mediationBannerAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun getView_returnsViewThatWrapsMetaAdView() {
+    whenever(
+      metaFactory.createMetaAdView(
+        context,
+        AdapterTestKitConstants.TEST_PLACEMENT_ID,
+        mediationBannerAdConfiguration.bidResponse
+      )
+    ) doReturn metaBannerAdView
+    adapterBannerAd.render()
+
+    val wrappedAdView = adapterBannerAd.view as ViewGroup
+
+    assertThat(wrappedAdView.childCount).isEqualTo(1)
+    assertThat(wrappedAdView.getChildAt(0)).isEqualTo(metaBannerAdView)
   }
 }
