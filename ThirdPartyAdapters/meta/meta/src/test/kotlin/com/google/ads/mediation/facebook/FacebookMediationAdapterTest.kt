@@ -19,6 +19,7 @@ import com.facebook.ads.NativeAdListener
 import com.facebook.ads.RewardedVideoAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -35,6 +36,7 @@ import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyN
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.facebook.FacebookAdapterUtils.adapterVersion
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience
 import com.google.ads.mediation.facebook.FacebookSdkWrapper.sdkVersion
@@ -239,7 +241,7 @@ class FacebookMediationAdapterTest {
   }
 
   @Test
-  fun initialize_whenInitializerListenerSucceeds_invokesOnInitializationSucceeded() {
+  fun initialize_whenInitializerSucceeds_invokesOnInitializationSucceeded() {
     mockStatic(FacebookInitializer::class.java).use {
       val mockInitializer: FacebookInitializer = mock()
       whenever(FacebookInitializer.getInstance()) doReturn mockInitializer
@@ -252,7 +254,29 @@ class FacebookMediationAdapterTest {
       facebookMediationAdapter.mediationAdapterInitializeVerifySuccess(
         context,
         mockInitializationCompleteCallback,
-        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_APP_ID)
+        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_PLACEMENT_ID)
+      )
+    }
+  }
+
+  @Test
+  fun initialize_whenInitializerFails_invokesOnInitializationFailed() {
+    val facebookInitializer: FacebookInitializer = mock()
+    val initializerError =
+      AdError(ERROR_FACEBOOK_INITIALIZATION, "Meta SDK initialization failed.", ERROR_DOMAIN)
+    whenever(facebookInitializer.initialize(any(), any<ArrayList<String>>(), any())) doAnswer
+      { invocation ->
+        val arguments = invocation.arguments
+        (arguments[2] as FacebookInitializer.Listener).onInitializeError(initializerError)
+      }
+    mockStatic(FacebookInitializer::class.java).use {
+      whenever(FacebookInitializer.getInstance()) doReturn facebookInitializer
+
+      facebookMediationAdapter.mediationAdapterInitializeVerifyFailure(
+        context,
+        mockInitializationCompleteCallback,
+        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_PLACEMENT_ID),
+        expectedError = initializerError.message
       )
     }
   }
