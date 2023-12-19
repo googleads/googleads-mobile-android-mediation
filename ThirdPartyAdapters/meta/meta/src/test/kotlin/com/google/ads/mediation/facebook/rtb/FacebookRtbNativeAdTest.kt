@@ -2,6 +2,8 @@ package com.google.ads.mediation.facebook.rtb
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.view.View
+import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -21,6 +23,7 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
@@ -36,7 +39,9 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /** Unit tests for public API calls implemented by [FacebookRtbNativeAd]. */
@@ -46,6 +51,7 @@ class FacebookRtbNativeAdTest {
   private lateinit var facebookRtbNativeAd: FacebookRtbNativeAd
   private lateinit var mediationNativeAdConfiguration: MediationNativeAdConfiguration
   private lateinit var metaNativeAd: NativeAd
+  private lateinit var metaNativeBannerAd: NativeBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val nativeAdCallback = mock<MediationNativeAdCallback>()
@@ -78,6 +84,7 @@ class FacebookRtbNativeAdTest {
   private val metaFactory =
     mock<MetaFactory> { on { createMediaView(any()) } doReturn metaMediaView }
   private val iconViewDrawable = mock<Drawable>()
+  private val gmaContainerView = mock<View>()
 
   @Before
   fun setUp() {
@@ -98,6 +105,16 @@ class FacebookRtbNativeAdTest {
       on { adCallToAction } doReturn META_AD_CALL_TO_ACTION
       on { adIcon } doReturn metaAdIcon
       on { adCoverImage } doReturn metaAdCoverImage
+      on { advertiserName } doReturn META_ADVERTISER_NAME
+      on { id } doReturn META_AD_ID
+      on { adSocialContext } doReturn META_AD_SOCIAL_CONTEXT
+    }
+    metaNativeBannerAd = mock {
+      on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder
+      on { adHeadline } doReturn META_AD_HEADLINE
+      on { adBodyText } doReturn META_AD_BODY_TEXT
+      on { adCallToAction } doReturn META_AD_CALL_TO_ACTION
+      on { adIcon } doReturn metaAdIcon
       on { advertiserName } doReturn META_ADVERTISER_NAME
       on { id } doReturn META_AD_ID
       on { adSocialContext } doReturn META_AD_SOCIAL_CONTEXT
@@ -316,17 +333,7 @@ class FacebookRtbNativeAdTest {
 
   @Test
   fun nativeAdListenerOnAdLoaded_forNativeBannerAdWithNoCoverImage_setsAllOtherAssetsAndInvokesLoadSuccess() {
-    val metaNativeBannerAd =
-      mock<NativeBannerAd> {
-        on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder
-        on { adHeadline } doReturn META_AD_HEADLINE
-        on { adBodyText } doReturn META_AD_BODY_TEXT
-        on { adCallToAction } doReturn META_AD_CALL_TO_ACTION
-        on { adIcon } doReturn metaAdIcon
-        on { advertiserName } doReturn META_ADVERTISER_NAME
-        on { id } doReturn META_AD_ID
-        on { adSocialContext } doReturn META_AD_SOCIAL_CONTEXT
-      }
+    whenever(metaNativeBannerAd.adCoverImage) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
       facebookRtbNativeAd.render()
@@ -448,6 +455,111 @@ class FacebookRtbNativeAdTest {
 
     // All the above calls are no-ops. So, this test is just a sanity-check that there is no crash
     // when any of them is called.
+  }
+
+  @Test
+  fun trackViews_ifIconIsImageView_registersViewWithIcon() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    val iconView = mock<ImageView>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    verify(metaNativeAd)
+      .registerViewForInteraction(gmaContainerView, metaMediaView, iconView, listOf(iconView))
+  }
+
+  @Test
+  fun trackViews_ifIconIsNotImageView_registersViewWithoutIcon() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    val iconView = mock<View>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    verify(metaNativeAd)
+      .registerViewForInteraction(gmaContainerView, metaMediaView, listOf(iconView))
+  }
+
+  @Test
+  fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsImageView_registersView() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
+      facebookRtbNativeAd.render()
+    }
+    val iconView = mock<ImageView>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    verify(metaNativeBannerAd)
+      .registerViewForInteraction(gmaContainerView, iconView, listOf(iconView))
+  }
+
+  @Test
+  fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsNotImageView_doesNotRegisterView() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
+      facebookRtbNativeAd.render()
+    }
+    val iconView = mock<View>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    verify(metaNativeBannerAd, times(0)).registerViewForInteraction(any(), any<ImageView>(), any())
+    verify(metaNativeBannerAd, times(0)).registerViewForInteraction(any(), any<MediaView>(), any())
+  }
+
+  @Test
+  fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsNull_doesNotRegisterView() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
+      facebookRtbNativeAd.render()
+    }
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, emptyMap(), emptyMap())
+
+    verify(metaNativeBannerAd, times(0)).registerViewForInteraction(any(), any<ImageView>(), any())
+    verify(metaNativeBannerAd, times(0)).registerViewForInteraction(any(), any<MediaView>(), any())
+  }
+
+  @Test
+  fun trackViews_ifNativeAdTypeIsNotNativeAdNorNativeBannerAd_doesNotRegisterView() {
+    val nativeAdBase =
+      mock<NativeAdBase> { on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder }
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn nativeAdBase
+      facebookRtbNativeAd.render()
+    }
+    val iconView = mock<View>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    verify(nativeAdBase).setExtraHints(any())
+    verify(nativeAdBase).buildLoadAdConfig()
+    verify(nativeAdBase).loadAd(any())
+    // Verify no interactions other than the above interactions.
+    verifyNoMoreInteractions(nativeAdBase)
+  }
+
+  @Test
+  fun unTrackView_unRegistersView() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+
+    verify(metaNativeAd).unregisterView()
   }
 
   private companion object {
