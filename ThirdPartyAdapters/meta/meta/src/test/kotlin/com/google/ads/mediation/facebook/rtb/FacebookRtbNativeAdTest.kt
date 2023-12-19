@@ -47,9 +47,12 @@ class FacebookRtbNativeAdTest {
   private lateinit var metaNativeAd: NativeAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val nativeAdCallback = mock<MediationNativeAdCallback>()
   private val nativeAdLoadCallback:
     MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
-    mock()
+    mock {
+      on { onSuccess(any()) } doReturn nativeAdCallback
+    }
   private val metaNativeAdLoadConfig: NativeAdBase.NativeLoadAdConfig = mock()
   private val metaNativeAdLoadConfigBuilder: NativeAdBase.NativeAdLoadConfigBuilder = mock {
     on { withBid(any()) } doReturn this.mock
@@ -348,6 +351,56 @@ class FacebookRtbNativeAdTest {
     assertThat(extras.getString(KEY_SOCIAL_CONTEXT_ASSET)).isEqualTo(META_AD_SOCIAL_CONTEXT)
     assertThat(facebookRtbNativeAd.adChoicesContent).isNotNull()
     verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
+  }
+
+  @Test
+  fun nativeAdListenerOnMediaDownloaded_doesntCrash() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val nativeAdListener = nativeListenerCaptor.firstValue
+    nativeAdListener.onAdLoaded(metaNativeAd)
+
+    nativeAdListener.onMediaDownloaded(metaNativeAd)
+
+    // nativeAdListener.onMediaDownloaded() is a no-op. So, this test is just a sanity-check that
+    // there is no crash when it is called.
+  }
+
+  @Test
+  fun nativeAdListenerOnLoggingImpression_doesntCrash() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val nativeAdListener = nativeListenerCaptor.firstValue
+    nativeAdListener.onAdLoaded(metaNativeAd)
+
+    nativeAdListener.onLoggingImpression(metaNativeAd)
+
+    // nativeAdListener.onLoggingImpression() is a no-op. So, this test is just a sanity-check that
+    // there is no crash when it is called.
+  }
+
+  @Test
+  fun nativeAdListenerOnAdClicked_reportsAdClickedAndAdOpenedAndAdLeftApplication() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val nativeAdListener = nativeListenerCaptor.firstValue
+    // Load the ad as part of the test setup.
+    nativeAdListener.onAdLoaded(metaNativeAd)
+
+    nativeAdListener.onAdClicked(metaNativeAd)
+
+    verify(nativeAdCallback).reportAdClicked()
+    verify(nativeAdCallback).onAdOpened()
+    verify(nativeAdCallback).onAdLeftApplication()
   }
 
   private companion object {
