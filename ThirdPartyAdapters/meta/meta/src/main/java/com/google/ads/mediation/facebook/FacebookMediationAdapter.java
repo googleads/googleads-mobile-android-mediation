@@ -277,7 +277,9 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
-    nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
+    nativeAd =
+        new FacebookRtbNativeAd(
+            mediationNativeAdConfiguration, mediationAdLoadCallback, metaFactory);
     nativeAd.render();
   }
 

@@ -47,6 +47,7 @@ import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.ads.mediation.facebook.MetaFactory;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -66,10 +67,15 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private MediationNativeAdCallback nativeAdCallback;
   private MediaView mediaView;
 
-  public FacebookRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  private final MetaFactory metaFactory;
+
+  public FacebookRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
+      MetaFactory metaFactory) {
     this.callback = callback;
     this.adConfiguration = adConfiguration;
+    this.metaFactory = metaFactory;
   }
 
   public void render() {
@@ -85,7 +91,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     setMixedAudience(adConfiguration);
-    mediaView = new MediaView(adConfiguration.getContext());
+    mediaView = metaFactory.createMediaView(adConfiguration.getContext());
 
     try {
       nativeAdBase =
