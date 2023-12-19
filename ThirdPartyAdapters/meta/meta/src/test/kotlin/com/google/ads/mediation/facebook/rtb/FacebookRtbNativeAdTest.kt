@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.MediaView
+import com.facebook.ads.MediaViewListener
 import com.facebook.ads.NativeAd
 import com.facebook.ads.NativeAdBase
 import com.facebook.ads.NativeAdBase.Image
@@ -401,6 +402,52 @@ class FacebookRtbNativeAdTest {
     verify(nativeAdCallback).reportAdClicked()
     verify(nativeAdCallback).onAdOpened()
     verify(nativeAdCallback).onAdLeftApplication()
+  }
+
+  @Test
+  fun mediaViewListenerOnComplete_invokesOnVideoComplete() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val nativeAdListener = nativeListenerCaptor.firstValue
+    // Load the ad as part of the test setup.
+    nativeAdListener.onAdLoaded(metaNativeAd)
+    val mediaViewListenerCaptor = argumentCaptor<MediaViewListener>()
+    verify(metaMediaView).setListener(mediaViewListenerCaptor.capture())
+
+    mediaViewListenerCaptor.firstValue.onComplete(metaMediaView)
+
+    verify(nativeAdCallback).onVideoComplete()
+  }
+
+  @Test
+  fun mediaViewListenerNoOpCallbacks_dontCrash() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render()
+    }
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val nativeAdListener = nativeListenerCaptor.firstValue
+    // Load the ad as part of the test setup.
+    nativeAdListener.onAdLoaded(metaNativeAd)
+    val mediaViewListener =
+      argumentCaptor<MediaViewListener>().run {
+        verify(metaMediaView).setListener(capture())
+        firstValue
+      }
+
+    mediaViewListener.onPlay(metaMediaView)
+    mediaViewListener.onVolumeChange(metaMediaView, 0.5f)
+    mediaViewListener.onPause(metaMediaView)
+    mediaViewListener.onEnterFullscreen(metaMediaView)
+    mediaViewListener.onExitFullscreen(metaMediaView)
+    mediaViewListener.onFullscreenBackground(metaMediaView)
+    mediaViewListener.onFullscreenForeground(metaMediaView)
+
+    // All the above calls are no-ops. So, this test is just a sanity-check that there is no crash
+    // when any of them is called.
   }
 
   private companion object {
