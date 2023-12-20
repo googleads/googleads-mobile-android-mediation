@@ -4,12 +4,17 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
+import com.vungle.ads.VunglePrivacySettings
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
+import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -71,6 +76,37 @@ class VungleInitializerTest {
     initializer.onSuccess()
 
     verify(mockVungleInitializationListener, times(3)).onInitializeSuccess()
+  }
+
+  @Test
+  fun updateCoppaStatus_whenChildDirectedIsTrue_setsCoppaStatusTrue() {
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaStatus(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+
+      it.verify { VunglePrivacySettings.setCOPPAStatus(true) }
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(false) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaStatus_whenChildDirectedIsFalse_setsCoppaStatusFalse() {
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaStatus(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE)
+
+      it.verify { VunglePrivacySettings.setCOPPAStatus(false) }
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(true) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaStatus_whenChildDirectedTagIsUnspecified_doesntSetCoppaStatus() {
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaStatus(
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+      )
+
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(any()) }, never())
+    }
   }
 
   private companion object {
