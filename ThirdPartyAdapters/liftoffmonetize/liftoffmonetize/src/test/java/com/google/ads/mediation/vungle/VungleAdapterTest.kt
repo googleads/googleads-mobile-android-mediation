@@ -32,6 +32,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 
 /** Tests for [VungleAdapter]. */
@@ -182,6 +183,26 @@ class VungleAdapterTest {
   }
 
   @Test
+  fun initialize_withMultipleAppIds_initializesLiftoffSdkUsingOneOfTheAppIds() {
+    val serverParameters1 = bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_1)
+    val serverParameters2 = bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_2)
+    val configs =
+      listOf(
+        createMediationConfiguration(serverParameters = serverParameters1),
+        createMediationConfiguration(serverParameters = serverParameters2)
+      )
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.initialize(context, mockInitializationCompleteCallback, configs)
+    }
+
+    val appIdCaptor = argumentCaptor<String>()
+    verify(mockVungleInitializer, times(1)).initialize(appIdCaptor.capture(), any(), any())
+    assertThat(appIdCaptor.firstValue).isAnyOf(TEST_APP_ID_1, TEST_APP_ID_2)
+  }
+
+  @Test
   fun collectSignals_onSuccessCalled() {
     val biddingToken = "token"
     whenever(mockSdkWrapper.getBiddingToken(any())) doReturn biddingToken
@@ -208,5 +229,6 @@ class VungleAdapterTest {
 
   private companion object {
     const val TEST_APP_ID_1 = "testAppId1"
+    const val TEST_APP_ID_2 = "testAppId2"
   }
 }
