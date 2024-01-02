@@ -3,9 +3,14 @@ package com.google.ads.mediation.vungle
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
+import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
+import com.vungle.ads.VungleError
+import com.vungle.ads.VungleError.Companion.UNKNOWN_ERROR
 import com.vungle.ads.VunglePrivacySettings
 import org.junit.Before
 import org.junit.Test
@@ -15,6 +20,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -56,6 +62,9 @@ class VungleInitializerTest {
     initializer.initialize(TEST_APP_ID_1, context, mockVungleInitializationListener)
 
     verify(mockSdkWrapper).init(eq(context), eq(TEST_APP_ID_1), eq(initializer))
+
+    // Call onSuccess to clear the init listeners.
+    initializer.onSuccess()
   }
 
   @Test
@@ -76,6 +85,27 @@ class VungleInitializerTest {
     initializer.onSuccess()
 
     verify(mockVungleInitializationListener, times(3)).onInitializeSuccess()
+  }
+
+  @Test
+  fun onError_callsErrorOnListeners() {
+    initializer.initialize(TEST_APP_ID_1, context, mockVungleInitializationListener)
+    val anotherInitializationListener = mock<VungleInitializer.VungleInitializationListener>()
+    initializer.initialize("another_app_id", context, anotherInitializationListener)
+    val vungleError =
+      mock<VungleError> {
+        on { code } doReturn UNKNOWN_ERROR
+        on { errorMessage } doReturn "Liftoff Monetize SDK initialization failed."
+      }
+
+    initializer.onError(vungleError)
+
+    val expectedAdError =
+      AdError(UNKNOWN_ERROR, "Liftoff Monetize SDK initialization failed.", VUNGLE_SDK_ERROR_DOMAIN)
+    verify(mockVungleInitializationListener)
+      .onInitializeError(argThat(AdErrorMatcher(expectedAdError)))
+    verify(anotherInitializationListener)
+      .onInitializeError(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
