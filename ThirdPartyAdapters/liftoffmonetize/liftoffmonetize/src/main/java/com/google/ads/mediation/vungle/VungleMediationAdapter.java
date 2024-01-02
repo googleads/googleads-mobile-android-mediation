@@ -498,8 +498,9 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     Log.d(TAG, "loadRtbInterstitialAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationInterstitialAdConfiguration.taggedForChildDirectedTreatment());
-    rtbInterstitialAd = new VungleRtbInterstitialAd(mediationInterstitialAdConfiguration,
-        mediationAdLoadCallback);
+    rtbInterstitialAd =
+        new VungleRtbInterstitialAd(
+            mediationInterstitialAdConfiguration, mediationAdLoadCallback, vungleFactory);
     rtbInterstitialAd.render();
   }
 

@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -55,13 +56,17 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
 
   private InterstitialAd interstitialAd;
 
+  private final VungleFactory vungleFactory;
+
   public VungleRtbInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback,
+      VungleFactory vungleFactory) {
     this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.vungleFactory = vungleFactory;
   }
 
   public void render() {
@@ -96,7 +101,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
 
     String adMarkup = mediationInterstitialAdConfiguration.getBidResponse();
 
-    AdConfig adConfig = new AdConfig();
+    AdConfig adConfig = vungleFactory.createAdConfig();
     if (mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
@@ -108,11 +113,13 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
     Context context = mediationInterstitialAdConfiguration.getContext();
 
     VungleInitializer.getInstance()
-        .initialize(appID, context,
+        .initialize(
+            appID,
+            context,
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                interstitialAd = new InterstitialAd(context, placement, adConfig);
+                interstitialAd = vungleFactory.createInterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(VungleRtbInterstitialAd.this);
                 interstitialAd.load(adMarkup);
               }
