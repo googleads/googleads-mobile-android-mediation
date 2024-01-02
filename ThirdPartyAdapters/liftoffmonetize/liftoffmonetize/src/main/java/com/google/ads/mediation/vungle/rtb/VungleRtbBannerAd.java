@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -54,11 +55,17 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   private BannerAd bannerAd;
   private RelativeLayout bannerLayout;
 
-  public VungleRtbBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd,
-          MediationBannerAdCallback> mediationAdLoadCallback) {
+  private final VungleFactory vungleFactory;
+
+  public VungleRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback,
+      VungleFactory vungleFactory) {
     this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.vungleFactory = vungleFactory;
   }
 
   public void render() {
@@ -135,7 +142,7 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
             adLayoutHeight);
     bannerLayout.setLayoutParams(adViewLayoutParams);
 
-    bannerAd = new BannerAd(context, placementId, bannerAdSize);
+    bannerAd = vungleFactory.createBannerAd(context, placementId, bannerAdSize);
     bannerAd.setAdListener(VungleRtbBannerAd.this);
 
     if (!TextUtils.isEmpty(watermark)) {

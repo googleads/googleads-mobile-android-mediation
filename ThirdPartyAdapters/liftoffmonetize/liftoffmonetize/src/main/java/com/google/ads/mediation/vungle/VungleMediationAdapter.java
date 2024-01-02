@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
@@ -82,6 +83,8 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback;
   private MediationRewardedAdCallback mediationRewardedAdCallback;
 
+  private final VungleFactory vungleFactory;
+
   /**
    * Liftoff Monetize adapter error domain.
    */
@@ -136,6 +139,15 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
    * Vungle SDK returned invalid bidding token.
    */
   public static final int ERROR_CANNOT_GET_BID_TOKEN = 108;
+
+  public VungleMediationAdapter() {
+    vungleFactory = new VungleFactory();
+  }
+
+  @VisibleForTesting
+  VungleMediationAdapter(VungleFactory vungleFactory) {
+    this.vungleFactory = vungleFactory;
+  }
 
   /**
    * Convert the given Liftoff Monetize exception into the appropriate custom error code.
@@ -473,7 +485,9 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     Log.d(TAG, "loadRtbBannerAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
-    rtbBannerAd = new VungleRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    rtbBannerAd =
+        new VungleRtbBannerAd(
+            mediationBannerAdConfiguration, mediationAdLoadCallback, vungleFactory);
     rtbBannerAd.render();
   }
 
