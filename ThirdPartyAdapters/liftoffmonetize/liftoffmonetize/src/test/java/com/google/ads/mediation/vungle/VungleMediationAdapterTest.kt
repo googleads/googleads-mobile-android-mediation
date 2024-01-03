@@ -13,11 +13,13 @@ import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
+import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
@@ -36,6 +38,8 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -44,6 +48,7 @@ import com.vungle.ads.AdConfig.Companion.LANDSCAPE
 import com.vungle.ads.BannerAd
 import com.vungle.ads.BannerAdSize
 import com.vungle.ads.InterstitialAd
+import com.vungle.ads.RewardedAd
 import com.vungle.ads.VungleError
 import org.junit.Before
 import org.junit.Test
@@ -221,6 +226,144 @@ class VungleMediationAdapterTest {
     val appIdCaptor = argumentCaptor<String>()
     verify(mockVungleInitializer, times(1)).initialize(appIdCaptor.capture(), any(), any())
     assertThat(appIdCaptor.firstValue).isAnyOf(TEST_APP_ID_1, TEST_APP_ID_2)
+  }
+
+  @Test
+  fun loadRtbRewardedAd_updatesCoppaStatus() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbRewardedAd(createMediationRewardedAdConfiguration(context = context), mock())
+    }
+
+    verify(mockVungleInitializer).updateCoppaStatus(any())
+  }
+
+  @Test
+  fun loadRtbRewardedAd_loadsLiftoffRewardedAdWithBidResponse() {
+    doAnswer { invocation ->
+        val args: Array<Any> = invocation.arguments
+        (args[2] as VungleInitializationListener).onInitializeSuccess()
+      }
+      .whenever(mockVungleInitializer)
+      .initialize(any(), any(), any())
+    val vungleAdConfig = mock<AdConfig>()
+    whenever(vungleFactory.createAdConfig()) doReturn vungleAdConfig
+    val vungleRewardedAd = mock<RewardedAd>()
+    whenever(vungleFactory.createRewardedAd(any(), any(), any())) doReturn vungleRewardedAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbRewardedAd(
+        createMediationRewardedAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        ),
+        mock()
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleAdConfig).adOrientation = LANDSCAPE
+    verify(vungleAdConfig).setWatermark(TEST_WATERMARK)
+    verify(vungleFactory).createRewardedAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
+    verify(vungleRewardedAd).adListener = any()
+    verify(vungleRewardedAd).setUserId(TEST_USER_ID)
+    verify(vungleRewardedAd).load(TEST_BID_RESPONSE)
+  }
+
+  @Test
+  fun loadRtbRewardedAd_withoutAppId_callsLoadFailure() {
+    val rewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+
+    adapter.loadRtbRewardedAd(
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+      ),
+      rewardedAdLoadCallback
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load bidding rewarded ad from Liftoff Monetize. " +
+          "Missing or invalid App ID configured for this ad source instance " +
+          "in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN
+      )
+    verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbRewardedAd_withoutPlacementId_callsLoadFailure() {
+    val rewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+
+    adapter.loadRtbRewardedAd(
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+      ),
+      rewardedAdLoadCallback
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load bidding rewarded ad from Liftoff Monetize. " +
+          "Missing or invalid Placement ID configured for this ad source instance " +
+          "in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN
+      )
+    verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbRewardedAd_onLiftoffSdkInitializationError_callsLoadFailure() {
+    val liftoffSdkInitError =
+      AdError(
+        VungleError.UNKNOWN_ERROR,
+        "Liftoff Monetize SDK initialization failed.",
+        VUNGLE_SDK_ERROR_DOMAIN
+      )
+    doAnswer { invocation ->
+        val args: Array<Any> = invocation.arguments
+        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+      }
+      .whenever(mockVungleInitializer)
+      .initialize(any(), any(), any())
+    whenever(vungleFactory.createAdConfig()) doReturn mock()
+    val rewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbRewardedAd(
+        createMediationRewardedAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        ),
+        rewardedAdLoadCallback
+      )
+    }
+
+    verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
   }
 
   @Test
@@ -554,5 +697,6 @@ class VungleMediationAdapterTest {
   private companion object {
     const val TEST_APP_ID_1 = "testAppId1"
     const val TEST_APP_ID_2 = "testAppId2"
+    const val TEST_USER_ID = "testUserId"
   }
 }

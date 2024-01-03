@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
@@ -57,13 +58,17 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
 
   private RewardedAd rewardedAd;
 
+  private final VungleFactory vungleFactory;
+
   public VungleRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback,
+      VungleFactory vungleFactory) {
     this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
+    this.vungleFactory = vungleFactory;
   }
 
   public void render() {
@@ -100,7 +105,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
 
     String adMarkup = mediationRewardedAdConfiguration.getBidResponse();
 
-    AdConfig adConfig = new AdConfig();
+    AdConfig adConfig = vungleFactory.createAdConfig();
     if (mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
@@ -112,11 +117,13 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
     Context context = mediationRewardedAdConfiguration.getContext();
 
     VungleInitializer.getInstance()
-        .initialize(appID, context,
+        .initialize(
+            appID,
+            context,
             new VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                rewardedAd = new RewardedAd(context, placement, adConfig);
+                rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleRtbRewardedAd.this);
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);
