@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Added watermark support for banner, interstitial and rewarded ads
+
 #### Version 10.6.2.0
 - - Updated the adapter to invoke Google Mobile Ads SDK's mediation callback
 `onAdFailedToShow` when InMobi interstitial ads fail to display.

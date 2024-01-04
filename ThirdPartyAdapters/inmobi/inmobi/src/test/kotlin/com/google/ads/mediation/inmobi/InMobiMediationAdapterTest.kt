@@ -88,17 +88,20 @@ class InMobiMediationAdapterTest {
     whenever(bannerAdConfiguration.context).thenReturn(context)
     whenever(bannerAdConfiguration.adSize).thenReturn(originalBannerSize)
     whenever(bannerAdConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(bannerAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
     whenever(inMobiAdFactory.createInMobiBannerWrapper(any(), any()))
       .thenReturn(inMobiBannerWrapper)
     whenever(inMobiAdFactory.createInMobiAdViewHolder(any())).thenReturn(inMobiAdViewHolder)
     whenever(inMobiAdViewHolder.addView(any())).doAnswer { null }
     whenever(interstitialAdConfiguration.context).thenReturn(context)
     whenever(interstitialAdConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(interstitialAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
     whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
       .thenReturn(inMobiInterstitialWrapper)
 
     whenever(rewardedAdConfiguration.context).thenReturn(context)
     whenever(rewardedAdConfiguration.serverParameters).thenReturn(serverParameters)
+    whenever(rewardedAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
     whenever(nativeAdConfiguration.context).thenReturn(context)
     whenever(nativeAdConfiguration.serverParameters).thenReturn(serverParameters)
     whenever(inMobiAdFactory.createInMobiNativeWrapper(any(), any(), any()))
@@ -422,6 +425,7 @@ class InMobiMediationAdapterTest {
       assertThat(width).isEqualTo(expectedMediationBannerSize.getWidthInPixels(context))
       assertThat(height).isEqualTo(expectedMediationBannerSize.getHeightInPixels(context))
     }
+    verify(inMobiBannerWrapper).setWatermarkData(any())
     verify(inMobiAdViewHolder).addView(eq(inMobiBannerWrapper))
     val extrasCaptor = argumentCaptor<Map<String, String>>()
     verify(inMobiBannerWrapper).setExtras(extrasCaptor.capture())
@@ -566,6 +570,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
 
+    verify(inMobiInterstitialWrapper).setWatermarkData(any())
     val extrasCaptor = argumentCaptor<Map<String, String>>()
     verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
     assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_RTB)
@@ -709,6 +714,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
+    verify(inMobiInterstitialWrapper).setWatermarkData(any())
     val extrasCaptor = argumentCaptor<Map<String, String>>()
     verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
     assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_RTB)
@@ -861,5 +867,6 @@ class InMobiMediationAdapterTest {
   companion object {
     private const val biddingToken = "BiddingToken"
     private const val accountId = "12345"
+    private const val TEST_WATERMARK = "WATERMARK"
   }
 }
