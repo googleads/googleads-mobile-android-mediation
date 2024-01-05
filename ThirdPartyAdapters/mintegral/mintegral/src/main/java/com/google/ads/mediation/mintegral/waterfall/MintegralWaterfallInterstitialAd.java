@@ -17,6 +17,8 @@ package com.google.ads.mediation.mintegral.waterfall;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralNewInterstitialAdWrapper;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralInterstitialAd;
 import com.google.android.gms.ads.AdError;
@@ -25,11 +27,10 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
 
 public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
-  private MBNewInterstitialHandler mbNewInterstitialHandler;
+  private MintegralNewInterstitialAdWrapper mbNewInterstitialAdWrapper;
 
   public MintegralWaterfallInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
@@ -49,17 +50,19 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbNewInterstitialHandler = new MBNewInterstitialHandler(adConfiguration.getContext(),
-        placementId, adUnitId);
-    mbNewInterstitialHandler.setInterstitialVideoListener(this);
-    mbNewInterstitialHandler.load();
+    mbNewInterstitialAdWrapper = MintegralFactory.createInterstitialHandler();
+    mbNewInterstitialAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
+    mbNewInterstitialAdWrapper.setInterstitialVideoListener(this);
+    mbNewInterstitialAdWrapper.load();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbNewInterstitialHandler.show();
+    mbNewInterstitialAdWrapper.playVideoMute(
+        muted
+            ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+            : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mbNewInterstitialAdWrapper.show();
   }
 }

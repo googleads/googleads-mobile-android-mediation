@@ -14,7 +14,11 @@
 
 package com.google.ads.mediation.mintegral
 
+import android.content.Context
 import android.view.ViewGroup
+import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler
+import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler
+import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener
 import com.mbridge.msdk.out.MBSplashHandler
 import com.mbridge.msdk.out.MBSplashLoadWithCodeListener
 import com.mbridge.msdk.out.MBSplashShowListener
@@ -65,6 +69,62 @@ object MintegralFactory {
         instance?.onDestroy()
       }
     }
+
+  @JvmStatic
+  fun createInterstitialHandler() =
+    object : MintegralNewInterstitialAdWrapper {
+      private var instance: MBNewInterstitialHandler? = null
+
+      override fun createAd(context: Context, placementId: String, adUnitId: String) {
+        instance = MBNewInterstitialHandler(context, placementId, adUnitId)
+      }
+
+      override fun setInterstitialVideoListener(listener: NewInterstitialWithCodeListener) {
+        instance?.setInterstitialVideoListener(listener)
+      }
+
+      override fun load() {
+        instance?.load()
+      }
+
+      override fun playVideoMute(muteConstant: Int) {
+        instance?.playVideoMute(muteConstant)
+      }
+
+      override fun show() {
+        instance?.show()
+      }
+    }
+
+  @JvmStatic
+  fun createBidInterstitialHandler() =
+    object : MintegralBidNewInterstitialAdWrapper {
+      private var instance: MBBidNewInterstitialHandler? = null
+
+      override fun createAd(context: Context, placementId: String, adUnitId: String) {
+        instance = MBBidNewInterstitialHandler(context, placementId, adUnitId)
+      }
+
+      override fun setExtraInfo(jsonObject: JSONObject) {
+        instance?.setExtraInfo(jsonObject)
+      }
+
+      override fun setInterstitialVideoListener(listener: NewInterstitialWithCodeListener) {
+        instance?.setInterstitialVideoListener(listener)
+      }
+
+      override fun loadFromBid(bidToken: String) {
+        instance?.loadFromBid(bidToken)
+      }
+
+      override fun playVideoMute(muteConstant: Int) {
+        instance?.playVideoMute(muteConstant)
+      }
+
+      override fun showFromBid() {
+        instance?.showFromBid()
+      }
+    }
 }
 
 /** Declares the methods that will invoke the [MBSplashHandler] methods */
@@ -84,4 +144,30 @@ interface MintegralSplashAdWrapper {
   fun show(group: ViewGroup)
 
   fun onDestroy()
+}
+
+interface MintegralNewInterstitialAdWrapper {
+  fun createAd(context: Context, placementId: String, adUnitId: String)
+
+  fun setInterstitialVideoListener(listener: NewInterstitialWithCodeListener)
+
+  fun load()
+
+  fun playVideoMute(muteConstant: Int)
+
+  fun show()
+}
+
+interface MintegralBidNewInterstitialAdWrapper {
+  fun createAd(context: Context, placementId: String, adUnitId: String)
+
+  fun setExtraInfo(jsonObject: JSONObject)
+
+  fun setInterstitialVideoListener(listener: NewInterstitialWithCodeListener)
+
+  fun loadFromBid(bidToken: String)
+
+  fun playVideoMute(muteConstant: Int)
+
+  fun showFromBid()
 }
