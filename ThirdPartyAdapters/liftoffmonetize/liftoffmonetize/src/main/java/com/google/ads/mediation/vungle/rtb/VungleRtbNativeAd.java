@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -60,10 +61,15 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   private MediaView mediaView;
   private String adMarkup;
 
-  public VungleRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  private final VungleFactory vungleFactory;
+
+  public VungleRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
+      VungleFactory vungleFactory) {
     this.adConfiguration = mediationNativeAdConfiguration;
     this.adLoadCallback = callback;
+    this.vungleFactory = vungleFactory;
   }
 
   public void render() {
@@ -116,25 +122,28 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
     String watermark = adConfiguration.getWatermark();
 
     VungleInitializer.getInstance()
-        .initialize(appID, context, new VungleInitializer.VungleInitializationListener() {
-          @Override
-          public void onInitializeSuccess() {
-            nativeAd = new NativeAd(context, placementId);
-            nativeAd.setAdOptionsPosition(adOptionsPosition);
-            nativeAd.setAdListener(VungleRtbNativeAd.this);
-            mediaView = new MediaView(context);
-            if (!TextUtils.isEmpty(watermark)) {
-              nativeAd.getAdConfig().setWatermark(watermark);
-            }
-            nativeAd.load(adMarkup);
-          }
+        .initialize(
+            appID,
+            context,
+            new VungleInitializer.VungleInitializationListener() {
+              @Override
+              public void onInitializeSuccess() {
+                nativeAd = vungleFactory.createNativeAd(context, placementId);
+                nativeAd.setAdOptionsPosition(adOptionsPosition);
+                nativeAd.setAdListener(VungleRtbNativeAd.this);
+                mediaView = new MediaView(context);
+                if (!TextUtils.isEmpty(watermark)) {
+                  nativeAd.getAdConfig().setWatermark(watermark);
+                }
+                nativeAd.load(adMarkup);
+              }
 
-          @Override
-          public void onInitializeError(AdError error) {
-            Log.d(TAG, error.toString());
-            adLoadCallback.onFailure(error);
-          }
-        });
+              @Override
+              public void onInitializeError(AdError error) {
+                Log.d(TAG, error.toString());
+                adLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @Override

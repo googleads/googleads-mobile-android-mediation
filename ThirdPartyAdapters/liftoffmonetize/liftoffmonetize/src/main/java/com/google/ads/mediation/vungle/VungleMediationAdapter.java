@@ -451,7 +451,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
     // Vungle waterfall and bidding Native ads use the same API.
-    rtbNativeAd = new VungleRtbNativeAd(mediationNativeAdConfiguration, callback);
+    rtbNativeAd = new VungleRtbNativeAd(mediationNativeAdConfiguration, callback, vungleFactory);
     rtbNativeAd.render();
   }
 
@@ -511,7 +511,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     Log.d(TAG, "loadRtbNativeAd()...");
     VungleInitializer.getInstance()
         .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
-    rtbNativeAd = new VungleRtbNativeAd(adConfiguration, callback);
+    rtbNativeAd = new VungleRtbNativeAd(adConfiguration, callback, vungleFactory);
     rtbNativeAd.render();
   }
 

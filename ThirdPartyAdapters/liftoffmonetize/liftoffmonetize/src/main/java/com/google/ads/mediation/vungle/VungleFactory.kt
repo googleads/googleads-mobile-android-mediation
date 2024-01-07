@@ -5,6 +5,7 @@ import com.vungle.ads.AdConfig
 import com.vungle.ads.BannerAd
 import com.vungle.ads.BannerAdSize
 import com.vungle.ads.InterstitialAd
+import com.vungle.ads.NativeAd
 import com.vungle.ads.RewardedAd
 
 /** Factory for creating Vungle ad objects. */
@@ -18,6 +19,8 @@ class VungleFactory {
 
   fun createRewardedAd(context: Context, placementId: String, adConfig: AdConfig) =
     RewardedAd(context, placementId, adConfig)
+
+  fun createNativeAd(context: Context, placementId: String) = NativeAd(context, placementId)
 
   fun createAdConfig() = AdConfig()
 }
