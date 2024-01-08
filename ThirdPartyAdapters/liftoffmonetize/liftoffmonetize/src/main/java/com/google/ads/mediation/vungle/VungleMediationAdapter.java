@@ -301,7 +301,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
       return;
     }
 
-    adConfig = new AdConfig();
+    adConfig = vungleFactory.createAdConfig();
     if (mediationExtras != null && mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
     }
@@ -311,24 +311,28 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
 
     Context context = mediationRewardedAdConfiguration.getContext();
 
-    VungleInitializer.getInstance().initialize(appID, context, new VungleInitializationListener() {
-      @Override
-      public void onInitializeSuccess() {
-        rewardedAd = new RewardedAd(context, placement, adConfig);
-        rewardedAd.setAdListener(VungleMediationAdapter.this);
-        if (!TextUtils.isEmpty(userId)) {
-          rewardedAd.setUserId(userId);
-        }
+    VungleInitializer.getInstance()
+        .initialize(
+            appID,
+            context,
+            new VungleInitializationListener() {
+              @Override
+              public void onInitializeSuccess() {
+                rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
+                rewardedAd.setAdListener(VungleMediationAdapter.this);
+                if (!TextUtils.isEmpty(userId)) {
+                  rewardedAd.setUserId(userId);
+                }
 
-        rewardedAd.load(null);
-      }
+                rewardedAd.load(null);
+              }
 
-      @Override
-      public void onInitializeError(AdError error) {
-        Log.w(TAG, error.toString());
-        VungleMediationAdapter.this.mediationAdLoadCallback.onFailure(error);
-      }
-    });
+              @Override
+              public void onInitializeError(AdError error) {
+                Log.w(TAG, error.toString());
+                VungleMediationAdapter.this.mediationAdLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @Override
