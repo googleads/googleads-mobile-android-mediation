@@ -17,9 +17,12 @@ package com.google.ads.mediation.mintegral.rtb;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
@@ -40,6 +43,8 @@ import org.json.JSONObject;
  */
 public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
 
+  private String bidToken;
+
   public MintegralRtbAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
@@ -52,7 +57,7 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String adUnitId = serverParameters.getString(MintegralConstants.AD_UNIT_ID);
     String placementId = serverParameters.getString(MintegralConstants.PLACEMENT_ID);
-    String bidToken = adConfiguration.getBidResponse();
+    bidToken = adConfiguration.getBidResponse();
     AdError error = MintegralUtils.validateMintegralAdLoadParams(adUnitId, placementId, bidToken);
     if (error != null) {
       adLoadCallback.onFailure(error);
@@ -68,7 +73,17 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
     splashAdWrapper.setSplashShowListener(this);
     splashAdWrapper.preLoadByToken(bidToken);
   }
-  
+
+  @Override
+  public void showAd(@NonNull Context context) {
+    if (splashAdWrapper != null) {
+      RelativeLayout layout = new RelativeLayout(activity);
+      ((ViewGroup) (activity.getWindow().getDecorView().findViewById(android.R.id.content)))
+          .addView(layout);
+      splashAdWrapper.show(layout, bidToken);
+    }
+  }
+
   private void setWatermark(String watermark) {
     try {
       JSONObject jsonObject = new JSONObject();

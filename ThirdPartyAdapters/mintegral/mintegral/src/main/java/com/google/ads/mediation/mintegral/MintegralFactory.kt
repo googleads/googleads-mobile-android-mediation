@@ -65,6 +65,10 @@ object MintegralFactory {
         instance?.show(group)
       }
 
+      override fun show(group: ViewGroup, bidToken: String) {
+        instance?.show(group, bidToken)
+      }
+
       override fun onDestroy() {
         instance?.onDestroy()
       }
@@ -142,6 +146,8 @@ interface MintegralSplashAdWrapper {
   fun preLoadByToken(token: String)
 
   fun show(group: ViewGroup)
+
+  fun show(group: ViewGroup, bidToken: String)
 
   fun onDestroy()
 }

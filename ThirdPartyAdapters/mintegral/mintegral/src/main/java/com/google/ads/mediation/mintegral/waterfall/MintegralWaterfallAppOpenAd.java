@@ -14,18 +14,15 @@
 
 package com.google.ads.mediation.mintegral.waterfall;
 
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
-import com.google.ads.mediation.mintegral.MintegralSplashAdWrapper;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralAppOpenAd;
 import com.google.android.gms.ads.AdError;
@@ -33,8 +30,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
-import com.mbridge.msdk.out.MBSplashShowListener;
-import com.mbridge.msdk.out.MBridgeIds;
 
 /**
  * Used to show Mintegral splash ads and mediate callbacks between Google Mobile Ads SDK and
@@ -65,5 +60,15 @@ public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
     splashAdWrapper.setSplashLoadListener(this);
     splashAdWrapper.setSplashShowListener(this);
     splashAdWrapper.preLoad();
+  }
+
+  @Override
+  public void showAd(@NonNull Context context) {
+    if (splashAdWrapper != null) {
+      RelativeLayout layout = new RelativeLayout(activity);
+      ((ViewGroup) (activity.getWindow().getDecorView().findViewById(android.R.id.content)))
+          .addView(layout);
+      splashAdWrapper.show(layout);
+    }
   }
 }

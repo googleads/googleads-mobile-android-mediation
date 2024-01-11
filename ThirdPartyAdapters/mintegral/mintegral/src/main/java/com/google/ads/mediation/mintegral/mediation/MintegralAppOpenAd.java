@@ -17,10 +17,7 @@ package com.google.ads.mediation.mintegral.mediation;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralSplashAdWrapper;
@@ -70,16 +67,6 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
     AdError adError = MintegralConstants.createSdkError(code, msg);
     Log.d(TAG, adError.toString());
     adLoadCallback.onFailure(adError);
-  }
-
-  @Override
-  public void showAd(@NonNull Context context) {
-    if (splashAdWrapper != null) {
-      RelativeLayout layout = new RelativeLayout(activity);
-      ((ViewGroup) (activity.getWindow().getDecorView().findViewById(android.R.id.content)))
-          .addView(layout);
-      splashAdWrapper.show(layout);
-    }
   }
 
   @Override
