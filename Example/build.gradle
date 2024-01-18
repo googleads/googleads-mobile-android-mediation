@@ -27,6 +27,6 @@ ext {
 
     appcompat = "androidx.appcompat:appcompat:1.6.1"
 
-    play = '22.0.0'
+    play = '22.6.0'
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }
