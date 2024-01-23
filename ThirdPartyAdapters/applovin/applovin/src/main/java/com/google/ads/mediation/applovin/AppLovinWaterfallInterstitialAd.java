@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
@@ -47,7 +48,8 @@ import java.util.HashMap;
 public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRenderer
     implements MediationInterstitialAd {
 
-  private static final HashMap<String, WeakReference<AppLovinWaterfallInterstitialAd>>
+  @VisibleForTesting
+  protected static final HashMap<String, WeakReference<AppLovinWaterfallInterstitialAd>>
       appLovinWaterfallInterstitialAds = new HashMap<>();
 
   private AppLovinSdk sdk;
@@ -55,6 +57,9 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
   private Context context;
 
   private Bundle networkExtras;
+
+  // Flag to let multiple loading of ads
+  private boolean enableMultipleAdLoading = false;
 
   public AppLovinWaterfallInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
@@ -78,6 +83,10 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
       Log.e(TAG, error.getMessage());
       interstitialAdLoadCallback.onFailure(error);
       return;
+    }
+
+    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+      enableMultipleAdLoading = true;
     }
 
     appLovinInitializer.initialize(
@@ -141,6 +150,9 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
     Log.d(TAG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
+    if (enableMultipleAdLoading) {
+      unregister();
+    }
   }
 
   @Override

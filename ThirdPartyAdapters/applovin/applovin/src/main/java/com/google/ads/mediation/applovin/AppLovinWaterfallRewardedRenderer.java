@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
@@ -46,7 +47,8 @@ import java.util.Objects;
 public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     implements MediationRewardedAd {
 
-  private static final HashMap<String, WeakReference<AppLovinWaterfallRewardedRenderer>>
+  @VisibleForTesting
+  protected static final HashMap<String, WeakReference<AppLovinWaterfallRewardedRenderer>>
       incentivizedAdsMap = new HashMap<>();
 
   /** AppLovin's default zone. */
@@ -54,6 +56,9 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
 
   /** AppLovin rewarded ad zone ID. */
   private String zoneId;
+
+  // Flag to let multiple loading of ads
+  private boolean enableMultipleAdLoading = false;
 
   protected AppLovinWaterfallRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
@@ -77,6 +82,10 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
+    }
+
+    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+      enableMultipleAdLoading = true;
     }
 
     appLovinInitializer.initialize(
@@ -143,6 +152,9 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     }
 
     incentivizedInterstitial.show(context, this, this, this, this);
+    if (enableMultipleAdLoading) {
+      incentivizedAdsMap.remove(zoneId);
+    }
   }
 
   // region AppLovinAdLoadListener implementation

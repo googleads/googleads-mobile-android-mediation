@@ -76,6 +76,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   // Controlled fields.
   private String zoneId;
 
+  // Flag to let multiple loading of ads
+  private boolean enableMultipleAdLoading = false;
+
   // region MediationInterstitialAdapter implementation.
   @Override
   public void requestInterstitialAd(@NonNull final Context context,
@@ -90,6 +93,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       log(ERROR, error.getMessage());
       interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, error);
       return;
+    }
+
+    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+      enableMultipleAdLoading = true;
     }
 
     AppLovinInitializer.getInstance()
@@ -192,6 +199,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
     log(DEBUG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
+    if (enableMultipleAdLoading) {
+      unregister();
+    }
   }
   // endregion
 

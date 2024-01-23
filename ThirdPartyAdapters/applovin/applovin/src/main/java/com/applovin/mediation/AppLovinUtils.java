@@ -35,6 +35,8 @@ public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
+  private static final String TRUE = "true";
+
   @VisibleForTesting
   public static final String ERROR_MSG_REASON_PREFIX =
       "AppLovin SDK returned a load failure callback with reason: ";
@@ -46,6 +48,7 @@ public class AppLovinUtils {
 
     public static final String SDK_KEY = "sdkKey";
     public static final String ZONE_ID = "zone_id";
+    public static final String MULTIPLE_ADS_PER_AD_UNIT = "enable_multiple_ads_per_unit";
 
     // Private constructor
     private ServerParameterKeys() {
@@ -62,6 +65,14 @@ public class AppLovinUtils {
     } else {
       return DEFAULT_ZONE;
     }
+  }
+
+  public static boolean isMultiAdsEnabled(Bundle serverParameters) {
+    if (serverParameters.containsKey(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT)) {
+      String multiAdsFlag = serverParameters.getString(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT);
+      return multiAdsFlag.equals(TRUE);
+    }
+    return false;
   }
 
   /**
