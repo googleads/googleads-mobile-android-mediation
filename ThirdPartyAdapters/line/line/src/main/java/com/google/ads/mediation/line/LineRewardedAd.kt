@@ -21,9 +21,8 @@ import android.util.Log
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
-import com.five_corp.ad.FiveAdState
 import com.five_corp.ad.FiveAdVideoReward
-import com.five_corp.ad.FiveAdViewEventListener
+import com.five_corp.ad.FiveAdVideoRewardEventListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -45,7 +44,7 @@ private constructor(
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val rewardedAd: FiveAdVideoReward,
   private val networkExtras: Bundle?,
-) : MediationRewardedAd, FiveAdLoadListener, FiveAdViewEventListener {
+) : MediationRewardedAd, FiveAdLoadListener, FiveAdVideoRewardEventListener {
 
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
 
@@ -60,26 +59,13 @@ private constructor(
   }
 
   override fun showAd(context: Context) {
-    val activity = activityReference.get() ?: return
-    val showedFullscreen = rewardedAd.show(activity)
-    if (!showedFullscreen) {
-      val adError =
-        AdError(
-          LineMediationAdapter.ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN,
-          LineMediationAdapter.ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN,
-          LineMediationAdapter.SDK_ERROR_DOMAIN
-        )
-      Log.w(TAG, adError.message)
-      mediationRewardedAdCallback?.onAdFailedToShow(adError)
-      return
-    }
-    mediationRewardedAdCallback?.onAdOpened()
+    rewardedAd.showAd()
   }
 
   override fun onFiveAdLoad(ad: FiveAdInterface) {
     Log.d(TAG, "Finished loading Line Rewarded Ad for slotId: ${ad.slotId}")
     mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
-    rewardedAd.setViewEventListener(this)
+    rewardedAd.setEventListener(this)
   }
 
   override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
@@ -87,77 +73,62 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
   }
 
-  override fun onFiveAdViewError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
+  override fun onViewError(fiveAdVideoReward: FiveAdVideoReward, fiveAdErrorCode: FiveAdErrorCode) {
     val adError =
       AdError(
-        errorCode.value,
-        String.format(LineMediationAdapter.ERROR_MSG_AD_SHOWING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        fiveAdErrorCode.value,
+        String.format(LineMediationAdapter.ERROR_MSG_AD_SHOWING, fiveAdErrorCode.name),
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationRewardedAdCallback?.onAdFailedToShow(adError)
   }
 
-  override fun onFiveAdClick(ad: FiveAdInterface) {
+  override fun onClick(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad did record a click.")
     mediationRewardedAdCallback?.reportAdClicked()
   }
 
-  override fun onFiveAdClose(ad: FiveAdInterface) {
+  override fun onFullScreenClose(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad closed")
-    mediationRewardedAdCallback?.apply {
-      onAdClosed()
-      if (ad.state != FiveAdState.ERROR) {
-        Log.d(TAG, "Line reward earned")
-        onUserEarnedReward(LineRewardItem())
-      }
-    }
+    mediationRewardedAdCallback?.onAdClosed()
   }
 
-  override fun onFiveAdStart(ad: FiveAdInterface) {
-    Log.d(TAG, "Line rewarded ad start")
+  override fun onPlay(fiveAdVideoReward: FiveAdVideoReward) {
+    Log.d(TAG, "Line rewarded ad played")
     mediationRewardedAdCallback?.onVideoStart()
   }
 
-  override fun onFiveAdPause(ad: FiveAdInterface) {
+  override fun onPause(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad paused")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdResume(ad: FiveAdInterface) {
-    Log.d(TAG, "Line rewarded ad resumed")
-    // Google Mobile Ads SDK doesn't have a matching event.
+  override fun onReward(fiveAdVideoReward: FiveAdVideoReward) {
+    Log.d(TAG, "Line rewarded ad user earned reward")
+
+    mediationRewardedAdCallback?.onUserEarnedReward(LineRewardItem())
   }
 
-  override fun onFiveAdViewThrough(ad: FiveAdInterface) {
+  override fun onViewThrough(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded video ad viewed")
     mediationRewardedAdCallback?.onVideoComplete()
   }
 
-  override fun onFiveAdReplay(ad: FiveAdInterface) {
-    Log.d(TAG, "Line rewarded ad replayed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdImpression(ad: FiveAdInterface) {
+  override fun onImpression(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad recorded an impression.")
     mediationRewardedAdCallback?.reportAdImpression()
   }
 
-  override fun onFiveAdStall(ad: FiveAdInterface) {
-    Log.d(TAG, "Line rewarded ad stalled")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdRecover(ad: FiveAdInterface) {
-    Log.d(TAG, "Line rewarded ad recovered")
-    // Google Mobile Ads SDK doesn't have a matching event.
+  override fun onFullScreenOpen(fiveAdVideoReward: FiveAdVideoReward) {
+    Log.d(TAG, "Line rewarded ad opened")
+    mediationRewardedAdCallback?.onAdOpened()
   }
 
   class LineRewardItem : RewardItem {
@@ -180,7 +151,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY,
             LineMediationAdapter.ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -192,7 +163,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -204,7 +175,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -218,7 +189,7 @@ private constructor(
           appId,
           mediationAdLoadCallback,
           fiveAdVideoRewarded,
-          mediationRewardedAdConfiguration.mediationExtras
+          mediationRewardedAdConfiguration.mediationExtras,
         )
       )
     }

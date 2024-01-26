@@ -6,7 +6,6 @@ import androidx.core.os.bundleOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
-import com.five_corp.ad.FiveAdState
 import com.five_corp.ad.FiveAdVideoReward
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
@@ -22,7 +21,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
@@ -58,38 +56,19 @@ class LineRewardedAdTest {
   }
 
   @Test
-  fun showAd_withSuccessfulFullscreenResponse_invokesOnAdOpened() {
-    whenever(mockFiveAdVideoReward.show(activity)) doReturn true
+  fun showAd_invokesFiveAdShowAd() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.showAd(activity)
 
-    verify(mockMediationAdCallback).onAdOpened()
-  }
-
-  @Test
-  fun showAd_withFailedFullscreenResponse_invokesOnAdFailedToShow() {
-    whenever(mockFiveAdVideoReward.show(activity)) doReturn false
-    lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
-    val adErrorCaptor = argumentCaptor<AdError>()
-
-    lineRewardedAd.showAd(activity)
-
-    verify(mockMediationAdCallback, never()).onAdOpened()
-    verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code)
-      .isEqualTo(LineMediationAdapter.ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN)
-    assertThat(capturedError.message)
-      .isEqualTo(LineMediationAdapter.ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    verify(mockFiveAdVideoReward).showAd()
   }
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    verify(mockFiveAdVideoReward).setViewEventListener(lineRewardedAd)
+    verify(mockFiveAdVideoReward).setEventListener(lineRewardedAd)
     verify(mediationAdLoadCallback).onSuccess(lineRewardedAd)
   }
 
@@ -107,52 +86,48 @@ class LineRewardedAdTest {
   }
 
   @Test
-  fun onFiveAdClick_invokesReportAdClicked() {
+  fun onClick_invokesReportAdClicked() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    lineRewardedAd.onFiveAdClick(mockFiveAdVideoReward)
+    lineRewardedAd.onClick(mockFiveAdVideoReward)
 
     verify(mockMediationAdCallback).reportAdClicked()
   }
 
   @Test
-  fun onFiveAdClose_withNoErrorState_invokesOnAdClosedAndOnUserEarnedReward() {
+  fun onFullScreenClose_invokesOnAdClosed() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    lineRewardedAd.onFiveAdClose(mockFiveAdVideoReward)
+    lineRewardedAd.onFullScreenClose(mockFiveAdVideoReward)
 
     verify(mockMediationAdCallback).onAdClosed()
+  }
+
+  @Test
+  fun onReward_invokesOnUserEarnedReward() {
+    lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
+
+    lineRewardedAd.onReward(mockFiveAdVideoReward)
+
     verify(mockMediationAdCallback).onUserEarnedReward(any<LineRewardedAd.LineRewardItem>())
   }
 
   @Test
-  fun onFiveAdClose_withErrorState_invokesOnAdClosedOnly() {
-    whenever(mockFiveAdVideoReward.state) doReturn FiveAdState.ERROR
+  fun onImpression_invokesReportAdImpression() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    lineRewardedAd.onFiveAdClose(mockFiveAdVideoReward)
-
-    verify(mockMediationAdCallback).onAdClosed()
-    verify(mockMediationAdCallback, never())
-      .onUserEarnedReward(any<LineRewardedAd.LineRewardItem>())
-  }
-
-  @Test
-  fun onFiveAdImpression_invokesReportAdImpression() {
-    lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
-
-    lineRewardedAd.onFiveAdImpression(mockFiveAdVideoReward)
+    lineRewardedAd.onImpression(mockFiveAdVideoReward)
 
     verify(mockMediationAdCallback).reportAdImpression()
   }
 
   @Test
-  fun onFiveAdViewError_invokesOnAdFailedToShow() {
+  fun onViewError_invokesOnAdFailedToShow() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
     val adErrorCaptor = argumentCaptor<AdError>()
 
-    lineRewardedAd.onFiveAdViewError(mockFiveAdVideoReward, dummyErrorCode)
+    lineRewardedAd.onViewError(mockFiveAdVideoReward, dummyErrorCode)
 
     verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
@@ -163,53 +138,42 @@ class LineRewardedAdTest {
   }
 
   @Test
-  fun onFiveAdStart_invokesOnVideoStart() {
+  fun onPlay_invokesOnVideoStart() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    lineRewardedAd.onFiveAdStart(mockFiveAdVideoReward)
+    lineRewardedAd.onPlay(mockFiveAdVideoReward)
 
     verify(mockMediationAdCallback).onVideoStart()
   }
 
   @Test
-  fun onFiveAdPause_throwsNoException() {
-    lineRewardedAd.onFiveAdPause(mockFiveAdVideoReward)
-  }
-
-  @Test
-  fun onFiveAdResume_throwsNoException() {
-    lineRewardedAd.onFiveAdResume(mockFiveAdVideoReward)
-  }
-
-  @Test
-  fun onFiveAdViewThrough_invokesOnVideoComplete() {
+  fun onFullScreenOpen_invokesOnAdOpened() {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
-    lineRewardedAd.onFiveAdViewThrough(mockFiveAdVideoReward)
+    lineRewardedAd.onFullScreenOpen(mockFiveAdVideoReward)
+
+    verify(mockMediationAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun onPause_throwsNoException() {
+    lineRewardedAd.onPause(mockFiveAdVideoReward)
+  }
+
+  @Test
+  fun onViewThrough_invokesOnVideoComplete() {
+    lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
+
+    lineRewardedAd.onViewThrough(mockFiveAdVideoReward)
 
     verify(mockMediationAdCallback).onVideoComplete()
-  }
-
-  @Test
-  fun onFiveAdReplay_throwsNoException() {
-    lineRewardedAd.onFiveAdReplay(mockFiveAdVideoReward)
-  }
-
-  @Test
-  fun onFiveAdStall_throwsNoException() {
-    lineRewardedAd.onFiveAdStall(mockFiveAdVideoReward)
-  }
-
-  @Test
-  fun onFiveAdRecover_throwsNoException() {
-    lineRewardedAd.onFiveAdRecover(mockFiveAdVideoReward)
   }
 
   private fun createMediationRewardedAdConfiguration(): MediationRewardedAdConfiguration {
     val serverParameters =
       bundleOf(
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
-        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
       )
     return MediationRewardedAdConfiguration(
       activity,

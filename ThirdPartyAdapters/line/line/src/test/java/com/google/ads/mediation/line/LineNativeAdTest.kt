@@ -80,7 +80,7 @@ class LineNativeAdTest {
 
       with(spiedLineNativeAd) {
         assertThat(lineNativeAd.overrideClickHandling).isTrue()
-        verify(mockFiveAdNative).setViewEventListener(this)
+        verify(mockFiveAdNative).setEventListener(this)
         assertThat(headline).isEqualTo(mockFiveAdNative.adTitle)
         assertThat(body).isEqualTo(mockFiveAdNative.descriptionText)
         assertThat(callToAction).isEqualTo(mockFiveAdNative.buttonText)
@@ -109,12 +109,12 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdClick_invokesReportAdClickedAndOnAdLeftApplication() {
+  fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
     testCoroutineScope.launch {
       initiateImageLoadCallbacks()
       lineNativeAd.onFiveAdLoad(mockFiveAdNative)
 
-      lineNativeAd.onFiveAdClick(mockFiveAdNative)
+      lineNativeAd.onClick(mockFiveAdNative)
 
       verify(mockMediationAdCallback).reportAdClicked()
       verify(mockMediationAdCallback).onAdLeftApplication()
@@ -122,62 +122,42 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdClose_throwsNoException() {
-    lineNativeAd.onFiveAdClose(mockFiveAdNative)
+  fun onRemove_throwsNoException() {
+    lineNativeAd.onRemove(mockFiveAdNative)
   }
 
   @Test
-  fun onFiveAdImpression_invokesReportAdImpression() {
+  fun onImpression_invokesReportAdImpression() {
     testCoroutineScope.launch {
       initiateImageLoadCallbacks()
       lineNativeAd.onFiveAdLoad(mockFiveAdNative)
 
-      lineNativeAd.onFiveAdImpression(mockFiveAdNative)
+      lineNativeAd.onImpression(mockFiveAdNative)
 
       verify(mockMediationAdCallback).reportAdImpression()
     }
   }
 
   @Test
-  fun onFiveAdViewError_throwsNoException() {
+  fun onViewError_throwsNoException() {
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
 
-    lineNativeAd.onFiveAdViewError(mockFiveAdNative, dummyErrorCode)
+    lineNativeAd.onViewError(mockFiveAdNative, dummyErrorCode)
   }
 
   @Test
-  fun onFiveAdStart_throwsNoException() {
-    lineNativeAd.onFiveAdStart(mockFiveAdNative)
+  fun onPlay_throwsNoException() {
+    lineNativeAd.onPlay(mockFiveAdNative)
   }
 
   @Test
-  fun onFiveAdPause_throwsNoException() {
-    lineNativeAd.onFiveAdPause(mockFiveAdNative)
+  fun onPause_throwsNoException() {
+    lineNativeAd.onPause(mockFiveAdNative)
   }
 
   @Test
-  fun onFiveAdResume_throwsNoException() {
-    lineNativeAd.onFiveAdResume(mockFiveAdNative)
-  }
-
-  @Test
-  fun onFiveAdViewThrough_throwsNoException() {
-    lineNativeAd.onFiveAdViewThrough(mockFiveAdNative)
-  }
-
-  @Test
-  fun onFiveAdReplay_throwsNoException() {
-    lineNativeAd.onFiveAdReplay(mockFiveAdNative)
-  }
-
-  @Test
-  fun onFiveAdStall_throwsNoException() {
-    lineNativeAd.onFiveAdStall(mockFiveAdNative)
-  }
-
-  @Test
-  fun onFiveAdRecover_throwsNoException() {
-    lineNativeAd.onFiveAdRecover(mockFiveAdNative)
+  fun onViewThrough_throwsNoException() {
+    lineNativeAd.onViewThrough(mockFiveAdNative)
   }
 
   @Test
@@ -188,7 +168,7 @@ class LineNativeAdTest {
     lineNativeAd.trackViews(
       viewContainer,
       /* clickableAssetViews= */ mock(),
-      /* nonClickableAssetViews= */ mock()
+      /* nonClickableAssetViews= */ mock(),
     )
 
     verify(mockFiveAdNative)
@@ -221,7 +201,7 @@ class LineNativeAdTest {
     val serverParameters =
       bundleOf(
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
-        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
       )
     return MediationNativeAdConfiguration(
       context,
@@ -234,7 +214,7 @@ class LineNativeAdTest {
       RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
       /*maxAdContentRating=*/ "",
       TEST_WATERMARK,
-      /*nativeAdOptions=*/ null
+      /*nativeAdOptions=*/ null,
     )
   }
 

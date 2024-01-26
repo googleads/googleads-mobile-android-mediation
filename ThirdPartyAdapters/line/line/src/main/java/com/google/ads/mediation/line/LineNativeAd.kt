@@ -25,7 +25,7 @@ import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdNative
-import com.five_corp.ad.FiveAdViewEventListener
+import com.five_corp.ad.FiveAdNativeEventListener
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.formats.NativeAd
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -52,7 +52,7 @@ private constructor(
     MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
   private val nativeAd: FiveAdNative,
   private val adapterScope: CoroutineScope,
-) : UnifiedNativeAdMapper(), FiveAdLoadListener, FiveAdViewEventListener {
+) : UnifiedNativeAdMapper(), FiveAdLoadListener, FiveAdNativeEventListener {
 
   private var mediationNativeAdCallback: MediationNativeAdCallback? = null
 
@@ -77,7 +77,7 @@ private constructor(
         AdError(
           LineMediationAdapter.ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED,
           LineMediationAdapter.ERROR_MSG_MINIMUM_NATIVE_INFO_NOT_RECEIVED,
-          LineMediationAdapter.SDK_ERROR_DOMAIN
+          LineMediationAdapter.SDK_ERROR_DOMAIN,
         )
       Log.w(TAG, adError.message)
       mediationNativeAdLoadCallback.onFailure(adError)
@@ -106,7 +106,7 @@ private constructor(
   override fun trackViews(
     containerView: View,
     clickableAssetViews: MutableMap<String, View>,
-    nonClickableAssetViews: MutableMap<String, View>
+    nonClickableAssetViews: MutableMap<String, View>,
   ) {
     nativeAd.registerViews(containerView, adChoicesContent, clickableAssetViews.values.toList())
   }
@@ -116,7 +116,7 @@ private constructor(
     adapterScope.async {
       mapNativeAd()
       mediationNativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this@LineNativeAd)
-      nativeAd.setViewEventListener(this@LineNativeAd)
+      nativeAd.setEventListener(this@LineNativeAd)
     }
   }
 
@@ -126,18 +126,18 @@ private constructor(
       AdError(
         errorCode.value,
         LineMediationAdapter.ERROR_MSG_AD_LOADING.format(errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationNativeAdLoadCallback.onFailure(adError)
   }
 
-  override fun onFiveAdViewError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
+  override fun onViewError(fiveAdNative: FiveAdNative, fiveAdErrorCode: FiveAdErrorCode) {
     Log.w(TAG, "There was an error displaying the ad.")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdClick(ad: FiveAdInterface) {
+  override fun onClick(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line native ad did record a click.")
     mediationNativeAdCallback?.apply {
       reportAdClicked()
@@ -145,52 +145,32 @@ private constructor(
     }
   }
 
-  override fun onFiveAdClose(ad: FiveAdInterface) {
+  override fun onRemove(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line native ad closed")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdStart(ad: FiveAdInterface) {
+  override fun onPlay(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line video native ad start")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdPause(ad: FiveAdInterface) {
+  override fun onPause(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line video native ad paused")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdResume(ad: FiveAdInterface) {
-    Log.d(TAG, "Line video native ad resumed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdViewThrough(ad: FiveAdInterface) {
+  override fun onViewThrough(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line video native ad viewed")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdReplay(ad: FiveAdInterface) {
-    Log.d(TAG, "Line video native ad replayed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdImpression(ad: FiveAdInterface) {
+  override fun onImpression(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line native ad recorded an impression.")
     mediationNativeAdCallback?.reportAdImpression()
   }
 
-  override fun onFiveAdStall(ad: FiveAdInterface) {
-    Log.d(TAG, "Line native ad stalled")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdRecover(ad: FiveAdInterface) {
-    Log.d(TAG, "Line native ad recovered")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  internal class LineNativeImage constructor(private val drawable: Drawable) : NativeAd.Image() {
+  internal class LineNativeImage(private val drawable: Drawable) : NativeAd.Image() {
 
     override fun getScale(): Double = 1.0
 
@@ -207,7 +187,7 @@ private constructor(
       mediationNativeAdLoadCallback:
         MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
       coroutineContext: CoroutineContext =
-        LineSdkFactory.BACKGROUND_EXECUTOR.asCoroutineDispatcher()
+        LineSdkFactory.BACKGROUND_EXECUTOR.asCoroutineDispatcher(),
     ): Result<LineNativeAd> {
       val context = mediationNativeAdConfiguration.context
       val serverParameters = mediationNativeAdConfiguration.serverParameters
@@ -218,7 +198,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationNativeAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -230,7 +210,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationNativeAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))

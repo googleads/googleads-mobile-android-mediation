@@ -21,7 +21,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
@@ -58,38 +57,19 @@ class LineInterstitialAdTest {
   }
 
   @Test
-  fun showAd_withSuccessfulFullscreenResponse_invokesOnAdOpened() {
-    whenever(mockFiveAdInterstitial.show(activity)) doReturn true
+  fun showAd_invokesFiveAdShowAd() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.showAd(activity)
 
-    verify(mockMediationAdCallback).onAdOpened()
-  }
-
-  @Test
-  fun showAd_withFailedFullscreenResponse_invokesOnAdFailedToShow() {
-    whenever(mockFiveAdInterstitial.show(activity)) doReturn false
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
-    val adErrorCaptor = argumentCaptor<AdError>()
-
-    lineInterstitialAd.showAd(activity)
-
-    verify(mockMediationAdCallback, never()).onAdOpened()
-    verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code)
-      .isEqualTo(LineMediationAdapter.ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN)
-    assertThat(capturedError.message)
-      .isEqualTo(LineMediationAdapter.ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    verify(mockFiveAdInterstitial).showAd()
   }
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
-    verify(mockFiveAdInterstitial).setViewEventListener(lineInterstitialAd)
+    verify(mockFiveAdInterstitial).setEventListener(lineInterstitialAd)
     verify(mediationAdLoadCallback).onSuccess(lineInterstitialAd)
   }
 
@@ -108,40 +88,40 @@ class LineInterstitialAdTest {
   }
 
   @Test
-  fun onFiveAdClick_invokesReportAdClickedAndOnAdLeftApplication() {
+  fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
-    lineInterstitialAd.onFiveAdClick(mockFiveAdInterstitial)
+    lineInterstitialAd.onClick(mockFiveAdInterstitial)
 
     verify(mockMediationAdCallback).reportAdClicked()
     verify(mockMediationAdCallback).onAdLeftApplication()
   }
 
   @Test
-  fun onFiveAdClose_invokesOnAdClosed() {
+  fun onFullScreenClose_invokesOnAdClosed() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
-    lineInterstitialAd.onFiveAdClose(mockFiveAdInterstitial)
+    lineInterstitialAd.onFullScreenClose(mockFiveAdInterstitial)
 
     verify(mockMediationAdCallback).onAdClosed()
   }
 
   @Test
-  fun onFiveAdImpression_invokesReportAdImpression() {
+  fun onImpression_invokesReportAdImpression() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
-    lineInterstitialAd.onFiveAdImpression(mockFiveAdInterstitial)
+    lineInterstitialAd.onImpression(mockFiveAdInterstitial)
 
     verify(mockMediationAdCallback).reportAdImpression()
   }
 
   @Test
-  fun onFiveAdViewError_invokesOnAdFailedToShow() {
+  fun onViewError_invokesOnAdFailedToShow() {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
     val adErrorCaptor = argumentCaptor<AdError>()
 
-    lineInterstitialAd.onFiveAdViewError(mockFiveAdInterstitial, dummyErrorCode)
+    lineInterstitialAd.onViewError(mockFiveAdInterstitial, dummyErrorCode)
 
     verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
@@ -152,45 +132,34 @@ class LineInterstitialAdTest {
   }
 
   @Test
-  fun onFiveAdStart_throwsNoException() {
-    lineInterstitialAd.onFiveAdStart(mockFiveAdInterstitial)
+  fun onFullScreenOpen_invokesOnAdOpened() {
+    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+
+    lineInterstitialAd.onFullScreenOpen(mockFiveAdInterstitial)
+
+    verify(mockMediationAdCallback).onAdOpened()
   }
 
   @Test
-  fun onFiveAdPause_throwsNoException() {
-    lineInterstitialAd.onFiveAdPause(mockFiveAdInterstitial)
+  fun onPlay_throwsNoException() {
+    lineInterstitialAd.onPlay(mockFiveAdInterstitial)
   }
 
   @Test
-  fun onFiveAdResume_throwsNoException() {
-    lineInterstitialAd.onFiveAdResume(mockFiveAdInterstitial)
+  fun onPause_throwsNoException() {
+    lineInterstitialAd.onPause(mockFiveAdInterstitial)
   }
 
   @Test
-  fun onFiveAdViewThrough_throwsNoException() {
-    lineInterstitialAd.onFiveAdViewThrough(mockFiveAdInterstitial)
-  }
-
-  @Test
-  fun onFiveAdReplay_throwsNoException() {
-    lineInterstitialAd.onFiveAdReplay(mockFiveAdInterstitial)
-  }
-
-  @Test
-  fun onFiveAdStall_throwsNoException() {
-    lineInterstitialAd.onFiveAdStall(mockFiveAdInterstitial)
-  }
-
-  @Test
-  fun onFiveAdRecover_throwsNoException() {
-    lineInterstitialAd.onFiveAdRecover(mockFiveAdInterstitial)
+  fun onViewThrough_throwsNoException() {
+    lineInterstitialAd.onViewThrough(mockFiveAdInterstitial)
   }
 
   private fun createMediationInterstitialAdConfiguration(): MediationInterstitialAdConfiguration {
     val serverParameters =
       bundleOf(
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
-        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
       )
     return MediationInterstitialAdConfiguration(
       activity,

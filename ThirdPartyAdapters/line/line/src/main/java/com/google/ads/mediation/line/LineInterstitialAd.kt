@@ -21,8 +21,8 @@ import android.util.Log
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdInterstitial
+import com.five_corp.ad.FiveAdInterstitialEventListener
 import com.five_corp.ad.FiveAdLoadListener
-import com.five_corp.ad.FiveAdViewEventListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -43,7 +43,7 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val interstitialAd: FiveAdInterstitial,
   private val networkExtras: Bundle?,
-) : MediationInterstitialAd, FiveAdLoadListener, FiveAdViewEventListener {
+) : MediationInterstitialAd, FiveAdLoadListener, FiveAdInterstitialEventListener {
 
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
 
@@ -58,26 +58,13 @@ private constructor(
   }
 
   override fun showAd(context: Context) {
-    val activity = activityReference.get() ?: return
-    val showedFullscreen = interstitialAd.show(activity)
-    if (!showedFullscreen) {
-      val adError =
-        AdError(
-          LineMediationAdapter.ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN,
-          LineMediationAdapter.ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN,
-          LineMediationAdapter.SDK_ERROR_DOMAIN
-        )
-      Log.w(TAG, adError.message)
-      mediationInterstitialAdCallback?.onAdFailedToShow(adError)
-      return
-    }
-    mediationInterstitialAdCallback?.onAdOpened()
+    interstitialAd.showAd()
   }
 
   override fun onFiveAdLoad(ad: FiveAdInterface) {
     Log.d(TAG, "Finished loading Line Interstitial Ad for slotId: ${ad.slotId}")
     mediationInterstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
-    interstitialAd.setViewEventListener(this)
+    interstitialAd.setEventListener(this)
   }
 
   override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
@@ -85,24 +72,24 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
   }
 
-  override fun onFiveAdViewError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
+  override fun onViewError(fiveAdInterstitial: FiveAdInterstitial, errorCode: FiveAdErrorCode) {
     val adError =
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_SHOWING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationInterstitialAdCallback?.onAdFailedToShow(adError)
   }
 
-  override fun onFiveAdClick(ad: FiveAdInterface) {
+  override fun onClick(fiveAdInterstitial: FiveAdInterstitial) {
     Log.d(TAG, "Line interstitial ad did record a click.")
     mediationInterstitialAdCallback?.apply {
       reportAdClicked()
@@ -110,49 +97,34 @@ private constructor(
     }
   }
 
-  override fun onFiveAdClose(ad: FiveAdInterface) {
+  override fun onFullScreenClose(fiveAdInterstitial: FiveAdInterstitial) {
     Log.d(TAG, "Line interstitial ad closed")
     mediationInterstitialAdCallback?.onAdClosed()
   }
 
-  override fun onFiveAdStart(ad: FiveAdInterface) {
-    Log.d(TAG, "Line interstitial video ad start")
+  override fun onPlay(fiveAdInterstitial: FiveAdInterstitial) {
+    Log.d(TAG, "Line interstitial video ad played")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdPause(ad: FiveAdInterface) {
+  override fun onPause(fiveAdInterstitial: FiveAdInterstitial) {
     Log.d(TAG, "Line interstitial video ad paused")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdResume(ad: FiveAdInterface) {
-    Log.d(TAG, "Line interstitial video ad resumed")
-    // Google Mobile Ads SDK doesn't have a matching event.
+  override fun onFullScreenOpen(fiveAdInterstitial: FiveAdInterstitial) {
+    Log.d(TAG, "Line interstitial video ad opened")
+    mediationInterstitialAdCallback?.onAdOpened()
   }
 
-  override fun onFiveAdViewThrough(ad: FiveAdInterface) {
+  override fun onViewThrough(fiveAdInterstitial: FiveAdInterstitial) {
     Log.d(TAG, "Line interstitial video ad viewed")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onFiveAdReplay(ad: FiveAdInterface) {
-    Log.d(TAG, "Line interstitial video ad replayed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdImpression(ad: FiveAdInterface) {
+  override fun onImpression(fiveAdInterstitial: FiveAdInterstitial) {
     Log.d(TAG, "Line interstitial ad recorded an impression.")
     mediationInterstitialAdCallback?.reportAdImpression()
-  }
-
-  override fun onFiveAdStall(ad: FiveAdInterface) {
-    Log.d(TAG, "Line interstitial ad stalled")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdRecover(ad: FiveAdInterface) {
-    Log.d(TAG, "Line interstitial ad recovered")
-    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   companion object {
@@ -169,7 +141,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY,
             LineMediationAdapter.ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -182,7 +154,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -194,7 +166,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))

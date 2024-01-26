@@ -91,7 +91,7 @@ class LineBannerAdTest {
   fun onFiveAdLoad_invokesOnSuccess() {
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
-    verify(mockFiveAdCustomLayout).setViewEventListener(lineBannerAd)
+    verify(mockFiveAdCustomLayout).setEventListener(lineBannerAd)
     verify(mediationAdLoadCallback).onSuccess(lineBannerAd)
   }
 
@@ -109,76 +109,56 @@ class LineBannerAdTest {
   }
 
   @Test
-  fun onFiveAdClick_invokesReportAdClickedAndOnAdLeftApplication() {
+  fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
-    lineBannerAd.onFiveAdClick(mockFiveAdCustomLayout)
+    lineBannerAd.onClick(mockFiveAdCustomLayout)
 
     verify(mockMediationAdCallback).reportAdClicked()
     verify(mockMediationAdCallback).onAdLeftApplication()
   }
 
   @Test
-  fun onFiveAdImpression_invokesReportAdImpression() {
+  fun onImpression_invokesReportAdImpression() {
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
-    lineBannerAd.onFiveAdImpression(mockFiveAdCustomLayout)
+    lineBannerAd.onImpression(mockFiveAdCustomLayout)
 
     verify(mockMediationAdCallback).reportAdImpression()
   }
 
   @Test
-  fun onFiveAdClose_throwsNoException() {
-    lineBannerAd.onFiveAdClose(mockFiveAdCustomLayout)
+  fun onRemove_throwsNoException() {
+    lineBannerAd.onRemove(mockFiveAdCustomLayout)
   }
 
   @Test
-  fun onFiveAdViewError_throwsNoException() {
+  fun onViewError_throwsNoException() {
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
 
-    lineBannerAd.onFiveAdViewError(mockFiveAdCustomLayout, dummyErrorCode)
+    lineBannerAd.onViewError(mockFiveAdCustomLayout, dummyErrorCode)
   }
 
   @Test
-  fun onFiveAdStart_throwsNoException() {
-    lineBannerAd.onFiveAdStart(mockFiveAdCustomLayout)
+  fun onPlay_throwsNoException() {
+    lineBannerAd.onPlay(mockFiveAdCustomLayout)
   }
 
   @Test
-  fun onFiveAdPause_throwsNoException() {
-    lineBannerAd.onFiveAdPause(mockFiveAdCustomLayout)
+  fun onPause_throwsNoException() {
+    lineBannerAd.onPause(mockFiveAdCustomLayout)
   }
 
   @Test
-  fun onFiveAdResume_throwsNoException() {
-    lineBannerAd.onFiveAdResume(mockFiveAdCustomLayout)
-  }
-
-  @Test
-  fun onFiveAdViewThrough_throwsNoException() {
-    lineBannerAd.onFiveAdViewThrough(mockFiveAdCustomLayout)
-  }
-
-  @Test
-  fun onFiveAdReplay_throwsNoException() {
-    lineBannerAd.onFiveAdReplay(mockFiveAdCustomLayout)
-  }
-
-  @Test
-  fun onFiveAdStall_throwsNoException() {
-    lineBannerAd.onFiveAdStall(mockFiveAdCustomLayout)
-  }
-
-  @Test
-  fun onFiveAdRecover_throwsNoException() {
-    lineBannerAd.onFiveAdRecover(mockFiveAdCustomLayout)
+  fun onViewThrough_throwsNoException() {
+    lineBannerAd.onViewThrough(mockFiveAdCustomLayout)
   }
 
   private fun createMediationBannerAdConfiguration(): MediationBannerAdConfiguration {
     val serverParameters =
       bundleOf(
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
-        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
       )
     return MediationBannerAdConfiguration(
       context,

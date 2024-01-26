@@ -19,10 +19,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.five_corp.ad.FiveAdCustomLayout
+import com.five_corp.ad.FiveAdCustomLayoutEventListener
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
-import com.five_corp.ad.FiveAdViewEventListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -45,7 +45,7 @@ private constructor(
   private val adView: FiveAdCustomLayout,
   private val adSize: AdSize,
   private val networkExtras: Bundle?,
-) : MediationBannerAd, FiveAdLoadListener, FiveAdViewEventListener {
+) : MediationBannerAd, FiveAdLoadListener, FiveAdCustomLayoutEventListener {
 
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
 
@@ -70,7 +70,7 @@ private constructor(
         AdSize((it.logicalWidth / density).roundToInt(), (it.logicalHeight / density).roundToInt())
       Log.d(
         TAG,
-        "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}"
+        "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}",
       )
       val closestSize = MediationUtils.findClosestSize(context, adSize, listOf(returnedAdSize))
       if (closestSize == null) {
@@ -79,20 +79,20 @@ private constructor(
             adSize.width,
             adSize.height,
             it.logicalWidth,
-            it.logicalHeight
+            it.logicalHeight,
           )
         Log.w(TAG, logMessage)
         val adError =
           AdError(
             ERROR_CODE_MISMATCH_AD_SIZE,
             logMessage,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return
       }
     }
-    adView.setViewEventListener(this)
+    adView.setEventListener(this)
     mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this)
   }
 
@@ -101,19 +101,22 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
   }
 
-  override fun onFiveAdViewError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
+  override fun onViewError(
+    fiveAdCustomLayout: FiveAdCustomLayout,
+    fiveAdErrorCode: FiveAdErrorCode,
+  ) {
     Log.w(TAG, "There was an error displaying the ad.")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   /** Called when banner is clicked */
-  override fun onFiveAdClick(ad: FiveAdInterface) {
+  override fun onClick(fiveAdCustomLayout: FiveAdCustomLayout) {
     Log.d(TAG, "Line banner ad did record a click.")
     mediationBannerAdCallback?.apply {
       reportAdClicked()
@@ -121,14 +124,14 @@ private constructor(
     }
   }
 
-  override fun onFiveAdClose(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad closed")
+  override fun onRemove(fiveAdCustomLayout: FiveAdCustomLayout) {
+    Log.d(TAG, "Line banner ad removed")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   /** Called when the loaded banner ad is a video and it starts playing. */
-  override fun onFiveAdStart(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad start")
+  override fun onPlay(fiveAdCustomLayout: FiveAdCustomLayout) {
+    Log.d(TAG, "Line banner ad played")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
@@ -136,46 +139,21 @@ private constructor(
    * Called when the loaded banner ad is a video, it hasn't finished and the app moves out from the
    * Foreground.
    */
-  override fun onFiveAdPause(ad: FiveAdInterface) {
+  override fun onPause(fiveAdCustomLayout: FiveAdCustomLayout) {
     Log.d(TAG, "Line banner ad paused")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  /** Called when the loaded banner ad is a video and the app moves into the Foreground. */
-  override fun onFiveAdResume(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad resumed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
   /** Called when the loaded banner ad is a video and it finishes playing it completely. */
-  override fun onFiveAdViewThrough(ad: FiveAdInterface) {
+  override fun onViewThrough(fiveAdCustomLayout: FiveAdCustomLayout) {
     Log.d(TAG, "Line banner ad viewed")
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  /**
-   * Called when the loaded banner ad is a video, it has finished playing and the replay button is
-   * clicked to play again. onFiveAdStart is not called.
-   */
-  override fun onFiveAdReplay(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad replayed")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
   /** Called when a new banner ad appears. */
-  override fun onFiveAdImpression(ad: FiveAdInterface) {
+  override fun onImpression(fiveAdCustomLayout: FiveAdCustomLayout) {
     Log.d(TAG, "Line banner ad recorded an impression.")
     mediationBannerAdCallback?.reportAdImpression()
-  }
-
-  override fun onFiveAdStall(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad stalled")
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  override fun onFiveAdRecover(ad: FiveAdInterface) {
-    Log.d(TAG, "Line banner ad recovered")
-    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   companion object {
@@ -186,8 +164,7 @@ private constructor(
 
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
-      mediationAdLoadCallback:
-        MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
     ): Result<LineBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
@@ -199,7 +176,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -211,7 +188,7 @@ private constructor(
           AdError(
             LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
             LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN
+            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return Result.failure(NoSuchElementException(adError.message))
@@ -221,7 +198,7 @@ private constructor(
         LineSdkFactory.delegate.createFiveAdCustomLayout(
           context,
           slotId,
-          adSize.getWidthInPixels(context)
+          adSize.getWidthInPixels(context),
         )
       return Result.success(
         LineBannerAd(
