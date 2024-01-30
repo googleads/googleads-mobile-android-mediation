@@ -1,11 +1,15 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Next Version
-- Removed uses of deprecated FiveAdViewEventListener to use 
-FiveAdCustomLayoutEventListener, FiveAdVideoRewardEventListener, 
-FiveAdInterstitialEventListener and FiveAdNativeEventListener.
+#### Version 2.7.20240112.0
+- Removed deprecated `FiveAdViewEventListener` in favor of
+`FiveAdCustomLayoutEventListener`, `FiveAdVideoRewardEventListener`,
+`FiveAdInterstitialEventListener` and `FiveAdNativeEventListener`.
 - Verified compatibility with FiveAd SDK version 2.7.20240112.
 - Updated the minimum required Google Mobile Ads SDK version to 22.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- FiveAd SDK version 2.7.20240112.
 
 #### Version 2.6.20230607.1
 - Added `LineExtras` class for publishers to define default sound settings for
