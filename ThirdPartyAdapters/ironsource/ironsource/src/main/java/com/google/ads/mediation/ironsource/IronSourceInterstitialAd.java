@@ -31,11 +31,12 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.ironsource.mediationsdk.IronSource;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
-  private static final ConcurrentHashMap<String, IronSourceInterstitialAd>
+  private static final ConcurrentHashMap<String, WeakReference<IronSourceInterstitialAd>>
       availableInterstitialInstances = new ConcurrentHashMap<>();
 
   private static final IronSourceInterstitialAdListener ironSourceInterstitialListener =
@@ -63,7 +64,9 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   /** Getters and Setters. */
   static IronSourceInterstitialAd getFromAvailableInstances(@NonNull String instanceId) {
-    return availableInterstitialInstances.get(instanceId);
+    return availableInterstitialInstances.containsKey(instanceId)
+        ? availableInterstitialInstances.get(instanceId).get()
+        : null;
   }
 
   static void removeFromAvailableInstances(@NonNull String instanceId) {
@@ -93,7 +96,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     }
 
     Activity activity = (Activity) context;
-    availableInterstitialInstances.put(instanceID, this);
+    availableInterstitialInstances.put(instanceID, new WeakReference<>(this));
     Log.d(
         TAG, String.format("Loading IronSource interstitial ad with instance ID: %s", instanceID));
     IronSource.loadISDemandOnlyInterstitial(activity, instanceID);
@@ -125,9 +128,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     IronSource.showISDemandOnlyInterstitial(instanceID);
   }
 
-  /**
-   * Forward ad load failure event to Google Mobile Ads SDK.
-   */
+  /** Forward ad load failure event to Google Mobile Ads SDK. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.e(TAG, loadError.toString());
     if (mediationAdLoadCallback != null) {

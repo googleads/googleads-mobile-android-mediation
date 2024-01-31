@@ -31,12 +31,13 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.ironsource.mediationsdk.IronSource;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceRewardedAd implements MediationRewardedAd {
 
-  private static final ConcurrentHashMap<String, IronSourceRewardedAd> availableInstances =
-      new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, WeakReference<IronSourceRewardedAd>>
+      availableInstances = new ConcurrentHashMap<>();
 
   private static final IronSourceRewardedAdListener ironSourceRewardedListener =
       new IronSourceRewardedAdListener();
@@ -53,19 +54,19 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   public IronSourceRewardedAd(
       @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  /**
-   * Getters and Setters.
-   */
+  /** Getters and Setters. */
   static IronSourceRewardedAd getFromAvailableInstances(@NonNull String instanceId) {
-    return availableInstances.get(instanceId);
+    return availableInstances.containsKey(instanceId)
+        ? availableInstances.get(instanceId).get()
+        : null;
   }
 
   static void removeFromAvailableInstances(@NonNull String instanceId) {
@@ -85,7 +86,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   }
 
   public MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-  getMediationAdLoadCallback() {
+      getMediationAdLoadCallback() {
     return mediationAdLoadCallback;
   }
 
@@ -95,7 +96,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     }
 
     Activity activity = (Activity) context;
-    availableInstances.put(instanceID, this);
+    availableInstances.put(instanceID, new WeakReference<>(this));
     Log.d(TAG, String.format("Loading IronSource rewarded ad with instance ID: %s", instanceID));
     IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
   }
@@ -128,9 +129,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     IronSource.showISDemandOnlyRewardedVideo(this.instanceID);
   }
 
-  /**
-   * Forward ad load failure event to Google Mobile Ads SDK.
-   */
+  /** Forward ad load failure event to Google Mobile Ads SDK. */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.w(TAG, loadError.toString());
     mediationAdLoadCallback.onFailure(loadError);
