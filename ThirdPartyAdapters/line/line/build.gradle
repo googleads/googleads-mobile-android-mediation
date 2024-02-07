@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Line"
     // String property to store version name.
-    stringVersion = "2.7.20240112.0"
+    stringVersion = "2.7.20240126.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -127,7 +127,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
-    implementation 'com.linecorp.adsnetwork:fivead:2.7.20240112'
+    implementation 'com.linecorp.adsnetwork:fivead:2.7.20240126'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
     testImplementation 'junit:junit:4.13.2'
