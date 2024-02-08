@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -42,7 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceBannerAd implements MediationBannerAd {
 
-  private static final ConcurrentHashMap<String, WeakReference<IronSourceBannerAd>>
+  @VisibleForTesting
+  static final ConcurrentHashMap<String, WeakReference<IronSourceBannerAd>>
       availableBannerInstances = new ConcurrentHashMap<>();
 
   private static final IronSourceBannerAdListener ironSourceBannerListener =

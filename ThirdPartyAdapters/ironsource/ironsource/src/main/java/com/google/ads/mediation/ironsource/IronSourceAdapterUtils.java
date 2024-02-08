@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
@@ -22,13 +21,13 @@ import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERR
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,10 +82,11 @@ public class IronSourceAdapterUtils {
     return null;
   }
 
-  public static <T> boolean canLoadIronSourceAdInstance(@NonNull String instanceId,
-      @NonNull ConcurrentHashMap<String, T> instanceMap) {
-    T adUnit = instanceMap.get(instanceId);
-    return (adUnit == null);
+  public static <T> boolean canLoadIronSourceAdInstance(
+      @NonNull String instanceId,
+      @NonNull ConcurrentHashMap<String, WeakReference<T>> instanceMap) {
+    WeakReference<T> adRef = instanceMap.get(instanceId);
+    return adRef == null || adRef.get() == null;
   }
 
   public static String getAdapterVersion() {

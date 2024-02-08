@@ -25,6 +25,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -36,7 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
-  private static final ConcurrentHashMap<String, WeakReference<IronSourceInterstitialAd>>
+  @VisibleForTesting
+  static final ConcurrentHashMap<String, WeakReference<IronSourceInterstitialAd>>
       availableInterstitialInstances = new ConcurrentHashMap<>();
 
   private static final IronSourceInterstitialAdListener ironSourceInterstitialListener =

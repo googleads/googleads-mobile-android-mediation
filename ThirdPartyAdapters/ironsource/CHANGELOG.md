@@ -1,5 +1,10 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next version
+- Updated the ad objects to hold weak references to themselves. This avoids load
+  error in the case where publisher deletes reference to an ad and later loads
+  an ad for the same ad unit again.
+
 #### Version 7.7.0.0
 - Verified compatibility with ironSource SDK version 7.7.0.
 

@@ -25,6 +25,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -36,8 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IronSourceRewardedAd implements MediationRewardedAd {
 
-  private static final ConcurrentHashMap<String, WeakReference<IronSourceRewardedAd>>
-      availableInstances = new ConcurrentHashMap<>();
+  @VisibleForTesting
+  static final ConcurrentHashMap<String, WeakReference<IronSourceRewardedAd>> availableInstances =
+      new ConcurrentHashMap<>();
 
   private static final IronSourceRewardedAdListener ironSourceRewardedListener =
       new IronSourceRewardedAdListener();
