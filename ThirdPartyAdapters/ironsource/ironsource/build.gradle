@@ -18,6 +18,9 @@ ext {
 }
 
 android {
+    if (project.android.hasProperty('namespace')) {
+        namespace 'com.google.ads.mediation.ironsource'
+    }
     defaultConfig {
         compileSdk 33
         minSdkVersion 19
@@ -26,6 +29,7 @@ android {
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
+        android.buildFeatures.buildConfig true
     }
     buildTypes {
         release {

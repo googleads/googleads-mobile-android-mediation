@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -38,6 +39,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.IronSource.createBannerForDemandOnly
 import com.ironsource.mediationsdk.IronSource.initISDemandOnly
@@ -48,12 +51,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
@@ -68,6 +71,8 @@ class IronSourceMediationAdapterTest {
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
 
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
+  private val mockRtbSignalData = mock<RtbSignalData> { on { context } doReturn context }
+  private val mockSignalCallbacks = mock<SignalCallbacks>()
   private val bannerAdLoadCallback =
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
   private val interstitialAdLoadCallback =
@@ -207,6 +212,17 @@ class IronSourceMediationAdapterTest {
     )
 
     verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+  }
+
+  @Test
+  fun collectSignals_invokesOnSuccess() {
+    mockStatic(IronSource::class.java).use {
+      whenever(IronSource.getISDemandOnlyBiddingData(context)) doReturn TEST_BID_RESPONSE
+
+      adapter.collectSignals(mockRtbSignalData, mockSignalCallbacks)
+
+      verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
+    }
   }
 
   @Test
