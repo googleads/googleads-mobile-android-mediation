@@ -1,9 +1,13 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 7.7.0.1
 - Updated the ad objects to hold weak references to themselves. This avoids load
   error in the case where publisher deletes reference to an ad and later loads
   an ad for the same ad unit again.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.7.0.
 
 #### Version 7.7.0.0
 - Verified compatibility with ironSource SDK version 7.7.0.
