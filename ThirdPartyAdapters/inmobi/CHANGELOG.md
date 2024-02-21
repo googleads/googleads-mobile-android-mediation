@@ -1,8 +1,15 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 10.6.6.0
+- Verified compatibility with InMobi Kotlin SDK version 10.6.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- InMobi Kotlin SDK version 10.6.6.
+
 #### Version 10.6.3.0
 - Added watermark support for bidding banner, interstitial and rewarded ads.
-- Verified compatibility with InMobi Kotlin SDK version 10.6.2.
+- Verified compatibility with InMobi Kotlin SDK version 10.6.3.
 
 Built and tested with:
 - Google Mobile Ads SDK version 22.6.0.
