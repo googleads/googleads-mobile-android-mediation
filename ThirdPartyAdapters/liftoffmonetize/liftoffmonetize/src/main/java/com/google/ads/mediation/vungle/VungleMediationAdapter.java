@@ -27,14 +27,19 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
+import com.google.ads.mediation.vungle.rtb.VungleRtbAppOpenAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
+import com.google.ads.mediation.vungle.waterfall.VungleWaterfallAppOpenAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -71,11 +76,14 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
 
   public static final String TAG = VungleMediationAdapter.class.getSimpleName();
 
+  private VungleWaterfallAppOpenAd waterfallAppOpenAd;
+
   private VungleRtbBannerAd rtbBannerAd;
   private VungleRtbInterstitialAd rtbInterstitialAd;
   private VungleRtbRewardedAd rtbRewardedAd;
   private VungleRtbRewardedAd rtbRewardedInterstitialAd;
   private VungleRtbNativeAd rtbNativeAd;
+  private VungleRtbAppOpenAd rtbAppOpenAd;
 
   private AdConfig adConfig;
   private String userId;
@@ -471,6 +479,17 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     loadRewardedAd(mediationRewardedAdConfiguration, callback);
   }
 
+  @Override
+  public void loadAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationAppOpenAdConfiguration.taggedForChildDirectedTreatment());
+    waterfallAppOpenAd =
+        new VungleWaterfallAppOpenAd(mediationAppOpenAdConfiguration, callback, vungleFactory);
+    waterfallAppOpenAd.render();
+  }
+
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
@@ -532,6 +551,16 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
     rtbRewardedInterstitialAd = new VungleRtbRewardedAd(adConfiguration, callback, vungleFactory);
     rtbRewardedInterstitialAd.render();
+  }
+
+  @Override
+  public void loadRtbAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationAppOpenAdConfiguration.taggedForChildDirectedTreatment());
+    rtbAppOpenAd = new VungleRtbAppOpenAd(mediationAppOpenAdConfiguration, callback, vungleFactory);
+    rtbAppOpenAd.render();
   }
 
   static String getAdapterVersion() {

@@ -10,6 +10,7 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLAC
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
@@ -35,6 +36,8 @@ import com.google.android.gms.ads.AdSize.BANNER
 import com.google.android.gms.ads.AdSize.WIDE_SKYSCRAPER
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationAppOpenAd
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -165,7 +168,7 @@ class VungleMediationAdapterTest {
     adapter.mediationAdapterInitializeVerifySuccess(
       context,
       mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_1)
+      /* serverParameters= */ bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_1),
     )
   }
 
@@ -176,7 +179,7 @@ class VungleMediationAdapterTest {
       context,
       mockInitializationCompleteCallback,
       /* serverParameters= */ bundleOf(),
-      /* expectedError= */ error.toString()
+      /* expectedError= */ error.toString(),
     )
   }
 
@@ -203,7 +206,7 @@ class VungleMediationAdapterTest {
     val configs =
       listOf(
         createMediationConfiguration(serverParameters = serverParameters),
-        createMediationConfiguration(serverParameters = serverParameters)
+        createMediationConfiguration(serverParameters = serverParameters),
       )
     val listener = argumentCaptor<VungleInitializer.VungleInitializationListener>()
 
@@ -241,7 +244,7 @@ class VungleMediationAdapterTest {
     val configs =
       listOf(
         createMediationConfiguration(serverParameters = serverParameters1),
-        createMediationConfiguration(serverParameters = serverParameters2)
+        createMediationConfiguration(serverParameters = serverParameters2),
       )
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
@@ -265,7 +268,7 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -285,9 +288,9 @@ class VungleMediationAdapterTest {
           context = context,
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -308,9 +311,9 @@ class VungleMediationAdapterTest {
       createMediationRewardedAdConfiguration(
         context = context,
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -319,7 +322,7 @@ class VungleMediationAdapterTest {
         "Failed to load waterfall rewarded ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -333,9 +336,9 @@ class VungleMediationAdapterTest {
       createMediationRewardedAdConfiguration(
         context = context,
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -344,7 +347,7 @@ class VungleMediationAdapterTest {
         "Failed to load waterfall rewarded ad from Liftoff Monetize. " +
           "Missing or Invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -355,7 +358,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -373,9 +376,9 @@ class VungleMediationAdapterTest {
           context = context,
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        rewardedAdLoadCallback
+        rewardedAdLoadCallback,
       )
     }
 
@@ -405,7 +408,7 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -482,7 +485,7 @@ class VungleMediationAdapterTest {
         context = context,
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
       ),
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
 
     val expectedAdError =
@@ -491,7 +494,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding native ad from Liftoff Monetize. " +
           "Missing or invalid app ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -506,7 +509,7 @@ class VungleMediationAdapterTest {
         context = context,
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
       ),
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
 
     val expectedAdError =
@@ -515,7 +518,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding native ad from Liftoff Monetize. " +
           "Missing or Invalid placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -526,7 +529,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -545,7 +548,7 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         ),
-        nativeAdLoadCallback
+        nativeAdLoadCallback,
       )
     }
 
@@ -563,7 +566,7 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -583,9 +586,9 @@ class VungleMediationAdapterTest {
           context = context,
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -606,9 +609,9 @@ class VungleMediationAdapterTest {
       createMediationRewardedAdConfiguration(
         context = context,
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -617,7 +620,7 @@ class VungleMediationAdapterTest {
         "Failed to load waterfall rewarded ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -631,9 +634,9 @@ class VungleMediationAdapterTest {
       createMediationRewardedAdConfiguration(
         context = context,
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -642,7 +645,7 @@ class VungleMediationAdapterTest {
         "Failed to load waterfall rewarded ad from Liftoff Monetize. " +
           "Missing or Invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -653,7 +656,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -671,13 +674,131 @@ class VungleMediationAdapterTest {
           context = context,
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        rewardedAdLoadCallback
+        rewardedAdLoadCallback,
       )
     }
 
     verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+  }
+
+  @Test
+  fun loadAppOpenAd_updatesCoppaStatus() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(createMediationAppOpenAdConfiguration(context = context), mock())
+    }
+
+    verify(mockVungleInitializer).updateCoppaStatus(any())
+  }
+
+  @Test
+  fun loadAppOpenAd_loadsLiftoffInterstitialAd() {
+    stubVungleInitializerToSucceed()
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+        ),
+        mock(),
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleAdConfig).adOrientation = LANDSCAPE
+    verify(vungleFactory).createInterstitialAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
+    verify(vungleAppOpenAd).adListener = any()
+    verify(vungleAppOpenAd).load(eq(null))
+  }
+
+  @Test
+  fun loadAppOpenAd_withoutAppId_callsLoadFailure() {
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+
+    adapter.loadAppOpenAd(
+      createMediationAppOpenAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+      ),
+      appOpenAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load app open ad from Liftoff Monetize. Missing or invalid App ID " +
+          "configured for this ad source instance in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadAppOpenAd_withoutPlacementId_callsLoadFailure() {
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+
+    adapter.loadAppOpenAd(
+      createMediationAppOpenAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+      ),
+      appOpenAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load app open ad from Liftoff Monetize. Missing or Invalid Placement " +
+          "ID configured for this ad source instance in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
+    val liftoffSdkInitError =
+      AdError(
+        VungleError.UNKNOWN_ERROR,
+        "Liftoff Monetize SDK initialization failed.",
+        VUNGLE_SDK_ERROR_DOMAIN,
+      )
+    doAnswer { invocation ->
+        val args: Array<Any> = invocation.arguments
+        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+      }
+      .whenever(mockVungleInitializer)
+      .initialize(any(), any(), any())
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+        ),
+        appOpenAdLoadCallback,
+      )
+    }
+
+    verify(appOpenAdLoadCallback).onFailure(liftoffSdkInitError)
   }
 
   @Test
@@ -706,9 +827,9 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -732,9 +853,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -743,7 +864,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding rewarded ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -759,9 +880,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -770,7 +891,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding rewarded ad from Liftoff Monetize. " +
           "Missing or invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -781,7 +902,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -801,9 +922,9 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        rewardedAdLoadCallback
+        rewardedAdLoadCallback,
       )
     }
 
@@ -835,9 +956,9 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK
+          watermark = TEST_WATERMARK,
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -862,9 +983,9 @@ class VungleMediationAdapterTest {
         context = context,
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         bidResponse = TEST_BID_RESPONSE,
-        watermark = TEST_WATERMARK
+        watermark = TEST_WATERMARK,
       ),
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
 
     val expectedAdError =
@@ -873,7 +994,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding banner ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -888,9 +1009,9 @@ class VungleMediationAdapterTest {
         context = context,
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
         bidResponse = TEST_BID_RESPONSE,
-        watermark = TEST_WATERMARK
+        watermark = TEST_WATERMARK,
       ),
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
 
     val expectedAdError =
@@ -899,7 +1020,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding banner ad from Liftoff Monetize. " +
           "Missing or Invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -916,9 +1037,9 @@ class VungleMediationAdapterTest {
           bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        adSize = WIDE_SKYSCRAPER
+        adSize = WIDE_SKYSCRAPER,
       ),
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
 
     val expectedAdError =
@@ -926,9 +1047,9 @@ class VungleMediationAdapterTest {
         ERROR_BANNER_SIZE_MISMATCH,
         String.format(
           "The requested banner size: %s is not supported by Vungle SDK.",
-          WIDE_SKYSCRAPER
+          WIDE_SKYSCRAPER,
         ),
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -939,7 +1060,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -958,9 +1079,9 @@ class VungleMediationAdapterTest {
           serverParameters =
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK
+          watermark = TEST_WATERMARK,
         ),
-        bannerAdLoadCallback
+        bannerAdLoadCallback,
       )
     }
 
@@ -974,7 +1095,7 @@ class VungleMediationAdapterTest {
 
       adapter.loadRtbInterstitialAd(
         createMediationInterstitialAdConfiguration(context = context),
-        mock()
+        mock(),
       )
     }
 
@@ -996,9 +1117,9 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -1021,9 +1142,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
       ),
-      interstitialAdLoadCallback
+      interstitialAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1032,7 +1153,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding interstitial ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(interstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1048,9 +1169,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
       ),
-      interstitialAdLoadCallback
+      interstitialAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1059,7 +1180,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding interstitial ad from Liftoff Monetize. " +
           "Missing or Invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(interstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1070,7 +1191,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -1090,9 +1211,9 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
         ),
-        interstitialAdLoadCallback
+        interstitialAdLoadCallback,
       )
     }
 
@@ -1124,7 +1245,7 @@ class VungleMediationAdapterTest {
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -1204,7 +1325,7 @@ class VungleMediationAdapterTest {
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
       ),
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1213,7 +1334,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding native ad from Liftoff Monetize. " +
           "Missing or invalid app ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1230,7 +1351,7 @@ class VungleMediationAdapterTest {
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
       ),
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1239,7 +1360,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding native ad from Liftoff Monetize. " +
           "Missing or Invalid placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1250,7 +1371,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -1271,7 +1392,7 @@ class VungleMediationAdapterTest {
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
         ),
-        nativeAdLoadCallback
+        nativeAdLoadCallback,
       )
     }
 
@@ -1285,7 +1406,7 @@ class VungleMediationAdapterTest {
 
       adapter.loadRtbRewardedInterstitialAd(
         createMediationRewardedAdConfiguration(context = context),
-        mock()
+        mock(),
       )
     }
 
@@ -1307,9 +1428,9 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        mock()
+        mock(),
       )
     }
 
@@ -1333,9 +1454,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1344,7 +1465,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding rewarded ad from Liftoff Monetize. " +
           "Missing or invalid App ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1360,9 +1481,9 @@ class VungleMediationAdapterTest {
         serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
         bidResponse = TEST_BID_RESPONSE,
         watermark = TEST_WATERMARK,
-        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
       ),
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
 
     val expectedAdError =
@@ -1371,7 +1492,7 @@ class VungleMediationAdapterTest {
         "Failed to load bidding rewarded ad from Liftoff Monetize. " +
           "Missing or invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -1382,7 +1503,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleError.UNKNOWN_ERROR,
         "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN
+        VUNGLE_SDK_ERROR_DOMAIN,
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -1402,13 +1523,140 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
         ),
-        rewardedAdLoadCallback
+        rewardedAdLoadCallback,
       )
     }
 
     verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_updatesCoppaStatus() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(createMediationAppOpenAdConfiguration(context = context), mock())
+    }
+
+    verify(mockVungleInitializer).updateCoppaStatus(any())
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_loadsLiftoffInterstitialAdWithBidResponse() {
+    stubVungleInitializerToSucceed()
+    val vungleInterstitialAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleInterstitialAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+        ),
+        mock(),
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleAdConfig).adOrientation = LANDSCAPE
+    verify(vungleAdConfig).setWatermark(TEST_WATERMARK)
+    verify(vungleFactory).createInterstitialAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
+    verify(vungleInterstitialAd).adListener = any()
+    verify(vungleInterstitialAd).load(TEST_BID_RESPONSE)
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withoutAppId_callsLoadFailure() {
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+
+    adapter.loadRtbAppOpenAd(
+      createMediationAppOpenAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+      ),
+      appOpenAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load app open ad from Liftoff Monetize. Missing or invalid App ID " +
+          "configured for this ad source instance in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_withoutPlacementId_callsLoadFailure() {
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+
+    adapter.loadRtbAppOpenAd(
+      createMediationAppOpenAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+        mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+      ),
+      appOpenAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load app open ad from Liftoff Monetize. Missing or Invalid Placement " +
+          "ID configured for this ad source instance in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
+    val liftoffSdkInitError =
+      AdError(
+        VungleError.UNKNOWN_ERROR,
+        "Liftoff Monetize SDK initialization failed.",
+        VUNGLE_SDK_ERROR_DOMAIN,
+      )
+    doAnswer { invocation ->
+        val args: Array<Any> = invocation.arguments
+        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+      }
+      .whenever(mockVungleInitializer)
+      .initialize(any(), any(), any())
+    val appOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+        ),
+        appOpenAdLoadCallback,
+      )
+    }
+
+    verify(appOpenAdLoadCallback).onFailure(liftoffSdkInitError)
   }
 
   @Test
@@ -1427,7 +1675,7 @@ class VungleMediationAdapterTest {
       AdError(
         VungleMediationAdapter.ERROR_CANNOT_GET_BID_TOKEN,
         "Liftoff Monetize returned an empty bid token.",
-        VungleMediationAdapter.ERROR_DOMAIN
+        VungleMediationAdapter.ERROR_DOMAIN,
       )
     whenever(mockSdkWrapper.getBiddingToken(any())) doReturn ""
 
