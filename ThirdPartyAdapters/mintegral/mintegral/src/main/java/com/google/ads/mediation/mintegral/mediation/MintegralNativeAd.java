@@ -120,15 +120,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onEnterFullscreen() {
-    if (nativeCallback != null) {
-      nativeCallback.onAdOpened();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onAdOpened();
     }
   }
 
   @Override
   public void onExitFullscreen() {
-    if (nativeCallback != null) {
-      nativeCallback.onAdClosed();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onAdClosed();
     }
   }
 
@@ -149,15 +149,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onVideoAdClicked(Campaign campaign) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdClicked();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.reportAdClicked();
     }
   }
 
   @Override
   public void onVideoStart() {
-    if (nativeCallback != null) {
-      nativeCallback.onVideoPlay();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onVideoPlay();
     }
   }
 

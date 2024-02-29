@@ -30,8 +30,10 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.MBBidNativeHandler;
 
 import org.json.JSONException;
@@ -93,6 +95,18 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     copyClickableAssetViews.remove("3012");
 
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
+    for (int i = 0; i < assetViews.size(); i++) {
+      View clickView = assetViews.get(i);
+      if (clickView instanceof MediaView) {
+        MediaView mediaView = (MediaView)clickView;
+        for (int a = 0; a < mediaView.getChildCount(); a++) {
+          View childView = mediaView.getChildAt(a);
+          if(childView instanceof MBMediaView){
+            ((MBMediaView)childView).setOnMediaViewListener(this);
+          }
+        }
+      }
+    }
     if (mbBidNativeHandler != null) {
       mbBidNativeHandler.registerView(view, assetViews, campaign);
     }
