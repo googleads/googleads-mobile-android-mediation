@@ -1,5 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 12.2.0.0
+- Verified compatibility with AppLovin SDK 12.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- AppLovin SDK version 12.2.0.
+
 #### Version 12.1.0.1
 - Added the possibility to load interstitial or rewarded ad right after
 requesting to show them if the server parameters are enabled.
