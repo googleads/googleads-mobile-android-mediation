@@ -136,11 +136,12 @@ public class UnityRewardedAd implements MediationRewardedAd {
       mediationAdLoadCallback.onFailure(adError);
       return;
     }
+    final String adMarkup = mediationRewardedAdConfiguration.getBidResponse();
 
     // The ad is loaded in the UnityAdsInitializationListener after initializing of the Unity Ads
     // SDK.
     unityInitializer.initializeUnityAds(
-        context, gameId, new UnityAdsInitializationListener(context, gameId, placementId));
+        context, gameId, new UnityAdsInitializationListener(context, gameId, placementId, adMarkup));
   }
 
   @Override
@@ -223,11 +224,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     private final Context context;
     private final String gameId;
     private final String placementId;
+    @Nullable private final String adMarkup;
 
-    UnityAdsInitializationListener(Context context, String gameId, String placementId) {
+    UnityAdsInitializationListener(
+        Context context, String gameId, String placementId, @Nullable String adMarkup) {
       this.context = context;
       this.gameId = gameId;
       this.placementId = placementId;
+      this.adMarkup = adMarkup;
     }
 
     @Override
@@ -245,6 +249,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
       objectId = UUID.randomUUID().toString();
       UnityAdsLoadOptions unityAdsLoadOptions =
           unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
+      if (adMarkup != null) {
+        unityAdsLoadOptions.setAdMarkup(adMarkup);
+      }
 
       unityAdsLoader.load(placementId, unityAdsLoadOptions, unityLoadListener);
     }

@@ -25,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
-import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -38,6 +37,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import java.lang.annotation.Retention;
@@ -49,7 +51,7 @@ import java.util.List;
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded video
  * ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
  */
-public class UnityMediationAdapter extends Adapter {
+public class UnityMediationAdapter extends RtbAdapter {
 
   /**
    * TAG used for logging messages.
@@ -161,18 +163,39 @@ public class UnityMediationAdapter extends Adapter {
   /** UnityBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
+  /** UnityBannerAd instance. */
+  private UnityMediationBannerAd bannerRtbAd;
+
   /** UnityInterstitialAd instance. */
   private UnityInterstitialAd interstitialAd;
+
+  /** UnityInterstitialAd instance used for RTB. */
+  private UnityInterstitialAd interstitialRtbAd;
 
   /**
    * UnityRewardedAd instance.
    */
   private UnityRewardedAd rewardedAd;
 
+  /** UnityRewardedAd instance used for RTB. */
+  private UnityRewardedAd rewardedRtbAd;
+
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
     unityBannerViewFactory = new UnityBannerViewFactory();
     this.unityAdsLoader = new UnityAdsLoader();
+  }
+
+  @Override
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    UnityAds.getToken(
+        token -> {
+          if (token == null) {
+            token = "";
+          }
+          signalCallbacks.onSuccess(token);
+        });
   }
 
   @VisibleForTesting
@@ -185,9 +208,7 @@ public class UnityMediationAdapter extends Adapter {
     this.unityAdsLoader = unityAdsLoader;
   }
 
-  /**
-   * {@link Adapter} implementation
-   */
+  /** {@link RtbAdapter} implementation */
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
@@ -314,11 +335,38 @@ public class UnityMediationAdapter extends Adapter {
   }
 
   @Override
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerRtbAd = new UnityMediationBannerAd(adConfiguration, callback, unityInitializer, unityBannerViewFactory);
+    bannerRtbAd.loadAd();
+  }
+
+  @Override
   public void loadInterstitialAd(
       MediationInterstitialAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     interstitialAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialRtbAd =
+        new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
+    interstitialRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    rewardedRtbAd =
+        new UnityRewardedAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
+    rewardedRtbAd.loadAd();
   }
 }
