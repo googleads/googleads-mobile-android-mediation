@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.facebook.rtb;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD;
@@ -33,6 +47,7 @@ import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.NativeBannerAd;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.ads.mediation.facebook.MetaFactory;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -52,10 +67,15 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private MediationNativeAdCallback nativeAdCallback;
   private MediaView mediaView;
 
-  public FacebookRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  private final MetaFactory metaFactory;
+
+  public FacebookRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
+      MetaFactory metaFactory) {
     this.callback = callback;
     this.adConfiguration = adConfiguration;
+    this.metaFactory = metaFactory;
   }
 
   public void render() {
@@ -71,7 +91,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
 
     setMixedAudience(adConfiguration);
-    mediaView = new MediaView(adConfiguration.getContext());
+    mediaView = metaFactory.createMediaView(adConfiguration.getContext());
 
     try {
       nativeAdBase =

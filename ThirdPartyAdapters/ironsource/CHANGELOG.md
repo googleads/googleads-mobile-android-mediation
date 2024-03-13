@@ -1,5 +1,106 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Version 7.8.1.1
+- Verified compatibility with ironSource SDK version 7.8.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.8.1.
+
+#### Version 7.7.0.1
+- Updated the ad objects to hold weak references to themselves. This avoids load
+  error in the case where publisher deletes reference to an ad and later loads
+  an ad for the same ad unit again.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.7.0.
+
+#### Version 7.7.0.0
+- Verified compatibility with ironSource SDK version 7.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.7.0.
+
+#### Version 7.6.1.0
+- Verified compatibility with ironSource SDK version 7.6.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.6.1.
+
+#### Version 7.6.0.0
+- Verified compatibility with ironSource SDK version 7.6.0.
+- Updated the minimum required Google Mobile Ads SDK version to 22.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- IronSource SDK version 7.6.0.
+
+#### Version 7.5.2.0
+- Verified compatibility with ironSource SDK version 7.5.2.
+- Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- IronSource SDK version 7.5.2.
+
+#### Version 7.5.1.0
+- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.4.0.
+- IronSource SDK version 7.5.1.
+
+#### Version 7.5.0.0
+- Verified compatibility with ironSource SDK version 7.5.1.
+- Added waterfall support for banner (includes MREC) ad format.
+- Updated the adapter to use the new mediation APIs.
+- Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- IronSource SDK version 7.5.1.
+
+#### Version 7.4.0.0
+- Verified compatibility with ironSource SDK version 7.4.0.
+- Updated the minimum required Google Mobile Ads SDK version to 22.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- IronSource SDK version 7.4.0.
+
+#### Version 7.3.1.1.0
+- Verified compatibility with ironSource SDK version 7.3.1.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- IronSource SDK version 7.3.1.1.
+
+#### Version 7.3.1.0
+- Verified compatibility with ironSource SDK version 7.3.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- IronSource SDK version 7.3.1.
+
+#### Version 7.3.0.1.0
+- Verified compatibility with ironSource SDK version 7.3.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- IronSource SDK version 7.3.0.1.
+
+#### Version 7.3.0.0
+- Verified compatibility with ironSource SDK version 7.3.0.
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- IronSource SDK version 7.3.0.
+
 #### Version 7.2.7.0
 - Verified compatibility with ironSource SDK version 7.2.7.
 - Updated the minimum required Google Mobile Ads SDK version to 21.4.0.

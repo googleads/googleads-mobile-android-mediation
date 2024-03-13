@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.facebook;
 
 import android.content.Context;
@@ -14,6 +28,7 @@ import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -30,7 +45,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -138,9 +152,17 @@ public class FacebookMediationAdapter extends RtbAdapter {
   // Meta Audience Network SDK error domain.
   public static final String FACEBOOK_SDK_ERROR_DOMAIN = "com.facebook.ads";
 
-  /**
-   * Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}.
-   */
+  private final MetaFactory metaFactory;
+
+  public FacebookMediationAdapter() {
+    metaFactory = new MetaFactory();
+  }
+
+  FacebookMediationAdapter(MetaFactory metaFactory) {
+    this.metaFactory = metaFactory;
+  }
+
+  /** Converts Meta Audience Network SDK error codes to admob error codes {@link AdError}. */
   @NonNull
   public static AdError getAdError(com.facebook.ads.AdError error) {
     return new AdError(error.getErrorCode(), error.getErrorMessage(), FACEBOOK_SDK_ERROR_DOMAIN);
@@ -149,7 +171,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = FacebookAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -168,7 +190,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   @Override
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String versionString = com.facebook.ads.BuildConfig.VERSION_NAME;
+    String versionString = FacebookSdkWrapper.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -229,7 +251,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback);
+    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback, metaFactory);
     banner.render();
   }
 
@@ -237,7 +259,8 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
-    interstitial = new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback);
+    interstitial =
+        new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback, metaFactory);
     interstitial.render();
   }
 
@@ -246,7 +269,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback, metaFactory);
     rewardedAd.render();
   }
 
@@ -254,7 +277,9 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
-    nativeAd = new FacebookRtbNativeAd(mediationNativeAdConfiguration, mediationAdLoadCallback);
+    nativeAd =
+        new FacebookRtbNativeAd(
+            mediationNativeAdConfiguration, mediationAdLoadCallback, metaFactory);
     nativeAd.render();
   }
 
@@ -264,7 +289,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
+        mediationAdLoadCallback, metaFactory);
     rewardedInterstitialAd.render();
   }
 

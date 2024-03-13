@@ -1,3 +1,17 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.inmobi;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -9,33 +23,37 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
-import com.inmobi.ads.InMobiNative;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
 import com.inmobi.sdk.InMobiSdk.Education;
 import com.inmobi.sdk.InMobiSdk.LogLevel;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 
 /**
  * This class contains the utility methods used by InMobi adapter.
  */
-class InMobiAdapterUtils {
+public class InMobiAdapterUtils {
 
-  static final String KEY_ACCOUNT_ID = "accountid";
-  static final String KEY_PLACEMENT_ID = "placementid";
+  public static final String KEY_ACCOUNT_ID = "accountid";
+  public static final String KEY_PLACEMENT_ID = "placementid";
+  // Protocol values provided by InMobi.
+  public static final String PROTOCOL_WATERFALL = "c_admob";
+  public static final String PROTOCOL_RTB = "c_google";
+  public static final String THIRD_PARTY_KEY = "tp";
+  public static final String THIRD_PARTY_VERSION = "tp-ver";
+  public static final String COPPA = "coppa";
 
-  static long getPlacementId(@NonNull Bundle serverParameters) {
+  public static long getPlacementId(@NonNull Bundle serverParameters) {
     String placementId = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placementId)) {
       Log.e(InMobiMediationAdapter.TAG, "Missing or invalid Placement ID.");
@@ -51,7 +69,7 @@ class InMobiAdapterUtils {
     return placement;
   }
 
-  static void configureGlobalTargeting(Bundle extras) {
+  public static void configureGlobalTargeting(Bundle extras) {
     if (extras == null) {
       Log.d(InMobiMediationAdapter.TAG, "Bundle extras are null");
       extras = new Bundle();
@@ -121,35 +139,24 @@ class InMobiAdapterUtils {
     }
   }
 
-  static void setIsAgeRestricted(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+  @VisibleForTesting
+  static void setIsAgeRestricted(InMobiSdkWrapper inMobiSdkWrapper) {
     // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
     // be `false`.
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
+    if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      InMobiSdk.setIsAgeRestricted(true);
+      inMobiSdkWrapper.setIsAgeRestricted(true);
     } else {
-      InMobiSdk.setIsAgeRestricted(false);
+      inMobiSdkWrapper.setIsAgeRestricted(false);
     }
   }
 
-  static HashMap<String, String> createInMobiParameterMap(
-      @NonNull MediationAdConfiguration mediationAdConfiguration) {
-    HashMap<String, String> map = new HashMap<>();
-    map.put("tp", "c_admob");
-
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `0`.
-    if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
-      map.put("coppa", "1");
-    } else {
-      map.put("coppa", "0");
-    }
-
-    return map;
+  public static void setIsAgeRestricted() {
+    setIsAgeRestricted(new InMobiSdkWrapper());
   }
 
-  private static AgeGroup getAgeGroup(String value) {
+  @VisibleForTesting
+  static AgeGroup getAgeGroup(String value) {
     switch (value) {
       case InMobiNetworkValues.ABOVE_65:
         return AgeGroup.ABOVE_65;
@@ -171,7 +178,8 @@ class InMobiAdapterUtils {
     return null;
   }
 
-  private static Education getEducation(String value) {
+  @VisibleForTesting
+  static Education getEducation(String value) {
     switch (value) {
       case InMobiNetworkValues.EDUCATION_COLLEGEORGRADUATE:
         return Education.COLLEGE_OR_GRADUATE;
@@ -183,7 +191,8 @@ class InMobiAdapterUtils {
     return null;
   }
 
-  private static LogLevel getLogLevel(String value) {
+  @VisibleForTesting
+  static LogLevel getLogLevel(String value) {
     if (value.equals(InMobiNetworkValues.LOGLEVEL_DEBUG)) {
       return LogLevel.DEBUG;
     }
@@ -199,7 +208,7 @@ class InMobiAdapterUtils {
    * @param nativeAd the InMobi native ad object.
    * @return {@code true} if the native ad has all the required assets.
    */
-  public static boolean isValidNativeAd(InMobiNative nativeAd) {
+  public static boolean isValidNativeAd(InMobiNativeWrapper nativeAd) {
     return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
         && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
         && nativeAd.getAdTitle() != null;
@@ -280,4 +289,8 @@ class InMobiAdapterUtils {
     }
     return null;
   }
+
+  /** A private constructor since this is a utility class which should not be instantiated. */
+  private InMobiAdapterUtils() {}
+
 }

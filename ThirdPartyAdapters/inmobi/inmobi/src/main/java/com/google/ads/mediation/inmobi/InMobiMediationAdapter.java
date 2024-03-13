@@ -1,3 +1,16 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package com.google.ads.mediation.inmobi;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -5,11 +18,19 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INVALID_SERV
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
+import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbInterstitialAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbNativeAd;
+import com.google.ads.mediation.inmobi.rtb.InMobiRtbRewardedAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallInterstitialAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallNativeAd;
+import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallRewardedAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -26,49 +47,75 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.google.android.gms.ads.mediation.VersionInfo;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.inmobi.sdk.InMobiSdk;
-
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * InMobi Adapter for AdMob Mediation used to load and show rewarded video ads. This class should
  * not be used directly by publishers.
  */
-public class InMobiMediationAdapter extends Adapter {
+public class InMobiMediationAdapter extends RtbAdapter {
+
+  @VisibleForTesting
+  public static final String ERROR_MESSAGE_FOR_INVALID_ACCOUNTID =
+      "Missing or invalid Account ID, configured for this ad source instance in the AdMob or Ad"
+          + " Manager UI";
 
   public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
-  // Callback listener
-  /**
-   * InMobiRewardedAd instance.
-   */
-  private InMobiRewardedAd inMobiRewardedAd;
+  private InMobiWaterfallRewardedAd inMobiWaterfallRewardedAd;
 
-  /**
-   * InMobiBannerAd instance.
-   */
-  private InMobiBannerAd inMobiBannerAd;
+  private InMobiWaterfallBannerAd inMobiWaterfallBannerAd;
 
-  /**
-   * InMobiInterstitialAd instance.
-   */
-  private InMobiInterstitialAd inMobiInterstitialAd;
+  private InMobiWaterfallInterstitialAd inMobiWaterfallInterstitialAd;
 
-  /**
-   * InMobiNativeAd instance.
-   */
-  private InMobiNativeAd inMobiNativeAd;
+  private InMobiWaterfallNativeAd inMobiWaterfallNativeAd;
 
-  /**
-   * {@link Adapter} implementation
-   */
+  private InMobiRtbRewardedAd inMobiRtbRewardedAd;
+
+  private InMobiRtbBannerAd inMobiRtbBannerAd;
+
+  private InMobiRtbInterstitialAd inMobiRtbInterstitialAd;
+
+  private InMobiRtbNativeAd inMobiRtbNativeAd;
+
+  private InMobiInitializer inMobiInitializer;
+
+  private InMobiAdFactory inMobiAdFactory;
+
+  private InMobiSdkWrapper inMobiSdkWrapper;
+
+  /** {@link Adapter} implementation */
+  @VisibleForTesting
+  InMobiMediationAdapter(
+      InMobiInitializer inMobiInitializer,
+      InMobiAdFactory inMobiAdFactory,
+      InMobiSdkWrapper inMobiSdkWrapper) {
+    this.inMobiInitializer = inMobiInitializer;
+    this.inMobiAdFactory = inMobiAdFactory;
+    this.inMobiSdkWrapper = inMobiSdkWrapper;
+  }
+
+  public InMobiMediationAdapter() {
+    super();
+    this.inMobiInitializer = InMobiInitializer.getInstance();
+    this.inMobiAdFactory = new InMobiAdFactory();
+    this.inMobiSdkWrapper = new InMobiSdkWrapper();
+  }
+
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    return getVersionInfo(BuildConfig.ADAPTER_VERSION);
+  }
+
+  @VisibleForTesting
+  @NonNull
+  VersionInfo getVersionInfo(String versionString) {
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -88,7 +135,7 @@ public class InMobiMediationAdapter extends Adapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = InMobiSdk.getVersion();
+    String versionString = inMobiSdkWrapper.getVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -97,9 +144,9 @@ public class InMobiMediationAdapter extends Adapter {
       int micro = Integer.parseInt(splits[2]);
       return new VersionInfo(major, minor, micro);
     }
-
-    String logMessage = String.format(
-        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+    String logMessage =
+        String.format(
+            "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
     Log.w(TAG, logMessage);
     return new VersionInfo(0, 0, 0);
   }
@@ -109,7 +156,7 @@ public class InMobiMediationAdapter extends Adapter {
       final @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    if (InMobiSdk.isSDKInitialized()) {
+    if (inMobiSdkWrapper.isSDKInitialized()) {
       initializationCompleteCallback.onInitializationSucceeded();
       return;
     }
@@ -127,8 +174,7 @@ public class InMobiMediationAdapter extends Adapter {
     int count = accountIDs.size();
     if (count <= 0) {
       AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid Account ID."
-              + " configured for this ad source instance in the AdMob or Ad Manager UI");
+          ERROR_MESSAGE_FOR_INVALID_ACCOUNTID);
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
@@ -142,7 +188,7 @@ public class InMobiMediationAdapter extends Adapter {
       Log.w(TAG, message);
     }
 
-    InMobiInitializer.getInstance().init(context, accountID, new Listener() {
+    inMobiInitializer.init(context, accountID, new Listener() {
       @Override
       public void onInitializeSuccess() {
         initializationCompleteCallback.onInitializationSucceeded();
@@ -156,34 +202,95 @@ public class InMobiMediationAdapter extends Adapter {
   }
 
   @Override
-  public void loadRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
-    inMobiRewardedAd = new InMobiRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    inMobiRewardedAd.loadAd();
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    InMobiExtras inMobiExtras =
+        InMobiExtrasBuilder.build(
+            rtbSignalData.getContext(),
+            rtbSignalData.getNetworkExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
+    String token =
+        inMobiSdkWrapper.getToken(inMobiExtras.getParameterMap(), inMobiExtras.getKeywords());
+    signalCallbacks.onSuccess(token);
   }
 
   @Override
-  public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    inMobiBannerAd = new InMobiBannerAd(mediationBannerAdConfiguration, callback);
-    inMobiBannerAd.loadAd();
+    inMobiRtbBannerAd =
+        new InMobiRtbBannerAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbBannerAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    inMobiRtbInterstitialAd =
+        new InMobiRtbInterstitialAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbInterstitialAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    inMobiRtbRewardedAd =
+        new InMobiRtbRewardedAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbNativeAd(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    inMobiRtbNativeAd =
+        new InMobiRtbNativeAd(adConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbNativeAd.loadAd();
+  }
+
+  @Override
+  public void loadRewardedAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+      final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+    inMobiWaterfallRewardedAd =
+        new InMobiWaterfallRewardedAd(
+            mediationRewardedAdConfiguration,
+            mediationAdLoadCallback,
+            inMobiInitializer,
+            inMobiAdFactory);
+    inMobiWaterfallRewardedAd.loadAd();
+  }
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    inMobiWaterfallBannerAd =
+        new InMobiWaterfallBannerAd(
+            mediationBannerAdConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiWaterfallBannerAd.loadAd();
   }
 
   @Override
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    inMobiInterstitialAd = new InMobiInterstitialAd(mediationInterstitialAdConfiguration, callback);
-    inMobiInterstitialAd.loadAd();
+    inMobiWaterfallInterstitialAd =
+        new InMobiWaterfallInterstitialAd(
+            mediationInterstitialAdConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiWaterfallInterstitialAd.loadAd();
   }
 
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
-    inMobiNativeAd = new InMobiNativeAd(mediationNativeAdConfiguration, callback);
-    inMobiNativeAd.loadAd();
+    inMobiWaterfallNativeAd =
+        new InMobiWaterfallNativeAd(
+            mediationNativeAdConfiguration, callback, inMobiInitializer, inMobiAdFactory);
+    inMobiWaterfallNativeAd.loadAd();
   }
 
 }

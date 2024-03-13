@@ -1,5 +1,212 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Version 5.8.0.7.0
+- Verified compatibility with Pangle SDK version 5.8.0.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.8.0.7.
+
+#### Version 5.8.0.6.0
+- Verified compatibility with Pangle SDK version 5.8.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.8.0.6.
+
+#### Version 5.7.0.3.0
+- Verified compatibility with Pangle SDK version 5.7.0.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.7.0.3.
+
+#### Version 5.7.0.2.0
+- Verified compatibility with Pangle SDK version 5.7.0.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.7.0.2.
+
+#### Version 5.7.0.1.0
+- Verified compatibility with Pangle SDK version 5.7.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.7.0.1.
+
+#### Version 5.6.0.3.0
+- Verified compatibility with Pangle SDK version 5.6.0.3.
+- Updated the minimum required Google Mobile Ads SDK version to 22.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Pangle SDK version 5.6.0.3.
+
+#### Version 5.5.0.9.0
+- Updated the minimum required Google Mobile Ads SDK version to 22.5.0.
+- Verified compatibility with Pangle SDK version 5.5.0.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.5.0.
+- Pangle SDK version 5.5.0.9.
+
+#### Version 5.5.0.8.0
+- Verified compatibility with Pangle SDK version 5.5.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.5.0.8.
+
+#### Version 5.5.0.7.0
+- Verified compatibility with Pangle SDK version 5.5.0.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.5.0.7.
+
+#### Version 5.5.0.6.0
+- Bidding app open ad format isn't supported in this version as this adapter version was reverted to depend on Google Mobile Ads SDK version 22.3.0.
+- Verified compatibility with Pangle SDK version 5.5.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.5.0.6.
+
+#### Version 5.5.0.4.0
+- Added bidding support for app open ad format.
+- Added watermark support for bidding ads.
+- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
+- Verified compatibility with Pangle SDK version 5.5.0.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.4.0.
+- Pangle SDK version 5.5.0.4.
+
+#### Version 5.4.1.1.0
+- Fixed an issue where the adapter fails to initialize.
+- Verified compatibility with Pangle SDK version 5.4.1.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.4.1.1.
+
+#### Version 5.4.0.9.0
+- Verified compatibility with Pangle SDK version 5.4.0.9.
+- Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Pangle SDK version 5.4.0.9.
+
+#### Version 5.4.0.8.0
+- Verified compatibility with Pangle SDK version 5.4.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Pangle SDK version 5.4.0.8.
+
+#### Version 5.3.0.6.0
+- Verified compatibility with Pangle SDK version 5.3.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Pangle SDK version 5.3.0.6.
+
+#### Version 5.3.0.5.0
+- Verified compatibility with Pangle SDK version 5.3.0.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Pangle SDK version 5.3.0.5.
+
+#### Version 5.3.0.4.0
+- Verified compatibility with Pangle SDK version 5.3.0.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Pangle SDK version 5.3.0.4.
+
+#### Version 5.2.0.7.0
+- Verified compatibility with Pangle SDK version 5.2.0.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Pangle SDK version 5.2.0.7.
+
+#### Version 5.2.0.6.0
+- Verified compatibility with Pangle SDK version 5.2.0.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Pangle SDK version 5.2.0.6.
+
+#### Version 5.2.0.5.0
+- Verified compatibility with Pangle SDK version 5.2.0.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Pangle SDK version 5.2.0.5.
+
+#### Version 5.2.0.3.0
+- Added waterfall support for app open, banner (includes MREC), interstitial,
+  rewarded and native ad formats.
+- Verified compatibility with Pangle SDK version 5.2.0.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.2.0.3.
+
+#### Version 5.1.0.9.0
+- Verified compatibility with Pangle SDK version 5.1.0.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.1.0.9.
+
+#### Version 5.1.0.8.0
+- Verified compatibility with Pangle SDK version 5.1.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.1.0.8.
+
+#### Version 5.1.0.6.0
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Pangle SDK version 5.1.0.6.
+
+#### Version 5.0.1.1.0
+- Verified compatibility with Pangle SDK version 5.0.1.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Pangle SDK version 5.0.1.1.
+
+#### Version 5.0.1.0.0
+- Verified compatibility with Pangle SDK version 5.0.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Pangle SDK version 5.0.1.0.
+
+#### Version 5.0.0.9.0
+- Verified compatibility with Pangle SDK version 5.0.0.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Pangle SDK version 5.0.0.9.
+
+#### Version 5.0.0.8.0
+- Verified compatibility with Pangle SDK version 5.0.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Pangle SDK version 5.0.0.8.
+
 #### Version 5.0.0.7.0
 - Verified compatibility with Pangle SDK version 5.0.0.7.
 

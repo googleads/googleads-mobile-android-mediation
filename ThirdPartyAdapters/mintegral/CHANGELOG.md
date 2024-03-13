@@ -1,6 +1,161 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 16.3.71.0 (In progress)
+#### Version 16.6.51.0
+- Verified compatibility with Mintegral SDK 16.6.51.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.6.51.
+
+#### Version 16.6.41.0
+- Verified compatibility with Mintegral SDK 16.6.41.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.6.41.
+
+#### Version 16.6.34.0
+- Verified compatibility with Mintegral SDK 16.6.34.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.6.34.
+
+#### Version 16.6.21.0
+- Verified compatibility with Mintegral SDK 16.6.21.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.6.21.
+
+#### Version 16.5.91.1
+- Added bidding support for app open ad format.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.5.91.
+
+#### Version 16.5.91.0
+- Verified compatibility with Mintegral SDK 16.5.91.
+- Updated the minimum required Google Mobile Ads SDK version to 22.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- Mintegral SDK version 16.5.91.
+
+#### Version 16.5.51.0
+- Verified compatibility with Mintegral SDK 16.5.51.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Mintegral SDK version 16.5.51.
+
+#### Version 16.5.41.0
+- Verified compatibility with Mintegral SDK 16.5.41.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Mintegral SDK version 16.5.41.
+
+#### Version 16.5.31.0
+- Verified compatibility with Mintegral SDK 16.5.31.
+- Reverted the adapter to depend on Google Mobile Ads SDK version 22.3.0.
+- Added waterfall support for app open ad format.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- Mintegral SDK version 16.5.31.
+
+#### Version 16.5.21.0
+- Verified compatibility with Mintegral SDK 16.5.21.
+- Updated the minimum required Google Mobile Ads SDK version to 22.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.4.0.
+- Mintegral SDK version 16.5.21.
+
+#### Version 16.5.11.0
+- Added watermark support for bidding ads.
+- Verified compatibility with Mintegral SDK 16.5.11.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Mintegral SDK version 16.5.11.
+
+#### Version 16.4.91.0
+- Verified compatibility with Mintegral SDK 16.4.91.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Mintegral SDK version 16.4.91.
+
+#### Version 16.4.81.0
+- Verified compatibility with Mintegral SDK 16.4.81.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Mintegral SDK version 16.4.81.
+
+#### Version 16.4.71.0
+- Verified compatibility with Mintegral SDK 16.4.71.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- Mintegral SDK version 16.4.71.
+
+#### Version 16.4.61.0
+- Verified compatibility with Mintegral SDK 16.4.61.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Mintegral SDK version 16.4.61.
+
+#### Version 16.4.51.0
+- Verified compatibility with Mintegral SDK 16.4.51.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- Mintegral SDK version 16.4.51.
+
+#### Version 16.4.41.0
+- Fixed an issue where banner ads were rendered with incorrect sizes.
+- Verified compatibility with Mintegral SDK 16.4.41.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Mintegral SDK version 16.4.41.
+
+#### Version 16.4.31.0
+- Verified compatibility with Mintegral SDK 16.4.31.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Mintegral SDK version 16.4.31.
+
+#### Version 16.4.21.0
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+- Verified compatibility with Mintegral SDK 16.4.21.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- Mintegral SDK version 16.4.21.
+
+#### Version 16.3.91.0
+- Verified compatibility with Mintegral SDK 16.3.91.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Mintegral SDK version 16.3.91.
+
+#### Version 16.3.81.0
+- Verified compatibility with Mintegral SDK 16.3.81.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.5.0.
+- Mintegral SDK version 16.3.81.
+
+#### Version 16.3.71.0
 - Verified compatibility with Mintegral SDK 16.3.71.
 
 Built and tested with:

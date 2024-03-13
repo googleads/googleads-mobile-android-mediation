@@ -1,19 +1,27 @@
-package com.google.ads.mediation.mintegral.mediation;
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+package com.google.ads.mediation.mintegral.mediation;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 
-import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -22,16 +30,13 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.Campaign;
-import com.mbridge.msdk.out.Frame;
-import com.mbridge.msdk.out.NativeListener;
 import com.mbridge.msdk.out.OnMBMediaViewListener;
 import com.mbridge.msdk.widget.MBAdChoice;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
-    NativeListener.NativeAdListener, OnMBMediaViewListener {
+    OnMBMediaViewListener {
 
   protected Campaign campaign;
   protected final MediationNativeAdConfiguration adConfiguration;
@@ -39,12 +44,14 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
       adLoadCallback;
   protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
+  public MintegralNativeAdListener mintegralNativeAdListener;
 
   public MintegralNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
+    mintegralNativeAdListener = new MintegralNativeAdListener(this);
   }
 
   /**
@@ -53,7 +60,7 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   public abstract void loadAd();
 
   @NonNull
-  private void mapNativeAd(@NonNull Campaign ad) {
+  protected void mapNativeAd(@NonNull Campaign ad) {
     campaign = ad;
     if (campaign.getAppName() != null) {
       setHeadline(campaign.getAppName());
@@ -110,46 +117,6 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
     return viewList;
   }
 
-  @Override
-  public void onAdLoaded(List<Campaign> list, int template) {
-    if (list == null || list.size() == 0) {
-      AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_CODE_NO_FILL,
-          "Mintegral SDK failed to return a native ad.");
-      Log.w(TAG, adError.toString());
-      adLoadCallback.onFailure(adError);
-      return;
-    }
-    mapNativeAd(list.get(0));
-    nativeCallback = adLoadCallback.onSuccess(MintegralNativeAd.this);
-  }
-
-  @Override
-  public void onAdLoadError(String errorMessage) {
-    AdError adError = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-        errorMessage);
-    Log.w(TAG, adError.toString());
-    adLoadCallback.onFailure(adError);
-  }
-
-  @Override
-  public void onAdClick(Campaign campaign) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdClicked();
-      nativeCallback.onAdLeftApplication();
-    }
-  }
-
-  @Override
-  public void onAdFramesLoaded(List<Frame> list) {
-    // No-op, this callback is deprecated in Mintegral SDK.
-  }
-
-  @Override
-  public void onLoggingImpression(int i) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdImpression();
-    }
-  }
 
   @Override
   public void onEnterFullscreen() {

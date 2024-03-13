@@ -1,9 +1,23 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.DEFAULT_INSTANCE_ID;
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_APP_KEY;
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.KEY_INSTANCE_ID;
-import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.ADAPTER_VERSION_NAME;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.MEDIATION_NAME;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,32 +26,43 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-import com.google.ads.mediation.ironsource.IronSourceManager.InitializationCallback;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.VersionInfo;
-import com.google.android.gms.ads.rewarded.RewardItem;
-import com.ironsource.mediationsdk.logger.IronSourceError;
+import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IronSourceMediationAdapter extends Adapter
-    implements MediationRewardedAd, IronSourceAdapterListener {
+public class IronSourceMediationAdapter extends Adapter {
+
+  private static final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
   // region Error codes
-  // IronSource adapter error domain.
+  /**
+   * IronSource adapter error domain.
+   */
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.ironsource";
 
-  // IronSource SDK error domain.
+  /**
+   * IronSource SDK error domain.
+   */
   public static final String IRONSOURCE_SDK_ERROR_DOMAIN = "com.ironsource.mediationsdk";
 
   @Retention(RetentionPolicy.SOURCE)
@@ -46,14 +71,15 @@ public class IronSourceMediationAdapter extends Adapter
           ERROR_INVALID_SERVER_PARAMETERS,
           ERROR_REQUIRES_ACTIVITY_CONTEXT,
           ERROR_AD_ALREADY_LOADED,
-          ERROR_AD_SHOW_UNAUTHORIZED,
+          ERROR_BANNER_SIZE_MISMATCH,
+          ERROR_SDK_NOT_INITIALIZED
       })
   public @interface AdapterError {
 
   }
 
   /**
-   * Server parameters (e.g. placement ID) are nil.
+   * Server parameters (e.g. instance ID) are nil.
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
@@ -68,32 +94,17 @@ public class IronSourceMediationAdapter extends Adapter
   public static final int ERROR_AD_ALREADY_LOADED = 103;
 
   /**
-   * IronSource adapter does not have authority to show an ad instance.
+   * Banner size mismatch.
    */
-  public static final int ERROR_AD_SHOW_UNAUTHORIZED = 104;
+  public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
+
+  /**
+   * IronSource SDK isn't initialized.
+   */
+  public static final int ERROR_SDK_NOT_INITIALIZED = 106;
+
   // endregion
 
-  /**
-   * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
-   * SDK while ad is presented
-   */
-  private MediationRewardedAdCallback mediationRewardedAdCallback;
-
-  /**
-   * Mediation listener used to forward rewarded ad events from IronSource SDK to Google Mobile Ads
-   * SDK for loading phases of the ad
-   */
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mediationAdLoadCallback;
-
-  /**
-   * This is the id of the rewarded video instance requested.
-   */
-  private String instanceID;
-
-  /**
-   * MediationRewardedAd implementation.
-   */
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
@@ -121,7 +132,7 @@ public class IronSourceMediationAdapter extends Adapter
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = IronSourceAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -144,9 +155,15 @@ public class IronSourceMediationAdapter extends Adapter
   }
 
   @Override
-  public void initialize(@NonNull Context context,
+  public void initialize(
+      @NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
+
+    if (isInitialized.get()) {
+      initializationCompleteCallback.onInitializationSucceeded();
+      return;
+    }
 
     HashSet<String> appKeys = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
@@ -160,33 +177,48 @@ public class IronSourceMediationAdapter extends Adapter
 
     int count = appKeys.size();
     if (count <= 0) {
-      AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid app key.", ERROR_DOMAIN);
+      AdError initializationError =
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.",
+              ERROR_DOMAIN);
       initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
       return;
     }
 
     // Having multiple app keys is not considered an error.
     String appKey = appKeys.iterator().next();
+
+    if (TextUtils.isEmpty(appKey)) {
+      AdError initializationError =
+          new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.",
+              ERROR_DOMAIN);
+      initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
+      return;
+    }
+
     if (count > 1) {
-      String message = String
-          .format("Multiple '%s' entries found: %s. Using '%s' to initialize the IronSource SDK.",
+      String message =
+          String.format(
+              "Multiple '%s' entries found: %s. Using app key '%s' to initialize the IronSource"
+                  + " SDK.",
               KEY_APP_KEY, appKeys, appKey);
       Log.w(TAG, message);
     }
 
-    IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
-        new IronSourceManager.InitializationCallback() {
-          @Override
-          public void onInitializeSuccess() {
-            initializationCompleteCallback.onInitializationSucceeded();
-          }
+    IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
+    Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
+    IronSource.initISDemandOnly(
+        context,
+        appKey,
+        IronSource.AD_UNIT.INTERSTITIAL,
+        IronSource.AD_UNIT.REWARDED_VIDEO,
+        IronSource.AD_UNIT.BANNER);
+    isInitialized.set(true);
+    initializationCompleteCallback.onInitializationSucceeded();
 
-          @Override
-          public void onInitializeError(@NonNull AdError initializationError) {
-            initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
-          }
-        });
+    IronSource.setISDemandOnlyInterstitialListener(
+        IronSourceInterstitialAd.getIronSourceInterstitialListener());
+    IronSource.setISDemandOnlyRewardedVideoListener(
+        IronSourceRewardedAd.getIronSourceRewardedListener());
   }
 
   @Override
@@ -194,214 +226,87 @@ public class IronSourceMediationAdapter extends Adapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError adError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource rewarded ad since IronSource SDK is not "
+                  + "initialized.",
+              ERROR_DOMAIN);
 
-    Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    Context context = mediationRewardedAdConfiguration.getContext();
-    String appKey = serverParameters.getString(KEY_APP_KEY);
-    this.instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+      Log.w(TAG, adError.getMessage());
+      mediationAdLoadCallback.onFailure(adError);
+      return;
+    }
 
-    IronSourceManager.getInstance().initIronSourceSDK(context, appKey,
-        new InitializationCallback() {
-          @Override
-          public void onInitializeSuccess() {
-            IronSourceMediationAdapter.this.mediationAdLoadCallback = mediationAdLoadCallback;
-            Log.d(TAG,
-                String.format("Loading IronSource rewarded ad with instance ID: %s", instanceID));
-            IronSourceManager.getInstance()
-                .loadRewardedVideo(instanceID, IronSourceMediationAdapter.this);
-          }
-
-          @Override
-          public void onInitializeError(@NonNull AdError initializationError) {
-            Log.e(TAG, initializationError.getMessage());
-            mediationAdLoadCallback.onFailure(initializationError);
-          }
-        });
+    IronSourceRewardedAd ironSourceRewardedAd =
+        new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    ironSourceRewardedAd.loadAd();
   }
 
   @Override
   public void loadRewardedInterstitialAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+      @NonNull
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     // IronSource Rewarded Interstitial ads use the same Rewarded Video API.
-    Log.d(TAG, "IronSource adapter was asked to load a rewarded interstitial ad. "
-        + "Using the rewarded ad request flow to load the ad to attempt to load a "
-        + "rewarded interstitial ad from IronSource.");
+    Log.d(
+        TAG,
+        "IronSource adapter was asked to load a rewarded interstitial ad. "
+            + "Using the rewarded ad request flow to load the ad to attempt to load a "
+            + "rewarded interstitial ad from IronSource.");
     loadRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
   }
 
   @Override
-  public void showAd(@NonNull Context context) {
-    Log.d(TAG,
-        String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
-    IronSourceManager.getInstance()
-        .showRewardedVideo(this.instanceID, IronSourceMediationAdapter.this);
-  }
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+          mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError loadError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource interstitial ad since IronSource SDK is not "
+                  + "initialized.",
+              IRONSOURCE_SDK_ERROR_DOMAIN);
+      Log.w(TAG, loadError.getMessage());
+      mediationAdLoadCallback.onFailure(loadError);
+      return;
+    }
 
-  // region ISDemandOnlyRewardedVideoListener implementation.
-  public void onRewardedVideoAdLoadSuccess(String instanceId) {
-    Log.d(TAG, String.format("IronSource rewarded ad loaded for instance ID: %s", instanceId));
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationAdLoadCallback != null) {
-              mediationRewardedAdCallback =
-                  mediationAdLoadCallback.onSuccess(IronSourceMediationAdapter.this);
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-    AdError loadError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
-    String errorMessage = String
-        .format("IronSource failed to load rewarded ad for instance ID: %s. Error: %s", instanceId,
-            loadError.getMessage());
-    Log.e(TAG, errorMessage);
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationAdLoadCallback != null) {
-              mediationAdLoadCallback.onFailure(loadError);
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdOpened(final String instanceId) {
-    Log.d(TAG, String.format("IronSource rewarded ad opened for instance ID: %s", instanceId));
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.onAdOpened();
-              mediationRewardedAdCallback.onVideoStart();
-              mediationRewardedAdCallback.reportAdImpression();
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdClosed(String instanceId) {
-    Log.d(TAG, String.format("IronSource rewarded ad closed for instance ID: %s", instanceId));
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.onAdClosed();
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdRewarded(String instanceId) {
-    final IronSourceReward reward = new IronSourceReward();
-    Log.d(
-        TAG,
-        String.format(
-            "IronSource rewarded ad received reward: %d %s, for instance ID: %s",
-            reward.getAmount(), reward.getType(), instanceId));
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.onVideoComplete();
-              mediationRewardedAdCallback.onUserEarnedReward(reward);
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-    AdError showError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
-    String errorMessage = String
-        .format("IronSource failed to show rewarded ad for instance ID: %s. Error: %s", instanceId,
-            showError.getMessage());
-    Log.e(TAG, errorMessage);
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.onAdFailedToShow(showError);
-            }
-          }
-        });
-  }
-
-  public void onRewardedVideoAdClicked(String instanceId) {
-    Log.d(TAG, String.format("IronSource rewarded ad clicked for instance ID: %s", instanceId));
-
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.reportAdClicked();
-            }
-          }
-        });
-  }
-  // endregion
-
-  // region IronSourceAdapterListener implementation.
-  @Override
-  public void onAdFailedToLoad(@NonNull AdError loadError) {
-    Log.e(TAG, loadError.getMessage());
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationAdLoadCallback != null) {
-              mediationAdLoadCallback.onFailure(loadError);
-            }
-          }
-        });
+    IronSourceInterstitialAd ironSourceInterstitialAd =
+        new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    ironSourceInterstitialAd.loadAd();
   }
 
   @Override
-  public void onAdFailedToShow(@NonNull AdError showError) {
-    Log.e(TAG, showError.getMessage());
-    IronSourceAdapterUtils.sendEventOnUIThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (mediationRewardedAdCallback != null) {
-              mediationRewardedAdCallback.onAdFailedToShow(showError);
-            }
-          }
-        });
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+          mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError loadError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource banner ad since IronSource SDK is not "
+                  + "initialized.",
+              IRONSOURCE_SDK_ERROR_DOMAIN);
+      Log.w(TAG, loadError.getMessage());
+      mediationAdLoadCallback.onFailure(loadError);
+      return;
+    }
+
+    IronSourceBannerAd ironSourceBannerAd =
+        new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    ironSourceBannerAd.loadAd();
   }
-  // endregion
 
-  /**
-   * A {@link RewardItem} used to map IronSource reward to Google's reward.
-   */
-  static class IronSourceReward implements RewardItem {
-
-    @NonNull
-    @Override
-    public String getType() {
-      return "";
-    }
-
-    @Override
-    public int getAmount() {
-      return 1;
-    }
+  @VisibleForTesting
+  public void setIsInitialized(boolean isInitializedValue) {
+    isInitialized.set(isInitializedValue);
   }
 }

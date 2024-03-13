@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.chartboost;
 
 import static com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS;
@@ -8,8 +22,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.chartboost.sdk.Chartboost;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -23,7 +39,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.VersionInfo;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,6 +47,12 @@ import java.util.List;
  * Chartboost banner, interstitial and rewarded video ads.
  */
 public class ChartboostMediationAdapter extends Adapter {
+
+  @VisibleForTesting
+  static final String ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID = "Missing or invalid App ID.";
+
+  @VisibleForTesting
+  static final String ERROR_MESSAGE_INVALID_SERVER_PARAMETERS = "Invalid server parameters.";
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
 
@@ -57,7 +78,7 @@ public class ChartboostMediationAdapter extends Adapter {
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = ChartboostAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -127,8 +148,7 @@ public class ChartboostMediationAdapter extends Adapter {
       if (count <= 0) {
         AdError error =
             ChartboostConstants.createAdapterError(
-                ERROR_INVALID_SERVER_PARAMETERS,
-                "Missing or invalid App ID.");
+                ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID);
         initializationCompleteCallback.onInitializationFailed(error.toString());
         Log.e(TAG, error.toString());
         return;
@@ -150,8 +170,7 @@ public class ChartboostMediationAdapter extends Adapter {
         // Invalid server parameters, send initialization failed event.
         AdError error =
             ChartboostConstants.createAdapterError(
-                ERROR_INVALID_SERVER_PARAMETERS,
-                "Invalid server parameters.");
+                ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
         initializationCompleteCallback.onInitializationFailed(error.toString());
         Log.e(TAG, error.toString());
         return;
@@ -168,8 +187,7 @@ public class ChartboostMediationAdapter extends Adapter {
       // Invalid server parameters, send initialization failed event.
       AdError error =
           ChartboostConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Invalid server parameters.");
+              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
       initializationCompleteCallback.onInitializationFailed(error.toString());
       Log.e(TAG, error.toString());
       return;

@@ -1,20 +1,28 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.applovin.mediation;
 
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
-import com.applovin.sdk.AppLovinMediationProvider;
-import com.applovin.sdk.AppLovinSdk;
-import com.applovin.sdk.AppLovinSdkSettings;
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
@@ -27,6 +35,12 @@ public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
+  private static final String TRUE = "true";
+
+  @VisibleForTesting
+  public static final String ERROR_MSG_REASON_PREFIX =
+      "AppLovin SDK returned a load failure callback with reason: ";
+
   /**
    * Keys for retrieving values from the server parameters.
    */
@@ -34,73 +48,11 @@ public class AppLovinUtils {
 
     public static final String SDK_KEY = "sdkKey";
     public static final String ZONE_ID = "zone_id";
+    public static final String MULTIPLE_ADS_PER_AD_UNIT = "enable_multiple_ads_per_unit";
 
     // Private constructor
     private ServerParameterKeys() {
     }
-  }
-
-  /**
-   * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server
-   * parameters, or Android Manifest.
-   */
-  public static AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
-    final String sdkKey =
-        (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
-    final AppLovinSdk sdk;
-
-    AppLovinSdkSettings sdkSettings = AppLovinMediationAdapter.getSdkSettings(context);
-    if (!TextUtils.isEmpty(sdkKey)) {
-      sdk = AppLovinSdk.getInstance(sdkKey, sdkSettings, context);
-    } else {
-      sdk = AppLovinSdk.getInstance(sdkSettings, context);
-    }
-
-    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
-    sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
-    return sdk;
-  }
-
-  /**
-   * Retrieves the AppLovin SDK key.
-   *
-   * @param context          the context object.
-   * @param serverParameters the ad request's server parameters.
-   * @return the AppLovin SDK key.
-   */
-  @Nullable
-  public static String retrieveSdkKey(@NonNull Context context, @Nullable Bundle serverParameters) {
-    String sdkKey = null;
-
-    // Prioritize the SDK Key contained in the server parameters, if any.
-    if (serverParameters != null) {
-      sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
-    }
-
-    // Fetch the SDK key in the AndroidManifest.xml file if no SDK key is found in the server
-    // parameters.
-    if (TextUtils.isEmpty(sdkKey)) {
-      final Bundle metaData = retrieveMetadata(context);
-      if (metaData != null) {
-        sdkKey = metaData.getString("applovin.sdk.key");
-      }
-    }
-
-    return sdkKey;
-  }
-
-  private static Bundle retrieveMetadata(Context context) {
-    try {
-      final PackageManager pm = context.getPackageManager();
-      final ApplicationInfo ai =
-          pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-
-      return ai.metaData;
-    } catch (PackageManager.NameNotFoundException ignored) {
-      // Metadata not found. Just continue and return null.
-    }
-
-    return null;
   }
 
   /**
@@ -113,6 +65,14 @@ public class AppLovinUtils {
     } else {
       return DEFAULT_ZONE;
     }
+  }
+
+  public static boolean isMultiAdsEnabled(Bundle serverParameters) {
+    if (serverParameters.containsKey(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT)) {
+      String multiAdsFlag = serverParameters.getString(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT);
+      return multiAdsFlag.equals(TRUE);
+    }
+    return false;
   }
 
   /**
@@ -183,9 +143,7 @@ public class AppLovinUtils {
     }
 
     return new AdError(
-        applovinErrorCode,
-        "AppLovin SDK returned a load failure callback with reason: " + reason,
-        APPLOVIN_SDK_ERROR_DOMAIN);
+        applovinErrorCode, ERROR_MSG_REASON_PREFIX + reason, APPLOVIN_SDK_ERROR_DOMAIN);
   }
 
   /**
@@ -197,10 +155,13 @@ public class AppLovinUtils {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
+    potentials.add(AdSize.MEDIUM_RECTANGLE);
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (AdSize.BANNER.equals(closestSize)) {
       return AppLovinAdSize.BANNER;
+    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+      return AppLovinAdSize.MREC;
     } else if (AdSize.LEADERBOARD.equals(closestSize)) {
       return AppLovinAdSize.LEADER;
     }

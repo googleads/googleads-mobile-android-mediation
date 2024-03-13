@@ -1,3 +1,17 @@
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.inmobi;
 
 import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION;
@@ -7,15 +21,16 @@ import android.content.Context;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
-import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.SdkInitializationListener;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
-public class InMobiInitializer {
+public class InMobiInitializer implements SdkInitializationListener {
 
   private static InMobiInitializer instance;
 
@@ -43,13 +58,19 @@ public class InMobiInitializer {
    */
   public static final int INITIALIZED = 2;
 
-  private @InitializationStatus
+  @VisibleForTesting
+  @InitializationStatus
   int initializationStatus;
 
-  private final ArrayList<Listener> listeners = new ArrayList<>();
+
+  @VisibleForTesting
+  final ArrayList<Listener> listeners = new ArrayList<>();
+
+  private final InMobiSdkWrapper inMobiSdkWrapper;
 
   private InMobiInitializer() {
-    initializationStatus = UNINITIALIZED;
+    this.initializationStatus = UNINITIALIZED;
+    this.inMobiSdkWrapper = new InMobiSdkWrapper();
   }
 
   public static InMobiInitializer getInstance() {
@@ -57,6 +78,12 @@ public class InMobiInitializer {
       instance = new InMobiInitializer();
     }
     return instance;
+  }
+
+  @VisibleForTesting
+  InMobiInitializer(InMobiSdkWrapper inMobiSdkWrapper) {
+    this.initializationStatus = UNINITIALIZED;
+    this.inMobiSdkWrapper = inMobiSdkWrapper;
   }
 
   public void init(@NonNull final Context context,
@@ -74,32 +101,32 @@ public class InMobiInitializer {
 
     initializationStatus = INITIALIZING;
 
-    InMobiSdk.init(context, accountID, InMobiConsent.getConsentObj(),
-        new SdkInitializationListener() {
-          @Override
-          public void onInitializationComplete(Error error) {
-            if (error == null) {
-              Log.d(TAG, "InMobi SDK initialized.");
-
-              initializationStatus = INITIALIZED;
-              for (Listener initListener : listeners) {
-                initListener.onInitializeSuccess();
-              }
-            } else {
-              initializationStatus = UNINITIALIZED;
-
-              AdError initializationError = InMobiConstants.createAdapterError(
-                  ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
-              for (Listener initListener : listeners) {
-                initListener.onInitializeError(initializationError);
-              }
-            }
-            listeners.clear();
-          }
-        });
+    inMobiSdkWrapper.init(context, accountID, InMobiConsent.getConsentObj(), this);
   }
 
-  interface Listener {
+  @Override
+  public void onInitializationComplete(@Nullable Error error) {
+    if (error == null) {
+      Log.d(TAG, "InMobi SDK initialized.");
+
+      initializationStatus = INITIALIZED;
+      for (Listener initListener : listeners) {
+        initListener.onInitializeSuccess();
+      }
+    } else {
+      initializationStatus = UNINITIALIZED;
+
+      AdError initializationError =
+          InMobiConstants.createAdapterError(
+              ERROR_INMOBI_FAILED_INITIALIZATION, error.getLocalizedMessage());
+      for (Listener initListener : listeners) {
+        initListener.onInitializeError(initializationError);
+      }
+    }
+    listeners.clear();
+  }
+
+  public interface Listener {
 
     /**
      * Called when the InMobi SDK initializes successfully.
@@ -114,4 +141,3 @@ public class InMobiInitializer {
     void onInitializeError(@NonNull AdError error);
   }
 }
-

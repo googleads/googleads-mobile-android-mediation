@@ -16,16 +16,18 @@
 
 package com.google.ads.mediation.sample.sdk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
-import androidx.appcompat.widget.AppCompatTextView;
 import android.view.Gravity;
+import androidx.appcompat.widget.AppCompatTextView;
 
 /**
  * SampleMediaView is a mocked media view returned by the Sample SDK. Normally, a media view would
  * contain an image or video asset. Since this one is just a mock, it displays a series of text
  * values instead.
  */
+@SuppressLint("SetTextI18n")
 public class SampleMediaView extends AppCompatTextView {
 
   SampleMediaViewListener listener;

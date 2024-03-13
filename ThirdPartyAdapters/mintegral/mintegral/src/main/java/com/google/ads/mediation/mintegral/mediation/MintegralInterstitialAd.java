@@ -1,11 +1,23 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -13,12 +25,13 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
+import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
 
-public abstract class MintegralInterstitialAd implements MediationInterstitialAd,
-    NewInterstitialListener {
+public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements
+    MediationInterstitialAd {
 
   protected final MediationInterstitialAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -49,8 +62,9 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   }
 
   @Override
-  public void onResourceLoadFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createSdkError(errorMessage);
+  public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode,
+      String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
   }
@@ -71,9 +85,8 @@ public abstract class MintegralInterstitialAd implements MediationInterstitialAd
   }
 
   @Override
-  public void onShowFail(MBridgeIds mBridgeIds, String errorMessage) {
-    AdError error = MintegralConstants.createAdapterError(MintegralConstants.ERROR_MINTEGRAL_SDK,
-        errorMessage);
+  public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdFailedToShow(error);

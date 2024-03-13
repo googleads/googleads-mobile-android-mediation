@@ -1,10 +1,27 @@
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+
 import android.content.Context;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
-
+import com.google.ads.mediation.mintegral.MintegralBidNewInterstitialAdWrapper;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralFactory;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralInterstitialAd;
 import com.google.android.gms.ads.AdError;
@@ -13,15 +30,16 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
-  private MBBidNewInterstitialHandler mbBidNewInterstitialHandler;
+  private MintegralBidNewInterstitialAdWrapper mbBidNewInterstitialAdWrapper;
 
   public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
+      @NonNull MediationAdLoadCallback<MediationInterstitialAd,
+          MediationInterstitialAdCallback> callback) {
     super(adConfiguration, callback);
   }
 
@@ -37,17 +55,27 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbBidNewInterstitialHandler = new MBBidNewInterstitialHandler(adConfiguration.getContext(),
-        placementId, adUnitId);
-    mbBidNewInterstitialHandler.setInterstitialVideoListener(this);
-    mbBidNewInterstitialHandler.loadFromBid(bidToken);
+    mbBidNewInterstitialAdWrapper = MintegralFactory.createBidInterstitialHandler();
+    mbBidNewInterstitialAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
+      mbBidNewInterstitialAdWrapper.setExtraInfo(jsonObject);
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding interstitial ad.",
+          jsonException);
+    }
+    mbBidNewInterstitialAdWrapper.setInterstitialVideoListener(this);
+    mbBidNewInterstitialAdWrapper.loadFromBid(bidToken);
   }
 
   @Override
   public void showAd(@NonNull Context context) {
     boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
-    mbBidNewInterstitialHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbBidNewInterstitialHandler.showFromBid();
+    mbBidNewInterstitialAdWrapper.playVideoMute(
+        muted
+            ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+            : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mbBidNewInterstitialAdWrapper.showFromBid();
   }
 }

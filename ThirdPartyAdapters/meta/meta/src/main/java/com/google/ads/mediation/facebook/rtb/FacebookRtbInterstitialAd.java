@@ -1,3 +1,17 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.facebook.rtb;
 
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
@@ -17,6 +31,7 @@ import com.facebook.ads.ExtraHints;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdExtendedListener;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
+import com.google.ads.mediation.facebook.MetaFactory;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -24,8 +39,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
-    InterstitialAdExtendedListener {
+public class FacebookRtbInterstitialAd
+    implements MediationInterstitialAd, InterstitialAdExtendedListener {
 
   private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
@@ -35,11 +50,15 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
   private final AtomicBoolean showAdCalled = new AtomicBoolean();
   private final AtomicBoolean didInterstitialAdClose = new AtomicBoolean();
 
-  public FacebookRtbInterstitialAd(MediationInterstitialAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
+  private final MetaFactory metaFactory;
+
+  public FacebookRtbInterstitialAd(
+      MediationInterstitialAdConfiguration adConfiguration,
+      MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback,
+      MetaFactory metaFactory) {
     this.adConfiguration = adConfiguration;
     this.callback = callback;
+    this.metaFactory = metaFactory;
   }
 
   public void render() {
@@ -54,7 +73,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     }
 
     setMixedAudience(adConfiguration);
-    interstitialAd = new InterstitialAd(adConfiguration.getContext(), placementID);
+    interstitialAd = metaFactory.createInterstitialAd(adConfiguration.getContext(), placementID);
     if (!TextUtils.isEmpty(adConfiguration.getWatermark())) {
       interstitialAd.setExtraHints(new ExtraHints.Builder()
           .mediationData(adConfiguration.getWatermark()).build());
@@ -101,8 +120,7 @@ public class FacebookRtbInterstitialAd implements MediationInterstitialAd,
     Log.w(TAG, error.getMessage());
     if (showAdCalled.get()) {
       if (interstitalAdCallback != null) {
-        interstitalAdCallback.onAdOpened();
-        interstitalAdCallback.onAdClosed();
+        interstitalAdCallback.onAdFailedToShow(error);
       }
       return;
     }

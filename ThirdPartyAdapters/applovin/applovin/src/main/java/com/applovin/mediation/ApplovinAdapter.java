@@ -1,3 +1,17 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.applovin.mediation;
 
 import static android.util.Log.DEBUG;
@@ -14,6 +28,7 @@ import androidx.annotation.Nullable;
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
+import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
@@ -29,7 +44,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.OnContextChangedListener;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -62,6 +76,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   // Controlled fields.
   private String zoneId;
 
+  // Flag to let multiple loading of ads
+  private boolean enableMultipleAdLoading = false;
+
   // region MediationInterstitialAdapter implementation.
   @Override
   public void requestInterstitialAd(@NonNull final Context context,
@@ -69,13 +86,17 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
       @Nullable final Bundle networkExtras) {
 
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
           ERROR_DOMAIN);
       log(ERROR, error.getMessage());
       interstitialListener.onAdFailedToLoad(ApplovinAdapter.this, error);
       return;
+    }
+
+    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+      enableMultipleAdLoading = true;
     }
 
     AppLovinInitializer.getInstance()
@@ -95,7 +116,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
             appLovinInterstitialAds.put(zoneId, new WeakReference<>(ApplovinAdapter.this));
 
             // Store parent objects.
-            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            sdk = AppLovinInitializer.getInstance().retrieveSdk(serverParameters, context);
             ApplovinAdapter.this.context = context;
             ApplovinAdapter.this.networkExtras = networkExtras;
             mediationInterstitialListener = interstitialListener;
@@ -178,6 +199,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
     log(DEBUG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
+    if (enableMultipleAdLoading) {
+      unregister();
+    }
   }
   // endregion
 
@@ -188,7 +212,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle networkExtras) {
 
-    String sdkKey = AppLovinUtils.retrieveSdkKey(context, serverParameters);
+    String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
           ERROR_DOMAIN);
@@ -213,7 +237,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
           @Override
           public void onInitializeSuccess(@NonNull String sdkKey) {
             // Store parent objects
-            sdk = AppLovinUtils.retrieveSdk(serverParameters, context);
+            sdk = AppLovinInitializer.getInstance().retrieveSdk(serverParameters, context);
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
             log(DEBUG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);

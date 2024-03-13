@@ -1,5 +1,100 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 10.6.7.0
+- Verified compatibility with InMobi Kotlin SDK version 10.6.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- InMobi Kotlin SDK version 10.6.7.
+
+#### Version 10.6.6.0
+- Verified compatibility with InMobi Kotlin SDK version 10.6.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- InMobi Kotlin SDK version 10.6.6.
+
+#### Version 10.6.3.0
+- Added watermark support for bidding banner, interstitial and rewarded ads.
+- Verified compatibility with InMobi Kotlin SDK version 10.6.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.6.0.
+- InMobi Kotlin SDK version 10.6.3.
+
+#### Version 10.6.2.0
+- Updated the adapter to invoke Google Mobile Ads SDK's mediation callback
+`onAdFailedToShow` when InMobi interstitial ads fail to display.
+- Verified compatibility with InMobi Kotlin SDK version 10.6.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.5.0.
+- InMobi Kotlin SDK version 10.6.2.
+
+#### Version 10.6.0.0
+- Verified compatibility with InMobi Kotlin SDK version 10.6.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- InMobi Kotlin SDK version 10.6.0.
+
+#### Version 10.5.9.0
+- Verified compatibility with InMobi Kotlin SDK version 10.5.9.
+- Updated the adapter to load InMobi banner ads with the closest supported banner ad sizes instead of the requested ad sizes. This will help reduce InMobi no-fills.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- InMobi Kotlin SDK version 10.5.9.
+
+#### Version 10.5.8.0
+- Fixed an issue where the adapter fails to initialize.
+- Updated dependencies to resolve class path conflicts.
+- Updated the minimum required Google Mobile Ads SDK version to 22.3.0.
+- Verified compatibility with InMobi Kotlin SDK version 10.5.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.3.0.
+- InMobi Kotlin SDK version 10.5.8.
+
+#### Version 10.5.7.1
+- Added support to read IAB U.S. Privacy string from shared preferences.
+- Added bidding support for banner (includes MREC), interstitial and rewarded
+ad formats.
+- Updated the minimum required Google Mobile Ads SDK version to 22.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.2.0.
+- InMobi Kotlin SDK version 10.5.7.
+
+#### Version 10.5.7.0
+- Verified compatibility with InMobi Kotlin SDK version 10.5.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- InMobi Kotlin SDK version 10.5.7.
+
+#### Version 10.5.5.0
+- Verified compatibility with InMobi Kotlin SDK version 10.5.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.1.0.
+- InMobi Kotlin SDK version 10.5.5.
+
+#### Version 10.5.4.1
+- Updated adapter to use new `VersionInfo` class.
+- Updated the minimum required Google Mobile Ads SDK version to 22.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 22.0.0.
+- InMobi Kotlin SDK version 10.5.4.
+
+#### Version 10.5.4.0
+- Verified compatibility with InMobi Kotlin SDK version 10.5.4.
+
+Built and tested with:
+- Google Mobile Ads SDK version 21.4.0.
+- InMobi Kotlin SDK version 10.5.4.
+
 #### Version 10.1.2.1
 - Added support for forwarding the COPPA value to InMobi SDK.
 - Updated the adapter to use the new mediation APIs.

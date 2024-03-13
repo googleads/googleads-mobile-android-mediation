@@ -1,7 +1,23 @@
+// Copyright 2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.mintegral.rtb;
 
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -17,6 +33,9 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidNativeHandler;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +71,14 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbBidNativeHandler = new MBBidNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbBidNativeHandler.setAdListener(this);
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
+      mbBidNativeHandler.setExtraInfo(jsonObject);
+    } catch (JSONException jsonException) {
+      Log.w(TAG, "Failed to apply watermark to Mintegral bidding native ad.", jsonException);
+    }
+    mbBidNativeHandler.setAdListener(mintegralNativeAdListener);
     mbBidNativeHandler.bidLoad(bidToken);
   }
 
@@ -68,7 +94,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
 
     ArrayList<View> assetViews = new ArrayList<>(copyClickableAssetViews.values());
     if (mbBidNativeHandler != null) {
-      mbBidNativeHandler.registerView(null, assetViews, campaign);
+      mbBidNativeHandler.registerView(view, assetViews, campaign);
     }
   }
 

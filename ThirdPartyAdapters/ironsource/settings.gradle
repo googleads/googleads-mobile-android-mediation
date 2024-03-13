@@ -1,1 +1,3 @@
 include ':ironsource'
+include 'adaptertestkit'
+project(":adaptertestkit").projectDir = file("../adaptertestkit")
