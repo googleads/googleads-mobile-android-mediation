@@ -44,6 +44,7 @@ import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -203,7 +204,9 @@ public class FyberMediationAdapter extends Adapter
       callback.onFailure(error);
       return;
     }
-
+    
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     InneractiveAdManager.initialize(configuration.getContext(), keyAppID,
         new OnFyberMarketplaceInitializedListener() {
           @Override
@@ -256,7 +259,9 @@ public class FyberMediationAdapter extends Adapter
           appIdForInitialization);
       Log.w(TAG, logMessage);
     }
-
+    
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     InneractiveAdManager.initialize(context, appIdForInitialization,
         new OnFyberMarketplaceInitializedListener() {
           @Override
@@ -325,7 +330,9 @@ public class FyberMediationAdapter extends Adapter
       this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
       return;
     }
-
+    
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     InneractiveAdManager.initialize(context, keyAppId, new OnFyberMarketplaceInitializedListener() {
       @Override
       public void onFyberMarketplaceInitialized(FyberInitStatus fyberInitStatus) {
@@ -350,7 +357,6 @@ public class FyberMediationAdapter extends Adapter
         }
 
         bannerSpot = InneractiveAdSpotManager.get().createSpot();
-        bannerSpot.setMediationName(MEDIATOR_NAME);
 
         InneractiveAdViewUnitController controller = new InneractiveAdViewUnitController();
         bannerSpot.addUnitController(controller);
@@ -521,7 +527,9 @@ public class FyberMediationAdapter extends Adapter
           .onAdFailedToLoad(FyberMediationAdapter.this, error);
       return;
     }
-
+    
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     InneractiveAdManager.initialize(context, keyAppId, new OnFyberMarketplaceInitializedListener() {
       @Override
       public void onFyberMarketplaceInitialized(FyberInitStatus fyberInitStatus) {
