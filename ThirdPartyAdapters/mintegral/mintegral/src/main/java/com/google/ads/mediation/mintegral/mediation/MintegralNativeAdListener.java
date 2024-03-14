@@ -25,7 +25,6 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
   public MintegralNativeAdListener(@NonNull MintegralNativeAd mintegralNativeAd) {
     this.mintegralNativeAd = mintegralNativeAd;
-    this.nativeCallback = mintegralNativeAd.nativeCallback;
     this.adLoadCallback = mintegralNativeAd.adLoadCallback;
   }
 

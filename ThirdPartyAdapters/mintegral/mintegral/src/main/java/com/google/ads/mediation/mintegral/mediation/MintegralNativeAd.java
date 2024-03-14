@@ -42,7 +42,6 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   protected final MediationNativeAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
-  protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
   public MintegralNativeAdListener mintegralNativeAdListener;
 
