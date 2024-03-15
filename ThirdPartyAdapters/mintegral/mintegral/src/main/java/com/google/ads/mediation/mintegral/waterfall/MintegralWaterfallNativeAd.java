@@ -88,8 +88,10 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
           View childView = mediaView.getChildAt(a);
           if(childView instanceof MBMediaView){
             ((MBMediaView)childView).setOnMediaViewListener(this);
+            break;
           }
         }
+        break;
       }
     }
     if (mbNativeHandler != null) {

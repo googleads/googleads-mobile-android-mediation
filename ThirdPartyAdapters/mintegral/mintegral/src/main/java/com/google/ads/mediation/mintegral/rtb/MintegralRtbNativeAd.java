@@ -103,8 +103,10 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
           View childView = mediaView.getChildAt(a);
           if(childView instanceof MBMediaView){
             ((MBMediaView)childView).setOnMediaViewListener(this);
+            break;
           }
         }
+        break;
       }
     }
     if (mbBidNativeHandler != null) {
