@@ -260,8 +260,6 @@ public class FyberMediationAdapter extends Adapter
       Log.w(TAG, logMessage);
     }
     
-    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
-    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     InneractiveAdManager.initialize(context, appIdForInitialization,
         new OnFyberMarketplaceInitializedListener() {
           @Override
@@ -570,7 +568,6 @@ public class FyberMediationAdapter extends Adapter
         interstitialActivityRef = new WeakReference<>((Activity) context);
 
         interstitialSpot = InneractiveAdSpotManager.get().createSpot();
-        interstitialSpot.setMediationName(MEDIATOR_NAME);
 
         InneractiveFullscreenUnitController controller = new InneractiveFullscreenUnitController();
         interstitialSpot.addUnitController(controller);
