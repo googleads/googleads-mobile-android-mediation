@@ -53,6 +53,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   private final String instanceID;
 
+  private final String bidToken;
+
   public IronSourceRewardedAd(
       @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
@@ -61,6 +63,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
+    bidToken = rewardedAdConfiguration.getBidResponse();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
@@ -92,15 +95,30 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return mediationAdLoadCallback;
   }
 
-  public void loadAd() {
+  private boolean loadValidConfig() {
     if (!isParamsValid()) {
-      return;
+      return false;
     }
 
-    Activity activity = (Activity) context;
     availableInstances.put(instanceID, new WeakReference<>(this));
     Log.d(TAG, String.format("Loading IronSource rewarded ad with instance ID: %s", instanceID));
+    return true;
+  }
+
+  public void loadWaterfallAd() {
+    if (!loadValidConfig()) {
+      return;
+    }
+    Activity activity = (Activity) context;
     IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
+  }
+
+  public void loadRtbAd() {
+    if (!loadValidConfig()) {
+      return;
+    }
+    Activity activity = (Activity) context;
+    IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, instanceID, bidToken);
   }
 
   private boolean isParamsValid() {

@@ -254,15 +254,36 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
     IronSourceRewardedAd ironSourceRewardedAd =
         new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    ironSourceRewardedAd.loadAd();
+    ironSourceRewardedAd.loadWaterfallAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (!isInitialized.get()) {
+      AdError adError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource RTB rewarded ad since IronSource SDK is not "
+                  + "initialized.",
+              ERROR_DOMAIN);
+
+      Log.w(TAG, adError.getMessage());
+      callback.onFailure(adError);
+      return;
+    }
+
+    IronSourceRewardedAd ironSourceRewardedAd = new IronSourceRewardedAd(adConfiguration, callback);
+    ironSourceRewardedAd.loadRtbAd();
   }
 
   @Override
   public void loadRewardedInterstitialAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     // IronSource Rewarded Interstitial ads use the same Rewarded Video API.
     Log.d(
         TAG,

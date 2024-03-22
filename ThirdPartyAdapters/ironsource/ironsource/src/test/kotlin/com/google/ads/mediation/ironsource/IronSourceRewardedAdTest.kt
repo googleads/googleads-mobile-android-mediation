@@ -225,6 +225,6 @@ class IronSourceRewardedAdTest {
   private fun loadRewardedAd() {
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
     ironSourceRewardedAd = IronSourceRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
-    ironSourceRewardedAd.loadAd()
+    ironSourceRewardedAd.loadWaterfallAd()
   }
 }

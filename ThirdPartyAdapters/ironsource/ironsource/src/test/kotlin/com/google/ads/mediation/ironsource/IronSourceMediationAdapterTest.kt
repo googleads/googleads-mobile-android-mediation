@@ -17,6 +17,7 @@ import com.google.ads.mediation.adaptertestkit.loadInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRewardedInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVersion
@@ -523,7 +524,7 @@ class IronSourceMediationAdapterTest {
   }
 
   @Test
-  fun loadRewardedAd_validInput_loadsSuccessfully() {
+  fun loadRewardedAd_validInput_invokesLoadISDemandOnlyRewardedVideo() {
     mockStatic(IronSource::class.java).use {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
@@ -531,6 +532,64 @@ class IronSourceMediationAdapterTest {
       adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
+    }
+  }
+
+  @Test
+  fun loadRtbRewardedAd_notInitialized_expectOnFailureCallbackWithAdError() {
+    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
+
+    adapter.loadRtbRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(
+        ERROR_SDK_NOT_INITIALIZED,
+        getUninitializedErrorMessage(adFormat = "RTB rewarded"),
+        ERROR_DOMAIN,
+      ),
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedAd_invalidContext_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
+
+    adapter.loadRtbRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedAd_emptyInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        activity,
+        serverParameters = bundleOf(IronSourceConstants.KEY_INSTANCE_ID to ""),
+      )
+
+    adapter.loadRtbRewardedAdWithFailure(
+      mediationAdConfiguration,
+      rewardedAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+    )
+  }
+
+  @Test
+  fun loadRtbRewardedAd_validInputAndBidToken_invokesLoadISDemandOnlyRewardedVideoWithAdm() {
+    mockStatic(IronSource::class.java).use {
+      adapter.setIsInitialized(true)
+      val mediationAdConfiguration =
+        createMediationRewardedAdConfiguration(activity, bidResponse = TEST_BID_RESPONSE)
+
+      adapter.loadRtbRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+
+      it.verify {
+        IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, "0", TEST_BID_RESPONSE)
+      }
     }
   }
 

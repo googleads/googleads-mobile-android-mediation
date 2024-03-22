@@ -2,6 +2,7 @@
 
 #### Next Version
 - Added support for bidding Interstitial ad.
+- Added support for bidding Rewarded ad.
 
 #### Version 7.9.0.0
 - Verified compatibility with ironSource SDK version 7.9.0.
