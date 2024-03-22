@@ -76,7 +76,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdLoadFailed(
       /* instanceId= */ "0",
-      ironSourceError
+      ironSourceError,
     )
 
     val expectedAdError =
@@ -93,7 +93,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdLoadFailed(
       /* instanceId= */ "0",
-      ironSourceError
+      ironSourceError,
     )
 
     verifyNoInteractions(interstitialAdLoadCallback)
@@ -120,7 +120,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdShowFailed(
       /* instanceId= */ "0",
-      ironSourceError
+      ironSourceError,
     )
 
     val expectedAdError =
@@ -138,7 +138,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdShowFailed(
       /* instanceId= */ "1",
-      ironSourceError
+      ironSourceError,
     )
 
     verifyNoInteractions(mockInterstitialAdCallback)
@@ -155,7 +155,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdShowFailed(
       /* instanceId= */ "0",
-      ironSourceError
+      ironSourceError,
     )
 
     verifyNoInteractions(mockInterstitialAdCallback)
@@ -232,6 +232,6 @@ class IronSourceInterstitialAdTest {
     val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
     ironSourceInterstitialAd =
       IronSourceInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
-    ironSourceInterstitialAd.loadAd()
+    ironSourceInterstitialAd.loadWaterfallAd()
   }
 }

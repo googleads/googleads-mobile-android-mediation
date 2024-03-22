@@ -16,6 +16,7 @@ import com.google.ads.mediation.adaptertestkit.loadBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRewardedInterstitialAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVersion
@@ -378,7 +379,7 @@ class IronSourceMediationAdapterTest {
   }
 
   @Test
-  fun loadInterstitialAd_validInput_loadsSuccessfully() {
+  fun loadInterstitialAd_validInput_invokesLoadISDemandOnlyInterstitial() {
     mockStatic(IronSource::class.java).use {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
@@ -386,6 +387,62 @@ class IronSourceMediationAdapterTest {
       adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyInterstitial(activity, "0") }
+    }
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_notInitialized_expectOnFailureCallbackWithAdError() {
+    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
+
+    adapter.loadRtbInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(
+        ERROR_SDK_NOT_INITIALIZED,
+        getUninitializedErrorMessage(adFormat = "RTB interstitial"),
+        IRONSOURCE_SDK_ERROR_DOMAIN,
+      ),
+    )
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_invalidContext_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
+
+    adapter.loadRtbInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+    )
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_emptyInstanceId_expectOnFailureCallbackWithAdError() {
+    adapter.setIsInitialized(true)
+    val mediationAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        activity,
+        serverParameters = bundleOf(IronSourceConstants.KEY_INSTANCE_ID to ""),
+      )
+
+    adapter.loadRtbInterstitialAdWithFailure(
+      mediationAdConfiguration,
+      interstitialAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+    )
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_validInputAndBidToken_invokesLoadISDemandOnlyInterstitialWithAdm() {
+    mockStatic(IronSource::class.java).use {
+      adapter.setIsInitialized(true)
+      val mediationAdConfiguration =
+        createMediationInterstitialAdConfiguration(activity, bidResponse = TEST_BID_RESPONSE)
+
+      adapter.loadRtbInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+
+      it.verify { IronSource.loadISDemandOnlyInterstitialWithAdm(activity, "0", TEST_BID_RESPONSE) }
     }
   }
 

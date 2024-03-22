@@ -292,15 +292,38 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
     IronSourceInterstitialAd ironSourceInterstitialAd =
         new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-    ironSourceInterstitialAd.loadAd();
+    ironSourceInterstitialAd.loadWaterfallAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError loadError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource RTB interstitial ad since IronSource SDK is not "
+                  + "initialized.",
+              IRONSOURCE_SDK_ERROR_DOMAIN);
+      Log.w(TAG, loadError.getMessage());
+      mediationAdLoadCallback.onFailure(loadError);
+      return;
+    }
+
+    IronSourceInterstitialAd ironSourceInterstitialAd =
+        new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    ironSourceInterstitialAd.loadRtbAd();
   }
 
   @Override
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     if (!isInitialized.get()) {
       AdError loadError =
           new AdError(

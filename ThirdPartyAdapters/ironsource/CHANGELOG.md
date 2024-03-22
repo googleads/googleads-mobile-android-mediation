@@ -1,5 +1,8 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for bidding Interstitial ad.
+
 #### Version 7.9.0.0
 - Verified compatibility with ironSource SDK version 7.9.0.
 - Updated the minimum required Google Mobile Ads SDK version to 23.0.0.
