@@ -32,6 +32,8 @@ import android.widget.RelativeLayout;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
@@ -68,6 +70,23 @@ public class VungleInterstitialAdapter
   private BannerAd bannerAd;
   private RelativeLayout bannerLayout;
 
+  private final VungleFactory vungleFactory;
+
+  @VisibleForTesting
+  VungleInterstitialListener vungleInterstitialListener;
+
+  @VisibleForTesting
+  VungleBannerListener vungleBannerListener;
+
+  public VungleInterstitialAdapter() {
+    vungleFactory = new VungleFactory();
+  }
+
+  @VisibleForTesting
+  VungleInterstitialAdapter(VungleFactory vungleFactory) {
+    this.vungleFactory = vungleFactory;
+  }
+
   @Override
   public void requestInterstitialAd(@NonNull Context context,
       @NonNull MediationInterstitialListener interstitialListener,
@@ -99,7 +118,7 @@ public class VungleInterstitialAdapter
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
 
-    AdConfig adConfig = new AdConfig();
+    AdConfig adConfig = vungleFactory.createAdConfig();
     if (mediationExtras != null && mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(
           mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
@@ -111,8 +130,9 @@ public class VungleInterstitialAdapter
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                interstitialAd = new InterstitialAd(context, placement, adConfig);
-                interstitialAd.setAdListener(new VungleInterstitialListener());
+                interstitialAd = vungleFactory.createInterstitialAd(context, placement, adConfig);
+                vungleInterstitialListener = new VungleInterstitialListener();
+                interstitialAd.setAdListener(vungleInterstitialListener);
                 interstitialAd.load(null);
               }
 
@@ -132,7 +152,8 @@ public class VungleInterstitialAdapter
     }
   }
 
-  private class VungleInterstitialListener implements InterstitialAdListener {
+  @VisibleForTesting
+  class VungleInterstitialListener implements InterstitialAdListener {
 
     @Override
     public void onAdLoaded(@NonNull BaseAd baseAd) {
@@ -275,8 +296,9 @@ public class VungleInterstitialAdapter
                         adLayoutHeight);
                 bannerLayout.setLayoutParams(adViewLayoutParams);
 
-                bannerAd = new BannerAd(context, placement, bannerAdSize);
-                bannerAd.setAdListener(new VungleBannerListener());
+                bannerAd = vungleFactory.createBannerAd(context, placement, bannerAdSize);
+                vungleBannerListener = new VungleBannerListener();
+                bannerAd.setAdListener(vungleBannerListener);
 
                 bannerAd.load(null);
               }
@@ -292,7 +314,8 @@ public class VungleInterstitialAdapter
             });
   }
 
-  private class VungleBannerListener implements BannerAdListener {
+  @VisibleForTesting
+  class VungleBannerListener implements BannerAdListener {
 
     @Override
     public void onAdClicked(@NonNull BaseAd baseAd) {
