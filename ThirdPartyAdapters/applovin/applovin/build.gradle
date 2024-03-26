@@ -16,7 +16,7 @@ ext {
 android {
     compileSdkVersion 33
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 33
         versionCode 12030100
         versionName stringVersion
