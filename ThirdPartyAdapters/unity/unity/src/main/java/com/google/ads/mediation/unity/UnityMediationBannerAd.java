@@ -38,6 +38,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -194,6 +195,8 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       return;
     }
 
+    final String adMarkup = mediationBannerAdConfiguration.getBidResponse();
+
     unityInitializer.initializeUnityAds(
         context,
         gameId,
@@ -217,7 +220,11 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
             }
 
             unityBannerViewWrapper.setListener(UnityMediationBannerAd.this);
-            unityBannerViewWrapper.load();
+            UnityAdsLoadOptions loadOptions = new UnityAdsLoadOptions();
+            if (adMarkup != null) {
+              loadOptions.setAdMarkup(adMarkup);
+            }
+            unityBannerViewWrapper.load(loadOptions);
           }
 
           @Override

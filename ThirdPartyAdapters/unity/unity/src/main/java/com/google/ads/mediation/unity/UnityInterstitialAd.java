@@ -178,6 +178,8 @@ public class UnityInterstitialAd
     Activity activity = (Activity) context;
     activityWeakReference = new WeakReference<>(activity);
 
+    final String adMarkup = adConfiguration.getBidResponse();
+
     unityInitializer.initializeUnityAds(
         context,
         gameId,
@@ -197,6 +199,9 @@ public class UnityInterstitialAd
             objectId = UUID.randomUUID().toString();
             UnityAdsLoadOptions unityAdsLoadOptions =
                 unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
+            if (adMarkup != null) {
+              unityAdsLoadOptions.setAdMarkup(adMarkup);
+            }
             unityAdsLoader.load(placementId, unityAdsLoadOptions, UnityInterstitialAd.this);
           }
 
