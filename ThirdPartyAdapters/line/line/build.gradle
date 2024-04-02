@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Line"
     // String property to store version name.
-    stringVersion = "2.7.20240214.0"
+    stringVersion = "2.7.20240214.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -28,9 +28,9 @@ android {
     compileSdk 33
 
     defaultConfig {
-        minSdk 19
+        minSdk 21
         targetSdk 33
-        versionCode 24011200  // FiveAd SDK patch number YYMMDD + two digits for adapter patch.
+        versionCode 24021401  // FiveAd SDK micro number as 6 digits instead of 8 (YYMMDD) + two digits for adapter patch.
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -126,7 +126,7 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'com.google.android.gms:play-services-ads:22.6.0'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
     implementation 'com.linecorp.adsnetwork:fivead:2.7.20240214'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
