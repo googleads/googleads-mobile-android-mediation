@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "DTExchange"
     // String property to store the version name.
-    stringVersion = "8.2.6.0"
+    stringVersion = "8.2.6.1"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
@@ -22,9 +22,9 @@ ext {
 android {
     compileSdkVersion 33
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 31
-        versionCode 8020600
+        versionCode 8020601
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
@@ -115,7 +115,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.fyber:marketplace-sdk:8.2.6'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:22.6.0'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
 
     testImplementation project(':adaptertestkit')
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
