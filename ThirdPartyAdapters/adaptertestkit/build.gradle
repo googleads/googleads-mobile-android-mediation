@@ -8,7 +8,7 @@ android {
   compileSdk 33
 
   defaultConfig {
-    minSdk 19
+    minSdk 21
     versionCode 1
     versionName "0.0.1"
     multiDexEnabled true
@@ -27,7 +27,7 @@ android {
 
 dependencies {
   implementation 'androidx.core:core-ktx:1.10.0'
-  implementation 'com.google.android.gms:play-services-ads:22.4.0'
+  implementation 'com.google.android.gms:play-services-ads:23.0.0'
   implementation 'junit:junit:4.13.2'
   implementation "com.google.truth:truth:1.1.5"
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
