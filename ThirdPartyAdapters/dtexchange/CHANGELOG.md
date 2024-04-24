@@ -4,10 +4,6 @@
 
 - Pass MobileAds version to DT Exchange SDK.
 
-#### Next version:
-
-- Pass MobileAds version to DT Exchange SDK.
-
 #### Version 8.2.7.0
 - Verified compatibility with DT Exchange SDK 8.2.7.
 
