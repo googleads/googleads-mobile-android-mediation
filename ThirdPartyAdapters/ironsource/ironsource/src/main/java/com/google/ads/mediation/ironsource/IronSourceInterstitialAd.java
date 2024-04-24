@@ -53,6 +53,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   private final String instanceID;
 
+  private final String bidToken;
+
   public IronSourceInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
       @NonNull
@@ -61,6 +63,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     Bundle serverParameters = interstitialAdConfig.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = interstitialAdConfig.getContext();
+    bidToken = interstitialAdConfig.getBidResponse();
     this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
@@ -92,16 +95,34 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     return mediationAdLoadCallback;
   }
 
-  public void loadAd() {
-    if (!isParamsValid()) {
+  /** Attempts to load an @{link IronSource} interstitial ad. */
+  public void loadWaterfallAd() {
+    if (!loadValidConfig()) {
       return;
     }
-
     Activity activity = (Activity) context;
+    IronSource.loadISDemandOnlyInterstitial(activity, instanceID);
+  }
+
+  /** Attempts to load an @{link IronSource} interstitial ad using a Bid token. */
+  public void loadRtbAd() {
+    if (!loadValidConfig()) {
+      return;
+    }
+    Activity activity = (Activity) context;
+    IronSource.loadISDemandOnlyInterstitialWithAdm(activity, instanceID, bidToken);
+  }
+
+  /** Returns true if all the parameters needed to load an ad are valid. */
+  private boolean loadValidConfig() {
+    if (!isParamsValid()) {
+      return false;
+    }
+
     availableInterstitialInstances.put(instanceID, new WeakReference<>(this));
     Log.d(
         TAG, String.format("Loading IronSource interstitial ad with instance ID: %s", instanceID));
-    IronSource.loadISDemandOnlyInterstitial(activity, instanceID);
+    return true;
   }
 
   private boolean isParamsValid() {

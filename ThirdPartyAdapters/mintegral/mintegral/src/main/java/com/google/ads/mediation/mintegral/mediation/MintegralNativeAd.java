@@ -42,7 +42,6 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   protected final MediationNativeAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
-  protected MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
   public MintegralNativeAdListener mintegralNativeAdListener;
 
@@ -120,15 +119,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onEnterFullscreen() {
-    if (nativeCallback != null) {
-      nativeCallback.onAdOpened();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onAdOpened();
     }
   }
 
   @Override
   public void onExitFullscreen() {
-    if (nativeCallback != null) {
-      nativeCallback.onAdClosed();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onAdClosed();
     }
   }
 
@@ -149,15 +148,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onVideoAdClicked(Campaign campaign) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdClicked();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.reportAdClicked();
     }
   }
 
   @Override
   public void onVideoStart() {
-    if (nativeCallback != null) {
-      nativeCallback.onVideoPlay();
+    if (mintegralNativeAdListener.nativeCallback != null) {
+      mintegralNativeAdListener.nativeCallback.onVideoPlay();
     }
   }
 

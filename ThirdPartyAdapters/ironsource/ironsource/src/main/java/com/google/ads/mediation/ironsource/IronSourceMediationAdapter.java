@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
-import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -42,6 +41,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import java.lang.annotation.Retention;
@@ -50,7 +52,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IronSourceMediationAdapter extends Adapter {
+/**
+ * IronSource Adapter for GMA SDK used to initialize and load ads from the IronSource SDK. This
+ * class should not be used directly by publishers.
+ */
+public class IronSourceMediationAdapter extends RtbAdapter {
 
   private static final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
@@ -222,10 +228,17 @@ public class IronSourceMediationAdapter extends Adapter {
   }
 
   @Override
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    signalCallbacks.onSuccess(IronSource.getISDemandOnlyBiddingData(rtbSignalData.getContext()));
+  }
+
+  @Override
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull
+          final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     if (!isInitialized.get()) {
       AdError adError =
           new AdError(
@@ -241,15 +254,36 @@ public class IronSourceMediationAdapter extends Adapter {
 
     IronSourceRewardedAd ironSourceRewardedAd =
         new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    ironSourceRewardedAd.loadAd();
+    ironSourceRewardedAd.loadWaterfallAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (!isInitialized.get()) {
+      AdError adError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource RTB rewarded ad since IronSource SDK is not "
+                  + "initialized.",
+              ERROR_DOMAIN);
+
+      Log.w(TAG, adError.getMessage());
+      callback.onFailure(adError);
+      return;
+    }
+
+    IronSourceRewardedAd ironSourceRewardedAd = new IronSourceRewardedAd(adConfiguration, callback);
+    ironSourceRewardedAd.loadRtbAd();
   }
 
   @Override
   public void loadRewardedInterstitialAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     // IronSource Rewarded Interstitial ads use the same Rewarded Video API.
     Log.d(
         TAG,
@@ -279,15 +313,38 @@ public class IronSourceMediationAdapter extends Adapter {
 
     IronSourceInterstitialAd ironSourceInterstitialAd =
         new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-    ironSourceInterstitialAd.loadAd();
+    ironSourceInterstitialAd.loadWaterfallAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError loadError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource RTB interstitial ad since IronSource SDK is not "
+                  + "initialized.",
+              IRONSOURCE_SDK_ERROR_DOMAIN);
+      Log.w(TAG, loadError.getMessage());
+      mediationAdLoadCallback.onFailure(loadError);
+      return;
+    }
+
+    IronSourceInterstitialAd ironSourceInterstitialAd =
+        new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+    ironSourceInterstitialAd.loadRtbAd();
   }
 
   @Override
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-          mediationAdLoadCallback) {
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     if (!isInitialized.get()) {
       AdError loadError =
           new AdError(

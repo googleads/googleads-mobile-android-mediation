@@ -97,7 +97,7 @@ public class FyberMediationAdapter extends Adapter
   /**
    * Key to obtain the mute video state, which enables the publisher to mute interstitial ads
    */
-  static final String KEY_MUTE_VIDEO = "muteVideo";
+  public static final String KEY_MUTE_VIDEO = "muteVideo";
 
   /**
    * Requested banner ad size.

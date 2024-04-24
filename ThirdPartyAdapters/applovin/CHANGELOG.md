@@ -1,5 +1,27 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 12.4.2.0
+- Verified compatibility with AppLovin SDK 12.4.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.0.0.
+- AppLovin SDK version 12.4.2.
+
+#### Version 12.4.0.0
+- Verified compatibility with AppLovin SDK 12.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.0.0.
+- AppLovin SDK version 12.4.0.
+
+#### Version 12.3.1.0
+- Updated the minimum required Google Mobile Ads SDK version to 23.0.0.
+- Verified compatibility with AppLovin SDK 12.3.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.0.0.
+- AppLovin SDK version 12.3.1.
+
 #### Version 12.3.0.0
 - Verified compatibility with AppLovin SDK 12.3.0.
 
