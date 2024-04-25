@@ -94,6 +94,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
     }
 
     rewardedSpot = InneractiveAdSpotManager.get().createSpot();
+    rewardedSpot.setMediationName(InneractiveMediationName.ADMOB);
 
     unitController = new InneractiveFullscreenUnitController();
     rewardedSpot.addUnitController(unitController);
