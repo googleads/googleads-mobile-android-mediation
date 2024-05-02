@@ -55,6 +55,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
 
   private final String bidToken;
 
+  private final String watermark;
+
   public IronSourceInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
       @NonNull
@@ -64,6 +66,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = interstitialAdConfig.getContext();
     bidToken = interstitialAdConfig.getBidResponse();
+    watermark = interstitialAdConfig.getWatermark();
     this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
@@ -110,6 +113,8 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
       return;
     }
     Activity activity = (Activity) context;
+
+    IronSourceAdapterUtils.setWatermark(watermark);
     IronSource.loadISDemandOnlyInterstitialWithAdm(activity, instanceID, bidToken);
   }
 

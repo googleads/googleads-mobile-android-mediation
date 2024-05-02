@@ -27,6 +27,7 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
+import com.ironsource.mediationsdk.IronSource;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -91,5 +92,9 @@ public class IronSourceAdapterUtils {
 
   public static String getAdapterVersion() {
     return BuildConfig.ADAPTER_VERSION;
+  }
+
+  public static void setWatermark(@NonNull String watermark) {
+    IronSource.setMetaData("google_water_mark", watermark);
   }
 }

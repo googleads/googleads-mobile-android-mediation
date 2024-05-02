@@ -7,6 +7,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -439,11 +440,18 @@ class IronSourceMediationAdapterTest {
     mockStatic(IronSource::class.java).use {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration =
-        createMediationInterstitialAdConfiguration(activity, bidResponse = TEST_BID_RESPONSE)
+        createMediationInterstitialAdConfiguration(
+          activity,
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+        )
 
       adapter.loadRtbInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
 
-      it.verify { IronSource.loadISDemandOnlyInterstitialWithAdm(activity, "0", TEST_BID_RESPONSE) }
+      it.verify {
+        IronSource.setMetaData(eq("google_water_mark"), eq(TEST_WATERMARK))
+        IronSource.loadISDemandOnlyInterstitialWithAdm(activity, "0", TEST_BID_RESPONSE)
+      }
     }
   }
 
@@ -583,11 +591,16 @@ class IronSourceMediationAdapterTest {
     mockStatic(IronSource::class.java).use {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration =
-        createMediationRewardedAdConfiguration(activity, bidResponse = TEST_BID_RESPONSE)
+        createMediationRewardedAdConfiguration(
+          activity,
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+        )
 
       adapter.loadRtbRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
 
       it.verify {
+        IronSource.setMetaData(eq("google_water_mark"), eq(TEST_WATERMARK))
         IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, "0", TEST_BID_RESPONSE)
       }
     }

@@ -55,6 +55,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   private final String bidToken;
 
+  private final String watermark;
+
   public IronSourceRewardedAd(
       @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
@@ -64,6 +66,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
     bidToken = rewardedAdConfiguration.getBidResponse();
+    watermark = rewardedAdConfiguration.getWatermark();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
@@ -118,6 +121,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
       return;
     }
     Activity activity = (Activity) context;
+
+    IronSourceAdapterUtils.setWatermark(watermark);
     IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, instanceID, bidToken);
   }
 
