@@ -1,5 +1,12 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Version 8.0.0.1
+- Added watermark support for bidding ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.0.0.
+- IronSource SDK version 8.0.0.
+
 #### Version 8.0.0.0
 - Added bidding support for interstitial and rewarded ad formats.
 - Verified compatibility with ironSource SDK version 8.0.0.
