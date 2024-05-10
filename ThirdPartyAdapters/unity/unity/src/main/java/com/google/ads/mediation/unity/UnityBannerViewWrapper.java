@@ -1,6 +1,7 @@
 package com.google.ads.mediation.unity;
 
 import androidx.annotation.NonNull;
+import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.services.banners.BannerView;
 
 /**
@@ -19,8 +20,8 @@ class UnityBannerViewWrapper {
     bannerView.setListener(listener);
   }
 
-  public void load() {
-    bannerView.load();
+  public void load(UnityAdsLoadOptions loadOptions) {
+    bannerView.load(loadOptions);
   }
 
   public BannerView getBannerView() {

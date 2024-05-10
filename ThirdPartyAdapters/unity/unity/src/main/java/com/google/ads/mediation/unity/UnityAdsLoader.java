@@ -24,8 +24,12 @@ class UnityAdsLoader {
     UnityAds.show(activity, placementId, unityAdsShowOptions, unityAdsShowListener);
   }
 
+  public UnityAdsLoadOptions createUnityAdsLoadOptions() {
+    return new UnityAdsLoadOptions();
+  }
+
   public UnityAdsLoadOptions createUnityAdsLoadOptionsWithId(String objectId) {
-    UnityAdsLoadOptions unityAdsLoadOptions = new UnityAdsLoadOptions();
+    UnityAdsLoadOptions unityAdsLoadOptions = createUnityAdsLoadOptions();
     unityAdsLoadOptions.setObjectId(objectId);
     return unityAdsLoadOptions;
   }

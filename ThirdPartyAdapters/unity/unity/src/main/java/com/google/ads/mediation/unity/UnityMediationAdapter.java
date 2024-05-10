@@ -164,6 +164,9 @@ public class UnityMediationAdapter extends RtbAdapter {
   /** UnityBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
+  /** UnityBannerAd instance. */
+  private UnityMediationBannerAd bannerRtbAd;
+
   /** UnityInterstitialAd instance. */
   private UnityInterstitialAd interstitialAd;
 
@@ -328,8 +331,15 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
         new UnityMediationBannerAd(
-            mediationBannerAdConfiguration, callback, unityInitializer, unityBannerViewFactory);
+            mediationBannerAdConfiguration, callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
     bannerAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerRtbAd = new UnityMediationBannerAd(adConfiguration, callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
+    bannerRtbAd.loadAd();
   }
 
   @Override

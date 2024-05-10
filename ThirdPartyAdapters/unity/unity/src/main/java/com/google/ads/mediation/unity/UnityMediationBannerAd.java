@@ -20,6 +20,7 @@ import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationEr
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,6 +39,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -69,6 +71,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
   private final UnityBannerViewFactory unityBannerViewFactory;
 
   @Nullable private UnityBannerViewWrapper unityBannerViewWrapper;
+  private final UnityAdsLoader unityAdsLoader;
 
   static final String ERROR_MSG_NO_MATCHING_AD_SIZE =
       "There is no matching Unity Ads ad size for Google ad size: ";
@@ -82,11 +85,13 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               bannerAdLoadCallback,
       @NonNull UnityInitializer unityInitializer,
-      @NonNull UnityBannerViewFactory unityBannerViewFactory) {
+      @NonNull UnityBannerViewFactory unityBannerViewFactory,
+      @NonNull UnityAdsLoader unityAdsLoader) {
     this.mediationBannerAdConfiguration = bannerAdConfiguration;
     this.mediationBannerAdLoadCallback = bannerAdLoadCallback;
     this.unityBannerViewFactory = unityBannerViewFactory;
     this.unityInitializer = unityInitializer;
+    this.unityAdsLoader = unityAdsLoader;
   }
 
   @Override
@@ -194,6 +199,8 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       return;
     }
 
+    final String adMarkup = mediationBannerAdConfiguration.getBidResponse();
+
     unityInitializer.initializeUnityAds(
         context,
         gameId,
@@ -217,7 +224,12 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
             }
 
             unityBannerViewWrapper.setListener(UnityMediationBannerAd.this);
-            unityBannerViewWrapper.load();
+            UnityAdsLoadOptions loadOptions = unityAdsLoader.createUnityAdsLoadOptions();
+            loadOptions.set(KEY_WATERMARK, mediationBannerAdConfiguration.getWatermark());
+            if (adMarkup != null) {
+              loadOptions.setAdMarkup(adMarkup);
+            }
+            unityBannerViewWrapper.load(loadOptions);
           }
 
           @Override
