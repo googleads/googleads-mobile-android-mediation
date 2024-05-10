@@ -154,6 +154,7 @@ public class UnityMediationAdapter extends RtbAdapter {
    */
   static final String KEY_PLACEMENT_ID = "zoneId";
 
+  static final String KEY_WATERMARK = "watermark";
   private final UnityInitializer unityInitializer;
 
   private final UnityBannerViewFactory unityBannerViewFactory;
@@ -165,6 +166,9 @@ public class UnityMediationAdapter extends RtbAdapter {
 
   /** UnityInterstitialAd instance. */
   private UnityInterstitialAd interstitialAd;
+
+  /** UnityInterstitialAd instance used for RTB. */
+  private UnityInterstitialAd interstitialRtbAd;
 
   /**
    * UnityRewardedAd instance.
@@ -332,5 +336,16 @@ public class UnityMediationAdapter extends RtbAdapter {
     interstitialAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialAd.loadAd();
+  }
+
+  @Override
+  public final void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialRtbAd =
+        new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
+    interstitialRtbAd.loadAd();
   }
 }

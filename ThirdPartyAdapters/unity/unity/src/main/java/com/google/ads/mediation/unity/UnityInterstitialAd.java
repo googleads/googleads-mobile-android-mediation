@@ -10,6 +10,7 @@ import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_NULL_CONTEXT;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_GAME_ID;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_PLACEMENT_ID;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 
 import android.app.Activity;
 import android.content.Context;
@@ -178,6 +179,8 @@ public class UnityInterstitialAd
     Activity activity = (Activity) context;
     activityWeakReference = new WeakReference<>(activity);
 
+    final String adMarkup = adConfiguration.getBidResponse();
+
     unityInitializer.initializeUnityAds(
         context,
         gameId,
@@ -197,6 +200,9 @@ public class UnityInterstitialAd
             objectId = UUID.randomUUID().toString();
             UnityAdsLoadOptions unityAdsLoadOptions =
                 unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
+            if (adMarkup != null) {
+              unityAdsLoadOptions.setAdMarkup(adMarkup);
+            }
             unityAdsLoader.load(placementId, unityAdsLoadOptions, UnityInterstitialAd.this);
           }
 
@@ -239,6 +245,7 @@ public class UnityInterstitialAd
 
     UnityAdsShowOptions unityAdsShowOptions =
         unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
+    unityAdsShowOptions.set(KEY_WATERMARK, adConfiguration.getWatermark());
     // UnityAds can handle a null placement ID so show is always called here.
     unityAdsLoader.show(activityReference, placementId, unityAdsShowOptions, this);
   }
