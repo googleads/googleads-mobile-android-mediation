@@ -14,6 +14,9 @@ ext {
 }
 
 android {
+    if (project.android.hasProperty('namespace')) {
+        namespace 'com.google.ads.mediation.unity'
+    }
     compileSdkVersion 31
     defaultConfig {
         minSdkVersion 21
@@ -21,6 +24,7 @@ android {
         versionCode 4110200
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
+        android.buildFeatures.buildConfig true
     }
     buildTypes {
         release {

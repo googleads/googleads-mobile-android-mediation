@@ -25,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
-import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -38,6 +37,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import java.lang.annotation.Retention;
@@ -49,7 +51,7 @@ import java.util.List;
  * The {@link UnityMediationAdapter} is used to initialize the Unity Ads SDK, load rewarded video
  * ads from Unity Ads and mediate the callbacks between Google Mobile Ads SDK and Unity Ads SDK.
  */
-public class UnityMediationAdapter extends Adapter {
+public class UnityMediationAdapter extends RtbAdapter {
 
   /**
    * TAG used for logging messages.
@@ -175,6 +177,18 @@ public class UnityMediationAdapter extends Adapter {
     this.unityAdsLoader = new UnityAdsLoader();
   }
 
+  @Override
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    UnityAds.getToken(
+        token -> {
+          if (token == null) {
+            token = "";
+          }
+          signalCallbacks.onSuccess(token);
+        });
+  }
+
   @VisibleForTesting
   UnityMediationAdapter(
       UnityInitializer unityInitializer,
@@ -185,9 +199,7 @@ public class UnityMediationAdapter extends Adapter {
     this.unityAdsLoader = unityAdsLoader;
   }
 
-  /**
-   * {@link Adapter} implementation
-   */
+  /** {@link RtbAdapter} implementation */
   @NonNull
   @Override
   public VersionInfo getVersionInfo() {
