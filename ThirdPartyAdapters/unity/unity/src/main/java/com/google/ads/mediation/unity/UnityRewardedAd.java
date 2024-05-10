@@ -20,6 +20,7 @@ import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.TAG;
 
 import android.app.Activity;
@@ -136,11 +137,12 @@ public class UnityRewardedAd implements MediationRewardedAd {
       mediationAdLoadCallback.onFailure(adError);
       return;
     }
+    final String adMarkup = mediationRewardedAdConfiguration.getBidResponse();
 
     // The ad is loaded in the UnityAdsInitializationListener after initializing of the Unity Ads
     // SDK.
     unityInitializer.initializeUnityAds(
-        context, gameId, new UnityAdsInitializationListener(context, gameId, placementId));
+        context, gameId, new UnityAdsInitializationListener(context, gameId, placementId, adMarkup));
   }
 
   @Override
@@ -163,6 +165,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
     UnityAdsShowOptions unityAdsShowOptions =
         unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
+    unityAdsShowOptions.set(KEY_WATERMARK, mediationRewardedAdConfiguration.getWatermark());
 
     // UnityAds can handle a null placement ID so show is always called here.
     unityAdsLoader.show(activity, placementId, unityAdsShowOptions, unityShowListener);
@@ -223,11 +226,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
     private final Context context;
     private final String gameId;
     private final String placementId;
+    @Nullable private final String adMarkup;
 
-    UnityAdsInitializationListener(Context context, String gameId, String placementId) {
+    UnityAdsInitializationListener(
+        Context context, String gameId, String placementId, @Nullable String adMarkup) {
       this.context = context;
       this.gameId = gameId;
       this.placementId = placementId;
+      this.adMarkup = adMarkup;
     }
 
     @Override
@@ -245,6 +251,9 @@ public class UnityRewardedAd implements MediationRewardedAd {
       objectId = UUID.randomUUID().toString();
       UnityAdsLoadOptions unityAdsLoadOptions =
           unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
+      if (adMarkup != null) {
+        unityAdsLoadOptions.setAdMarkup(adMarkup);
+      }
 
       unityAdsLoader.load(placementId, unityAdsLoadOptions, unityLoadListener);
     }

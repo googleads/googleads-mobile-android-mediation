@@ -175,6 +175,9 @@ public class UnityMediationAdapter extends RtbAdapter {
    */
   private UnityRewardedAd rewardedAd;
 
+  /** UnityRewardedAd instance used for RTB. */
+  private UnityRewardedAd rewardedRtbAd;
+
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
     unityBannerViewFactory = new UnityBannerViewFactory();
@@ -347,5 +350,14 @@ public class UnityMediationAdapter extends RtbAdapter {
     interstitialRtbAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    rewardedRtbAd =
+        new UnityRewardedAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
+    rewardedRtbAd.loadAd();
   }
 }
