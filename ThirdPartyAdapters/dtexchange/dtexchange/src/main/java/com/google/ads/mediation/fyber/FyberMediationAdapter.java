@@ -277,7 +277,7 @@ public class FyberMediationAdapter extends Adapter
 
   @NonNull
   public VersionInfo getVersionInfo() {
-    String versionString = BuildConfig.ADAPTER_VERSION;
+    String versionString = FyberAdapterUtils.getAdapterVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 4) {
@@ -295,7 +295,7 @@ public class FyberMediationAdapter extends Adapter
 
   @NonNull
   public VersionInfo getSDKVersionInfo() {
-    String sdkVersion = InneractiveAdManager.getVersion();
+    String sdkVersion = FyberAdapterUtils.getSdkVersion();
     String[] splits = sdkVersion.split("\\.");
 
     if (splits.length >= 3) {

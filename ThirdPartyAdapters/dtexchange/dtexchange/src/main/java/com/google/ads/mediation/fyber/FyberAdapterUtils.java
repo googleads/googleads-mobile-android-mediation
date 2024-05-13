@@ -37,6 +37,16 @@ class FyberAdapterUtils {
   private FyberAdapterUtils() {
   }
 
+  @NonNull
+  public static String getSdkVersion() {
+    return InneractiveAdManager.getVersion();
+  }
+
+  @NonNull
+  public static String getAdapterVersion() {
+    return BuildConfig.ADAPTER_VERSION;
+  }
+
   /**
    * Gets the specific error code for the specified {@link FyberInitStatus}.
    *
