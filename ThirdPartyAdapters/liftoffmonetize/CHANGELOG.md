@@ -17,6 +17,7 @@ Built and tested with:
 #### Version 7.3.0.0
 - Updated the minimum required Google Mobile Ads SDK version to 23.0.0.
 - Verified compatibility with Vungle SDK 7.3.0.
+- Added waterfall and bidding support for app open ad format.
 
 Built and tested with:
 - Google Mobile Ads SDK version 23.0.0.
