@@ -1,3 +1,0 @@
-include ':nend'
-include 'adaptertestkit'
-project(":adaptertestkit").projectDir = file("../adaptertestkit")
