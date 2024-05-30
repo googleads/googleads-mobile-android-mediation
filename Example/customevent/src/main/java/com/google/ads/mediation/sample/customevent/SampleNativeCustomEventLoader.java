@@ -18,6 +18,7 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.ads.mediation.sample.sdk.SampleNativeAdListener;
@@ -26,7 +27,7 @@ import com.google.ads.mediation.sample.sdk.SampleNativeAdRequest;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 
 /** Native custom event loader for the SampleSDK. */
@@ -36,7 +37,7 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
   private final MediationNativeAdConfiguration mediationNativeAdConfiguration;
 
   /** Callback that fires on loading success or failure. */
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+  private final MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
       mediationAdLoadCallback;
 
   /** Tag used for log statements */
@@ -51,8 +52,8 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
   private MediationNativeAdCallback mediationNativeAdCallback;
 
   public SampleNativeCustomEventLoader(
-      MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
     this.mediationNativeAdConfiguration = mediationNativeAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
@@ -135,7 +136,7 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
     // the mapped native ad object is returned to the Google Mobile Ads SDK via the
     // onAdLoaded method.
     Log.d(TAG, "Received the native ad.");
-    SampleUnifiedNativeAdMapper mapper = new SampleUnifiedNativeAdMapper(ad);
+    SampleNativeAdMapper mapper = new SampleNativeAdMapper(ad);
     mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(mapper);
   }
 

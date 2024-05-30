@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import androidx.core.content.res.ResourcesCompat;
 import java.util.Random;
 
 /**
@@ -121,14 +122,13 @@ public class SampleNativeAdLoader {
     // There are other options offered in the SampleNativeAdRequest,
     // but for simplicity's sake, this is the only one we'll put to use.
     if (request.getShouldDownloadImages()) {
-      nativeAd.setIcon(context.getResources()
-          .getDrawable(R.drawable.sample_app_icon));
-      nativeAd.setImage(context.getResources()
-          .getDrawable(R.drawable.sample_app_image));
+      nativeAd.setIcon(ResourcesCompat
+          .getDrawable(context.getResources(), R.drawable.sample_app_icon, null));
+      nativeAd.setImage(ResourcesCompat
+          .getDrawable(context.getResources(), R.drawable.sample_app_image, null));
     }
 
     nativeAd.setInformationIcon(createInformationIconImageView());
-
     return nativeAd;
   }
 
@@ -152,14 +152,13 @@ public class SampleNativeAdLoader {
     // There are other options offered in the SampleNativeAdRequest,
     // but for simplicity's sake, this is the only one we'll put to use.
     if (request.getShouldDownloadImages()) {
-      nativeAd.setIcon(context.getResources()
-          .getDrawable(R.drawable.sample_content_logo));
-      nativeAd.setImage(context.getResources()
-          .getDrawable(R.drawable.sample_content_ad_image));
+      nativeAd.setIcon(ResourcesCompat
+          .getDrawable(context.getResources(), R.drawable.sample_content_logo, null));
+      nativeAd.setImage(ResourcesCompat
+          .getDrawable(context.getResources(), R.drawable.sample_content_ad_image, null));
     }
 
     nativeAd.setInformationIcon(createInformationIconImageView());
-
     return nativeAd;
   }
 

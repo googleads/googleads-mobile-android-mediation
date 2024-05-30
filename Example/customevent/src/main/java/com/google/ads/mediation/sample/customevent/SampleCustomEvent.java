@@ -38,7 +38,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import java.util.List;
 
 /**
@@ -56,7 +56,7 @@ public class SampleCustomEvent extends Adapter {
 
   /**
    * Example of an extra field that publishers can use for a Native ad. In this example, the String
-   * is added to a {@link Bundle} in {@link SampleUnifiedNativeAdMapper}.
+   * is added to a {@link Bundle} in {@link SampleNativeAdMapper}.
    */
   public static final String DEGREE_OF_AWESOMENESS = "DegreeOfAwesomeness";
 
@@ -93,9 +93,9 @@ public class SampleCustomEvent extends Adapter {
   }
 
   @Override
-  public void loadNativeAd(
+  public void loadNativeAdMapper(
       @NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback) {
     nativeLoader = new SampleNativeCustomEventLoader(adConfiguration, callback);
     nativeLoader.loadAd();
   }

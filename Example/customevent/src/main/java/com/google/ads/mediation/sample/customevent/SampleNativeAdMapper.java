@@ -18,23 +18,24 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.os.Bundle;
 import android.view.View;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
-import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
+import com.google.android.gms.ads.nativead.NativeAd;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
+ * A {@link NativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
  * Ads SDK's {@link com.google.android.gms.ads.nativead.NativeAd} interface.
  */
-public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+public class SampleNativeAdMapper extends NativeAdMapper {
 
   private final SampleNativeAd sampleAd;
 
-  public SampleUnifiedNativeAdMapper(SampleNativeAd ad) {
+  public SampleNativeAdMapper(@NonNull SampleNativeAd ad) {
     sampleAd = ad;
     setHeadline(sampleAd.getHeadline());
     setBody(sampleAd.getBody());
@@ -46,7 +47,7 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
             ad.getIcon(), ad.getIconUri(), SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
     setAdvertiser(ad.getAdvertiser());
 
-    List<NativeAd.Image> imagesList = new ArrayList<NativeAd.Image>();
+    List<NativeAd.Image> imagesList = new ArrayList<>();
     imagesList.add(new SampleNativeMappedImage(ad.getImage(), ad.getImageUri(),
         SampleCustomEvent.SAMPLE_SDK_IMAGE_SCALE));
     setImages(imagesList);
@@ -73,7 +74,7 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void handleClick(View view) {
+  public void handleClick(@NonNull View view) {
     sampleAd.handleClick(view);
   }
 
@@ -82,18 +83,17 @@ public class SampleUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   // there's no need to pass it a reference to the View being used to display the native ad. If
   // your mediated network does need a reference to the view, the following method can be used
   // to provide one.
-
-
   @Override
-  public void trackViews(View containerView, Map<String, View> clickableAssetViews,
-      Map<String, View> nonClickableAssetViews) {
+  public void trackViews(@NonNull View containerView,
+      @NonNull Map<String, View> clickableAssetViews,
+      @NonNull Map<String, View> nonClickableAssetViews) {
     super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
     // If your ad network SDK does its own impression tracking, here is where you can track the
     // top level native ad view and its individual asset views.
   }
 
   @Override
-  public void untrackView(View view) {
+  public void untrackView(@NonNull View view) {
     super.untrackView(view);
     // Here you would remove any trackers from the View added in trackView.
   }

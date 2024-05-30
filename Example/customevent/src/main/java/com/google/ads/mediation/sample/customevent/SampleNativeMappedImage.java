@@ -18,7 +18,8 @@ package com.google.ads.mediation.sample.customevent;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import com.google.android.gms.ads.formats.NativeAd;
+import androidx.annotation.NonNull;
+import com.google.android.gms.ads.nativead.NativeAd;
 
 /**
  * A simple class that fits the the {@link NativeAd.Image} interface and can be filled with assets
@@ -30,18 +31,20 @@ public class SampleNativeMappedImage extends NativeAd.Image {
   private final Uri imageUri;
   private final double scale;
 
-  public SampleNativeMappedImage(Drawable drawable, Uri imageUri, double scale) {
+  public SampleNativeMappedImage(@NonNull Drawable drawable, @NonNull Uri imageUri, double scale) {
     this.drawable = drawable;
     this.imageUri = imageUri;
     this.scale = scale;
   }
 
   @Override
+  @NonNull
   public Drawable getDrawable() {
     return drawable;
   }
 
   @Override
+  @NonNull
   public Uri getUri() {
     return imageUri;
   }

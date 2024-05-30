@@ -1,7 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
+    namespace "com.google.ads.mediation.sample.mediationsample"
 
     defaultConfig {
         applicationId "com.google.ads.mediation.sample.mediationsample"
@@ -9,6 +10,9 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+    }
+    buildFeatures {
+        buildConfig = true
     }
     buildTypes {
         release {

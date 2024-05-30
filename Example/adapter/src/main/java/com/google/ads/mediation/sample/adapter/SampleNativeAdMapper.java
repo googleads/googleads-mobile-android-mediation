@@ -19,18 +19,18 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleMediaView;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
-import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
+import com.google.android.gms.ads.nativead.NativeAd;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link UnifiedNativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
+ * A {@link NativeAdMapper} extension to map {@link SampleNativeAd} instances to the Mobile
  * Ads SDK's {@link com.google.android.gms.ads.nativead.NativeAd} interface.
  */
-public class SampleNativeAdMapper extends UnifiedNativeAdMapper {
+public class SampleNativeAdMapper extends NativeAdMapper {
 
   private final SampleNativeAd sampleAd;
 
@@ -91,7 +91,6 @@ public class SampleNativeAdMapper extends UnifiedNativeAdMapper {
   // there's no need to pass it a reference to the View being used to display the native ad. If
   // your mediated network does need a reference to the view, the following method can be used
   // to provide one.
-
   @Override
   public void trackViews(@NonNull View containerView,
       @NonNull Map<String, View> clickableAssetViews,
