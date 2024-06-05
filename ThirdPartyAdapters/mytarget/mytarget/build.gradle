@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "MyTarget"
     // String property to store version name.
-    stringVersion = "5.20.1.0"
+    stringVersion = "5.21.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -18,11 +18,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 5200100
+        versionCode 5210000
         versionName stringVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
@@ -115,9 +115,9 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.my.target:mytarget-sdk:5.20.1'
+    implementation 'com.my.target:mytarget-sdk:5.21.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    implementation 'com.google.android.gms:play-services-ads:23.1.0'
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
