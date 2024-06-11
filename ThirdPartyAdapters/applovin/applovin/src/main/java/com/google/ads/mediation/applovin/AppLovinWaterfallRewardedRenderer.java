@@ -152,9 +152,14 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     }
 
     incentivizedInterstitial.show(context, this, this, this, this);
+  }
+
+  @Override
+  public void adReceived(@NonNull AppLovinAd appLovinAd) {
     if (enableMultipleAdLoading) {
       incentivizedAdsMap.remove(zoneId);
     }
+    super.adReceived(appLovinAd);
   }
 
   // region AppLovinAdLoadListener implementation

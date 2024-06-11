@@ -132,6 +132,9 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                         "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
                             + zoneId);
                     appLovinInterstitialAd = ad;
+                    if (enableMultipleAdLoading) {
+                      unregister();
+                    }
 
                     AppLovinSdkUtils.runOnUiThread(
                         new Runnable() {
@@ -199,9 +202,6 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
 
     log(DEBUG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
-    if (enableMultipleAdLoading) {
-      unregister();
-    }
   }
   // endregion
 
