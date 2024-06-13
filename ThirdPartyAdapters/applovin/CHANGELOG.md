@@ -1,5 +1,9 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Added the ability to load a second interstitial or rewarded ad after the
+previous ad has loaded (if enabled through server parameters).
+
 #### Version 12.5.0.0
 - Updated the minimum required Google Mobile Ads SDK version to 23.1.0.
 - Verified compatibility with AppLovin SDK 12.5.0.
