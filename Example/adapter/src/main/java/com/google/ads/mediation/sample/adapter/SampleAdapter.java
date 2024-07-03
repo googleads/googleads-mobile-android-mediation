@@ -37,7 +37,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -210,8 +210,9 @@ public class SampleAdapter extends Adapter {
    * This method will only ever be called once per adapter instance.
    */
   @Override
-  public void loadNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+  public void loadNativeAdMapper(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback) {
     sampleNativeAd = new SampleNativeAd(mediationNativeAdConfiguration, callback);
     sampleNativeAd.loadAd();
   }

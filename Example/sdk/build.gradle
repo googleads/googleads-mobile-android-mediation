@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
+    namespace "com.google.ads.mediation.sample.sdk"
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
@@ -9,6 +10,9 @@ android {
         versionCode 1
         versionName "1.0.0"
         buildConfigField("String", "SDK_VERSION", "\"${versionName}\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     buildTypes {
         release {

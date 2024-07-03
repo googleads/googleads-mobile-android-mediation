@@ -150,9 +150,14 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
     Log.d(TAG, "Showing interstitial for zone: " + zoneId);
     interstitialAdDialog.showAndRender(appLovinInterstitialAd);
+  }
+
+  @Override
+  public void adReceived(AppLovinAd ad) {
     if (enableMultipleAdLoading) {
       unregister();
     }
+    super.adReceived(ad);
   }
 
   @Override

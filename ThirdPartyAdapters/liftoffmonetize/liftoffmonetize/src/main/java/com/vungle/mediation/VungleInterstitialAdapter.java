@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * using Google Mobile Ads SDK mediation.
  */
 @Keep
-public class VungleInterstitialAdapter
+public class VungleInterstitialAdapter extends VungleMediationAdapter
     implements MediationInterstitialAdapter, MediationBannerAdapter {
 
   private MediationInterstitialListener mediationInterstitialListener;

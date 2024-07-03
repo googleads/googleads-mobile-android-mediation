@@ -19,7 +19,7 @@ package com.google.ads.mediation.sample.adapter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import androidx.annotation.NonNull;
-import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAd;
 
 /**
  * A simple class that fits the the {@link NativeAd.Image} abstract class and can be filled with

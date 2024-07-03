@@ -35,7 +35,7 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 
 public class SampleNativeAd extends SampleNativeAdListener implements SampleMediaViewListener {
@@ -51,7 +51,7 @@ public class SampleNativeAd extends SampleNativeAdListener implements SampleMedi
    * loading.
    */
   @NonNull
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+  private final MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
 
   /**
@@ -61,8 +61,7 @@ public class SampleNativeAd extends SampleNativeAdListener implements SampleMedi
   private MediationNativeAdCallback nativeAdCallback;
 
   public SampleNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-          adLoadCallback) {
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> adLoadCallback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
   }

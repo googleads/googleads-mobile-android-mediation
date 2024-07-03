@@ -171,19 +171,21 @@ public class MintegralMediationAdapter extends RtbAdapter {
     }
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
     Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
+    // Mintegral sdk modified the channel acquisition plan and needs to adjust the setting time to
+    // before init
+    try {
+      Aa channelManagerInstance = new Aa();
+      Class channelManagerClass = channelManagerInstance.getClass();
+      Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
+      setChannelMethod.setAccessible(true);
+      // Set the channel flag to "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" to indicate an AdMob channel.
+      setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBiQKwJQKQYrN=");
+    } catch (Throwable e) {
+      e.printStackTrace();
+    }
     mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
       @Override
       public void onInitSuccess() {
-        try {
-          Aa channelManagerInstance = new Aa();
-          Class channelManagerClass = channelManagerInstance.getClass();
-          Method setChannelMethod = channelManagerClass.getDeclaredMethod("b", String.class);
-          setChannelMethod.setAccessible(true);
-          // Set the channel flag to "Y+H6DFttYrPQYcIBiQKwJQKQYrN=" to indicate an AdMob channel.
-          setChannelMethod.invoke(channelManagerInstance, "Y+H6DFttYrPQYcIBiQKwJQKQYrN=");
-        } catch (Throwable e) {
-          e.printStackTrace();
-        }
         initializationCompleteCallback.onInitializationSucceeded();
       }
 
