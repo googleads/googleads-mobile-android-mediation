@@ -1,0 +1,26 @@
+# go/google3metadata
+# proto-file: devtools/metadata/metadata.proto
+# proto-message: MetaData
+
+presubmit: {
+  path_expression: "..."
+  path_expression_exclusion: "METADATA"
+  path_expression_exclusion: "OWNERS"
+  path_expression_exclusion: "BUILD"
+  path_expression_exclusion: "README.md"
+  path_expression_exclusion: "CHANGELOG.md"
+  check_presubmit_service: {
+    base: {
+      id: "BuildAndTest##adapter_name##OnGradle"
+      # Allow skipping kokoro with a justification
+      disable_tags: "SKIP_KOKORO"
+    }
+    failure_status: ERROR
+    include_all_opened_files: true
+    include_deleted_files: true
+    registry_id: "kokoro"
+    options:
+      "job=gma-sdk/android-mediation-adapters/presubmit,"
+      "build_request=env_vars {key: 'ADAPTER_DIR' value: '##adapter_name_lower_cased##'}"
+  }
+}

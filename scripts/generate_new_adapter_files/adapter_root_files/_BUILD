@@ -1,0 +1,17 @@
+# Copyright 2023 Google Inc. All rights reserved.
+# Description:
+#    Google Mobile Ads SDK ##adapter_name## mediation adapter for Android.
+
+# Distribution access to code.
+load("//third_party/java_src/gma_sdk_mediation:adapter_library.bzl", "adapter_files")
+
+package(
+    default_applicable_licenses = ["//third_party/java_src/gma_sdk_mediation:license"],
+    default_visibility = ["//third_party/java_src/gma_sdk_mediation:allowed_users"],
+)
+
+# Apache License 2.0
+licenses(["notice"])
+
+# Filegroup containing files to open source.
+adapter_files()
