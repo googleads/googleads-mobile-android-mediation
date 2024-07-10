@@ -1,8 +1,13 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 7.4.0.0
 - Extended the `VungleInterstitialAdapter` class from `VungleMediationAdapter`
   to add waterfall support for the app open ad format on Google Ad Manager.
+- Verified compatibility with Vungle SDK 7.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.2.0.
+- Vungle SDK version 7.4.0.
 
 #### Version 7.3.2.0
 - Verified compatibility with Vungle SDK 7.3.2.
