@@ -26,8 +26,11 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import org.mockito.Mockito.mock
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /**
  * Calls [Adapter.loadNativeAd] with the given [MediationNativeAdConfiguration] and verifies
@@ -71,18 +74,18 @@ fun createMediationNativeAdConfiguration(
     RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
   taggedForUnderAgeTreatment: Int = RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
   maxAdContentRating: String? = null,
-  watermark: String = ""
-): MediationNativeAdConfiguration =
-  MediationNativeAdConfiguration(
-    context,
-    bidResponse,
-    serverParameters,
-    mediationExtras,
-    isTesting,
-    location,
-    taggedForChildDirectedTreatment,
-    taggedForUnderAgeTreatment,
-    maxAdContentRating,
-    watermark,
-    null
-  )
+  watermark: String = "",
+): MediationNativeAdConfiguration {
+  return mock<MediationNativeAdConfiguration>().apply {
+    whenever(this.context).thenReturn(context)
+    whenever(this.bidResponse).thenReturn(bidResponse)
+    whenever(this.serverParameters).thenReturn(serverParameters)
+    whenever(this.mediationExtras).thenReturn(mediationExtras)
+    whenever(this.isTestRequest).thenReturn(isTesting)
+    whenever(this.taggedForChildDirectedTreatment()).thenReturn(taggedForChildDirectedTreatment)
+    whenever(this.taggedForUnderAgeTreatment()).thenReturn(taggedForUnderAgeTreatment)
+    whenever(this.maxAdContentRating).thenReturn(maxAdContentRating)
+    whenever(this.watermark).thenReturn(watermark)
+    whenever(this.nativeAdOptions).thenReturn(NativeAdOptions.Builder().build())
+  }
+}

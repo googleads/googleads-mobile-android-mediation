@@ -20,7 +20,8 @@ ext {
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'com.vungle.mediation'
+    compileSdkVersion 34
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 33
@@ -60,8 +61,11 @@ android {
             unitTests.returnDefaultValues = true
         }
     }
-
+    buildFeatures {
+        buildConfig true
+    }
 }
+
 tasks.withType(Test) {
     testLogging {
         events "PASSED", "SKIPPED", "FAILED"
@@ -117,7 +121,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.vungle:vungle-ads:7.4.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    implementation 'com.google.android.gms:play-services-ads:23.2.0'
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'junit:junit:4.13.2'
