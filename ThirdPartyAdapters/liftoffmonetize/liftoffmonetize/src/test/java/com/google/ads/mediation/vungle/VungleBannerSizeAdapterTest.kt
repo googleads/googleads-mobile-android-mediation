@@ -59,7 +59,7 @@ class VungleBannerSizeAdapterTest {
   }
 
   @Test
-  fun getVungleBannerAdSize_forUnsupportedGoogleBannerSize_returnsCustomSize() {
+  fun getVungleBannerAdSize_forNonStandardGoogleBannerSize_returnsCustomSize() {
     val liftoffBannerSize = VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(
         AdSize.WIDE_SKYSCRAPER,
         placementId
