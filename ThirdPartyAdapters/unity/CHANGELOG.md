@@ -15,6 +15,7 @@ Built and tested with:
 - Unity Ads SDK version 4.12.0.
 
 #### Version 4.11.3.0
+- Added bidding support for banner, interstitial and rewarded ad formats.
 - Verified compatibility with Unity Ads SDK 4.11.3.
 
 Built and tested with:
