@@ -14,10 +14,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdk 34
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 601000500
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
