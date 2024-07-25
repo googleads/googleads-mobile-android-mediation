@@ -15,6 +15,8 @@
 package com.google.ads.mediation.moloco
 
 import android.content.Context
+import android.util.Log
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -34,6 +36,10 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import com.moloco.sdk.publisher.Initialization
+import com.moloco.sdk.publisher.Moloco
+import com.moloco.sdk.publisher.MolocoAdError
+import com.moloco.sdk.publisher.init.MolocoInitParams
 
 /**
  * Moloco Adapter for GMA SDK used to initialize and load ads from the Moloco SDK. This class should
@@ -47,12 +53,29 @@ class MolocoMediationAdapter : RtbAdapter() {
   private lateinit var nativeAd: MolocoNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
-    return VersionInfo(0, 0, 0)
+    return VersionInfo(
+      com.moloco.sdk.BuildConfig.SDK_VERSION_MAJOR,
+      com.moloco.sdk.BuildConfig.SDK_VERSION_MINOR,
+      com.moloco.sdk.BuildConfig.SDK_VERSION_MICRO,
+    )
   }
 
   override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val adapterVersion = MolocoAdapterUtils.adapterVersion
+    val splits = adapterVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 4) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt() * 100 + splits[3].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        adapterVersion,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
@@ -61,13 +84,49 @@ class MolocoMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    val appKeys =
+      mediationConfigurations.mapNotNull {
+        val appKey = it.serverParameters.getString(KEY_APP_KEY)
+        if (appKey.isNullOrEmpty()) {
+          null
+        } else {
+          appKey
+        }
+      }
+
+    if (appKeys.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_KEY)
+      return
+    }
+
+    val appKeyForInit = appKeys[0]
+    if (appKeys.size > 1) {
+      val message =
+        "Multiple $KEY_APP_KEY entries found: ${appKeys}. Using '${appKeyForInit}' to initialize the Moloco SDK"
+      Log.w(TAG, message)
+    }
+
+    val initParams = MolocoInitParams(context, appKeyForInit)
+    Moloco.initialize(initParams) { status ->
+      if (status.initialization == Initialization.SUCCESS) {
+        initializationCompleteCallback.onInitializationSucceeded()
+      } else {
+        initializationCompleteCallback.onInitializationFailed(
+          "Moloco SDK failed to initialize: ${status.description}."
+        )
+      }
+    }
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    Moloco.getBidToken { bidToken: String, errorType: MolocoAdError.ErrorType? ->
+      if (errorType != null) {
+        val adError = AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
+        callback.onFailure(adError)
+        return@getBidToken
+      }
+      callback.onSuccess(bidToken)
+    }
   }
 
   override fun loadRtbBannerAd(
@@ -108,5 +167,15 @@ class MolocoMediationAdapter : RtbAdapter() {
       nativeAd = it
       nativeAd.loadAd()
     }
+  }
+
+  companion object {
+    private val TAG = MolocoMediationAdapter::class.simpleName
+    const val KEY_APP_KEY = "app_key"
+    const val ERROR_CODE_MISSING_APP_KEY = 101
+    const val ERROR_MSG_MISSING_APP_KEY =
+      "Missing or invalid App Key configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.moloco"
+    const val SDK_ERROR_DOMAIN = "com.moloco.sdk"
   }
 }

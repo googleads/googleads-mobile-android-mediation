@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 33
         versionCode 1
         versionName stringVersion
         multiDexEnabled true
@@ -60,7 +60,7 @@ android {
     }
 
     sourceSets {
-        test.java.srcDirs += 'src/test/java'
+        test.kotlin.srcDirs += 'src/test/kotlin'
     }
 
     testOptions {
@@ -129,19 +129,21 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:23.2.0'
+    implementation 'com.moloco.sdk:moloco-sdk:3.0.1'
 
-    testImplementation 'androidx.test:core:1.5.0'
-    testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    testImplementation 'androidx.test.ext:junit-ktx:1.1.5'
-    testImplementation 'androidx.test.ext:truth:1.5.0'
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
+    testImplementation 'androidx.test.ext:truth:1.6.0'
     testImplementation "com.google.truth:truth:1.1.5"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.21'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
+    testImplementation project(':adaptertestkit')
 }
 
 /**
