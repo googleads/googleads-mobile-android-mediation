@@ -14,13 +14,20 @@
 
 package com.google.ads.mediation.moloco
 
-import android.content.Context
 import android.view.View
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.moloco.sdk.publisher.AdLoad
+import com.moloco.sdk.publisher.Banner
+import com.moloco.sdk.publisher.BannerAdShowListener
+import com.moloco.sdk.publisher.CreateBannerCallback
+import com.moloco.sdk.publisher.Moloco
+import com.moloco.sdk.publisher.MolocoAd
+import com.moloco.sdk.publisher.MolocoAdError
 
 /**
  * Used to load Moloco banner ads and mediate callbacks between Google Mobile Ads SDK and Moloco
@@ -28,22 +35,84 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
  */
 class MolocoBannerAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val adSize: AdSize,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationBannerAd {
-  // TODO: Replace with 3p View. Ideally avoid lateinit and initialize in constructor.
-  private lateinit var adView: View
+  private val adUnitId: String,
+  private val bidResponse: String,
+) : MediationBannerAd, AdLoad.Listener, BannerAdShowListener {
+  private lateinit var molocoAd: Banner
+  private var bannerAdCallback: MediationBannerAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val createBannerCallback =
+      object : CreateBannerCallback {
+        override fun invoke(banner: Banner?) {
+          if (banner == null) {
+            val adError =
+              AdError(
+                MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
+                MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
+                MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return
+          }
+          molocoAd = banner
+          molocoAd.adShowListener = this@MolocoBannerAd
+          molocoAd.load(bidResponse, this@MolocoBannerAd)
+        }
+      }
+    if (adSize == AdSize.LEADERBOARD) {
+      Moloco.createBannerTablet(adUnitId, createBannerCallback)
+      return
+    }
+
+    Moloco.createBanner(adUnitId, createBannerCallback)
   }
 
-  override fun getView(): View {
-    // TODO: Implement this method.
-    return adView
+  override fun getView(): View = molocoAd
+
+  override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    mediationAdLoadCallback.onFailure(adError)
+  }
+
+  override fun onAdLoadSuccess(molocoAd: MolocoAd) {
+    bannerAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdClicked(molocoAd: MolocoAd) {
+    bannerAdCallback?.apply {
+      reportAdClicked()
+      onAdLeftApplication()
+    }
+  }
+
+  override fun onAdHidden(molocoAd: MolocoAd) {
+    bannerAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    mediationAdLoadCallback.onFailure(adError)
+  }
+
+  override fun onAdShowSuccess(molocoAd: MolocoAd) {
+    bannerAdCallback?.apply {
+      onAdOpened()
+      reportAdImpression()
+    }
   }
 
   companion object {
@@ -51,13 +120,24 @@ private constructor(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
       mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
     ): Result<MolocoBannerAd> {
-      val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
       val adSize = mediationBannerAdConfiguration.adSize
 
-      // TODO: Implement necessary initialization steps.
+      val adUnitId = serverParameters.getString(MolocoMediationAdapter.KEY_AD_UNIT_ID)
+      if (adUnitId.isNullOrEmpty()) {
+        val adError =
+          AdError(
+            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return Result.failure(NoSuchElementException(adError.message))
+      }
 
-      return Result.success(MolocoBannerAd(context, mediationAdLoadCallback, adSize))
+      val bidResponse = mediationBannerAdConfiguration.bidResponse
+
+      return Result.success(MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse))
     }
   }
 }
