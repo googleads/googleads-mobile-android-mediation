@@ -104,23 +104,20 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   public static final String VUNGLE_SDK_ERROR_DOMAIN = "com.vungle.ads";
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_BANNER_SIZE_MISMATCH,
-      ERROR_REQUIRES_ACTIVITY_CONTEXT, ERROR_VUNGLE_BANNER_NULL, ERROR_INITIALIZATION_FAILURE,
-      ERROR_CANNOT_PLAY_AD, ERROR_CANNOT_GET_BID_TOKEN})
-
-  public @interface AdapterError {
-
-  }
+  @IntDef(
+      value = {
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_REQUIRES_ACTIVITY_CONTEXT,
+        ERROR_INITIALIZATION_FAILURE,
+        ERROR_CANNOT_PLAY_AD,
+        ERROR_CANNOT_GET_BID_TOKEN
+      })
+  public @interface AdapterError {}
 
   /**
    * Server parameters, such as app ID or placement ID, are invalid.
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
-
-  /**
-   * The requested ad size does not match a Liftoff Monetize supported banner size.
-   */
-  public static final int ERROR_BANNER_SIZE_MISMATCH = 102;
 
   /**
    * Liftoff Monetize requires an {@link android.app.Activity} context to request ads.
@@ -131,12 +128,6 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
    * Vungle SDK failed to initialize.
    */
   public static final int ERROR_INITIALIZATION_FAILURE = 105;
-
-  /**
-   * Vungle SDK returned a successful load callback, but Banners.getBanner() or Vungle.getNativeAd()
-   * returned null.
-   */
-  public static final int ERROR_VUNGLE_BANNER_NULL = 106;
 
   /**
    * Vungle SDK is not ready to play the ad.

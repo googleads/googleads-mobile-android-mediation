@@ -24,7 +24,6 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
-import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INITIALIZATION_FAILURE
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
@@ -33,7 +32,6 @@ import com.google.ads.mediation.vungle.VungleMediationAdapter.getAdapterVersion
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize.BANNER
-import com.google.android.gms.ads.AdSize.WIDE_SKYSCRAPER
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
@@ -57,8 +55,6 @@ import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_RIGHT
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
-import com.vungle.ads.BannerAd
-import com.vungle.ads.BannerAdSize
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.NativeAd
 import com.vungle.ads.NativeAd.Companion.BOTTOM_LEFT
@@ -66,6 +62,8 @@ import com.vungle.ads.NativeAd.Companion.BOTTOM_RIGHT
 import com.vungle.ads.NativeAd.Companion.TOP_LEFT
 import com.vungle.ads.NativeAd.Companion.TOP_RIGHT
 import com.vungle.ads.RewardedAd
+import com.vungle.ads.VungleAdSize
+import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
 import org.junit.Before
 import org.junit.Test
@@ -945,7 +943,7 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbBannerAd_loadsLiftoffBannerAdWithBidResponse() {
     stubVungleInitializerToSucceed()
-    val vungleBannerAd = mock<BannerAd> { on { adConfig } doReturn vungleAdConfig }
+    val vungleBannerAd = mock<VungleBannerView> { on { adConfig } doReturn vungleAdConfig }
     whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
@@ -963,7 +961,7 @@ class VungleMediationAdapterTest {
     }
 
     verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
-    verify(vungleFactory).createBannerAd(context, TEST_PLACEMENT_ID, BannerAdSize.BANNER)
+    verify(vungleFactory).createBannerAd(context, TEST_PLACEMENT_ID, VungleAdSize.BANNER)
     verify(vungleBannerAd).load(TEST_BID_RESPONSE)
     val bannerAdCaptor = argumentCaptor<VungleRtbBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
@@ -1020,35 +1018,6 @@ class VungleMediationAdapterTest {
         "Failed to load bidding banner ad from Liftoff Monetize. " +
           "Missing or Invalid Placement ID configured for this ad source instance " +
           "in the AdMob or Ad Manager UI.",
-        ERROR_DOMAIN,
-      )
-    verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-  }
-
-  @Test
-  fun loadRtbBannerAd_forUnsupportedBannerAdSize_callsLoadFailure() {
-    val bannerAdLoadCallback =
-      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
-
-    adapter.loadRtbBannerAd(
-      createMediationBannerAdConfiguration(
-        context = context,
-        serverParameters =
-          bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-        bidResponse = TEST_BID_RESPONSE,
-        watermark = TEST_WATERMARK,
-        adSize = WIDE_SKYSCRAPER,
-      ),
-      bannerAdLoadCallback,
-    )
-
-    val expectedAdError =
-      AdError(
-        ERROR_BANNER_SIZE_MISMATCH,
-        String.format(
-          "The requested banner size: %s is not supported by Vungle SDK.",
-          WIDE_SKYSCRAPER,
-        ),
         ERROR_DOMAIN,
       )
     verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
