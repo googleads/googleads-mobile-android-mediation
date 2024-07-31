@@ -1,5 +1,8 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version Next
+- Increase max JVM memory to 1GB for gradle build.
+
 #### Version 5.21.1.0
 - Verified compatibility with myTarget SDK version 5.21.1.
 
