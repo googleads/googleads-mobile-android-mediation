@@ -88,7 +88,7 @@ public class FyberMediationAdapter extends Adapter
   /**
    * Key to obtain App id, required for initializing DT Exchange's SDK.
    */
-  private static final String KEY_APP_ID = "applicationId";
+  static final String KEY_APP_ID = "applicationId";
 
   /**
    * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
@@ -228,7 +228,7 @@ public class FyberMediationAdapter extends Adapter
       @NonNull final InitializationCompleteCallback completionCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
     // Initialize only once.
-    if (InneractiveAdManager.wasInitialized()) {
+    if (FyberSdkWrapper.getDelegate().isInitialized()) {
       completionCallback.onInitializationSucceeded();
       return;
     }
