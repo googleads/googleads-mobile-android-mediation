@@ -15,10 +15,17 @@
 package com.google.ads.mediation.moloco
 
 import android.content.Context
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.moloco.sdk.publisher.AdLoad
+import com.moloco.sdk.publisher.InterstitialAd
+import com.moloco.sdk.publisher.InterstitialAdShowListener
+import com.moloco.sdk.publisher.Moloco
+import com.moloco.sdk.publisher.MolocoAd
+import com.moloco.sdk.publisher.MolocoAdError
 
 /**
  * Used to load Moloco interstitial ads and mediate callbacks between Google Mobile Ads SDK and
@@ -26,18 +33,73 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
  */
 class MolocoInterstitialAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationInterstitialAd {
+  private val adUnitId: String,
+  private val bidResponse: String,
+) : MediationInterstitialAd, AdLoad.Listener, InterstitialAdShowListener {
+
+  private lateinit var molocoAd: InterstitialAd
+  private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    Moloco.createInterstitial(adUnitId) { returnedAd ->
+      if (returnedAd == null) {
+        val adError =
+          AdError(
+            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
+            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
+            MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return@createInterstitial
+      }
+      molocoAd = returnedAd
+      molocoAd.load(bidResponse, this)
+    }
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    molocoAd.show(this)
+  }
+
+  override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    mediationAdLoadCallback.onFailure(adError)
+  }
+
+  override fun onAdLoadSuccess(molocoAd: MolocoAd) {
+    interstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdClicked(molocoAd: MolocoAd) {
+    interstitialAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdHidden(molocoAd: MolocoAd) {
+    interstitialAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    interstitialAdCallback?.onAdFailedToShow(adError)
+  }
+
+  override fun onAdShowSuccess(molocoAd: MolocoAd) {
+    interstitialAdCallback?.apply {
+      onAdOpened()
+      reportAdImpression()
+    }
   }
 
   companion object {
@@ -46,12 +108,23 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
     ): Result<MolocoInterstitialAd> {
-      val context = mediationInterstitialAdConfiguration.context
       val serverParameters = mediationInterstitialAdConfiguration.serverParameters
 
-      // TODO: Implement necessary initialization steps.
+      val adUnitId = serverParameters.getString(MolocoMediationAdapter.KEY_AD_UNIT_ID)
+      if (adUnitId.isNullOrEmpty()) {
+        val adError =
+          AdError(
+            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return Result.failure(NoSuchElementException(adError.message))
+      }
 
-      return Result.success(MolocoInterstitialAd(context, mediationAdLoadCallback))
+      val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+
+      return Result.success(MolocoInterstitialAd(mediationAdLoadCallback, adUnitId, bidResponse))
     }
   }
 }

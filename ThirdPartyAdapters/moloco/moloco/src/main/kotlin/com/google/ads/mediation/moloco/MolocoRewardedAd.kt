@@ -15,10 +15,18 @@
 package com.google.ads.mediation.moloco
 
 import android.content.Context
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.rewarded.RewardItem
+import com.moloco.sdk.publisher.AdLoad
+import com.moloco.sdk.publisher.Moloco
+import com.moloco.sdk.publisher.MolocoAd
+import com.moloco.sdk.publisher.MolocoAdError
+import com.moloco.sdk.publisher.RewardedInterstitialAd
+import com.moloco.sdk.publisher.RewardedInterstitialAdShowListener
 
 /**
  * Used to load Moloco rewarded ads and mediate callbacks between Google Mobile Ads SDK and Moloco
@@ -26,18 +34,91 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
  */
 class MolocoRewardedAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationRewardedAd {
+  private val adUnitId: String,
+  private val bidResponse: String,
+) : MediationRewardedAd, AdLoad.Listener, RewardedInterstitialAdShowListener {
+
+  private lateinit var molocoAd: RewardedInterstitialAd
+  private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    Moloco.createRewardedInterstitial(adUnitId) { returnedAd ->
+      if (returnedAd == null) {
+        val adError =
+          AdError(
+            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
+            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
+            MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return@createRewardedInterstitial
+      }
+      molocoAd = returnedAd
+      molocoAd.load(bidResponse, this)
+    }
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    molocoAd.show(this)
+  }
+
+  override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    mediationAdLoadCallback.onFailure(adError)
+  }
+
+  override fun onAdLoadSuccess(molocoAd: MolocoAd) {
+    rewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdClicked(molocoAd: MolocoAd) {
+    rewardedAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdHidden(molocoAd: MolocoAd) {
+    rewardedAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(molocoAdError: MolocoAdError) {
+    val adError =
+      AdError(
+        molocoAdError.errorType.errorCode,
+        molocoAdError.errorType.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    rewardedAdCallback?.onAdFailedToShow(adError)
+  }
+
+  override fun onAdShowSuccess(molocoAd: MolocoAd) {
+    rewardedAdCallback?.apply {
+      onAdOpened()
+      reportAdImpression()
+    }
+  }
+
+  override fun onRewardedVideoCompleted(molocoAd: MolocoAd) {
+    rewardedAdCallback?.onVideoComplete()
+  }
+
+  override fun onRewardedVideoStarted(molocoAd: MolocoAd) {
+    rewardedAdCallback?.onVideoStart()
+  }
+
+  override fun onUserRewarded(molocoAd: MolocoAd) {
+    rewardedAdCallback?.onUserEarnedReward(MolocoRewardItem())
+  }
+
+  class MolocoRewardItem : RewardItem {
+    override fun getAmount(): Int = 1
+
+    override fun getType(): String = ""
   }
 
   companion object {
@@ -46,12 +127,23 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
     ): Result<MolocoRewardedAd> {
-      val context = mediationRewardedAdConfiguration.context
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
 
-      // TODO: Implement necessary initialization steps.
+      val adUnitId = serverParameters.getString(MolocoMediationAdapter.KEY_AD_UNIT_ID)
+      if (adUnitId.isNullOrEmpty()) {
+        val adError =
+          AdError(
+            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+            MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return Result.failure(NoSuchElementException(adError.message))
+      }
 
-      return Result.success(MolocoRewardedAd(context, mediationAdLoadCallback))
+      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+
+      return Result.success(MolocoRewardedAd(mediationAdLoadCallback, adUnitId, bidResponse))
     }
   }
 }
