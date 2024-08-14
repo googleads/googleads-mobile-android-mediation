@@ -33,19 +33,25 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.BuildConfig
 import com.moloco.sdk.publisher.CreateInterstitialAdCallback
+import com.moloco.sdk.publisher.CreateRewardedInterstitialAdCallback
 import com.moloco.sdk.publisher.Initialization
 import com.moloco.sdk.publisher.InterstitialAd
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.Moloco.createInterstitial
+import com.moloco.sdk.publisher.Moloco.createRewardedInterstitial
 import com.moloco.sdk.publisher.Moloco.getBidToken
 import com.moloco.sdk.publisher.Moloco.initialize
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.MolocoBidTokenListener
 import com.moloco.sdk.publisher.MolocoInitStatus
 import com.moloco.sdk.publisher.MolocoInitializationListener
+import com.moloco.sdk.publisher.RewardedInterstitialAd
 import com.moloco.sdk.publisher.init.MolocoInitParams
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -72,7 +78,10 @@ class MolocoMediationAdapterTest {
   private val mockSignalCallbacks = mock<SignalCallbacks>()
   private val mockMediationInterstitialAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+  private val mockMediationRewardedAdLoadCallback =
+    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
   private val mockInterstitialAd = mock<InterstitialAd>()
+  private val mockRewardedAd = mock<RewardedInterstitialAd>()
 
   @Before
   fun setUp() {
@@ -348,6 +357,109 @@ class MolocoMediationAdapterTest {
     serverParameters: Bundle = bundleOf(),
   ) =
     MediationInterstitialAdConfiguration(
+      context,
+      bidResponse,
+      serverParameters,
+      /*mediationExtras=*/ bundleOf(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      TEST_WATERMARK,
+    )
+
+  // endregion
+
+  // region Rewarded tests
+  @Test
+  fun loadRtbRewardedAd_withNullAdUnit_invokesOnFailure() {
+    val mediationRewardedAdConfiguration = createMediationRewardedAdConfiguration()
+
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbRewardedAd_withEmptyAdUnit_invokesOnFailure() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbRewardedAd_whenAdIsCreated_loadsMolocoRewarded() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationRewardedAdConfiguration =
+        createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+
+      adapter.loadRtbRewardedAd(
+        mediationRewardedAdConfiguration,
+        mockMediationRewardedAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createRewardedInterstitial(eq(TEST_AD_UNIT), createRewardedCaptor.capture())
+      }
+      val capturedCallback = createRewardedCaptor.firstValue
+      capturedCallback.invoke(mockRewardedAd)
+      verify(mockRewardedAd).load(eq(TEST_BID_RESPONSE), any())
+    }
+  }
+
+  @Test
+  fun loadRtbRewardedAd_whenAdFailsToBeCreated_invokesOnFailure() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationRewardedAdConfiguration =
+        createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+
+      adapter.loadRtbRewardedAd(
+        mediationRewardedAdConfiguration,
+        mockMediationRewardedAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createRewardedInterstitial(eq(TEST_AD_UNIT), createRewardedCaptor.capture())
+      }
+      val capturedCallback = createRewardedCaptor.firstValue
+      capturedCallback.invoke(null)
+      val expectedAdError =
+        AdError(
+          MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
+          MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
+          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      verify(mockMediationRewardedAdLoadCallback)
+        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    }
+  }
+
+  private fun createMediationRewardedAdConfiguration(
+    bidResponse: String = "",
+    serverParameters: Bundle = bundleOf(),
+  ) =
+    MediationRewardedAdConfiguration(
       context,
       bidResponse,
       serverParameters,
