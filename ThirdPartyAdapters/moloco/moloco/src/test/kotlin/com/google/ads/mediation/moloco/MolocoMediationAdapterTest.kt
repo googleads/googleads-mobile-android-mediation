@@ -21,16 +21,25 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.BuildConfig
+import com.moloco.sdk.publisher.CreateInterstitialAdCallback
 import com.moloco.sdk.publisher.Initialization
+import com.moloco.sdk.publisher.InterstitialAd
 import com.moloco.sdk.publisher.Moloco
+import com.moloco.sdk.publisher.Moloco.createInterstitial
 import com.moloco.sdk.publisher.Moloco.getBidToken
 import com.moloco.sdk.publisher.Moloco.initialize
 import com.moloco.sdk.publisher.MolocoAdError
@@ -61,6 +70,9 @@ class MolocoMediationAdapterTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val mockSignalCallbacks = mock<SignalCallbacks>()
+  private val mockMediationInterstitialAdLoadCallback =
+    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+  private val mockInterstitialAd = mock<InterstitialAd>()
 
   @Before
   fun setUp() {
@@ -239,8 +251,120 @@ class MolocoMediationAdapterTest {
 
   // endregion
 
+  // region Interstitial tests
+  @Test
+  fun loadRtbInterstitialAd_withNullAdUnit_invokesOnFailure() {
+    val mediationInterstitialAdConfiguration = createMediationInterstitialAdConfiguration()
+
+    adapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_withEmptyAdUnit_invokesOnFailure() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_whenAdIsCreated_loadsMolocoInterstitial() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationInterstitialAdConfiguration =
+        createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+
+      adapter.loadRtbInterstitialAd(
+        mediationInterstitialAdConfiguration,
+        mockMediationInterstitialAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createInterstitial(eq(TEST_AD_UNIT), createInterstitialCaptor.capture())
+      }
+      val capturedCallback = createInterstitialCaptor.firstValue
+      capturedCallback.invoke(mockInterstitialAd)
+      verify(mockInterstitialAd).load(eq(TEST_BID_RESPONSE), any())
+    }
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_whenAdFailsToBeCreated_invokesOnFailure() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationInterstitialAdConfiguration =
+        createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+
+      adapter.loadRtbInterstitialAd(
+        mediationInterstitialAdConfiguration,
+        mockMediationInterstitialAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createInterstitial(eq(TEST_AD_UNIT), createInterstitialCaptor.capture())
+      }
+      val capturedCallback = createInterstitialCaptor.firstValue
+      capturedCallback.invoke(null)
+      val expectedAdError =
+        AdError(
+          MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
+          MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
+          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      verify(mockMediationInterstitialAdLoadCallback)
+        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    }
+  }
+
+  private fun createMediationInterstitialAdConfiguration(
+    bidResponse: String = "",
+    serverParameters: Bundle = bundleOf(),
+  ) =
+    MediationInterstitialAdConfiguration(
+      context,
+      bidResponse,
+      serverParameters,
+      /*mediationExtras=*/ bundleOf(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      TEST_WATERMARK,
+    )
+
+  // endregion
+
   private companion object {
     const val TEST_APP_KEY_1 = "testAppKey1"
     const val TEST_APP_KEY_2 = "testAppKey2"
+    const val TEST_AD_UNIT = "testAdUnit"
   }
 }
