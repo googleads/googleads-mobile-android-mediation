@@ -64,6 +64,10 @@ public class IronSourceAdapterUtils {
     return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
   }
 
+  public static AdError buildAdError(int code, @NonNull String message) {
+    return new AdError(code, message, ERROR_DOMAIN);
+  }
+
   public static AdError validateIronSourceAdLoadParams(@NonNull Context context,
       @NonNull String instanceID) {
     // Check that context is an Activity.
@@ -91,7 +95,7 @@ public class IronSourceAdapterUtils {
   }
 
   public static String getAdapterVersion() {
-    return BuildConfig.ADAPTER_VERSION;
+    return "182";
   }
 
   public static void setWatermark(@NonNull String watermark) {

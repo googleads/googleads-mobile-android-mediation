@@ -30,5 +30,11 @@ public class IronSourceConstants {
   /**
    * Constant used for IronSource adapter version internal reporting.
    */
-  static final String ADAPTER_VERSION_NAME = "410";
+  static final String ADAPTER_VERSION_NAME = "500";
+
+  /**
+   * Constant used for IronSource adapter set watermark to iAds.
+   */
+  static final String WATERMARK = "google_watermark";
+
 }
