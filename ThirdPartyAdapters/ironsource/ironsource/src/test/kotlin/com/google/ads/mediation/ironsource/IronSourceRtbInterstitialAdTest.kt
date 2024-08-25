@@ -2,22 +2,19 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter
 import com.google.ads.mediation.ironsource.IronSourceRtbInterstitialAd
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.unity3d.ironsourceads.interstitial.InterstitialAd
 import com.unity3d.ironsourceads.interstitial.InterstitialAdLoader
-import com.unity3d.ironsourceads.interstitial.InterstitialAdLoaderListener
 import com.unity3d.ironsourceads.interstitial.InterstitialAdRequest
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
-import junit.framework.TestCase.assertTrue
-import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -35,6 +32,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
@@ -56,12 +54,17 @@ class IronSourceRtbInterstitialAdTest {
     private lateinit var interstitialAd: InterstitialAd
 
     private lateinit var ironSourceRtbInterstitialAd: IronSourceRtbInterstitialAd
-
     private lateinit var mockedInterstitialAdLoader: MockedStatic<InterstitialAdLoader>
+
+    private lateinit var mediationConfigurations: List<MediationConfiguration>
+    private lateinit var initializationCompleteCallback: InitializationCompleteCallback
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        val mockMediationConfiguration = mock(MediationConfiguration::class.java)
+        mediationConfigurations = listOf(mockMediationConfiguration)
+        initializationCompleteCallback = mock(InitializationCompleteCallback::class.java)
 
         mockedInterstitialAdLoader = Mockito.mockStatic(InterstitialAdLoader::class.java)
         whenever(InterstitialAdLoader.loadAd(any(), any())).then { }
@@ -79,6 +82,15 @@ class IronSourceRtbInterstitialAdTest {
 
         ironSourceRtbInterstitialAd =
             IronSourceRtbInterstitialAd(interstitialAdConfig, mediationAdLoadCallback)
+
+        context = mock(Context::class.java)
+        initializationCompleteCallback = mock(InitializationCompleteCallback::class.java)
+        mediationConfigurations = listOf(mockMediationConfiguration)
+
+        // Mock the behavior of serverParameters
+        val mockBundle = mock(Bundle::class.java)
+        whenever(mockBundle.getString("APP_KEY")).thenReturn("validAppKey")
+        whenever(mockMediationConfiguration.serverParameters).thenReturn(mockBundle)
     }
 
     @After
@@ -149,6 +161,25 @@ class IronSourceRtbInterstitialAdTest {
 
         // then
         verify(interstitialAd).show(mockActivity)
+    }
+
+    @Test
+    fun showAd_invalidContext_expectObFailureCallbackWithError() {
+        // given
+        whenever(interstitialAdConfig.context).thenReturn(mock(Activity::class.java))
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        val nonActivityContext = mock(Context::class.java)
+
+        // when
+        ironSourceRtbInterstitialAd.showAd(nonActivityContext)
+
+        // then
+        val captor = argumentCaptor<AdError>()
+        verify(mediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
+        val capturedError = captor.firstValue
+        assertEquals(102, capturedError.code)
+        assertEquals("IronSource requires an Activity context to load ads.", capturedError.message)
+        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
     }
 
     @Test
@@ -318,9 +349,9 @@ class IronSourceRtbInterstitialAdTest {
         ironSourceRtbInterstitialAd.loadRtbAd()
 
         // then
-        mockedInterstitialAdLoader.verify {
+        mockedInterstitialAdLoader.verify({
             InterstitialAdLoader.loadAd(requestCaptor.capture(), any())
-        }
+        })
 
         val capturedRequest = requestCaptor.firstValue
         val actualWatermark = capturedRequest.extraParams?.getString("google_watermark")

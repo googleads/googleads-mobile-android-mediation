@@ -113,11 +113,9 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
             this.showAd(activity);
 
         } catch (ClassCastException e) {
-            String errorMsg =  (e.getMessage() != null) ?
-                    e.getMessage() : "cannot cast Context to Activity";
             AdError contextError = IronSourceAdapterUtils
                     .buildAdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-                            errorMsg);
+                            "IronSource requires an Activity context to load ads.");
             this.reportAdFailedToShow(contextError);
         }
     }

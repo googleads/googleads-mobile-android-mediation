@@ -160,6 +160,25 @@ class IronSourceRtbRewardedAdTest {
     }
 
     @Test
+    fun showAd_invalidContext_expectObFailureCallbackWithError() {
+        // given
+        whenever(rewardedAdConfig.context).thenReturn(mock(Activity::class.java))
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
+        val nonActivityContext = mock(Context::class.java)
+
+        // when
+        ironSourceRtbRewardedAd.showAd(nonActivityContext)
+
+        // then
+        val captor = argumentCaptor<AdError>()
+        verify(mediationRewardedAdCallback).onAdFailedToShow(captor.capture())
+        val capturedError = captor.firstValue
+        assertEquals(102, capturedError.code)
+        assertEquals("IronSource requires an Activity context to load ads.", capturedError.message)
+        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+    }
+
+    @Test
     fun onRewardedAdShowFailed_withoutRewardedAdCallbackInstance_verifyOnAdFailedToShow() {
         // Given
         whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(null)
