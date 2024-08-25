@@ -95,7 +95,7 @@ public class IronSourceAdapterUtils {
   }
 
   public static String getAdapterVersion() {
-    return "182";
+    return BuildConfig.ADAPTER_VERSION;
   }
 
   public static void setWatermark(@NonNull String watermark) {
