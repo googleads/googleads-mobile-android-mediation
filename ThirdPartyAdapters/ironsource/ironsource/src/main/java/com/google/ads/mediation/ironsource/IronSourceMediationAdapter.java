@@ -24,9 +24,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -117,7 +119,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   public static final int ERROR_SDK_NOT_INITIALIZED = 106;
 
   /**
-   *  Call show before loaded success.
+   * Call show before loaded success.
    */
   public static final int ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS = 107;
 
@@ -177,28 +179,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
           @NonNull Context context,
           @NonNull final InitializationCompleteCallback initializationCompleteCallback,
           @NonNull List<MediationConfiguration> mediationConfigurations) {
-    this.initializeInternal(context,initializationCompleteCallback, mediationConfigurations, new InitListener()
-    {
-      @Override
-      public void onInitSuccess()
-      {
-        initializationCompleteCallback.onInitializationSucceeded();
-        isInitialized.set(true);
-      }
-
-      @Override
-      public void onInitFailed(@NonNull final IronSourceError ironSourceError)
-      {
-        initializationCompleteCallback.onInitializationFailed(ironSourceError.getErrorMessage());
-      }
-    });
-  }
-
-  public void initializeInternal(
-          @NonNull Context context,
-          @NonNull final InitializationCompleteCallback initializationCompleteCallback,
-          @NonNull List<MediationConfiguration> mediationConfigurations,
-          InitListener listener) {
 
     if (isInitialized.get()) {
       initializationCompleteCallback.onInitializationSucceeded();
@@ -252,11 +232,22 @@ public class IronSourceMediationAdapter extends RtbAdapter {
                     IronSourceAds.AdFormat.REWARDED));
 
     InitRequest initRequest = new InitRequest
-            .Builder( appKey )
-            .withLegacyAdFormats( adFormatsToInitialize)
+            .Builder(appKey)
+            .withLegacyAdFormats(adFormatsToInitialize)
             .build();
 
-    IronSourceAds.init(context, initRequest, listener);
+    IronSourceAds.init(context, initRequest, new InitListener() {
+      @Override
+      public void onInitSuccess() {
+        initializationCompleteCallback.onInitializationSucceeded();
+        isInitialized.set(true);
+      }
+
+      @Override
+      public void onInitFailed(@NonNull final IronSourceError ironSourceError) {
+        initializationCompleteCallback.onInitializationFailed(ironSourceError.getErrorMessage());
+      }
+    });
 
     IronSource.setISDemandOnlyInterstitialListener(
             IronSourceInterstitialAd.getIronSourceInterstitialListener());
@@ -273,8 +264,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   @Override
   public void loadRewardedAd(
           @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-          @NonNull
-          final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+          @NonNull final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
                   mediationAdLoadCallback) {
     if (!isInitialized.get()) {
       AdError adError =
