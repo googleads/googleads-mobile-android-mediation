@@ -19,8 +19,6 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KE
 import static com.google.ads.mediation.ironsource.IronSourceConstants.MEDIATION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 
-import static java.sql.DriverManager.println;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -248,8 +246,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
     IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
     Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
-    println("This is a test message");
-
     List<IronSourceAds.AdFormat> adFormatsToInitialize = new ArrayList<>
             (Arrays.asList(IronSourceAds.AdFormat.BANNER,
                     IronSourceAds.AdFormat.INTERSTITIAL,
