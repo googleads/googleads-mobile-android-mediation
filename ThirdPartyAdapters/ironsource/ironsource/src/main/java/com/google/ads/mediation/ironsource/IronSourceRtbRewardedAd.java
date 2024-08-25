@@ -89,11 +89,11 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
         watermarkBundle.putString(WATERMARK, this.watermark);
 
         RewardedAdRequest adRequest = new RewardedAdRequest
-                .Builder( instanceID, bidToken )
+                .Builder(instanceID, bidToken)
                 .withExtraParams(watermarkBundle)
                 .build();
 
-        RewardedAdLoader.loadAd( adRequest, this );
+        RewardedAdLoader.loadAd(adRequest, this);
     }
 
     @Override
@@ -120,23 +120,15 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
         }
     }
 
-    private void showAd(@NonNull Activity activity){
+    private void showAd(@NonNull Activity activity) {
         this.ad.setListener(this);
         this.ad.show(activity);
     }
 
     private void reportAdFailedToShow(@NonNull AdError showError) {
         Log.w(TAG, showError.toString());
-        if (mediationRewardedAdCallback != null){
+        if (mediationRewardedAdCallback != null) {
             this.mediationRewardedAdCallback.onAdFailedToShow(showError);
-        }
-    }
-
-    /** Forward ad load failure event to Google Mobile Ads SDK. */
-    private void reportAdFailedToLoad(@NonNull AdError loadError) {
-        Log.w(TAG, loadError.toString());
-        if (mediationAdLoadCallback != null){
-            mediationAdLoadCallback.onFailure(loadError);
         }
     }
 
@@ -152,7 +144,9 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
     public void onRewardedAdLoadFailed(@NonNull IronSourceError ironSourceError) {
         AdError adError = IronSourceAdapterUtils
                 .buildAdError(ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
-        this.reportAdFailedToLoad(adError);
+        if (mediationAdLoadCallback != null) {
+            mediationAdLoadCallback.onFailure(adError);
+        }
     }
 
     @Override
@@ -172,13 +166,13 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
     @Override
     public void onRewardedAdFailedToShow(@NonNull RewardedAd rewardedAd, @NonNull IronSourceError ironSourceError) {
         AdError adError = IronSourceAdapterUtils
-                .buildAdError(ironSourceError.getErrorCode(),ironSourceError.getErrorMessage());
+                .buildAdError(ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
         this.reportAdFailedToShow(adError);
     }
 
     @Override
     public void onRewardedAdShown(@NonNull RewardedAd rewardedAd) {
-        if (this.mediationRewardedAdCallback == null){
+        if (this.mediationRewardedAdCallback == null) {
             return;
         }
         this.mediationRewardedAdCallback.onAdOpened();
@@ -188,7 +182,7 @@ public class IronSourceRtbRewardedAd implements MediationRewardedAd, RewardedAdL
 
     @Override
     public void onUserEarnedReward(@NonNull RewardedAd rewardedAd) {
-        if (this.mediationRewardedAdCallback == null){
+        if (this.mediationRewardedAdCallback == null) {
             return;
         }
         final IronSourceRewardItem ironSourceRewardItem = new IronSourceRewardItem();

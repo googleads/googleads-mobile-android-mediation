@@ -77,7 +77,9 @@ public class IronSourceRtbInterstitialAd implements MediationInterstitialAd, Int
         this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
     }
 
-    /** Attempts to load an @{link IronSource} interstitial ad using a Bid token. */
+    /**
+     * Attempts to load an @{link IronSource} interstitial ad using a Bid token.
+     */
     public void loadRtbAd() {
         if (TextUtils.isEmpty(instanceID)) {
             AdError loadError = IronSourceAdapterUtils.buildAdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
@@ -88,10 +90,10 @@ public class IronSourceRtbInterstitialAd implements MediationInterstitialAd, Int
         watermarkBundle.putString(WATERMARK, this.watermark);
 
         InterstitialAdRequest adRequest = new InterstitialAdRequest
-                .Builder( instanceID, bidToken )
+                .Builder(instanceID, bidToken)
                 .withExtraParams(watermarkBundle)
                 .build();
-        InterstitialAdLoader.loadAd( adRequest, this );
+        InterstitialAdLoader.loadAd(adRequest, this);
     }
 
     @Override
@@ -117,7 +119,7 @@ public class IronSourceRtbInterstitialAd implements MediationInterstitialAd, Int
         }
     }
 
-    private void showAd(@NonNull Activity activity){
+    private void showAd(@NonNull Activity activity) {
         this.ad.setListener(this);
         this.ad.show(activity);
     }
@@ -126,14 +128,6 @@ public class IronSourceRtbInterstitialAd implements MediationInterstitialAd, Int
         Log.e(TAG, showError.toString());
         if (this.interstitialAdCallback != null) {
             this.interstitialAdCallback.onAdFailedToShow(showError);
-        }
-    }
-
-    /** Forward ad load failure event to Google Mobile Ads SDK. */
-    private void reportAdFailedToLoad(@NonNull AdError loadError) {
-        Log.e(TAG, loadError.toString());
-        if (this.mediationAdLoadCallback != null) {
-            this.mediationAdLoadCallback.onFailure(loadError);
         }
     }
 
@@ -182,7 +176,9 @@ public class IronSourceRtbInterstitialAd implements MediationInterstitialAd, Int
     public void onInterstitialAdLoadFailed(@NonNull IronSourceError ironSourceError) {
         Log.e(TAG, ironSourceError.toString());
         AdError adError = IronSourceAdapterUtils.buildAdError(ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
-        this.reportAdFailedToLoad(adError);
+        if (this.mediationAdLoadCallback != null) {
+            this.mediationAdLoadCallback.onFailure(adError);
+        }
     }
 
     @Override
