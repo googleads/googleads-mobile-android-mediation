@@ -60,6 +60,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -189,15 +190,24 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun initialize_withMultipleMediationConfigurations_invokesOnInitializationSucceededOnlyOnce() {
-    val expectedInitRequest = InitRequest.Builder(TEST_APP_ID_1)
-      .withLegacyAdFormats(
-        listOf(
-          IronSourceAds.AdFormat.BANNER,
-          IronSourceAds.AdFormat.INTERSTITIAL,
-          IronSourceAds.AdFormat.REWARDED
-        )
-      )
-      .build()
+    val context = Mockito.mock(Context::class.java)
+    val mockInitializationCompleteCallback = Mockito.mock(InitializationCompleteCallback::class.java)
+
+    val expectedAppKey = "testAppKey"
+    val expectedAdFormats = listOf(
+      IronSourceAds.AdFormat.BANNER,
+      IronSourceAds.AdFormat.INTERSTITIAL,
+      IronSourceAds.AdFormat.REWARDED
+    )
+
+    val mediationConfiguration1 = createMediationConfiguration(
+      AdFormat.BANNER,
+      serverParameters = bundleOf(KEY_APP_KEY to expectedAppKey)
+    )
+    val mediationConfiguration2 = createMediationConfiguration(
+      AdFormat.INTERSTITIAL,
+      serverParameters = bundleOf(KEY_APP_KEY to expectedAppKey)
+    )
 
     Mockito.mockStatic(IronSourceAds::class.java).use { mockedStatic ->
       mockedStatic.`when`<Unit> {
@@ -207,29 +217,25 @@ class IronSourceMediationAdapterTest {
         listener.onInitSuccess()
         null
       }
-      val mediationConfiguration1 =
-        createMediationConfiguration(
-          AdFormat.BANNER,
-          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
-        )
-      val mediationConfiguration2 =
-        createMediationConfiguration(
-          AdFormat.BANNER,
-          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_2),
-        )
 
       adapter.initialize(
         context,
         mockInitializationCompleteCallback,
-        listOf(mediationConfiguration1, mediationConfiguration2),
+        listOf(mediationConfiguration1, mediationConfiguration2)
       )
 
       verify(mockInitializationCompleteCallback).onInitializationSucceeded()
-      // Verify IronSourceAds.init call
+
       mockedStatic.verify {
         IronSourceAds.init(
           eq(context),
-          any(),
+          argThat { initRequest ->
+            val appKeyMatches = initRequest.appKey == expectedAppKey
+            val adFormatsMatch = initRequest.legacyAdFormats.containsAll(expectedAdFormats) &&
+                    initRequest.legacyAdFormats.size == expectedAdFormats.size
+
+            appKeyMatches && adFormatsMatch
+          },
           any()
         )
       }
