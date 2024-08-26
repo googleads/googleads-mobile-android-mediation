@@ -11,7 +11,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.unity3d.ironsourceads.rewarded.RewardedAdLoader
 import com.unity3d.ironsourceads.rewarded.RewardedAdLoaderListener
-import com.unity3d.ironsourceads.rewarded.RewardedAdRequest
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before

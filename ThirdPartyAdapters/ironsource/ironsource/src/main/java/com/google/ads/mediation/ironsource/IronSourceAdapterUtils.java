@@ -39,8 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IronSourceAdapterUtils {
 
   @Nullable
-  public static ISBannerSize getISBannerSizeFromGoogleAdSize(@NonNull Context context,
-      @NonNull AdSize adSize) {
+  public static ISBannerSize getISBannerSizeFromGoogleAdSize(
+      @NonNull Context context, @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.MEDIUM_RECTANGLE);
@@ -68,19 +68,23 @@ public class IronSourceAdapterUtils {
     return new AdError(code, message, ERROR_DOMAIN);
   }
 
-  public static AdError validateIronSourceAdLoadParams(@NonNull Context context,
-      @NonNull String instanceID) {
+  public static AdError validateIronSourceAdLoadParams(
+      @NonNull Context context, @NonNull String instanceID) {
     // Check that context is an Activity.
     if (!(context instanceof Activity)) {
-      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "IronSource requires an Activity context to load ads.", ERROR_DOMAIN);
+      AdError contextError =
+          new AdError(
+              ERROR_REQUIRES_ACTIVITY_CONTEXT,
+              "IronSource requires an Activity context to load ads.",
+              ERROR_DOMAIN);
       return contextError;
     }
 
     // Check validity of instance ID.
     if (TextUtils.isEmpty(instanceID)) {
-      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid instance ID.", ERROR_DOMAIN);
+      AdError loadError =
+          new AdError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
       return loadError;
     }
 

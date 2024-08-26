@@ -1,7 +1,6 @@
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import com.google.ads.mediation.ironsource.IronSourceAdapterUtils
 import com.google.ads.mediation.ironsource.IronSourceRtbInterstitialAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
