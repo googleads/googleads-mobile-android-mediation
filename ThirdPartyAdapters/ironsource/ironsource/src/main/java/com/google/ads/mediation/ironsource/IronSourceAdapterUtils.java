@@ -24,10 +24,13 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
+import com.unity3d.ironsourceads.IronSourceAds;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,5 +107,17 @@ public class IronSourceAdapterUtils {
 
   public static void setWatermark(@NonNull String watermark) {
     IronSource.setMetaData("google_water_mark", watermark);
+  }
+
+  public static IronSourceAds.AdFormat convertToIronSourceAdFormat(AdFormat adFormat) {
+    switch (adFormat) {
+      case BANNER:
+        return IronSourceAds.AdFormat.BANNER;
+      case INTERSTITIAL:
+        return IronSourceAds.AdFormat.INTERSTITIAL;
+      case REWARDED:
+        return IronSourceAds.AdFormat.REWARDED;
+    }
+    return null;
   }
 }

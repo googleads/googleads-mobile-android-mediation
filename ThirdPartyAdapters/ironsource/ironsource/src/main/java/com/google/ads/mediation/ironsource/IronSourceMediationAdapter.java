@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.ironsource;
 
+import static com.google.ads.mediation.ironsource.IronSourceAdapterUtils.convertToIronSourceAdFormat;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.ADAPTER_VERSION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.MEDIATION_NAME;
@@ -175,7 +176,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       }
 
       IronSourceAds.AdFormat ironSourceAdFormats =
-          this.convertToIronSourceAdFormat(configuration.getFormat());
+          convertToIronSourceAdFormat(configuration.getFormat());
       if (ironSourceAdFormats != null) {
         adFormatsToInitialize.add(ironSourceAdFormats);
       }
@@ -236,17 +237,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         IronSourceRewardedAd.getIronSourceRewardedListener());
   }
 
-  private IronSourceAds.AdFormat convertToIronSourceAdFormat(AdFormat adFormat) {
-    switch (adFormat) {
-      case BANNER:
-        return IronSourceAds.AdFormat.BANNER;
-      case INTERSTITIAL:
-        return IronSourceAds.AdFormat.INTERSTITIAL;
-      case REWARDED:
-        return IronSourceAds.AdFormat.REWARDED;
-    }
-    return null;
-  }
 
   @Override
   public void collectSignals(

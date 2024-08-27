@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.WATERMARK;
@@ -63,7 +62,7 @@ public class IronSourceRtbInterstitialAd
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationInterstitialAdLoadCallback) {
     Bundle serverParameters = interstitialAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     bidToken = interstitialAdConfig.getBidResponse();
     watermark = interstitialAdConfig.getWatermark();
     this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
