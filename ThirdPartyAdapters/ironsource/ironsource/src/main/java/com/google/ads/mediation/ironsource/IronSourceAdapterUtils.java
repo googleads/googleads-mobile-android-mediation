@@ -105,10 +105,6 @@ public class IronSourceAdapterUtils {
     return BuildConfig.ADAPTER_VERSION;
   }
 
-  public static void setWatermark(@NonNull String watermark) {
-    IronSource.setMetaData("google_water_mark", watermark);
-  }
-
   public static IronSourceAds.AdFormat convertToIronSourceAdFormat(AdFormat adFormat) {
     switch (adFormat) {
       case BANNER:
