@@ -69,7 +69,7 @@ class IronSourceRtbInterstitialAdTest {
         whenever(InterstitialAdLoader.loadAd(any(), any())).then { }
 
         val bundleMock = mock(Bundle::class.java)
-        whenever(bundleMock.getString("instanceId", "0")).thenReturn("mockInstanceId")
+        whenever(bundleMock.getString("instanceId", "")).thenReturn("mockInstanceId")
 
         whenever(interstitialAdConfig.context).thenReturn(context)
         whenever(interstitialAdConfig.serverParameters).thenReturn(bundleMock)

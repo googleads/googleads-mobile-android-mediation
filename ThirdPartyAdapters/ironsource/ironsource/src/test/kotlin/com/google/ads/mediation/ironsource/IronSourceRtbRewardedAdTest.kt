@@ -53,7 +53,7 @@ class IronSourceRtbRewardedAdTest {
         MockitoAnnotations.openMocks(this)
 
         val bundleMock = mock(Bundle::class.java)
-        whenever(bundleMock.getString("instanceId", "0")).thenReturn("mockInstanceId")
+        whenever(bundleMock.getString("instanceId", "")).thenReturn("mockInstanceId")
         whenever(rewardedAdConfig.context).thenReturn(context)
         whenever(rewardedAdConfig.serverParameters).thenReturn(bundleMock)
         whenever(rewardedAdConfig.bidResponse).thenReturn("sampleBidToken")
