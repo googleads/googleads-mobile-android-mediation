@@ -104,6 +104,6 @@ public class IronSourceAdapterUtils {
   }
 
   public static String getAdapterVersion() {
-    return "7.8.1.1";
+    return BuildConfig.ADAPTER_VERSION;
   }
 }
