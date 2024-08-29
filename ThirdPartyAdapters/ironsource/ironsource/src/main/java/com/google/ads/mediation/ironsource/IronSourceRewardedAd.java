@@ -14,7 +14,7 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_NON_RTB_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
@@ -24,14 +24,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.ironsource.mediationsdk.IronSource;
+
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,36 +42,38 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   @VisibleForTesting
   static final ConcurrentHashMap<String, WeakReference<IronSourceRewardedAd>> availableInstances =
-      new ConcurrentHashMap<>();
+          new ConcurrentHashMap<>();
 
   private static final IronSourceRewardedAdListener ironSourceRewardedListener =
-      new IronSourceRewardedAdListener();
+          new IronSourceRewardedAdListener();
 
   private MediationRewardedAdCallback mediationRewardedAdCallback;
 
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mediationAdLoadCallback;
+          mediationAdLoadCallback;
 
   private final Context context;
 
   private final String instanceID;
 
   public IronSourceRewardedAd(
-      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-      @NonNull
+          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+          @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
+                  mediationAdLoadCallback) {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  /** Getters and Setters. */
+  /**
+   * Getters and Setters.
+   */
   static IronSourceRewardedAd getFromAvailableInstances(@NonNull String instanceId) {
     return availableInstances.containsKey(instanceId)
-        ? availableInstances.get(instanceId).get()
-        : null;
+            ? availableInstances.get(instanceId).get()
+            : null;
   }
 
   static void removeFromAvailableInstances(@NonNull String instanceId) {
@@ -88,7 +93,7 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   }
 
   public MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      getMediationAdLoadCallback() {
+  getMediationAdLoadCallback() {
     return mediationAdLoadCallback;
   }
 
@@ -121,8 +126,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     // Check that an Ad for this instance ID is not already loading.
     if (!IronSourceAdapterUtils.canLoadIronSourceAdInstance(instanceID, availableInstances)) {
       String errorMessage =
-          String.format(
-              "An IronSource Rewarded ad is already loading for instance ID: %s", instanceID);
+              String.format(
+                      "An IronSource Rewarded ad is already loading for instance ID: %s", instanceID);
       AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
       onAdFailedToLoad(concurrentError);
       return false;
@@ -134,11 +139,13 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   @Override
   public void showAd(@NonNull Context context) {
     Log.d(
-        TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
+            TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
     IronSource.showISDemandOnlyRewardedVideo(this.instanceID);
   }
 
-  /** Forward ad load failure event to Google Mobile Ads SDK. */
+  /**
+   * Forward ad load failure event to Google Mobile Ads SDK.
+   */
   private void onAdFailedToLoad(@NonNull AdError loadError) {
     Log.w(TAG, loadError.toString());
     mediationAdLoadCallback.onFailure(loadError);

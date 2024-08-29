@@ -18,7 +18,9 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyInterstitialListener;
@@ -29,27 +31,27 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
   @Override
   public void onInterstitialAdReady(@NonNull String instanceId) {
     Log.d(TAG,
-        String.format("IronSource interstitial ad is ready for instance ID: %s", instanceId));
+            String.format("IronSource interstitial ad is ready for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       if (ironSourceInterstitialAd.getMediationAdLoadCallback() != null) {
         ironSourceInterstitialAd.setInterstitialAdCallback(
-            ironSourceInterstitialAd.getMediationAdLoadCallback()
-                .onSuccess(ironSourceInterstitialAd));
+                ironSourceInterstitialAd.getMediationAdLoadCallback()
+                        .onSuccess(ironSourceInterstitialAd));
       }
     }
   }
 
   @Override
   public void onInterstitialAdLoadFailed(@NonNull String instanceId,
-      @NonNull IronSourceError ironSourceError) {
+                                         @NonNull IronSourceError ironSourceError) {
     final AdError loadError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+            ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.w(TAG, loadError.toString());
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       if (ironSourceInterstitialAd.getMediationAdLoadCallback() != null) {
@@ -64,11 +66,11 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
   public void onInterstitialAdOpened(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource interstitial ad opened for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       MediationInterstitialAdCallback adCallback =
-          ironSourceInterstitialAd.getInterstitialAdCallback();
+              ironSourceInterstitialAd.getInterstitialAdCallback();
       if (adCallback != null) {
         adCallback.onAdOpened();
         adCallback.reportAdImpression();
@@ -80,11 +82,11 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
   public void onInterstitialAdClosed(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource interstitial ad closed for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       MediationInterstitialAdCallback adCallback =
-          ironSourceInterstitialAd.getInterstitialAdCallback();
+              ironSourceInterstitialAd.getInterstitialAdCallback();
       if (adCallback != null) {
         adCallback.onAdClosed();
       }
@@ -95,16 +97,16 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
 
   @Override
   public void onInterstitialAdShowFailed(@NonNull String instanceId,
-      @NonNull IronSourceError ironSourceError) {
+                                         @NonNull IronSourceError ironSourceError) {
     AdError showError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+            ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.w(TAG, showError.toString());
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       MediationInterstitialAdCallback adCallback =
-          ironSourceInterstitialAd.getInterstitialAdCallback();
+              ironSourceInterstitialAd.getInterstitialAdCallback();
       if (adCallback != null) {
         adCallback.onAdFailedToShow(showError);
       }
@@ -117,11 +119,11 @@ public class IronSourceInterstitialAdListener implements ISDemandOnlyInterstitia
   public void onInterstitialAdClicked(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource interstitial ad clicked for instance ID: %s", instanceId));
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
+            IronSourceInterstitialAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceInterstitialAd != null) {
       MediationInterstitialAdCallback adCallback =
-          ironSourceInterstitialAd.getInterstitialAdCallback();
+              ironSourceInterstitialAd.getInterstitialAdCallback();
       if (adCallback != null) {
         adCallback.reportAdClicked();
       }

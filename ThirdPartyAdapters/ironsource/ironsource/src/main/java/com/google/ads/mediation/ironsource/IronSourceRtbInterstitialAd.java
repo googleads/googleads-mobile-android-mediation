@@ -26,8 +26,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -41,12 +43,13 @@ import com.unity3d.ironsourceads.interstitial.InterstitialAdLoaderListener;
 import com.unity3d.ironsourceads.interstitial.InterstitialAdRequest;
 
 public class IronSourceRtbInterstitialAd
-    implements MediationInterstitialAd, InterstitialAdLoaderListener, InterstitialAdListener {
+        implements MediationInterstitialAd, InterstitialAdLoaderListener, InterstitialAdListener {
 
-  @VisibleForTesting private MediationInterstitialAdCallback interstitialAdCallback;
+  @VisibleForTesting
+  private MediationInterstitialAdCallback interstitialAdCallback;
 
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-      mediationAdLoadCallback;
+          mediationAdLoadCallback;
 
   private final String instanceID;
 
@@ -57,10 +60,10 @@ public class IronSourceRtbInterstitialAd
   private final String watermark;
 
   public IronSourceRtbInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
-      @NonNull
+          @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
+          @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-              mediationInterstitialAdLoadCallback) {
+                  mediationInterstitialAdLoadCallback) {
     Bundle serverParameters = interstitialAdConfig.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     bidToken = interstitialAdConfig.getBidResponse();
@@ -68,12 +71,14 @@ public class IronSourceRtbInterstitialAd
     this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
-  /** Attempts to load an @{link IronSource} interstitial ad using a Bid token. */
+  /**
+   * Attempts to load an @{link IronSource} interstitial ad using a Bid token.
+   */
   public void loadRtbAd() {
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
-          IronSourceAdapterUtils.buildAdError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
+              IronSourceAdapterUtils.buildAdError(
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
       this.mediationAdLoadCallback.onFailure(loadError);
     }
 
@@ -81,9 +86,9 @@ public class IronSourceRtbInterstitialAd
     watermarkBundle.putString(WATERMARK, this.watermark);
 
     InterstitialAdRequest adRequest =
-        new InterstitialAdRequest.Builder(instanceID, bidToken)
-            .withExtraParams(watermarkBundle)
-            .build();
+            new InterstitialAdRequest.Builder(instanceID, bidToken)
+                    .withExtraParams(watermarkBundle)
+                    .build();
     InterstitialAdLoader.loadAd(adRequest, this);
   }
 
@@ -92,7 +97,7 @@ public class IronSourceRtbInterstitialAd
 
     if (this.ad == null) {
       AdError contextError =
-          IronSourceAdapterUtils.buildAdError(ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS, "ad is null");
+              IronSourceAdapterUtils.buildAdError(ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS, "ad is null");
       this.interstitialAdCallback.onAdFailedToShow(contextError);
     }
 
@@ -104,9 +109,9 @@ public class IronSourceRtbInterstitialAd
 
     } catch (ClassCastException e) {
       AdError contextError =
-          IronSourceAdapterUtils.buildAdError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "IronSource requires an Activity context to load ads.");
+              IronSourceAdapterUtils.buildAdError(
+                      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+                      "IronSource requires an Activity context to load ads.");
       this.reportAdFailedToShow(contextError);
     }
   }
@@ -136,15 +141,15 @@ public class IronSourceRtbInterstitialAd
 
   @Override
   public void onInterstitialAdFailedToShow(
-      @NonNull InterstitialAd interstitialAd, @NonNull IronSourceError ironSourceError) {
+          @NonNull InterstitialAd interstitialAd, @NonNull IronSourceError ironSourceError) {
     Log.e(TAG, ironSourceError.toString());
     if (this.interstitialAdCallback == null) {
       return;
     }
 
     AdError adError =
-        IronSourceAdapterUtils.buildAdError(
-            ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
+            IronSourceAdapterUtils.buildAdError(
+                    ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
     this.reportAdFailedToShow(adError);
   }
 
@@ -162,8 +167,8 @@ public class IronSourceRtbInterstitialAd
   public void onInterstitialAdLoadFailed(@NonNull IronSourceError ironSourceError) {
     Log.e(TAG, ironSourceError.toString());
     AdError adError =
-        IronSourceAdapterUtils.buildAdError(
-            ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
+            IronSourceAdapterUtils.buildAdError(
+                    ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
     if (this.mediationAdLoadCallback != null) {
       this.mediationAdLoadCallback.onFailure(adError);
     }

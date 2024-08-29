@@ -26,8 +26,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -41,11 +43,12 @@ import com.unity3d.ironsourceads.rewarded.RewardedAdLoaderListener;
 import com.unity3d.ironsourceads.rewarded.RewardedAdRequest;
 
 public class IronSourceRtbRewardedAd
-    implements MediationRewardedAd, RewardedAdLoaderListener, RewardedAdListener {
+        implements MediationRewardedAd, RewardedAdLoaderListener, RewardedAdListener {
 
-  @VisibleForTesting private MediationRewardedAdCallback mediationRewardedAdCallback;
+  @VisibleForTesting
+  private MediationRewardedAdCallback mediationRewardedAdCallback;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-      mediationAdLoadCallback;
+          mediationAdLoadCallback;
 
   private final Context context;
 
@@ -58,10 +61,10 @@ public class IronSourceRtbRewardedAd
   private final String watermark;
 
   public IronSourceRtbRewardedAd(
-      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
-      @NonNull
+          @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+          @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-              mediationAdLoadCallback) {
+                  mediationAdLoadCallback) {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     context = rewardedAdConfiguration.getContext();
@@ -73,8 +76,8 @@ public class IronSourceRtbRewardedAd
   public void loadRtbAd() {
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
-          IronSourceAdapterUtils.buildAdError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
+              IronSourceAdapterUtils.buildAdError(
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
       this.mediationAdLoadCallback.onFailure(loadError);
     }
 
@@ -82,9 +85,9 @@ public class IronSourceRtbRewardedAd
     watermarkBundle.putString(WATERMARK, this.watermark);
 
     RewardedAdRequest adRequest =
-        new RewardedAdRequest.Builder(instanceID, bidToken)
-            .withExtraParams(watermarkBundle)
-            .build();
+            new RewardedAdRequest.Builder(instanceID, bidToken)
+                    .withExtraParams(watermarkBundle)
+                    .build();
 
     RewardedAdLoader.loadAd(adRequest, this);
   }
@@ -92,10 +95,10 @@ public class IronSourceRtbRewardedAd
   @Override
   public void showAd(@NonNull Context context) {
     Log.d(
-        TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
+            TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", this.instanceID));
     if (this.ad == null) {
       AdError contextError =
-          IronSourceAdapterUtils.buildAdError(ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS, "ad is null");
+              IronSourceAdapterUtils.buildAdError(ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS, "ad is null");
       this.reportAdFailedToShow(contextError);
     }
 
@@ -106,9 +109,9 @@ public class IronSourceRtbRewardedAd
       this.ad.show(activity);
     } catch (ClassCastException e) {
       AdError contextError =
-          IronSourceAdapterUtils.buildAdError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "IronSource requires an Activity context to load ads.");
+              IronSourceAdapterUtils.buildAdError(
+                      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+                      "IronSource requires an Activity context to load ads.");
       this.reportAdFailedToShow(contextError);
     }
   }
@@ -131,8 +134,8 @@ public class IronSourceRtbRewardedAd
   @Override
   public void onRewardedAdLoadFailed(@NonNull IronSourceError ironSourceError) {
     AdError adError =
-        IronSourceAdapterUtils.buildAdError(
-            ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
+            IronSourceAdapterUtils.buildAdError(
+                    ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
     if (mediationAdLoadCallback != null) {
       mediationAdLoadCallback.onFailure(adError);
     }
@@ -154,10 +157,10 @@ public class IronSourceRtbRewardedAd
 
   @Override
   public void onRewardedAdFailedToShow(
-      @NonNull RewardedAd rewardedAd, @NonNull IronSourceError ironSourceError) {
+          @NonNull RewardedAd rewardedAd, @NonNull IronSourceError ironSourceError) {
     AdError adError =
-        IronSourceAdapterUtils.buildAdError(
-            ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
+            IronSourceAdapterUtils.buildAdError(
+                    ironSourceError.getErrorCode(), ironSourceError.getErrorMessage());
     this.reportAdFailedToShow(adError);
   }
 

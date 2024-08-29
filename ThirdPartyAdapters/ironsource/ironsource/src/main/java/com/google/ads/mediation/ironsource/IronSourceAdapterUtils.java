@@ -21,8 +21,10 @@ import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERR
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
@@ -43,7 +45,7 @@ public class IronSourceAdapterUtils {
 
   @Nullable
   public static ISBannerSize getISBannerSizeFromGoogleAdSize(
-      @NonNull Context context, @NonNull AdSize adSize) {
+          @NonNull Context context, @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.MEDIUM_RECTANGLE);
@@ -72,22 +74,22 @@ public class IronSourceAdapterUtils {
   }
 
   public static AdError validateIronSourceAdLoadParams(
-      @NonNull Context context, @NonNull String instanceID) {
+          @NonNull Context context, @NonNull String instanceID) {
     // Check that context is an Activity.
     if (!(context instanceof Activity)) {
       AdError contextError =
-          new AdError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "IronSource requires an Activity context to load ads.",
-              ERROR_DOMAIN);
+              new AdError(
+                      ERROR_REQUIRES_ACTIVITY_CONTEXT,
+                      "IronSource requires an Activity context to load ads.",
+                      ERROR_DOMAIN);
       return contextError;
     }
 
     // Check validity of instance ID.
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
-          new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
+              new AdError(
+                      ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
       return loadError;
     }
 
@@ -95,25 +97,13 @@ public class IronSourceAdapterUtils {
   }
 
   public static <T> boolean canLoadIronSourceAdInstance(
-      @NonNull String instanceId,
-      @NonNull ConcurrentHashMap<String, WeakReference<T>> instanceMap) {
+          @NonNull String instanceId,
+          @NonNull ConcurrentHashMap<String, WeakReference<T>> instanceMap) {
     WeakReference<T> adRef = instanceMap.get(instanceId);
     return adRef == null || adRef.get() == null;
   }
 
   public static String getAdapterVersion() {
-    return BuildConfig.ADAPTER_VERSION;
-  }
-
-  public static IronSourceAds.AdFormat convertToIronSourceAdFormat(AdFormat adFormat) {
-    switch (adFormat) {
-      case BANNER:
-        return IronSourceAds.AdFormat.BANNER;
-      case INTERSTITIAL:
-        return IronSourceAds.AdFormat.INTERSTITIAL;
-      case REWARDED:
-        return IronSourceAds.AdFormat.REWARDED;
-    }
-    return null;
+    return "7.8.1.1";
   }
 }

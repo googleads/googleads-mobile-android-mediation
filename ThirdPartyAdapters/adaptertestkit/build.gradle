@@ -32,4 +32,8 @@ dependencies {
   implementation "com.google.truth:truth:1.1.5"
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
   implementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
+
+  testImplementation "org.powermock:powermock-module-junit4:2.0.9"
+  testImplementation "org.powermock:powermock-api-mockito2:2.0.9"
+
 }

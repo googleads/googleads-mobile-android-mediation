@@ -18,7 +18,9 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyRewardedVideoListener;
@@ -30,24 +32,24 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   public void onRewardedVideoAdLoadSuccess(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad loaded for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       if (ironSourceRewardedAd.getMediationAdLoadCallback() != null) {
         ironSourceRewardedAd.setRewardedAdCallback(
-            ironSourceRewardedAd.getMediationAdLoadCallback().onSuccess(ironSourceRewardedAd));
+                ironSourceRewardedAd.getMediationAdLoadCallback().onSuccess(ironSourceRewardedAd));
       }
     }
   }
 
   @Override
   public void onRewardedVideoAdLoadFailed(@NonNull String instanceId,
-      @NonNull IronSourceError ironSourceError) {
+                                          @NonNull IronSourceError ironSourceError) {
     AdError loadError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+            ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.e(TAG, loadError.toString());
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       if (ironSourceRewardedAd.getMediationAdLoadCallback() != null) {
@@ -62,7 +64,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   public void onRewardedVideoAdOpened(@NonNull final String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad opened for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       MediationRewardedAdCallback adCallBack = ironSourceRewardedAd.getRewardedAdCallback();
@@ -78,7 +80,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   public void onRewardedVideoAdClosed(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad closed for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       MediationRewardedAdCallback adCallBack = ironSourceRewardedAd.getRewardedAdCallback();
@@ -94,9 +96,9 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   public void onRewardedVideoAdRewarded(@NonNull String instanceId) {
     final IronSourceRewardItem ironSourceRewardItem = new IronSourceRewardItem();
     Log.d(TAG, String.format("IronSource rewarded ad received reward: %d %s, for instance ID: %s",
-        ironSourceRewardItem.getAmount(), ironSourceRewardItem.getType(), instanceId));
+            ironSourceRewardItem.getAmount(), ironSourceRewardItem.getType(), instanceId));
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       MediationRewardedAdCallback adCallBack = ironSourceRewardedAd.getRewardedAdCallback();
@@ -109,12 +111,12 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
 
   @Override
   public void onRewardedVideoAdShowFailed(@NonNull String instanceId,
-      @NonNull IronSourceError ironSourceError) {
+                                          @NonNull IronSourceError ironSourceError) {
     AdError showError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+            ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.e(TAG, showError.toString());
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       // Check currently showing instance existence.
@@ -131,7 +133,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
   public void onRewardedVideoAdClicked(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource rewarded ad clicked for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd = IronSourceRewardedAd.getFromAvailableInstances(
-        instanceId);
+            instanceId);
 
     if (ironSourceRewardedAd != null) {
       MediationRewardedAdCallback adCallBack = ironSourceRewardedAd.getRewardedAdCallback();
