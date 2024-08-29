@@ -15,16 +15,13 @@ import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.common.truth.Truth.assertThat
-import jp.maio.sdk.android.MaioAds
-import jp.maio.sdk.android.MaioAds.getSdkVersion
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_MEDIA_ID
-import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.getManager
+import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.getSdkVersion
+import jp.maio.sdk.android.v2.Version
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -76,27 +73,36 @@ class MaioMediationAdapterTest {
 
   @Test
   fun getSDKVersionInfo_validSDKVersionFor3Digits_returnsTheSameVersion() {
-    mockStatic(MaioAds::class.java).use {
-      whenever(getSdkVersion()) doReturn "7.3.2"
+    val mockVersion = mock<Version> {
+      on { toString() } doReturn "7.3.2"
+    }
 
+    mockStatic(MaioAdsManager::class.java).use {
+      whenever(getSdkVersion()) doReturn mockVersion
       adapter.assertGetSdkVersion(expectedValue = "7.3.2")
     }
   }
 
   @Test
   fun getSDKVersionInfo_validSDKVersionFor4Digits_returnsTheValidVersion() {
-    mockStatic(MaioAds::class.java).use {
-      whenever(getSdkVersion()) doReturn "7.3.2.1"
+    val mockVersion = mock<Version> {
+      on { toString() } doReturn "7.3.2.1"
+    }
 
+    mockStatic(MaioAdsManager::class.java).use {
+      whenever(getSdkVersion()) doReturn mockVersion
       adapter.assertGetSdkVersion(expectedValue = "7.3.2")
     }
   }
 
   @Test
   fun getSDKVersionInfo_invalidSDKVersion_returnsZeros() {
-    mockStatic(MaioAds::class.java).use {
-      whenever(getSdkVersion()) doReturn "3.2"
+    val mockVersion = mock<Version> {
+      on { toString() } doReturn "3.2"
+    }
 
+    mockStatic(MaioAdsManager::class.java).use {
+      whenever(getSdkVersion()) doReturn mockVersion
       adapter.assertGetSdkVersion(expectedValue = "0.0.0")
     }
   }
@@ -132,50 +138,33 @@ class MaioMediationAdapterTest {
 
   @Test
   fun initialize_withMediationConfigurations_invokesOnInitializationSucceeded() {
-    mockStatic(MaioAdsManager::class.java).use {
-      setupInitialize()
-
-      adapter.mediationAdapterInitializeVerifySuccess(
-        activity,
-        mockInitializationCompleteCallback,
-        /* serverParameters= */ bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
-      )
-    }
+    adapter.mediationAdapterInitializeVerifySuccess(
+      activity,
+      mockInitializationCompleteCallback,
+      /* serverParameters= */ bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
+    )
   }
 
   @Test
   fun initialize_withMultipleMediationConfigurations_invokesOnInitializationSucceededOnlyOnce() {
-    mockStatic(MaioAdsManager::class.java).use {
-      setupInitialize()
-      val mediationConfiguration1 =
-        createMediationConfiguration(
-          AdFormat.BANNER,
-          serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
-        )
-      val mediationConfiguration2 =
-        createMediationConfiguration(
-          AdFormat.BANNER,
-          serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_2)
-        )
-
-      adapter.initialize(
-        activity,
-        mockInitializationCompleteCallback,
-        listOf(mediationConfiguration1, mediationConfiguration2)
+    val mediationConfiguration1 =
+      createMediationConfiguration(
+        AdFormat.BANNER,
+        serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
+      )
+    val mediationConfiguration2 =
+      createMediationConfiguration(
+        AdFormat.BANNER,
+        serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_2)
       )
 
-      verify(mockInitializationCompleteCallback, times(1)).onInitializationSucceeded()
-    }
-  }
+    adapter.initialize(
+      activity,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration1, mediationConfiguration2)
+    )
 
-  private fun setupInitialize() {
-    val mockMaioAdsManager = mock<MaioAdsManager>()
-    whenever(getManager(any())) doReturn mockMaioAdsManager
-    whenever(mockMaioAdsManager.initialize(any(), any())) doAnswer
-      {
-        val listener = it.getArgument(1) as MaioAdsManager.InitializationListener
-        listener.onMaioInitialized()
-      }
+    verify(mockInitializationCompleteCallback, times(1)).onInitializationSucceeded()
   }
 
   private fun createMediationConfiguration(
