@@ -17,8 +17,12 @@ package com.google.ads.mediation.line
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdLoader.CollectSignalCallback
+import com.five_corp.ad.FiveAdConfig
+import com.five_corp.ad.FiveAdErrorCode
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.VersionInfo
-import com.google.android.gms.ads.mediation.Adapter
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -33,18 +37,23 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 
 /**
  * Line Adapter for GMA SDK used to initialize and load ads from the Line SDK. This class should not
  * be used directly by publishers.
  */
-class LineMediationAdapter : Adapter() {
+class LineMediationAdapter : RtbAdapter() {
 
   private lateinit var bannerAd: LineBannerAd
   private lateinit var interstitialAd: LineInterstitialAd
   private lateinit var rewardedAd: LineRewardedAd
   private lateinit var nativeAd: LineNativeAd
+  private lateinit var adLoader: AdLoader
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -60,7 +69,7 @@ class LineMediationAdapter : Adapter() {
     val logMessage =
       String.format(
         "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-        versionString
+        versionString,
       )
     Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
@@ -83,7 +92,7 @@ class LineMediationAdapter : Adapter() {
     val logMessage =
       String.format(
         "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-        versionString
+        versionString,
       )
     Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
@@ -116,6 +125,14 @@ class LineMediationAdapter : Adapter() {
       Log.w(TAG, message)
     }
 
+    val loader = AdLoader.getAdLoader(context, FiveAdConfig(appIdForInit))
+    if (loader == null) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_NULL_AD_LOADER)
+      return
+    }
+
+    adLoader = loader
+
     try {
       LineInitializer.initialize(context, appIdForInit)
     } catch (exception: IllegalArgumentException) {
@@ -124,6 +141,37 @@ class LineMediationAdapter : Adapter() {
     }
 
     initializationCompleteCallback.onInitializationSucceeded()
+  }
+
+  override fun collectSignals(signalData: RtbSignalData, signalCallbacks: SignalCallbacks) {
+    val slotIds =
+      signalData.configurations.mapNotNull {
+        val appId = it.serverParameters.getString(KEY_SLOT_ID)
+        if (appId.isNullOrEmpty()) {
+          null
+        } else {
+          appId
+        }
+      }
+    if (slotIds.isEmpty() || slotIds.first().isEmpty()) {
+      val adError =
+        AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
+    adLoader.collectSignal(
+      slotIds.first(),
+      object : CollectSignalCallback {
+        override fun onCollect(signalString: String) {
+          signalCallbacks.onSuccess(signalString)
+        }
+
+        override fun onError(fiveAdErrorCode: FiveAdErrorCode) {
+          val adError = AdError(fiveAdErrorCode.value, fiveAdErrorCode.name, SDK_ERROR_DOMAIN)
+          signalCallbacks.onFailure(adError)
+        }
+      },
+    )
   }
 
   override fun loadBannerAd(
@@ -158,12 +206,40 @@ class LineMediationAdapter : Adapter() {
 
   override fun loadNativeAd(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
   ) {
     LineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
       nativeAd.loadAd()
     }
+  }
+
+  override fun loadRtbBannerAd(
+    adConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    super.loadRtbBannerAd(adConfiguration, callback)
+  }
+
+  override fun loadRtbInterstitialAd(
+    adConfiguration: MediationInterstitialAdConfiguration,
+    callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+  ) {
+    super.loadRtbInterstitialAd(adConfiguration, callback)
+  }
+
+  override fun loadRtbRewardedAd(
+    adConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    super.loadRtbRewardedAd(adConfiguration, callback)
+  }
+
+  override fun loadRtbNativeAdMapper(
+    adConfiguration: MediationNativeAdConfiguration,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+  ) {
+    super.loadRtbNativeAdMapper(adConfiguration, callback)
   }
 
   companion object {
@@ -175,6 +251,7 @@ class LineMediationAdapter : Adapter() {
       "Missing or invalid Application ID configured for this ad source instance in the AdMob or Ad Manager UI."
     const val ERROR_MSG_MISSING_SLOT_ID =
       "Missing or invalid Slot ID configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_MSG_NULL_AD_LOADER = "Null AdLoader from Five Ad SDK."
     const val ERROR_CODE_MISSING_APP_ID = 101
     const val ERROR_CODE_MISSING_SLOT_ID = 102
     const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
