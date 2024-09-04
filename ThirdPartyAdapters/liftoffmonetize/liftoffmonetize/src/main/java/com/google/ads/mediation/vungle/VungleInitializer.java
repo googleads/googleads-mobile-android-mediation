@@ -22,16 +22,11 @@ import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
 import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleAds.WrapperFramework;
-import com.vungle.ads.VungleError;
 import com.vungle.ads.VunglePrivacySettings;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class VungleInitializer implements InitializationListener {
+public class VungleInitializer {
 
   private static final VungleInitializer instance = new VungleInitializer();
-  private final AtomicBoolean isInitializing = new AtomicBoolean(false);
-  private final ArrayList<VungleInitializationListener> initListeners;
 
   @NonNull
   public static VungleInitializer getInstance() {
@@ -39,7 +34,6 @@ public class VungleInitializer implements InitializationListener {
   }
 
   private VungleInitializer() {
-    initListeners = new ArrayList<>();
     VungleAds.setIntegrationName(
         WrapperFramework.admob,
         com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
@@ -48,41 +42,16 @@ public class VungleInitializer implements InitializationListener {
   public void initialize(
       final @NonNull String appId,
       final @NonNull Context context,
-      @NonNull VungleInitializationListener listener) {
+      @NonNull InitializationListener listener) {
 
     if (VungleSdkWrapper.delegate.isInitialized()) {
-      listener.onInitializeSuccess();
-      return;
-    }
-
-    if (isInitializing.getAndSet(true)) {
-      initListeners.add(listener);
+      listener.onSuccess();
       return;
     }
 
     updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
 
-    VungleSdkWrapper.delegate.init(context, appId, VungleInitializer.this);
-    initListeners.add(listener);
-  }
-
-  @Override
-  public void onSuccess() {
-    for (VungleInitializationListener listener : initListeners) {
-      listener.onInitializeSuccess();
-    }
-    initListeners.clear();
-    isInitializing.set(false);
-  }
-
-  @Override
-  public void onError(@NonNull final VungleError vungleError) {
-    final AdError error = VungleMediationAdapter.getAdError(vungleError);
-    for (VungleInitializationListener listener : initListeners) {
-      listener.onInitializeError(error);
-    }
-    initListeners.clear();
-    isInitializing.set(false);
+    VungleSdkWrapper.delegate.init(context, appId, listener);
   }
 
   public void updateCoppaStatus(int configuration) {

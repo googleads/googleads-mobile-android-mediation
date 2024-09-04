@@ -21,6 +21,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.VungleError
 import org.junit.Before
@@ -75,7 +76,7 @@ class VungleRtbInterstitialAdTest {
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializer.VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())

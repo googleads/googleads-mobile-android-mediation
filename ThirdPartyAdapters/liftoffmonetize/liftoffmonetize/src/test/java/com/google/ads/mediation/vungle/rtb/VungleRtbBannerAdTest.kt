@@ -25,6 +25,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.BaseAd
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
 import com.vungle.ads.VungleError.Companion.AD_FAILED_TO_DOWNLOAD
@@ -81,7 +82,7 @@ class VungleRtbBannerAdTest {
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializer.VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())

@@ -17,6 +17,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.RewardedAd
 import com.vungle.ads.VungleError
 import org.junit.Before
@@ -69,7 +70,7 @@ class VungleRewardedAdTest {
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializer.VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(vungleInitializer)
       .initialize(any(), any(), any())

@@ -26,7 +26,6 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener;
 import com.google.ads.mediation.vungle.rtb.VungleRtbAppOpenAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
@@ -59,6 +58,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
+import com.vungle.ads.InitializationListener;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
 import com.vungle.ads.VungleError;
@@ -250,14 +250,15 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
       Log.w(TAG, logMessage);
     }
 
-    VungleInitializer.getInstance().initialize(appID, context, new VungleInitializationListener() {
+    VungleInitializer.getInstance().initialize(appID, context, new InitializationListener() {
       @Override
-      public void onInitializeSuccess() {
+      public void onSuccess() {
         initializationCompleteCallback.onInitializationSucceeded();
       }
 
       @Override
-      public void onInitializeError(AdError error) {
+      public void onError(@NonNull VungleError vungleError) {
+        AdError error = getAdError(vungleError);
         Log.w(TAG, error.toString());
         initializationCompleteCallback.onInitializationFailed(error.toString());
       }
@@ -314,9 +315,9 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
         .initialize(
             appID,
             context,
-            new VungleInitializationListener() {
+            new InitializationListener() {
               @Override
-              public void onInitializeSuccess() {
+              public void onSuccess() {
                 rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleMediationAdapter.this);
                 if (!TextUtils.isEmpty(userId)) {
@@ -327,7 +328,8 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
               }
 
               @Override
-              public void onInitializeError(AdError error) {
+              public void onError(@NonNull VungleError vungleError) {
+                AdError error = getAdError(vungleError);
                 Log.w(TAG, error.toString());
                 VungleMediationAdapter.this.mediationAdLoadCallback.onFailure(error);
               }
