@@ -24,6 +24,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.common.truth.Truth.assertThat
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.NativeAd
 import com.vungle.ads.VungleError
 import org.junit.Before
@@ -37,7 +38,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -87,7 +87,7 @@ class VungleRtbNativeAdTest {
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializer.VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(vungleInitializer)
       .initialize(any(), any(), any())

@@ -23,6 +23,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.VungleError
 import org.junit.Before
@@ -77,7 +78,7 @@ class VungleWaterfallAppOpenAdTest {
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializer.VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(vungleInitializer)
       .initialize(any(), any(), any())

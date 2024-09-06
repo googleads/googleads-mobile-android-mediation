@@ -39,6 +39,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.vungle.ads.AdConfig;
 import com.vungle.ads.BannerAdListener;
 import com.vungle.ads.BaseAd;
+import com.vungle.ads.InitializationListener;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleAdSize;
@@ -101,16 +102,17 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
     VungleInitializer.getInstance()
         .initialize(
             appID, context,
-            new VungleInitializer.VungleInitializationListener() {
+            new InitializationListener() {
               @Override
-              public void onInitializeSuccess() {
+              public void onSuccess() {
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(new VungleInterstitialListener());
                 interstitialAd.load(null);
               }
 
               @Override
-              public void onInitializeError(AdError error) {
+              public void onError(@NonNull VungleError vungleError) {
+                AdError error = getAdError(vungleError);
                 interstitialListener
                     .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
                 Log.w(TAG, error.toString());
@@ -245,9 +247,9 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
         .initialize(
             appID,
             context,
-            new VungleInitializer.VungleInitializationListener() {
+            new InitializationListener() {
               @Override
-              public void onInitializeSuccess() {
+              public void onSuccess() {
                 bannerLayout = new RelativeLayout(context);
                 int adLayoutHeight = adSize.getHeightInPixels(context);
                 // If the height is 0 (e.g. for inline adaptive banner requests), use the closest
@@ -278,7 +280,8 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
               }
 
               @Override
-              public void onInitializeError(AdError error) {
+              public void onError(@NonNull VungleError vungleError) {
+                AdError error = getAdError(vungleError);
                 Log.w(TAG, error.toString());
                 if (mediationBannerListener != null) {
                   mediationBannerListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);

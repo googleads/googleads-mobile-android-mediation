@@ -6,7 +6,6 @@ import android.util.Log
 import com.google.ads.mediation.vungle.VungleConstants
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
-import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener
 import com.google.ads.mediation.vungle.VungleMediationAdapter
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
@@ -19,6 +18,7 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
 import com.vungle.ads.AdConfig
 import com.vungle.ads.BaseAd
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.InterstitialAdListener
 import com.vungle.ads.VungleError
@@ -79,10 +79,10 @@ abstract class VungleAppOpenAd(
       .initialize(
         // Safe to access appId here since we do a null-check for appId earlier in the function and
         // return if it's null.
-        appId!!,
+        appId,
         context,
-        object : VungleInitializationListener {
-          override fun onInitializeSuccess() {
+        object : InitializationListener {
+          override fun onSuccess() {
             val adConfig = vungleFactory.createAdConfig()
             if (mediationExtras.containsKey(VungleConstants.KEY_ORIENTATION)) {
               adConfig.adOrientation =
@@ -96,7 +96,8 @@ abstract class VungleAppOpenAd(
             appOpenAd.load(getAdMarkup(mediationAppOpenAdConfiguration))
           }
 
-          override fun onInitializeError(error: AdError) {
+          override fun onError(vungleError: VungleError) {
+            val error = VungleMediationAdapter.getAdError(vungleError)
             Log.w(TAG, error.toString())
             mediationAdLoadCallback.onFailure(error)
           }

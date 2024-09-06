@@ -22,12 +22,11 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
-import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INITIALIZATION_FAILURE
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+import com.google.ads.mediation.vungle.VungleMediationAdapter.getAdError
 import com.google.ads.mediation.vungle.VungleMediationAdapter.getAdapterVersion
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd
 import com.google.android.gms.ads.AdError
@@ -55,6 +54,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_RIGHT
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.InitializationListener
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.NativeAd
 import com.vungle.ads.NativeAd.Companion.BOTTOM_LEFT
@@ -62,18 +62,19 @@ import com.vungle.ads.NativeAd.Companion.BOTTOM_RIGHT
 import com.vungle.ads.NativeAd.Companion.TOP_LEFT
 import com.vungle.ads.NativeAd.Companion.TOP_RIGHT
 import com.vungle.ads.RewardedAd
+import com.vungle.ads.SdkNotInitialized
 import com.vungle.ads.VungleAdSize
 import com.vungle.ads.VungleBannerView
-import com.vungle.ads.VungleError
+import com.vungle.ads.InternalError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -185,7 +186,7 @@ class VungleMediationAdapterTest {
   fun initialize_oneMediationConfiguration_callsOnSuccess() {
     val serverParameters = bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_1)
     val configs = listOf(createMediationConfiguration(serverParameters = serverParameters))
-    val listener = argumentCaptor<VungleInitializer.VungleInitializationListener>()
+    val listener = argumentCaptor<InitializationListener>()
 
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
@@ -193,7 +194,7 @@ class VungleMediationAdapterTest {
       adapter.initialize(context, mockInitializationCompleteCallback, configs)
 
       verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), any(), listener.capture())
-      listener.firstValue.onInitializeSuccess()
+      listener.firstValue.onSuccess()
       verify(mockInitializationCompleteCallback).onInitializationSucceeded()
     }
   }
@@ -206,32 +207,33 @@ class VungleMediationAdapterTest {
         createMediationConfiguration(serverParameters = serverParameters),
         createMediationConfiguration(serverParameters = serverParameters),
       )
-    val listener = argumentCaptor<VungleInitializer.VungleInitializationListener>()
+    val listener = argumentCaptor<InitializationListener>()
 
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
       adapter.initialize(context, mockInitializationCompleteCallback, configs)
 
       verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), any(), listener.capture())
-      listener.firstValue.onInitializeSuccess()
+      listener.firstValue.onSuccess()
       verify(mockInitializationCompleteCallback).onInitializationSucceeded()
     }
   }
 
   @Test
   fun initialize_vungleSdkInitFails_callsOnFailure() {
-    val error = AdError(ERROR_INITIALIZATION_FAILURE, "Oops.", ERROR_DOMAIN)
+    val error = SdkNotInitialized()
     val serverParameters = bundleOf(VungleConstants.KEY_APP_ID to TEST_APP_ID_1)
     val configs = listOf(createMediationConfiguration(serverParameters = serverParameters))
-    val listener = argumentCaptor<VungleInitializer.VungleInitializationListener>()
+    val listener = argumentCaptor<InitializationListener>()
 
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
       adapter.initialize(context, mockInitializationCompleteCallback, configs)
 
       verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), any(), listener.capture())
-      listener.firstValue.onInitializeError(error)
-      verify(mockInitializationCompleteCallback).onInitializationFailed(error.toString())
+      listener.firstValue.onError(error)
+      val adError = getAdError(error)
+      verify(mockInitializationCompleteCallback).onInitializationFailed(adError.toString())
     }
   }
 
@@ -353,19 +355,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRewardedAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val rewardedAdLoadCallback =
       mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    whenever(rewardedAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -380,7 +387,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(rewardedAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -524,19 +531,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadNativeAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val nativeAdLoadCallback =
       mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>>()
+    whenever(nativeAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -550,7 +562,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(nativeAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(nativeAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -651,19 +663,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRewardedInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val rewardedAdLoadCallback =
       mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    whenever(rewardedAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -678,7 +695,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(rewardedAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -769,19 +786,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val appOpenAdLoadCallback =
       mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    whenever(appOpenAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -796,7 +818,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(appOpenAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(appOpenAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -897,19 +919,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbRewardedAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val rewardedAdLoadCallback =
       mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    whenever(rewardedAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -926,7 +953,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(rewardedAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1026,19 +1053,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbBannerAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val bannerAdLoadCallback =
       mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    whenever(bannerAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1054,7 +1086,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(bannerAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(bannerAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1157,19 +1189,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val interstitialAdLoadCallback =
       mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    whenever(interstitialAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1186,7 +1223,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(interstitialAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(interstitialAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1337,19 +1374,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbNativeAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val nativeAdLoadCallback =
       mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>>()
+    whenever(nativeAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+        val error = it.arguments[0] as AdError
+        assertThat(error.code).isEqualTo(1)
+        assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+        assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1365,7 +1407,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(nativeAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(nativeAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1469,19 +1511,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbRewardedInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val rewardedAdLoadCallback =
       mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    whenever(rewardedAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1498,7 +1545,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(rewardedAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(rewardedAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1596,19 +1643,24 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
-      AdError(
-        VungleError.UNKNOWN_ERROR,
-        "Liftoff Monetize SDK initialization failed.",
-        VUNGLE_SDK_ERROR_DOMAIN,
+      InternalError(
+        1,
+        "Liftoff Monetize SDK initialization failed"
       )
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+        (args[2] as InitializationListener).onError(liftoffSdkInitError)
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())
     val appOpenAdLoadCallback =
       mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    whenever(appOpenAdLoadCallback.onFailure(any<AdError>())) doAnswer {
+      val error = it.arguments[0] as AdError
+      assertThat(error.code).isEqualTo(1)
+      assertThat(error.message).isEqualTo("Liftoff Monetize SDK initialization failed")
+      assertThat(error.domain).isEqualTo(VUNGLE_SDK_ERROR_DOMAIN)
+    }
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1625,7 +1677,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(appOpenAdLoadCallback).onFailure(liftoffSdkInitError)
+    verify(appOpenAdLoadCallback).onFailure(any<AdError>())
   }
 
   @Test
@@ -1656,7 +1708,7 @@ class VungleMediationAdapterTest {
   private fun stubVungleInitializerToSucceed() {
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
-        (args[2] as VungleInitializationListener).onInitializeSuccess()
+        (args[2] as InitializationListener).onSuccess()
       }
       .whenever(mockVungleInitializer)
       .initialize(any(), any(), any())

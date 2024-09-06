@@ -43,6 +43,7 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.vungle.ads.BaseAd;
+import com.vungle.ads.InitializationListener;
 import com.vungle.ads.NativeAd;
 import com.vungle.ads.NativeAdListener;
 import com.vungle.ads.VungleError;
@@ -125,9 +126,9 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
         .initialize(
             appID,
             context,
-            new VungleInitializer.VungleInitializationListener() {
+            new InitializationListener() {
               @Override
-              public void onInitializeSuccess() {
+              public void onSuccess() {
                 nativeAd = vungleFactory.createNativeAd(context, placementId);
                 nativeAd.setAdOptionsPosition(adOptionsPosition);
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
@@ -139,7 +140,8 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
               }
 
               @Override
-              public void onInitializeError(AdError error) {
+              public void onError(@NonNull VungleError vungleError) {
+                AdError error = VungleMediationAdapter.getAdError(vungleError);
                 Log.d(TAG, error.toString());
                 adLoadCallback.onFailure(error);
               }
