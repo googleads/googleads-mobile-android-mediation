@@ -56,7 +56,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatcher
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
@@ -86,9 +85,6 @@ class IronSourceMediationAdapterTest {
         mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
     private val rewardedAdLoadCallback =
         mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
-
-    @Mock
-    private lateinit var initializationCompleteCallback: InitializationCompleteCallback
 
     @Before
     fun setUp() {

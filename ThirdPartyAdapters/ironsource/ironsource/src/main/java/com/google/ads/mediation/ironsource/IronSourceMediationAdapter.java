@@ -18,19 +18,15 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.ADAPTER_VE
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.MEDIATION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -53,7 +49,6 @@ import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.unity3d.ironsourceads.InitListener;
 import com.unity3d.ironsourceads.InitRequest;
 import com.unity3d.ironsourceads.IronSourceAds;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -256,7 +251,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       AdError adError =
           new AdError(
               ERROR_SDK_NOT_INITIALIZED,
-              "Failed to load IronSource rewarded ad since IronSource SDK is not " + "initialized.",
+              "Failed to load IronSource rewarded ad since IronSource SDK is not initialized.",
               ERROR_DOMAIN);
 
       Log.w(TAG, adError.getMessage());
@@ -363,7 +358,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       AdError loadError =
           new AdError(
               ERROR_SDK_NOT_INITIALIZED,
-              "Failed to load IronSource banner ad since IronSource SDK is not " + "initialized.",
+              "Failed to load IronSource banner ad since IronSource SDK is not initialized.",
               IRONSOURCE_SDK_ERROR_DOMAIN);
       Log.w(TAG, loadError.getMessage());
       mediationAdLoadCallback.onFailure(loadError);

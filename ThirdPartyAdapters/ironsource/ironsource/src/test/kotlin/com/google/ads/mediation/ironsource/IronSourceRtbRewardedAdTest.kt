@@ -1,6 +1,8 @@
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceRewardItem
 import com.google.ads.mediation.ironsource.IronSourceRtbRewardedAd
 import com.google.android.gms.ads.AdError
@@ -30,27 +32,22 @@ import org.robolectric.annotation.Config
 @Config(sdk = [28])
 class IronSourceRtbRewardedAdTest {
 
-    @Mock
     private lateinit var context: Context
-
-    @Mock
     private lateinit var rewardedAdConfig: MediationRewardedAdConfiguration
-
-    @Mock
     private lateinit var mediationAdLoadCallback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-
-    @Mock
     private lateinit var mediationRewardedAdCallback: MediationRewardedAdCallback
-
-    @Mock
     private lateinit var rewardedAd: com.unity3d.ironsourceads.rewarded.RewardedAd
-
     private lateinit var ironSourceRtbRewardedAd: IronSourceRtbRewardedAd
     private lateinit var mockedRewardedAdLoader: MockedStatic<RewardedAdLoader>
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        context = mock(Context::class.java)
+        rewardedAdConfig = mock()
+        mediationAdLoadCallback = mock()
+        mediationRewardedAdCallback = mock()
+        rewardedAd = mock()
 
         val bundleMock = mock(Bundle::class.java)
         whenever(bundleMock.getString("instanceId", "")).thenReturn("mockInstanceId")
@@ -115,12 +112,10 @@ class IronSourceRtbRewardedAdTest {
         ironSourceRtbRewardedAd.onRewardedAdLoadFailed(ironSourceError)
 
         // Then
-        val captor = argumentCaptor<AdError>()
-        verify(mediationAdLoadCallback).onFailure(captor.capture())
-        val capturedError = captor.firstValue
-        assertEquals(errorCode, capturedError.code)
-        assertEquals(errorRes, capturedError.message)
-        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+        val expectedAdError =
+            AdError(errorCode, errorRes, "com.ironsource.mediationsdk")
+        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+
     }
 
     @Test
@@ -145,17 +140,14 @@ class IronSourceRtbRewardedAdTest {
         val errorCode = 123
         ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
         val ironSourceError = IronSourceError(errorCode, errorRes)
-        val captor = argumentCaptor<AdError>()
 
         // When
         ironSourceRtbRewardedAd.onRewardedAdFailedToShow(rewardedAd, ironSourceError)
 
         // Then
-        verify(mediationRewardedAdCallback).onAdFailedToShow(captor.capture())
-        val capturedError = captor.firstValue
-        assertEquals(errorCode, capturedError.code)
-        assertEquals(errorRes, capturedError.message)
-        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+        val expectedAdError =
+            AdError(errorCode, errorRes, IRONSOURCE_SDK_ERROR_DOMAIN)
+        verify(mediationRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
     }
 
     @Test

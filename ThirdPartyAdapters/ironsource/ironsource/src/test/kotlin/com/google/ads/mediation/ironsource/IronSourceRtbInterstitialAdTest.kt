@@ -1,6 +1,7 @@
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.ironsource.IronSourceRtbInterstitialAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -27,6 +28,7 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
@@ -37,30 +39,24 @@ import org.robolectric.annotation.Config
 @Config(sdk = [28])
 class IronSourceRtbInterstitialAdTest {
 
-    @Mock
     private lateinit var context: Context
-
-    @Mock
     private lateinit var interstitialAdConfig: MediationInterstitialAdConfiguration
-
-    @Mock
     private lateinit var mediationAdLoadCallback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-
-    @Mock
     private lateinit var mediationInterstitialAdCallback: MediationInterstitialAdCallback
-
-    @Mock
     private lateinit var interstitialAd: InterstitialAd
-
     private lateinit var ironSourceRtbInterstitialAd: IronSourceRtbInterstitialAd
     private lateinit var mockedInterstitialAdLoader: MockedStatic<InterstitialAdLoader>
-
     private lateinit var mediationConfigurations: List<MediationConfiguration>
     private lateinit var initializationCompleteCallback: InitializationCompleteCallback
 
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        context = mock(Context::class.java)
+        interstitialAdConfig = mock()
+        mediationAdLoadCallback = mock()
+        mediationInterstitialAdCallback = mock()
+        interstitialAd = mock()
         val mockMediationConfiguration = mock(MediationConfiguration::class.java)
         mediationConfigurations = listOf(mockMediationConfiguration)
         initializationCompleteCallback = mock(InitializationCompleteCallback::class.java)
@@ -139,12 +135,9 @@ class IronSourceRtbInterstitialAdTest {
         ironSourceRtbInterstitialAd.onInterstitialAdLoadFailed(ironSourceError)
 
         // then
-        val captor = argumentCaptor<AdError>()
-        verify(mediationAdLoadCallback).onFailure(captor.capture())
-        val capturedError = captor.firstValue
-        assertEquals(123, capturedError.code)
-        assertEquals("An error occurred", capturedError.message)
-        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+        val expectedAdError =
+            AdError(123, "An error occurred", "com.ironsource.mediationsdk")
+        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
 
 
@@ -192,12 +185,9 @@ class IronSourceRtbInterstitialAdTest {
         ironSourceRtbInterstitialAd.onInterstitialAdFailedToShow(interstitialAd, ironSourceError)
 
         // then
-        val captor = argumentCaptor<AdError>()
-        verify(mediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
-        val capturedError = captor.firstValue
-        assertEquals(123, capturedError.code)
-        assertEquals("An error occurred", capturedError.message)
-        assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+        val expectedAdError =
+            AdError(123, "An error occurred", "com.ironsource.mediationsdk")
+        verify(mediationInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
     }
 
     @Test

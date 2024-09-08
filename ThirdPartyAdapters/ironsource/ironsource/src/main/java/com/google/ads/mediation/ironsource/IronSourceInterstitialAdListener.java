@@ -16,11 +16,8 @@ package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
-
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyInterstitialListener;
