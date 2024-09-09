@@ -19,7 +19,7 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTAN
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -165,7 +165,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
               new AdError(
                       ERROR_AD_ALREADY_LOADED,
                       "An IronSource banner is already loaded for instance ID: " + instanceID,
-                      ERROR_DOMAIN);
+                      ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(adError);
       return false;
     }
@@ -176,7 +176,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
               new AdError(
                       ERROR_BANNER_SIZE_MISMATCH,
                       "There is no matching IronSource banner ad size for Google ad size: " + adSize,
-                      ERROR_DOMAIN);
+                      ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(sizeError);
       return false;
     }

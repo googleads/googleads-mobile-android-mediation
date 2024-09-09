@@ -14,7 +14,7 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
@@ -65,7 +65,7 @@ public class IronSourceAdapterUtils {
   }
 
   public static AdError buildAdErrorAdapterDomain(int code, @NonNull String message) {
-    return new AdError(code, message, ERROR_DOMAIN);
+    return new AdError(code, message, ADAPTER_ERROR_DOMAIN);
   }
 
   public static AdError buildAdErrorIronSourceDomain(int code, @NonNull String message) {
@@ -80,7 +80,7 @@ public class IronSourceAdapterUtils {
           new AdError(
               ERROR_REQUIRES_ACTIVITY_CONTEXT,
               "IronSource requires an Activity context to load ads.",
-              ERROR_DOMAIN);
+                  ADAPTER_ERROR_DOMAIN);
       return contextError;
     }
 
@@ -88,7 +88,7 @@ public class IronSourceAdapterUtils {
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
           new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ERROR_DOMAIN);
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", ADAPTER_ERROR_DOMAIN);
       return loadError;
     }
 

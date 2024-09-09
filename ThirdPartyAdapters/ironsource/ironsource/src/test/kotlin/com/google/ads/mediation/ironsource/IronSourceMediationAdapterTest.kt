@@ -24,7 +24,7 @@ import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVers
 import com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_SDK_NOT_INITIALIZED
@@ -291,7 +291,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadBannerAdWithFailure(
             mediationAdConfiguration,
             bannerAdLoadCallback,
-            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -307,7 +307,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadBannerAdWithFailure(
             mediationAdConfiguration,
             bannerAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -323,7 +323,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_BANNER_SIZE_MISMATCH,
                 "There is no matching IronSource banner ad size for Google ad size: ${AdSize.SEARCH}",
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -354,7 +354,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_AD_ALREADY_LOADED,
                 "An IronSource banner is already loaded for instance ID: 0",
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -400,7 +400,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadInterstitialAdWithFailure(
             mediationAdConfiguration,
             interstitialAdLoadCallback,
-            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -416,7 +416,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadInterstitialAdWithFailure(
             mediationAdConfiguration,
             interstitialAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -459,7 +459,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRtbInterstitialAdWithFailure(
             mediationAdConfiguration,
             interstitialAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -475,7 +475,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_AD_ALREADY_LOADED,
                 "An IronSource interstitial ad is already loading for instance ID: 0",
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -506,7 +506,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_SDK_NOT_INITIALIZED,
                 getUninitializedErrorMessage(adFormat = "rewarded"),
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -519,7 +519,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRewardedAdWithFailure(
             mediationAdConfiguration,
             rewardedAdLoadCallback,
-            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -535,7 +535,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRewardedAdWithFailure(
             mediationAdConfiguration,
             rewardedAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -561,7 +561,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_SDK_NOT_INITIALIZED,
                 getUninitializedErrorMessage(adFormat = "RTB rewarded"),
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -578,7 +578,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRtbRewardedAdWithFailure(
             mediationAdConfiguration,
             rewardedAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -594,7 +594,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_AD_ALREADY_LOADED,
                 "An IronSource Rewarded ad is already loading for instance ID: 0",
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -625,7 +625,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_SDK_NOT_INITIALIZED,
                 getUninitializedErrorMessage(adFormat = "rewarded"),
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }
@@ -638,7 +638,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRewardedInterstitialAdWithFailure(
             mediationAdConfiguration,
             rewardedAdLoadCallback,
-            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -654,7 +654,7 @@ class IronSourceMediationAdapterTest {
         adapter.loadRewardedInterstitialAdWithFailure(
             mediationAdConfiguration,
             rewardedAdLoadCallback,
-            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+            AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
         )
     }
 
@@ -682,7 +682,7 @@ class IronSourceMediationAdapterTest {
             AdError(
                 ERROR_AD_ALREADY_LOADED,
                 "An IronSource Rewarded ad is already loading for instance ID: 0",
-                ERROR_DOMAIN,
+                ADAPTER_ERROR_DOMAIN,
             ),
         )
     }

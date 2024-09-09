@@ -18,7 +18,7 @@ import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_NO
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -135,7 +135,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
       String errorMessage =
               String.format(
                       "An IronSource interstitial ad is already loading for instance ID: %s", instanceID);
-      AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
+      AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(concurrentError);
       return false;
     }
