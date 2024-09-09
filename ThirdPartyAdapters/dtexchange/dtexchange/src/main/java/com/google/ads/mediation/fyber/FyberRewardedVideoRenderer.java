@@ -28,13 +28,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
-import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
+import com.fyber.inneractive.sdk.external.InneractiveAdSpot.RequestListener;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveFullScreenAdRewardedListener;
-import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
+import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
-import com.fyber.inneractive.sdk.external.InneractiveMediationName;
+import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -45,7 +45,8 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 /**
  * Class for rendering a DT Exchange rewarded video.
  */
-public class FyberRewardedVideoRenderer implements MediationRewardedAd {
+public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestListener,
+    InneractiveFullscreenAdEventsListener, InneractiveFullScreenAdRewardedListener {
 
   /**
    * AdMob's Rewarded ad configuration object.
@@ -64,7 +65,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
   private MediationRewardedAdCallback rewardedAdCallback;
 
   /**
-   * The Spot object for the banner.
+   * The Spot object for the rewarded ad.
    */
   private InneractiveAdSpot rewardedSpot;
   private InneractiveFullscreenUnitController unitController;
@@ -93,85 +94,30 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
       return;
     }
 
-    rewardedSpot = InneractiveAdSpotManager.get().createSpot();
+    rewardedSpot = FyberFactory.createRewardedAdSpot();
 
-    unitController = new InneractiveFullscreenUnitController();
+    unitController = FyberFactory.createInneractiveFullscreenUnitController();
     rewardedSpot.addUnitController(unitController);
 
-    InneractiveAdSpot.RequestListener requestListener = createRequestListener();
-    rewardedSpot.setRequestListener(requestListener);
+    rewardedSpot.setRequestListener(FyberRewardedVideoRenderer.this);
 
     FyberAdapterUtils.updateFyberExtraParams(adConfiguration.getMediationExtras());
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     rewardedSpot.requestAd(request);
   }
 
-  private InneractiveAdSpot.RequestListener createRequestListener() {
-    return new InneractiveAdSpot.RequestListener() {
-      @Override
-      public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-        // Report load success to AdMob, and cache the returned callback for a later use
-        rewardedAdCallback = adLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
-        registerFyberAdListener(unitController);
-      }
-
-      @Override
-      public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
-          InneractiveErrorCode errorCode) {
-        AdError error = getAdError(errorCode);
-        Log.w(TAG, error.getMessage());
-        adLoadCallback.onFailure(error);
-      }
-    };
-  }
-
   /**
    * Creates a listener for DT Exchange's fullscreen placement events.
-   *
-   * @param controller the full screen controller.
    */
-  private void registerFyberAdListener(
-      final @NonNull InneractiveFullscreenUnitController controller) {
-
-    InneractiveFullscreenAdEventsListenerAdapter adListener =
-        new InneractiveFullscreenAdEventsListenerAdapter() {
-          @Override
-          public void onAdImpression(InneractiveAdSpot inneractiveAdSpot) {
-            rewardedAdCallback.onAdOpened();
-
-            // Code review note: Report video start should be called before reporting ad impression
-            if (isVideoAdAvailable(controller)) {
-              rewardedAdCallback.onVideoStart();
-            }
-
-            rewardedAdCallback.reportAdImpression();
-          }
-
-          @Override
-          public void onAdClicked(InneractiveAdSpot inneractiveAdSpot) {
-            rewardedAdCallback.reportAdClicked();
-          }
-
-          @Override
-          public void onAdDismissed(InneractiveAdSpot inneractiveAdSpot) {
-            rewardedAdCallback.onAdClosed();
-          }
-        };
+  private void registerFyberAdListeners() {
+    unitController.setEventsListener(FyberRewardedVideoRenderer.this);
+    // Official rewarded interface for both Video and display ads (Since Marketplace 7.6.0)
+    unitController.setRewardedListener(FyberRewardedVideoRenderer.this);
 
     // If the ad is a video ad, wait for the video completion event.
     final InneractiveFullscreenVideoContentController videoContentController =
         new InneractiveFullscreenVideoContentController();
-    controller.setEventsListener(adListener);
-    // Official rewarded interface for both Video and display ads (Since Marketplace 7.6.0)
-    controller.setRewardedListener(new InneractiveFullScreenAdRewardedListener() {
-      @Override
-      public void onAdRewarded(InneractiveAdSpot inneractiveAdSpot) {
-        rewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
-        rewardedAdCallback.onVideoComplete();
-      }
-    });
-
-    controller.addContentController(videoContentController);
+    unitController.addContentController(videoContentController);
   }
 
   @Override
@@ -210,4 +156,69 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd {
         && controller.getSelectedContentController() instanceof
         InneractiveFullscreenVideoContentController;
   }
+
+  // region Fyber's RequestListener implementation
+  @Override
+  public void onInneractiveSuccessfulAdRequest(@NonNull InneractiveAdSpot adSpot) {
+    // Report load success to AdMob, and cache the returned callback for a later use
+    rewardedAdCallback = adLoadCallback.onSuccess(FyberRewardedVideoRenderer.this);
+    registerFyberAdListeners();
+  }
+
+  @Override
+  public void onInneractiveFailedAdRequest(@NonNull InneractiveAdSpot adSpot,
+      @NonNull InneractiveErrorCode errorCode) {
+    AdError error = getAdError(errorCode);
+    Log.w(TAG, error.getMessage());
+    adLoadCallback.onFailure(error);
+  }
+  // endregion
+
+  // region Fyber's InneractiveFullscreenAdEventsListener implementation
+  @Override
+  public void onAdImpression(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    rewardedAdCallback.onAdOpened();
+
+    // Code review note: Report video start should be called before reporting ad impression
+    if (isVideoAdAvailable(unitController)) {
+      rewardedAdCallback.onVideoStart();
+    }
+
+    rewardedAdCallback.reportAdImpression();
+  }
+
+  @Override
+  public void onAdClicked(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    rewardedAdCallback.reportAdClicked();
+  }
+
+  @Override
+  public void onAdDismissed(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    rewardedAdCallback.onAdClosed();
+  }
+
+  @Override
+  public void onAdWillOpenExternalApp(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    // No relevant events to be forwarded to the GMA SDK.
+  }
+
+  @Override
+  public void onAdEnteredErrorState(@NonNull InneractiveAdSpot inneractiveAdSpot,
+      @NonNull AdDisplayError adDisplayError) {
+    // No relevant events to be forwarded to the GMA SDK.
+  }
+
+  @Override
+  public void onAdWillCloseInternalBrowser(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    // No relevant events to be forwarded to the GMA SDK.
+  }
+  // endregion
+
+  // region Fyber's InneractiveFullScreenAdRewardedListener implementation
+  @Override
+  public void onAdRewarded(@NonNull InneractiveAdSpot inneractiveAdSpot) {
+    rewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+    rewardedAdCallback.onVideoComplete();
+  }
+  // endregion
 }

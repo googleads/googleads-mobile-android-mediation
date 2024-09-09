@@ -18,16 +18,14 @@ import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfigurat
 import com.google.ads.mediation.vungle.VungleConstants
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
-import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_VUNGLE_BANNER_NULL
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
-import com.vungle.ads.BannerAd
-import com.vungle.ads.BannerView
+import com.vungle.ads.BaseAd
+import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
 import com.vungle.ads.VungleError.Companion.AD_FAILED_TO_DOWNLOAD
 import com.vungle.ads.VungleError.Companion.AD_UNABLE_TO_PLAY
@@ -59,9 +57,10 @@ class VungleRtbBannerAdTest {
       on { onSuccess(any()) } doReturn bannerAdCallback
     }
   private val mockVungleInitializer = mock<VungleInitializer>()
-  private val vungleBannerAd = mock<BannerAd>()
+  private val vungleBannerView = mock<VungleBannerView>()
+  private val baseAd = mock<BaseAd>()
   private val vungleFactory =
-    mock<VungleFactory> { on { createBannerAd(any(), any(), any()) } doReturn vungleBannerAd }
+    mock<VungleFactory> { on { createBannerAd(any(), any(), any()) } doReturn vungleBannerView }
 
   @Before
   fun setUp() {
@@ -72,12 +71,12 @@ class VungleRtbBannerAdTest {
           serverParameters =
             bundleOf(
               VungleConstants.KEY_APP_ID to TEST_APP_ID,
-              VungleConstants.KEY_PLACEMENT_ID to TEST_PLACEMENT_ID
+              VungleConstants.KEY_PLACEMENT_ID to TEST_PLACEMENT_ID,
             ),
-          bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+          bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
         ),
         bannerAdLoadCallback,
-        vungleFactory
+        vungleFactory,
       )
 
     doAnswer { invocation ->
@@ -90,17 +89,15 @@ class VungleRtbBannerAdTest {
 
   @Test
   fun onAdLoaded_addsLiftoffBannerViewToBannerLayoutAndCallsLoadSuccess() {
-    val bannerView = mock<BannerView>()
-    whenever(vungleBannerAd.getBannerView()) doReturn bannerView
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
       adapterRtbBannerAd.render()
     }
 
-    adapterRtbBannerAd.onAdLoaded(vungleBannerAd)
+    adapterRtbBannerAd.onAdLoaded(baseAd)
 
     val layoutParamsCaptor = argumentCaptor<RelativeLayout.LayoutParams>()
-    verify(bannerView, atLeastOnce()).layoutParams = layoutParamsCaptor.capture()
+    verify(vungleBannerView, atLeastOnce()).layoutParams = layoutParamsCaptor.capture()
     val layoutParams = layoutParamsCaptor.firstValue
     assertThat(layoutParams.width).isEqualTo(WRAP_CONTENT)
     assertThat(layoutParams.height).isEqualTo(WRAP_CONTENT)
@@ -108,27 +105,8 @@ class VungleRtbBannerAdTest {
     assertThat(layoutParams.getRule(CENTER_VERTICAL)).isEqualTo(TRUE)
     val bannerLayout = adapterRtbBannerAd.view as ViewGroup
     assertThat(bannerLayout.childCount).isEqualTo(1)
-    assertThat(bannerLayout.getChildAt(0)).isEqualTo(bannerView)
+    assertThat(bannerLayout.getChildAt(0)).isEqualTo(vungleBannerView)
     verify(bannerAdLoadCallback).onSuccess(adapterRtbBannerAd)
-  }
-
-  @Test
-  fun onAdLoaded_ifLiftoffBannerViewIsUnavailable_callsLoadFailure() {
-    whenever(vungleBannerAd.getBannerView()) doReturn null
-    mockStatic(VungleInitializer::class.java).use {
-      whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbBannerAd.render()
-    }
-
-    adapterRtbBannerAd.onAdLoaded(vungleBannerAd)
-
-    val expectedError =
-      AdError(
-        ERROR_VUNGLE_BANNER_NULL,
-        "Vungle SDK returned a successful load callback, but getBannerView() returned null.",
-        ERROR_DOMAIN
-      )
-    verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -139,7 +117,7 @@ class VungleRtbBannerAdTest {
         on { errorMessage } doReturn "Liftoff Monetize SDK banner ad load failed."
       }
 
-    adapterRtbBannerAd.onAdFailedToLoad(vungleBannerAd, liftoffError)
+    adapterRtbBannerAd.onAdFailedToLoad(baseAd, liftoffError)
 
     val expectedError =
       AdError(liftoffError.code, liftoffError.errorMessage, VUNGLE_SDK_ERROR_DOMAIN)
@@ -147,20 +125,18 @@ class VungleRtbBannerAdTest {
   }
 
   private fun renderAdAndMockLoadSuccess() {
-    val bannerView = mock<BannerView>()
-    whenever(vungleBannerAd.getBannerView()) doReturn bannerView
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
       adapterRtbBannerAd.render()
     }
-    adapterRtbBannerAd.onAdLoaded(vungleBannerAd)
+    adapterRtbBannerAd.onAdLoaded(baseAd)
   }
 
   @Test
   fun onAdClicked_reportsAdClickedAndAdOpened() {
     renderAdAndMockLoadSuccess()
 
-    adapterRtbBannerAd.onAdClicked(vungleBannerAd)
+    adapterRtbBannerAd.onAdClicked(baseAd)
 
     verify(bannerAdCallback).reportAdClicked()
     verify(bannerAdCallback).onAdOpened()
@@ -170,7 +146,7 @@ class VungleRtbBannerAdTest {
   fun onAdImpression_reportsAdImpression() {
     renderAdAndMockLoadSuccess()
 
-    adapterRtbBannerAd.onAdImpression(vungleBannerAd)
+    adapterRtbBannerAd.onAdImpression(baseAd)
 
     verify(bannerAdCallback).reportAdImpression()
   }
@@ -179,21 +155,21 @@ class VungleRtbBannerAdTest {
   fun onAdLeftApplication_callsOnAdLeftApplication() {
     renderAdAndMockLoadSuccess()
 
-    adapterRtbBannerAd.onAdLeftApplication(vungleBannerAd)
+    adapterRtbBannerAd.onAdLeftApplication(baseAd)
 
     verify(bannerAdCallback).onAdLeftApplication()
   }
 
   @Test
   fun onAdEnd_noCrash() {
-    adapterRtbBannerAd.onAdEnd(vungleBannerAd)
+    adapterRtbBannerAd.onAdEnd(baseAd)
 
     // No matching callback exists on the GMA SDK. This test just verifies that there was no crash.
   }
 
   @Test
   fun onAdStart_noCrash() {
-    adapterRtbBannerAd.onAdStart(vungleBannerAd)
+    adapterRtbBannerAd.onAdStart(baseAd)
 
     // No matching callback exists on the GMA SDK. This test just verifies that there was no crash.
   }
@@ -206,7 +182,7 @@ class VungleRtbBannerAdTest {
         on { errorMessage } doReturn "Liftoff Monetize SDK banner ad play failed."
       }
 
-    adapterRtbBannerAd.onAdFailedToPlay(vungleBannerAd, liftoffError)
+    adapterRtbBannerAd.onAdFailedToPlay(baseAd, liftoffError)
 
     // No matching callback exists on the GMA SDK. This test just verifies that there was no crash.
   }

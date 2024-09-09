@@ -1,5 +1,12 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 10.7.5.0
+- Verified compatibility with InMobi Kotlin SDK version 10.7.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.2.0.
+- InMobi Kotlin SDK version 10.7.5.
+
 #### Version 10.7.4.0
 - Verified compatibility with InMobi Kotlin SDK version 10.7.4.
 

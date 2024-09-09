@@ -27,6 +27,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
@@ -83,12 +84,13 @@ public class FyberMediationAdapter extends Adapter
   /**
    * DT Exchange requires to know the host mediation platform.
    */
-  private final static InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
+  @VisibleForTesting
+  static final InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
   /**
    * Key to obtain App id, required for initializing DT Exchange's SDK.
    */
-  private static final String KEY_APP_ID = "applicationId";
+  static final String KEY_APP_ID = "applicationId";
 
   /**
    * Key to obtain a placement name or spot id. Required for creating a DT Exchange ad request.
@@ -228,7 +230,7 @@ public class FyberMediationAdapter extends Adapter
       @NonNull final InitializationCompleteCallback completionCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
     // Initialize only once.
-    if (InneractiveAdManager.wasInitialized()) {
+    if (FyberSdkWrapper.getDelegate().isInitialized()) {
       completionCallback.onInitializationSucceeded();
       return;
     }

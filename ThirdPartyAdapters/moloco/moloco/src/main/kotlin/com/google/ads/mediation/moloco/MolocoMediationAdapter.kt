@@ -172,9 +172,15 @@ class MolocoMediationAdapter : RtbAdapter() {
   companion object {
     private val TAG = MolocoMediationAdapter::class.simpleName
     const val KEY_APP_KEY = "app_key"
+    const val KEY_AD_UNIT_ID = "ad_unit_id"
     const val ERROR_CODE_MISSING_APP_KEY = 101
+    const val ERROR_CODE_MISSING_AD_UNIT = 102
+    const val ERROR_CODE_MISSING_AD_FAILED_TO_CREATE = 103
     const val ERROR_MSG_MISSING_APP_KEY =
       "Missing or invalid App Key configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_MSG_MISSING_AD_UNIT =
+      "Missing or invalid Ad Unit configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_MSG_MISSING_AD_FAILED_TO_CREATE = "Create Ad object returned was null."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.moloco"
     const val SDK_ERROR_DOMAIN = "com.moloco.sdk"
   }

@@ -5,7 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.gms.ads.AdSize
 import com.google.common.truth.Truth.assertThat
-import com.vungle.ads.BannerAdSize
+import com.vungle.ads.VungleAdSize
 import com.vungle.mediation.VungleInterstitialAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,46 +19,55 @@ class VungleBannerSizeAdapterTest {
   @Test
   fun getVungleBannerAdSize_forGoogleSize300By50_returnsLiftoffSizeBannerShort() {
     val liftoffBannerSize =
-      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(context, AdSize(300, 50))
+      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(AdSize(300, 50), PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(BannerAdSize.BANNER_SHORT)
+    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER_SHORT)
   }
 
   @Test
   fun getVungleBannerAdSize_forGoogleSizeRegularBanner_returnsLiftoffSizeRegularBanner() {
     val liftoffBannerSize =
-      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(context, AdSize.BANNER)
+      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(AdSize.BANNER, PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(BannerAdSize.BANNER)
+    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER)
   }
 
   @Test
   fun getVungleBannerAdSize_forGoogleSizeLeaderboard_returnsLiftoffSizeLeaderboard() {
     val liftoffBannerSize =
-      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(context, AdSize.LEADERBOARD)
+      VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(
+        AdSize.LEADERBOARD,
+        PLACEMENT_ID,
+      )
 
-    assertThat(liftoffBannerSize).isEqualTo(BannerAdSize.BANNER_LEADERBOARD)
+    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER_LEADERBOARD)
   }
 
   @Test
   fun getVungleBannerAdSize_forGoogleSizeMediumRectangle_returnsLiftoffSizeMediumRectangle() {
     val liftoffBannerSize =
       VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(
-        context,
         AdSize.MEDIUM_RECTANGLE,
+        PLACEMENT_ID,
       )
 
-    assertThat(liftoffBannerSize).isEqualTo(BannerAdSize.VUNGLE_MREC)
+    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.MREC)
   }
 
   @Test
-  fun getVungleBannerAdSize_forUnsupportedGoogleBannerSize_returnsNull() {
+  fun getVungleBannerAdSize_forNonStandardGoogleBannerSize_returnsCustomSize() {
     val liftoffBannerSize =
       VungleInterstitialAdapter.getVungleBannerAdSizeFromGoogleAdSize(
-        context,
         AdSize.WIDE_SKYSCRAPER,
+        PLACEMENT_ID,
       )
 
-    assertThat(liftoffBannerSize).isNull()
+    assertThat(liftoffBannerSize).isNotNull()
+    assertThat(liftoffBannerSize.width).isEqualTo(AdSize.WIDE_SKYSCRAPER.width)
+    assertThat(liftoffBannerSize.height).isEqualTo(AdSize.WIDE_SKYSCRAPER.height)
+  }
+
+  private companion object {
+    const val PLACEMENT_ID = "testPlacementId"
   }
 }
