@@ -18,10 +18,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 34
+    compileSdk 34
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdk 31
         versionCode 10070700
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
@@ -107,7 +107,7 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.5.0'
+    implementation 'androidx.annotation:annotation:1.8.2'
 
     // Mobile Ads SDK
     implementation 'com.google.android.gms:play-services-ads:23.3.0'
@@ -119,14 +119,14 @@ dependencies {
     implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.7.7'
 
     // Unit tests
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
-    testImplementation 'com.google.truth:truth:1.1.3'
-    testImplementation 'androidx.test:core:1.4.0'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.21'
+    testImplementation 'com.google.truth:truth:1.1.5'
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation 'org.robolectric:robolectric:4.9'
-    testImplementation 'androidx.test.ext:junit:1.1.5'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
+    testImplementation 'androidx.test.ext:junit:1.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 }
 
 /**
