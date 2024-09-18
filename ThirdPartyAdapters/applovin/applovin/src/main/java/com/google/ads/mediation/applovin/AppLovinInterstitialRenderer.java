@@ -81,7 +81,7 @@ public abstract class AppLovinInterstitialRenderer
 
   @Override
   public void adReceived(final AppLovinAd ad) {
-    Log.d(TAG, "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: " + zoneId);
+    Log.d(TAG, "Interstitial did load ad for zone: " + zoneId);
     appLovinInterstitialAd = ad;
 
     interstitialAdCallback = interstitialAdLoadCallback.onSuccess(this);

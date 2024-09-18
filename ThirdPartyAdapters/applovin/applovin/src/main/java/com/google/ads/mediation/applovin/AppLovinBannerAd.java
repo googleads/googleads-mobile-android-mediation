@@ -164,7 +164,7 @@ public class AppLovinBannerAd
 
   @Override
   public void adReceived(final AppLovinAd ad) {
-    Log.d(TAG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: " + zoneId);
+    Log.d(TAG, "Banner did load ad for zone: " + zoneId);
     appLovinAdViewWrapper.renderAd(ad);
     bannerAdCallback = mediationAdLoadCallback.onSuccess(this);
   }

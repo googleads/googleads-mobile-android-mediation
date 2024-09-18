@@ -129,7 +129,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                   @Override
                   public void adReceived(final AppLovinAd ad) {
                     log(DEBUG,
-                        "Interstitial did load ad: " + ad.getAdIdNumber() + " for zone: "
+                        "Interstitial did load ad: for zone: "
                             + zoneId);
                     appLovinInterstitialAd = ad;
                     if (enableMultipleAdLoading) {
