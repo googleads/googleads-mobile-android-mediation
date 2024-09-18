@@ -1,12 +1,11 @@
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import androidx.test.core.app.ApplicationProvider
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.ironsource.IronSourceRtbInterstitialAd
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -16,87 +15,55 @@ import com.unity3d.ironsourceads.interstitial.InterstitialAdLoader
 import com.unity3d.ironsourceads.interstitial.InterstitialAdRequest
 import junit.framework.TestCase.assertEquals
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.MockedStatic
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class IronSourceRtbInterstitialAdTest {
 
-    private lateinit var context: Context
-    private lateinit var interstitialAdConfig: MediationInterstitialAdConfiguration
-    private lateinit var mediationAdLoadCallback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-    private lateinit var mediationInterstitialAdCallback: MediationInterstitialAdCallback
-    private lateinit var interstitialAd: InterstitialAd
-    private lateinit var ironSourceRtbInterstitialAd: IronSourceRtbInterstitialAd
-    private lateinit var mockedInterstitialAdLoader: MockedStatic<InterstitialAdLoader>
-    private lateinit var mediationConfigurations: List<MediationConfiguration>
-    private lateinit var initializationCompleteCallback: InitializationCompleteCallback
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        context = mock(Context::class.java)
-        interstitialAdConfig = mock()
-        mediationAdLoadCallback = mock()
-        mediationInterstitialAdCallback = mock()
-        interstitialAd = mock()
-        val mockMediationConfiguration = mock(MediationConfiguration::class.java)
-        mediationConfigurations = listOf(mockMediationConfiguration)
-        initializationCompleteCallback = mock(InitializationCompleteCallback::class.java)
-
-        mockedInterstitialAdLoader = Mockito.mockStatic(InterstitialAdLoader::class.java)
-        whenever(InterstitialAdLoader.loadAd(any(), any())).then { }
-
-        val bundleMock = mock(Bundle::class.java)
-        whenever(bundleMock.getString("instanceId", "")).thenReturn("mockInstanceId")
-
-        whenever(interstitialAdConfig.context).thenReturn(context)
-        whenever(interstitialAdConfig.serverParameters).thenReturn(bundleMock)
-        whenever(interstitialAdConfig.getBidResponse()).thenReturn("sampleBidToken")
-        whenever(interstitialAdConfig.getWatermark()).thenReturn("sampleWatermark")
-        whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(
-            mediationInterstitialAdCallback
-        )
-
-        ironSourceRtbInterstitialAd =
-            IronSourceRtbInterstitialAd(interstitialAdConfig, mediationAdLoadCallback)
-
-        context = mock(Context::class.java)
-        initializationCompleteCallback = mock(InitializationCompleteCallback::class.java)
-        mediationConfigurations = listOf(mockMediationConfiguration)
-
-        // Mock the behavior of serverParameters
-        val mockBundle = mock(Bundle::class.java)
-        whenever(mockBundle.getString("APP_KEY")).thenReturn("validAppKey")
-        whenever(mockMediationConfiguration.serverParameters).thenReturn(mockBundle)
+    private val bundle = Bundle().apply {
+        putString("instanceId", "mockInstanceId")
     }
+    private val mockInterstitialAdConfig: MediationInterstitialAdConfiguration = mock {
+        on { context } doReturn context
+        on { serverParameters } doReturn bundle
+        on { getBidResponse() } doReturn TEST_BID_RESPONSE
+        on { getWatermark() } doReturn TEST_WATERMARK
+    }
+    private val mockMediationInterstitialAdCallback: MediationInterstitialAdCallback = mock()
+    private var mockMediationAdLoadCallback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> = mock {
+        on { onSuccess(any()) } doReturn mockMediationInterstitialAdCallback
+    }
+    private val mockInterstitialAd: InterstitialAd = mock()
+    private val ironSourceRtbInterstitialAd: IronSourceRtbInterstitialAd = IronSourceRtbInterstitialAd(mockInterstitialAdConfig, mockMediationAdLoadCallback)
+    private val mockInterstitialAdLoader: MockedStatic<InterstitialAdLoader> = Mockito.mockStatic(InterstitialAdLoader::class.java)
+    private val context: Context = ApplicationProvider.getApplicationContext()
 
     @After
     fun tearDown() {
-        mockedInterstitialAdLoader.close()
+        mockInterstitialAdLoader.close()
         Mockito.reset(
-            context,
-            interstitialAdConfig,
-            mediationAdLoadCallback,
-            mediationInterstitialAdCallback,
-            interstitialAd
+            mockInterstitialAdConfig,
+            mockMediationAdLoadCallback,
+            mockMediationInterstitialAdCallback,
+            mockInterstitialAd
         )
     }
 
@@ -106,11 +73,11 @@ class IronSourceRtbInterstitialAdTest {
 
         // when
         ironSourceRtbInterstitialAd.loadRtbAd()
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // then
-        verify(mediationAdLoadCallback).onSuccess(ironSourceRtbInterstitialAd)
-        verifyNoMoreInteractions(mediationAdLoadCallback)
+        verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbInterstitialAd)
+        verifyNoMoreInteractions(mockMediationAdLoadCallback)
     }
 
     @Test
@@ -118,11 +85,11 @@ class IronSourceRtbInterstitialAdTest {
         // given
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // then
-        verify(mediationAdLoadCallback).onSuccess(ironSourceRtbInterstitialAd)
-        verifyNoMoreInteractions(mediationAdLoadCallback)
+        verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbInterstitialAd)
+        verifyNoMoreInteractions(mockMediationAdLoadCallback)
     }
 
     @Test
@@ -137,37 +104,34 @@ class IronSourceRtbInterstitialAdTest {
         // then
         val expectedAdError =
             AdError(123, "An error occurred", "com.ironsource.mediationsdk")
-        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+        verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
 
 
     @Test
     fun showAd_verifyShowAdInvoked() {
         // given
-        whenever(interstitialAdConfig.context).thenReturn(mock(Activity::class.java))
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
-        val mockActivity = mock(Activity::class.java)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
+        val activity = Robolectric.buildActivity(Activity::class.java).get()
 
         // when
-        ironSourceRtbInterstitialAd.showAd(mockActivity)
+        ironSourceRtbInterstitialAd.showAd(activity)
 
         // then
-        verify(interstitialAd).show(mockActivity)
+        verify(mockInterstitialAd).show(activity)
     }
 
     @Test
     fun showAd_invalidContext_expectObFailureCallbackWithError() {
         // given
-        whenever(interstitialAdConfig.context).thenReturn(mock(Activity::class.java))
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
-        val nonActivityContext = mock(Context::class.java)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.showAd(nonActivityContext)
+        ironSourceRtbInterstitialAd.showAd(context)
 
         // then
         val captor = argumentCaptor<AdError>()
-        verify(mediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
+        verify(mockMediationInterstitialAdCallback).onAdFailedToShow(captor.capture())
         val capturedError = captor.firstValue
         assertEquals(102, capturedError.code)
         assertEquals("IronSource requires an Activity context to load ads.", capturedError.message)
@@ -178,16 +142,16 @@ class IronSourceRtbInterstitialAdTest {
     fun onInterstitialAdShowFailed_verifyOnAdFailedToShow() {
         // given
         ironSourceRtbInterstitialAd.loadRtbAd()
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
         val ironSourceError = IronSourceError(123, "An error occurred")
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdFailedToShow(interstitialAd, ironSourceError)
+        ironSourceRtbInterstitialAd.onInterstitialAdFailedToShow(mockInterstitialAd, ironSourceError)
 
         // then
         val expectedAdError =
             AdError(123, "An error occurred", "com.ironsource.mediationsdk")
-        verify(mediationInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+        verify(mockMediationInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
     }
 
     @Test
@@ -199,52 +163,52 @@ class IronSourceRtbInterstitialAdTest {
         val ironSourceError = IronSourceError(errorCode, errorRes)
 
         // When
-        whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(null)
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
-        ironSourceRtbInterstitialAd.onInterstitialAdFailedToShow(interstitialAd, ironSourceError)
+        doReturn(null).whenever(mockMediationAdLoadCallback).onSuccess(any())
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdFailedToShow(mockInterstitialAd, ironSourceError)
 
         // Then
-        verifyNoInteractions(mediationInterstitialAdCallback)
+        verifyNoInteractions(mockMediationInterstitialAdCallback)
     }
 
     @Test
     fun onInterstitialAdOpened_verifyOnInterstitialAdOpenedCallbacks() {
         // given
         ironSourceRtbInterstitialAd.loadRtbAd()
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdShown(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdShown(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).onAdOpened()
-        verify(mediationInterstitialAdCallback).reportAdImpression()
+        verify(mockMediationInterstitialAdCallback).onAdOpened()
+        verify(mockMediationInterstitialAdCallback).reportAdImpression()
     }
 
     @Test
     fun onInterstitialAdClosed_verifyOnAdClosedCallback() {
         // given
         ironSourceRtbInterstitialAd.loadRtbAd()
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).onAdClosed()
+        verify(mockMediationInterstitialAdCallback).onAdClosed()
     }
 
     @Test
     fun onInterstitialAdClicked_verifyReportAdClickedCallback() {
         // given
         ironSourceRtbInterstitialAd.loadRtbAd()
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdClicked(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdClicked(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).reportAdClicked()
+        verify(mockMediationInterstitialAdCallback).reportAdClicked()
     }
 
     @Test
@@ -253,80 +217,73 @@ class IronSourceRtbInterstitialAdTest {
         ironSourceRtbInterstitialAd.loadRtbAd()
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdShown(interstitialAd)
-        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(interstitialAd)
-        ironSourceRtbInterstitialAd.onInterstitialAdClicked(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdShown(mockInterstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(mockInterstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdClicked(mockInterstitialAd)
 
         // then
-        verifyNoMoreInteractions(mediationInterstitialAdCallback)
-    }
-
-    @Test
-    fun onAdEvents_withoutInterstitialAdCallbackInstance_verifyNoCallbacks() {
-
+        verifyNoMoreInteractions(mockMediationInterstitialAdCallback)
     }
 
     @Test
     fun testShowAd_NullAd() {
         // given
-        val mockContext = mock(Context::class.java)
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.showAd(mockContext)
+        ironSourceRtbInterstitialAd.showAd(context)
 
         // then
-        verify(interstitialAd, Mockito.never()).show(any())
+        verify(mockInterstitialAd, Mockito.never()).show(any())
     }
 
     @Test
     fun testShowAd_NonActivityContext() {
         // given
-        val mockContext = mock(Context::class.java)
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.showAd(mockContext)
+        ironSourceRtbInterstitialAd.showAd(context)
 
         // then
-        verify(interstitialAd, Mockito.never()).show(any())
+        verify(mockInterstitialAd, Mockito.never()).show(any())
     }
 
     @Test
     fun testOnInterstitialAdShown_CallbackSet() {
         // given
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdShown(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdShown(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).onAdOpened()
-        verify(mediationInterstitialAdCallback).reportAdImpression()
+        verify(mockMediationInterstitialAdCallback).onAdOpened()
+        verify(mockMediationInterstitialAdCallback).reportAdImpression()
     }
 
     @Test
     fun testOnInterstitialAdDismissed_CallbackSet() {
         // given
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdDismissed(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).onAdClosed()
+        verify(mockMediationInterstitialAdCallback).onAdClosed()
     }
 
     @Test
     fun testOnInterstitialAdClicked_CallbackSet() {
         // given
-        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
         // when
-        ironSourceRtbInterstitialAd.onInterstitialAdClicked(interstitialAd)
+        ironSourceRtbInterstitialAd.onInterstitialAdClicked(mockInterstitialAd)
 
         // then
-        verify(mediationInterstitialAdCallback).reportAdClicked()
+        verify(mockMediationInterstitialAdCallback).reportAdClicked()
     }
 
     @Test
@@ -338,12 +295,12 @@ class IronSourceRtbInterstitialAdTest {
         ironSourceRtbInterstitialAd.loadRtbAd()
 
         // then
-        mockedInterstitialAdLoader.verify({
+        mockInterstitialAdLoader.verify({
             InterstitialAdLoader.loadAd(requestCaptor.capture(), any())
         })
 
         val capturedRequest = requestCaptor.firstValue
         val actualWatermark = capturedRequest.extraParams?.getString("google_watermark")
-        assertEquals("sampleWatermark", actualWatermark)
+        assertEquals(TEST_WATERMARK, actualWatermark)
     }
 }

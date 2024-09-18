@@ -1,7 +1,10 @@
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import androidx.test.core.app.ApplicationProvider
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceRewardItem
 import com.google.ads.mediation.ironsource.IronSourceRtbRewardedAd
@@ -11,72 +14,56 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.ironsource.mediationsdk.logger.IronSourceError
+import com.unity3d.ironsourceads.rewarded.RewardedAd
 import com.unity3d.ironsourceads.rewarded.RewardedAdLoader
-import com.unity3d.ironsourceads.rewarded.RewardedAdLoaderListener
 import junit.framework.TestCase.assertEquals
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.MockedStatic
 import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
 class IronSourceRtbRewardedAdTest {
-
-    private lateinit var context: Context
-    private lateinit var rewardedAdConfig: MediationRewardedAdConfiguration
-    private lateinit var mediationAdLoadCallback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-    private lateinit var mediationRewardedAdCallback: MediationRewardedAdCallback
-    private lateinit var rewardedAd: com.unity3d.ironsourceads.rewarded.RewardedAd
-    private lateinit var ironSourceRtbRewardedAd: IronSourceRtbRewardedAd
-    private lateinit var mockedRewardedAdLoader: MockedStatic<RewardedAdLoader>
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        context = mock(Context::class.java)
-        rewardedAdConfig = mock()
-        mediationAdLoadCallback = mock()
-        mediationRewardedAdCallback = mock()
-        rewardedAd = mock()
-
-        val bundleMock = mock(Bundle::class.java)
-        whenever(bundleMock.getString("instanceId", "")).thenReturn("mockInstanceId")
-        whenever(rewardedAdConfig.context).thenReturn(context)
-        whenever(rewardedAdConfig.serverParameters).thenReturn(bundleMock)
-        whenever(rewardedAdConfig.bidResponse).thenReturn("sampleBidToken")
-        whenever(rewardedAdConfig.watermark).thenReturn("sampleWatermark")
-        whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationRewardedAdCallback)
-
-        mockedRewardedAdLoader = mockStatic(RewardedAdLoader::class.java)
-        mockedRewardedAdLoader.`when`<Unit> {
-            RewardedAdLoader.loadAd(any(), any())
-        }.then { invocation ->
-            val listener = invocation.arguments[1] as RewardedAdLoaderListener
-            listener.onRewardedAdLoaded(rewardedAd)
-        }
-
-        ironSourceRtbRewardedAd = IronSourceRtbRewardedAd(rewardedAdConfig, mediationAdLoadCallback)
+    private val bundle = Bundle().apply {
+        putString("instanceId", "mockInstanceId")
     }
+    private val mockRewardedAdConfig: MediationRewardedAdConfiguration =
+        org.mockito.kotlin.mock {
+            on { context } doReturn context
+            on { serverParameters } doReturn bundle
+            on { getBidResponse() } doReturn TEST_BID_RESPONSE
+            on { getWatermark() } doReturn TEST_WATERMARK
+        }
+    private val mockMediationRewardedAdCallback: MediationRewardedAdCallback = mock()
+
+    private val mockMediationAdLoadCallback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
+        org.mockito.kotlin.mock {
+            on { onSuccess(any()) } doReturn mockMediationRewardedAdCallback
+        }
+    private val mockRewardedAd: RewardedAd = mock()
+    private val ironSourceRtbRewardedAd: IronSourceRtbRewardedAd =
+        IronSourceRtbRewardedAd(mockRewardedAdConfig, mockMediationAdLoadCallback)
+    private val mockRewardedAdLoader: MockedStatic<RewardedAdLoader> = mockStatic(
+        RewardedAdLoader::class.java)
+    private val context: Context = ApplicationProvider.getApplicationContext()
 
     @After
     fun tearDown() {
-        mockedRewardedAdLoader.close()
+        mockRewardedAdLoader.close()
         reset(
-            context,
-            rewardedAdConfig,
-            mediationAdLoadCallback,
-            mediationRewardedAdCallback,
-            rewardedAd
+            mockRewardedAdConfig,
+            mockMediationAdLoadCallback,
+            mockMediationRewardedAdCallback,
+            mockRewardedAd
         )
     }
 
@@ -84,20 +71,21 @@ class IronSourceRtbRewardedAdTest {
     fun onLoadRtbAd_verifyOnSuccessCallback() {
         // When
         ironSourceRtbRewardedAd.loadRtbAd()
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // Then
-        verify(mediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
-        verifyNoMoreInteractions(mediationAdLoadCallback)
+        verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
+        verifyNoMoreInteractions(mockMediationAdLoadCallback)
     }
 
     @Test
     fun onRewardedVideoAdLoadSuccess_verifyOnSuccessCallback() {
         // When
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // Then
-        verify(mediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
-        verifyNoMoreInteractions(mediationAdLoadCallback)
+        verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
+        verifyNoMoreInteractions(mockMediationAdLoadCallback)
     }
 
     @Test
@@ -114,22 +102,21 @@ class IronSourceRtbRewardedAdTest {
         // Then
         val expectedAdError =
             AdError(errorCode, errorRes, "com.ironsource.mediationsdk")
-        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+        verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
 
     }
 
     @Test
     fun showAd_verifyShowAdInvoked() {
         // Given
-        `when`(rewardedAdConfig.context).thenReturn(mock(Activity::class.java))
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
-        val mockActivity = mock(Activity::class.java)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
+        val activity = Robolectric.buildActivity(Activity::class.java).get()
 
         // When
-        ironSourceRtbRewardedAd.showAd(mockActivity)
+        ironSourceRtbRewardedAd.showAd(activity)
 
         // Then
-        verify(rewardedAd).show(mockActivity)
+        verify(mockRewardedAd).show(activity)
     }
 
     @Test
@@ -138,77 +125,85 @@ class IronSourceRtbRewardedAdTest {
         ironSourceRtbRewardedAd.loadRtbAd()
         val errorRes = "An error occurred"
         val errorCode = 123
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
         val ironSourceError = IronSourceError(errorCode, errorRes)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdFailedToShow(rewardedAd, ironSourceError)
+        ironSourceRtbRewardedAd.onRewardedAdFailedToShow(mockRewardedAd, ironSourceError)
 
         // Then
         val expectedAdError =
             AdError(errorCode, errorRes, IRONSOURCE_SDK_ERROR_DOMAIN)
-        verify(mediationRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+        verify(mockMediationRewardedAdCallback).onAdFailedToShow(
+            argThat(
+                AdErrorMatcher(
+                    expectedAdError
+                )
+            )
+        )
     }
 
     @Test
     fun showAd_invalidContext_expectObFailureCallbackWithError() {
         // given
-        whenever(rewardedAdConfig.context).thenReturn(mock(Activity::class.java))
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
-        val nonActivityContext = mock(Context::class.java)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // when
-        ironSourceRtbRewardedAd.showAd(nonActivityContext)
+        ironSourceRtbRewardedAd.showAd(context)
 
         // then
         val captor = argumentCaptor<AdError>()
-        verify(mediationRewardedAdCallback).onAdFailedToShow(captor.capture())
+        verify(mockMediationRewardedAdCallback).onAdFailedToShow(captor.capture())
         val capturedError = captor.firstValue
         assertEquals(102, capturedError.code)
-        assertEquals("IronSource requires an Activity context to load ads.", capturedError.message)
+        assertEquals(
+            "IronSource requires an Activity context to load ads.",
+            capturedError.message
+        )
         assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
     }
 
     @Test
     fun onRewardedAdShowFailed_withoutRewardedAdCallbackInstance_verifyOnAdFailedToShow() {
         // Given
-        whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(null)
+        doReturn(null).whenever(mockMediationAdLoadCallback).onSuccess(any())
         val errorRes = "An error occurred"
         val errorCode = 123
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
         val ironSourceError = IronSourceError(errorCode, errorRes)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdFailedToShow(rewardedAd, ironSourceError)
+        ironSourceRtbRewardedAd.onRewardedAdFailedToShow(mockRewardedAd, ironSourceError)
 
         // Then
-        verifyNoInteractions(mediationRewardedAdCallback)
+        verifyNoInteractions(mockMediationRewardedAdCallback)
     }
 
     @Test
     fun onRewardedAdOpened_withRewardedAd_verifyOnRewardedAdOpenedCallbacks() {
         // Given
         ironSourceRtbRewardedAd.loadRtbAd()
-        ironSourceRtbRewardedAd.onRewardedAdLoaded(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdShown(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdShown(mockRewardedAd)
 
         // Then
-        verify(mediationRewardedAdCallback).onAdOpened()
-        verify(mediationRewardedAdCallback).reportAdImpression()
+        verify(mockMediationRewardedAdCallback).onAdOpened()
+        verify(mockMediationRewardedAdCallback).reportAdImpression()
     }
 
     @Test
     fun onRewardedAdClosed_withRewardedAd_verifyOnAdClosedCallback() {
         // Given
         ironSourceRtbRewardedAd.loadRtbAd()
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdDismissed(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdDismissed(mockRewardedAd)
 
         // Then
-        verify(mediationRewardedAdCallback).onAdClosed()
+        verify(mockMediationRewardedAdCallback).onAdClosed()
     }
 
     fun onRewardedVideoAdRewarded_withRewardedAd_verifyOnRewardedCallbacks() {
@@ -216,35 +211,36 @@ class IronSourceRtbRewardedAdTest {
         ironSourceRtbRewardedAd.loadRtbAd()
 
         // When
-        ironSourceRtbRewardedAd.onUserEarnedReward(rewardedAd);
+        ironSourceRtbRewardedAd.onUserEarnedReward(mockRewardedAd);
 
         // Then
-        verify(mediationRewardedAdCallback).onVideoComplete();
-        verify(mediationRewardedAdCallback).onUserEarnedReward(any<IronSourceRewardItem>());
+        verify(mockMediationRewardedAdCallback).onVideoComplete();
+        verify(mockMediationRewardedAdCallback).onUserEarnedReward(any<IronSourceRewardItem>());
     }
 
     @Test
     fun onRewardedAdClicked_withRewardedAd_verifyReportAdClickedCallback() {
         // Given
         ironSourceRtbRewardedAd.loadRtbAd()
+        ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdClicked(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdClicked(mockRewardedAd)
 
         // Then
-        verify(mediationRewardedAdCallback).reportAdClicked()
+        verify(mockMediationRewardedAdCallback).reportAdClicked()
     }
 
     fun onAdEvents_withoutRewardedAd_verifyNoCallbacks() {
         // Given
-        clearInvocations(mediationRewardedAdCallback)
+        clearInvocations(mockMediationRewardedAdCallback)
 
         // When
-        ironSourceRtbRewardedAd.onRewardedAdShown(rewardedAd)
-        ironSourceRtbRewardedAd.onRewardedAdDismissed(rewardedAd)
-        ironSourceRtbRewardedAd.onRewardedAdClicked(rewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdShown(mockRewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdDismissed(mockRewardedAd)
+        ironSourceRtbRewardedAd.onRewardedAdClicked(mockRewardedAd)
 
         // Then
-        verifyNoInteractions(mediationRewardedAdCallback)
+        verifyNoInteractions(mockMediationRewardedAdCallback)
     }
 }
