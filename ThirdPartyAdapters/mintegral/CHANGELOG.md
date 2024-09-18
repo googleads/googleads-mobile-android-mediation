@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next version
+- Switched to use initAsync() to initialize Mintegral SDK (to avoid ANRs).
+
 #### Version 16.8.51.0
 - Verified compatibility with Mintegral SDK 16.8.51.
 
