@@ -160,7 +160,7 @@ public class MyTargetMediationAdapter extends Adapter
 
     mAdLoadCallback = mediationAdLoadCallback;
 
-    mRewardedAd = new RewardedAd(slotId, context);
+    mRewardedAd = MyTargetSdkWrapper.createRewardedAd(slotId, context);
     CustomParams params = mRewardedAd.getCustomParams();
     handleMediationExtras(TAG, mediationRewardedAdConfiguration.getMediationExtras(), params);
     params.setCustomParam(MyTargetTools.PARAM_MEDIATION_KEY,
