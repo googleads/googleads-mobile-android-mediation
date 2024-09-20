@@ -41,7 +41,7 @@ object LineInitializer {
         else -> NeedChildDirectedTreatment.UNSPECIFIED
       }
 
-    config.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
+    // config.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
     LineSdkWrapper.delegate.initialize(context, config)
   }
 }
