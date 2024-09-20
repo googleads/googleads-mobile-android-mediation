@@ -36,7 +36,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: "Install Gradle"
+        run: |
+          brew install gradle
       - name: "Unit Tests"
         run: |
           cd ThirdPartyAdapters/line/
+          gradle wrapper
           ./gradlew test
