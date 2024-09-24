@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Implemented AdLoader to enable RTB for Interstitial Ads.
+
 #### Version 2.8.20240827.0
 - Verified compatibility with FiveAd SDK version 2.8.20240827.0
 

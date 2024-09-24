@@ -18,12 +18,16 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.BidData
+import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdInterstitial
 import com.five_corp.ad.FiveAdInterstitialEventListener
 import com.five_corp.ad.FiveAdLoadListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -39,22 +43,62 @@ class LineInterstitialAd
 private constructor(
   private val activityReference: WeakReference<Activity>,
   private val appId: String,
+  private val slotId: String?,
+  private val bidResponse: String,
+  private val watermark: String,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
-  private val interstitialAd: FiveAdInterstitial,
   private val networkExtras: Bundle?,
 ) : MediationInterstitialAd, FiveAdLoadListener, FiveAdInterstitialEventListener {
 
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
+  private lateinit var interstitialAd: FiveAdInterstitial
 
   fun loadAd() {
     val activity = activityReference.get() ?: return
+    if (slotId.isNullOrEmpty()) {
+      val adError =
+        AdError(
+          LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+          LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+          LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+        )
+      mediationAdLoadCallback.onFailure(adError)
+      return
+    }
+    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(activity, slotId)
     LineInitializer.initialize(activity, appId)
     interstitialAd.setLoadListener(this)
     if (networkExtras != null) {
       interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
     }
     interstitialAd.loadAdAsync()
+  }
+
+  fun loadRtbAd() {
+    val activity = activityReference.get() ?: return
+    val fiveAdConfig = FiveAdConfig(appId)
+    val adLoader = AdLoader.getAdLoader(activity, fiveAdConfig) ?: return
+    val bidData = BidData(bidResponse, watermark)
+    adLoader.loadInterstitialAd(
+      bidData,
+      object : AdLoader.LoadInterstitialAdCallback {
+        override fun onLoad(fiveAdInterstitial: FiveAdInterstitial) {
+          interstitialAd = fiveAdInterstitial
+          if (networkExtras != null) {
+            interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+          }
+          mediationInterstitialAdCallback =
+            mediationAdLoadCallback.onSuccess(this@LineInterstitialAd)
+          interstitialAd.setEventListener(this@LineInterstitialAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError = AdError(adErrorCode.value, adErrorCode.name, SDK_ERROR_DOMAIN)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   override fun showAd(context: Context) {
@@ -72,7 +116,7 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
+        SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
@@ -83,7 +127,7 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_SHOWING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
+        SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationInterstitialAdCallback?.onAdFailedToShow(adError)
@@ -161,25 +205,17 @@ private constructor(
       }
 
       val slotId = serverParameters.getString(LineMediationAdapter.KEY_SLOT_ID)
-      if (slotId.isNullOrEmpty()) {
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
-            LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
-
-      val fiveAdInterstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(activity, slotId)
+      val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val watermark = mediationInterstitialAdConfiguration.watermark
 
       return Result.success(
         LineInterstitialAd(
           WeakReference(activity),
           appId,
+          slotId,
+          bidResponse,
+          watermark,
           mediationAdLoadCallback,
-          fiveAdInterstitialAd,
           mediationInterstitialAdConfiguration.mediationExtras,
         )
       )
