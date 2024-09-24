@@ -18,12 +18,16 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.BidData
+import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdVideoReward
 import com.five_corp.ad.FiveAdVideoRewardEventListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -40,22 +44,61 @@ class LineRewardedAd
 private constructor(
   private val activityReference: WeakReference<Activity>,
   private val appId: String,
+  private val slotId: String?,
+  private val bidResponse: String,
+  private val watermark: String,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  private val rewardedAd: FiveAdVideoReward,
   private val networkExtras: Bundle?,
 ) : MediationRewardedAd, FiveAdLoadListener, FiveAdVideoRewardEventListener {
 
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
+  private lateinit var rewardedAd: FiveAdVideoReward
 
   fun loadAd() {
     val activity = activityReference.get() ?: return
+    if (slotId.isNullOrEmpty()) {
+      val adError =
+        AdError(
+          LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+          LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+          LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+        )
+      mediationAdLoadCallback.onFailure(adError)
+      return
+    }
+    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
     LineInitializer.initialize(activity, appId)
     rewardedAd.setLoadListener(this)
     if (networkExtras != null) {
       rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
     }
     rewardedAd.loadAdAsync()
+  }
+
+  fun loadRtbAd() {
+    val activity = activityReference.get() ?: return
+    val fiveAdConfig = FiveAdConfig(appId)
+    val adLoader = AdLoader.getAdLoader(activity, fiveAdConfig) ?: return
+    val bidData = BidData(bidResponse, watermark)
+    adLoader.loadRewardAd(
+      bidData,
+      object : AdLoader.LoadRewardAdCallback {
+        override fun onLoad(fiveAdRewarded: FiveAdVideoReward) {
+          rewardedAd = fiveAdRewarded
+          if (networkExtras != null) {
+            rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+          }
+          mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(this@LineRewardedAd)
+          rewardedAd.setEventListener(this@LineRewardedAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError = AdError(adErrorCode.value, adErrorCode.name, SDK_ERROR_DOMAIN)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   override fun showAd(context: Context) {
@@ -73,7 +116,7 @@ private constructor(
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
+        SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
@@ -84,7 +127,7 @@ private constructor(
       AdError(
         fiveAdErrorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_SHOWING, fiveAdErrorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
+        SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationRewardedAdCallback?.onAdFailedToShow(adError)
@@ -170,25 +213,17 @@ private constructor(
       }
 
       val slotId = serverParameters.getString(LineMediationAdapter.KEY_SLOT_ID)
-      if (slotId.isNullOrEmpty()) {
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
-            LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
-
-      val fiveAdVideoRewarded = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
+      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      val watermark = mediationRewardedAdConfiguration.watermark
 
       return Result.success(
         LineRewardedAd(
           WeakReference(activity),
           appId,
+          slotId,
+          bidResponse,
+          watermark,
           mediationAdLoadCallback,
-          fiveAdVideoRewarded,
           mediationRewardedAdConfiguration.mediationExtras,
         )
       )

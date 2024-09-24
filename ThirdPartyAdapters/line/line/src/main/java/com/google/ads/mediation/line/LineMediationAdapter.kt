@@ -235,7 +235,10 @@ class LineMediationAdapter : RtbAdapter() {
     adConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    super.loadRtbRewardedAd(adConfiguration, callback)
+    LineRewardedAd.newInstance(adConfiguration, callback).onSuccess {
+      rewardedAd = it
+      rewardedAd.loadRtbAd()
+    }
   }
 
   override fun loadRtbNativeAdMapper(
