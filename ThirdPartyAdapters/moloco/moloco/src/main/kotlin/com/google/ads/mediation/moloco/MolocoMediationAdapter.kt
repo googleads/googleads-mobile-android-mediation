@@ -37,6 +37,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.publisher.Initialization
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.init.MolocoInitParams
@@ -106,7 +107,8 @@ class MolocoMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
-    val initParams = MolocoInitParams(context, appKeyForInit)
+    val mediationInfo = MediationInfo(Companion::class.java.name)
+    val initParams = MolocoInitParams(context, appKeyForInit, mediationInfo)
     Moloco.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
         initializationCompleteCallback.onInitializationSucceeded()

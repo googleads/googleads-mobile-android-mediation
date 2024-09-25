@@ -40,6 +40,7 @@ private constructor(
   private val adSize: AdSize,
   private val adUnitId: String,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationBannerAd, AdLoad.Listener, BannerAdShowListener {
   private lateinit var molocoAd: Banner
   private var bannerAdCallback: MediationBannerAdCallback? = null
@@ -64,11 +65,11 @@ private constructor(
         }
       }
     if (adSize == AdSize.LEADERBOARD) {
-      Moloco.createBannerTablet(adUnitId, createBannerCallback)
+      Moloco.createBannerTablet(adUnitId, watermark, createBannerCallback)
       return
     }
 
-    Moloco.createBanner(adUnitId, createBannerCallback)
+    Moloco.createBanner(adUnitId, watermark, createBannerCallback)
   }
 
   override fun getView(): View = molocoAd
@@ -136,8 +137,11 @@ private constructor(
       }
 
       val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val watermark = mediationBannerAdConfiguration.watermark
 
-      return Result.success(MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse))
+      return Result.success(
+        MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse, watermark)
+      )
     }
   }
 }
