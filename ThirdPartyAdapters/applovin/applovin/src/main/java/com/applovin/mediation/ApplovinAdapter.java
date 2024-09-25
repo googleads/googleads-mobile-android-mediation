@@ -17,6 +17,8 @@ package com.applovin.mediation;
 import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 import static android.util.Log.WARN;
+import static com.applovin.mediation.AppLovinUtils.getChildUserError;
+import static com.applovin.mediation.AppLovinUtils.isChildUser;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -85,6 +87,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final MediationInterstitialListener interstitialListener,
       @NonNull final Bundle serverParameters, @NonNull MediationAdRequest mediationAdRequest,
       @Nullable final Bundle networkExtras) {
+    if (isChildUser()) {
+      interstitialListener.onAdFailedToLoad(this, getChildUserError());
+      return;
+    }
 
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
@@ -211,6 +217,10 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       @NonNull final MediationBannerListener mediationBannerListener,
       @NonNull final Bundle serverParameters, @NonNull final AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle networkExtras) {
+    if (isChildUser()) {
+      mediationBannerListener.onAdFailedToLoad(this, getChildUserError());
+      return;
+    }
 
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {

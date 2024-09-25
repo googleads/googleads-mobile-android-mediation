@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next version
+- Updated to not initialize, collect signals nor request ads from AppLovin SDK if user is tagged as a child.
+
 #### Version 13.0.0.0
 - Verified compatibility with AppLovin SDK 13.0.0.
 
