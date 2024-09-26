@@ -1,7 +1,13 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
-- Updated to not initialize, collect signals nor request ads from AppLovin SDK if user is tagged as a child.
+#### Version 13.0.0.1
+- Disabled AppLovin mediation automatically for apps that declare either of the following settings with the Google Mobile Ads SDK:
+  * [Child-directed setting](https://developers.google.com/admob/android/targeting#child-directed_setting\)
+  * [Users under the age of consent](https://developers.google.com/admob/android/targeting#users_under_the_age_of_consent\)
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.3.0.
+- AppLovin SDK version 13.0.0.
 
 #### Version 13.0.0.0
 - Verified compatibility with AppLovin SDK 13.0.0.
