@@ -183,21 +183,23 @@ public class MintegralMediationAdapter extends RtbAdapter {
     } catch (Throwable e) {
       e.printStackTrace();
     }
-    mBridgeSDK.init(configurationMap, context, new SDKInitStatusListener() {
-      @Override
-      public void onInitSuccess() {
-        initializationCompleteCallback.onInitializationSucceeded();
-      }
+    mBridgeSDK.initAsync(
+        configurationMap,
+        context,
+        new SDKInitStatusListener() {
+          @Override
+          public void onInitSuccess() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
 
-      @Override
-      public void onInitFail(String errorMessage) {
-        AdError initError = createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED,
-            errorMessage);
-        initializationCompleteCallback.onInitializationFailed(initError.getMessage());
-        Log.w(TAG, initError.toString());
-      }
-    });
-
+          @Override
+          public void onInitFail(String errorMessage) {
+            AdError initError =
+                createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED, errorMessage);
+            initializationCompleteCallback.onInitializationFailed(initError.getMessage());
+            Log.w(TAG, initError.toString());
+          }
+        });
   }
 
   @Override
