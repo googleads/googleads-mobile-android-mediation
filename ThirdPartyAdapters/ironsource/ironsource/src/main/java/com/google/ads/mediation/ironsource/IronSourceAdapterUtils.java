@@ -14,9 +14,10 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,7 +28,6 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
-import com.ironsource.mediationsdk.IronSource;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IronSourceAdapterUtils {
 
   @Nullable
-  public static ISBannerSize getISBannerSizeFromGoogleAdSize(@NonNull Context context,
-      @NonNull AdSize adSize) {
+  public static ISBannerSize getISBannerSizeFromGoogleAdSize(
+      @NonNull Context context, @NonNull AdSize adSize) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.MEDIUM_RECTANGLE);
@@ -64,19 +64,33 @@ public class IronSourceAdapterUtils {
     return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
   }
 
-  public static AdError validateIronSourceAdLoadParams(@NonNull Context context,
-      @NonNull String instanceID) {
+  public static AdError buildAdErrorAdapterDomain(int code, @NonNull String message) {
+    return new AdError(code, message, ADAPTER_ERROR_DOMAIN);
+  }
+
+  public static AdError buildAdErrorIronSourceDomain(int code, @NonNull String message) {
+    return new AdError(code, message, IRONSOURCE_SDK_ERROR_DOMAIN);
+  }
+
+  public static AdError validateIronSourceAdLoadParams(
+      @NonNull Context context, @NonNull String instanceID) {
     // Check that context is an Activity.
     if (!(context instanceof Activity)) {
-      AdError contextError = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "IronSource requires an Activity context to load ads.", ERROR_DOMAIN);
+      AdError contextError =
+          new AdError(
+              ERROR_REQUIRES_ACTIVITY_CONTEXT,
+              "IronSource requires an Activity context to load ads.",
+              ADAPTER_ERROR_DOMAIN);
       return contextError;
     }
 
     // Check validity of instance ID.
     if (TextUtils.isEmpty(instanceID)) {
-      AdError loadError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or invalid instance ID.", ERROR_DOMAIN);
+      AdError loadError =
+          new AdError(
+              ERROR_INVALID_SERVER_PARAMETERS,
+              "Missing or invalid instance ID.",
+              ADAPTER_ERROR_DOMAIN);
       return loadError;
     }
 
@@ -92,9 +106,5 @@ public class IronSourceAdapterUtils {
 
   public static String getAdapterVersion() {
     return BuildConfig.ADAPTER_VERSION;
-  }
-
-  public static void setWatermark(@NonNull String watermark) {
-    IronSource.setMetaData("google_water_mark", watermark);
   }
 }

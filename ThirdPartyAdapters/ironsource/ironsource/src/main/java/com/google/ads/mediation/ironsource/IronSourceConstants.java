@@ -17,18 +17,16 @@ public class IronSourceConstants {
    */
   static final String KEY_INSTANCE_ID = "instanceId";
 
-  /**
-   * Default IronSource instance ID.
-   */
-  static final String DEFAULT_INSTANCE_ID = "0";
+  /** Default non bidder IronSource instance ID. */
+  static final String DEFAULT_NON_RTB_INSTANCE_ID = "0";
 
   /**
    * Constant used for IronSource internal reporting.
    */
   static final String MEDIATION_NAME = "AdMob";
 
-  /**
-   * Constant used for IronSource adapter version internal reporting.
-   */
-  static final String ADAPTER_VERSION_NAME = "410";
+  /** Constant used for IronSource adapter version internal reporting. */
+  static final String ADAPTER_VERSION_NAME = "500";
+
+  static final String WATERMARK = "google_watermark";
 }
