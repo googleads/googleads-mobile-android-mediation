@@ -1,7 +1,14 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next version
+#### Next Version
 - Reverted the minimum required Android API level to 21.
+
+#### Version 10.7.8.0
+- Verified compatibility with InMobi Kotlin SDK version 10.7.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.3.0.
+- InMobi Kotlin SDK version 10.7.8.
 
 #### Version 10.7.7.0
 - Verified compatibility with InMobi Kotlin SDK version 10.7.7.
