@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next version
+- Reverted the minimum required Android API level to 21.
+
 #### Version 10.7.7.0
 - Verified compatibility with InMobi Kotlin SDK version 10.7.7.
 - Updated the minimum required Android API level to 24.
