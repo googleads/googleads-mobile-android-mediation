@@ -64,6 +64,8 @@ class LineBannerAdTest {
 
   @Test
   fun getView_returnsCreatedBannerAd() {
+    lineBannerAd.loadAd()
+
     val createdAdView = lineBannerAd.view
 
     assertThat(createdAdView).isEqualTo(mockFiveAdCustomLayout)
@@ -89,6 +91,8 @@ class LineBannerAdTest {
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
+    lineBannerAd.loadAd()
+
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     verify(mockFiveAdCustomLayout).setEventListener(lineBannerAd)
@@ -110,6 +114,7 @@ class LineBannerAdTest {
 
   @Test
   fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
+    lineBannerAd.loadAd()
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     lineBannerAd.onClick(mockFiveAdCustomLayout)
@@ -120,6 +125,7 @@ class LineBannerAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
+    lineBannerAd.loadAd()
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     lineBannerAd.onImpression(mockFiveAdCustomLayout)
