@@ -218,7 +218,10 @@ class LineMediationAdapter : RtbAdapter() {
     adConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    super.loadRtbBannerAd(adConfiguration, callback)
+    LineBannerAd.newInstance(adConfiguration, callback).onSuccess {
+      bannerAd = it
+      bannerAd.loadRtbAd()
+    }
   }
 
   override fun loadRtbInterstitialAd(

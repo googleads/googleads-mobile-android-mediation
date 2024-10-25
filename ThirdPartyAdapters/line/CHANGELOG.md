@@ -1,6 +1,7 @@
 ## LINE Android Mediation Adapter Changelog
 
 #### Next Version
+- Implemented AdLoader to enable RTB for Banner Ads.
 - Implemented AdLoader to enable RTB for Interstitial Ads.
 - Implemented AdLoader to enable RTB for Rewarded Ads.
 
