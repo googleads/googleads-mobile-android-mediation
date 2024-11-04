@@ -11,8 +11,10 @@ import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.mytarget.MyTargetAdapterUtils.adapterVersion
+import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_AD_FAILED_TO_SHOW
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
+import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MSG_AD_FAILED_TO_SHOW
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MY_TARGET_SDK
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.mytarget.MyTargetSdkWrapper.sdkVersion
@@ -358,6 +360,30 @@ class MyTargetMediationAdapterTest {
       verify(mockRewardedAdCallback).onAdOpened()
       verify(mockRewardedAdCallback).onVideoStart()
       verify(mockRewardedAdCallback).reportAdImpression()
+    }
+  }
+
+  @Test
+  fun onAdFailedToShow_invokes() {
+    mockStatic(MyTargetSdkWrapper::class.java).use {
+      val mockRewardedAd = mock<RewardedAd>()
+      val mockCustomParams = mock<CustomParams>()
+      whenever(MyTargetSdkWrapper.createRewardedAd(eq(1234), eq(context))) doReturn mockRewardedAd
+      whenever(mockRewardedAd.customParams) doReturn mockCustomParams
+      val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
+      val rewardedAdConfiguration =
+        createRewardedAdConfiguration(serverParameters = serverParameters)
+      myTargetMediationAdapter.loadRewardedAd(
+        rewardedAdConfiguration,
+        mockMediationRewardedAdLoadCallback,
+      )
+      myTargetMediationAdapter.onLoad(mockRewardedAd)
+
+      myTargetMediationAdapter.onFailedToShow(mockRewardedAd)
+
+      val expectedAdError =
+        AdError(ERROR_AD_FAILED_TO_SHOW, ERROR_MSG_AD_FAILED_TO_SHOW, ERROR_DOMAIN)
+      verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
     }
   }
 
