@@ -55,6 +55,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_RIGHT
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.BidTokenCallback
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.NativeAd
 import com.vungle.ads.NativeAd.Companion.BOTTOM_LEFT
@@ -68,12 +69,12 @@ import com.vungle.ads.VungleError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -1631,7 +1632,10 @@ class VungleMediationAdapterTest {
   @Test
   fun collectSignals_onSuccessCalled() {
     val biddingToken = "token"
-    whenever(mockSdkWrapper.getBiddingToken(any())) doReturn biddingToken
+    whenever(mockSdkWrapper.getBiddingToken(any(), any())) doAnswer { invocation ->
+      val args: Array<Any> = invocation.arguments
+      (args[1] as BidTokenCallback).onBidTokenCollected(biddingToken)
+    }
 
     adapter.collectSignals(mockRtbSignalData, mockSignalCallbacks)
 
@@ -1643,10 +1647,13 @@ class VungleMediationAdapterTest {
     val error =
       AdError(
         VungleMediationAdapter.ERROR_CANNOT_GET_BID_TOKEN,
-        "Liftoff Monetize returned an empty bid token.",
+        "Liftoff Monetize returned error on collecting bid token: mocked_error",
         VungleMediationAdapter.ERROR_DOMAIN,
       )
-    whenever(mockSdkWrapper.getBiddingToken(any())) doReturn ""
+    whenever(mockSdkWrapper.getBiddingToken(any(), any())) doAnswer { invocation ->
+      val args: Array<Any> = invocation.arguments
+      (args[1] as BidTokenCallback).onBidTokenError("mocked_error")
+    }
 
     adapter.collectSignals(mockRtbSignalData, mockSignalCallbacks)
 
