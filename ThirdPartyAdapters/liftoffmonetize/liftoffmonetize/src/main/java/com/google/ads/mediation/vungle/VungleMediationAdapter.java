@@ -59,6 +59,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
+import com.vungle.ads.BidTokenCallback;
 import com.vungle.ads.RewardedAd;
 import com.vungle.ads.RewardedAdListener;
 import com.vungle.ads.VungleError;
@@ -199,16 +200,22 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
-    String token = VungleSdkWrapper.delegate.getBiddingToken(rtbSignalData.getContext());
-    if (TextUtils.isEmpty(token)) {
-      AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN,
-          "Liftoff Monetize returned an empty bid token.", ERROR_DOMAIN);
-      Log.w(TAG, error.toString());
-      signalCallbacks.onFailure(error);
-    } else {
-      Log.d(TAG, "Liftoff Monetize bidding token=" + token);
-      signalCallbacks.onSuccess(token);
-    }
+    VungleSdkWrapper.delegate.getBiddingToken(rtbSignalData.getContext(), new BidTokenCallback() {
+      @Override
+      public void onBidTokenCollected(@NonNull String bidToken) {
+        Log.d(TAG, "Liftoff Monetize bidding token=" + bidToken);
+        signalCallbacks.onSuccess(bidToken);
+      }
+
+      @Override
+      public void onBidTokenError(@NonNull String errorMessage) {
+        AdError error = new AdError(ERROR_CANNOT_GET_BID_TOKEN,
+            "Liftoff Monetize returned error on collecting bid token: " + errorMessage,
+            ERROR_DOMAIN);
+        Log.w(TAG, error.toString());
+        signalCallbacks.onFailure(error);
+      }
+    });
   }
 
   @Override
