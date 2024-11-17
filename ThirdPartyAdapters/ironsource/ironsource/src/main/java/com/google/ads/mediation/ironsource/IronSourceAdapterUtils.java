@@ -30,6 +30,7 @@ import com.google.android.gms.ads.MediationUtils;
 import com.ironsource.mediationsdk.ISBannerSize;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -62,6 +63,34 @@ public class IronSourceAdapterUtils {
     // If none of the predefined sizes are matched, return a new IronSource size for the closest
     // size returned by Admob
     return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
+  }
+
+  @NonNull
+  public static com.unity3d.ironsourceads.AdSize getAdSizeFromGoogleAdSize(
+      @NonNull Context context, @NonNull AdSize adSize) {
+    ArrayList<AdSize> potentials =
+        new ArrayList<>(
+            Arrays.asList(
+                AdSize.BANNER, AdSize.MEDIUM_RECTANGLE, AdSize.LARGE_BANNER, AdSize.LEADERBOARD));
+
+    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    if (closestSize == null) {
+      return com.unity3d.ironsourceads.AdSize.banner();
+    }
+
+    if (AdSize.BANNER.equals(closestSize)) {
+      return com.unity3d.ironsourceads.AdSize.banner();
+    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+      return com.unity3d.ironsourceads.AdSize.mediumRectangle();
+    } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
+      return com.unity3d.ironsourceads.AdSize.large();
+    } else if (AdSize.LEADERBOARD.equals(closestSize)) {
+      return com.unity3d.ironsourceads.AdSize.leaderboard();
+    }
+
+    // If none of the predefined sizes are matched, return a new IronSource size for the closest
+    // size returned by Admob
+    return com.unity3d.ironsourceads.AdSize.banner();
   }
 
   public static AdError buildAdErrorAdapterDomain(int code, @NonNull String message) {
