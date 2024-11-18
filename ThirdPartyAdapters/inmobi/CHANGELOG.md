@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next version
+- Compile with Java 11 instead of Java 17.
+
 #### Version 10.7.8.1
 - Reverted the minimum required Android API level to 21.
 
