@@ -17,16 +17,13 @@ package com.google.ads.mediation.ironsource;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.ironsource.mediationsdk.ISBannerSize;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;

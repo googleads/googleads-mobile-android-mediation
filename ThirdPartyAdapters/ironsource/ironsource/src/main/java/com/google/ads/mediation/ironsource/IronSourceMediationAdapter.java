@@ -16,17 +16,14 @@ package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -50,7 +47,6 @@ import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.unity3d.ironsourceads.InitListener;
 import com.unity3d.ironsourceads.InitRequest;
 import com.unity3d.ironsourceads.IronSourceAds;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -83,8 +79,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
                     ERROR_BANNER_SIZE_MISMATCH,
                     ERROR_SDK_NOT_INITIALIZED
             })
-    public @interface AdapterError {
-    }
+    public @interface AdapterError {}
 
     /** Server parameters (e.g. instance ID) are nil. */
     public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
