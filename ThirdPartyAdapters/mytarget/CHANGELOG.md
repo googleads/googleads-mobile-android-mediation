@@ -1,5 +1,13 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.23.0.0
+- Updated adapter to implement `onFailedToShow` method for fullscreen ads.
+- Verified compatibility with myTarget SDK version 5.23.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.4.0.
+- MyTarget SDK version 5.23.0.
+
 #### Version 5.22.1.0
 - Increased the maximum heap size for the Gradle JVM from 512MB to 1GB.
 - Verified compatibility with myTarget SDK version 5.22.1.

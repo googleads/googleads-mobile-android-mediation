@@ -37,7 +37,6 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
@@ -244,11 +243,14 @@ class LineMediationAdapter : RtbAdapter() {
     }
   }
 
-  override fun loadRtbNativeAdMapper(
+  override fun loadRtbNativeAd(
     adConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
   ) {
-    super.loadRtbNativeAdMapper(adConfiguration, callback)
+    LineNativeAd.newInstance(adConfiguration, callback).onSuccess {
+      nativeAd = it
+      nativeAd.loadRtbAd()
+    }
   }
 
   companion object {

@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next version
+- Initialize Mintegral SDK in a background thread (to fix ANRs).
+
 #### Version 16.8.61.0
 - Verified compatibility with Mintegral SDK 16.8.61.
 

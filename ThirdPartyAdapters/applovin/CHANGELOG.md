@@ -1,5 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 13.0.1.0
+- Verified compatibility with AppLovin SDK 13.0.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.4.0.
+- AppLovin SDK version 13.0.1.
+
 #### Version 13.0.0.1
 - Disabled AppLovin mediation automatically for apps that declare either of the following settings with the Google Mobile Ads SDK:
   * [Child-directed setting](https://developers.google.com/admob/android/targeting#child-directed_setting)
