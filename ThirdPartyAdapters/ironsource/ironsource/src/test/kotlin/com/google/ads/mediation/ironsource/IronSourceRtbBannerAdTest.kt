@@ -4,18 +4,9 @@ import android.content.Context
 import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.MediationBannerAd
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
-import com.google.common.truth.Truth.assertThat
 import com.ironsource.mediationsdk.logger.IronSourceError
-import com.ironsource.mediationsdk.logger.IronSourceError.ERROR_CODE_DECRYPT_FAILED
-import com.unity3d.ironsourceads.banner.BannerAdView
-import com.unity3d.ironsourceads.banner.BannerAdViewListener
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
@@ -25,6 +16,15 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.google.common.truth.Truth.assertThat
+import com.ironsource.mediationsdk.logger.IronSourceError.ERROR_CODE_DECRYPT_FAILED
+import com.unity3d.ironsourceads.banner.BannerAdView
+import com.unity3d.ironsourceads.banner.BannerAdViewListener
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])

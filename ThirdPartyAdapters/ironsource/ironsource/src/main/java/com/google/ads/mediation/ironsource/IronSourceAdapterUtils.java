@@ -14,20 +14,19 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN;
-
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
 import com.ironsource.mediationsdk.ISBannerSize;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,101 +38,110 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IronSourceAdapterUtils {
 
-  @Nullable
-  public static ISBannerSize getISBannerSizeFromGoogleAdSize(
-      @NonNull Context context, @NonNull AdSize adSize) {
-    ArrayList<AdSize> potentials = new ArrayList<>();
-    potentials.add(AdSize.BANNER);
-    potentials.add(AdSize.MEDIUM_RECTANGLE);
-    potentials.add(AdSize.LARGE_BANNER);
+    @Nullable
+    public static ISBannerSize getISBannerSizeFromGoogleAdSize(
+            @NonNull Context context, @NonNull AdSize adSize) {
+        ArrayList<AdSize> potentials = new ArrayList<>();
+        potentials.add(AdSize.BANNER);
+        potentials.add(AdSize.MEDIUM_RECTANGLE);
+        potentials.add(AdSize.LARGE_BANNER);
 
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
-    if (closestSize == null) {
-      return null;
+        AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+        if (closestSize == null) {
+            return null;
+        }
+
+        if (AdSize.BANNER.equals(closestSize)) {
+            return ISBannerSize.BANNER;
+        } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+            return ISBannerSize.RECTANGLE;
+        } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
+            return ISBannerSize.LARGE;
+        }
+
+        // If none of the predefined sizes are matched, return a new IronSource size for the closest
+        // size returned by Admob
+        return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
     }
 
-    if (AdSize.BANNER.equals(closestSize)) {
-      return ISBannerSize.BANNER;
-    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
-      return ISBannerSize.RECTANGLE;
-    } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
-      return ISBannerSize.LARGE;
+    @NonNull
+    public static com.unity3d.ironsourceads.AdSize getAdSizeFromGoogleAdSize(
+            @NonNull Context context, @NonNull AdSize adSize) {
+        ArrayList<AdSize> potentials = new ArrayList<>(Arrays.asList(
+                AdSize.BANNER,
+                AdSize.MEDIUM_RECTANGLE,
+                AdSize.LARGE_BANNER,
+                AdSize.LEADERBOARD));
+
+        AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+        if (closestSize == null) {
+            return com.unity3d.ironsourceads.AdSize.banner();
+        }
+
+        if (AdSize.BANNER.equals(closestSize)) {
+            return com.unity3d.ironsourceads.AdSize.banner();
+        } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
+            return com.unity3d.ironsourceads.AdSize.mediumRectangle();
+        } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
+            return com.unity3d.ironsourceads.AdSize.large();
+        } else if (AdSize.LEADERBOARD.equals(closestSize)) {
+            return com.unity3d.ironsourceads.AdSize.leaderboard();
+        }
+
+        // If none of the predefined sizes are matched, return a new IronSource size for the closest
+        // size returned by Admob
+        return com.unity3d.ironsourceads.AdSize.banner();
     }
 
-    // If none of the predefined sizes are matched, return a new IronSource size for the closest
-    // size returned by Admob
-    return new ISBannerSize(closestSize.getWidth(), closestSize.getHeight());
-  }
-
-  @NonNull
-  public static com.unity3d.ironsourceads.AdSize getAdSizeFromGoogleAdSize(
-      @NonNull Context context, @NonNull AdSize adSize) {
-    ArrayList<AdSize> potentials =
-        new ArrayList<>(
-            Arrays.asList(
-                AdSize.BANNER, AdSize.MEDIUM_RECTANGLE, AdSize.LARGE_BANNER, AdSize.LEADERBOARD));
-
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
-    if (closestSize == null) {
-      return com.unity3d.ironsourceads.AdSize.banner();
+    public static AdError buildAdErrorAdapterDomain(int code, @NonNull String message) {
+        return new AdError(code, message, IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN);
     }
 
-    if (AdSize.BANNER.equals(closestSize)) {
-      return com.unity3d.ironsourceads.AdSize.banner();
-    } else if (AdSize.MEDIUM_RECTANGLE.equals(closestSize)) {
-      return com.unity3d.ironsourceads.AdSize.mediumRectangle();
-    } else if (AdSize.LARGE_BANNER.equals(closestSize)) {
-      return com.unity3d.ironsourceads.AdSize.large();
-    } else if (AdSize.LEADERBOARD.equals(closestSize)) {
-      return com.unity3d.ironsourceads.AdSize.leaderboard();
+    public static AdError buildAdErrorIronSourceDomain(int code, @NonNull String message) {
+        return new AdError(code, message, IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN);
     }
 
-    // If none of the predefined sizes are matched, return a new IronSource size for the closest
-    // size returned by Admob
-    return com.unity3d.ironsourceads.AdSize.banner();
-  }
+    public static AdError validateIronSourceAdLoadParams(
+            @NonNull Context context, @NonNull String instanceID) {
+        // Check that context is an Activity.
+        if (!(context instanceof Activity)) {
+            AdError contextError =
+                    new AdError(
+                            IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT,
+                            "IronSource requires an Activity context to load ads.",
+                            IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN);
+            return contextError;
+        }
 
-  public static AdError buildAdErrorAdapterDomain(int code, @NonNull String message) {
-    return new AdError(code, message, ADAPTER_ERROR_DOMAIN);
-  }
+        // Check validity of instance ID.
+        if (TextUtils.isEmpty(instanceID)) {
+            AdError loadError =
+                    new AdError(
+                            IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.", IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN);
+            return loadError;
+        }
 
-  public static AdError buildAdErrorIronSourceDomain(int code, @NonNull String message) {
-    return new AdError(code, message, IRONSOURCE_SDK_ERROR_DOMAIN);
-  }
-
-  public static AdError validateIronSourceAdLoadParams(
-      @NonNull Context context, @NonNull String instanceID) {
-    // Check that context is an Activity.
-    if (!(context instanceof Activity)) {
-      AdError contextError =
-          new AdError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "IronSource requires an Activity context to load ads.",
-              ADAPTER_ERROR_DOMAIN);
-      return contextError;
+        return null;
     }
 
-    // Check validity of instance ID.
-    if (TextUtils.isEmpty(instanceID)) {
-      AdError loadError =
-          new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid instance ID.",
-              ADAPTER_ERROR_DOMAIN);
-      return loadError;
+    public static <T> boolean canLoadIronSourceAdInstance(
+            @NonNull String instanceId,
+            @NonNull ConcurrentHashMap<String, WeakReference<T>> instanceMap) {
+        WeakReference<T> adRef = instanceMap.get(instanceId);
+        return adRef == null || adRef.get() == null;
     }
 
-    return null;
-  }
+    public static String getAdapterVersion() {
+        return BuildConfig.ADAPTER_VERSION;
+    }
 
-  public static <T> boolean canLoadIronSourceAdInstance(
-      @NonNull String instanceId,
-      @NonNull ConcurrentHashMap<String, WeakReference<T>> instanceMap) {
-    WeakReference<T> adRef = instanceMap.get(instanceId);
-    return adRef == null || adRef.get() == null;
-  }
+    public static String prepareVersionToiAdsSdk(@NonNull String version) {
+        return version.replace(".", "");
+    }
 
-  public static String getAdapterVersion() {
-    return BuildConfig.ADAPTER_VERSION;
-  }
+    public static String getMediationType() {
+        return IronSourceConstants.MEDIATION_NAME + prepareVersionToiAdsSdk(getAdapterVersion())
+                + IronSourceConstants.SDK + prepareVersionToiAdsSdk(MobileAds.getVersion().toString()) +
+                IronSourceConstants.IADS + IronSourceConstants.IADS_ADAPTER_VERSION;
+    }
 }

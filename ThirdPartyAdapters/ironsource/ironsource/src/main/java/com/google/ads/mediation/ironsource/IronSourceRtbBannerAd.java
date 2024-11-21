@@ -25,8 +25,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
@@ -40,101 +42,98 @@ import com.unity3d.ironsourceads.banner.BannerAdView;
 import com.unity3d.ironsourceads.banner.BannerAdViewListener;
 
 public class IronSourceRtbBannerAd
-    implements MediationBannerAd, BannerAdLoaderListener, BannerAdViewListener {
+        implements MediationBannerAd, BannerAdLoaderListener, BannerAdViewListener {
 
-  @VisibleForTesting private MediationBannerAdCallback adLifecycleCallback;
+    @VisibleForTesting
+    private MediationBannerAdCallback adLifecycleCallback;
 
-  private final Context context;
+    private final Context context;
 
-  private final String instanceID;
+    private final String instanceID;
 
-  private final String bidToken;
+    private final String bidToken;
 
-  private final com.google.android.gms.ads.AdSize adSize;
+    private final com.google.android.gms.ads.AdSize adSize;
 
-  private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-      adLoadCallback;
+    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+            adLoadCallback;
 
-  private final String watermark;
+    private final String watermark;
 
-  private FrameLayout ironSourceAdView;
+    private FrameLayout ironSourceAdView;
 
-  public IronSourceRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration bannerAdConfig,
-      @NonNull
-          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-              mediationAdLoadCallback) {
-    Bundle serverParameters = bannerAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
-    context = bannerAdConfig.getContext();
-    adSize = bannerAdConfig.getAdSize();
-    adLoadCallback = mediationAdLoadCallback;
-    watermark = bannerAdConfig.getWatermark();
-    bidToken = bannerAdConfig.getBidResponse();
-  }
-
-  public void loadRtbAd() {
-    if (TextUtils.isEmpty(instanceID)) {
-      AdError loadError =
-          IronSourceAdapterUtils.buildAdErrorAdapterDomain(
-              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
-      adLoadCallback.onFailure(loadError);
-      return;
+    public IronSourceRtbBannerAd(
+            @NonNull MediationBannerAdConfiguration bannerAdConfig,
+            @NonNull
+            MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+                    mediationAdLoadCallback) {
+        Bundle serverParameters = bannerAdConfig.getServerParameters();
+        instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
+        context = bannerAdConfig.getContext();
+        adSize = bannerAdConfig.getAdSize();
+        adLoadCallback = mediationAdLoadCallback;
+        watermark = bannerAdConfig.getWatermark();
+        bidToken = bannerAdConfig.getBidResponse();
     }
 
-    Bundle watermarkBundle = new Bundle();
-    watermarkBundle.putString(WATERMARK, watermark);
-    BannerAdRequest adRequest =
-        new BannerAdRequest.Builder(
-                context, instanceID, bidToken, getAdSizeFromGoogleAdSize(context, adSize))
-            .withExtraParams(watermarkBundle)
-            .build();
-    ironSourceAdView = new FrameLayout(context);
-    BannerAdLoader.loadAd(adRequest, this);
-  }
+    public void loadRtbAd() {
+        if (TextUtils.isEmpty(instanceID)) {
+            AdError loadError =
+                    IronSourceAdapterUtils.buildAdErrorAdapterDomain(
+                            ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid instance ID.");
+            adLoadCallback.onFailure(loadError);
+            return;
+        }
 
-  @NonNull
-  @Override
-  public View getView() {
-    return ironSourceAdView;
-  }
-
-  @Override
-  public void onBannerAdLoaded(@NonNull BannerAdView bannerAdView) {
-    if (this.ironSourceAdView == null || this.adLoadCallback == null) {
-      return;
+        Bundle watermarkBundle = new Bundle();
+        watermarkBundle.putString(WATERMARK, watermark);
+        BannerAdRequest adRequest =
+                new BannerAdRequest.Builder(context, instanceID, bidToken, getAdSizeFromGoogleAdSize(context, adSize))
+                        .withExtraParams(watermarkBundle)
+                        .build();
+        ironSourceAdView = new FrameLayout(context);
+        BannerAdLoader.loadAd(adRequest, this);
     }
-    this.ironSourceAdView.addView(bannerAdView);
-    bannerAdView.setListener(this);
-    adLifecycleCallback = adLoadCallback.onSuccess(this);
-  }
 
-  @Override
-  public void onBannerAdLoadFailed(@NonNull IronSourceError ironSourceError) {
-    if (adLoadCallback == null) {
-      return;
+    @NonNull
+    @Override
+    public View getView() {
+        return ironSourceAdView;
     }
-    final AdError loadError =
-        new AdError(
-            ironSourceError.getErrorCode(),
-            ironSourceError.getErrorMessage(),
-            IRONSOURCE_SDK_ERROR_DOMAIN);
-    adLoadCallback.onFailure(loadError);
-  }
 
-  @Override
-  public void onBannerAdClicked(@NonNull BannerAdView bannerAdView) {
-    if (adLifecycleCallback == null) {
-      return;
+    @Override
+    public void onBannerAdLoaded(@NonNull BannerAdView bannerAdView) {
+        if (this.ironSourceAdView == null || this.adLoadCallback == null) {
+            return;
+        }
+        this.ironSourceAdView.addView(bannerAdView);
+        bannerAdView.setListener(this);
+        adLifecycleCallback = adLoadCallback.onSuccess(this);
     }
-    adLifecycleCallback.onAdOpened();
-    adLifecycleCallback.reportAdClicked();
-  }
 
-  @Override
-  public void onBannerAdShown(@NonNull BannerAdView bannerAdView) {
-    if (adLifecycleCallback != null) {
-      adLifecycleCallback.reportAdImpression();
+    @Override
+    public void onBannerAdLoadFailed(@NonNull IronSourceError ironSourceError) {
+        if (adLoadCallback == null) {
+            return;
+        }
+        final AdError loadError = new AdError(ironSourceError.getErrorCode(),
+                ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+        adLoadCallback.onFailure(loadError);
     }
-  }
+
+    @Override
+    public void onBannerAdClicked(@NonNull BannerAdView bannerAdView) {
+        if (adLifecycleCallback == null) {
+            return;
+        }
+        adLifecycleCallback.onAdOpened();
+        adLifecycleCallback.reportAdClicked();
+    }
+
+    @Override
+    public void onBannerAdShown(@NonNull BannerAdView bannerAdView) {
+        if (adLifecycleCallback != null) {
+            adLifecycleCallback.reportAdImpression();
+        }
+    }
 }
