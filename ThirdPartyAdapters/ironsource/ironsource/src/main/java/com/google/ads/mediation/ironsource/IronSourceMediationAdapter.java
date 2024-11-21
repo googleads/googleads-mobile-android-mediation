@@ -68,14 +68,10 @@ public class IronSourceMediationAdapter extends RtbAdapter {
     private static final AtomicBoolean isInitialized = new AtomicBoolean(false);
 
     // region Error codes
-    /**
-     * IronSource adapter error domain.
-     */
+    /** IronSource adapter error domain. */
     public static final String ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.ironsource";
 
-    /**
-     * IronSource SDK error domain.
-     */
+    /** IronSource SDK error domain. */
     public static final String IRONSOURCE_SDK_ERROR_DOMAIN = "com.ironsource.mediationsdk";
 
     @Retention(RetentionPolicy.SOURCE)
@@ -90,34 +86,22 @@ public class IronSourceMediationAdapter extends RtbAdapter {
     public @interface AdapterError {
     }
 
-    /**
-     * Server parameters (e.g. instance ID) are nil.
-     */
+    /** Server parameters (e.g. instance ID) are nil. */
     public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
-    /**
-     * IronSource requires an {@link Activity} context to initialize their SDK.
-     */
+    /** IronSource requires an {@link Activity} context to initialize their SDK. */
     public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 102;
 
-    /**
-     * IronSource can only load 1 ad per IronSource instance ID.
-     */
+    /** IronSource can only load 1 ad per IronSource instance ID. */
     public static final int ERROR_AD_ALREADY_LOADED = 103;
 
-    /**
-     * Banner size mismatch.
-     */
+    /** Banner size mismatch. */
     public static final int ERROR_BANNER_SIZE_MISMATCH = 105;
 
-    /**
-     * IronSource SDK isn't initialized.
-     */
+    /** IronSource SDK isn't initialized. */
     public static final int ERROR_SDK_NOT_INITIALIZED = 106;
 
-    /**
-     * Call show before loaded success.
-     */
+    /** Call show before loaded success. */
     public static final int ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS = 107;
 
     // endregion
@@ -141,7 +125,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
         String logMessage =
                 String.format(
-                        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.", versionString);
+                        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+                        versionString);
         Log.w(TAG, logMessage);
         return new VersionInfo(0, 0, 0);
     }
@@ -195,7 +180,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         int count = appKeys.size();
         if (count <= 0) {
             AdError initializationError =
-                    new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.", ADAPTER_ERROR_DOMAIN);
+                    new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.",
+                            ADAPTER_ERROR_DOMAIN);
             initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
             return;
         }
@@ -204,7 +190,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         String appKey = appKeys.iterator().next();
         if (TextUtils.isEmpty(appKey)) {
             AdError initializationError =
-                    new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.", ADAPTER_ERROR_DOMAIN);
+                    new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.",
+                            ADAPTER_ERROR_DOMAIN);
             initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
             return;
         }
@@ -212,8 +199,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         if (count > 1) {
             String message =
                     String.format(
-                            "Multiple '%s' entries found: %s. Using app key '%s' to initialize the IronSource"
-                                    + " SDK.",
+                            "Multiple '%s' entries found: %s. Using app key '%s' to initialize " +
+                                    "the IronSource SDK.",
                             KEY_APP_KEY, appKeys, appKey);
             Log.w(TAG, message);
         }
@@ -338,7 +325,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         }
 
         IronSourceInterstitialAd ironSourceInterstitialAd =
-                new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
+                new IronSourceInterstitialAd(mediationInterstitialAdConfiguration,
+                        mediationAdLoadCallback);
         ironSourceInterstitialAd.loadWaterfallAd();
     }
 
