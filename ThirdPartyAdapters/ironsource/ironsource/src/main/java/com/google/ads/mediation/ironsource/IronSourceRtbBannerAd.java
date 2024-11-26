@@ -106,8 +106,8 @@ public class IronSourceRtbBannerAd
         if (this.ironSourceAdView == null || this.adLoadCallback == null) {
             return;
         }
-        this.ironSourceAdView.addView(bannerAdView);
         bannerAdView.setListener(this);
+        this.ironSourceAdView.addView(bannerAdView);
         adLifecycleCallback = adLoadCallback.onSuccess(this);
     }
 
