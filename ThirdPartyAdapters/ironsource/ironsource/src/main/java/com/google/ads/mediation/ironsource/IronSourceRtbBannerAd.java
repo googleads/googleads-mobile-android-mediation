@@ -41,6 +41,10 @@ import com.unity3d.ironsourceads.banner.BannerAdRequest;
 import com.unity3d.ironsourceads.banner.BannerAdView;
 import com.unity3d.ironsourceads.banner.BannerAdViewListener;
 
+/**
+ * Used to load ironSource RTB Banner ads and mediate callbacks between Google Mobile Ads SDK
+ * and ironSource SDK.
+ */
 public class IronSourceRtbBannerAd
         implements MediationBannerAd, BannerAdLoaderListener, BannerAdViewListener {
 

@@ -1,7 +1,7 @@
 package com.google.ads.mediation.ironsource
 
 import android.content.Context
-import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.android.gms.ads.AdError
@@ -15,7 +15,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -25,17 +24,17 @@ import com.google.common.truth.Truth.assertThat
 import com.ironsource.mediationsdk.logger.IronSourceError.ERROR_CODE_DECRYPT_FAILED
 import com.unity3d.ironsourceads.banner.BannerAdView
 import com.unity3d.ironsourceads.banner.BannerAdViewListener
+import org.mockito.kotlin.mock
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
 class IronSourceRtbBannerAdTest {
-    private val bundle = Bundle().apply {
-        putString("instanceId", "mockInstanceId")
-    }
+    private val bundle = bundleOf(
+        "instanceId" to "mockInstanceId"
+    )
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     private val mockInterstitialAdConfig: MediationBannerAdConfiguration =
-        org.mockito.kotlin.mock {
+        mock {
             on { context } doReturn context
             on { serverParameters } doReturn bundle
             on { getBidResponse() } doReturn AdapterTestKitConstants.TEST_BID_RESPONSE
@@ -43,14 +42,13 @@ class IronSourceRtbBannerAdTest {
             on { adSize } doReturn AdSize.BANNER
         }
 
-    private val mockMediationBannerAdCallback: MediationBannerAdCallback =
-        org.mockito.kotlin.mock()
+    private val mockMediationBannerAdCallback: MediationBannerAdCallback = mock()
 
     private val bannerAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
         org.mockito.kotlin.mock {
             on { onSuccess(any()) } doReturn mockMediationBannerAdCallback
         }
-    private val mockIsListener: BannerAdViewListener = org.mockito.kotlin.mock()
+    private val mockIsListener: BannerAdViewListener = mock()
     private val mockBannerAd: BannerAdView =
         org.mockito.kotlin.mock { on { listener } doReturn mockIsListener }
 
