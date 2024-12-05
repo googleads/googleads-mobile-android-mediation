@@ -14,9 +14,7 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.ADAPTER_VERSION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
-import static com.google.ads.mediation.ironsource.IronSourceConstants.MEDIATION_NAME;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
 
 import android.app.Activity;
@@ -196,13 +194,13 @@ public class IronSourceMediationAdapter extends RtbAdapter {
     if (count > 1) {
       String message =
           String.format(
-              "Multiple '%s' entries found: %s. Using app key '%s' to initialize the IronSource"
-                  + " SDK.",
+              "Multiple '%s' entries found: %s. Using app key '%s' to initialize "
+                  + "the IronSource SDK.",
               KEY_APP_KEY, appKeys, appKey);
       Log.w(TAG, message);
     }
 
-    IronSource.setMediationType(MEDIATION_NAME + ADAPTER_VERSION_NAME);
+    IronSource.setMediationType(IronSourceAdapterUtils.getMediationType());
     Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
 
     List<IronSourceAds.AdFormat> adFormatsToInitialize =
@@ -349,6 +347,29 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         new IronSourceRtbInterstitialAd(
             mediationInterstitialAdConfiguration, mediationAdLoadCallback);
     ironSourceRtbInterstitialAd.loadRtbAd();
+  }
+
+  @Override
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
+    if (!isInitialized.get()) {
+      AdError loadError =
+          new AdError(
+              ERROR_SDK_NOT_INITIALIZED,
+              "Failed to load IronSource RTB interstitial ad since IronSource SDK is not "
+                  + "initialized.",
+              IRONSOURCE_SDK_ERROR_DOMAIN);
+      Log.w(TAG, loadError.getMessage());
+      mediationAdLoadCallback.onFailure(loadError);
+      return;
+    }
+
+    IronSourceRtbBannerAd ironSourceRtbBannerAd =
+        new IronSourceRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    ironSourceRtbBannerAd.loadRtbAd();
   }
 
   @Override

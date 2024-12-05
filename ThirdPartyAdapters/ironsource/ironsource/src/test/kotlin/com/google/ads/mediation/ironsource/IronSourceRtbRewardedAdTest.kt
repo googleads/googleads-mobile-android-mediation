@@ -34,10 +34,8 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
 class IronSourceRtbRewardedAdTest {
   private lateinit var ironSourceRtbRewardedAd: IronSourceRtbRewardedAd
 
