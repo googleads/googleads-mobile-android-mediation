@@ -11,7 +11,7 @@ Built and tested with:
 - IronSource SDK version 8.5.0.
 
 #### Version 8.4.0.0
-- Updated the adapter to use the new IronSource SDK APIs.
+- Updated the adapter to use the new IronSource SDK APIs for all bidding ad formats.
 - Verified compatibility with ironSource SDK version 8.4.0.
 
 Built and tested with:
