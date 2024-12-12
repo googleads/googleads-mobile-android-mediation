@@ -1,7 +1,11 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
-- Added bidding support for banner ad formats.
+#### Version 8.5.0.1
+- Added bidding support for banner ad format.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.5.0.
+- IronSource SDK version 8.5.0
 
 #### Version 8.5.0.0
 - Verified compatibility with ironSource SDK version 8.5.0.
