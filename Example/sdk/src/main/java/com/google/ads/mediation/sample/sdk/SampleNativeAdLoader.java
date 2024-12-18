@@ -28,7 +28,7 @@ import java.util.Random;
 
 /**
  * An example AdLoader that pretends to load native ads. It has methods that will be used by the
- * {@code SampleCustomEvent} and {@code SampleAdapter} to request native ads.
+ * {@code SampleCustomEvent} to request native ads.
  */
 public class SampleNativeAdLoader {
 

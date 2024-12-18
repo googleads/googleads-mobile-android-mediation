@@ -17,6 +17,9 @@ package com.google.ads.mediation.moloco
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -37,6 +40,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.publisher.Initialization
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.init.MolocoInitParams
@@ -79,6 +83,15 @@ class MolocoMediationAdapter : RtbAdapter() {
     return VersionInfo(0, 0, 0)
   }
 
+  private fun configurePrivacy() {
+    val isAgeRestricted =
+      MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
+          TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    MolocoAdapterUtils.setMolocoIsAgeRestricted(isAgeRestricted)
+  }
+
   override fun initialize(
     context: Context,
     initializationCompleteCallback: InitializationCompleteCallback,
@@ -106,9 +119,11 @@ class MolocoMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
-    val initParams = MolocoInitParams(context, appKeyForInit)
+    val mediationInfo = MediationInfo(Companion::class.java.name)
+    val initParams = MolocoInitParams(context, appKeyForInit, mediationInfo)
     Moloco.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
+        configurePrivacy()
         initializationCompleteCallback.onInitializationSucceeded()
       } else {
         initializationCompleteCallback.onInitializationFailed(

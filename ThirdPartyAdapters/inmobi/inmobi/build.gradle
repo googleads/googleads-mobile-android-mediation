@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "InMobi"
     // String property to store version name.
-    stringVersion = "10.7.5.0"
+    stringVersion = "10.8.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -18,11 +18,13 @@ ext {
 }
 
 android {
-    compileSdkVersion 34
+    namespace 'com.google.ads.mediation.inmobi'
+    compileSdk 34
+    buildFeatures.buildConfig true
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 10070500
+        targetSdk 31
+        versionCode 10080000
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -48,6 +50,16 @@ android {
         }
     }
 
+    compileOptions {
+        // Unity versions 2020 to 2023 require Java version <=11. So, consult
+        // with Google Mobile Ads Unity team before upgrading Java version.
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
 }
 
 tasks.withType(Test) {
@@ -99,26 +111,26 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.5.0'
+    implementation 'androidx.annotation:annotation:1.8.2'
 
     // Mobile Ads SDK
-    implementation 'com.google.android.gms:play-services-ads:23.2.0'
+    implementation 'com.google.android.gms:play-services-ads:23.5.0'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // inMobi SDK
-    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.7.5'
+    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:10.8.0'
 
     // Unit tests
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
-    testImplementation 'com.google.truth:truth:1.1.3'
-    testImplementation 'androidx.test:core:1.4.0'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.21'
+    testImplementation 'com.google.truth:truth:1.1.5'
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation 'org.robolectric:robolectric:4.9'
-    testImplementation 'androidx.test.ext:junit:1.1.5'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
+    testImplementation 'androidx.test.ext:junit:1.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 }
 
 /**

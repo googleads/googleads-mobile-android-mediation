@@ -21,6 +21,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdSize;
 import com.my.target.ads.MyTargetView;
 import com.my.target.common.CustomParams;
@@ -30,7 +31,7 @@ import com.my.target.common.CustomParams;
  */
 class MyTargetTools {
 
-  private static final String KEY_SLOT_ID = "slotId";
+  @VisibleForTesting protected static final String KEY_SLOT_ID = "slotId";
   @NonNull
   static final String PARAM_MEDIATION_KEY = "mediation";
   @NonNull

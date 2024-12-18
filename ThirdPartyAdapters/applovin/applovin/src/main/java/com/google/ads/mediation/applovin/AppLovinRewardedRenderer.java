@@ -109,7 +109,7 @@ public abstract class AppLovinRewardedRenderer
   // region AppLovinAdLoadListener implementation.
   @Override
   public void adReceived(final @NonNull AppLovinAd appLovinAd) {
-    Log.i(TAG, "Rewarded video did load ad: " + appLovinAd.getAdIdNumber());
+    Log.i(TAG, "Rewarded video did load ad.");
     appLovinSdkUtilsWrapper.runOnUiThread(
         new Runnable() {
           @Override

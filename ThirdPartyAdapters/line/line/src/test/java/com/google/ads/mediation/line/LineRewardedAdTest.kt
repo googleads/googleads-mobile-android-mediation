@@ -57,6 +57,7 @@ class LineRewardedAdTest {
 
   @Test
   fun showAd_invokesFiveAdShowAd() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.showAd(activity)
@@ -66,6 +67,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     verify(mockFiveAdVideoReward).setEventListener(lineRewardedAd)
@@ -87,6 +89,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onClick_invokesReportAdClicked() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onClick(mockFiveAdVideoReward)
@@ -96,6 +99,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onFullScreenClose_invokesOnAdClosed() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onFullScreenClose(mockFiveAdVideoReward)
@@ -105,6 +109,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onReward_invokesOnUserEarnedReward() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onReward(mockFiveAdVideoReward)
@@ -114,6 +119,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onImpression(mockFiveAdVideoReward)
@@ -123,6 +129,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onViewError_invokesOnAdFailedToShow() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
     val adErrorCaptor = argumentCaptor<AdError>()
@@ -139,6 +146,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onPlay_invokesOnVideoStart() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onPlay(mockFiveAdVideoReward)
@@ -148,6 +156,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onFullScreenOpen_invokesOnAdOpened() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onFullScreenOpen(mockFiveAdVideoReward)
@@ -162,6 +171,7 @@ class LineRewardedAdTest {
 
   @Test
   fun onViewThrough_invokesOnVideoComplete() {
+    lineRewardedAd.loadAd()
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     lineRewardedAd.onViewThrough(mockFiveAdVideoReward)

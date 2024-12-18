@@ -7,7 +7,6 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
-import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -23,9 +22,9 @@ import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyF
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.ironsource.IronSourceAdapterUtils.getAdapterVersion
 import com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
-import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_SDK_NOT_INITIALIZED
@@ -46,14 +45,17 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.IronSource.createBannerForDemandOnly
-import com.ironsource.mediationsdk.IronSource.initISDemandOnly
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerLayout
 import com.ironsource.mediationsdk.utils.IronSourceUtils
 import com.ironsource.mediationsdk.utils.IronSourceUtils.getSDKVersion
+import com.unity3d.ironsourceads.InitListener
+import com.unity3d.ironsourceads.InitRequest
+import com.unity3d.ironsourceads.IronSourceAds
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatcher
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -72,15 +74,14 @@ class IronSourceMediationAdapterTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
   private val mockRtbSignalData = mock<RtbSignalData> { on { context } doReturn context }
   private val mockSignalCallbacks = mock<SignalCallbacks>()
-  private val bannerAdLoadCallback =
+  private val mockBannerAdLoadCallback =
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
-  private val interstitialAdLoadCallback =
+  private val mockInterstitialAdLoadCallback =
     mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
-  private val rewardedAdLoadCallback =
+  private val mockRewardedAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
 
   @Before
@@ -164,16 +165,30 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun initialize_withMediationConfigurations_invokesOnInitializationSucceeded() {
-    adapter.mediationAdapterInitializeVerifySuccess(
-      context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
-    )
+    mockStatic(IronSourceAds::class.java).use { mockedStatic ->
+      whenever(IronSourceAds.init(any(), any(), any())).thenAnswer { invocation ->
+        val listener = invocation.getArgument<InitListener>(2)
+        listener.onInitSuccess()
+        null
+      }
+
+      adapter.mediationAdapterInitializeVerifySuccess(
+        context,
+        mockInitializationCompleteCallback,
+        /* serverParameters= */ bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+      )
+    }
   }
 
   @Test
   fun initialize_withMultipleMediationConfigurations_invokesOnInitializationSucceededOnlyOnce() {
-    mockStatic(IronSource::class.java).use {
+    mockStatic(IronSourceAds::class.java).use { mockedStatic ->
+      val expectedAdFormats =
+        listOf(
+          IronSourceAds.AdFormat.BANNER,
+          IronSourceAds.AdFormat.INTERSTITIAL,
+          IronSourceAds.AdFormat.REWARDED,
+        )
       val mediationConfiguration1 =
         createMediationConfiguration(
           AdFormat.BANNER,
@@ -181,9 +196,14 @@ class IronSourceMediationAdapterTest {
         )
       val mediationConfiguration2 =
         createMediationConfiguration(
-          AdFormat.BANNER,
+          AdFormat.INTERSTITIAL,
           serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_2),
         )
+      whenever(IronSourceAds.init(any(), any(), any())).thenAnswer { invocation ->
+        val listener = invocation.getArgument<InitListener>(2)
+        listener.onInitSuccess()
+        null
+      }
 
       adapter.initialize(
         context,
@@ -192,13 +212,18 @@ class IronSourceMediationAdapterTest {
       )
 
       verify(mockInitializationCompleteCallback).onInitializationSucceeded()
-      it.verify {
-        initISDemandOnly(
+      mockedStatic.verify {
+        IronSourceAds.init(
+          eq(context),
+          argThat { initRequest ->
+            val appKeyMatches = initRequest.appKey == TEST_APP_ID_2
+            val adFormatsMatch =
+              initRequest.legacyAdFormats.containsAll(expectedAdFormats) &&
+                initRequest.legacyAdFormats.size == expectedAdFormats.size
+
+            appKeyMatches && adFormatsMatch
+          },
           any(),
-          argThat { appKey -> listOf(TEST_APP_ID_1, TEST_APP_ID_2).contains(appKey) },
-          eq(IronSource.AD_UNIT.INTERSTITIAL),
-          eq(IronSource.AD_UNIT.REWARDED_VIDEO),
-          eq(IronSource.AD_UNIT.BANNER),
         )
       }
     }
@@ -234,7 +259,7 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
-      bannerAdLoadCallback,
+      mockBannerAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "banner"),
@@ -250,8 +275,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
-      bannerAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+      mockBannerAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -266,8 +291,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
-      bannerAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockBannerAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -279,11 +304,11 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
-      bannerAdLoadCallback,
+      mockBannerAdLoadCallback,
       AdError(
         ERROR_BANNER_SIZE_MISMATCH,
         "There is no matching IronSource banner ad size for Google ad size: ${AdSize.SEARCH}",
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -296,7 +321,7 @@ class IronSourceMediationAdapterTest {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
 
-      adapter.loadBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
+      adapter.loadBannerAd(mediationAdConfiguration, mockBannerAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyBanner(activity, mockISBannerLayout, "0") }
     }
@@ -306,15 +331,15 @@ class IronSourceMediationAdapterTest {
   fun loadBannerAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
-    adapter.loadBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
+    adapter.loadBannerAd(mediationAdConfiguration, mockBannerAdLoadCallback)
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
-      bannerAdLoadCallback,
+      mockBannerAdLoadCallback,
       AdError(
         ERROR_AD_ALREADY_LOADED,
         "An IronSource banner is already loaded for instance ID: 0",
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -323,7 +348,7 @@ class IronSourceMediationAdapterTest {
   fun loadBannerAd_referenceToPreviouslyLoadedAdCleared_loadsSuccessfully() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
-    adapter.loadBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
+    adapter.loadBannerAd(mediationAdConfiguration, mockBannerAdLoadCallback)
     // Clear the ad reference's reference to the ad object.
     IronSourceBannerAd.availableBannerInstances["0"]?.clear()
     mockStatic(IronSource::class.java).use {
@@ -331,7 +356,7 @@ class IronSourceMediationAdapterTest {
       whenever(createBannerForDemandOnly(any(), any())) doReturn mockISBannerLayout
 
       // Reload an ad for the same instance ID (i.e. "0") as above.
-      adapter.loadBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
+      adapter.loadBannerAd(mediationAdConfiguration, mockBannerAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyBanner(activity, mockISBannerLayout, "0") }
     }
@@ -343,7 +368,7 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
+      mockInterstitialAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "interstitial"),
@@ -359,8 +384,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+      mockInterstitialAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -375,8 +400,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockInterstitialAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -386,7 +411,7 @@ class IronSourceMediationAdapterTest {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
 
-      adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+      adapter.loadInterstitialAd(mediationAdConfiguration, mockInterstitialAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyInterstitial(activity, "0") }
     }
@@ -398,24 +423,12 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRtbInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
+      mockInterstitialAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "RTB interstitial"),
         IRONSOURCE_SDK_ERROR_DOMAIN,
       ),
-    )
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_invalidContext_expectOnFailureCallbackWithAdError() {
-    adapter.setIsInitialized(true)
-    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
-
-    adapter.loadRtbInterstitialAdWithFailure(
-      mediationAdConfiguration,
-      interstitialAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
     )
   }
 
@@ -430,44 +443,24 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRtbInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockInterstitialAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_validInputAndBidToken_invokesLoadISDemandOnlyInterstitialWithAdm() {
-    mockStatic(IronSource::class.java).use {
-      adapter.setIsInitialized(true)
-      val mediationAdConfiguration =
-        createMediationInterstitialAdConfiguration(
-          activity,
-          bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK,
-        )
-
-      adapter.loadRtbInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
-
-      it.verify {
-        IronSource.setMetaData(eq("google_water_mark"), eq(TEST_WATERMARK))
-        IronSource.loadISDemandOnlyInterstitialWithAdm(activity, "0", TEST_BID_RESPONSE)
-      }
-    }
   }
 
   @Test
   fun loadInterstitialAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
-    adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+    adapter.loadInterstitialAd(mediationAdConfiguration, mockInterstitialAdLoadCallback)
 
     adapter.loadInterstitialAdWithFailure(
       mediationAdConfiguration,
-      interstitialAdLoadCallback,
+      mockInterstitialAdLoadCallback,
       AdError(
         ERROR_AD_ALREADY_LOADED,
         "An IronSource interstitial ad is already loading for instance ID: 0",
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -476,13 +469,13 @@ class IronSourceMediationAdapterTest {
   fun loadInterstitialAd_referenceToPreviouslyLoadedAdCleared_loadsSuccessfully() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
-    adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+    adapter.loadInterstitialAd(mediationAdConfiguration, mockInterstitialAdLoadCallback)
     // Clear the ad reference's reference to the ad object.
     IronSourceInterstitialAd.availableInterstitialInstances["0"]?.clear()
 
     mockStatic(IronSource::class.java).use {
       // Reload an ad for the same instance ID (i.e. "0") as above.
-      adapter.loadInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
+      adapter.loadInterstitialAd(mediationAdConfiguration, mockInterstitialAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyInterstitial(activity, "0") }
     }
@@ -494,11 +487,11 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
+      mockRewardedAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "rewarded"),
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -510,8 +503,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+      mockRewardedAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -526,8 +519,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockRewardedAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -537,7 +530,7 @@ class IronSourceMediationAdapterTest {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
 
-      adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+      adapter.loadRewardedAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
     }
@@ -549,24 +542,12 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRtbRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
+      mockRewardedAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "RTB rewarded"),
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
-    )
-  }
-
-  @Test
-  fun loadRtbRewardedAd_invalidContext_expectOnFailureCallbackWithAdError() {
-    adapter.setIsInitialized(true)
-    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
-
-    adapter.loadRtbRewardedAdWithFailure(
-      mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
     )
   }
 
@@ -581,44 +562,24 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRtbRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockRewardedAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
-  }
-
-  @Test
-  fun loadRtbRewardedAd_validInputAndBidToken_invokesLoadISDemandOnlyRewardedVideoWithAdm() {
-    mockStatic(IronSource::class.java).use {
-      adapter.setIsInitialized(true)
-      val mediationAdConfiguration =
-        createMediationRewardedAdConfiguration(
-          activity,
-          bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK,
-        )
-
-      adapter.loadRtbRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
-
-      it.verify {
-        IronSource.setMetaData(eq("google_water_mark"), eq(TEST_WATERMARK))
-        IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, "0", TEST_BID_RESPONSE)
-      }
-    }
   }
 
   @Test
   fun loadRewardedAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
-    adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+    adapter.loadRewardedAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
     adapter.loadRewardedAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
+      mockRewardedAdLoadCallback,
       AdError(
         ERROR_AD_ALREADY_LOADED,
         "An IronSource Rewarded ad is already loading for instance ID: 0",
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -627,13 +588,13 @@ class IronSourceMediationAdapterTest {
   fun loadRewardedAd_referenceToPreviouslyLoadedAdCleared_loadsSuccessfully() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
-    adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+    adapter.loadRewardedAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
     // Clear the ad reference's reference to the ad object.
     IronSourceRewardedAd.availableInstances["0"]?.clear()
 
     mockStatic(IronSource::class.java).use {
       // Reload an ad for the same instance ID (i.e. "0") as above.
-      adapter.loadRewardedAd(mediationAdConfiguration, rewardedAdLoadCallback)
+      adapter.loadRewardedAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
     }
@@ -645,11 +606,11 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedInterstitialAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
+      mockRewardedAdLoadCallback,
       AdError(
         ERROR_SDK_NOT_INITIALIZED,
         getUninitializedErrorMessage(adFormat = "rewarded"),
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -661,8 +622,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedInterstitialAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ERROR_DOMAIN),
+      mockRewardedAdLoadCallback,
+      AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT, INVALID_CONTEXT_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -677,8 +638,8 @@ class IronSourceMediationAdapterTest {
 
     adapter.loadRewardedInterstitialAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ERROR_DOMAIN),
+      mockRewardedAdLoadCallback,
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, INVALID_INSTANCE_ID_MESSAGE, ADAPTER_ERROR_DOMAIN),
     )
   }
 
@@ -688,7 +649,7 @@ class IronSourceMediationAdapterTest {
       adapter.setIsInitialized(true)
       val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
 
-      adapter.loadRewardedInterstitialAd(mediationAdConfiguration, rewardedAdLoadCallback)
+      adapter.loadRewardedInterstitialAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
     }
@@ -698,15 +659,15 @@ class IronSourceMediationAdapterTest {
   fun loadRewardedInterstitialAd_alreadyLoadedInstanceId_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
-    adapter.loadRewardedInterstitialAd(mediationAdConfiguration, rewardedAdLoadCallback)
+    adapter.loadRewardedInterstitialAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
     adapter.loadRewardedInterstitialAdWithFailure(
       mediationAdConfiguration,
-      rewardedAdLoadCallback,
+      mockRewardedAdLoadCallback,
       AdError(
         ERROR_AD_ALREADY_LOADED,
         "An IronSource Rewarded ad is already loading for instance ID: 0",
-        ERROR_DOMAIN,
+        ADAPTER_ERROR_DOMAIN,
       ),
     )
   }
@@ -715,13 +676,13 @@ class IronSourceMediationAdapterTest {
   fun loadRewardedInterstitialAd_referenceToPreviouslyLoadedAdCleared_loadsSuccessfully() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration = createMediationRewardedAdConfiguration(activity)
-    adapter.loadRewardedInterstitialAd(mediationAdConfiguration, rewardedAdLoadCallback)
+    adapter.loadRewardedInterstitialAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
     // Clear the ad reference's reference to the ad object.
     IronSourceRewardedAd.availableInstances["0"]?.clear()
 
     mockStatic(IronSource::class.java).use {
       // Reload an ad for the same instance ID (i.e. "0") as above.
-      adapter.loadRewardedInterstitialAd(mediationAdConfiguration, rewardedAdLoadCallback)
+      adapter.loadRewardedInterstitialAd(mediationAdConfiguration, mockRewardedAdLoadCallback)
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
     }
@@ -742,6 +703,16 @@ class IronSourceMediationAdapterTest {
 
   private fun getUninitializedErrorMessage(adFormat: String) =
     "Failed to load IronSource $adFormat ad since IronSource SDK is not initialized."
+
+  class InitRequestMatcher(
+    private val expectedAppKey: String,
+    private val expectedAdFormats: List<IronSourceAds.AdFormat>,
+  ) : ArgumentMatcher<InitRequest> {
+    override fun matches(argument: InitRequest?): Boolean {
+      return argument?.appKey == expectedAppKey &&
+        argument.legacyAdFormats.containsAll(expectedAdFormats)
+    }
+  }
 
   private companion object {
     const val TEST_APP_ID_1 = "testAppId1"

@@ -268,5 +268,12 @@ public class MyTargetAdapter extends MyTargetMediationAdapter
       Log.d(TAG, "Interstitial mediation Ad displayed.");
       listener.onAdOpened(MyTargetAdapter.this);
     }
+
+    @Override
+    public void onFailedToShow(@NonNull InterstitialAd interstitialAd) {
+      AdError error =
+          new AdError(ERROR_AD_FAILED_TO_SHOW, ERROR_MSG_AD_FAILED_TO_SHOW, ERROR_DOMAIN);
+      Log.e(TAG, error.getMessage());
+    }
   }
 }

@@ -14,3 +14,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "line"
 include ':line'
+include 'adaptertestkit'
+project(":adaptertestkit").projectDir = file("../adaptertestkit")

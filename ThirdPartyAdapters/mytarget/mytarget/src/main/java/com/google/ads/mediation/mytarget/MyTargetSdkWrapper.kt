@@ -14,10 +14,15 @@
 
 package com.google.ads.mediation.mytarget
 
+import android.content.Context
+import com.my.target.ads.RewardedAd
 import com.my.target.common.MyTargetVersion
 
 object MyTargetSdkWrapper {
   @JvmStatic
   val sdkVersion: String
     get() = MyTargetVersion.VERSION
+
+  @JvmStatic
+  fun createRewardedAd(slotId: Int, context: Context): RewardedAd = RewardedAd(slotId, context)
 }

@@ -28,17 +28,10 @@
         android:orientation="horizontal">
 
       <RadioButton
-          android:id="@+id/integration_adapter"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:checked = "true"
-          android:text="Adapter" />
-
-      <RadioButton
           android:id="@+id/integration_custom_event"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="Custom event" />
+          android:text="Custom event (Java)" />
     </RadioGroup>
 
     <TextView

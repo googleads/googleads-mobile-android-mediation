@@ -37,13 +37,14 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val adUnitId: String,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationInterstitialAd, AdLoad.Listener, InterstitialAdShowListener {
 
   private lateinit var molocoAd: InterstitialAd
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
-    Moloco.createInterstitial(adUnitId) { returnedAd ->
+    Moloco.createInterstitial(adUnitId, watermark) { returnedAd ->
       if (returnedAd == null) {
         val adError =
           AdError(
@@ -123,8 +124,11 @@ private constructor(
       }
 
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val watermark = mediationInterstitialAdConfiguration.watermark
 
-      return Result.success(MolocoInterstitialAd(mediationAdLoadCallback, adUnitId, bidResponse))
+      return Result.success(
+        MolocoInterstitialAd(mediationAdLoadCallback, adUnitId, bidResponse, watermark)
+      )
     }
   }
 }

@@ -31,14 +31,15 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
 
   public void onBannerAdLoaded(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource banner ad loaded for instance ID: %s", instanceId));
-    IronSourceBannerAd ironSourceBannerAd = IronSourceBannerAd.getFromAvailableInstances(
-        instanceId);
+    IronSourceBannerAd ironSourceBannerAd =
+        IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceBannerAd == null || ironSourceBannerAd.getIronSourceAdView() == null) {
       return;
     }
 
-    ironSourceBannerAd.getIronSourceAdView()
+    ironSourceBannerAd
+        .getIronSourceAdView()
         .addView(ironSourceBannerAd.getIronSourceBannerLayout());
 
     if (ironSourceBannerAd.getAdLoadCallback() != null) {
@@ -47,13 +48,16 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
     }
   }
 
-  public void onBannerAdLoadFailed(@NonNull final String instanceId,
-      @NonNull final IronSourceError ironSourceError) {
-    final AdError loadError = new AdError(ironSourceError.getErrorCode(),
-        ironSourceError.getErrorMessage(), IRONSOURCE_SDK_ERROR_DOMAIN);
+  public void onBannerAdLoadFailed(
+      @NonNull final String instanceId, @NonNull final IronSourceError ironSourceError) {
+    final AdError loadError =
+        new AdError(
+            ironSourceError.getErrorCode(),
+            ironSourceError.getErrorMessage(),
+            IRONSOURCE_SDK_ERROR_DOMAIN);
     Log.w(TAG, loadError.toString());
-    IronSourceBannerAd ironSourceBannerAd = IronSourceBannerAd.getFromAvailableInstances(
-        instanceId);
+    IronSourceBannerAd ironSourceBannerAd =
+        IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceBannerAd == null) {
       return;
@@ -74,8 +78,8 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
 
   public void onBannerAdShown(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource banner ad shown for instance ID: %s", instanceId));
-    IronSourceBannerAd ironSourceBannerAd = IronSourceBannerAd.getFromAvailableInstances(
-        instanceId);
+    IronSourceBannerAd ironSourceBannerAd =
+        IronSourceBannerAd.getFromAvailableInstances(instanceId);
     // The banner ad instance will be null if it fails to load or another banner ad is showing.
     if (ironSourceBannerAd != null) {
       MediationBannerAdCallback adCallback = ironSourceBannerAd.getBannerAdCallback();
@@ -89,8 +93,8 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
 
   public void onBannerAdClicked(@NonNull String instanceId) {
     Log.d(TAG, String.format("IronSource banner ad clicked for instance ID: %s", instanceId));
-    IronSourceBannerAd ironSourceBannerAd = IronSourceBannerAd.getFromAvailableInstances(
-        instanceId);
+    IronSourceBannerAd ironSourceBannerAd =
+        IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceBannerAd != null) {
       MediationBannerAdCallback adCallback = ironSourceBannerAd.getBannerAdCallback();
@@ -102,11 +106,13 @@ public class IronSourceBannerAdListener implements ISDemandOnlyBannerListener {
   }
 
   public void onBannerAdLeftApplication(@NonNull String instanceId) {
-    Log.d(TAG, String.format(
-        "IronSource banner ad has caused user to leave the application for instance ID: %s",
-        instanceId));
-    IronSourceBannerAd ironSourceBannerAd = IronSourceBannerAd.getFromAvailableInstances(
-        instanceId);
+    Log.d(
+        TAG,
+        String.format(
+            "IronSource banner ad has caused user to leave the application for instance ID: %s",
+            instanceId));
+    IronSourceBannerAd ironSourceBannerAd =
+        IronSourceBannerAd.getFromAvailableInstances(instanceId);
 
     if (ironSourceBannerAd != null) {
       MediationBannerAdCallback adCallback = ironSourceBannerAd.getBannerAdCallback();
