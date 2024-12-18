@@ -119,7 +119,7 @@ class MolocoMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
-    val mediationInfo = MediationInfo(Companion::class.java.name)
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
     val initParams = MolocoInitParams(context, appKeyForInit, mediationInfo)
     Moloco.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
@@ -186,6 +186,7 @@ class MolocoMediationAdapter : RtbAdapter() {
 
   companion object {
     private val TAG = MolocoMediationAdapter::class.simpleName
+    const val MEDIATION_PLATFORM_NAME = "AdMob"
     const val KEY_APP_KEY = "app_key"
     const val KEY_AD_UNIT_ID = "ad_unit_id"
     const val ERROR_CODE_MISSING_APP_KEY = 101
