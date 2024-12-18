@@ -25,6 +25,7 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.moloco.MolocoAdapterUtils.setMolocoIsAgeRestricted
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
@@ -43,6 +44,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import com.google.common.truth.Truth.assertThat
 import com.moloco.sdk.BuildConfig
 import com.moloco.sdk.publisher.Banner
 import com.moloco.sdk.publisher.CreateBannerCallback
@@ -95,6 +97,7 @@ class MolocoMediationAdapterTest {
   private val mockInterstitialAd = mock<InterstitialAd>()
   private val mockRewardedAd = mock<RewardedInterstitialAd>()
   private val mockBannerAd = mock<Banner>()
+  private val molocoInitParamsCaptor = argumentCaptor<MolocoInitParams>()
 
   @Before
   fun setUp() {
@@ -181,8 +184,10 @@ class MolocoMediationAdapterTest {
         listOf(mediationConfiguration),
       )
 
-      mockMoloco.verify { initialize(any(), any()) }
+      mockMoloco.verify { initialize(molocoInitParamsCaptor.capture(), any()) }
     }
+    val molocoInitParams = molocoInitParamsCaptor.firstValue
+    assertThat(molocoInitParams.mediationInfo.name).isEqualTo(MEDIATION_PLATFORM_NAME)
   }
 
   @Test
