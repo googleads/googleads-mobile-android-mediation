@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.AdLoader.CollectSignalCallback
+import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdErrorCode
@@ -995,7 +996,7 @@ class LineMediationAdapterTest {
         mockMediationInterstitialAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadInterstitialAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onLoad(mockFiveAdInterstitial)
       verify(mockFiveAdInterstitial).setEventListener(isA<LineInterstitialAd>())
@@ -1023,7 +1024,7 @@ class LineMediationAdapterTest {
         mockMediationInterstitialAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadInterstitialAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onLoad(mockFiveAdInterstitial)
       verify(mockFiveAdInterstitial).enableSound(false)
@@ -1051,7 +1052,7 @@ class LineMediationAdapterTest {
         mockMediationInterstitialAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadInterstitialAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onError(FiveAdErrorCode.INTERNAL_ERROR)
       val expectedAdError =
@@ -1342,7 +1343,7 @@ class LineMediationAdapterTest {
         mockMediationRewardedAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadRewardAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadRewardAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onLoad(mockFiveAdVideoReward)
       verify(mockFiveAdVideoReward).setEventListener(isA<LineRewardedAd>())
@@ -1371,7 +1372,7 @@ class LineMediationAdapterTest {
         mockMediationRewardedAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadRewardAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadRewardAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onLoad(mockFiveAdVideoReward)
       verify(mockFiveAdVideoReward).enableSound(false)
@@ -1399,7 +1400,7 @@ class LineMediationAdapterTest {
         mockMediationRewardedAdLoadCallback,
       )
 
-      verify(mockAdLoader).loadRewardAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadRewardAd(any<BidData>(), loadCallbackCaptor.capture())
       val loadCallback = loadCallbackCaptor.firstValue
       loadCallback.onError(FiveAdErrorCode.INTERNAL_ERROR)
       val expectedAdError =
