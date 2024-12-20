@@ -21,22 +21,27 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.ads.mediation.maio.MaioAdsManagerListener;
+
 import com.google.ads.mediation.maio.MaioMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-import jp.maio.sdk.android.FailNotificationReason;
-import jp.maio.sdk.android.MaioAds;
+
+import jp.maio.sdk.android.v2.interstitial.IInterstitialLoadCallback;
+import jp.maio.sdk.android.v2.interstitial.IInterstitialShowCallback;
+import jp.maio.sdk.android.v2.request.MaioRequest;
 
 /**
  * maio mediation adapter for AdMob Interstitial videos.
  */
-public class Interstitial extends MaioMediationAdapter
-    implements MediationInterstitialAdapter, MaioAdsManagerListener {
+public class Interstitial extends MaioMediationAdapter implements MediationInterstitialAdapter {
 
   private MediationInterstitialListener mediationInterstitialListener;
+
+  private jp.maio.sdk.android.v2.interstitial.Interstitial maioInterstitial;
+
+  private Context targetContext;
 
   // region MediationInterstitialAdapter implementation
   @Override
@@ -63,6 +68,7 @@ public class Interstitial extends MaioMediationAdapter
       this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
       return;
     }
+    this.targetContext = context;
 
     this.mediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
     if (TextUtils.isEmpty(mediaID)) {
@@ -82,89 +88,63 @@ public class Interstitial extends MaioMediationAdapter
       return;
     }
 
-    MaioAds.setAdTestMode(mediationAdRequest.isTesting());
-    MaioAdsManager.getManager(mediaID)
-        .initialize(
-            (Activity) context,
-            new MaioAdsManager.InitializationListener() {
-              @Override
-              public void onMaioInitialized() {
-                MaioAdsManager.getManager(mediaID).loadAd(zoneID, Interstitial.this);
-              }
-            });
+    this.maioInterstitial = jp.maio.sdk.android.v2.interstitial.Interstitial.loadAd(
+        new MaioRequest(zoneID, mediationAdRequest.isTesting(), ""), context, new IInterstitialLoadCallback() {
+          @Override
+          public void loaded(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial) {
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdLoaded(Interstitial.this);
+            }
+          }
+
+          @Override
+          public void failed(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial, int errorCode) {
+            AdError error = getAdError(errorCode);
+            Log.w(TAG, error.getMessage());
+            if (mediationInterstitialListener != null) {
+              mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
+            }
+          }
+        });
   }
 
   @Override
   public void showInterstitial() {
-    MaioAdsManager.getManager(mediaID).showAd(zoneID, Interstitial.this);
-  }
-  // endregion
+    if (this.maioInterstitial != null) {
+      this.maioInterstitial.show(this.targetContext, new IInterstitialShowCallback() {
+        @Override
+        public void opened(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial) {
+          if (mediationInterstitialListener != null) {
+            mediationInterstitialListener.onAdOpened(Interstitial.this);
+          }
+        }
 
-  // region MaioAdsManagerListener implementation
-  @Override
-  public void onChangedCanShow(String zoneId, boolean isAvailable) {
-    if (this.mediationInterstitialListener != null && isAvailable) {
-      this.mediationInterstitialListener.onAdLoaded(Interstitial.this);
-    }
-  }
+        @Override
+        public void closed(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial) {
+          if (mediationInterstitialListener != null) {
+            mediationInterstitialListener.onAdClosed(Interstitial.this);
+          }
+        }
 
-  @Override
-  public void onFailed(FailNotificationReason reason, String zoneId) {
-    AdError error = MaioMediationAdapter.getAdError(reason);
-    Log.w(TAG, error.getMessage());
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
-    }
-  }
+        @Override
+        public void clicked(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial) {
+          if (mediationInterstitialListener != null) {
+            mediationInterstitialListener.onAdClicked(Interstitial.this);
+            mediationInterstitialListener.onAdLeftApplication(Interstitial.this);
+          }
+        }
 
-  @Override
-  public void onAdFailedToShow(@NonNull AdError error) {
-    Log.w(TAG, error.getMessage());
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdOpened(Interstitial.this);
-      this.mediationInterstitialListener.onAdClosed(Interstitial.this);
-    }
-  }
-
-  @Override
-  public void onAdFailedToLoad(@NonNull AdError error) {
-    Log.w(TAG, error.getMessage());
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdFailedToLoad(Interstitial.this, error);
-    }
-  }
-
-  @Override
-  public void onOpenAd(String zoneId) {
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdOpened(Interstitial.this);
-    }
-  }
-
-  @Override
-  public void onStartedAd(String zoneId) {
-    // No relevant Interstitial Ad event to forward to the Google Mobile Ads SDK.
-  }
-
-  @Override
-  public void onClickedAd(String zoneId) {
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdClicked(Interstitial.this);
-      this.mediationInterstitialListener.onAdLeftApplication(Interstitial.this);
-    }
-  }
-
-  @Override
-  public void onFinishedAd(int playtime, boolean skipped, int duration, String zoneId) {
-    // No relevant Interstitial Ad event to forward to the Google Mobile Ads SDK.
-  }
-
-  @Override
-  public void onClosedAd(String zoneId) {
-    if (this.mediationInterstitialListener != null) {
-      this.mediationInterstitialListener.onAdClosed(Interstitial.this);
+        @Override
+        public void failed(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial, int errorCode) {
+          AdError error = getAdError(errorCode);
+          Log.w(TAG, error.getMessage());
+          if (mediationInterstitialListener != null) {
+            mediationInterstitialListener.onAdOpened(Interstitial.this);
+            mediationInterstitialListener.onAdClosed(Interstitial.this);
+          }
+        }
+      });
     }
   }
   // endregion
-
 }
