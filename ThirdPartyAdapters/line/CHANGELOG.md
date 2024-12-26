@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed signals collection process.
+
 #### Version 2.9.20241129.0
 - Added bidding support for banner, interstitial, rewarded and native ad formats.
 - Verified compatibility with FiveAd SDK version 2.9.20241129.0

@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.AdLoader.CollectSignalCallback
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.google.android.gms.ads.AdError
@@ -52,7 +53,6 @@ class LineMediationAdapter : RtbAdapter() {
   private lateinit var interstitialAd: LineInterstitialAd
   private lateinit var rewardedAd: LineRewardedAd
   private lateinit var nativeAd: LineNativeAd
-  private lateinit var adLoader: AdLoader
 
   override fun getSDKVersionInfo(): VersionInfo {
     val versionString = LineSdkWrapper.delegate.getSdkVersion()
@@ -117,23 +117,15 @@ class LineMediationAdapter : RtbAdapter() {
       return
     }
 
-    val appIdForInit = appIds[0]
+    initAppId = appIds.first()
     if (appIds.size > 1) {
       val message =
-        "Multiple $KEY_APP_ID entries found: ${appIds}. Using '${appIdForInit}' to initialize the Line SDK"
+        "Multiple $KEY_APP_ID entries found: ${appIds}. Using '${initAppId}' to initialize the Line SDK"
       Log.w(TAG, message)
     }
 
-    val loader = AdLoader.getAdLoader(context, FiveAdConfig(appIdForInit))
-    if (loader == null) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_NULL_AD_LOADER)
-      return
-    }
-
-    adLoader = loader
-
     try {
-      LineInitializer.initialize(context, appIdForInit)
+      LineInitializer.initialize(context, initAppId)
     } catch (exception: IllegalArgumentException) {
       exception.message?.let { initializationCompleteCallback.onInitializationFailed(it) }
       return
@@ -158,8 +150,22 @@ class LineMediationAdapter : RtbAdapter() {
       signalCallbacks.onFailure(adError)
       return
     }
+
+    if (initAppId.isEmpty()) {
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
+    val adConfig = FiveAdConfig(initAppId)
+    val adLoader = AdLoader.forConfig(signalData.context, adConfig)
+    if (adLoader == null) {
+      val adError = AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, SDK_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
     adLoader.collectSignal(
-      slotIds.first(),
+      AdSlotConfig(slotIds.first()),
       object : CollectSignalCallback {
         override fun onCollect(signalString: String) {
           signalCallbacks.onSuccess(signalString)
@@ -273,9 +279,11 @@ class LineMediationAdapter : RtbAdapter() {
     const val ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN = 105
     const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
     const val ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED = 106
+    const val ERROR_CODE_NULL_AD_LOADER = 107
     const val ERROR_MSG_MINIMUM_NATIVE_INFO_NOT_RECEIVED =
       "Complete required data for Native ads was not received. Skipping Ad."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
     const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
+    private var initAppId: String = ""
   }
 }

@@ -79,7 +79,7 @@ private constructor(
   fun loadRtbAd() {
     val activity = activityReference.get() ?: return
     val fiveAdConfig = FiveAdConfig(appId)
-    val adLoader = AdLoader.getAdLoader(activity, fiveAdConfig) ?: return
+    val adLoader = AdLoader.forConfig(activity, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadRewardAd(
       bidData,

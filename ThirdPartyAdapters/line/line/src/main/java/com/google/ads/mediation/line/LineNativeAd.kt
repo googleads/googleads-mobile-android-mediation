@@ -88,7 +88,7 @@ private constructor(
 
   fun loadRtbAd() {
     val fiveAdConfig = FiveAdConfig(appId)
-    val adLoader = AdLoader.getAdLoader(context, fiveAdConfig) ?: return
+    val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadNativeAd(
       bidData,

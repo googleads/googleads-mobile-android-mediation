@@ -208,7 +208,7 @@ class LineNativeAdTest {
   fun loadRtbNativeAd_onLoad_mapsAdAndThenLoadsFiveAdNative() {
     Mockito.mockStatic(AdLoader::class.java).use {
       val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.getAdLoader(eq(context), any())) doReturn mockAdLoader
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
       initiateImageLoadCallbacks()
 
       lineNativeAd.loadRtbAd()
