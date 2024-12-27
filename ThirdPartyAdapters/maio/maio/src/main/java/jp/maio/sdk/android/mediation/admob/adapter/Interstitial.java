@@ -21,13 +21,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.ads.mediation.maio.MaioMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
-
 import jp.maio.sdk.android.v2.interstitial.IInterstitialLoadCallback;
 import jp.maio.sdk.android.v2.interstitial.IInterstitialShowCallback;
 import jp.maio.sdk.android.v2.request.MaioRequest;
@@ -89,7 +87,7 @@ public class Interstitial extends MaioMediationAdapter implements MediationInter
     }
 
     this.maioInterstitial = jp.maio.sdk.android.v2.interstitial.Interstitial.loadAd(
-        new MaioRequest(zoneID, mediationAdRequest.isTesting(), ""), context, new IInterstitialLoadCallback() {
+        new MaioRequest(zoneID, mediationAdRequest.isTesting(), /* bidData= */ ""), context, new IInterstitialLoadCallback() {
           @Override
           public void loaded(@NonNull jp.maio.sdk.android.v2.interstitial.Interstitial interstitial) {
             if (mediationInterstitialListener != null) {

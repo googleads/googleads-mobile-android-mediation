@@ -35,7 +35,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
-
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 import jp.maio.sdk.android.v2.errorcode.ErrorCode;
 import jp.maio.sdk.android.v2.request.MaioRequest;
@@ -232,7 +231,7 @@ public class MaioMediationAdapter extends Adapter implements MediationRewardedAd
     }
 
     this.maioRewarded = Rewarded.loadAd(new MaioRequest(zoneID,
-      mediationRewardedAdConfiguration.isTestRequest(), ""), context, new IRewardedLoadCallback() {
+      mediationRewardedAdConfiguration.isTestRequest(), /* bidData= */ ""), context, new IRewardedLoadCallback() {
       @Override
       public void loaded(@NonNull Rewarded rewarded) {
         if (adLoadCallback != null) {
