@@ -94,7 +94,7 @@ public class MaioMediationAdapter extends Adapter implements MediationRewardedAd
     // 20400: failedPlayback
     // 20500: nullArgViewContext
    return new AdError(reason,
-        "Failed to request ad from Maio: " + ErrorCode.Companion.fromInt(reason).toString(), MAIO_SDK_ERROR_DOMAIN);
+        "Failed to request ad from Maio: " + reason, MAIO_SDK_ERROR_DOMAIN);
   }
 
   /**
