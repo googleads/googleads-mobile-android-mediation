@@ -67,8 +67,8 @@ private constructor(
       mediationAdLoadCallback.onFailure(adError)
       return
     }
-    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
     LineInitializer.initialize(activity, appId)
+    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
     rewardedAd.setLoadListener(this)
     if (networkExtras != null) {
       rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))

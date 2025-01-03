@@ -2,6 +2,7 @@
 
 #### Next Version
 - Fixed signals collection process.
+- Fixed initialization process for waterfall interstitial and rewarded ad formats.
 
 #### Version 2.9.20241129.0
 - Added bidding support for banner, interstitial, rewarded and native ad formats.

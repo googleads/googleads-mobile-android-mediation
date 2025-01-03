@@ -66,8 +66,8 @@ private constructor(
       mediationAdLoadCallback.onFailure(adError)
       return
     }
-    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(activity, slotId)
     LineInitializer.initialize(activity, appId)
+    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(activity, slotId)
     interstitialAd.setLoadListener(this)
     if (networkExtras != null) {
       interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
