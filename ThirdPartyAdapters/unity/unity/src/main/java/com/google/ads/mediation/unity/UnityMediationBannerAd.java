@@ -43,6 +43,7 @@ import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
+import java.util.UUID;
 
 /**
  * The {@link UnityMediationBannerAd} is used to load Unity Banner ads and mediate the callbacks
@@ -224,7 +225,9 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
             }
 
             unityBannerViewWrapper.setListener(UnityMediationBannerAd.this);
-            UnityAdsLoadOptions loadOptions = unityAdsLoader.createUnityAdsLoadOptions();
+            String objectId = UUID.randomUUID().toString();
+            UnityAdsLoadOptions loadOptions =
+                unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
             loadOptions.set(KEY_WATERMARK, mediationBannerAdConfiguration.getWatermark());
             if (adMarkup != null) {
               loadOptions.setAdMarkup(adMarkup);
