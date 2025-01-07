@@ -16,7 +16,6 @@ package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
-import android.app.Activity;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
@@ -40,7 +39,6 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
 
   protected MediationAppOpenAdCallback appOpenAdCallback;
   protected MintegralSplashAdWrapper splashAdWrapper;
-  protected Activity activity;
 
   protected MintegralAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration adConfiguration,

@@ -46,7 +46,6 @@ public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
 
   @Override
   public void loadAd() {
-    activity = (Activity) adConfiguration.getContext();
     Bundle serverParameters = adConfiguration.getServerParameters();
     String adUnitId = serverParameters.getString(MintegralConstants.AD_UNIT_ID);
     String placementId = serverParameters.getString(MintegralConstants.PLACEMENT_ID);
@@ -64,6 +63,10 @@ public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
 
   @Override
   public void showAd(@NonNull Context context) {
+    // Context passed here is the activity that the publisher passed to GMA SDK's show() method
+    // (https://developers.google.com/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
+    // So, this will be an activity context.
+    Activity activity = (Activity) context;
     if (splashAdWrapper != null) {
       RelativeLayout layout = new RelativeLayout(activity);
       ((ViewGroup) (activity.getWindow().getDecorView().findViewById(android.R.id.content)))
