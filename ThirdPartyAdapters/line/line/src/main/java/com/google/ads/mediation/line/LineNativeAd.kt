@@ -31,11 +31,11 @@ import com.five_corp.ad.FiveAdNative
 import com.five_corp.ad.FiveAdNativeEventListener
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.formats.NativeAd
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
+import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -58,9 +58,9 @@ private constructor(
   private val watermark: String,
   private val nativeAdOptions: NativeAdOptions,
   private val mediationNativeAdLoadCallback:
-    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val adapterScope: CoroutineScope,
-) : UnifiedNativeAdMapper(), FiveAdLoadListener, FiveAdNativeEventListener {
+) : NativeAdMapper(), FiveAdLoadListener, FiveAdNativeEventListener {
 
   private var mediationNativeAdCallback: MediationNativeAdCallback? = null
   private lateinit var nativeAd: FiveAdNative
@@ -239,7 +239,7 @@ private constructor(
     fun newInstance(
       mediationNativeAdConfiguration: MediationNativeAdConfiguration,
       mediationNativeAdLoadCallback:
-        MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
+        MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
       coroutineContext: CoroutineContext =
         LineSdkFactory.BACKGROUND_EXECUTOR.asCoroutineDispatcher(),
     ): Result<LineNativeAd> {

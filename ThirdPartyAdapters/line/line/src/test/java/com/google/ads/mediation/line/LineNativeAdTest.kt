@@ -19,7 +19,7 @@ import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -73,7 +73,7 @@ class LineNativeAdTest {
     }
   private val mockMediationAdCallback = mock<MediationNativeAdCallback>()
   private val mediationAdLoadCallback:
-    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
     mock()
   private val testCoroutineScope = TestScope(UnconfinedTestDispatcher())
 

@@ -1,6 +1,7 @@
 ## LINE Android Mediation Adapter Changelog
 
 #### Next Version
+- Removed deprecated `UnifiedNativeAdMapper` class in favor of `NativeAdMapper`
 - Fixed signals collection process.
 - Fixed initialization process for waterfall interstitial and rewarded ad formats.
 

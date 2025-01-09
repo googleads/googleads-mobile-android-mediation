@@ -38,7 +38,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
@@ -209,9 +209,9 @@ class LineMediationAdapter : RtbAdapter() {
     }
   }
 
-  override fun loadNativeAd(
+  override fun loadNativeAdMapper(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
     LineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
@@ -249,9 +249,9 @@ class LineMediationAdapter : RtbAdapter() {
     }
   }
 
-  override fun loadRtbNativeAd(
+  override fun loadRtbNativeAdMapper(
     adConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
     LineNativeAd.newInstance(adConfiguration, callback).onSuccess {
       nativeAd = it
