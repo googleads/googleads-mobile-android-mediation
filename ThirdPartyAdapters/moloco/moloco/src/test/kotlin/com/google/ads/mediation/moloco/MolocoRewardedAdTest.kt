@@ -184,7 +184,7 @@ class MolocoRewardedAdTest {
         )
       }
       val capturedCallback = createRewardedCaptor.firstValue
-      capturedCallback.invoke(mockRewardedAd)
+      capturedCallback.invoke(mockRewardedAd, /* error= */ null)
     }
   }
 

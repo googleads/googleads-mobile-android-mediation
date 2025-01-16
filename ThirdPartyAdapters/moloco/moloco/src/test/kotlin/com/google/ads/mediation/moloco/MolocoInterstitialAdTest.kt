@@ -155,7 +155,7 @@ class MolocoInterstitialAdTest {
         )
       }
       val capturedCallback = createInterstitialCaptor.firstValue
-      capturedCallback.invoke(mockInterstitialAd)
+      capturedCallback.invoke(mockInterstitialAd, /* error= */ null)
     }
   }
 

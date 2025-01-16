@@ -134,7 +134,8 @@ class MolocoMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    Moloco.getBidToken { bidToken: String, errorType: MolocoAdError.ErrorType? ->
+    Moloco.getBidToken(signalData.context) { bidToken: String, errorType: MolocoAdError.ErrorType?
+      ->
       if (errorType != null) {
         val adError = AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
         callback.onFailure(adError)
@@ -191,12 +192,12 @@ class MolocoMediationAdapter : RtbAdapter() {
     const val KEY_AD_UNIT_ID = "ad_unit_id"
     const val ERROR_CODE_MISSING_APP_KEY = 101
     const val ERROR_CODE_MISSING_AD_UNIT = 102
-    const val ERROR_CODE_MISSING_AD_FAILED_TO_CREATE = 103
+    const val ERROR_CODE_AD_IS_NULL = 103
     const val ERROR_MSG_MISSING_APP_KEY =
       "Missing or invalid App Key configured for this ad source instance in the AdMob or Ad Manager UI."
     const val ERROR_MSG_MISSING_AD_UNIT =
       "Missing or invalid Ad Unit configured for this ad source instance in the AdMob or Ad Manager UI."
-    const val ERROR_MSG_MISSING_AD_FAILED_TO_CREATE = "Create Ad object returned was null."
+    const val ERROR_MSG_AD_IS_NULL = "Moloco ad object returned was null."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.moloco"
     const val SDK_ERROR_DOMAIN = "com.moloco.sdk"
   }
