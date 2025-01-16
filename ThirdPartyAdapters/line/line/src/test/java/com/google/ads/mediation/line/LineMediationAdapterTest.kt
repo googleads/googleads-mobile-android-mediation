@@ -121,6 +121,7 @@ class LineMediationAdapterTest {
   fun setUp() {
     LineSdkWrapper.delegate = mockSdkWrapper
     LineSdkFactory.delegate = mockSdkFactory
+    LineInitializer.resetFiveAdConfig()
   }
 
   // region Version Tests

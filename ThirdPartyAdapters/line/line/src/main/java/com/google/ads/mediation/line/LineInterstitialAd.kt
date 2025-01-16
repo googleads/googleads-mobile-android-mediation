@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.util.Log
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
-import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdInterstitial
@@ -77,7 +76,7 @@ private constructor(
 
   fun loadRtbAd() {
     val activity = activityReference.get() ?: return
-    val fiveAdConfig = FiveAdConfig(appId)
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(activity, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadInterstitialAd(

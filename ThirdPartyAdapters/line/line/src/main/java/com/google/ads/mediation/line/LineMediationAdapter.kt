@@ -20,7 +20,6 @@ import androidx.annotation.VisibleForTesting
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.AdLoader.CollectSignalCallback
 import com.five_corp.ad.AdSlotConfig
-import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.VersionInfo
@@ -157,7 +156,7 @@ class LineMediationAdapter : RtbAdapter() {
       signalCallbacks.onFailure(adError)
       return
     }
-    val adConfig = FiveAdConfig(initAppId)
+    val adConfig = LineInitializer.getFiveAdConfig(initAppId)
     val adLoader = AdLoader.forConfig(signalData.context, adConfig)
     if (adLoader == null) {
       val adError = AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, SDK_ERROR_DOMAIN)

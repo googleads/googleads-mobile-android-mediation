@@ -20,7 +20,6 @@ import android.util.Log
 import android.view.View
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
-import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdCustomLayoutEventListener
 import com.five_corp.ad.FiveAdErrorCode
@@ -83,7 +82,7 @@ private constructor(
   }
 
   fun loadRtbAd() {
-    val fiveAdConfig = FiveAdConfig(appId)
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadBannerAd(

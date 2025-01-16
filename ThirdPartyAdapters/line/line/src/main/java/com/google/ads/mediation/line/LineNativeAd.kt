@@ -23,7 +23,6 @@ import android.widget.ImageView
 import androidx.core.graphics.drawable.toDrawable
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
-import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
@@ -87,7 +86,7 @@ private constructor(
   }
 
   fun loadRtbAd() {
-    val fiveAdConfig = FiveAdConfig(appId)
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadNativeAd(
