@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next version
+- Updated to not check for activity context when it is not actually needed.
+
 #### Version 4.12.5.1
 - Fixed bidding banner ad load failures by setting the object ID when loading ads.
 
