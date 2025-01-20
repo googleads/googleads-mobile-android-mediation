@@ -117,15 +117,6 @@ public class UnityRewardedAd implements MediationRewardedAd {
   public void loadAd() {
 
     Context context = mediationRewardedAdConfiguration.getContext();
-
-    if (!(context instanceof Activity)) {
-      AdError adError =
-          new AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN);
-      Log.w(TAG, adError.toString());
-      mediationAdLoadCallback.onFailure(adError);
-      return;
-    }
-
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
     final String placementId = serverParameters.getString(UnityMediationAdapter.KEY_PLACEMENT_ID);

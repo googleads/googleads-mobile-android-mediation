@@ -107,7 +107,6 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   @IntDef(
       value = {
         ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_REQUIRES_ACTIVITY_CONTEXT,
         ERROR_INITIALIZATION_FAILURE,
         ERROR_CANNOT_PLAY_AD,
         ERROR_CANNOT_GET_BID_TOKEN
@@ -119,14 +118,15 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 101;
 
-  /**
-   * Liftoff Monetize requires an {@link android.app.Activity} context to request ads.
-   */
-  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+  // Commenting this out since this error code is not returned by this adapter anymore. But, still
+  // having this as a comment so that, if we look at error code 103 in the logs, we have this as a
+  // reference to understand what it means.
+  // Also, shouldn't reuse 103 for any new error type since that could cause confusion when looking
+  // at the logs.
+  /** Liftoff Monetize requires an {@link android.app.Activity} context to request ads. */
+  // public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
-  /**
-   * Vungle SDK failed to initialize.
-   */
+  /** Vungle SDK failed to initialize. */
   public static final int ERROR_INITIALIZATION_FAILURE = 105;
 
   /**

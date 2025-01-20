@@ -15,6 +15,10 @@
 package com.applovin.mediation;
 
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -26,6 +30,8 @@ import com.applovin.sdk.AppLovinErrorCodes;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import java.util.ArrayList;
 
 /**
@@ -42,8 +48,15 @@ public class AppLovinUtils {
       "AppLovin SDK returned a load failure callback with reason: ";
 
   /**
-   * Keys for retrieving values from the server parameters.
+   * Error message when the user is a child.
+   *
+   * <p>See {@link ERROR_CHILD_USER} for more details.
    */
+  public static final String ERROR_MSG_CHILD_USER =
+      "MobileAds.getRequestConfiguration() indicates the user is a child. AppLovin SDK 13.0.0 or"
+          + " higher does not support child users.";
+
+  /** Keys for retrieving values from the server parameters. */
   public static class ServerParameterKeys {
 
     public static final String SDK_KEY = "sdkKey";
@@ -166,5 +179,23 @@ public class AppLovinUtils {
       return AppLovinAdSize.LEADER;
     }
     return null;
+  }
+
+  /** Returns whether the user has been tagged as a child or not. */
+  public static boolean isChildUser() {
+    RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    return requestConfiguration.getTagForChildDirectedTreatment()
+            == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+  }
+
+  /**
+   * Returns error object that should be passed back through callback when a request is made for a
+   * user who is a child.
+   *
+   * <p>See {@link ERROR_CHILD_USER} for more details.
+   */
+  public static AdError getChildUserError() {
+    return new AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN);
   }
 }

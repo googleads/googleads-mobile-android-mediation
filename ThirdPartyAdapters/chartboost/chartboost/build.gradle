@@ -3,6 +3,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'kotlin-android'
 apply plugin: 'jacoco'
 
+android.buildFeatures.buildConfig true
+
 /**
  * Extra properties used by the project.
  */
@@ -10,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Chartboost"
     // String property to store version name.
-    stringVersion = "9.7.0.0"
+    stringVersion = "9.8.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -18,11 +20,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'com.google.ads.mediation.chartboost'
+    compileSdkVersion 34
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 9070000
+        versionCode 9080100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
@@ -112,9 +115,9 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.chartboost:chartboost-sdk:9.7.0'
+    implementation 'com.chartboost:chartboost-sdk:9.8.2'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'junit:junit:4.13.2'

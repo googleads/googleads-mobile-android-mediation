@@ -17,8 +17,12 @@ package com.google.ads.mediation.line
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdLoader.CollectSignalCallback
+import com.five_corp.ad.AdSlotConfig
+import com.five_corp.ad.FiveAdErrorCode
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.VersionInfo
-import com.google.android.gms.ads.mediation.Adapter
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -33,13 +37,16 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 
 /**
  * Line Adapter for GMA SDK used to initialize and load ads from the Line SDK. This class should not
  * be used directly by publishers.
  */
-class LineMediationAdapter : Adapter() {
+class LineMediationAdapter : RtbAdapter() {
 
   private lateinit var bannerAd: LineBannerAd
   private lateinit var interstitialAd: LineInterstitialAd
@@ -60,7 +67,7 @@ class LineMediationAdapter : Adapter() {
     val logMessage =
       String.format(
         "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
-        versionString
+        versionString,
       )
     Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
@@ -83,7 +90,7 @@ class LineMediationAdapter : Adapter() {
     val logMessage =
       String.format(
         "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-        versionString
+        versionString,
       )
     Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
@@ -109,21 +116,66 @@ class LineMediationAdapter : Adapter() {
       return
     }
 
-    val appIdForInit = appIds[0]
+    initAppId = appIds.first()
     if (appIds.size > 1) {
       val message =
-        "Multiple $KEY_APP_ID entries found: ${appIds}. Using '${appIdForInit}' to initialize the Line SDK"
+        "Multiple $KEY_APP_ID entries found: ${appIds}. Using '${initAppId}' to initialize the Line SDK"
       Log.w(TAG, message)
     }
 
     try {
-      LineInitializer.initialize(context, appIdForInit)
+      LineInitializer.initialize(context, initAppId)
     } catch (exception: IllegalArgumentException) {
       exception.message?.let { initializationCompleteCallback.onInitializationFailed(it) }
       return
     }
 
     initializationCompleteCallback.onInitializationSucceeded()
+  }
+
+  override fun collectSignals(signalData: RtbSignalData, signalCallbacks: SignalCallbacks) {
+    val slotIds =
+      signalData.configurations.mapNotNull {
+        val appId = it.serverParameters.getString(KEY_SLOT_ID)
+        if (appId.isNullOrEmpty()) {
+          null
+        } else {
+          appId
+        }
+      }
+    if (slotIds.isEmpty() || slotIds.first().isEmpty()) {
+      val adError =
+        AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
+
+    if (initAppId.isEmpty()) {
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
+    val adConfig = LineInitializer.getFiveAdConfig(initAppId)
+    val adLoader = AdLoader.forConfig(signalData.context, adConfig)
+    if (adLoader == null) {
+      val adError = AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, SDK_ERROR_DOMAIN)
+      signalCallbacks.onFailure(adError)
+      return
+    }
+    adLoader.collectSignal(
+      AdSlotConfig(slotIds.first()),
+      object : CollectSignalCallback {
+        override fun onCollect(signalString: String) {
+          signalCallbacks.onSuccess(signalString)
+        }
+
+        override fun onError(fiveAdErrorCode: FiveAdErrorCode) {
+          val adError = AdError(fiveAdErrorCode.value, fiveAdErrorCode.name, SDK_ERROR_DOMAIN)
+          signalCallbacks.onFailure(adError)
+        }
+      },
+    )
   }
 
   override fun loadBannerAd(
@@ -156,13 +208,53 @@ class LineMediationAdapter : Adapter() {
     }
   }
 
-  override fun loadNativeAd(
+  override fun loadNativeAdMapper(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
     LineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
       nativeAd.loadAd()
+    }
+  }
+
+  override fun loadRtbBannerAd(
+    adConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    LineBannerAd.newInstance(adConfiguration, callback).onSuccess {
+      bannerAd = it
+      bannerAd.loadRtbAd()
+    }
+  }
+
+  override fun loadRtbInterstitialAd(
+    adConfiguration: MediationInterstitialAdConfiguration,
+    callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+  ) {
+    LineInterstitialAd.newInstance(adConfiguration, callback).onSuccess {
+      interstitialAd = it
+      interstitialAd.loadRtbAd()
+    }
+  }
+
+  override fun loadRtbRewardedAd(
+    adConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    LineRewardedAd.newInstance(adConfiguration, callback).onSuccess {
+      rewardedAd = it
+      rewardedAd.loadRtbAd()
+    }
+  }
+
+  override fun loadRtbNativeAdMapper(
+    adConfiguration: MediationNativeAdConfiguration,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+  ) {
+    LineNativeAd.newInstance(adConfiguration, callback).onSuccess {
+      nativeAd = it
+      nativeAd.loadRtbAd()
     }
   }
 
@@ -175,6 +267,7 @@ class LineMediationAdapter : Adapter() {
       "Missing or invalid Application ID configured for this ad source instance in the AdMob or Ad Manager UI."
     const val ERROR_MSG_MISSING_SLOT_ID =
       "Missing or invalid Slot ID configured for this ad source instance in the AdMob or Ad Manager UI."
+    const val ERROR_MSG_NULL_AD_LOADER = "Null AdLoader from Five Ad SDK."
     const val ERROR_CODE_MISSING_APP_ID = 101
     const val ERROR_CODE_MISSING_SLOT_ID = 102
     const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
@@ -185,9 +278,11 @@ class LineMediationAdapter : Adapter() {
     const val ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN = 105
     const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
     const val ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED = 106
+    const val ERROR_CODE_NULL_AD_LOADER = 107
     const val ERROR_MSG_MINIMUM_NATIVE_INFO_NOT_RECEIVED =
       "Complete required data for Native ads was not received. Skipping Ad."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
     const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
+    private var initAppId: String = ""
   }
 }

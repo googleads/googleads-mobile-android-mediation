@@ -15,6 +15,7 @@
 package com.google.ads.mediation.moloco
 
 import android.content.Context
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -37,19 +38,26 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val adUnitId: String,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationInterstitialAd, AdLoad.Listener, InterstitialAdShowListener {
 
   private lateinit var molocoAd: InterstitialAd
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
-    Moloco.createInterstitial(adUnitId) { returnedAd ->
+    Moloco.createInterstitial(adUnitId, watermark) { returnedAd, molocoError ->
+      if (molocoError != null) {
+        val adError = AdError(molocoError.errorCode, molocoError.description, SDK_ERROR_DOMAIN)
+        mediationAdLoadCallback.onFailure(adError)
+        return@createInterstitial
+      }
+      // Gracefully handle the scenario where ad object is null even if no error is reported.
       if (returnedAd == null) {
         val adError =
           AdError(
-            MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
-            MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
-            MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+            MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+            MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+            MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
         return@createInterstitial
@@ -123,8 +131,11 @@ private constructor(
       }
 
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val watermark = mediationInterstitialAdConfiguration.watermark
 
-      return Result.success(MolocoInterstitialAd(mediationAdLoadCallback, adUnitId, bidResponse))
+      return Result.success(
+        MolocoInterstitialAd(mediationAdLoadCallback, adUnitId, bidResponse, watermark)
+      )
     }
   }
 }

@@ -41,8 +41,8 @@ public class SampleNativeAdRequest extends SampleAdRequest {
   }
 
   // For the sake of simplicity, the following two values are ignored by the Sample SDK.
-  // They're included so that the custom event and adapter classes can demonstrate how to take
-  // a request from the Google Mobile Ads SDK and translate it into one for the Sample SDK.
+  // They're included so that the custom event classes can demonstrate how to take a request
+  // from the Google Mobile Ads SDK and translate it into one for the Sample SDK.
   public void setShouldDownloadMultipleImages(boolean shouldDownloadMultipleImages) {
 
   }

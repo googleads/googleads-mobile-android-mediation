@@ -14,11 +14,11 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_NON_RTB_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -53,20 +53,14 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
 
   private final String instanceID;
 
-  private final String bidToken;
-
-  private final String watermark;
-
   public IronSourceRewardedAd(
       @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
     context = rewardedAdConfiguration.getContext();
-    bidToken = rewardedAdConfiguration.getBidResponse();
-    watermark = rewardedAdConfiguration.getWatermark();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
@@ -116,16 +110,6 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
   }
 
-  public void loadRtbAd() {
-    if (!loadValidConfig()) {
-      return;
-    }
-    Activity activity = (Activity) context;
-
-    IronSourceAdapterUtils.setWatermark(watermark);
-    IronSource.loadISDemandOnlyRewardedVideoWithAdm(activity, instanceID, bidToken);
-  }
-
   private boolean isParamsValid() {
     // Check that the context is an Activity and that the instance ID is valid.
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
@@ -139,7 +123,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
       String errorMessage =
           String.format(
               "An IronSource Rewarded ad is already loading for instance ID: %s", instanceID);
-      AdError concurrentError = new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ERROR_DOMAIN);
+      AdError concurrentError =
+          new AdError(ERROR_AD_ALREADY_LOADED, errorMessage, ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(concurrentError);
       return false;
     }

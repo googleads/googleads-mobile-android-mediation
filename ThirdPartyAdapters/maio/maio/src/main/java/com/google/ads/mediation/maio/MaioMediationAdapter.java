@@ -14,9 +14,7 @@
 
 package com.google.ads.mediation.maio;
 
-import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
@@ -27,28 +25,24 @@ import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
-import jp.maio.sdk.android.FailNotificationReason;
-import jp.maio.sdk.android.MaioAds;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 
-public class MaioMediationAdapter extends Adapter
-    implements MediationRewardedAd, MaioAdsManagerListener {
+public class MaioMediationAdapter extends Adapter {
 
   public static final String TAG = MaioMediationAdapter.class.getSimpleName();
 
-  protected String mediaID;
-  protected String zoneID;
-
-  private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback;
-  private MediationRewardedAdCallback rewardedAdCallback;
+  private MaioInterstitialAd interstitialAd;
+  private MaioRewardedAd rewardedAd;
 
   /**
    * Maio adapter error domain.
@@ -71,30 +65,24 @@ public class MaioMediationAdapter extends Adapter
   }
 
   @NonNull
-  public static AdError getAdError(@NonNull FailNotificationReason reason) {
-    // Error '99' to indicate that the error is new and has not been supported by the adapter yet.
-    int code = 99;
-    switch (reason) {
-      case AD_STOCK_OUT:
-        code = 0;
-        break;
-      case NETWORK_NOT_READY:
-        code = 1;
-        break;
-      case RESPONSE:
-        code = 2;
-        break;
-      case NETWORK:
-        code = 3;
-        break;
-      case UNKNOWN:
-        code = 4;
-        break;
-      case VIDEO:
-        code = 5;
-        break;
-    }
-    return new AdError(code, "Failed to request ad from Maio: " + reason, MAIO_SDK_ERROR_DOMAIN);
+  public static AdError getAdError(int reason) {
+    //     0: unknown
+    // 10100: noNetwork
+    // 10200: networkTimeout
+    // 10300: abortedDownload
+    // 10400: invalidResponse
+    // 10500: zoneNotFound
+    // 10600: unavailableZone
+    // 10700: noFill
+    // 10800: nullArgMaioRequest
+    // 10900: diskSpaceNotEnough
+    // 11000: unsupportedOsVer
+    // 20100: expired
+    // 20200: notReadyYet
+    // 20300: alreadyShown
+    // 20400: failedPlayback
+    // 20500: nullArgViewContext
+    return new AdError(reason, "Failed to request ad from Maio: " + reason, MAIO_SDK_ERROR_DOMAIN);
   }
 
   /**
@@ -111,7 +99,6 @@ public class MaioMediationAdapter extends Adapter
    * Activity context is required.
    */
   public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
-
 
   /**
    * {@link Adapter} implementation
@@ -139,7 +126,7 @@ public class MaioMediationAdapter extends Adapter
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = MaioAds.getSdkVersion();
+    String versionString = MaioAdsManager.getSdkVersion().toString();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {
@@ -160,12 +147,6 @@ public class MaioMediationAdapter extends Adapter
   public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
-
-    if (!(context instanceof Activity)) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Maio SDK requires an Activity context to initialize");
-      return;
-    }
 
     HashSet<String> mediaIDs = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
@@ -193,15 +174,17 @@ public class MaioMediationAdapter extends Adapter
       Log.w(TAG, logMessage);
     }
 
-    MaioAdsManager.getManager(mediaID)
-        .initialize(
-            (Activity) context,
-            new MaioAdsManager.InitializationListener() {
-              @Override
-              public void onMaioInitialized() {
-                initializationCompleteCallback.onInitializationSucceeded();
-              }
-            });
+    initializationCompleteCallback.onInitializationSucceeded();
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialAd = new MaioInterstitialAd(mediationInterstitialAdConfiguration, callback);
+    interstitialAd.loadAd();
   }
 
   @Override
@@ -209,149 +192,7 @@ public class MaioMediationAdapter extends Adapter
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    adLoadCallback = mediationAdLoadCallback;
-
-    Context context = mediationRewardedAdConfiguration.getContext();
-    if (!(context instanceof Activity)) {
-      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "Maio SDK requires an Activity context to load ads.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
-    Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-    mediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
-    if (TextUtils.isEmpty(mediaID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid Media ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
-    zoneID = serverParameters.getString(MaioAdsManager.KEY_ZONE_ID);
-    if (TextUtils.isEmpty(zoneID)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
-          "Missing or Invalid Zone ID.", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      adLoadCallback.onFailure(error);
-      return;
-    }
-
-    MaioAds.setAdTestMode(mediationRewardedAdConfiguration.isTestRequest());
-    MaioAdsManager.getManager(mediaID)
-        .initialize(
-            (Activity) context,
-            new MaioAdsManager.InitializationListener() {
-              @Override
-              public void onMaioInitialized() {
-                MaioAdsManager.getManager(mediaID).loadAd(zoneID, MaioMediationAdapter.this);
-              }
-            });
-  }
-
-  @Override
-  public void showAd(@NonNull Context context) {
-    MaioAdsManager.getManager(mediaID).showAd(zoneID, MaioMediationAdapter.this);
-  }
-
-  // region MaioAdsManagerListener implementation
-  @Override
-  public void onInitialized() {
-    // Not called.
-    // MaioAdsManager calls MaioAdsManager.InitializationListener.onMaioInitialized() instead.
-  }
-
-  @Override
-  public void onChangedCanShow(String zoneId, boolean isAvailable) {
-    if (adLoadCallback != null && isAvailable) {
-      rewardedAdCallback = adLoadCallback.onSuccess(MaioMediationAdapter.this);
-    }
-  }
-
-  @Override
-  public void onFailed(FailNotificationReason reason, String zoneId) {
-    AdError error = MaioMediationAdapter.getAdError(reason);
-    Log.w(TAG, error.getMessage());
-    if (adLoadCallback != null) {
-      adLoadCallback.onFailure(error);
-    }
-  }
-
-  @Override
-  public void onAdFailedToLoad(@NonNull AdError error) {
-    Log.w(TAG, error.getMessage());
-    if (adLoadCallback != null) {
-      adLoadCallback.onFailure(error);
-    }
-  }
-
-  @Override
-  public void onAdFailedToShow(@NonNull AdError error) {
-    Log.w(TAG, error.getMessage());
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.onAdFailedToShow(error);
-    }
-  }
-
-  @Override
-  public void onOpenAd(String zoneId) {
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.onAdOpened();
-      rewardedAdCallback.reportAdImpression();
-    }
-  }
-
-  @Override
-  public void onStartedAd(String zoneId) {
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.onVideoStart();
-    }
-  }
-
-  @Override
-  public void onClickedAd(String zoneId) {
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.reportAdClicked();
-    }
-  }
-
-  @Override
-  public void onFinishedAd(int playtime, boolean skipped, int duration, String zoneId) {
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.onVideoComplete();
-      if (!skipped) {
-        rewardedAdCallback.onUserEarnedReward(new MaioReward());
-      }
-    }
-  }
-
-  @Override
-  public void onClosedAd(String zoneId) {
-    if (rewardedAdCallback != null) {
-      rewardedAdCallback.onAdClosed();
-    }
-  }
-  // endregion
-
-  /**
-   * A {@link RewardItem} used to map maio rewards to Google's rewarded video ads rewards.
-   */
-  private class MaioReward implements RewardItem {
-
-    private MaioReward() {
-    }
-
-    @Override
-    public int getAmount() {
-      return 1;
-    }
-
-    @NonNull
-    @Override
-    public String getType() {
-      return "";
-    }
+    rewardedAd = new MaioRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
+    rewardedAd.loadAd();
   }
 }

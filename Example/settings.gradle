@@ -1,1 +1,1 @@
-include ':app', ':adapter', ':customevent', ':sdk'
+include ':app', ':customevent', ':sdk'

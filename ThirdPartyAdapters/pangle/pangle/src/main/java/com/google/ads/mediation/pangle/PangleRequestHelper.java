@@ -15,14 +15,16 @@
 package com.google.ads.mediation.pangle;
 
 import android.text.TextUtils;
-
+import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGRequest;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class PangleRequestHelper {
+
+    @VisibleForTesting public static final String ADMOB_WATERMARK_KEY = "admob_watermark";
+
     public static void setWatermarkString(PAGRequest request, String bidResponse, MediationAdConfiguration adConfiguration) {
         // Only bidding ads require watermark.
         if (TextUtils.isEmpty(bidResponse)) {
@@ -36,7 +38,7 @@ public class PangleRequestHelper {
         if (extraInfo == null) {
             extraInfo = new HashMap<>();
         }
-        extraInfo.put("admob_watermark", watermark);
+        extraInfo.put(ADMOB_WATERMARK_KEY, watermark);
         request.setExtraInfo(extraInfo);
     }
 

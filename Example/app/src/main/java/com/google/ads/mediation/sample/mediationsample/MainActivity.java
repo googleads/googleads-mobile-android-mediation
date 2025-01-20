@@ -48,13 +48,9 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import java.util.Locale;
 
 /**
- * A simple {@link android.app.Activity} that displays adds using the sample adapter and sample
- * custom event.
+ * A simple {@link android.app.Activity} that displays adds using the sample custom event.
  */
 public class MainActivity extends AppCompatActivity {
-  // Radio button indicating if the integration type to test is the adapter.
-  private RadioButton adapterRadioButton;
-
   // The banner ad view.
   private AdView adView;
   // A loaded interstitial ad.
@@ -76,8 +72,6 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-
-    adapterRadioButton = findViewById(R.id.integration_adapter);
 
     // Banner ads.
     Button loadBannerButton = findViewById(R.id.banner_load_ad);
@@ -159,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-    //Sample Adapter Rewarded Ad Button.
+    // Rewarded Ads.
     loadRewardedButton = (Button) findViewById(R.id.rewarded_load_button);
     loadRewardedButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -255,9 +249,6 @@ public class MainActivity extends AppCompatActivity {
    * Gets the banner ad unit ID to test.
    */
   private String getBannerAdUnitId() {
-    if (adapterRadioButton.isChecked()) {
-      return getResources().getString(R.string.adapter_banner_ad_unit_id);
-    }
     return getResources().getString(R.string.customevent_banner_ad_unit_id);
   }
 
@@ -265,9 +256,6 @@ public class MainActivity extends AppCompatActivity {
    * Gets the interstitial ad unit ID to test.
    */
   private String getInterstitialAdUnitId() {
-    if (adapterRadioButton.isChecked()) {
-      return getResources().getString(R.string.adapter_interstitial_ad_unit_id);
-    }
     return getResources().getString(R.string.customevent_interstitial_ad_unit_id);
   }
 
@@ -275,9 +263,6 @@ public class MainActivity extends AppCompatActivity {
    * Gets the rewarded ad unit ID to test.
    */
   private String getRewardedAdUnitId() {
-    if (adapterRadioButton.isChecked()) {
-      return getResources().getString(R.string.adapter_rewarded_ad_unit_id);
-    }
     return getResources().getString(R.string.customevent_rewarded_ad_unit_id);
   }
 
@@ -285,9 +270,6 @@ public class MainActivity extends AppCompatActivity {
    * Gets the native ad unit ID to test.
    */
   private String getNativeAdUnitId() {
-    if (adapterRadioButton.isChecked()) {
-      return getResources().getString(R.string.adapter_native_ad_unit_id);
-    }
     return getResources().getString(R.string.customevent_native_ad_unit_id);
   }
 

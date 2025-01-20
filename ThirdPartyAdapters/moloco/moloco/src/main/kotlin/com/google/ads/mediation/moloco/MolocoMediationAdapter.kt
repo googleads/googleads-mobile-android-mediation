@@ -17,6 +17,9 @@ package com.google.ads.mediation.moloco
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -37,6 +40,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.publisher.Initialization
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.init.MolocoInitParams
@@ -79,6 +83,15 @@ class MolocoMediationAdapter : RtbAdapter() {
     return VersionInfo(0, 0, 0)
   }
 
+  private fun configurePrivacy() {
+    val isAgeRestricted =
+      MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
+          TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    MolocoAdapterUtils.setMolocoIsAgeRestricted(isAgeRestricted)
+  }
+
   override fun initialize(
     context: Context,
     initializationCompleteCallback: InitializationCompleteCallback,
@@ -106,9 +119,11 @@ class MolocoMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
-    val initParams = MolocoInitParams(context, appKeyForInit)
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
+    val initParams = MolocoInitParams(context, appKeyForInit, mediationInfo)
     Moloco.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
+        configurePrivacy()
         initializationCompleteCallback.onInitializationSucceeded()
       } else {
         initializationCompleteCallback.onInitializationFailed(
@@ -119,7 +134,8 @@ class MolocoMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    Moloco.getBidToken { bidToken: String, errorType: MolocoAdError.ErrorType? ->
+    Moloco.getBidToken(signalData.context) { bidToken: String, errorType: MolocoAdError.ErrorType?
+      ->
       if (errorType != null) {
         val adError = AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
         callback.onFailure(adError)
@@ -171,16 +187,17 @@ class MolocoMediationAdapter : RtbAdapter() {
 
   companion object {
     private val TAG = MolocoMediationAdapter::class.simpleName
+    const val MEDIATION_PLATFORM_NAME = "AdMob"
     const val KEY_APP_KEY = "app_key"
     const val KEY_AD_UNIT_ID = "ad_unit_id"
     const val ERROR_CODE_MISSING_APP_KEY = 101
     const val ERROR_CODE_MISSING_AD_UNIT = 102
-    const val ERROR_CODE_MISSING_AD_FAILED_TO_CREATE = 103
+    const val ERROR_CODE_AD_IS_NULL = 103
     const val ERROR_MSG_MISSING_APP_KEY =
       "Missing or invalid App Key configured for this ad source instance in the AdMob or Ad Manager UI."
     const val ERROR_MSG_MISSING_AD_UNIT =
       "Missing or invalid Ad Unit configured for this ad source instance in the AdMob or Ad Manager UI."
-    const val ERROR_MSG_MISSING_AD_FAILED_TO_CREATE = "Create Ad object returned was null."
+    const val ERROR_MSG_AD_IS_NULL = "Moloco ad object returned was null."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.moloco"
     const val SDK_ERROR_DOMAIN = "com.moloco.sdk"
   }

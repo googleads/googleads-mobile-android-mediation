@@ -39,6 +39,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -176,10 +177,14 @@ class MolocoRewardedAdTest {
       molocoRewardedAd.loadAd()
       val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
       mockedMoloco.verify {
-        Moloco.createRewardedInterstitial(any(), createRewardedCaptor.capture())
+        Moloco.createRewardedInterstitial(
+          eq(TEST_AD_UNIT),
+          eq(TEST_WATERMARK),
+          createRewardedCaptor.capture(),
+        )
       }
       val capturedCallback = createRewardedCaptor.firstValue
-      capturedCallback.invoke(mockRewardedAd)
+      capturedCallback.invoke(mockRewardedAd, /* error= */ null)
     }
   }
 

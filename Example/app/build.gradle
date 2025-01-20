@@ -25,6 +25,5 @@ android {
 dependencies {
     implementation rootProject.ext.appcompat
     implementation rootProject.ext.playServicesAds
-    implementation project(':adapter')
     implementation project(':customevent')
 }

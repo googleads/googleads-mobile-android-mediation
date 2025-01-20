@@ -14,12 +14,12 @@
 
 package com.google.ads.mediation.ironsource;
 
-import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_INSTANCE_ID;
+import static com.google.ads.mediation.ironsource.IronSourceConstants.DEFAULT_NON_RTB_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_INSTANCE_ID;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
+import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
-import static com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_DOMAIN;
 
 import android.app.Activity;
 import android.content.Context;
@@ -73,7 +73,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
     Bundle serverParameters = bannerAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_INSTANCE_ID);
+    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
     context = bannerAdConfig.getContext();
     adSize = bannerAdConfig.getAdSize();
     adLoadCallback = mediationAdLoadCallback;
@@ -156,7 +156,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
           new AdError(
               ERROR_AD_ALREADY_LOADED,
               "An IronSource banner is already loaded for instance ID: " + instanceID,
-              ERROR_DOMAIN);
+              ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(adError);
       return false;
     }
@@ -167,7 +167,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
           new AdError(
               ERROR_BANNER_SIZE_MISMATCH,
               "There is no matching IronSource banner ad size for Google ad size: " + adSize,
-              ERROR_DOMAIN);
+              ADAPTER_ERROR_DOMAIN);
       onAdFailedToLoad(sizeError);
       return false;
     }

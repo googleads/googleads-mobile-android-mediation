@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "maio"
     // String property to store version name.
-    stringVersion = "1.1.16.3"
+    stringVersion = "2.0.3.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -18,11 +18,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'jp.maio.sdk.android.mediation.admob.adapter'
+    compileSdk 35
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 1011603
+        targetSdk 33
+        versionCode 2000300
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -34,7 +35,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_11
     }
 
     buildTypes {
@@ -45,6 +46,10 @@ android {
         debug {
             testCoverageEnabled true
         }
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     sourceSets {
@@ -114,23 +119,23 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.maio:android-sdk:1.1.16'
+    implementation 'com.maio:android-sdk-v2:2.0.3'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
-    testImplementation 'com.google.truth:truth:1.1.3'
-    testImplementation 'androidx.test:core:1.4.0'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
+    testImplementation 'com.google.truth:truth:1.1.5'
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation 'org.robolectric:robolectric:4.9'
-    testImplementation 'androidx.core:core-ktx:1.8.0'
-    testImplementation 'androidx.test.ext:junit:1.1.5'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
+    testImplementation 'androidx.core:core-ktx:1.15.0'
+    testImplementation 'androidx.test.ext:junit:1.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation project(':adaptertestkit')
 }
 

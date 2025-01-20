@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "16.8.31.0"
+    stringVersion = "16.8.61.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdk 33
-        versionCode 16083100
+        versionCode 16086100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -58,6 +58,9 @@ android {
 
     testOptions {
         unitTests {
+            all {
+                jvmArgs "-noverify"
+            }
             includeAndroidResources = true
             unitTests.returnDefaultValues = true
         }
@@ -113,14 +116,14 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    implementation 'com.google.android.gms:play-services-ads:23.4.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.mbridge.msdk.oversea:mbbid:16.8.31'
-    implementation 'com.mbridge.msdk.oversea:reward:16.8.31'
-    implementation 'com.mbridge.msdk.oversea:mbnative:16.8.31'
-    implementation 'com.mbridge.msdk.oversea:mbbanner:16.8.31'
-    implementation 'com.mbridge.msdk.oversea:newinterstitial:16.8.31'
-    implementation 'com.mbridge.msdk.oversea:mbsplash:16.8.31'
+    implementation 'com.mbridge.msdk.oversea:mbbid:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:reward:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:mbnative:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:mbbanner:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:newinterstitial:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:mbsplash:16.8.61'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"

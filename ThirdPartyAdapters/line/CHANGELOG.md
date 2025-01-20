@@ -1,5 +1,26 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Removed deprecated `UnifiedNativeAdMapper` class in favor of `NativeAdMapper`
+- Fixed signals collection process.
+- Fixed initialization process for waterfall interstitial and rewarded ad formats.
+
+#### Version 2.9.20241129.0
+- Added bidding support for banner, interstitial, rewarded and native ad formats.
+- Verified compatibility with FiveAd SDK version 2.9.20241129.0
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.5.0.
+- FiveAd SDK version 2.9.20241129.0
+
+
+#### Version 2.8.20240827.0
+- Verified compatibility with FiveAd SDK version 2.8.20240827.0
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.3.0.
+- FiveAd SDK version 2.8.20240827.0
+
 #### Version 2.8.20240808.0
 - Verified compatibility with FiveAd SDK version 2.8.20240808.0
 

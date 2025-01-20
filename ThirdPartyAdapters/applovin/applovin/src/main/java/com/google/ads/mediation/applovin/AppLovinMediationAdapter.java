@@ -14,6 +14,10 @@
 
 package com.google.ads.mediation.applovin;
 
+import static com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER;
+import static com.applovin.mediation.AppLovinUtils.getChildUserError;
+import static com.applovin.mediation.AppLovinUtils.isChildUser;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -98,18 +102,17 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   private static final String TAG = AppLovinMediationAdapter.class.getSimpleName();
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef(value = {
-      ERROR_BANNER_SIZE_MISMATCH,
-      ERROR_EMPTY_BID_TOKEN,
-      ERROR_AD_ALREADY_REQUESTED,
-      ERROR_PRESENTATON_AD_NOT_READY,
-      ERROR_AD_FORMAT_UNSUPPORTED,
-      ERROR_INVALID_SERVER_PARAMETERS}
-  )
-
-  public @interface AdapterError {
-
-  }
+  @IntDef(
+      value = {
+        ERROR_BANNER_SIZE_MISMATCH,
+        ERROR_EMPTY_BID_TOKEN,
+        ERROR_AD_ALREADY_REQUESTED,
+        ERROR_PRESENTATON_AD_NOT_READY,
+        ERROR_AD_FORMAT_UNSUPPORTED,
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_CHILD_USER
+      })
+  public @interface AdapterError {}
 
   /**
    * Banner size mismatch.
@@ -140,6 +143,21 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    * Invalid server parameters (e.g. SDK key is null).
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
+
+  /**
+   * User is a child.
+   *
+   * <p>Shouldn't call AppLovin SDK if the user is a child. Adapter will respond with this error
+   * code if adapter is requested to load ad or collect signals when the user is a child.
+   *
+   * <p>Starting with AppLovin SDK 13.0.0, AppLovin no longer supports child user flags and you may
+   * not initialize or use the AppLovin SDK in connection with a "child" as defined under applicable
+   * laws. For more information, see AppLovin's documentation on <a
+   * href="https://developers.applovin.com/en/max/android/overview/privacy/#children">Prohibition on
+   * Children's Data or Using the Services for Children or Apps Exclusively Targeted to
+   * Children</a>.
+   */
+  public static final int ERROR_CHILD_USER = 112;
 
   @VisibleForTesting static final String ERROR_MSG_MISSING_SDK = "Missing or invalid SDK Key.";
 
@@ -184,6 +202,10 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
+    if (isChildUser()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER);
+      return;
+    }
 
     final HashSet<String> sdkKeys = new HashSet<>();
     for (MediationConfiguration configuration : mediationConfigurations) {
@@ -268,6 +290,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
+    if (isChildUser()) {
+      signalCallbacks.onFailure(getChildUserError());
+      return;
+    }
+
     final MediationConfiguration config = rtbSignalData.getConfiguration();
 
     // Check if supported ad format
@@ -302,6 +329,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
     bannerAd =
         AppLovinBannerAd.newInstance(
             adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
@@ -314,6 +346,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
     waterfallInterstitialAd =
         new AppLovinWaterfallInterstitialAd(
             adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
@@ -326,6 +363,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
     rtbInterstitialRenderer =
         new AppLovinRtbInterstitialRenderer(
             adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
@@ -335,6 +377,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
     rewardedRenderer =
         new AppLovinWaterfallRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rewardedRenderer.loadAd();
@@ -343,6 +390,11 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
     rtbRewardedRenderer =
         new AppLovinRtbRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
     rtbRewardedRenderer.loadAd();

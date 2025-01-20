@@ -15,6 +15,8 @@
 package com.google.ads.mediation.line
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
+import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -24,24 +26,37 @@ import com.google.android.gms.ads.RequestConfiguration
  * testing of the class.
  */
 object LineInitializer {
+  private var fiveAdConfig: FiveAdConfig? = null
+
   fun initialize(context: Context, appId: String) {
 
     if (LineSdkWrapper.delegate.isInitialized()) {
       return
     }
 
-    val config = LineSdkFactory.delegate.createFiveAdConfig(appId)
-
-    config.needChildDirectedTreatment =
-      when (MobileAds.getRequestConfiguration().tagForChildDirectedTreatment) {
-        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ->
-          NeedChildDirectedTreatment.TRUE
-        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ->
-          NeedChildDirectedTreatment.FALSE
-        else -> NeedChildDirectedTreatment.UNSPECIFIED
-      }
-
-    config.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
+    val config = getFiveAdConfig(appId)
     LineSdkWrapper.delegate.initialize(context, config)
+  }
+
+  fun getFiveAdConfig(appId: String): FiveAdConfig {
+    if (fiveAdConfig == null) {
+      fiveAdConfig = LineSdkFactory.delegate.createFiveAdConfig(appId)
+      fiveAdConfig?.needChildDirectedTreatment =
+        when (MobileAds.getRequestConfiguration().tagForChildDirectedTreatment) {
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ->
+            NeedChildDirectedTreatment.TRUE
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ->
+            NeedChildDirectedTreatment.FALSE
+          else -> NeedChildDirectedTreatment.UNSPECIFIED
+        }
+
+      fiveAdConfig?.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
+    }
+    return fiveAdConfig as FiveAdConfig
+  }
+
+  @VisibleForTesting
+  internal fun resetFiveAdConfig() {
+    fiveAdConfig = null
   }
 }

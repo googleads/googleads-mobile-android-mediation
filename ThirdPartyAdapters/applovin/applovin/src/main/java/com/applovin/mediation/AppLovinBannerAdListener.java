@@ -56,7 +56,7 @@ class AppLovinBannerAdListener
   @Override
   public void adReceived(final AppLovinAd ad) {
     ApplovinAdapter.log(
-        DEBUG, "Banner did load ad: " + ad.getAdIdNumber() + " for zone: " + zoneId);
+        DEBUG, "Banner did load ad for zone: " + zoneId);
     adView.renderAd(ad);
     AppLovinSdkUtils.runOnUiThread(
         new Runnable() {

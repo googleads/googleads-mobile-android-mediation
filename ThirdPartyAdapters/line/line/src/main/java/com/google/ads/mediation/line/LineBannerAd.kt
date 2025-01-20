@@ -18,12 +18,15 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdCustomLayoutEventListener
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdLoadListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MediationUtils
@@ -40,17 +43,37 @@ class LineBannerAd
 private constructor(
   private val context: Context,
   private val appId: String,
+  private val slotId: String?,
+  private val bidResponse: String,
+  private val watermark: String,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-  private val adView: FiveAdCustomLayout,
   private val adSize: AdSize,
   private val networkExtras: Bundle?,
 ) : MediationBannerAd, FiveAdLoadListener, FiveAdCustomLayoutEventListener {
 
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
+  private lateinit var adView: FiveAdCustomLayout
 
   fun loadAd() {
+    if (slotId.isNullOrEmpty()) {
+      val adError =
+        AdError(
+          LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+          LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+          LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+        )
+      mediationAdLoadCallback.onFailure(adError)
+      return
+    }
     LineInitializer.initialize(context, appId)
+    // FiveAd SDK requires the size of the banner given in pixels.
+    adView =
+      LineSdkFactory.delegate.createFiveAdCustomLayout(
+        context,
+        slotId,
+        adSize.getWidthInPixels(context),
+      )
     adView.setLoadListener(this)
     if (networkExtras != null) {
       adView.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, false))
@@ -58,9 +81,34 @@ private constructor(
     adView.loadAdAsync()
   }
 
+  fun loadRtbAd() {
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
+    val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
+    val bidData = BidData(bidResponse, watermark)
+    adLoader.loadBannerAd(
+      bidData,
+      object : AdLoader.LoadBannerAdCallback {
+        override fun onLoad(fiveAdCustomLayout: FiveAdCustomLayout) {
+          adView = fiveAdCustomLayout
+          if (networkExtras != null) {
+            adView.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, false))
+          }
+          adView.setEventListener(this@LineBannerAd)
+          mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this@LineBannerAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError = AdError(adErrorCode.value, adErrorCode.name, SDK_ERROR_DOMAIN)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
+  }
+
   override fun getView(): View = adView
 
   override fun onFiveAdLoad(ad: FiveAdInterface) {
+    // This callback is not used in the RTB flow.
     Log.d(TAG, "Finished loading Line Banner Ad for slotId: ${ad.slotId}")
     val loadedAd = ad as? FiveAdCustomLayout
     loadedAd?.let {
@@ -97,11 +145,12 @@ private constructor(
   }
 
   override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
+    // This callback is not used in the RTB flow.
     val adError =
       AdError(
         errorCode.value,
         String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
+        SDK_ERROR_DOMAIN,
       )
     Log.w(TAG, adError.message)
     mediationAdLoadCallback.onFailure(adError)
@@ -183,29 +232,17 @@ private constructor(
       }
 
       val slotId = serverParameters.getString(LineMediationAdapter.KEY_SLOT_ID)
-      if (slotId.isNullOrEmpty()) {
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
-            LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
-      // FiveAd SDK requires the size of the banner given in pixels.
-      val bannerAdView =
-        LineSdkFactory.delegate.createFiveAdCustomLayout(
-          context,
-          slotId,
-          adSize.getWidthInPixels(context),
-        )
+      val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val watermark = mediationBannerAdConfiguration.watermark
+
       return Result.success(
         LineBannerAd(
           context,
           appId,
+          slotId,
+          bidResponse,
+          watermark,
           mediationAdLoadCallback,
-          bannerAdView,
           adSize,
           mediationBannerAdConfiguration.mediationExtras,
         )

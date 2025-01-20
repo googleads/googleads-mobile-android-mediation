@@ -2,12 +2,8 @@ package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_CONTEXT_NULL;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_NULL_CONTEXT;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_GAME_ID;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
@@ -32,7 +28,6 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
-import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 /**
@@ -44,8 +39,6 @@ public class UnityInterstitialAd
 
   static final String ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED =
       "Unity Ads initialization failed for game ID '%s' with error message: %s";
-  /** An Android {@link Activity} weak reference used to show ads. */
-  private WeakReference<Activity> activityWeakReference;
 
   /** Object ID used to track loaded/shown ads. */
   private String objectId;
@@ -170,15 +163,6 @@ public class UnityInterstitialAd
       return;
     }
 
-    if (!(context instanceof Activity)) {
-      AdError adError =
-          new AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN);
-      adLoadCallback.onFailure(adError);
-      return;
-    }
-    Activity activity = (Activity) context;
-    activityWeakReference = new WeakReference<>(activity);
-
     final String adMarkup = adConfiguration.getBidResponse();
 
     unityInitializer.initializeUnityAds(
@@ -222,21 +206,6 @@ public class UnityInterstitialAd
 
   @Override
   public void showAd(Context context) {
-    Activity activityReference = activityWeakReference == null ? null : activityWeakReference.get();
-    if (activityReference == null) {
-      Log.w(
-          UnityMediationAdapter.TAG,
-          "Failed to show interstitial ad for placement ID '"
-              + placementId
-              + "' from Unity Ads: Activity context is null.");
-      if (interstitialAdCallback != null) {
-        AdError adError =
-            new AdError(ERROR_NULL_CONTEXT, ERROR_MSG_CONTEXT_NULL, ADAPTER_ERROR_DOMAIN);
-        interstitialAdCallback.onAdFailedToShow(adError);
-      }
-      return;
-    }
-
     if (placementId == null) {
       Log.w(
           UnityMediationAdapter.TAG,
@@ -247,6 +216,9 @@ public class UnityInterstitialAd
         unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
     unityAdsShowOptions.set(KEY_WATERMARK, adConfiguration.getWatermark());
     // UnityAds can handle a null placement ID so show is always called here.
-    unityAdsLoader.show(activityReference, placementId, unityAdsShowOptions, this);
+    // Note: Context here is the activity that the publisher passed to GMA SDK's show() method
+    // (https://developers.google.com/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
+    // So, this is guaranteed to be an activity context.
+    unityAdsLoader.show((Activity) context, placementId, unityAdsShowOptions, this);
   }
 }

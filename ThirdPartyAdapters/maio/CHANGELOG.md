@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next Version
+- Support for major maio SDK update.
+
 #### Version 1.1.16.3
 - Updated the minimum required Google Mobile Ads SDK version to 23.0.0.
 - Verified compatibility with maio SDK version 1.1.16.

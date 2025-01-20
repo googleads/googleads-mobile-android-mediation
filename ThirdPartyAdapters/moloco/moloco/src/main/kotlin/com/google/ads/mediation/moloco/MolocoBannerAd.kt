@@ -15,6 +15,7 @@
 package com.google.ads.mediation.moloco
 
 import android.view.View
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -28,6 +29,7 @@ import com.moloco.sdk.publisher.CreateBannerCallback
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
+import com.moloco.sdk.publisher.MolocoAdError.AdCreateError
 
 /**
  * Used to load Moloco banner ads and mediate callbacks between Google Mobile Ads SDK and Moloco
@@ -40,6 +42,7 @@ private constructor(
   private val adSize: AdSize,
   private val adUnitId: String,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationBannerAd, AdLoad.Listener, BannerAdShowListener {
   private lateinit var molocoAd: Banner
   private var bannerAdCallback: MediationBannerAdCallback? = null
@@ -47,13 +50,19 @@ private constructor(
   fun loadAd() {
     val createBannerCallback =
       object : CreateBannerCallback {
-        override fun invoke(banner: Banner?) {
+        override fun invoke(banner: Banner?, molocoError: AdCreateError?) {
+          if (molocoError != null) {
+            val adError = AdError(molocoError.errorCode, molocoError.description, SDK_ERROR_DOMAIN)
+            mediationAdLoadCallback.onFailure(adError)
+            return
+          }
+          // Gracefully handle the scenario where ad object is null even if no error is reported.
           if (banner == null) {
             val adError =
               AdError(
-                MolocoMediationAdapter.ERROR_CODE_MISSING_AD_FAILED_TO_CREATE,
-                MolocoMediationAdapter.ERROR_MSG_MISSING_AD_FAILED_TO_CREATE,
-                MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+                MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+                MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+                MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
               )
             mediationAdLoadCallback.onFailure(adError)
             return
@@ -64,11 +73,11 @@ private constructor(
         }
       }
     if (adSize == AdSize.LEADERBOARD) {
-      Moloco.createBannerTablet(adUnitId, createBannerCallback)
+      Moloco.createBannerTablet(adUnitId, watermark, createBannerCallback)
       return
     }
 
-    Moloco.createBanner(adUnitId, createBannerCallback)
+    Moloco.createBanner(adUnitId, watermark, createBannerCallback)
   }
 
   override fun getView(): View = molocoAd
@@ -136,8 +145,11 @@ private constructor(
       }
 
       val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val watermark = mediationBannerAdConfiguration.watermark
 
-      return Result.success(MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse))
+      return Result.success(
+        MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse, watermark)
+      )
     }
   }
 }

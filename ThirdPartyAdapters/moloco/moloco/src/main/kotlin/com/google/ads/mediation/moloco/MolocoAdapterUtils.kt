@@ -14,8 +14,21 @@
 
 package com.google.ads.mediation.moloco
 
+import com.moloco.sdk.publisher.privacy.MolocoPrivacy
+
 object MolocoAdapterUtils {
   @JvmStatic
   val adapterVersion: String
     get() = BuildConfig.ADAPTER_VERSION
+
+  @JvmStatic
+  fun setMolocoIsAgeRestricted(isAgeRestricted: Boolean) {
+    MolocoPrivacy.setPrivacy(
+      MolocoPrivacy.PrivacySettings(
+        isAgeRestrictedUser = isAgeRestricted,
+        isDoNotSell = MolocoPrivacy.privacySettings.isDoNotSell,
+        isUserConsent = MolocoPrivacy.privacySettings.isUserConsent,
+      )
+    )
+  }
 }
