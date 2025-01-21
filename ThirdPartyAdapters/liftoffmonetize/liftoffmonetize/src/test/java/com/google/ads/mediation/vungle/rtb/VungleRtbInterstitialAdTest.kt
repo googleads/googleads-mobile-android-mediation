@@ -23,6 +23,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.VungleError
+import com.vungle.ads.internal.protos.Sdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -92,7 +93,7 @@ class VungleRtbInterstitialAdTest {
   fun onAdFailedToLoad_callsLoadFailure() {
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_FAILED_TO_DOWNLOAD
+        on { code } doReturn Sdk.SDKError.Reason.API_REQUEST_ERROR_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK interstitial ad load failed."
       }
 
@@ -168,7 +169,7 @@ class VungleRtbInterstitialAdTest {
     renderAdAndMockLoadSuccess()
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_UNABLE_TO_PLAY
+        on { code } doReturn Sdk.SDKError.Reason.AD_NOT_LOADED_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK interstitial ad play failed."
       }
 

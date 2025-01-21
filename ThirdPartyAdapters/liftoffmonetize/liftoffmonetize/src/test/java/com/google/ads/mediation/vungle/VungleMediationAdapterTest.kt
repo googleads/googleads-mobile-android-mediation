@@ -65,6 +65,7 @@ import com.vungle.ads.RewardedAd
 import com.vungle.ads.VungleAdSize
 import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
+import com.vungle.ads.internal.protos.Sdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -354,7 +355,7 @@ class VungleMediationAdapterTest {
   fun loadRewardedAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -525,7 +526,7 @@ class VungleMediationAdapterTest {
   fun loadNativeAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -652,7 +653,7 @@ class VungleMediationAdapterTest {
   fun loadRewardedInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -770,7 +771,7 @@ class VungleMediationAdapterTest {
   fun loadAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -898,7 +899,7 @@ class VungleMediationAdapterTest {
   fun loadRtbRewardedAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -1027,7 +1028,7 @@ class VungleMediationAdapterTest {
   fun loadRtbBannerAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -1158,7 +1159,7 @@ class VungleMediationAdapterTest {
   fun loadRtbInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -1338,7 +1339,7 @@ class VungleMediationAdapterTest {
   fun loadRtbNativeAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -1470,7 +1471,7 @@ class VungleMediationAdapterTest {
   fun loadRtbRewardedInterstitialAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
@@ -1597,7 +1598,7 @@ class VungleMediationAdapterTest {
   fun loadRtbAppOpenAd_onLiftoffSdkInitializationError_callsLoadFailure() {
     val liftoffSdkInitError =
       AdError(
-        VungleError.UNKNOWN_ERROR,
+        Sdk.SDKError.Reason.UNKNOWN_ERROR_VALUE,
         "Liftoff Monetize SDK initialization failed.",
         VUNGLE_SDK_ERROR_DOMAIN,
       )
