@@ -26,6 +26,7 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.NativeAd
 import com.vungle.ads.VungleError
+import com.vungle.ads.internal.protos.Sdk.SDKError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,7 +83,7 @@ class VungleRtbNativeAdTest {
           bidResponse = TEST_BID_RESPONSE,
         ),
         nativeAdLoadCallback,
-        vungleFactory
+        vungleFactory,
       )
 
     doAnswer { invocation ->
@@ -126,7 +127,7 @@ class VungleRtbNativeAdTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
         ),
         nativeAdLoadCallback,
-        vungleFactory
+        vungleFactory,
       )
     Mockito.mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
@@ -142,7 +143,7 @@ class VungleRtbNativeAdTest {
   fun onAdFailedToLoad_callsLoadFailure() {
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_FAILED_TO_DOWNLOAD
+        on { code } doReturn SDKError.Reason.API_REQUEST_ERROR_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK native ad load failed."
       }
 
@@ -152,7 +153,7 @@ class VungleRtbNativeAdTest {
       AdError(
         liftoffError.code,
         liftoffError.errorMessage,
-        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
@@ -170,7 +171,7 @@ class VungleRtbNativeAdTest {
     renderAdAndMockLoadSuccess()
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_UNABLE_TO_PLAY
+        on { code } doReturn SDKError.Reason.AD_NOT_LOADED_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK rewarded ad play failed."
       }
 
@@ -257,7 +258,7 @@ class VungleRtbNativeAdTest {
         eq(overlayView),
         any(),
         /* iconView = */ eq(null),
-        eq(listOf(iconView))
+        eq(listOf(iconView)),
       )
   }
 

@@ -27,8 +27,7 @@ import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.BaseAd
 import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
-import com.vungle.ads.VungleError.Companion.AD_FAILED_TO_DOWNLOAD
-import com.vungle.ads.VungleError.Companion.AD_UNABLE_TO_PLAY
+import com.vungle.ads.internal.protos.Sdk.SDKError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -113,7 +112,7 @@ class VungleRtbBannerAdTest {
   fun onAdFailedToLoad_callsLoadFailure() {
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn AD_FAILED_TO_DOWNLOAD
+        on { code } doReturn SDKError.Reason.API_REQUEST_ERROR_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK banner ad load failed."
       }
 
@@ -178,7 +177,7 @@ class VungleRtbBannerAdTest {
   fun onAdFailedToPlay_noCrash() {
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn AD_UNABLE_TO_PLAY
+        on { code } doReturn SDKError.Reason.AD_NOT_LOADED_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK banner ad play failed."
       }
 
