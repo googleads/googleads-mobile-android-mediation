@@ -84,7 +84,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
       return;
     }
 
-    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+    if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
 

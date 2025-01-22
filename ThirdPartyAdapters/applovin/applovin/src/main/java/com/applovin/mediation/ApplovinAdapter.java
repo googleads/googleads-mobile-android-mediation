@@ -101,7 +101,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       return;
     }
 
-    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+    if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
 
