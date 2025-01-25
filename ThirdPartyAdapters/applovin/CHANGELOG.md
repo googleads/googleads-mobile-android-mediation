@@ -1,7 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
-- Enable loading of a second ad for an ad unit after the first ad for that ad unit has loaded.
+#### Version 13.0.1.1
+- Added support to load a second ad with the same ad unit if the first ad has
+been loaded but not yet shown.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.6.0.
+- AppLovin SDK version 13.0.1.
 
 #### Version 13.0.1.0
 - Verified compatibility with AppLovin SDK 13.0.1.
