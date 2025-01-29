@@ -272,9 +272,8 @@ class LineMediationAdapter : RtbAdapter() {
     const val ERROR_CODE_MISSING_SLOT_ID = 102
     const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
     const val ERROR_MSG_AD_SHOWING = "FiveAd SDK could not show ad with error with code %s."
-    const val ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY = 104
-    const val ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY =
-      "Line Interstitial requires an Activity context to load this ad"
+    // An error code that's no longer logged. Left as a comment for future reference.
+    // const val ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY = 104
     const val ERROR_CODE_FAILED_TO_SHOW_FULLSCREEN = 105
     const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
     const val ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED = 106

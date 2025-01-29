@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.line
 
-import android.app.Activity
 import android.content.Context
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
@@ -51,13 +50,11 @@ object LineSdkFactory {
         width: Int,
       ): FiveAdCustomLayout = FiveAdCustomLayout(context, slotId, width)
 
-      override fun createFiveAdInterstitial(
-        activity: Activity,
-        slotId: String,
-      ): FiveAdInterstitial = FiveAdInterstitial(activity, slotId)
+      override fun createFiveAdInterstitial(context: Context, slotId: String): FiveAdInterstitial =
+        FiveAdInterstitial(context, slotId)
 
-      override fun createFiveVideoRewarded(activity: Activity, slotId: String): FiveAdVideoReward =
-        FiveAdVideoReward(activity, slotId)
+      override fun createFiveVideoRewarded(context: Context, slotId: String): FiveAdVideoReward =
+        FiveAdVideoReward(context, slotId)
 
       override fun createFiveAdNative(context: Context, slotId: String) =
         FiveAdNative(context, slotId)
@@ -79,7 +76,7 @@ object LineSdkFactory {
       THREAD_KEEP_ALIVE_TIME.inWholeSeconds,
       TimeUnit.SECONDS,
       LinkedBlockingQueue(),
-      newThreadFactory("BG")
+      newThreadFactory("BG"),
     )
 }
 
@@ -89,9 +86,9 @@ interface SdkFactory {
 
   fun createFiveAdCustomLayout(context: Context, slotId: String, width: Int): FiveAdCustomLayout
 
-  fun createFiveAdInterstitial(activity: Activity, slotId: String): FiveAdInterstitial
+  fun createFiveAdInterstitial(context: Context, slotId: String): FiveAdInterstitial
 
-  fun createFiveVideoRewarded(activity: Activity, slotId: String): FiveAdVideoReward
+  fun createFiveVideoRewarded(context: Context, slotId: String): FiveAdVideoReward
 
   fun createFiveAdNative(context: Context, slotId: String): FiveAdNative
 }

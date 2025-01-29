@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next version
+- Updated to use context instead of activity for loading all format ads.
+
 #### Version 2.9.20250110.0
 - Removed deprecated `UnifiedNativeAdMapper` class in favor of `NativeAdMapper`
 - Fixed signals collection process.

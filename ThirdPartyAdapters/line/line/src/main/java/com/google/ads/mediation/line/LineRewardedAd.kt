@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.line
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -33,7 +32,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.rewarded.RewardItem
-import java.lang.ref.WeakReference
 
 /**
  * Used to load Line rewarded ads and mediate callbacks between Google Mobile Ads SDK and FiveAd
@@ -41,7 +39,7 @@ import java.lang.ref.WeakReference
  */
 class LineRewardedAd
 private constructor(
-  private val activityReference: WeakReference<Activity>,
+  private val context: Context,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -55,7 +53,6 @@ private constructor(
   private lateinit var rewardedAd: FiveAdVideoReward
 
   fun loadAd() {
-    val activity = activityReference.get() ?: return
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -66,8 +63,8 @@ private constructor(
       mediationAdLoadCallback.onFailure(adError)
       return
     }
-    LineInitializer.initialize(activity, appId)
-    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(activity, slotId)
+    LineInitializer.initialize(context, appId)
+    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(context, slotId)
     rewardedAd.setLoadListener(this)
     if (networkExtras != null) {
       rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
@@ -76,9 +73,8 @@ private constructor(
   }
 
   fun loadRtbAd() {
-    val activity = activityReference.get() ?: return
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
-    val adLoader = AdLoader.forConfig(activity, fiveAdConfig) ?: return
+    val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadRewardAd(
       bidData,
@@ -187,17 +183,6 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
     ): Result<LineRewardedAd> {
-      val activity = mediationRewardedAdConfiguration.context as? Activity
-      if (activity == null) {
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
       val appId = serverParameters.getString(LineMediationAdapter.KEY_APP_ID)
       if (appId.isNullOrEmpty()) {
@@ -217,7 +202,7 @@ private constructor(
 
       return Result.success(
         LineRewardedAd(
-          WeakReference(activity),
+          mediationRewardedAdConfiguration.context,
           appId,
           slotId,
           bidResponse,

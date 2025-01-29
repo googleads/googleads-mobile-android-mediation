@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.line
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -32,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
-import java.lang.ref.WeakReference
 
 /**
  * Used to load Line interstitial ads and mediate callbacks between Google Mobile Ads SDK and Line
@@ -40,7 +38,7 @@ import java.lang.ref.WeakReference
  */
 class LineInterstitialAd
 private constructor(
-  private val activityReference: WeakReference<Activity>,
+  private val context: Context,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -54,7 +52,6 @@ private constructor(
   private lateinit var interstitialAd: FiveAdInterstitial
 
   fun loadAd() {
-    val activity = activityReference.get() ?: return
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -65,8 +62,8 @@ private constructor(
       mediationAdLoadCallback.onFailure(adError)
       return
     }
-    LineInitializer.initialize(activity, appId)
-    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(activity, slotId)
+    LineInitializer.initialize(context, appId)
+    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(context, slotId)
     interstitialAd.setLoadListener(this)
     if (networkExtras != null) {
       interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
@@ -75,9 +72,8 @@ private constructor(
   }
 
   fun loadRtbAd() {
-    val activity = activityReference.get() ?: return
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
-    val adLoader = AdLoader.forConfig(activity, fiveAdConfig) ?: return
+    val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadInterstitialAd(
       bidData,
@@ -178,17 +174,6 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
     ): Result<LineInterstitialAd> {
-      val activity = mediationInterstitialAdConfiguration.context as? Activity
-      if (activity == null) {
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ERROR_MSG_CONTEXT_NOT_AN_ACTIVITY,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
       val serverParameters = mediationInterstitialAdConfiguration.serverParameters
 
       val appId = serverParameters.getString(LineMediationAdapter.KEY_APP_ID)
@@ -209,7 +194,7 @@ private constructor(
 
       return Result.success(
         LineInterstitialAd(
-          WeakReference(activity),
+          mediationInterstitialAdConfiguration.context,
           appId,
           slotId,
           bidResponse,
