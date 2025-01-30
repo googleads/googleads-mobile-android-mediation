@@ -32,6 +32,22 @@ Please keep these in mind when making adapter modifications:
    Once this is imported, you can reformat your code by going to **Code > Show Reformat File Dialog** and click **Run**.
    Make sure that **Rearrange code** is not selected to avoid large diffs.
 
+## Troubleshooting
+
+### Android Studio errors
+
+When importing an adapter project into Android Studio, you may run into some errors.
+
+Here are some potential errors and ways to resolve those errors:
+
+1. Build error: “Cannot find a Java installation on your machine matching this tasks requirements: {languageVersion=11, vendor=any, implementation=vendor-specific}”
+ - Solution is to set Gradle JDK to be Java 11 (at Android Studio Settings -> Build, Execution, Deployment -> Build Tools -> Gradle, select Gradle JDK).
+ - But, when using Java 11 as Gradle JDK, Gradle build may fail due to a missing library error (like "/tmp/libconscrypt_openjdk_jni-linux-x86_6417345489542840000.so: libstdc++.so.6: cannot open shared object file: No such file or directory").
+ - In that case, the workaround is to remove the line kotlin.jvmToolChain(11) from the module’s build.gradle file while doing development. Note: This line removal shouldn't be included as part of the pull request.
+
+2. Error when running the unit tests: "Failed to transform core-for-system-modules.jar to match attributes {artifactType=_internal_android_jdk_image, org.gradle.libraryelements=jar, org.gradle.usage=java-runtime}"
+ - Solution: Set Gradle JDK to be <= Java 17 (at Android Studio Settings -> Build, Execution, Deployment -> Build Tools -> Gradle, select Gradle JDK).
+
 # If you can't become a contributor
 
 If you can't become a contributor, but wish to share some code that illustrates
