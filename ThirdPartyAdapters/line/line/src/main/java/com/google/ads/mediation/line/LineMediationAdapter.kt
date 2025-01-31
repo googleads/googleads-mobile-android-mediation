@@ -283,5 +283,17 @@ class LineMediationAdapter : RtbAdapter() {
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
     const val SDK_ERROR_DOMAIN = "com.five_corp.ad"
     private var initAppId: String = ""
+    internal var isTestMode = false
+
+    /**
+     * Sets whether test mode should be true or false for the adapter.
+     *
+     * This should be set before initializing the Google Mobile Ads SDK.
+     *
+     * Ensure that you set test mode false before publishing your app.
+     */
+    fun setTestMode(isTestMode: Boolean) {
+      LineMediationAdapter.isTestMode = isTestMode
+    }
   }
 }

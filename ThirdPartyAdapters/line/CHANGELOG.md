@@ -2,6 +2,7 @@
 
 #### Next version
 - Updated to use context instead of activity for loading all format ads.
+- Fixed how test mode is set on the LINE SDK.
 
 #### Version 2.9.20250110.0
 - Removed deprecated `UnifiedNativeAdMapper` class in favor of `NativeAdMapper`

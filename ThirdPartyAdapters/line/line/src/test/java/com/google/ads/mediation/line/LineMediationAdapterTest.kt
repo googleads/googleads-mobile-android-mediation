@@ -322,13 +322,11 @@ class LineMediationAdapterTest {
   }
 
   @Test
-  fun initialize_withTestDevicesIds_configuresTestToTrue() {
-    val requestConfiguration =
-      RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_DEVICE")).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+  fun initialize_withTestModeTrue_configuresTestModeToTrueOnLineSdk() {
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 
+    LineMediationAdapter.setTestMode(true)
     lineMediationAdapter.initialize(
       context,
       mockInitializationCompleteCallback,
@@ -339,12 +337,11 @@ class LineMediationAdapterTest {
   }
 
   @Test
-  fun initialize_withoutTestDevicesIds_configuresTestToFalse() {
-    val requestConfiguration = RequestConfiguration.Builder().setTestDeviceIds(null).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+  fun initialize_withTestModeFalse_configuresTestModeToFalseOnLineSdk() {
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 
+    LineMediationAdapter.setTestMode(false)
     lineMediationAdapter.initialize(
       context,
       mockInitializationCompleteCallback,
