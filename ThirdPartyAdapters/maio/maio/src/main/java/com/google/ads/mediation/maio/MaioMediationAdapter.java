@@ -56,7 +56,6 @@ public class MaioMediationAdapter extends Adapter {
 
   @IntDef(value = {ERROR_AD_NOT_AVAILABLE,
       ERROR_INVALID_SERVER_PARAMETERS,
-      ERROR_REQUIRES_ACTIVITY_CONTEXT,
   })
 
   @Retention(RetentionPolicy.SOURCE)
@@ -98,7 +97,9 @@ public class MaioMediationAdapter extends Adapter {
   /**
    * Activity context is required.
    */
-  public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+  // Commented out since adapter no longer reports this error code. But, leaving it as comment for
+  // reference.
+  // public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
 
   /**
    * {@link Adapter} implementation

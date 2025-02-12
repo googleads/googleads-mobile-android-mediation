@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated to not require activity for loading ads.
+
 #### Version 2.0.3.0
 - Verified compatibility with maio SDK version 2.0.3.0.
 

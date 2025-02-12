@@ -14,7 +14,6 @@ import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyF
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
-import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT
 import com.google.ads.mediation.maio.MaioUtils.getVersionInfo
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
@@ -177,21 +176,6 @@ class MaioMediationAdapterTest {
   // endregion
 
   // region Rewarded ad tests
-  @Test
-  fun loadRewardedAd_nonActivityContext_invokesOnFailure() {
-    val rewardedAdConfiguration = createRewardedAdConfiguration(context = context)
-
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
-
-    val expectedAdError =
-      AdError(
-        ERROR_REQUIRES_ACTIVITY_CONTEXT,
-        "Maio SDK requires an Activity context to load ads.",
-        ERROR_DOMAIN,
-      )
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-  }
-
   @Test
   fun loadRewardedAd_withNullKeyMedia_invokesOnFailure() {
     val rewardedAdConfiguration = createRewardedAdConfiguration()
