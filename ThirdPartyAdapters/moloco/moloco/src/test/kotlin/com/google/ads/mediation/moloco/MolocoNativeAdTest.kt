@@ -10,9 +10,9 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.NativeAd
 import org.junit.Before
@@ -33,7 +33,7 @@ class MolocoNativeAdTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val mockNativeAd = mock<NativeAd>()
     private val mockMediationAdLoadCallback:
-            MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
+            MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
         mock()
     private val mockMediationAdCallback = mock<MediationNativeAdCallback>()
 
