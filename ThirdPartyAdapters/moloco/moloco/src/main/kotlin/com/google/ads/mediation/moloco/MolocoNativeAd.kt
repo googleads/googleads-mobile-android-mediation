@@ -13,11 +13,6 @@
 // limitations under the License.
 
 package com.google.ads.mediation.moloco
-
-/**
- * Used to load Moloco native ads and mediate callbacks between Google Mobile Ads SDK and Moloco
- * SDK.
- */
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
@@ -33,6 +28,10 @@ import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.NativeAd
 
+/**
+ * Used to load Moloco native ads and mediate callbacks between Google Mobile Ads SDK and Moloco
+ * SDK.
+ */
 class MolocoNativeAd
 private constructor(
   private val adUnitId: String,
