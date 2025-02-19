@@ -1,8 +1,13 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Next version
-- Updated to initialize Mintegral SDK in a background thread (to fix ANRs).
-- Updated to use the activity context passed in at show time for showing app open ads (to prevent unexpected show failures).
+#### Version 16.9.41.0
+- Updated the adapter to initialize the Mintegral SDK on a background thread.
+- Updated the adapter to use the activity context passed at show time for showing app open ads.
+- Verified compatibility with Mintegral SDK 16.9.41.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.6.0.
+- Mintegral SDK version 16.9.41.
 
 #### Version 16.8.61.0
 - Verified compatibility with Mintegral SDK 16.8.61.
