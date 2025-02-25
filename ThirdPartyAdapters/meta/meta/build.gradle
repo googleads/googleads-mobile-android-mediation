@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Meta Audience Network"
     // String property to store the version name.
-    stringVersion = "6.18.0.0"
+    stringVersion = "6.19.0.0"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 6180000
+        versionCode 6190000
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -111,9 +111,9 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.facebook.android:audience-network-sdk:6.18.0'
+    implementation 'com.facebook.android:audience-network-sdk:6.19.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
