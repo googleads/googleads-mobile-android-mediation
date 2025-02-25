@@ -40,9 +40,12 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -50,6 +53,7 @@ import com.moloco.sdk.BuildConfig
 import com.moloco.sdk.publisher.Banner
 import com.moloco.sdk.publisher.CreateBannerCallback
 import com.moloco.sdk.publisher.CreateInterstitialAdCallback
+import com.moloco.sdk.publisher.CreateNativeAdCallback
 import com.moloco.sdk.publisher.CreateRewardedInterstitialAdCallback
 import com.moloco.sdk.publisher.Initialization
 import com.moloco.sdk.publisher.InterstitialAd
@@ -57,6 +61,7 @@ import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.Moloco.createBanner
 import com.moloco.sdk.publisher.Moloco.createBannerTablet
 import com.moloco.sdk.publisher.Moloco.createInterstitial
+import com.moloco.sdk.publisher.Moloco.createNativeAd
 import com.moloco.sdk.publisher.Moloco.createRewardedInterstitial
 import com.moloco.sdk.publisher.Moloco.getBidToken
 import com.moloco.sdk.publisher.Moloco.initialize
@@ -64,6 +69,7 @@ import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.MolocoBidTokenListener
 import com.moloco.sdk.publisher.MolocoInitStatus
 import com.moloco.sdk.publisher.MolocoInitializationListener
+import com.moloco.sdk.publisher.NativeAd
 import com.moloco.sdk.publisher.RewardedInterstitialAd
 import com.moloco.sdk.publisher.init.MolocoInitParams
 import org.junit.Assert.assertEquals
@@ -95,9 +101,14 @@ class MolocoMediationAdapterTest {
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
   private val mockMediationBannerAdLoadCallback =
     mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+  private val mockMediationNativeAdLoadCallback =
+    mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+
   private val mockInterstitialAd = mock<InterstitialAd>()
   private val mockRewardedAd = mock<RewardedInterstitialAd>()
   private val mockBannerAd = mock<Banner>()
+  private val mockNativeAd = mock<NativeAd>()
+
   private val molocoInitParamsCaptor = argumentCaptor<MolocoInitParams>()
   private val rtbSignalData = mock<RtbSignalData> { on { context } doReturn context }
 
@@ -784,6 +795,140 @@ class MolocoMediationAdapterTest {
       /*maxAdContentRating=*/ "",
       adSize,
       TEST_WATERMARK,
+    )
+
+  // endregion
+
+  // region NativeAd tests
+
+  @Test
+  fun loadRtbNativeAdMapper_withNullAdUnit_invokesOnFailure() {
+    val mediationNativeAdConfiguration = createMediationNativeAdConfiguration()
+
+    adapter.loadRtbNativeAdMapper(mediationNativeAdConfiguration, mockMediationNativeAdLoadCallback)
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_withEmptyAdUnit_invokesOnFailure() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRtbNativeAdMapper(mediationNativeAdConfiguration, mockMediationNativeAdLoadCallback)
+
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_whenAdIsCreated_loadsMolocoNativeAd() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationNativeAdConfiguration =
+        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+
+      adapter.loadRtbNativeAdMapper(
+        mediationNativeAdConfiguration,
+        mockMediationNativeAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createNativeAd(eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
+      }
+      val capturedCallback = createNativeAdCaptor.firstValue
+      capturedCallback.invoke(mockNativeAd, /* error= */ null)
+      verify(mockNativeAd).load(eq(TEST_BID_RESPONSE), any())
+    }
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_whenMolocoErrorIsReported_invokesOnFailure() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationNativeAdConfiguration =
+        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+
+      adapter.loadRtbNativeAdMapper(
+        mediationNativeAdConfiguration,
+        mockMediationNativeAdLoadCallback,
+      )
+      mockedMoloco.verify {
+        createNativeAd(eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
+      }
+      val capturedCallback = createNativeAdCaptor.firstValue
+      // An example Moloco ad creation error.
+      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      capturedCallback.invoke(/* nativeAd= */ null, molocoError)
+
+      val expectedAdError =
+        AdError(
+          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
+          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    }
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationNativeAdConfiguration =
+        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+
+      adapter.loadRtbNativeAdMapper(
+        mediationNativeAdConfiguration,
+        mockMediationNativeAdLoadCallback,
+      )
+
+      mockedMoloco.verify {
+        createNativeAd(eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
+      }
+      val capturedCallback = createNativeAdCaptor.firstValue
+      capturedCallback.invoke(/* nativeAd= */ null, /* error= */ null)
+      val expectedAdError =
+        AdError(
+          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+        )
+      verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    }
+  }
+
+  private fun createMediationNativeAdConfiguration(
+    bidResponse: String = "",
+    serverParameters: Bundle = bundleOf(),
+  ) =
+    MediationNativeAdConfiguration(
+      context,
+      bidResponse,
+      serverParameters,
+      /*mediationExtras=*/ bundleOf(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      TEST_WATERMARK,
+      null,
     )
 
   // endregion
