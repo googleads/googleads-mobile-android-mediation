@@ -1,5 +1,12 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Version 6.19.0.0
+- Verified compatibility with Meta Audience Network SDK v6.19.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 23.6.0.
+- Meta Audience Network SDK version 6.19.0.
+
 #### Version 6.18.0.0
 - Verified compatibility with Meta Audience Network SDK v6.18.0.
 
