@@ -83,11 +83,6 @@ public abstract class AppLovinRewardedRenderer
    */
   private boolean fullyWatched;
 
-  /**
-   * AppLovin reward item object.
-   */
-  private AppLovinRewardItem rewardItem;
-
   protected AppLovinRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
@@ -153,7 +148,7 @@ public abstract class AppLovinRewardedRenderer
     }
 
     if (fullyWatched) {
-      rewardedAdCallback.onUserEarnedReward(rewardItem);
+      rewardedAdCallback.onUserEarnedReward();
     }
     rewardedAdCallback.onAdClosed();
   }
@@ -215,7 +210,6 @@ public abstract class AppLovinRewardedRenderer
     final int amount = (int) Double.parseDouble(amountStr);
 
     Log.d(TAG, "Rewarded " + amount + " " + currency);
-    rewardItem = new AppLovinRewardItem(amount, currency);
   }
   // endregion
 }

@@ -14,14 +14,16 @@ ext {
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'com.applovin.mediation'
+    compileSdk 34
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 33
         versionCode 13010000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
+    buildFeatures.buildConfig true
     buildTypes {
         release {
             minifyEnabled false
@@ -33,7 +35,7 @@ android {
 dependencies {
     implementation 'com.applovin:applovin-sdk:13.1.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.6.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
 }
 
 /**
