@@ -1,5 +1,9 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 6.19.0.0
 - Verified compatibility with Meta Audience Network SDK v6.19.0.
 

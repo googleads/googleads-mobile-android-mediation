@@ -13,7 +13,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
-import com.google.android.gms.ads.rewarded.RewardItem
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -85,7 +84,7 @@ class FacebookRewardedAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD,
         "Failed to present rewarded ad.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     // invoke the showAd callback
@@ -117,8 +116,7 @@ class FacebookRewardedAdTest {
     adapterRewardedAd.onRewardedVideoCompleted()
 
     verify(mediationRewardedAdCallback).onVideoComplete()
-    verify(mediationRewardedAdCallback)
-      .onUserEarnedReward(ArgumentMatchers.any(RewardItem::class.java))
+    verify(mediationRewardedAdCallback).onUserEarnedReward()
   }
 
   @Test
@@ -202,7 +200,7 @@ class FacebookRewardedAdTest {
       AdError(
         metaAdError.errorCode,
         metaAdError.errorMessage,
-        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN,
       )
     whenever(facebookRewardedAd.show()) doReturn true
 
@@ -224,7 +222,7 @@ class FacebookRewardedAdTest {
       AdError(
         metaAdError.errorCode,
         metaAdError.errorMessage,
-        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN,
       )
 
     // mimic an ad render
