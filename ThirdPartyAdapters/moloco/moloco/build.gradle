@@ -20,7 +20,7 @@ ext {
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 android {
@@ -28,7 +28,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
         targetSdk 33
         versionCode 3070000
         versionName stringVersion
@@ -130,7 +130,7 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'com.google.android.gms:play-services-ads:23.6.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
     implementation 'com.moloco.sdk:moloco-sdk:3.7.0'
 
     testImplementation 'androidx.test:core:1.6.1'
@@ -140,7 +140,7 @@ dependencies {
     testImplementation "com.google.truth:truth:1.1.5"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.21'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')

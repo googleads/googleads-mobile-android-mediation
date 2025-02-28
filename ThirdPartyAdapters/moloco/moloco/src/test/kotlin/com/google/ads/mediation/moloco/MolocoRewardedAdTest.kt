@@ -35,7 +35,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -169,7 +168,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onUserRewarded(mock())
 
-    verify(mockMediationAdCallback).onUserEarnedReward(any())
+    verify(mockMediationAdCallback).onUserEarnedReward()
   }
 
   private fun loadRewardedAd() {
