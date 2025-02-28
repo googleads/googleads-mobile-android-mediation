@@ -6,7 +6,6 @@ import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
-import com.google.ads.mediation.ironsource.IronSourceRewardItem
 import com.google.ads.mediation.ironsource.IronSourceRtbRewardedAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -207,7 +206,7 @@ class IronSourceRtbRewardedAdTest {
 
     // Then
     verify(mockMediationRewardedAdCallback).onVideoComplete()
-    verify(mockMediationRewardedAdCallback).onUserEarnedReward(any<IronSourceRewardItem>())
+    verify(mockMediationRewardedAdCallback).onUserEarnedReward()
   }
 
   @Test

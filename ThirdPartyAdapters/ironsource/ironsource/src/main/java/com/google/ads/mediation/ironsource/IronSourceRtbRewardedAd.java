@@ -181,8 +181,7 @@ public class IronSourceRtbRewardedAd
     if (mediationRewardedAdCallback == null) {
       return;
     }
-    final IronSourceRewardItem ironSourceRewardItem = new IronSourceRewardItem();
     mediationRewardedAdCallback.onVideoComplete();
-    mediationRewardedAdCallback.onUserEarnedReward(ironSourceRewardItem);
+    mediationRewardedAdCallback.onUserEarnedReward();
   }
 }

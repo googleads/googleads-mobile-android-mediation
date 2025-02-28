@@ -1,5 +1,9 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 8.7.0.0
 - Verified compatibility with ironSource SDK version 8.7.0.
 
