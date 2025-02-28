@@ -335,7 +335,7 @@ class MyTargetMediationAdapterTest {
       myTargetMediationAdapter.onReward(mock<Reward>(), mockRewardedAd)
 
       verify(mockRewardedAdCallback).onVideoComplete()
-      verify(mockRewardedAdCallback).onUserEarnedReward(any())
+      verify(mockRewardedAdCallback).onUserEarnedReward()
     }
   }
 

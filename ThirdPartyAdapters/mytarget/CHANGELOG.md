@@ -1,5 +1,9 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 5.27.1.0
 - Verified compatibility with myTarget SDK version 5.27.1.
 
