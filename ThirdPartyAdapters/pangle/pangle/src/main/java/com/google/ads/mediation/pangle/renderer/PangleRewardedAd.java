@@ -40,7 +40,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 
 public class PangleRewardedAd implements MediationRewardedAd {
 
@@ -153,21 +152,8 @@ public class PangleRewardedAd implements MediationRewardedAd {
 
           @Override
           public void onUserEarnedReward(final PAGRewardItem pagRewardItem) {
-            RewardItem rewardItem =
-                new RewardItem() {
-                  @NonNull
-                  @Override
-                  public String getType() {
-                    return pagRewardItem.getRewardName();
-                  }
-
-                  @Override
-                  public int getAmount() {
-                    return pagRewardItem.getRewardAmount();
-                  }
-                };
             if (rewardedAdCallback != null) {
-              rewardedAdCallback.onUserEarnedReward(rewardItem);
+              rewardedAdCallback.onUserEarnedReward();
             }
           }
 

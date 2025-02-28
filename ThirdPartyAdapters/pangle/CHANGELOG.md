@@ -1,5 +1,9 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 6.5.0.4.0
 - Verified compatibility with Pangle SDK version 6.5.0.4.
 
