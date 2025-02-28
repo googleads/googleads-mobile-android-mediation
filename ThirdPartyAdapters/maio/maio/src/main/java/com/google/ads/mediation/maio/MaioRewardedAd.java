@@ -15,7 +15,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 import jp.maio.sdk.android.v2.request.MaioRequest;
 import jp.maio.sdk.android.v2.rewarddata.RewardData;
@@ -124,7 +123,7 @@ public class MaioRewardedAd implements MediationRewardedAd {
           @Override
           public void rewarded(@NonNull Rewarded rewarded, @NonNull RewardData rewardData) {
             if (rewardedAdCallback != null) {
-              rewardedAdCallback.onUserEarnedReward(new MaioReward());
+              rewardedAdCallback.onUserEarnedReward();
             }
           }
 
@@ -137,22 +136,5 @@ public class MaioRewardedAd implements MediationRewardedAd {
             }
           }
         });
-  }
-
-  /** A {@link RewardItem} used to map maio rewards to Google's rewarded video ads rewards. */
-  private class MaioReward implements RewardItem {
-
-    private MaioReward() {}
-
-    @Override
-    public int getAmount() {
-      return 1;
-    }
-
-    @NonNull
-    @Override
-    public String getType() {
-      return "";
-    }
   }
 }

@@ -2,6 +2,8 @@
 
 #### Next Version
 - Updated to not require activity for loading ads.
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
 
 #### Version 2.0.3.0
 - Verified compatibility with maio SDK version 2.0.3.0.
