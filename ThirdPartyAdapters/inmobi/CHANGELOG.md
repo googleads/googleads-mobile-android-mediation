@@ -1,5 +1,9 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 10.8.0.0
 - Compile with Java 11 instead of Java 17.
 - Verified compatibility with InMobi Kotlin SDK version 10.8.0.

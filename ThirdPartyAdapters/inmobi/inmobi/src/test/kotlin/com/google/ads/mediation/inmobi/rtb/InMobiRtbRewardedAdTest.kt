@@ -13,7 +13,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.common.truth.Truth
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
@@ -53,7 +52,7 @@ class InMobiRtbRewardedAdTest {
         rewardedAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory
+        inMobiAdFactory,
       )
   }
 
@@ -124,19 +123,6 @@ class InMobiRtbRewardedAdTest {
   }
 
   @Test
-  fun onRewardsUnlocked_onEmptyRewards_invokesOnUserEarnedRewardWithZeroReward() {
-    // mimic an ad load
-    rtbRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
-    rtbRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, null)
-
-    verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor = argumentCaptor<RewardItem>()
-    verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
-    Truth.assertThat(captor.firstValue.type).isEmpty()
-    Truth.assertThat(captor.firstValue.amount).isEqualTo(0)
-  }
-
-  @Test
   fun onRewardsUnlocked_invokesOnUserEarnedReward() {
     val expectedRewardType = "SecondReward"
     val expectedReward = "2"
@@ -147,28 +133,7 @@ class InMobiRtbRewardedAdTest {
     rtbRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, rewards)
 
     verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor = argumentCaptor<RewardItem>()
-    verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
-    Truth.assertThat(captor.firstValue.type).isEqualTo(expectedRewardType)
-    Truth.assertThat(captor.firstValue.amount).isEqualTo(expectedReward.toInt())
-  }
-
-  @Test
-  fun onRewardsUnlocked_onInvalidRewardValue_invokesOnUserEarnedRewardWithDefaultReward() {
-    val expectedRewardType = "SecondReward"
-    val invalidReward = "invalid"
-    val defaultReward = 1
-    var rewards = mapOf<Any, Any>(expectedRewardType to invalidReward, "firstReward" to "10")
-
-    // mimic an ad load
-    rtbRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
-    rtbRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, rewards)
-
-    verify(mediationRewardedAdCallback).onVideoComplete()
-    val captor = argumentCaptor<RewardItem>()
-    verify(mediationRewardedAdCallback).onUserEarnedReward(captor.capture())
-    Truth.assertThat(captor.firstValue.type).isEqualTo(expectedRewardType)
-    Truth.assertThat(captor.firstValue.amount).isEqualTo(defaultReward)
+    verify(mediationRewardedAdCallback).onUserEarnedReward()
   }
 
   @Test

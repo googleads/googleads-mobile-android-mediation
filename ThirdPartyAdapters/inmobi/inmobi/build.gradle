@@ -22,7 +22,7 @@ android {
     compileSdk 34
     buildFeatures.buildConfig true
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdk 31
         versionCode 10080000
         versionName stringVersion
@@ -114,7 +114,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.8.2'
 
     // Mobile Ads SDK
-    implementation 'com.google.android.gms:play-services-ads:23.5.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
@@ -124,7 +124,7 @@ dependencies {
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.21'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
     testImplementation 'com.google.truth:truth:1.1.5'
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'org.mockito:mockito-core:5.5.0'
