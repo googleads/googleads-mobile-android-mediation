@@ -17,9 +17,9 @@ android {
     if (project.android.hasProperty('namespace')) {
         namespace 'com.google.ads.mediation.unity'
     }
-    compileSdkVersion 31
+    compileSdk 34
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 31
         versionCode 4130100
         versionName stringVersion
@@ -37,7 +37,7 @@ android {
 dependencies {
     implementation 'com.unity3d.ads:unity-ads:4.13.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.6.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
 }
 
 /**

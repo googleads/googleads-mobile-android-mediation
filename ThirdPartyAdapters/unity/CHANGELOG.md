@@ -1,5 +1,9 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 4.13.1.0
 - Verified compatibility with Unity Ads SDK 4.13.1.
 
