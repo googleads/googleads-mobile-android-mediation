@@ -162,10 +162,7 @@ class VungleRtbRewardedAdTest {
     adapterRtbRewardedAd.onAdRewarded(vungleRewardedAd)
 
     verify(rewardedAdCallback).onVideoComplete()
-    verify(rewardedAdCallback)
-      .onUserEarnedReward(
-        argThat { rewardItem -> rewardItem.type == "vungle" && rewardItem.amount == 1 }
-      )
+    verify(rewardedAdCallback).onUserEarnedReward()
     verifyNoMoreInteractions(rewardedAdCallback)
   }
 

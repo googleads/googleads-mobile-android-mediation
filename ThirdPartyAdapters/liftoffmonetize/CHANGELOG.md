@@ -1,5 +1,9 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 7.4.3.0
 - Verified compatibility with Vungle SDK 7.4.3.
 
