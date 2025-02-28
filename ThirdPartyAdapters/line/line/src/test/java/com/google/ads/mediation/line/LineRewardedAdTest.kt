@@ -114,7 +114,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onReward(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onUserEarnedReward(any<LineRewardedAd.LineRewardItem>())
+    verify(mockMediationAdCallback).onUserEarnedReward()
   }
 
   @Test

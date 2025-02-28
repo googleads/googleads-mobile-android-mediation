@@ -31,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.rewarded.RewardItem
 
 /**
  * Used to load Line rewarded ads and mediate callbacks between Google Mobile Ads SDK and FiveAd
@@ -151,7 +150,7 @@ private constructor(
   override fun onReward(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad user earned reward")
 
-    mediationRewardedAdCallback?.onUserEarnedReward(LineRewardItem())
+    mediationRewardedAdCallback?.onUserEarnedReward()
   }
 
   override fun onViewThrough(fiveAdVideoReward: FiveAdVideoReward) {
@@ -167,12 +166,6 @@ private constructor(
   override fun onFullScreenOpen(fiveAdVideoReward: FiveAdVideoReward) {
     Log.d(TAG, "Line rewarded ad opened")
     mediationRewardedAdCallback?.onAdOpened()
-  }
-
-  class LineRewardItem : RewardItem {
-    override fun getAmount(): Int = 1
-
-    override fun getType(): String = ""
   }
 
   companion object {
