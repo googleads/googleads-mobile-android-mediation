@@ -1,5 +1,9 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 16.9.41.0
 - Updated the adapter to initialize the Mintegral SDK on a background thread.
 - Updated the adapter to use the activity context passed at show time for showing app open ads.
