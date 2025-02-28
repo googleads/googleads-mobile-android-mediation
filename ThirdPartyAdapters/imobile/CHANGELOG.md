@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+
 #### Version 2.3.2.0
 - Verified compatibility with i-mobile SDK v2.3.2.
 
