@@ -1,5 +1,9 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated `minSdk` to 23
+- Rewarded ads now calls `onUserEarnedReward` without parameters.
+
 #### Version 8.3.6.0
 - Verified compatibility with DT Exchange SDK 8.3.6.
 

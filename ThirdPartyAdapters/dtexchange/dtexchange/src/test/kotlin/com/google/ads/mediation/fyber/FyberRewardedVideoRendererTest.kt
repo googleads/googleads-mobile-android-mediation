@@ -228,7 +228,7 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdRewarded(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).onUserEarnedReward(any())
+    verify(mockRewardedAdCallback).onUserEarnedReward()
     verify(mockRewardedAdCallback).onVideoComplete()
   }
 
