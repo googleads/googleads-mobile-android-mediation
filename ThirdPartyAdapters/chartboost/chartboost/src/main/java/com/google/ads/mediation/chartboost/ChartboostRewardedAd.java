@@ -39,7 +39,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 
 public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallback {
 
@@ -112,19 +111,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     Log.d(TAG, "User earned a rewarded from Chartboost rewarded ad.");
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onVideoComplete();
-      rewardedAdCallback.onUserEarnedReward(new RewardItem() {
-        @Override
-        public int getAmount() {
-          return rewardEvent.getReward();
-        }
-
-        @NonNull
-        @Override
-        public String getType() {
-          // Charboost doesn't provide reward type.
-          return "";
-        }
-      });
+      rewardedAdCallback.onUserEarnedReward();
     }
   }
 
