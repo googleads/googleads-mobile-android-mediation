@@ -39,7 +39,7 @@ private constructor(
   private val watermark: String,
   private val mediationNativeAdLoadCallback:
   MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
-) : AdLoad.Listener, NativeAdMapper() {
+) : NativeAdMapper() {
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
   internal var nativeAd: NativeAd? = null
 
@@ -66,51 +66,54 @@ private constructor(
 
       nativeAd = returnedAd
 
-      nativeAd?.load(bidResponse, this)
-    }
-  }
+      val loadListener = object : AdLoad.Listener {
+        override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
+          val adError =
+            AdError(
+              molocoAdError.errorType.errorCode,
+              molocoAdError.errorType.description,
+              MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+            )
+          mediationNativeAdLoadCallback.onFailure(adError)
+        }
 
-  override fun onAdLoadSuccess(molocoAd: MolocoAd) {
-    overrideClickHandling = true
-    nativeAd?.apply {
-      assets?.apply {
-        rating?.let { starRating = it.toDouble() }
-        sponsorText?.let { advertiser = it }
-        store = "Google Play"
-        title?.let { headline = it }
-        description?.let { body = it }
-        callToActionText?.let { callToAction = it }
-        iconUri?.let {
-          Drawable.createFromPath(it.toString())?.apply {
-            icon = MolocoNativeMappedImage(this)
+        override fun onAdLoadSuccess(molocoAd: MolocoAd) {
+          overrideClickHandling = true
+          nativeAd?.apply {
+            assets?.apply {
+              rating?.let { starRating = it.toDouble() }
+              sponsorText?.let { advertiser = it }
+              store = "Google Play"
+              title?.let { headline = it }
+              description?.let { body = it }
+              callToActionText?.let { callToAction = it }
+              iconUri?.let {
+                Drawable.createFromPath(it.toString())?.apply {
+                  icon = MolocoNativeMappedImage(this)
+                }
+              }
+
+              val mediaView = this.mediaView
+
+              mediaView?.let {
+                it.tag = MEDIA_VIEW_TAG
+                setMediaView(it)
+              }
+            }
+          }
+
+          val showCallback = mediationNativeAdLoadCallback.onSuccess(this@MolocoNativeAd)
+          nativeAd?.interactionListener = object : NativeAd.InteractionListener {
+            override fun onImpressionHandled() {}
+
+            override fun onGeneralClickHandled() = showCallback.reportAdClicked()
           }
         }
 
-        val mediaView = this.mediaView
-
-        mediaView?.let {
-          it.tag = MEDIA_VIEW_TAG
-          setMediaView(it)
-        }
       }
+
+      nativeAd?.load(bidResponse, loadListener)
     }
-
-    val showCallback = mediationNativeAdLoadCallback.onSuccess(this)
-    nativeAd?.interactionListener = object : NativeAd.InteractionListener {
-      override fun onImpressionHandled() {}
-
-      override fun onGeneralClickHandled() = showCallback.reportAdClicked()
-    }
-  }
-
-  override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
-    mediationNativeAdLoadCallback.onFailure(adError)
   }
 
   override fun handleClick(view: View) {
