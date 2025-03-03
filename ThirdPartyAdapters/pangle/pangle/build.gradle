@@ -8,7 +8,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Pangle"
     // String property to store version name.
-    stringVersion = "6.5.0.4.0"
+    stringVersion = "6.5.0.4.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -19,7 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 605000400
+        versionCode 605000401
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
