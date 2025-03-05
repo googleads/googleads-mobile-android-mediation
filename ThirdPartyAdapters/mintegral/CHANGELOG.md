@@ -1,8 +1,12 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated `minSdk` to 23
-- Rewarded ads now calls `onUserEarnedReward` without parameters.
+#### Version 16.9.41.1
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- Mintegral SDK version 16.9.41.
 
 #### Version 16.9.41.0
 - Updated the adapter to initialize the Mintegral SDK on a background thread.
