@@ -1,8 +1,12 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated `minSdk` to 23
-- Rewarded ads now calls `onUserEarnedReward` without parameters.
+#### 6.5.0.4.1
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- Pangle SDK version 6.5.0.4.
 
 #### Version 6.5.0.4.0
 - Verified compatibility with Pangle SDK version 6.5.0.4.
