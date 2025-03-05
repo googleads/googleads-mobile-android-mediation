@@ -1,10 +1,12 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Next version
-- Updated to use context instead of activity for loading all format ads.
-- Fixed how test mode is set on the LINE SDK.
-- Updated `minSdk` to 23
-- Rewarded ads now calls `onUserEarnedReward` without parameters.
+#### Version 2.9.20250110.1
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- FiveAd SDK version 2.9.20250110.0
 
 #### Version 2.9.20250110.0
 - Removed deprecated `UnifiedNativeAdMapper` class in favor of `NativeAdMapper`
