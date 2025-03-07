@@ -22,7 +22,7 @@ android {
     compileSdk 34
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdk 33
         versionCode 2030200
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")

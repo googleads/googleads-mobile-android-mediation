@@ -23,7 +23,7 @@ android {
     buildFeatures.buildConfig true
     defaultConfig {
         minSdkVersion 23
-        targetSdk 31
+        targetSdk 33
         versionCode 10080000
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'

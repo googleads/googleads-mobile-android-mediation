@@ -1,7 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
 #### Next Version
-- Updated `minSdk` to 23
+- Updated `minSdk` to 23 and `targetSdk` to 33.
 - Rewarded ads now calls `onUserEarnedReward` without parameters.
 
 #### Version 10.8.0.0
