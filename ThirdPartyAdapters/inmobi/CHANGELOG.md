@@ -1,8 +1,12 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated `minSdk` to 23 and `targetSdk` to 33.
-- Rewarded ads now calls `onUserEarnedReward` without parameters.
+#### Version 10.8.0.1
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- InMobi Kotlin SDK version 10.8.0.
 
 #### Version 10.8.0.0
 - Compile with Java 11 instead of Java 17.
