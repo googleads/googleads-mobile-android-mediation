@@ -1,8 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated `minSdk` to 23 and `targetSdk` to 33.
-- Rewarded ads now calls `onUserEarnedReward` without parameters.
+#### Version 13.1.0.1
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- AppLovin SDK version 13.1.0.
 
 #### Version 13.1.0.0
 - Verified compatibility with AppLovin SDK 13.1.0.
