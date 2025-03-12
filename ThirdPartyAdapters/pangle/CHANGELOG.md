@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### 6.5.0.4.1
+#### Version 6.5.0.4.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
 
