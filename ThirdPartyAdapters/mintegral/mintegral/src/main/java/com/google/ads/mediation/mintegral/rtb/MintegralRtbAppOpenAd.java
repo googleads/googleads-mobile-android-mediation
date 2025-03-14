@@ -76,7 +76,7 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
   @Override
   public void showAd(@NonNull Context context) {
     // Context passed here is the activity that the publisher passed to GMA SDK's show() method
-    // (https://developers.google.com/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
+    // (https://developers.google.com/admob/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
     // So, this will be an activity context.
     Activity activity = (Activity) context;
     if (splashAdWrapper != null) {
