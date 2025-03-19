@@ -35,7 +35,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
@@ -175,9 +175,9 @@ class MolocoMediationAdapter : RtbAdapter() {
     }
   }
 
-  override fun loadRtbNativeAd(
+  override fun loadRtbNativeAdMapper(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
-    callback: MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
     MolocoNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
