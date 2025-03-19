@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for COPPA flag
+
 #### Version 16.9.51.0
 - Verified compatibility with Mintegral SDK 16.9.51.
 

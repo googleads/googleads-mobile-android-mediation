@@ -192,6 +192,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
                     new SDKInitStatusListener() {
                       @Override
                       public void onInitSuccess() {
+                        MintegralUtils.configureMintegralPrivacy(context, mBridgeSDK);
                         initializationCompleteCallback.onInitializationSucceeded();
                       }
 
