@@ -127,7 +127,7 @@ private constructor(
     nonClickableAssetViews: MutableMap<String, View>,
   ) {
     containerView.setOnClickListener { nativeAd?.handleGeneralAdClick() }
-    clickableAssetViews.values.forEach {
+    clickableAssetViews.values.iterator().forEach {
       it.setOnClickListener { nativeAd?.handleGeneralAdClick() }
     }
   }

@@ -2,6 +2,7 @@ package com.google.ads.mediation.moloco
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -135,6 +137,20 @@ class MolocoNativeAdTest {
 
     verify(mockNativeAd).destroy()
     assert(molocoNativeAd.nativeAd == null) { "Expected nativeAd to be null after calling destroy" }
+  }
+
+  @Test
+  fun trackViews_invokesRegisterViews() {
+    molocoNativeAd.nativeAd = mockNativeAd
+    val viewContainer = View(context)
+    val clickableView = View(context)
+    val clickableAssets = mutableMapOf(Pair("testView", clickableView))
+
+    molocoNativeAd.trackViews(viewContainer, clickableAssets, /* nonClickableAssetViews= */ mock())
+    viewContainer.callOnClick()
+    clickableView.callOnClick()
+
+    verify(mockNativeAd, times(2)).handleGeneralAdClick()
   }
 
   private fun createMediationNativeAdConfiguration(): MediationNativeAdConfiguration {
