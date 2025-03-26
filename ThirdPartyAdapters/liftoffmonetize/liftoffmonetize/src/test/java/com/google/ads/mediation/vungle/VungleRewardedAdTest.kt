@@ -19,6 +19,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
 import com.vungle.ads.RewardedAd
 import com.vungle.ads.VungleError
+import com.vungle.ads.internal.protos.Sdk.SDKError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,7 +61,7 @@ class VungleRewardedAdTest {
     createMediationRewardedAdConfiguration(
       context = context,
       serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-      mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID)
+      mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE, KEY_USER_ID to TEST_USER_ID),
     )
 
   @Before
@@ -89,7 +90,7 @@ class VungleRewardedAdTest {
     adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_FAILED_TO_DOWNLOAD
+        on { code } doReturn SDKError.Reason.API_REQUEST_ERROR_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK rewarded ad load failed."
       }
 
@@ -99,7 +100,7 @@ class VungleRewardedAdTest {
       AdError(
         liftoffError.code,
         liftoffError.errorMessage,
-        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
     verify(rewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
@@ -161,10 +162,7 @@ class VungleRewardedAdTest {
     adapter.onAdRewarded(vungleRewardedAd)
 
     verify(rewardedAdCallback).onVideoComplete()
-    verify(rewardedAdCallback)
-      .onUserEarnedReward(
-        argThat { rewardItem -> rewardItem.type == "vungle" && rewardItem.amount == 1 }
-      )
+    verify(rewardedAdCallback).onUserEarnedReward()
     verifyNoMoreInteractions(rewardedAdCallback)
   }
 
@@ -182,7 +180,7 @@ class VungleRewardedAdTest {
     renderAdAndMockLoadSuccess()
     val liftoffError =
       mock<VungleError> {
-        on { code } doReturn VungleError.AD_UNABLE_TO_PLAY
+        on { code } doReturn SDKError.Reason.AD_NOT_LOADED_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK rewarded ad play failed."
       }
 
@@ -192,7 +190,7 @@ class VungleRewardedAdTest {
       AdError(
         liftoffError.code,
         liftoffError.errorMessage,
-        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
+        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
     verify(rewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
     verifyNoMoreInteractions(rewardedAdCallback)

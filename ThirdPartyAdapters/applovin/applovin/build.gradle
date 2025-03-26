@@ -8,20 +8,22 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "AppLovin"
     // String property to store version name.
-    stringVersion = "13.0.1.0"
+    stringVersion = "13.1.0.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'com.applovin.mediation'
+    compileSdk 34
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 33
-        versionCode 13000100
+        minSdkVersion 23
+        targetSdk 33
+        versionCode 13010001
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
     }
+    buildFeatures.buildConfig true
     buildTypes {
         release {
             minifyEnabled false
@@ -31,9 +33,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.applovin:applovin-sdk:13.0.1'
+    implementation 'com.applovin:applovin-sdk:13.1.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:23.4.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
 }
 
 /**

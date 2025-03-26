@@ -50,7 +50,7 @@ object LineInitializer {
           else -> NeedChildDirectedTreatment.UNSPECIFIED
         }
 
-      fiveAdConfig?.isTest = MobileAds.getRequestConfiguration().testDeviceIds.isNotEmpty()
+      fiveAdConfig?.isTest = LineMediationAdapter.isTestMode
     }
     return fiveAdConfig as FiveAdConfig
   }

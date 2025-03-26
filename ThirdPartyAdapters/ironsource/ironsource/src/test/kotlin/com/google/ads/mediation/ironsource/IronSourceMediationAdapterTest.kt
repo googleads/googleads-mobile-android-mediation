@@ -300,14 +300,14 @@ class IronSourceMediationAdapterTest {
   fun loadBannerAd_invalidBannerSize_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration =
-      createMediationBannerAdConfiguration(activity, adSize = AdSize.SEARCH)
+      createMediationBannerAdConfiguration(activity, adSize = AdSize.WIDE_SKYSCRAPER)
 
     adapter.loadBannerAdWithFailure(
       mediationAdConfiguration,
       mockBannerAdLoadCallback,
       AdError(
         ERROR_BANNER_SIZE_MISMATCH,
-        "There is no matching IronSource banner ad size for Google ad size: ${AdSize.SEARCH}",
+        "There is no matching IronSource banner ad size for Google ad size: ${AdSize.WIDE_SKYSCRAPER}",
         ADAPTER_ERROR_DOMAIN,
       ),
     )

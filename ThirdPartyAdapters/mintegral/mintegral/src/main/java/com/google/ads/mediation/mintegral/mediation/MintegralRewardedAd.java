@@ -24,7 +24,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoWithCodeListener;
@@ -80,25 +79,7 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
       return;
     }
     if (rewardInfo != null && rewardInfo.isCompleteView()) {
-      RewardItem rewardItem = new RewardItem() {
-        @NonNull
-        @Override
-        public String getType() {
-          return rewardInfo.getRewardName();
-        }
-
-        @Override
-        public int getAmount() {
-          int amount = 0;
-          try {
-            amount = Integer.getInteger(rewardInfo.getRewardAmount());
-          } catch (Exception exception) {
-            Log.w(TAG, "Failed to get reward amount.", exception);
-          }
-          return amount;
-        }
-      };
-      rewardedAdCallback.onUserEarnedReward(rewardItem);
+      rewardedAdCallback.onUserEarnedReward();
     } else {
       Log.w(TAG, "Mintegral SDK failed to reward user due to missing rewarded settings "
           + "or rewarded ad playback not completed.");

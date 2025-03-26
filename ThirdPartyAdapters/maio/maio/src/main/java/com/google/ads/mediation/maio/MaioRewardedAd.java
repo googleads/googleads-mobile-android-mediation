@@ -2,11 +2,9 @@ package com.google.ads.mediation.maio;
 
 import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
-import static com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
 import static com.google.ads.mediation.maio.MaioMediationAdapter.TAG;
 import static com.google.ads.mediation.maio.MaioMediationAdapter.getAdError;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -17,7 +15,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 import jp.maio.sdk.android.v2.request.MaioRequest;
 import jp.maio.sdk.android.v2.rewarddata.RewardData;
@@ -49,16 +46,6 @@ public class MaioRewardedAd implements MediationRewardedAd {
 
   public void loadAd() {
     Context context = mediationRewardedAdConfiguration.getContext();
-    if (!(context instanceof Activity)) {
-      AdError error =
-          new AdError(
-              ERROR_REQUIRES_ACTIVITY_CONTEXT,
-              "Maio SDK requires an Activity context to load ads.",
-              ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      adLoadCallback.onFailure(error);
-      return;
-    }
 
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     mediaID = serverParameters.getString(MaioAdsManager.KEY_MEDIA_ID);
@@ -136,7 +123,7 @@ public class MaioRewardedAd implements MediationRewardedAd {
           @Override
           public void rewarded(@NonNull Rewarded rewarded, @NonNull RewardData rewardData) {
             if (rewardedAdCallback != null) {
-              rewardedAdCallback.onUserEarnedReward(new MaioReward());
+              rewardedAdCallback.onUserEarnedReward();
             }
           }
 
@@ -149,22 +136,5 @@ public class MaioRewardedAd implements MediationRewardedAd {
             }
           }
         });
-  }
-
-  /** A {@link RewardItem} used to map maio rewards to Google's rewarded video ads rewards. */
-  private class MaioReward implements RewardItem {
-
-    private MaioReward() {}
-
-    @Override
-    public int getAmount() {
-      return 1;
-    }
-
-    @NonNull
-    @Override
-    public String getType() {
-      return "";
-    }
   }
 }

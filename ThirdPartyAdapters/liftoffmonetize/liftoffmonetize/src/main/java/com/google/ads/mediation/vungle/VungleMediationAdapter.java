@@ -56,7 +56,6 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.vungle.ads.AdConfig;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.RewardedAd;
@@ -386,7 +385,7 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
     Log.d(TAG, "Received reward from Liftoff Monetize waterfall rewarded ad.");
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onVideoComplete();
-      mediationRewardedAdCallback.onUserEarnedReward(new VungleReward("vungle", 1));
+      mediationRewardedAdCallback.onUserEarnedReward();
     }
   }
 
@@ -419,32 +418,6 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
   public void onAdImpression(@NonNull BaseAd baseAd) {
     mediationRewardedAdCallback.onVideoStart();
     mediationRewardedAdCallback.reportAdImpression();
-  }
-
-  /**
-   * This class is used to map Liftoff Monetize rewarded video ad rewards to Google Mobile Ads SDK
-   * rewards.
-   */
-  public static class VungleReward implements RewardItem {
-
-    private final String type;
-    private final int amount;
-
-    public VungleReward(String type, int amount) {
-      this.type = type;
-      this.amount = amount;
-    }
-
-    @Override
-    public int getAmount() {
-      return amount;
-    }
-
-    @NonNull
-    @Override
-    public String getType() {
-      return type;
-    }
   }
 
   @Override

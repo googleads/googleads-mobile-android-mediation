@@ -41,8 +41,6 @@ public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
 
-  private static final String TRUE = "true";
-
   @VisibleForTesting
   public static final String ERROR_MSG_REASON_PREFIX =
       "AppLovin SDK returned a load failure callback with reason: ";
@@ -61,7 +59,6 @@ public class AppLovinUtils {
 
     public static final String SDK_KEY = "sdkKey";
     public static final String ZONE_ID = "zone_id";
-    public static final String MULTIPLE_ADS_PER_AD_UNIT = "enable_multiple_ads_per_unit";
 
     // Private constructor
     private ServerParameterKeys() {
@@ -80,12 +77,17 @@ public class AppLovinUtils {
     }
   }
 
-  public static boolean isMultiAdsEnabled(Bundle serverParameters) {
-    if (serverParameters.containsKey(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT)) {
-      String multiAdsFlag = serverParameters.getString(ServerParameterKeys.MULTIPLE_ADS_PER_AD_UNIT);
-      return multiAdsFlag.equals(TRUE);
-    }
-    return false;
+  /**
+   * Enable the ability to load a second ad for an ad unit after the first ad for that ad unit has
+   * loaded even if the first ad hasn't been shown yet.
+   *
+   * <p>This is always set to true.
+   *
+   * <p>TODO(b/391643963): Remove the code branches for the case where this is false since this is
+   * always true now.
+   */
+  public static boolean isMultiAdsEnabled() {
+    return true;
   }
 
   /**

@@ -36,7 +36,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.inmobi.ads.AdMetaInfo;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.ads.InMobiInterstitial;
@@ -180,35 +179,10 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
   @Override
   public void onRewardsUnlocked(@NonNull InMobiInterstitial inMobiInterstitial,
       Map<Object, Object> rewards) {
-    String rewardKey = "";
-    String rewardStringValue = "";
-    int rewardValue = 0;
-
-    if (rewards != null) {
-      for (Object reward : rewards.keySet()) {
-        rewardKey = reward.toString();
-        rewardStringValue = rewards.get(rewardKey).toString();
-        if (!TextUtils.isEmpty(rewardKey) &&
-            !TextUtils.isEmpty(rewardStringValue)) {
-          break;
-        }
-      }
-    }
-
-    if (!TextUtils.isEmpty(rewardStringValue)) {
-      try {
-        rewardValue = Integer.parseInt(rewardStringValue);
-      } catch (NumberFormatException e) {
-        Log.e(TAG, "Expected an integer reward value. Got " +
-            rewardStringValue + " instead. Using reward value of 1.");
-        rewardValue = 1;
-      }
-    }
-
     if (rewardedAdCallback != null) {
       Log.d(TAG, "InMobi rewarded ad credited the user with a reward.");
       rewardedAdCallback.onVideoComplete();
-      rewardedAdCallback.onUserEarnedReward(new InMobiReward(rewardKey, rewardValue));
+      rewardedAdCallback.onUserEarnedReward();
     }
   }
 
@@ -266,27 +240,5 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
       rewardedAdCallback =
           mediationAdLoadCallback.onSuccess(InMobiRewardedAd.this);
     }
-  }
-}
-
-class InMobiReward implements RewardItem {
-
-  private final String type;
-  private final int amount;
-
-  InMobiReward(String type, int amount) {
-    this.type = type;
-    this.amount = amount;
-  }
-
-  @NonNull
-  @Override
-  public String getType() {
-    return type;
-  }
-
-  @Override
-  public int getAmount() {
-    return amount;
   }
 }

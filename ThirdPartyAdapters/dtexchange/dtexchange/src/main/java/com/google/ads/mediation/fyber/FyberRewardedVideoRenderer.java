@@ -40,7 +40,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 
 /**
  * Class for rendering a DT Exchange rewarded video.
@@ -217,7 +216,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   // region Fyber's InneractiveFullScreenAdRewardedListener implementation
   @Override
   public void onAdRewarded(@NonNull InneractiveAdSpot inneractiveAdSpot) {
-    rewardedAdCallback.onUserEarnedReward(RewardItem.DEFAULT_REWARD);
+    rewardedAdCallback.onUserEarnedReward();
     rewardedAdCallback.onVideoComplete();
   }
   // endregion

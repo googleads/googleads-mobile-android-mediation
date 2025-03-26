@@ -182,8 +182,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
   public void onAdRewarded(@NonNull BaseAd baseAd) {
     if (mediationRewardedAdCallback != null) {
       mediationRewardedAdCallback.onVideoComplete();
-      mediationRewardedAdCallback.onUserEarnedReward(
-          new VungleMediationAdapter.VungleReward("vungle", 1));
+      mediationRewardedAdCallback.onUserEarnedReward();
     }
   }
 

@@ -128,7 +128,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   @Override
   public void onRewardedVideoCompleted() {
     rewardedAdCallback.onVideoComplete();
-    rewardedAdCallback.onUserEarnedReward(new FacebookReward());
+    rewardedAdCallback.onUserEarnedReward();
   }
 
   @Override

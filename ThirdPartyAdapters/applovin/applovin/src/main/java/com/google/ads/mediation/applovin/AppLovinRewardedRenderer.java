@@ -78,16 +78,6 @@ public abstract class AppLovinRewardedRenderer
   @Nullable
   protected AppLovinIncentivizedInterstitial incentivizedInterstitial;
 
-  /**
-   * Flag to indicate if AppLovin incentivized ad was fully watched.
-   */
-  private boolean fullyWatched;
-
-  /**
-   * AppLovin reward item object.
-   */
-  private AppLovinRewardItem rewardItem;
-
   protected AppLovinRewardedRenderer(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
@@ -148,14 +138,9 @@ public abstract class AppLovinRewardedRenderer
   @Override
   public void adHidden(@NonNull AppLovinAd ad) {
     Log.d(TAG, "Rewarded video dismissed.");
-    if (rewardedAdCallback == null) {
-      return;
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdClosed();
     }
-
-    if (fullyWatched) {
-      rewardedAdCallback.onUserEarnedReward(rewardItem);
-    }
-    rewardedAdCallback.onAdClosed();
   }
   // endregion
 
@@ -181,8 +166,8 @@ public abstract class AppLovinRewardedRenderer
   @Override
   public void videoPlaybackEnded(AppLovinAd ad, double percentViewed, boolean fullyWatched) {
     Log.d(TAG, "Rewarded video playback ended at playback percent: " + percentViewed + "%.");
-    this.fullyWatched = fullyWatched;
     if (rewardedAdCallback != null && fullyWatched) {
+      rewardedAdCallback.onUserEarnedReward();
       rewardedAdCallback.onVideoComplete();
     }
   }
@@ -215,7 +200,6 @@ public abstract class AppLovinRewardedRenderer
     final int amount = (int) Double.parseDouble(amountStr);
 
     Log.d(TAG, "Rewarded " + amount + " " + currency);
-    rewardItem = new AppLovinRewardItem(amount, currency);
   }
   // endregion
 }

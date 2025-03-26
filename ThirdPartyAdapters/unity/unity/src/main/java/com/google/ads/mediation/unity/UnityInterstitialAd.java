@@ -217,7 +217,7 @@ public class UnityInterstitialAd
     unityAdsShowOptions.set(KEY_WATERMARK, adConfiguration.getWatermark());
     // UnityAds can handle a null placement ID so show is always called here.
     // Note: Context here is the activity that the publisher passed to GMA SDK's show() method
-    // (https://developers.google.com/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
+    // (https://developers.google.com/admob/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
     // So, this is guaranteed to be an activity context.
     unityAdsLoader.show((Activity) context, placementId, unityAdsShowOptions, this);
   }

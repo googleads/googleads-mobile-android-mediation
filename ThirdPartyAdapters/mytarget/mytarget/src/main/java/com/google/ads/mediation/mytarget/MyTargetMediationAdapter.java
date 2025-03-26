@@ -29,7 +29,6 @@ import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.my.target.ads.Reward;
 import com.my.target.ads.RewardedAd;
 import com.my.target.ads.RewardedAd.RewardedAdListener;
@@ -228,7 +227,7 @@ public class MyTargetMediationAdapter extends Adapter
     Log.d(TAG, "Rewarded.");
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onVideoComplete();
-      mRewardedAdCallback.onUserEarnedReward(new MyTargetReward(reward));
+      mRewardedAdCallback.onUserEarnedReward();
     }
   }
 
@@ -251,27 +250,6 @@ public class MyTargetMediationAdapter extends Adapter
     Log.d(TAG, error.getMessage());
     if (mRewardedAdCallback != null) {
       mRewardedAdCallback.onAdFailedToShow(error);
-    }
-  }
-
-  private static class MyTargetReward implements RewardItem {
-
-    private final @NonNull
-    String type;
-
-    public MyTargetReward(@NonNull Reward reward) {
-      this.type = reward.type;
-    }
-
-    @Override
-    @NonNull
-    public String getType() {
-      return type;
-    }
-
-    @Override
-    public int getAmount() {
-      return 1;
     }
   }
 }

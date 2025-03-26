@@ -196,7 +196,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
           }
           if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
             mediationRewardedAdCallback.onVideoComplete();
-            mediationRewardedAdCallback.onUserEarnedReward(new UnityReward());
+            mediationRewardedAdCallback.onUserEarnedReward();
           }
           mediationRewardedAdCallback.onAdClosed();
         }

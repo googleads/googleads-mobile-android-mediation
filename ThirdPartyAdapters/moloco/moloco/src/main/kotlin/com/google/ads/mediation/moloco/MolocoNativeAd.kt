@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package com.google.ads.mediation.moloco
+
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
@@ -38,27 +39,27 @@ private constructor(
   private val bidResponse: String,
   private val watermark: String,
   private val mediationNativeAdLoadCallback:
-  MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
-) : NativeAdMapper() {
-  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-  internal var nativeAd: NativeAd? = null
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+) : AdLoad.Listener, NativeAdMapper() {
+  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE) internal var nativeAd: NativeAd? = null
 
   fun loadAd() {
     Moloco.createNativeAd(adUnitId, watermark) { returnedAd, adCreateError ->
       if (returnedAd == null) {
-        val adError = if (adCreateError != null) {
+        val adError =
+          if (adCreateError != null) {
             AdError(
               adCreateError.errorCode,
               adCreateError.description,
               MolocoMediationAdapter.SDK_ERROR_DOMAIN,
             )
-        } else {
-          AdError(
-            MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-            MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-            MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        }
+          } else {
+            AdError(
+              MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+              MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+              MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+            )
+          }
 
         mediationNativeAdLoadCallback.onFailure(adError)
         return@createNativeAd
@@ -77,30 +78,19 @@ private constructor(
           mediationNativeAdLoadCallback.onFailure(adError)
         }
 
-        override fun onAdLoadSuccess(molocoAd: MolocoAd) {
-          overrideClickHandling = true
-          nativeAd?.apply {
-            assets?.apply {
-              rating?.let { starRating = it.toDouble() }
-              sponsorText?.let { advertiser = it }
-              store = "Google Play"
-              title?.let { headline = it }
-              description?.let { body = it }
-              callToActionText?.let { callToAction = it }
-              iconUri?.let {
-                Drawable.createFromPath(it.toString())?.apply {
-                  icon = MolocoNativeMappedImage(this)
-                }
-              }
-
-              val mediaView = this.mediaView
-
-              mediaView?.let {
-                it.tag = MEDIA_VIEW_TAG
-                setMediaView(it)
-              }
-            }
-          }
+  override fun onAdLoadSuccess(molocoAd: MolocoAd) {
+    overrideClickHandling = true
+    nativeAd?.apply {
+      assets?.apply {
+        rating?.let { starRating = it.toDouble() }
+        sponsorText?.let { advertiser = it }
+        store = "Google Play"
+        title?.let { headline = it }
+        description?.let { body = it }
+        callToActionText?.let { callToAction = it }
+        iconUri?.let {
+          Drawable.createFromPath(it.toString())?.apply { icon = MolocoNativeMappedImage(this) }
+        }
 
           val showCallback = mediationNativeAdLoadCallback.onSuccess(this@MolocoNativeAd)
           nativeAd?.interactionListener = object : NativeAd.InteractionListener {
@@ -110,10 +100,13 @@ private constructor(
           }
         }
 
-      }
+    val showCallback = mediationNativeAdLoadCallback.onSuccess(this)
+    nativeAd?.interactionListener =
+      object : NativeAd.InteractionListener {
+        override fun onImpressionHandled() {}
 
-      nativeAd?.load(bidResponse, loadListener)
-    }
+        override fun onGeneralClickHandled() = showCallback.reportAdClicked()
+      }
   }
 
   override fun handleClick(view: View) {
@@ -130,7 +123,7 @@ private constructor(
     nonClickableAssetViews: MutableMap<String, View>,
   ) {
     containerView.setOnClickListener { nativeAd?.handleGeneralAdClick() }
-    clickableAssetViews.values.forEach {
+    clickableAssetViews.values.iterator().forEach {
       it.setOnClickListener { nativeAd?.handleGeneralAdClick() }
     }
   }
@@ -144,7 +137,7 @@ private constructor(
     fun newInstance(
       mediationNativeAdConfiguration: MediationNativeAdConfiguration,
       mediationNativeAdLoadCallback:
-      MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+        MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
     ): Result<MolocoNativeAd> {
       val serverParameters = mediationNativeAdConfiguration.serverParameters
 
@@ -163,7 +156,9 @@ private constructor(
       val bidResponse = mediationNativeAdConfiguration.bidResponse
       val watermark = mediationNativeAdConfiguration.watermark
 
-      return Result.success(MolocoNativeAd(adUnitId, bidResponse, watermark, mediationNativeAdLoadCallback))
+      return Result.success(
+        MolocoNativeAd(adUnitId, bidResponse, watermark, mediationNativeAdLoadCallback)
+      )
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -176,7 +171,9 @@ private constructor(
     private val scale: Double = 1.0,
   ) : com.google.android.gms.ads.nativead.NativeAd.Image() {
     override fun getScale() = scale
+
     override fun getDrawable() = drawable
+
     override fun getUri() = uri
   }
 }

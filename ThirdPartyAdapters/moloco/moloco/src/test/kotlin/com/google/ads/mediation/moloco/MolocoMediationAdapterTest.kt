@@ -383,13 +383,13 @@ class MolocoMediationAdapterTest {
       }
       val capturedCallback = createInterstitialCaptor.firstValue
       // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
       capturedCallback.invoke(/* interstitialAd= */ null, molocoError)
 
       val expectedAdError =
         AdError(
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
           MolocoMediationAdapter.SDK_ERROR_DOMAIN,
         )
       verify(mockMediationInterstitialAdLoadCallback)
@@ -525,13 +525,13 @@ class MolocoMediationAdapterTest {
       }
       val capturedCallback = createRewardedCaptor.firstValue
       // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
       capturedCallback.invoke(/* rewardedAd= */ null, molocoError)
 
       val expectedAdError =
         AdError(
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
           MolocoMediationAdapter.SDK_ERROR_DOMAIN,
         )
       verify(mockMediationRewardedAdLoadCallback)
@@ -657,13 +657,13 @@ class MolocoMediationAdapterTest {
       }
       val capturedCallback = createBannerCaptor.firstValue
       // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
       capturedCallback.invoke(/* banner= */ null, molocoError)
 
       val expectedAdError =
         AdError(
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
           MolocoMediationAdapter.SDK_ERROR_DOMAIN,
         )
       verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
@@ -736,13 +736,13 @@ class MolocoMediationAdapterTest {
       }
       val capturedCallback = createBannerCaptor.firstValue
       // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
       capturedCallback.invoke(/* banner= */ null, molocoError)
 
       val expectedAdError =
         AdError(
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
           MolocoMediationAdapter.SDK_ERROR_DOMAIN,
         )
       verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
@@ -872,13 +872,13 @@ class MolocoMediationAdapterTest {
       }
       val capturedCallback = createNativeAdCaptor.firstValue
       // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID
+      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
       capturedCallback.invoke(/* nativeAd= */ null, molocoError)
 
       val expectedAdError =
         AdError(
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.errorCode,
-          MolocoAdError.AdCreateError.INVALID_AD_UNIT_ID.description,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
           MolocoMediationAdapter.SDK_ERROR_DOMAIN,
         )
       verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))

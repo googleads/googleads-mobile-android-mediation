@@ -95,12 +95,9 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
 
   @Override
   public void onRewardedVideoAdRewarded(@NonNull String instanceId) {
-    final IronSourceRewardItem ironSourceRewardItem = new IronSourceRewardItem();
     Log.d(
         TAG,
-        String.format(
-            "IronSource rewarded ad received reward: %d %s, for instance ID: %s",
-            ironSourceRewardItem.getAmount(), ironSourceRewardItem.getType(), instanceId));
+        String.format("IronSource rewarded ad received reward for instance ID: %s", instanceId));
     IronSourceRewardedAd ironSourceRewardedAd =
         IronSourceRewardedAd.getFromAvailableInstances(instanceId);
 
@@ -108,7 +105,7 @@ public class IronSourceRewardedAdListener implements ISDemandOnlyRewardedVideoLi
       MediationRewardedAdCallback adCallBack = ironSourceRewardedAd.getRewardedAdCallback();
       if (adCallBack != null) {
         adCallBack.onVideoComplete();
-        adCallBack.onUserEarnedReward(ironSourceRewardItem);
+        adCallBack.onUserEarnedReward();
       }
     }
   }

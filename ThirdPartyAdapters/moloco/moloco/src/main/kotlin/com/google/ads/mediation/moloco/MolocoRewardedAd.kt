@@ -21,7 +21,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.android.gms.ads.rewarded.RewardItem
 import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
@@ -120,13 +119,7 @@ private constructor(
   }
 
   override fun onUserRewarded(molocoAd: MolocoAd) {
-    rewardedAdCallback?.onUserEarnedReward(MolocoRewardItem())
-  }
-
-  class MolocoRewardItem : RewardItem {
-    override fun getAmount(): Int = 1
-
-    override fun getType(): String = ""
+    rewardedAdCallback?.onUserEarnedReward()
   }
 
   companion object {

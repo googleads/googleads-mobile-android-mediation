@@ -179,7 +179,7 @@ class IronSourceRewardedAdTest {
     ironSourceRewardedAdListener.onRewardedVideoAdRewarded(/* instanceId= */ "0")
 
     verify(mockRewardedAdCallback).onVideoComplete()
-    verify(mockRewardedAdCallback).onUserEarnedReward(any<IronSourceRewardItem>())
+    verify(mockRewardedAdCallback).onUserEarnedReward()
   }
 
   @Test

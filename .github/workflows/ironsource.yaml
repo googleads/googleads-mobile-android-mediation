@@ -1,0 +1,46 @@
+#  Copyright 2024 Google LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#  https://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+name: ironsource
+
+on:
+  pull_request:
+    paths:
+      - "ThirdPartyAdapters/ironsource/**"
+      - ".github/workflows/ironsource.yaml"
+  push:
+    branches:
+      - main
+
+jobs:
+  android:
+    runs-on: macos-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: "Install Gradle"
+        run: |
+          brew install gradle
+      - name: "Unit Tests"
+        run: |
+          cd ThirdPartyAdapters/ironsource/
+          gradle wrapper
+          ./gradlew test --scan

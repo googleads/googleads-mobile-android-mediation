@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "16.8.61.0"
+    stringVersion = "16.9.51.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -21,9 +21,9 @@ android {
     namespace 'com.google.ads.mediation.mintegral'
     compileSdk 34
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdk 33
-        versionCode 16086100
+        versionCode 16095100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -116,21 +116,16 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:23.4.0'
+    implementation 'com.google.android.gms:play-services-ads:24.0.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.mbridge.msdk.oversea:mbbid:16.8.61'
-    implementation 'com.mbridge.msdk.oversea:reward:16.8.61'
-    implementation 'com.mbridge.msdk.oversea:mbnative:16.8.61'
-    implementation 'com.mbridge.msdk.oversea:mbbanner:16.8.61'
-    implementation 'com.mbridge.msdk.oversea:newinterstitial:16.8.61'
-    implementation 'com.mbridge.msdk.oversea:mbsplash:16.8.61'
+    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:16.9.51'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.1'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
     testImplementation 'com.google.truth:truth:1.1.5'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'org.mockito:mockito-core:5.5.0'

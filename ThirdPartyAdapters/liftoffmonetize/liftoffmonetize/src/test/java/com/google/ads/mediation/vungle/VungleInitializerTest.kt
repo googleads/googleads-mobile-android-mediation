@@ -10,8 +10,8 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.VungleError
-import com.vungle.ads.VungleError.Companion.UNKNOWN_ERROR
 import com.vungle.ads.VunglePrivacySettings
+import com.vungle.ads.internal.protos.Sdk.SDKError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -94,14 +94,18 @@ class VungleInitializerTest {
     initializer.initialize("another_app_id", context, anotherInitializationListener)
     val vungleError =
       mock<VungleError> {
-        on { code } doReturn UNKNOWN_ERROR
+        on { code } doReturn SDKError.Reason.UNKNOWN_ERROR_VALUE
         on { errorMessage } doReturn "Liftoff Monetize SDK initialization failed."
       }
 
     initializer.onError(vungleError)
 
     val expectedAdError =
-      AdError(UNKNOWN_ERROR, "Liftoff Monetize SDK initialization failed.", VUNGLE_SDK_ERROR_DOMAIN)
+      AdError(
+        SDKError.Reason.UNKNOWN_ERROR_VALUE,
+        "Liftoff Monetize SDK initialization failed.",
+        VUNGLE_SDK_ERROR_DOMAIN,
+      )
     verify(mockVungleInitializationListener)
       .onInitializeError(argThat(AdErrorMatcher(expectedAdError)))
     verify(anotherInitializationListener)

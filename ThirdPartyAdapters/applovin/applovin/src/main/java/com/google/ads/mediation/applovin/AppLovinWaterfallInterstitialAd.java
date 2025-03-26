@@ -85,7 +85,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
       return;
     }
 
-    if (AppLovinUtils.isMultiAdsEnabled(serverParameters)) {
+    if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
 
