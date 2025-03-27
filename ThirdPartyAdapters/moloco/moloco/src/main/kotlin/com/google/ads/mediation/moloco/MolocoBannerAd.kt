@@ -72,12 +72,17 @@ private constructor(
           molocoAd.load(bidResponse, this@MolocoBannerAd)
         }
       }
-    if (adSize == AdSize.LEADERBOARD) {
-      Moloco.createBannerTablet(adUnitId, watermark, createBannerCallback)
-      return
+    when (adSize) {
+      AdSize.LEADERBOARD -> {
+        Moloco.createBannerTablet(adUnitId, watermark, createBannerCallback)
+      }
+      AdSize.MEDIUM_RECTANGLE -> {
+        Moloco.createMREC(adUnitId, watermark, createBannerCallback)
+      }
+      else -> {
+        Moloco.createBanner(adUnitId, watermark, createBannerCallback)
+      }
     }
-
-    Moloco.createBanner(adUnitId, watermark, createBannerCallback)
   }
 
   override fun getView(): View = molocoAd

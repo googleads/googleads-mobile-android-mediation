@@ -61,6 +61,7 @@ import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.Moloco.createBanner
 import com.moloco.sdk.publisher.Moloco.createBannerTablet
 import com.moloco.sdk.publisher.Moloco.createInterstitial
+import com.moloco.sdk.publisher.Moloco.createMREC
 import com.moloco.sdk.publisher.Moloco.createNativeAd
 import com.moloco.sdk.publisher.Moloco.createRewardedInterstitial
 import com.moloco.sdk.publisher.Moloco.getBidToken
@@ -692,6 +693,29 @@ class MolocoMediationAdapterTest {
           MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
         )
       verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    }
+  }
+
+  @Test
+  fun loadRtbBannerAd_whenSizeIsMediumRectangle_loadsMolocoCreateMREC() {
+    mockStatic(Moloco::class.java).use { mockedMoloco ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+      val mediationBannerAdConfiguration =
+        createMediationBannerAdConfiguration(
+          TEST_BID_RESPONSE,
+          serverParameters,
+          AdSize.MEDIUM_RECTANGLE,
+        )
+      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+
+      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+
+      mockedMoloco.verify {
+        createMREC(eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createBannerCaptor.capture())
+      }
+      val capturedCallback = createBannerCaptor.firstValue
+      capturedCallback.invoke(mockBannerAd, /* error= */ null)
+      verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
     }
   }
 
