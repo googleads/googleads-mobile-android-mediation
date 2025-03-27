@@ -1,7 +1,12 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Next Version
-- Added bidding support for native ads format.
+#### Version 3.8.0.0
+- Added bidding support for native ad format.
+- Verified compatibility with Moloco SDK 3.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.1.0.
+- Moloco SDK version 3.8.0.
 
 #### Version 3.7.2.0
 - Verified compatibility with Moloco SDK 3.7.2.
