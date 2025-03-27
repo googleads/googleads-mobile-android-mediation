@@ -15,6 +15,7 @@
 package com.google.ads.mediation.pubmatic
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -34,6 +35,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import com.pubmatic.sdk.common.OpenWrapSDK
 
 /**
  * PubMatic Adapter for GMA SDK used to initialize and load ads from the PubMatic SDK. This class
@@ -47,12 +49,34 @@ class PubMaticMediationAdapter : RtbAdapter() {
   private lateinit var nativeAd: PubMaticNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val sdkVersion = OpenWrapSDK.getVersion()
+    val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+    if (splits.size >= 3) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage = "Unexpected SDK version format: $sdkVersion. Returning 0.0.0 for SDK version."
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
   override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val adapterVersion = BuildConfig.ADAPTER_VERSION
+    val splits = adapterVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 4) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt() * 100 + splits[3].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      "Unexpected adapter version format: $adapterVersion. Returning 0.0.0 for adapter version."
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 

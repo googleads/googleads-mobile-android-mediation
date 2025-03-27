@@ -10,6 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url 'https://repo.pubmatic.com/artifactory/public-repos'
+        }
     }
 }
 rootProject.name = "pubmatic"

@@ -15,8 +15,7 @@
 package com.google.ads.mediation.pubmatic
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
-import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,14 +33,26 @@ class PubMaticMediationAdapterTest {
   // region Version tests
   @Test
   fun getSDKVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    val sdkVersion = adapter.sdkVersionInfo
+
+    assertThat(sdkVersion.majorVersion).isGreaterThan(0)
+    assertThat(sdkVersion.majorVersion).isLessThan(100)
+    assertThat(sdkVersion.minorVersion).isAtLeast(0)
+    assertThat(sdkVersion.minorVersion).isLessThan(100)
+    assertThat(sdkVersion.microVersion).isAtLeast(0)
+    assertThat(sdkVersion.microVersion).isLessThan(100)
   }
 
   @Test
   fun getVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    val adapterVersion = adapter.versionInfo
+
+    assertThat(adapterVersion.majorVersion).isGreaterThan(0)
+    assertThat(adapterVersion.majorVersion).isLessThan(100)
+    assertThat(adapterVersion.minorVersion).isAtLeast(0)
+    assertThat(adapterVersion.minorVersion).isLessThan(100)
+    assertThat(adapterVersion.microVersion).isAtLeast(0)
+    assertThat(adapterVersion.microVersion).isLessThan(100)
   }
 
   // endregion
