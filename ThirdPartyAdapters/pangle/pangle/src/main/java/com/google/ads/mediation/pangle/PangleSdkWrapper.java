@@ -16,6 +16,8 @@ package com.google.ads.mediation.pangle;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+
+import com.bytedance.sdk.openadsdk.api.PAGConstant;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
@@ -58,6 +60,9 @@ public class PangleSdkWrapper {
     PAGConfig.setGDPRConsent(gdpr);
   }
 
+  void setPAConsent(@PAGConstant.PAGPAConsentType int pa) {
+    PAGConfig.setPAConsent(pa);
+  }
 
   void setUserData(String userData) {
     PAGConfig.setUserData(userData);
