@@ -22,8 +22,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
+import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
@@ -32,7 +32,6 @@ import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd;
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd;
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -68,7 +67,6 @@ public class PangleMediationAdapter extends RtbAdapter {
   private final PangleInitializer pangleInitializer;
   private final PangleSdkWrapper pangleSdkWrapper;
   private final PangleFactory pangleFactory;
-  private final PanglePrivacyConfig panglePrivacyConfig;
 
   private PangleAppOpenAd appOpenAd;
   private PangleBannerAd bannerAd;
@@ -83,19 +81,17 @@ public class PangleMediationAdapter extends RtbAdapter {
     pangleInitializer = PangleInitializer.getInstance();
     pangleSdkWrapper = new PangleSdkWrapper();
     pangleFactory = new PangleFactory();
-    panglePrivacyConfig = new PanglePrivacyConfig(pangleSdkWrapper);
   }
 
   @VisibleForTesting
   PangleMediationAdapter(
       PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper,
-      PangleFactory pangleFactory,
-      PanglePrivacyConfig panglePrivacyConfig) {
+      PangleFactory pangleFactory
+    ) {
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
-    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   @Override
@@ -106,7 +102,9 @@ public class PangleMediationAdapter extends RtbAdapter {
     if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
       pangleSdkWrapper.setUserData(networkExtras.getString(PangleExtras.Keys.USER_DATA, ""));
     }
-    pangleSdkWrapper.getBiddingToken(new BiddingTokenCallback() {
+    PAGBiddingRequest biddingRequest = new PAGBiddingRequest();
+    biddingRequest.setAdxId(PangleConstants.ADX_ID);
+    pangleSdkWrapper.getBiddingToken(rtbSignalData.getContext(),biddingRequest,new BiddingTokenCallback() {
       @Override
       public void onBiddingTokenCollected(String biddingToken) {
         signalCallbacks.onSuccess(biddingToken);
@@ -146,8 +144,6 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, message);
     }
 
-    panglePrivacyConfig.setCoppa(
-        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
     pangleInitializer.initialize(
         context,
         appId,
@@ -223,7 +219,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
     appOpenAd =
         pangleFactory.createPangleAppOpenAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
     appOpenAd.render();
   }
 
@@ -233,7 +229,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
         pangleFactory.createPangleBannerAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
     bannerAd.render();
   }
 
@@ -245,7 +241,7 @@ public class PangleMediationAdapter extends RtbAdapter {
               callback) {
     interstitialAd =
         pangleFactory.createPangleInterstitialAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
     interstitialAd.render();
   }
 
@@ -255,7 +251,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     nativeAd =
         pangleFactory.createPangleNativeAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
     nativeAd.render();
   }
 
@@ -265,7 +261,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedAd =
         pangleFactory.createPangleRewardedAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper, panglePrivacyConfig);
+            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
     rewardedAd.render();
   }
 
@@ -300,34 +296,4 @@ public class PangleMediationAdapter extends RtbAdapter {
     return gdpr;
   }
 
-  /**
-   * Set the CCPA setting in Pangle SDK.
-   *
-   * @param ccpa an {@code Integer} value that indicates whether the user opts in of the "sale" of
-   *     the "personal information" under CCPA. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
-   */
-  public static void setDoNotSell(@PAGDoNotSellType int ccpa) {
-    setDoNotSell(ccpa, new PangleSdkWrapper());
-  }
-
-  @VisibleForTesting
-  static void setDoNotSell(@PAGDoNotSellType int ccpa, PangleSdkWrapper pangleSdkWrapper) {
-    if (ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_SELL
-        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL
-        && ccpa != PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT) {
-      // no-op
-      Log.w(TAG, "Invalid CCPA value. Pangle SDK only accepts -1, 0 or 1.");
-      return;
-    }
-    if (pangleSdkWrapper.isInitSuccess()) {
-      pangleSdkWrapper.setDoNotSell(ccpa);
-    }
-    PangleMediationAdapter.ccpa = ccpa;
-  }
-
-  public static int getDoNotSell() {
-    return ccpa;
-  }
 }
