@@ -27,7 +27,7 @@ public class PangleConstants {
   // The adapter error domain.
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.pangle";
   public static final String PANGLE_SDK_ERROR_DOMAIN = "com.pangle.ads";
-
+  public static final String ADX_ID = "207";
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(value = {ERROR_INVALID_SERVER_PARAMETERS, ERROR_BANNER_SIZE_MISMATCH,})
   public @interface AdapterError {
