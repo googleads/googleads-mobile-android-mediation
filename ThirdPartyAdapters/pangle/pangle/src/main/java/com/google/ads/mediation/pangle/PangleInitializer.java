@@ -94,12 +94,12 @@ public class PangleInitializer implements PAGInitCallback {
         pangleFactory
             .createPAGConfigBuilder()
             .appId(appId)
-            .setChildDirected(PanglePrivacyConfig.getCoppa())
+            .setAdxId(PangleConstants.ADX_ID)
             .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
-            .setDoNotSell(PangleMediationAdapter.getDoNotSell())
+            .setPAConsent(PangleMediationAdapter.getPAConsent())
             .setUserData(String.format(
                 "[{\"name\":\"mediation\",\"value\":\"google\"},{\"name\":\"adapter_version\",\"value\":\"%s\"}]",
-                BuildConfig.ADAPTER_VERSION))
+                    BuildConfig.ADAPTER_VERSION))
             .build();
     pangleSdkWrapper.init(context, adConfig, PangleInitializer.this);
   }
