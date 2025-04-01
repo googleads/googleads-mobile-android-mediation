@@ -16,12 +16,11 @@ package com.google.ads.mediation.pangle;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType;
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener;
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest;
+import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
@@ -54,24 +53,18 @@ public class PangleSdkWrapper {
     return PAGSdk.isInitSuccess();
   }
 
-  void setChildDirected(@PAGChildDirectedType int childDirectedType) {
-    PAGConfig.setChildDirected(childDirectedType);
-  }
 
   void setGdprConsent(@PAGGDPRConsentType int gdpr) {
     PAGConfig.setGDPRConsent(gdpr);
   }
 
-  void setDoNotSell(@PAGDoNotSellType int ccpa) {
-    PAGConfig.setDoNotSell(ccpa);
-  }
 
   void setUserData(String userData) {
     PAGConfig.setUserData(userData);
   }
 
-  void getBiddingToken(BiddingTokenCallback biddingTokenCallback) {
-    PAGSdk.getBiddingToken(biddingTokenCallback);
+  void getBiddingToken(Context context, PAGBiddingRequest biddingRequest,BiddingTokenCallback biddingTokenCallback) {
+    PAGSdk.getBiddingToken(context,biddingRequest,biddingTokenCallback);
   }
 
   String getSdkVersion() {
