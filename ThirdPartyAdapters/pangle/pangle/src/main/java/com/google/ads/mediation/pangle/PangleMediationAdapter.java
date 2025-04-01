@@ -22,6 +22,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
+import com.bytedance.sdk.openadsdk.api.PAGConstant;
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
@@ -68,6 +70,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   private final PangleSdkWrapper pangleSdkWrapper;
   private final PangleFactory pangleFactory;
 
+
   private PangleAppOpenAd appOpenAd;
   private PangleBannerAd bannerAd;
   private PangleInterstitialAd interstitialAd;
@@ -75,12 +78,13 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleRewardedAd rewardedAd;
 
   private static int gdpr = -1;
-  private static int ccpa = -1;
+  private static int pa = -1;
 
   public PangleMediationAdapter() {
     pangleInitializer = PangleInitializer.getInstance();
     pangleSdkWrapper = new PangleSdkWrapper();
     pangleFactory = new PangleFactory();
+
   }
 
   @VisibleForTesting
@@ -294,6 +298,38 @@ public class PangleMediationAdapter extends RtbAdapter {
 
   public static int getGDPRConsent() {
     return gdpr;
+  }
+
+
+  /**
+   * Set the PA setting in Pangle SDK.
+   *
+   * @param pa an {@code Integer} value that Indicates whether the user agrees to the delivery of personalized ads.
+   *     If not passed, it is assumed to be agreed. See <a
+   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
+   *     documentation</a> for more information about what values may be provided.
+   */
+  public static void setPAConsent(@PAGConstant.PAGPAConsentType int pa) {
+    setPAConsent(pa, new PangleSdkWrapper());
+  }
+
+  @VisibleForTesting
+  static void setPAConsent(@PAGConstant.PAGPAConsentType int pa, PangleSdkWrapper pangleSdkWrapper) {
+    if (pa != PAGConstant.PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT
+            && pa != PAGConstant.PAGPAConsentType.PAG_PA_CONSENT_TYPE_NO_CONSENT
+    ) {
+      // no-op
+      Log.w(TAG, "Invalid PA value. Pangle SDK only accepts 0 or 1.");
+      return;
+    }
+    if (pangleSdkWrapper.isInitSuccess()) {
+      pangleSdkWrapper.setPAConsent(pa);
+    }
+    PangleMediationAdapter.pa = pa;
+  }
+
+  public static int getPAConsent() {
+    return pa;
   }
 
 }
