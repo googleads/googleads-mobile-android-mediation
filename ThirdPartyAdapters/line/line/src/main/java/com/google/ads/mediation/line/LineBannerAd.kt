@@ -87,6 +87,7 @@ private constructor(
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadBannerAd(
       bidData,
+      adSize.getWidthInPixels(context),
       object : AdLoader.LoadBannerAdCallback {
         override fun onLoad(fiveAdCustomLayout: FiveAdCustomLayout) {
           adView = fiveAdCustomLayout

@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixes banner loading dimensions for bidding ads with new FiveAd API
+
 #### Version 2.9.20250317.0
 - Verified compatibility with FiveAd SDK version 2.9.20250317.
 

@@ -662,7 +662,7 @@ class LineMediationAdapterTest {
       )
 
       val loadCallbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader).loadBannerAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadBannerAd(any<BidData>(), any<Int>(), loadCallbackCaptor.capture())
       val capturedCallback = loadCallbackCaptor.firstValue
       capturedCallback.onLoad(mockFiveAdCustomLayout)
       verify(mockFiveAdCustomLayout).setEventListener(isA<LineBannerAd>())
@@ -691,7 +691,7 @@ class LineMediationAdapterTest {
       )
 
       val loadCallbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader).loadBannerAd(any(), loadCallbackCaptor.capture())
+      verify(mockAdLoader).loadBannerAd(any<BidData>(), any<Int>(), loadCallbackCaptor.capture())
       val capturedCallback = loadCallbackCaptor.firstValue
       capturedCallback.onLoad(mockFiveAdCustomLayout)
       verify(mockFiveAdCustomLayout).enableSound(true)
