@@ -46,6 +46,10 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.mbridge.msdk.out.MBridgeSDKFactory
 import com.mbridge.msdk.out.SDKInitStatusListener
 import com.mbridge.msdk.system.MBridgeSDKImpl
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,7 +80,7 @@ class MintegralMediationAdapterTest {
 
   @Before
   fun setUp() {
-    mintegralMediationAdapter = MintegralMediationAdapter()
+    mintegralMediationAdapter = MintegralMediationAdapter(SynchronousExecutorService())
   }
 
   // region version tests
@@ -646,5 +650,86 @@ class MintegralMediationAdapterTest {
   private companion object {
     val TEST_APP_KEY = "testAppKey"
     val TEST_APP_ID = "testAppId"
+  }
+
+  /** A synchronous executor service used for testing purpose. */
+  class SynchronousExecutorService : ExecutorService {
+    override fun shutdown() {}
+
+    override fun shutdownNow() = emptyList<Runnable>()
+
+    override fun isShutdown() = true
+
+    override fun isTerminated() = true
+
+    override fun awaitTermination(timeout: Long, unit: TimeUnit) = true
+
+    override fun execute(command: Runnable) {
+      command.run()
+    }
+
+    override fun <T> submit(task: Callable<T>): Future<T> {
+      val result = task.call()
+      return object : Future<T> {
+        override fun cancel(mayInterruptIfRunning: Boolean) = false
+
+        override fun isCancelled() = false
+
+        override fun isDone() = true
+
+        override fun get() = result
+
+        override fun get(timeout: Long, unit: TimeUnit) = result
+      }
+    }
+
+    override fun <T> submit(task: Runnable, result: T): Future<T> {
+      task.run()
+      return object : Future<T> {
+        override fun cancel(mayInterruptIfRunning: Boolean) = false
+
+        override fun isCancelled() = false
+
+        override fun isDone() = true
+
+        override fun get() = result
+
+        override fun get(timeout: Long, unit: TimeUnit) = result
+      }
+    }
+
+    override fun submit(task: Runnable): Future<*> {
+      task.run()
+      return object : Future<Void> {
+        override fun cancel(mayInterruptIfRunning: Boolean) = false
+
+        override fun isCancelled() = false
+
+        override fun isDone() = true
+
+        override fun get() = null
+
+        override fun get(timeout: Long, unit: TimeUnit) = null
+      }
+    }
+
+    override fun <T : Any?> invokeAll(
+      tasks: MutableCollection<out Callable<T>>?
+    ): MutableList<Future<T>> = throw UnsupportedOperationException()
+
+    override fun <T : Any?> invokeAll(
+      tasks: MutableCollection<out Callable<T>>?,
+      timeout: Long,
+      unit: TimeUnit?,
+    ): MutableList<Future<T>> = throw UnsupportedOperationException()
+
+    override fun <T : Any?> invokeAny(tasks: MutableCollection<out Callable<T>>?): T =
+      throw UnsupportedOperationException()
+
+    override fun <T : Any?> invokeAny(
+      tasks: MutableCollection<out Callable<T>>?,
+      timeout: Long,
+      unit: TimeUnit?,
+    ): T = throw UnsupportedOperationException()
   }
 }

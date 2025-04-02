@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbAppOpenAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbBannerAd;
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbInterstitialAd;
@@ -64,6 +65,8 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MintegralMediationAdapter extends RtbAdapter {
 
@@ -79,6 +82,17 @@ public class MintegralMediationAdapter extends RtbAdapter {
   private MintegralRtbRewardedAd mintegralRtbRewardedAd;
   private MintegralRtbNativeAd mintegralRtbNativeAd;
   private MintegralRtbAppOpenAd mintegralRtbAppOpenAd;
+
+  private ExecutorService executorService;
+
+  public MintegralMediationAdapter() {
+    executorService = Executors.newCachedThreadPool();
+  }
+
+  @VisibleForTesting
+  MintegralMediationAdapter(ExecutorService executorService) {
+    this.executorService = executorService;
+  }
 
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
@@ -184,29 +198,26 @@ public class MintegralMediationAdapter extends RtbAdapter {
       e.printStackTrace();
     }
     // Initialize the Mintegral SDK in a separate thread to avoid blocking the main thread.
-    new Thread(
-            () ->
-                mBridgeSDK.init(
-                    configurationMap,
-                    context,
-                    new SDKInitStatusListener() {
-                      @Override
-                      public void onInitSuccess() {
-                        MintegralUtils.configureMintegralPrivacy(context, mBridgeSDK);
-                        initializationCompleteCallback.onInitializationSucceeded();
-                      }
+    executorService.submit(
+        () ->
+            mBridgeSDK.init(
+                configurationMap,
+                context,
+                new SDKInitStatusListener() {
+                  @Override
+                  public void onInitSuccess() {
+                    MintegralUtils.configureMintegralPrivacy(context, mBridgeSDK);
+                    initializationCompleteCallback.onInitializationSucceeded();
+                  }
 
-                      @Override
-                      public void onInitFail(String errorMessage) {
-                        AdError initError =
-                            createSdkError(
-                                MintegralConstants.ERROR_CODE_SDK_INIT_FAILED, errorMessage);
-                        initializationCompleteCallback.onInitializationFailed(
-                            initError.getMessage());
-                        Log.w(TAG, initError.toString());
-                      }
-                    }))
-        .start();
+                  @Override
+                  public void onInitFail(String errorMessage) {
+                    AdError initError =
+                        createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED, errorMessage);
+                    initializationCompleteCallback.onInitializationFailed(initError.getMessage());
+                    Log.w(TAG, initError.toString());
+                  }
+                }));
   }
 
   @Override
