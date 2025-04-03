@@ -2,6 +2,7 @@
 
 #### Next Version
 - Adapter can now call onUserEarnedReward on videoPlaybackEnded callback.
+- Updated adapter to use new AppLovin API for initialization.
 
 #### Version 13.1.0.1
 - Updated the minimum required Android API level to 23.

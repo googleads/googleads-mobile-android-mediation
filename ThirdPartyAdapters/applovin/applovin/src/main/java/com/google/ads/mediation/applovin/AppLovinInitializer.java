@@ -15,23 +15,13 @@
 package com.google.ads.mediation.applovin;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
-import com.applovin.mediation.BuildConfig;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdk.SdkInitializationListener;
 import com.applovin.sdk.AppLovinSdkConfiguration;
-import com.applovin.sdk.AppLovinSdkSettings;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.applovin.sdk.AppLovinSdkInitializationConfiguration;
 
 public class AppLovinInitializer {
 
@@ -40,43 +30,12 @@ public class AppLovinInitializer {
   private static AppLovinInitializer instance;
   private final AppLovinSdkWrapper appLovinSdkWrapper;
 
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef(value = {
-      UNINITIALIZED,
-      INITIALIZING,
-      INITIALIZED
-  })
-
-  public @interface InitializationStatus {
-
-  }
-
-  /**
-   * UNINITIALIZED.
-   */
-  public static final int UNINITIALIZED = 0;
-  /**
-   * INITIALIZING.
-   */
-  public static final int INITIALIZING = 1;
-  /**
-   * INITIALIZED.
-   */
-  public static final int INITIALIZED = 2;
-
-  private final HashMap<String, Integer> initializationStatus;
-  private final HashMap<String, ArrayList<OnInitializeSuccessListener>> initializerListeners;
-
   private AppLovinInitializer() {
-    initializationStatus = new HashMap<>();
-    initializerListeners = new HashMap<>();
     appLovinSdkWrapper = new AppLovinSdkWrapper();
   }
 
   @VisibleForTesting
   AppLovinInitializer(AppLovinSdkWrapper appLovinSdkWrapper) {
-    initializationStatus = new HashMap<>();
-    initializerListeners = new HashMap<>();
     this.appLovinSdkWrapper = appLovinSdkWrapper;
   }
 
@@ -89,75 +48,31 @@ public class AppLovinInitializer {
 
   public void initialize(@NonNull Context context, @NonNull final String sdkKey,
       @NonNull OnInitializeSuccessListener onInitializeSuccessListener) {
-    // Initial values
-    if (!initializationStatus.containsKey(sdkKey)) {
-      initializationStatus.put(sdkKey, UNINITIALIZED);
-      initializerListeners.put(sdkKey, new ArrayList<OnInitializeSuccessListener>());
-    }
-
-    if (Integer.valueOf(INITIALIZED).equals(initializationStatus.get(sdkKey))) {
-      onInitializeSuccessListener.onInitializeSuccess(sdkKey);
-      return;
-    }
-
-    initializerListeners.get(sdkKey).add(onInitializeSuccessListener);
-    if (Integer.valueOf(INITIALIZING).equals(initializationStatus.get(sdkKey))) {
-      return;
-    }
-
-    initializationStatus.put(sdkKey, INITIALIZING);
-    String logMessage = String.format("Attempting to initialize SDK with SDK Key: %s", sdkKey);
-    Log.d(TAG, logMessage);
-
-    AppLovinSdkSettings sdkSettings = appLovinSdkWrapper.getSdkSettings(context);
-    AppLovinSdk sdk = appLovinSdkWrapper.getInstance(sdkKey, sdkSettings, context);
-    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
-    sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
-    sdk.initializeSdk(new SdkInitializationListener() {
-      @Override
-      public void onSdkInitialized(AppLovinSdkConfiguration config) {
-        // AppLovin currently has no method to check if initialization returned a failure, so assume
-        // it is always a success.
-        initializationStatus.put(sdkKey, INITIALIZED);
-
-        ArrayList<OnInitializeSuccessListener> listeners = initializerListeners.get(sdkKey);
-        if (listeners != null) {
-          for (OnInitializeSuccessListener onInitializeSuccessListener : listeners) {
-            onInitializeSuccessListener.onInitializeSuccess(sdkKey);
+    AppLovinSdk sdk = appLovinSdkWrapper.getInstance(context);
+    AppLovinSdkInitializationConfiguration initConfig =
+        AppLovinSdkInitializationConfiguration.builder(sdkKey)
+            .setMediationProvider(AppLovinMediationProvider.ADMOB)
+            .build();
+    sdk.initialize(
+        initConfig,
+        new SdkInitializationListener() {
+          @Override
+          public void onSdkInitialized(AppLovinSdkConfiguration config) {
+            onInitializeSuccessListener.onInitializeSuccess();
           }
-          listeners.clear();
-        }
-      }
-    });
+        });
   }
 
-  /**
-   * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server
-   * parameters, or Android Manifest.
-   */
-  public AppLovinSdk retrieveSdk(Bundle serverParameters, Context context) {
-    String sdkKey =
-        (serverParameters != null) ? serverParameters.getString(ServerParameterKeys.SDK_KEY) : null;
-    AppLovinSdk sdk;
-
-    AppLovinSdkSettings sdkSettings = appLovinSdkWrapper.getSdkSettings(context);
-    if (!TextUtils.isEmpty(sdkKey)) {
-      sdk = appLovinSdkWrapper.getInstance(sdkKey, sdkSettings, context);
-    } else {
-      sdk = appLovinSdkWrapper.getInstance(sdkSettings, context);
-    }
-
-    sdk.setPluginVersion(BuildConfig.ADAPTER_VERSION);
-    sdk.setMediationProvider(AppLovinMediationProvider.ADMOB);
-    return sdk;
+  // TODO: Refactor the adapter so that callers of this method directly call
+  // appLovinSdkWrapper.getInstance(context) instead.
+  public AppLovinSdk retrieveSdk(Context context) {
+    return appLovinSdkWrapper.getInstance(context);
   }
 
   public interface OnInitializeSuccessListener {
 
-    /**
-     * Invoked once AppLovin SDK finishes initializing with the specified SDK key.
-     */
-    void onInitializeSuccess(@NonNull String sdkKey);
+    /** Invoked once AppLovin SDK finishes initializing. */
+    void onInitializeSuccess();
   }
 
 }

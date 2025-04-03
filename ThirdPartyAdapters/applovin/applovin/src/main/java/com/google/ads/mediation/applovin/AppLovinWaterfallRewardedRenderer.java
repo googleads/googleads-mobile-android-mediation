@@ -93,9 +93,9 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
         sdkKey,
         new OnInitializeSuccessListener() {
           @Override
-          public void onInitializeSuccess(@NonNull String sdkKey) {
+          public void onInitializeSuccess() {
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
-            appLovinSdk = appLovinInitializer.retrieveSdk(serverParameters, context);
+            appLovinSdk = appLovinInitializer.retrieveSdk(context);
 
             String logMessage = String.format("Requesting rewarded video for zone '%s'", zoneId);
             Log.d(TAG, logMessage);

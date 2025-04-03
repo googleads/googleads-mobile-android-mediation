@@ -94,7 +94,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
         sdkKey,
         new OnInitializeSuccessListener() {
           @Override
-          public void onInitializeSuccess(@NonNull String sdkKey) {
+          public void onInitializeSuccess() {
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
             if (appLovinWaterfallInterstitialAds.containsKey(zoneId)
                 && appLovinWaterfallInterstitialAds.get(zoneId).get() != null) {
@@ -109,7 +109,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
                 zoneId, new WeakReference<>(AppLovinWaterfallInterstitialAd.this));
 
             // Store parent objects.
-            sdk = appLovinInitializer.retrieveSdk(serverParameters, context);
+            sdk = appLovinInitializer.retrieveSdk(context);
             AppLovinWaterfallInterstitialAd.this.networkExtras = networkExtras;
 
             Log.d(TAG, "Requesting interstitial for zone: " + zoneId);

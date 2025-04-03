@@ -135,9 +135,9 @@ public class AppLovinBannerAd
         sdkKey,
         new OnInitializeSuccessListener() {
           @Override
-          public void onInitializeSuccess(@NonNull String sdkKey) {
+          public void onInitializeSuccess() {
             // Store parent objects
-            sdk = appLovinInitializer.retrieveSdk(serverParameters, context);
+            sdk = appLovinInitializer.retrieveSdk(context);
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
             Log.d(TAG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);

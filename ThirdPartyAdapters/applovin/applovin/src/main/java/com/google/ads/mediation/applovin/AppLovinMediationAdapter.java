@@ -23,7 +23,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
@@ -57,12 +56,6 @@ import java.util.List;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class AppLovinMediationAdapter extends RtbAdapter {
-
-  /**
-   * AppLovin SDK settings.
-   */
-  @Nullable
-  public static AppLovinSdkSettings appLovinSdkSettings;
 
   private AppLovinBannerAd bannerAd;
 
@@ -192,10 +185,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   @NonNull
   public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
-    if (appLovinSdkSettings == null) {
-      appLovinSdkSettings = new AppLovinSdkSettings(context);
-    }
-    return appLovinSdkSettings;
+    return AppLovinSdk.getInstance(context).getSettings();
   }
 
   @Override
@@ -223,24 +213,27 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       return;
     }
 
-    // Keep track of the SDK keys that were used to initialize the AppLovin SDK. Once all of them
-    // have been initialized, then the completion callback is invoked.
-    final HashSet<String> initializedSdkKeys = new HashSet<>();
+    String sdkKey = sdkKeys.iterator().next();
 
-    for (String sdkKey : sdkKeys) {
-      appLovinInitializer.initialize(
-          context,
-          sdkKey,
-          new OnInitializeSuccessListener() {
-            @Override
-            public void onInitializeSuccess(@NonNull String sdkKey) {
-              initializedSdkKeys.add(sdkKey);
-              if (initializedSdkKeys.equals(sdkKeys)) {
-                initializationCompleteCallback.onInitializationSucceeded();
-              }
-            }
-          });
+    if (sdkKeys.size() > 1) {
+      Log.w(
+          TAG,
+          String.format(
+              "Found more than one AppLovin SDK key. Using %s. Please update your app's ad unit"
+                  + " mappings on Admob/GAM UI to use a single SDK key for ad serving to work as"
+                  + " expected.",
+              sdkKey));
     }
+
+    appLovinInitializer.initialize(
+        context,
+        sdkKey,
+        new OnInitializeSuccessListener() {
+          @Override
+          public void onInitializeSuccess() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
+        });
   }
 
   @Override
@@ -309,8 +302,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     // Check if the publisher provided extra parameters
     Log.i(TAG, "Extras for signal collection: " + rtbSignalData.getNetworkExtras());
-    AppLovinSdk sdk =
-        appLovinInitializer.retrieveSdk(config.getServerParameters(), rtbSignalData.getContext());
+    AppLovinSdk sdk = appLovinInitializer.retrieveSdk(rtbSignalData.getContext());
     String bidToken = sdk.getAdService().getBidToken();
 
     if (TextUtils.isEmpty(bidToken)) {

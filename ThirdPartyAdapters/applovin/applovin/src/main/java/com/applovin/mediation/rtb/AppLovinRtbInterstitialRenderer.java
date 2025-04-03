@@ -46,9 +46,7 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory) {
     super(adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
-    sdk =
-        appLovinInitializer.retrieveSdk(
-            adConfiguration.getServerParameters(), adConfiguration.getContext());
+    sdk = appLovinInitializer.retrieveSdk(adConfiguration.getContext());
   }
 
   @Override

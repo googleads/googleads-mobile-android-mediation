@@ -49,7 +49,7 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
   @Override
   public void loadAd() {
     Context context = adConfiguration.getContext();
-    appLovinSdk = appLovinInitializer.retrieveSdk(adConfiguration.getServerParameters(), context);
+    appLovinSdk = appLovinInitializer.retrieveSdk(context);
 
     // Create rewarded video object.
     incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
