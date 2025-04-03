@@ -1,5 +1,10 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- FyberMediationAdapter now extends from RtbAdapter
+- Added DTExchangeBannerAd class to handle banner RTB ads
+- Added DTExchangeInterstitialAd class to handle interstitial RTB ads
+
 #### Version 8.3.6.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.

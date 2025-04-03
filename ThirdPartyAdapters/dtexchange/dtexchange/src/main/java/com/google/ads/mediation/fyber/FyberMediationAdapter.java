@@ -27,7 +27,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
+import com.fyber.inneractive.sdk.external.BidTokenProvider;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
@@ -51,14 +51,23 @@ import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -73,7 +82,7 @@ import java.util.Set;
  * interfaces. Implements initialization and Rewarded video ads, by extending the {@link Adapter}
  * class.
  */
-public class FyberMediationAdapter extends Adapter
+public class FyberMediationAdapter extends RtbAdapter
     implements MediationBannerAdapter, MediationInterstitialAdapter {
 
   /**
@@ -81,11 +90,8 @@ public class FyberMediationAdapter extends Adapter
    */
   static final String TAG = FyberMediationAdapter.class.getSimpleName();
 
-  /**
-   * DT Exchange requires to know the host mediation platform.
-   */
-  @VisibleForTesting
-  static final InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
+  /** DT Exchange requires to know the host mediation platform. */
+  protected static final InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
   /**
    * Key to obtain App id, required for initializing DT Exchange's SDK.
@@ -136,6 +142,12 @@ public class FyberMediationAdapter extends Adapter
    * DT Exchange's spot object for interstitial.
    */
   private InneractiveAdSpot interstitialSpot;
+
+  /** DT Exchange banner ad for sdk bidding. */
+  private DTExchangeBannerAd bannerRtbAd;
+
+  /** DT Exchange interstitial ad for sdk bidding */
+  private DTExchangeInterstitialAd interstitialRtbAd;
 
   /**
    * DT Exchange rewarded ad video renderer.
@@ -220,7 +232,7 @@ public class FyberMediationAdapter extends Adapter
               return;
             }
             rewardedRenderer = new FyberRewardedVideoRenderer(configuration, callback);
-            rewardedRenderer.render();
+            rewardedRenderer.loadWaterfallAd();
           }
         });
   }
@@ -275,6 +287,16 @@ public class FyberMediationAdapter extends Adapter
             completionCallback.onInitializationSucceeded();
           }
         });
+  }
+
+  @Override
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    String bidToken = BidTokenProvider.getBidderToken();
+    if (TextUtils.isEmpty(bidToken)) {
+      bidToken = "";
+    }
+    signalCallbacks.onSuccess(bidToken);
   }
 
   @NonNull
@@ -676,5 +698,32 @@ public class FyberMediationAdapter extends Adapter
         mediationInterstitialListener.onAdLeftApplication(FyberMediationAdapter.this);
       }
     };
+  }
+
+  @Override
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerRtbAd = new DTExchangeBannerAd(adConfiguration, callback);
+    bannerRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialRtbAd = new DTExchangeInterstitialAd(adConfiguration, callback);
+    interstitialRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    rewardedRenderer = new FyberRewardedVideoRenderer(adConfiguration, callback);
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
+    rewardedRenderer.loadRtbAd();
   }
 }
