@@ -429,6 +429,26 @@ class FyberMediationAdapterTest {
     verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
+  @Test
+  fun loadRtbRewardedAd_invokesLoadAd() {
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val rewardedAdParameters =
+        createMediationRewardedAdConfiguration(context = activity, bidResponse = TEST_BID_RESPONSE)
+      val mockAdSpot = mock<InneractiveAdSpot>()
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+
+      adapter.loadRtbRewardedAd(rewardedAdParameters, mockRewardedAdLoadCallback)
+
+      mockInneractiveAdManager.verify {
+        InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
+        InneractiveAdManager.setMediationVersion(eq(MobileAds.getVersion().toString()))
+      }
+      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE))
+    }
+  }
+
   // endregion
 
   private companion object {

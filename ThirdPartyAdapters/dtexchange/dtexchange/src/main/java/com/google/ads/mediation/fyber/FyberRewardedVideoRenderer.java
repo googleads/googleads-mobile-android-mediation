@@ -81,7 +81,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
     this.adLoadCallback = adLoadCallback;
   }
 
-  void render() {
+  /** Requests waterfall interstitial ad from DTExchange SDK */
+  void loadWaterfallAd() {
     // Check that we got a valid Spot ID from the server.
     String spotId = adConfiguration.getServerParameters()
         .getString(FyberMediationAdapter.KEY_SPOT_ID);
@@ -93,16 +94,28 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
       return;
     }
 
+    initializeFyberClasses();
+
+    InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+    rewardedSpot.requestAd(request);
+  }
+
+  /** Requests bidding interstitial ad from DTExchange SDK */
+  void loadRtbAd() {
+    String bidResponse = adConfiguration.getBidResponse();
+    initializeFyberClasses();
+    rewardedSpot.loadAd(bidResponse);
+  }
+
+  private void initializeFyberClasses() {
     rewardedSpot = FyberFactory.createRewardedAdSpot();
 
     unitController = FyberFactory.createInneractiveFullscreenUnitController();
     rewardedSpot.addUnitController(unitController);
 
-    rewardedSpot.setRequestListener(FyberRewardedVideoRenderer.this);
+    rewardedSpot.setRequestListener(this);
 
     FyberAdapterUtils.updateFyberExtraParams(adConfiguration.getMediationExtras());
-    InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-    rewardedSpot.requestAd(request);
   }
 
   /**

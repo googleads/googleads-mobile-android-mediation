@@ -232,7 +232,7 @@ public class FyberMediationAdapter extends RtbAdapter
               return;
             }
             rewardedRenderer = new FyberRewardedVideoRenderer(configuration, callback);
-            rewardedRenderer.render();
+            rewardedRenderer.loadWaterfallAd();
           }
         });
   }
@@ -716,5 +716,14 @@ public class FyberMediationAdapter extends RtbAdapter
               callback) {
     interstitialRtbAd = new DTExchangeInterstitialAd(adConfiguration, callback);
     interstitialRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    rewardedRenderer = new FyberRewardedVideoRenderer(adConfiguration, callback);
+    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
+    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
+    rewardedRenderer.loadRtbAd();
   }
 }

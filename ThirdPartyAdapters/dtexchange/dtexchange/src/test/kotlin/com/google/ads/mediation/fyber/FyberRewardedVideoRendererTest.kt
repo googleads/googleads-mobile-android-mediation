@@ -100,18 +100,18 @@ class FyberRewardedVideoRendererTest {
   }
 
   @Test
-  fun render_withValidSpotId_requestsFyberAd() {
+  fun loadWaterfallAd_withValidSpotId_requestsFyberAd() {
     Mockito.mockStatic(FyberFactory::class.java).use {
       whenever(FyberFactory.createRewardedAdSpot()).doReturn(mockRewardedAdSpot)
 
-      fyberRewardedAd.render()
+      fyberRewardedAd.loadWaterfallAd()
 
       verify(mockRewardedAdSpot).requestAd(any())
     }
   }
 
   @Test
-  fun render_whenInvalidSpotId_invokesOnAdFailedToLoad() {
+  fun loadWaterfallAd_whenInvalidSpotId_invokesOnAdFailedToLoad() {
     val invalidServerParameters = bundleOf(FyberMediationAdapter.KEY_SPOT_ID to "")
     val adConfiguration =
       createMediationRewardedAdConfiguration(
@@ -122,7 +122,7 @@ class FyberRewardedVideoRendererTest {
     val invalidFyberRewardedAd = FyberRewardedVideoRenderer(adConfiguration, mockAdLoadCallback)
 
     val adErrorCaptor = argumentCaptor<AdError>()
-    invalidFyberRewardedAd.render()
+    invalidFyberRewardedAd.loadWaterfallAd()
 
     verify(mockAdLoadCallback).onFailure(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
@@ -183,6 +183,21 @@ class FyberRewardedVideoRendererTest {
       assertThat(capturedError.code).isEqualTo(FyberMediationAdapter.ERROR_AD_NOT_READY)
       assertThat(capturedError.message).isEqualTo("DT Exchange's rewarded spot is not ready.")
       assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+    }
+  }
+
+  @Test
+  fun showAd_viaRtb_invokesShowAd() {
+    Mockito.mockStatic(FyberFactory::class.java).use {
+      whenever(FyberFactory.createRewardedAdSpot()).doReturn(mockRewardedAdSpot)
+      whenever(FyberFactory.createInneractiveFullscreenUnitController())
+        .doReturn(mockUnitController)
+      whenever(mockRewardedAdSpot.isReady).doReturn(true)
+
+      loadRtbAdSuccessfully()
+      fyberRewardedAd.showAd(activity)
+
+      verify(mockUnitController).show(activity)
     }
   }
 
@@ -262,7 +277,12 @@ class FyberRewardedVideoRendererTest {
 
   // region Utility methods
   private fun loadAndRenderAdSuccessfully() {
-    fyberRewardedAd.render()
+    fyberRewardedAd.loadWaterfallAd()
+    fyberRewardedAd.onInneractiveSuccessfulAdRequest(mockRewardedAdSpot)
+  }
+
+  private fun loadRtbAdSuccessfully() {
+    fyberRewardedAd.loadRtbAd()
     fyberRewardedAd.onInneractiveSuccessfulAdRequest(mockRewardedAdSpot)
   }
   // endregion
