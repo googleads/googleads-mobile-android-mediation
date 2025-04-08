@@ -1,7 +1,11 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Next Version
-- Added support for Moloco MREC ads.
+#### Version 3.8.0.1
+- Added support for medium rectangle banner ad size.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.1.0.
+- Moloco SDK version 3.8.0.
 
 #### Version 3.8.0.0
 - Added bidding support for native ad format.
