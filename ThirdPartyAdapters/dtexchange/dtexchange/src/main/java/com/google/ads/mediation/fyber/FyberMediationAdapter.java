@@ -27,7 +27,6 @@ import android.widget.RelativeLayout;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import com.fyber.inneractive.sdk.external.BidTokenProvider;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
@@ -52,6 +51,9 @@ import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
@@ -85,11 +87,8 @@ public class FyberMediationAdapter extends RtbAdapter
    */
   static final String TAG = FyberMediationAdapter.class.getSimpleName();
 
-  /**
-   * DT Exchange requires to know the host mediation platform.
-   */
-  @VisibleForTesting
-  static final InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
+  /** DT Exchange requires to know the host mediation platform. */
+  protected static final InneractiveMediationName MEDIATOR_NAME = InneractiveMediationName.ADMOB;
 
   /**
    * Key to obtain App id, required for initializing DT Exchange's SDK.
@@ -140,6 +139,9 @@ public class FyberMediationAdapter extends RtbAdapter
    * DT Exchange's spot object for interstitial.
    */
   private InneractiveAdSpot interstitialSpot;
+
+  /** DT Exchange banner ad for sdk bidding. */
+  private DTExchangeBannerAd bannerRtbAd;
 
   /**
    * DT Exchange rewarded ad video renderer.
@@ -690,5 +692,13 @@ public class FyberMediationAdapter extends RtbAdapter
         mediationInterstitialListener.onAdLeftApplication(FyberMediationAdapter.this);
       }
     };
+  }
+
+  @Override
+  public void loadRtbBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerRtbAd = new DTExchangeBannerAd(adConfiguration, callback);
+    bannerRtbAd.loadAd();
   }
 }

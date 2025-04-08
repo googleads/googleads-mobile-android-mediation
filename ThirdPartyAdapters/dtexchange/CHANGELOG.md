@@ -2,6 +2,7 @@
 
 #### Next Version
 - FyberMediationAdapter now extends from RtbAdapter
+- Added DTExchangeBannerAd class to handle banner RTB ads
 
 #### Version 8.3.6.1
 - Updated the minimum required Android API level to 23.

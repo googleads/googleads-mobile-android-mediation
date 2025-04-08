@@ -19,6 +19,8 @@ import androidx.core.os.bundleOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.fyber.inneractive.sdk.external.BidTokenProvider
 import com.fyber.inneractive.sdk.external.InneractiveAdManager
+import com.fyber.inneractive.sdk.external.InneractiveAdSpot
+import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
@@ -26,13 +28,17 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
+import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
@@ -68,6 +74,9 @@ class FyberMediationAdapterTest {
       FyberMediationAdapter.KEY_SPOT_ID to AdapterTestKitConstants.TEST_PLACEMENT_ID,
     )
   private val mockInitializationCompleteCallback: InitializationCompleteCallback = mock()
+  private val mockBannerAdLoadCallback:
+    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
+    mock()
   private val mockRewardedAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
     mock()
@@ -281,6 +290,29 @@ class FyberMediationAdapterTest {
       adapter.collectSignals(mockSignalData, mockSignalCallback)
 
       verify(mockSignalCallback).onSuccess("")
+    }
+  }
+
+  // endregion
+
+  // region Banner Ad Load Tests
+  @Test
+  fun loadRtbBannerAd_invokesLoadAd() {
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val bannerAdConfiguration =
+        createMediationBannerAdConfiguration(context = activity, bidResponse = TEST_BID_RESPONSE)
+      val mockAdSpot = mock<InneractiveAdSpot>()
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+
+      adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+      mockInneractiveAdManager.verify {
+        InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
+        InneractiveAdManager.setMediationVersion(eq(MobileAds.getVersion().toString()))
+      }
+      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE))
     }
   }
 
