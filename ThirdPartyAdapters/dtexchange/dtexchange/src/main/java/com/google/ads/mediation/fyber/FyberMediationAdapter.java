@@ -57,6 +57,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -142,6 +145,9 @@ public class FyberMediationAdapter extends RtbAdapter
 
   /** DT Exchange banner ad for sdk bidding. */
   private DTExchangeBannerAd bannerRtbAd;
+
+  /** DT Exchange interstitial ad for sdk bidding */
+  private DTExchangeInterstitialAd interstitialRtbAd;
 
   /**
    * DT Exchange rewarded ad video renderer.
@@ -700,5 +706,15 @@ public class FyberMediationAdapter extends RtbAdapter
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerRtbAd = new DTExchangeBannerAd(adConfiguration, callback);
     bannerRtbAd.loadAd();
+  }
+
+  @Override
+  public void loadRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    interstitialRtbAd = new DTExchangeInterstitialAd(adConfiguration, callback);
+    interstitialRtbAd.loadAd();
   }
 }
