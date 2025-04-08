@@ -12,14 +12,14 @@
             android:name="com.ironsource.sdk.controller.InterstitialActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:exported="false"/>
 
         <activity
             android:name="com.ironsource.sdk.controller.OpenUrlActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true"
-            android:theme="@android:style/Theme.Translucent"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:exported="false"/>
     </application>
 </manifest>
