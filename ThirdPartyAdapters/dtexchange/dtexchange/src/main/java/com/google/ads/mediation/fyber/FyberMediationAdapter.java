@@ -28,6 +28,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import com.fyber.inneractive.sdk.external.BidTokenProvider;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
@@ -59,6 +60,9 @@ import com.google.android.gms.ads.mediation.MediationInterstitialListener;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -73,7 +77,7 @@ import java.util.Set;
  * interfaces. Implements initialization and Rewarded video ads, by extending the {@link Adapter}
  * class.
  */
-public class FyberMediationAdapter extends Adapter
+public class FyberMediationAdapter extends RtbAdapter
     implements MediationBannerAdapter, MediationInterstitialAdapter {
 
   /**
@@ -275,6 +279,16 @@ public class FyberMediationAdapter extends Adapter
             completionCallback.onInitializationSucceeded();
           }
         });
+  }
+
+  @Override
+  public void collectSignals(
+      @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    String bidToken = BidTokenProvider.getBidderToken();
+    if (TextUtils.isEmpty(bidToken)) {
+      bidToken = "";
+    }
+    signalCallbacks.onSuccess(bidToken);
   }
 
   @NonNull

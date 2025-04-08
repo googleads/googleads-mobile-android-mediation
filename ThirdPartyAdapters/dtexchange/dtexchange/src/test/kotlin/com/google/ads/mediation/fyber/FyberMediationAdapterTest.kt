@@ -17,11 +17,13 @@ package com.google.ads.mediation.fyber
 import android.app.Activity
 import androidx.core.os.bundleOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.fyber.inneractive.sdk.external.BidTokenProvider
 import com.fyber.inneractive.sdk.external.InneractiveAdManager
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
@@ -33,6 +35,8 @@ import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -249,6 +253,35 @@ class FyberMediationAdapterTest {
 
     listener.firstValue.onFyberMarketplaceInitialized(FyberInitStatus.SUCCESSFULLY)
     verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+  }
+
+  // endregion
+
+  // region Collect Signals
+  @Test
+  fun collectSignals_invokesOnSuccessWithGeneratedToken() {
+    mockStatic(BidTokenProvider::class.java).use {
+      val mockSignalData = mock<RtbSignalData>()
+      val mockSignalCallback = mock<SignalCallbacks>()
+      whenever(BidTokenProvider.getBidderToken()) doReturn TEST_BID_RESPONSE
+
+      adapter.collectSignals(mockSignalData, mockSignalCallback)
+
+      verify(mockSignalCallback).onSuccess(TEST_BID_RESPONSE)
+    }
+  }
+
+  @Test
+  fun collectSignals_withNullToken_invokesOnSuccessEmptyString() {
+    mockStatic(BidTokenProvider::class.java).use {
+      val mockSignalData = mock<RtbSignalData>()
+      val mockSignalCallback = mock<SignalCallbacks>()
+      whenever(BidTokenProvider.getBidderToken()) doReturn null
+
+      adapter.collectSignals(mockSignalData, mockSignalCallback)
+
+      verify(mockSignalCallback).onSuccess("")
+    }
   }
 
   // endregion
