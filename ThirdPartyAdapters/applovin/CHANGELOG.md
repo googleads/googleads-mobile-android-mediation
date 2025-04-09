@@ -1,8 +1,13 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
-- Adapter can now call onUserEarnedReward on videoPlaybackEnded callback.
-- Updated adapter to use new AppLovin API for initialization.
+#### Version 13.2.0.0
+- Updated the adapter to support `onUserEarnedReward` on `videoPlaybackEnded` callback.
+- Updated the adapter to use new AppLovin API for initialization.
+- Verified compatibility with AppLovin SDK 13.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.1.0.
+- AppLovin SDK version 13.2.0.
 
 #### Version 13.1.0.1
 - Updated the minimum required Android API level to 23.
