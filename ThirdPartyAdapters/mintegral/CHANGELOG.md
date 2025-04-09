@@ -1,7 +1,12 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Next Version
-- Added support for COPPA flag
+#### Version 16.9.61.0
+- Added support for forwarding COPPA information to the Mintegral SDK.
+- Verified compatibility with Mintegral SDK 16.9.61.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.1.0.
+- Mintegral SDK version 16.9.61.
 
 #### Version 16.9.51.0
 - Verified compatibility with Mintegral SDK 16.9.51.
