@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next version
+- Set adapter version as plugin version when initializing AppLovin SDK.
+
 #### Version 13.2.0.0
 - Updated the adapter to support `onUserEarnedReward` on `videoPlaybackEnded` callback.
 - Updated the adapter to use new AppLovin API for initialization.

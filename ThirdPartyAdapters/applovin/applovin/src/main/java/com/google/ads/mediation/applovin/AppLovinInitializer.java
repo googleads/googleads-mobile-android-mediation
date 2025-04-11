@@ -17,6 +17,7 @@ package com.google.ads.mediation.applovin;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import com.applovin.mediation.BuildConfig;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdk.SdkInitializationListener;
@@ -52,6 +53,7 @@ public class AppLovinInitializer {
     AppLovinSdkInitializationConfiguration initConfig =
         AppLovinSdkInitializationConfiguration.builder(sdkKey)
             .setMediationProvider(AppLovinMediationProvider.ADMOB)
+            .setPluginVersion(BuildConfig.ADAPTER_VERSION)
             .build();
     sdk.initialize(
         initConfig,
