@@ -18,14 +18,27 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_FORMAT
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_FORMAT
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_MISSING_SOURCE_ID
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SOURCE_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
+import io.bidmachine.BidTokenCallback
 import io.bidmachine.InitializationCallback
 import org.junit.After
 import org.junit.Before
@@ -33,6 +46,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -119,6 +134,115 @@ class BidMachineMediationAdapterTest {
     }
     callbackCaptor.firstValue.onInitialized()
     verify(mockInitializationCallback).onInitializationSucceeded()
+  }
+
+  // endregion
+
+  // region collectSignals tests
+  @Test
+  fun collectSignals_withEmptyMediationConfiguration_invokesOnFailure() {
+    val signalData =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+    val expectedAdError =
+      AdError(
+        ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS,
+        ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS,
+        ADAPTER_ERROR_DOMAIN,
+      )
+
+    adapter.collectSignals(signalData, mockSignalCallbacks)
+
+    mockSignalCallbacks.onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun collectSignals_withInvalidAdFormat_invokesOnFailure() {
+    val configuration =
+      createMediationConfiguration(AdFormat.APP_OPEN_AD, /* serverParameters= */ bundleOf())
+    val signalData =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(configuration),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+    val expectedAdError =
+      AdError(ERROR_CODE_INVALID_AD_FORMAT, ERROR_MSG_INVALID_AD_FORMAT, ADAPTER_ERROR_DOMAIN)
+
+    adapter.collectSignals(signalData, mockSignalCallbacks)
+
+    mockSignalCallbacks.onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun collectSignals_invokesOnSuccess() {
+    val configuration =
+      createMediationConfiguration(AdFormat.INTERSTITIAL, /* serverParameters= */ bundleOf())
+    val signalData =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(configuration),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+    val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
+
+    adapter.collectSignals(signalData, mockSignalCallbacks)
+
+    mockBidMachine.verify {
+      BidMachine.getBidToken(eq(context), eq(AdsFormat.Interstitial), tokenCallbackCaptor.capture())
+    }
+    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
+    mockSignalCallbacks.onSuccess(TEST_BID_RESPONSE)
+  }
+
+  @Test
+  fun collectSignals_mapsCorrectFormatToBitMachineAdsFormat() {
+    val configurationBanner =
+      createMediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())
+    val configurationRewarded =
+      createMediationConfiguration(AdFormat.REWARDED, /* serverParameters= */ bundleOf())
+    val configurationNative =
+      createMediationConfiguration(AdFormat.NATIVE, /* serverParameters= */ bundleOf())
+    val signalDataBanner =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(configurationBanner),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val signalDataRewarded =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(configurationRewarded),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val signalDataNative =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf<MediationConfiguration>(configurationNative),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+
+    adapter.collectSignals(signalDataBanner, mockSignalCallbacks)
+    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Banner), any()) }
+
+    adapter.collectSignals(signalDataRewarded, mockSignalCallbacks)
+    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Rewarded), any()) }
+
+    adapter.collectSignals(signalDataNative, mockSignalCallbacks)
+    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Native), any()) }
   }
 
   // endregion

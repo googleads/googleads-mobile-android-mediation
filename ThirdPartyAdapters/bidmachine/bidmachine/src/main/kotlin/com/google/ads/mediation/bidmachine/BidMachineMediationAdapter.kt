@@ -17,6 +17,8 @@ package com.google.ads.mediation.bidmachine
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -36,6 +38,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 
 /**
@@ -130,8 +133,26 @@ class BidMachineMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    if (signalData.configurations.isEmpty()) {
+      val adError =
+        AdError(
+          ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS,
+          ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      callback.onFailure(adError)
+      return
+    }
+    val adsFormat = mapAdFormatToBidMachineAdsFormat(signalData.configurations[0].format)
+    if (adsFormat == null) {
+      val adError =
+        AdError(ERROR_CODE_INVALID_AD_FORMAT, ERROR_MSG_INVALID_AD_FORMAT, ADAPTER_ERROR_DOMAIN)
+      callback.onFailure(adError)
+      return
+    }
+    BidMachine.getBidToken(signalData.context, adsFormat) { bidToken ->
+      callback.onSuccess(bidToken)
+    }
   }
 
   override fun loadRtbBannerAd(
@@ -174,6 +195,15 @@ class BidMachineMediationAdapter : RtbAdapter() {
     }
   }
 
+  private fun mapAdFormatToBidMachineAdsFormat(adFormat: AdFormat): AdsFormat? =
+    when (adFormat) {
+      AdFormat.BANNER -> AdsFormat.Banner
+      AdFormat.INTERSTITIAL -> AdsFormat.Interstitial
+      AdFormat.REWARDED -> AdsFormat.Rewarded
+      AdFormat.NATIVE -> AdsFormat.Native
+      else -> null
+    }
+
   internal companion object {
     private val TAG = BidMachineMediationAdapter::class.simpleName
     @VisibleForTesting var bidMachineSdkVersionDelegate: String? = null
@@ -182,5 +212,10 @@ class BidMachineMediationAdapter : RtbAdapter() {
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
     const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
     @VisibleForTesting const val ERROR_MSG_MISSING_SOURCE_ID = "Source Id is missing or empty"
+    const val ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS = 101
+    const val ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS =
+      "Error during signal collection: No Signal Data Configuration found."
+    const val ERROR_CODE_INVALID_AD_FORMAT = 102
+    const val ERROR_MSG_INVALID_AD_FORMAT = "Invalid Ad Format received during signal collection."
   }
 }
