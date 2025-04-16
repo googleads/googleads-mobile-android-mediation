@@ -43,6 +43,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.banner.BannerView
+import io.bidmachine.interstitial.InterstitialAd
 
 /**
  * BidMachine Adapter for GMA SDK used to initialize and load ads from the BidMachine SDK. This
@@ -177,7 +178,8 @@ class BidMachineMediationAdapter : RtbAdapter() {
   ) {
     BidMachineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadAd()
+      val bidMachineInterstitialAd = InterstitialAd(mediationInterstitialAdConfiguration.context)
+      interstitialAd.loadAd(bidMachineInterstitialAd)
     }
   }
 
@@ -238,5 +240,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
       "Requested ad size could not be mapped to bidmachine.BannerSize"
     const val ERROR_CODE_AD_REQUEST_EXPIRED = 104
     const val ERROR_MSG_AD_REQUEST_EXPIRED = "Loaded BidMachine ad request has expired."
+    const val ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD = 105
+    const val ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD = "Fullscreen ad could not be shown."
   }
 }
