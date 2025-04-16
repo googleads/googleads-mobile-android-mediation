@@ -44,6 +44,7 @@ import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.banner.BannerView
 import io.bidmachine.interstitial.InterstitialAd
+import io.bidmachine.rewarded.RewardedAd
 
 /**
  * BidMachine Adapter for GMA SDK used to initialize and load ads from the BidMachine SDK. This
@@ -189,7 +190,8 @@ class BidMachineMediationAdapter : RtbAdapter() {
   ) {
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd()
+      val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
+      rewardedAd.loadAd(bidMachineRewardedAd)
     }
   }
 
