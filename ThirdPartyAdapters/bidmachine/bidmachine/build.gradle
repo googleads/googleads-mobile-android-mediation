@@ -12,11 +12,11 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "BidMachine"
     // String property to store version name.
-    stringVersion = "1.0.0.0"
+    stringVersion = "3.2.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
-    jacocoVersion = '0.8.8'
+    jacocoVersion = '0.8.13'
 }
 
 android {
@@ -127,17 +127,18 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:24.1.0'
+    implementation 'io.bidmachine:ads:3.2.1'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
     testImplementation 'androidx.test.ext:truth:1.6.0'
-    testImplementation "com.google.truth:truth:1.1.5"
+    testImplementation "com.google.truth:truth:1.2.0"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
-    testImplementation 'org.robolectric:robolectric:4.9'
+    testImplementation 'org.robolectric:robolectric:4.10.3'
     testImplementation project(':adaptertestkit')
 }
 

@@ -34,14 +34,16 @@ class BidMachineMediationAdapterTest {
   // region Version tests
   @Test
   fun getSDKVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    BidMachineMediationAdapter.bidMachineSdkVersionDelegate = "1.2.3"
+
+    adapter.assertGetSdkVersion(expectedValue = "1.2.3")
   }
 
   @Test
   fun getVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    BidMachineMediationAdapter.adapterVersionDelegate = "1.2.3.4"
+
+    adapter.assertGetVersionInfo(expectedValue = "1.2.304")
   }
 
   // endregion

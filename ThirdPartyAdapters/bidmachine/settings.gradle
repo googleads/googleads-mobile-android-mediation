@@ -10,6 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url 'https://artifactory.bidmachine.io/bidmachine'
+        }
     }
 }
 rootProject.name = "bidmachine"

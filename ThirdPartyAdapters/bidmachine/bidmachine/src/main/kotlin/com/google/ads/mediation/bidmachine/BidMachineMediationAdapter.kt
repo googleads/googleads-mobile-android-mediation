@@ -15,6 +15,8 @@
 package com.google.ads.mediation.bidmachine
 
 import android.content.Context
+import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -34,6 +36,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import io.bidmachine.BidMachine
 
 /**
  * BidMachine Adapter for GMA SDK used to initialize and load ads from the BidMachine SDK. This
@@ -46,13 +49,48 @@ class BidMachineMediationAdapter : RtbAdapter() {
   private lateinit var rewardedAd: BidMachineRewardedAd
   private lateinit var nativeAd: BidMachineNativeAd
 
-  override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+  override fun getSDKVersionInfo(): VersionInfo =
+    bidMachineSdkVersionDelegate?.let { getSDKVersionInfo(it) }
+      ?: getSDKVersionInfo(BidMachine.VERSION)
+
+  private fun getSDKVersionInfo(sdkVersion: String): VersionInfo {
+    val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+    if (splits.size >= 3) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+        sdkVersion,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
-  override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+  override fun getVersionInfo(): VersionInfo =
+    adapterVersionDelegate?.let { getVersionInfo(it) }
+      ?: getVersionInfo(BuildConfig.ADAPTER_VERSION)
+
+  private fun getVersionInfo(versionString: String): VersionInfo {
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 4) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt() * 100 + splits[3].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
@@ -110,8 +148,10 @@ class BidMachineMediationAdapter : RtbAdapter() {
     }
   }
 
-  companion object {
+  internal companion object {
     private val TAG = BidMachineMediationAdapter::class.simpleName
+    @VisibleForTesting var bidMachineSdkVersionDelegate: String? = null
+    @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
     const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
   }
