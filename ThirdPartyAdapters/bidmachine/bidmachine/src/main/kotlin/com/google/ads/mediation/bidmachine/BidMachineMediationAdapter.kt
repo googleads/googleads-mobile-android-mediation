@@ -42,6 +42,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
+import io.bidmachine.banner.BannerView
 
 /**
  * BidMachine Adapter for GMA SDK used to initialize and load ads from the BidMachine SDK. This
@@ -165,7 +166,8 @@ class BidMachineMediationAdapter : RtbAdapter() {
   ) {
     BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      val bannerView = BannerView(mediationBannerAdConfiguration.context)
+      bannerAd.loadAdOnBannerView(bannerView)
     }
   }
 
@@ -220,13 +222,21 @@ class BidMachineMediationAdapter : RtbAdapter() {
     @VisibleForTesting var bidMachineSdkVersionDelegate: String? = null
     @VisibleForTesting var adapterVersionDelegate: String? = null
     @VisibleForTesting const val SOURCE_ID_KEY = "source_id"
+    const val PLACEMENT_ID_KEY = "placement_id"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "io.bidmachine"
     @VisibleForTesting const val ERROR_MSG_MISSING_SOURCE_ID = "Source Id is missing or empty"
+    const val ERROR_CODE_NO_PLACEMENT_ID = 100
+    const val ERROR_MSG_NO_PLACEMENT_ID = "Invalid or empty placement id received."
     const val ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS = 101
     const val ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS =
       "Error during signal collection: No Signal Data Configuration found."
     const val ERROR_CODE_INVALID_AD_FORMAT = 102
     const val ERROR_MSG_INVALID_AD_FORMAT = "Invalid Ad Format received during signal collection."
+    const val ERROR_CODE_INVALID_AD_SIZE = 103
+    const val ERROR_MSG_INVALID_AD_SIZE =
+      "Requested ad size could not be mapped to bidmachine.BannerSize"
+    const val ERROR_CODE_AD_REQUEST_EXPIRED = 104
+    const val ERROR_MSG_AD_REQUEST_EXPIRED = "Loaded BidMachine ad request has expired."
   }
 }
