@@ -32,6 +32,8 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SOURCE_ID_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
@@ -125,15 +127,61 @@ class BidMachineMediationAdapterTest {
         AdFormat.BANNER,
         /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
       )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
     val callbackCaptor = argumentCaptor<InitializationCallback>()
 
     adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
 
+    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
     mockBidMachine.verify {
       BidMachine.initialize(eq(context), eq(TEST_SOURCE_ID), callbackCaptor.capture())
     }
     callbackCaptor.firstValue.onInitialized()
     verify(mockInitializationCallback).onInitializationSucceeded()
+  }
+
+  @Test
+  fun initialize_tagForChildFalse_setBidMachineCoppaToFalse() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBidMachine.verify { BidMachine.setCoppa(eq(false)) }
+  }
+
+  @Test
+  fun initialize_tagForChildUnspecified_setBidMachineCoppaToFalse() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBidMachine.verify { BidMachine.setCoppa(eq(false)) }
   }
 
   // endregion

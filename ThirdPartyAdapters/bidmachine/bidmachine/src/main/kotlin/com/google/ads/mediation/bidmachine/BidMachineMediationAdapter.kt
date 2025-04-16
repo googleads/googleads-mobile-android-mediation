@@ -19,6 +19,8 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.MobileAds.getRequestConfiguration
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -127,6 +129,8 @@ class BidMachineMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
+    configureBidMachinePrivacy()
+
     BidMachine.initialize(context, sourceIdForInit) {
       initializationCompleteCallback.onInitializationSucceeded()
     }
@@ -203,6 +207,13 @@ class BidMachineMediationAdapter : RtbAdapter() {
       AdFormat.NATIVE -> AdsFormat.Native
       else -> null
     }
+
+  private fun configureBidMachinePrivacy() {
+    val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
+    val isTaggedForChildDirected =
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    BidMachine.setCoppa(isTaggedForChildDirected)
+  }
 
   internal companion object {
     private val TAG = BidMachineMediationAdapter::class.simpleName
