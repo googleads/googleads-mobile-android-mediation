@@ -99,8 +99,34 @@ class BidMachineMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    val sourceIds =
+      mediationConfigurations.mapNotNull {
+        val sourceId = it.serverParameters.getString(SOURCE_ID_KEY)
+        if (sourceId.isNullOrEmpty()) {
+          null
+        } else {
+          sourceId
+        }
+      }
+    if (sourceIds.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_SOURCE_ID)
+      return
+    }
+
+    val sourceIdForInit = sourceIds[0]
+    if (sourceIdForInit.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_SOURCE_ID)
+      return
+    }
+    if (sourceIds.size > 1) {
+      val message =
+        "Multiple $SOURCE_ID_KEY entries found: ${sourceIds}. Using '${sourceIdForInit}' to initialize the BidMachine SDK"
+      Log.w(TAG, message)
+    }
+
+    BidMachine.initialize(context, sourceIdForInit) {
+      initializationCompleteCallback.onInitializationSucceeded()
+    }
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
@@ -152,7 +178,9 @@ class BidMachineMediationAdapter : RtbAdapter() {
     private val TAG = BidMachineMediationAdapter::class.simpleName
     @VisibleForTesting var bidMachineSdkVersionDelegate: String? = null
     @VisibleForTesting var adapterVersionDelegate: String? = null
+    @VisibleForTesting const val SOURCE_ID_KEY = "source_id"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
     const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    @VisibleForTesting const val ERROR_MSG_MISSING_SOURCE_ID = "Source Id is missing or empty"
   }
 }
