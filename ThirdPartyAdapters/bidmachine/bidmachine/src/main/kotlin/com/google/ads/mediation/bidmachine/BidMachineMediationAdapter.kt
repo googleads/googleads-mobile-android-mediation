@@ -44,6 +44,7 @@ import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.banner.BannerView
 import io.bidmachine.interstitial.InterstitialAd
+import io.bidmachine.nativead.NativeAd
 import io.bidmachine.rewarded.RewardedAd
 
 /**
@@ -201,7 +202,8 @@ class BidMachineMediationAdapter : RtbAdapter() {
   ) {
     BidMachineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
-      nativeAd.loadAd()
+      val bidMachineNativeAd = NativeAd(mediationNativeAdConfiguration.context)
+      nativeAd.loadAd(bidMachineNativeAd)
     }
   }
 
@@ -244,5 +246,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
     const val ERROR_MSG_AD_REQUEST_EXPIRED = "Loaded BidMachine ad request has expired."
     const val ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD = 105
     const val ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD = "Fullscreen ad could not be shown."
+    const val ERROR_CODE_EMPTY_NATIVE_AD_DATA = 106
+    const val ERROR_MSG_EMPTY_NATIVE_AD_DATA = "Native Ad Data received was null."
   }
 }
