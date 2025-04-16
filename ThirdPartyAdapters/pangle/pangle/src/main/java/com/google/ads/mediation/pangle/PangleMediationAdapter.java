@@ -15,6 +15,7 @@
 package com.google.ads.mediation.pangle;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleConstants.isChildUser;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -101,6 +102,10 @@ public class PangleMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    if (isChildUser()) {
+      signalCallbacks.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
     // The user data needs to be set for it to be included in the signals.
     Bundle networkExtras = rtbSignalData.getNetworkExtras();
     if (networkExtras != null && networkExtras.containsKey(PangleExtras.Keys.USER_DATA)) {
@@ -121,6 +126,10 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> list) {
+    if (isChildUser()) {
+      initializationCompleteCallback.onInitializationFailed(PangleConstants.ERROR_MSG_CHILD_USER);
+      return;
+    }
     HashSet<String> appIds = new HashSet<>();
     for (MediationConfiguration mediationConfiguration : list) {
       Bundle serverParameters = mediationConfiguration.getServerParameters();
@@ -221,6 +230,10 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
     appOpenAd =
         pangleFactory.createPangleAppOpenAd(
             adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
@@ -231,6 +244,11 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
+
     bannerAd =
         pangleFactory.createPangleBannerAd(
             adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
@@ -243,6 +261,11 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
+    if (isChildUser()) {
+      callback.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
+
     interstitialAd =
         pangleFactory.createPangleInterstitialAd(
             adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
@@ -253,6 +276,11 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
+
     nativeAd =
         pangleFactory.createPangleNativeAd(
             adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
@@ -263,6 +291,10 @@ public class PangleMediationAdapter extends RtbAdapter {
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(PangleConstants.createChildUserError());
+      return;
+    }
     rewardedAd =
         pangleFactory.createPangleRewardedAd(
             adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
@@ -290,7 +322,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
       return;
     }
-    if (pangleSdkWrapper.isInitSuccess()) {
+    if (pangleSdkWrapper.isInitSuccess() && !isChildUser()) {
       pangleSdkWrapper.setGdprConsent(gdpr);
     }
     PangleMediationAdapter.gdpr = gdpr;
