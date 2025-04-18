@@ -11,7 +11,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url 'https://repo.pubmatic.com/artifactory/public-repos'
+            url 'https://repo.pubmatic.com/artifactory/public-repos-gradle'
         }
     }
 }
