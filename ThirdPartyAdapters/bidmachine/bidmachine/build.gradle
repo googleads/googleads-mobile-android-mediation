@@ -26,7 +26,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 1
+        versionCode 3020100
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
