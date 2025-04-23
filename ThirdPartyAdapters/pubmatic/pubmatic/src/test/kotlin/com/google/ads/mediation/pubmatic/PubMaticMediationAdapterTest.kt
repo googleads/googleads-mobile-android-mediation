@@ -34,6 +34,7 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONS
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -49,6 +50,7 @@ import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import com.pubmatic.sdk.openwrap.core.signal.POBSignalConfig
 import com.pubmatic.sdk.openwrap.core.signal.POBSignalGenerator.generateSignal
 import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial
+import com.pubmatic.sdk.rewardedad.POBRewardedAd
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -90,8 +92,13 @@ class PubMaticMediationAdapterTest {
 
   private val pobInterstitial = mock<POBInterstitial>()
 
+  private val pobRewardedAd = mock<POBRewardedAd>()
+
   private val pubMaticAdFactory =
-    mock<PubMaticAdFactory> { on { createPOBInterstitial(any()) } doReturn pobInterstitial }
+    mock<PubMaticAdFactory> {
+      on { createPOBInterstitial(any()) } doReturn pobInterstitial
+      on { createPOBRewardedAd(any()) } doReturn pobRewardedAd
+    }
 
   @Before
   fun setUp() {
@@ -448,7 +455,7 @@ class PubMaticMediationAdapterTest {
 
   // endregion
 
-  // region RTB interstitial ad load tests.
+  // region RTB ad load tests.
 
   @Test
   fun loadRtbInterstitialAd_setsWatermarkAndLoadsPubMaticInterstitial() {
@@ -471,6 +478,29 @@ class PubMaticMediationAdapterTest {
     verify(pobInterstitial).setListener(any())
     verify(pobInterstitial).addExtraInfo(KEY_POB_ADMOB_WATERMARK, WATERMARK)
     verify(pobInterstitial).loadAd(BID_RESPONSE, POBBiddingHost.ADMOB)
+  }
+
+  @Test
+  fun loadRtbRewardedAd_setsWatermarkAndLoadsPubMaticRewardedAd() {
+    val mediationRewardedAdConfiguration =
+      MediationRewardedAdConfiguration(
+        context,
+        BID_RESPONSE,
+        /*serverParameters=*/ bundleOf(),
+        /*mediationExtras=*/ bundleOf(),
+        /*isTesting=*/ true,
+        /*location=*/ null,
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+        TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+        /*maxAdContentRating=*/ "",
+        WATERMARK,
+      )
+
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mock())
+
+    verify(pobRewardedAd).setListener(any())
+    verify(pobRewardedAd).addExtraInfo(KEY_POB_ADMOB_WATERMARK, WATERMARK)
+    verify(pobRewardedAd).loadAd(BID_RESPONSE, POBBiddingHost.ADMOB)
   }
 
   // endregion

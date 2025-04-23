@@ -198,10 +198,11 @@ class PubMaticMediationAdapter(
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    PubMaticRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
-      rewardedAd = it
-      rewardedAd.loadAd()
-    }
+    PubMaticRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, pubMaticAdFactory)
+      .onSuccess {
+        rewardedAd = it
+        rewardedAd.loadAd()
+      }
   }
 
   override fun loadRtbNativeAdMapper(
