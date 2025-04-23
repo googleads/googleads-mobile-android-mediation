@@ -15,12 +15,17 @@
 package com.google.ads.mediation.pubmatic
 
 import android.content.Context
-import android.view.View
-import com.google.android.gms.ads.AdSize
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.pubmatic.sdk.common.POBError
+import com.pubmatic.sdk.openwrap.banner.POBBannerView
+import com.pubmatic.sdk.openwrap.banner.POBBannerView.POBBannerViewListener
+import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
+import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 
 /**
  * Used to load PubMatic banner ads and mediate callbacks between Google Mobile Ads SDK and PubMatic
@@ -28,36 +33,74 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
  */
 class PubMaticBannerAd
 private constructor(
-  private val context: Context,
+  context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-  private val adSize: AdSize,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationBannerAd {
-  // TODO: Replace with 3p View. Ideally avoid lateinit and initialize in constructor.
-  private lateinit var adView: View
+  private val bidResponse: String,
+  private val watermark: String,
+  pubMaticAdFactory: PubMaticAdFactory,
+) : MediationBannerAd, POBBannerViewListener() {
+
+  /** PubMatic SDK's banner view object. */
+  private val pobBannerView: POBBannerView = pubMaticAdFactory.createPOBBannerView(context)
+
+  private var mediationBannerAdCallback: MediationBannerAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    pobBannerView.setListener(this)
+    // Pause auto-refresh since the GMA SDK will handle the banner refresh logic.
+    pobBannerView.pauseAutoRefresh()
+    pobBannerView.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
+    pobBannerView.loadAd(bidResponse, POBBiddingHost.ADMOB)
   }
 
-  override fun getView(): View {
-    // TODO: Implement this method.
-    return adView
+  override fun getView() = pobBannerView
+
+  override fun onAdReceived(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdFailed(pobBannerView: POBBannerView, pobError: POBError) {
+    mediationAdLoadCallback.onFailure(
+      AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    )
+  }
+
+  override fun onAdImpression(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdOpened(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback?.onAdOpened()
+  }
+
+  override fun onAppLeaving(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback?.onAdLeftApplication()
+  }
+
+  override fun onAdClosed(pobBannerView: POBBannerView) {
+    mediationBannerAdCallback?.onAdClosed()
   }
 
   companion object {
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
-      mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-    ): Result<PubMaticBannerAd> {
-      val context = mediationBannerAdConfiguration.context
-      val serverParameters = mediationBannerAdConfiguration.serverParameters
-      val adSize = mediationBannerAdConfiguration.adSize
-
-      // TODO: Implement necessary initialization steps.
-
-      return Result.success(PubMaticBannerAd(context, mediationAdLoadCallback, adSize))
-    }
+      mediationAdLoadCallback:
+        MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      pubMaticAdFactory: PubMaticAdFactory,
+    ) =
+      Result.success(
+        PubMaticBannerAd(
+          mediationBannerAdConfiguration.context,
+          mediationAdLoadCallback,
+          mediationBannerAdConfiguration.bidResponse,
+          mediationBannerAdConfiguration.watermark,
+          pubMaticAdFactory,
+        )
+      )
   }
 }

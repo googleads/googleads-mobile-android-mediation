@@ -173,10 +173,11 @@ class PubMaticMediationAdapter(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    PubMaticBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
-      bannerAd = it
-      bannerAd.loadAd()
-    }
+    PubMaticBannerAd.newInstance(mediationBannerAdConfiguration, callback, pubMaticAdFactory)
+      .onSuccess {
+        bannerAd = it
+        bannerAd.loadAd()
+      }
   }
 
   override fun loadRtbInterstitialAd(
