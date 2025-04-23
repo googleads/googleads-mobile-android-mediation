@@ -17,6 +17,8 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -42,14 +44,19 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.pubmatic.sdk.common.OpenWrapSDK
 import com.pubmatic.sdk.common.OpenWrapSDKConfig
 import com.pubmatic.sdk.common.OpenWrapSDKInitializer
+import com.pubmatic.sdk.common.POBAdFormat
 import com.pubmatic.sdk.common.POBError
+import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
+import com.pubmatic.sdk.openwrap.core.signal.POBSignalConfig
 import java.lang.NumberFormatException
 
 /**
  * PubMatic Adapter for GMA SDK used to initialize and load ads from the PubMatic SDK. This class
  * should not be used directly by publishers.
  */
-class PubMaticMediationAdapter : RtbAdapter() {
+class PubMaticMediationAdapter(
+  private val pubMaticSignalGenerator: PubMaticSignalGenerator = PubMaticSignalGeneratorImpl()
+) : RtbAdapter() {
 
   private lateinit var bannerAd: PubMaticBannerAd
   private lateinit var interstitialAd: PubMaticInterstitialAd
@@ -131,8 +138,34 @@ class PubMaticMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    // The ad format set in the GMA SDK ad request.
+    val gmaAdFormat = signalData.configurations.firstOrNull()?.format
+    if (gmaAdFormat == null) {
+      callback.onFailure(
+        AdError(
+          ERROR_INVALID_AD_FORMAT,
+          "Ad format missing in RTB signal data",
+          ADAPTER_ERROR_DOMAIN,
+        )
+      )
+      return
+    }
+
+    val pubMaticAdFormat = getPubMaticFormatFromGmaFormat(gmaAdFormat, signalData.adSize)
+    if (pubMaticAdFormat == null) {
+      callback.onFailure(
+        AdError(ERROR_INVALID_AD_FORMAT, "Ad format unsupported by PubMatic", ADAPTER_ERROR_DOMAIN)
+      )
+      return
+    }
+
+    callback.onSuccess(
+      pubMaticSignalGenerator.generateSignal(
+        signalData.context,
+        POBBiddingHost.ADMOB,
+        POBSignalConfig.Builder(pubMaticAdFormat).build(),
+      )
+    )
   }
 
   override fun loadRtbBannerAd(
@@ -184,6 +217,8 @@ class PubMaticMediationAdapter : RtbAdapter() {
 
     const val ERROR_MISSING_PUBLISHER_ID = 101
 
+    const val ERROR_INVALID_AD_FORMAT = 102
+
     /**
      * Gets the PubMatic publisher ID from ad unit mappings.
      *
@@ -232,5 +267,25 @@ class PubMaticMediationAdapter : RtbAdapter() {
 
       return profileIds.toList()
     }
+
+    /**
+     * Maps Google ad format to PubMatic ad format.
+     *
+     * Returns null if the ad format is not supported by PubMatic.
+     */
+    fun getPubMaticFormatFromGmaFormat(gmaFormat: AdFormat, adSize: AdSize?): POBAdFormat? =
+      when (gmaFormat) {
+        AdFormat.BANNER -> {
+          if (adSize == AdSize.MEDIUM_RECTANGLE) {
+            POBAdFormat.MREC
+          } else {
+            POBAdFormat.BANNER
+          }
+        }
+        AdFormat.INTERSTITIAL -> POBAdFormat.INTERSTITIAL
+        AdFormat.REWARDED -> POBAdFormat.REWARDEDAD
+        AdFormat.NATIVE -> POBAdFormat.NATIVE
+        else -> null
+      }
   }
 }

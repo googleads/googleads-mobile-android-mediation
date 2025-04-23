@@ -19,10 +19,12 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_AD_FORMAT
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
@@ -30,13 +32,18 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.pubmatic.sdk.common.OpenWrapSDK
 import com.pubmatic.sdk.common.OpenWrapSDK.initialize
 import com.pubmatic.sdk.common.OpenWrapSDK.setCoppa
 import com.pubmatic.sdk.common.OpenWrapSDKConfig
 import com.pubmatic.sdk.common.OpenWrapSDKInitializer
+import com.pubmatic.sdk.common.POBAdFormat
 import com.pubmatic.sdk.common.POBError
+import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
+import com.pubmatic.sdk.openwrap.core.signal.POBSignalConfig
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,6 +54,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class PubMaticMediationAdapterTest {
@@ -61,11 +69,21 @@ class PubMaticMediationAdapterTest {
 
   private val adErrorStringCaptor = argumentCaptor<String>()
 
+  private val adErrorCaptor = argumentCaptor<AdError>()
+
   private val openWrapSdkInitListenerCaptor = argumentCaptor<OpenWrapSDKInitializer.Listener>()
+
+  private val signalCallbacks = mock<SignalCallbacks>()
+
+  private val pobSignalConfigCaptor = argumentCaptor<POBSignalConfig>()
+
+  private val pubMaticSignalGenerator = mock<PubMaticSignalGenerator>()
+
+  private val pobBiddingHostCaptor = argumentCaptor<POBBiddingHost>()
 
   @Before
   fun setUp() {
-    adapter = PubMaticMediationAdapter()
+    adapter = PubMaticMediationAdapter(pubMaticSignalGenerator)
   }
 
   // region Version tests
@@ -313,6 +331,111 @@ class PubMaticMediationAdapterTest {
 
   // endregion
 
+  // region signal collection tests
+
+  @Test
+  fun collectSignals_setsAdmobAsBiddingHostAndCollectsPubMaticSignals() {
+    whenever(pubMaticSignalGenerator.generateSignal(any(), any(), any()))
+      .thenReturn(PUBMATIC_SIGNALS)
+    val mediationConfiguration = MediationConfiguration(AdFormat.BANNER, bundleOf())
+    val rtbSignalData = RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), pobBiddingHostCaptor.capture(), any())
+    assertThat(pobBiddingHostCaptor.firstValue).isEqualTo(POBBiddingHost.ADMOB)
+    verify(signalCallbacks).onSuccess(eq(PUBMATIC_SIGNALS))
+  }
+
+  @Test
+  fun collectSignals_forBannerFormat_generatesPubMaticSignalsForBanner() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.BANNER, bundleOf())
+    val rtbSignalData =
+      RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), AdSize.BANNER)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), any(), pobSignalConfigCaptor.capture())
+    val pobSignalConfig = pobSignalConfigCaptor.firstValue
+    assertThat(pobSignalConfig.adFormat).isEqualTo(POBAdFormat.BANNER)
+  }
+
+  @Test
+  fun collectSignals_forMRECFormat_generatesPubMaticSignalsForMREC() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.BANNER, bundleOf())
+    val rtbSignalData =
+      RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), AdSize.MEDIUM_RECTANGLE)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), any(), pobSignalConfigCaptor.capture())
+    val pobSignalConfig = pobSignalConfigCaptor.firstValue
+    assertThat(pobSignalConfig.adFormat).isEqualTo(POBAdFormat.MREC)
+  }
+
+  @Test
+  fun collectSignals_forInterstitialFormat_generatesPubMaticSignalsForInterstitial() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.INTERSTITIAL, bundleOf())
+    val rtbSignalData = RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), any(), pobSignalConfigCaptor.capture())
+    val pobSignalConfig = pobSignalConfigCaptor.firstValue
+    assertThat(pobSignalConfig.adFormat).isEqualTo(POBAdFormat.INTERSTITIAL)
+  }
+
+  @Test
+  fun collectSignals_forRewardedFormat_generatesPubMaticSignalsForRewarded() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.REWARDED, bundleOf())
+    val rtbSignalData = RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), any(), pobSignalConfigCaptor.capture())
+    val pobSignalConfig = pobSignalConfigCaptor.firstValue
+    assertThat(pobSignalConfig.adFormat).isEqualTo(POBAdFormat.REWARDEDAD)
+  }
+
+  @Test
+  fun collectSignals_forNativeFormat_generatesPubMaticSignalsForNativeFormat() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.NATIVE, bundleOf())
+    val rtbSignalData = RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(pubMaticSignalGenerator).generateSignal(any(), any(), pobSignalConfigCaptor.capture())
+    val pobSignalConfig = pobSignalConfigCaptor.firstValue
+    assertThat(pobSignalConfig.adFormat).isEqualTo(POBAdFormat.NATIVE)
+  }
+
+  @Test
+  fun collectSignals_forFormatNotSupportedByPubMatic_returnsInvalidFormatError() {
+    val mediationConfiguration = MediationConfiguration(AdFormat.APP_OPEN_AD, bundleOf())
+    val rtbSignalData = RtbSignalData(context, listOf(mediationConfiguration), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_INVALID_AD_FORMAT)
+    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun collectSignals_ifFormatIsMissingInRtbSignalData_returnsInvalidFormatError() {
+    val rtbSignalData = RtbSignalData(context, listOf(), bundleOf(), null)
+
+    adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_INVALID_AD_FORMAT)
+    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+  }
+
+  // endregion
+
   private companion object {
     const val TEST_PUBLISHER_ID = "a_pubmatic_publisher_id"
     const val TEST_PROFILE_ID_1 = "1234"
@@ -321,5 +444,6 @@ class PubMaticMediationAdapterTest {
     const val INVALID_PROFILE_ID = "a123"
     const val OPENWRAP_INIT_ERROR_CODE = 1001
     const val OPENWRAP_INIT_ERROR_MSG = "Init failed"
+    const val PUBMATIC_SIGNALS = "PubMatic-SDK-collected signals"
   }
 }
