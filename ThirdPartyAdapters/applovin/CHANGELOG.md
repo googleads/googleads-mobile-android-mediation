@@ -1,7 +1,11 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
-- Set adapter version as plugin version when initializing AppLovin SDK.
+#### Version 13.2.0.1
+- Updated the adapter to set plugin version when initializing Applovin SDK.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.2.0.
+- AppLovin SDK version 13.2.0.
 
 #### Version 13.2.0.0
 - Updated the adapter to support `onUserEarnedReward` on `videoPlaybackEnded` callback.
