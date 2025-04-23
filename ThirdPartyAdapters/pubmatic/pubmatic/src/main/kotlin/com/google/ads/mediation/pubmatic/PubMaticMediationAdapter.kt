@@ -55,7 +55,8 @@ import java.lang.NumberFormatException
  * should not be used directly by publishers.
  */
 class PubMaticMediationAdapter(
-  private val pubMaticSignalGenerator: PubMaticSignalGenerator = PubMaticSignalGeneratorImpl()
+  private val pubMaticSignalGenerator: PubMaticSignalGenerator = PubMaticSignalGeneratorImpl(),
+  private val pubMaticAdFactory: PubMaticAdFactory = PubMaticAdFactoryImpl(),
 ) : RtbAdapter() {
 
   private lateinit var bannerAd: PubMaticBannerAd
@@ -182,10 +183,15 @@ class PubMaticMediationAdapter(
     mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
     callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   ) {
-    PubMaticInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
-      interstitialAd = it
-      interstitialAd.loadAd()
-    }
+    PubMaticInterstitialAd.newInstance(
+        mediationInterstitialAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+      )
+      .onSuccess {
+        interstitialAd = it
+        interstitialAd.loadAd()
+      }
   }
 
   override fun loadRtbRewardedAd(
@@ -218,6 +224,8 @@ class PubMaticMediationAdapter(
     const val ERROR_MISSING_PUBLISHER_ID = 101
 
     const val ERROR_INVALID_AD_FORMAT = 102
+
+    const val ERROR_AD_NOT_READY = 103
 
     /**
      * Gets the PubMatic publisher ID from ad unit mappings.

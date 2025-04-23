@@ -30,8 +30,10 @@ import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -42,8 +44,11 @@ import com.pubmatic.sdk.common.OpenWrapSDKConfig
 import com.pubmatic.sdk.common.OpenWrapSDKInitializer
 import com.pubmatic.sdk.common.POBAdFormat
 import com.pubmatic.sdk.common.POBError
+import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import com.pubmatic.sdk.openwrap.core.signal.POBSignalConfig
+import com.pubmatic.sdk.openwrap.core.signal.POBSignalGenerator.generateSignal
+import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,6 +58,8 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 
@@ -81,9 +88,14 @@ class PubMaticMediationAdapterTest {
 
   private val pobBiddingHostCaptor = argumentCaptor<POBBiddingHost>()
 
+  private val pobInterstitial = mock<POBInterstitial>()
+
+  private val pubMaticAdFactory =
+    mock<PubMaticAdFactory> { on { createPOBInterstitial(any()) } doReturn pobInterstitial }
+
   @Before
   fun setUp() {
-    adapter = PubMaticMediationAdapter(pubMaticSignalGenerator)
+    adapter = PubMaticMediationAdapter(pubMaticSignalGenerator, pubMaticAdFactory)
   }
 
   // region Version tests
@@ -436,6 +448,33 @@ class PubMaticMediationAdapterTest {
 
   // endregion
 
+  // region RTB interstitial ad load tests.
+
+  @Test
+  fun loadRtbInterstitialAd_setsWatermarkAndLoadsPubMaticInterstitial() {
+    val mediationInterstitialAdConfiguration =
+      MediationInterstitialAdConfiguration(
+        context,
+        BID_RESPONSE,
+        /*serverParameters=*/ bundleOf(),
+        /*mediationExtras=*/ bundleOf(),
+        /*isTesting=*/ true,
+        /*location=*/ null,
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+        TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+        /*maxAdContentRating=*/ "",
+        WATERMARK,
+      )
+
+    adapter.loadRtbInterstitialAd(mediationInterstitialAdConfiguration, mock())
+
+    verify(pobInterstitial).setListener(any())
+    verify(pobInterstitial).addExtraInfo(KEY_POB_ADMOB_WATERMARK, WATERMARK)
+    verify(pobInterstitial).loadAd(BID_RESPONSE, POBBiddingHost.ADMOB)
+  }
+
+  // endregion
+
   private companion object {
     const val TEST_PUBLISHER_ID = "a_pubmatic_publisher_id"
     const val TEST_PROFILE_ID_1 = "1234"
@@ -445,5 +484,7 @@ class PubMaticMediationAdapterTest {
     const val OPENWRAP_INIT_ERROR_CODE = 1001
     const val OPENWRAP_INIT_ERROR_MSG = "Init failed"
     const val PUBMATIC_SIGNALS = "PubMatic-SDK-collected signals"
+    const val BID_RESPONSE = "bid response"
+    const val WATERMARK = "test watermark"
   }
 }
