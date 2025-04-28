@@ -21,9 +21,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
 import com.vungle.ads.VungleAds;
-import com.vungle.ads.VungleAds.WrapperFramework;
 import com.vungle.ads.VungleError;
 import com.vungle.ads.VunglePrivacySettings;
+import com.vungle.ads.VungleWrapperFramework;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,7 +41,7 @@ public class VungleInitializer implements InitializationListener {
   private VungleInitializer() {
     initListeners = new ArrayList<>();
     VungleAds.setIntegrationName(
-        WrapperFramework.admob,
+        VungleWrapperFramework.admob,
         com.vungle.mediation.BuildConfig.ADAPTER_VERSION.replace('.', '_'));
   }
 

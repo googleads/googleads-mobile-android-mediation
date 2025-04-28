@@ -1,5 +1,13 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.5.0.0
+- Updated the minimum required Android API level to 23.
+- Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.0.0.
+- Vungle SDK version 7.5.0.
+
 #### Version 7.4.3.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
