@@ -46,7 +46,7 @@ private constructor(
   /** PubMatic SDK's rewarded ad object. */
   private val pobRewardedAd: POBRewardedAd = pubMaticAdFactory.createPOBRewardedAd(context)
 
-  private lateinit var mediationRewardedAdCallback: MediationRewardedAdCallback
+  private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
 
   fun loadAd() {
     pobRewardedAd.setListener(this)
@@ -68,36 +68,36 @@ private constructor(
     if (pobRewardedAd.isReady) {
       pobRewardedAd.show()
     } else {
-      mediationRewardedAdCallback.onAdFailedToShow(
+      mediationRewardedAdCallback?.onAdFailedToShow(
         AdError(ERROR_AD_NOT_READY, "Ad not ready", ADAPTER_ERROR_DOMAIN)
       )
     }
   }
 
   override fun onAdFailedToShow(pobRewardedAd: POBRewardedAd, pobError: POBError) {
-    mediationRewardedAdCallback.onAdFailedToShow(
+    mediationRewardedAdCallback?.onAdFailedToShow(
       AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
     )
   }
 
   override fun onAdImpression(pobRewardedAd: POBRewardedAd) {
-    mediationRewardedAdCallback.reportAdImpression()
+    mediationRewardedAdCallback?.reportAdImpression()
   }
 
   override fun onAdClicked(pobRewardedAd: POBRewardedAd) {
-    mediationRewardedAdCallback.reportAdClicked()
+    mediationRewardedAdCallback?.reportAdClicked()
   }
 
   override fun onAdOpened(pobRewardedAd: POBRewardedAd) {
-    mediationRewardedAdCallback.onAdOpened()
+    mediationRewardedAdCallback?.onAdOpened()
   }
 
   override fun onAdClosed(pobRewardedAd: POBRewardedAd) {
-    mediationRewardedAdCallback.onAdClosed()
+    mediationRewardedAdCallback?.onAdClosed()
   }
 
   override fun onReceiveReward(pobRewardedAd: POBRewardedAd, pobReward: POBReward) {
-    mediationRewardedAdCallback.onUserEarnedReward()
+    mediationRewardedAdCallback?.onUserEarnedReward()
   }
 
   companion object {

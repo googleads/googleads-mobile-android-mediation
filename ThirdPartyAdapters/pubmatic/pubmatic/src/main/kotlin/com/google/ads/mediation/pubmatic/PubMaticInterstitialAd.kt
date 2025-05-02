@@ -46,7 +46,7 @@ private constructor(
   /** PubMatic SDK's interstitial ad object. */
   private val pobInterstitial: POBInterstitial = pubMaticAdFactory.createPOBInterstitial(context)
 
-  private lateinit var mediationInterstitialAdCallback: MediationInterstitialAdCallback
+  private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
     pobInterstitial.setListener(this)
@@ -68,36 +68,36 @@ private constructor(
     if (pobInterstitial.isReady) {
       pobInterstitial.show()
     } else {
-      mediationInterstitialAdCallback.onAdFailedToShow(
+      mediationInterstitialAdCallback?.onAdFailedToShow(
         AdError(ERROR_AD_NOT_READY, "Ad not ready", ADAPTER_ERROR_DOMAIN)
       )
     }
   }
 
   override fun onAdFailedToShow(pobInterstitial: POBInterstitial, pobError: POBError) {
-    mediationInterstitialAdCallback.onAdFailedToShow(
+    mediationInterstitialAdCallback?.onAdFailedToShow(
       AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
     )
   }
 
   override fun onAdImpression(pobInterstitial: POBInterstitial) {
-    mediationInterstitialAdCallback.reportAdImpression()
+    mediationInterstitialAdCallback?.reportAdImpression()
   }
 
   override fun onAdClicked(pobInterstitial: POBInterstitial) {
-    mediationInterstitialAdCallback.reportAdClicked()
+    mediationInterstitialAdCallback?.reportAdClicked()
   }
 
   override fun onAppLeaving(pobInterstitial: POBInterstitial) {
-    mediationInterstitialAdCallback.onAdLeftApplication()
+    mediationInterstitialAdCallback?.onAdLeftApplication()
   }
 
   override fun onAdOpened(pobInterstitial: POBInterstitial) {
-    mediationInterstitialAdCallback.onAdOpened()
+    mediationInterstitialAdCallback?.onAdOpened()
   }
 
   override fun onAdClosed(pobInterstitial: POBInterstitial) {
-    mediationInterstitialAdCallback.onAdClosed()
+    mediationInterstitialAdCallback?.onAdClosed()
   }
 
   companion object {
