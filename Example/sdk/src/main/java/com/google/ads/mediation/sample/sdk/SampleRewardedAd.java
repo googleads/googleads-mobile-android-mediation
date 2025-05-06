@@ -21,6 +21,8 @@ import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.ads.mediation.sample.sdk.activities.SampleSDKAdsActivity;
 import java.util.Random;
 
@@ -36,7 +38,7 @@ public class SampleRewardedAd implements Parcelable {
       new Creator<SampleRewardedAd>() {
         @Override
         public SampleRewardedAd createFromParcel(Parcel in) {
-          return new SampleRewardedAd(in.readString());
+          return new SampleRewardedAd(in);
         }
 
         @Override
@@ -68,8 +70,13 @@ public class SampleRewardedAd implements Parcelable {
   /**
    * Construct a rewarded ad.
    */
-  public SampleRewardedAd(String adUnitId) {
+  public SampleRewardedAd(@NonNull String adUnitId) {
     this.adUnitId = adUnitId;
+  }
+
+  protected SampleRewardedAd(@NonNull Parcel parcel) {
+    this.adUnitId = parcel.readString();
+    this.reward = parcel.readInt();
   }
 
   /**
@@ -78,7 +85,7 @@ public class SampleRewardedAd implements Parcelable {
    * @param listener a {@code SampleRewardedAdListener} to which to forward the rewarded video ad
    * events.
    */
-  public void setListener(SampleRewardedAdListener listener) {
+  public void setListener(@NonNull SampleRewardedAdListener listener) {
     this.listener = listener;
   }
 
@@ -87,6 +94,7 @@ public class SampleRewardedAd implements Parcelable {
    *
    * @return a {@code SampleRewardedAdListener} that is currently registered to the Sample SDK.
    */
+  @Nullable
   public SampleRewardedAdListener getListener() {
     return listener;
   }
@@ -124,7 +132,7 @@ public class SampleRewardedAd implements Parcelable {
       errorCode = SampleErrorCode.BAD_REQUEST;
     } else if (nextInt < 95) {
       errorCode = SampleErrorCode.NETWORK_ERROR;
-    } else if (nextInt < 100) {
+    } else {
       errorCode = SampleErrorCode.NO_INVENTORY;
     }
     if (errorCode != null && listener != null && !isAdAvailable) {
@@ -138,9 +146,8 @@ public class SampleRewardedAd implements Parcelable {
    */
   public void showAd(Activity activity) {
     if (!(isAdAvailable())) {
-      Log.w(
-          "SampleSDK",
-          "No ads to show. Call SampleRewardedAd.isAdAvailable() before " + "calling showAd().");
+      Log.w("SampleSDK",
+          "No ads to show. Call SampleRewardedAd.isAdAvailable() before calling showAd().");
       return;
     }
 
@@ -150,7 +157,7 @@ public class SampleRewardedAd implements Parcelable {
     }
 
     Intent intent = new Intent(activity, SampleSDKAdsActivity.class);
-    intent.putExtra(SampleSDKAdsActivity.KEY_REWARDED_AD_EXTRA, this);
+    intent.putExtra(SampleSDKAdsActivity.KEY_REWARDED_AD_EXTRA, SampleRewardedAd.this);
     activity.startActivity(intent);
   }
 
@@ -160,8 +167,9 @@ public class SampleRewardedAd implements Parcelable {
   }
 
   @Override
-  public void writeToParcel(Parcel parcel, int i) {
+  public void writeToParcel(@NonNull Parcel parcel, int i) {
     parcel.writeString(adUnitId);
+    parcel.writeInt(reward);
   }
 }
 

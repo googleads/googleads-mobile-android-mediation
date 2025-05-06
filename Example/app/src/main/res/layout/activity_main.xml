@@ -35,6 +35,28 @@
     </RadioGroup>
 
     <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:text="App Open Ads"
+      android:textAppearance="@android:style/TextAppearance.Medium" />
+
+    <Button
+      android:id="@+id/app_open_load_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:text="Load App Open Ad" />
+
+    <Button
+      android:id="@+id/app_open_show_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:enabled="false"
+      android:text="Show App Open Ad" />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
@@ -45,7 +67,7 @@
         android:id="@+id/banner_load_ad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="Load Banner" />
 
     <FrameLayout
@@ -65,14 +87,14 @@
         android:id="@+id/interstitial_load_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="Load Interstitial" />
 
     <Button
         android:id="@+id/interstitial_show_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:enabled="false"
         android:text="Show Interstitial" />
 
@@ -93,9 +115,30 @@
         android:id="@+id/rewarded_show_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:enabled="false"
         android:text="Show Rewarded Ad" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:text="Rewarded Interstitial Ads"
+      android:textAppearance="@android:style/TextAppearance.Medium" />
+
+    <Button
+      android:id="@+id/rewarded_interstitial_load_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Load Rewarded Interstitial Ad" />
+
+    <Button
+      android:id="@+id/rewarded_interstitial_show_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:enabled="false"
+      android:text="Show Rewarded Interstitial Ad" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -108,7 +151,7 @@
         android:id="@+id/native_load_ad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="Load Native" />
 
     <FrameLayout

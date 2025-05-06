@@ -17,12 +17,12 @@
 package com.google.ads.mediation.sample.mediationsample;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +37,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.nativead.MediaView;
@@ -45,26 +47,43 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 import java.util.Locale;
 
 /**
  * A simple {@link android.app.Activity} that displays adds using the sample custom event.
  */
 public class MainActivity extends AppCompatActivity {
+
+  private final String LOG_TAG = "MediationExample";
+
   // The banner ad view.
   private AdView adView;
+  // A loaded app open ad.
+  private AppOpenAd appOpenAd;
+  // The load app open button.
+  private Button loadAppOpenButton;
+  // The show app open button.
+  private Button showAppOpenButton;
   // A loaded interstitial ad.
   private InterstitialAd interstitial;
-  // A loaded rewarded ad.
-  private RewardedAd rewardedAd;
   // The load interstitial button.
   private Button loadInterstitialButton;
   // The show interstitial button.
   private Button showInterstitialButton;
+  // A loaded rewarded ad.
+  private RewardedAd rewardedAd;
   // The load rewarded ad button.
   private Button loadRewardedButton;
   // The load rewarded ad button.
   private Button showRewardedButton;
+  // A loaded rewarded interstitial ad.
+  private RewardedInterstitialAd rewardedInterstitialAd;
+  // The load rewarded interstitial ad button.
+  private Button loadRewardedInterstitialButton;
+  // The load rewarded interstitial ad button.
+  private Button showRewardedInterstitialButton;
   // The ad loader.
   private AdLoader adLoader;
 
@@ -72,6 +91,22 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    // App Open ads.
+    loadAppOpenButton = findViewById(R.id.app_open_load_button);
+    loadAppOpenButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        loadAppOpenAd();
+      }
+    });
+    showAppOpenButton = findViewById(R.id.app_open_show_button);
+    showAppOpenButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        showAppOpenAd();
+      }
+    });
 
     // Banner ads.
     Button loadBannerButton = findViewById(R.id.banner_load_ad);
@@ -83,7 +118,13 @@ public class MainActivity extends AppCompatActivity {
         adView.setAdUnitId(getBannerAdUnitId());
         adView.setAdListener(new AdListener() {
           @Override
+          public void onAdLoaded() {
+            Log.d(LOG_TAG, "Banner Ad loaded: " + adView.getResponseInfo());
+          }
+
+          @Override
           public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+            Log.d(LOG_TAG, "Failed to load banner ad: " + loadAdError.getResponseInfo());
             Toast.makeText(MainActivity.this,
                 "Failed to load banner: " + loadAdError,
                 Toast.LENGTH_SHORT).show();
@@ -98,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-
     // Interstitial ads.
     loadInterstitialButton = (Button) findViewById(R.id.interstitial_load_button);
     loadInterstitialButton.setOnClickListener(
@@ -112,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
                 new InterstitialAdLoadCallback() {
                   @Override
                   public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                    Log.d(LOG_TAG, "Interstitial Ad loaded: " + interstitialAd.getResponseInfo());
+
                     interstitial = interstitialAd;
                     interstitial.setFullScreenContentCallback(new FullScreenContentCallback() {
                       @Override
@@ -132,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
 
                   @Override
                   public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                    Log.d(LOG_TAG,
+                        "Failed to load interstitial ad: " + loadAdError.getResponseInfo());
                     Toast.makeText(MainActivity.this,
                         "Failed to load interstitial: " + loadAdError,
                         Toast.LENGTH_SHORT).show();
@@ -165,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
             new RewardedAdLoadCallback() {
               @Override
               public void onAdLoaded(@NonNull RewardedAd ad) {
+                Log.d(LOG_TAG, "Rewarded Ad loaded: " + ad.getResponseInfo());
+
                 rewardedAd = ad;
                 rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                   @Override
@@ -185,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
               @Override
               public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Log.d(LOG_TAG, "Failed to load rewarded ad: " + loadAdError.getResponseInfo());
                 Toast.makeText(MainActivity.this,
                     "Failed to load rewarded ad: " + loadAdError,
                     Toast.LENGTH_SHORT).show();
@@ -205,13 +252,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
               Toast.makeText(MainActivity.this,
-
                   String.format(Locale.getDefault(), "User earned reward. Type: %s, amount: %d",
                       rewardItem.getType(), rewardItem.getAmount()),
                   Toast.LENGTH_SHORT).show();
             }
           });
         }
+      }
+    });
+
+    // Rewarded Interstitial Ads.
+    loadRewardedInterstitialButton = findViewById(R.id.rewarded_interstitial_load_button);
+    loadRewardedInterstitialButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        loadRewardedInterstitial();
+      }
+    });
+    showRewardedInterstitialButton = findViewById(R.id.rewarded_interstitial_show_button);
+    showRewardedInterstitialButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        showRewardedInterstitial();
       }
     });
 
@@ -224,6 +286,8 @@ public class MainActivity extends AppCompatActivity {
             .forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
               @Override
               public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
+                Log.d(LOG_TAG, "Native Ad loaded: " + nativeAd.getResponseInfo());
+
                 FrameLayout nativeContainer = findViewById(R.id.native_container);
                 nativeContainer.removeAllViews();
                 getLayoutInflater().inflate(R.layout.native_ad, nativeContainer, true);
@@ -235,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
             .withAdListener(new AdListener() {
               @Override
               public void onAdFailedToLoad(@NonNull LoadAdError error) {
+                Log.d(LOG_TAG, "Failed to load native ad: " + error.getResponseInfo());
                 Toast.makeText(MainActivity.this,
                     "Failed to load native ad: " + error,
                     Toast.LENGTH_SHORT).show();
@@ -243,6 +308,13 @@ public class MainActivity extends AppCompatActivity {
         adLoader.loadAd(new AdRequest.Builder().build());
       }
     });
+  }
+
+  /**
+   * Gets the app open ad unit ID to test.
+   */
+  private String getAppOpenAdUnitId() {
+    return getResources().getString(R.string.customevent_app_open_ad_unit_id);
   }
 
   /**
@@ -267,10 +339,148 @@ public class MainActivity extends AppCompatActivity {
   }
 
   /**
+   * Gets the rewarded interstitial ad unit ID to test.
+   */
+  private String getRewardedInterstitialAdUnitId() {
+    return getResources().getString(R.string.customevent_rewarded_interstitial_ad_unit_id);
+  }
+
+  /**
    * Gets the native ad unit ID to test.
    */
   private String getNativeAdUnitId() {
     return getResources().getString(R.string.customevent_native_ad_unit_id);
+  }
+
+  /**
+   * Loads the app open ad.
+   */
+  private void loadAppOpenAd() {
+    loadAppOpenButton.setEnabled(false);
+
+    AppOpenAd.load(MainActivity.this,
+        getAppOpenAdUnitId(),
+        new AdRequest.Builder().build(),
+        new AppOpenAdLoadCallback() {
+          @Override
+          public void onAdLoaded(@NonNull AppOpenAd ad) {
+            Log.d(LOG_TAG, "App Open Ad loaded: " + ad.getResponseInfo());
+
+            appOpenAd = ad;
+            appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+              @Override
+              public void onAdFailedToShowFullScreenContent(@NonNull AdError error) {
+                Log.d(LOG_TAG, "Failed to show app open ad: " + error);
+                Toast.makeText(MainActivity.this,
+                    "Failed to show app open ad. See logcat for details.",
+                    Toast.LENGTH_SHORT).show();
+                loadAppOpenButton.setEnabled(true);
+              }
+
+              @Override
+              public void onAdDismissedFullScreenContent() {
+                loadAppOpenButton.setEnabled(true);
+                showAppOpenButton.setEnabled(false);
+              }
+            });
+            showAppOpenButton.setEnabled(true);
+          }
+
+          @Override
+          public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+            Log.d(LOG_TAG, "Failed to load app open ad: " + loadAdError.getResponseInfo());
+            Toast.makeText(MainActivity.this,
+                "Failed to load app open ad. See logcat for details.",
+                Toast.LENGTH_SHORT).show();
+            appOpenAd = null;
+            loadAppOpenButton.setEnabled(true);
+          }
+        });
+  }
+
+  /**
+   * Shows the app open ad.
+   */
+  private void showAppOpenAd() {
+    if (appOpenAd == null) {
+      Toast.makeText(MainActivity.this,
+          "App open ad is not ready to be shown.",
+          Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    showRewardedButton.setEnabled(false);
+    appOpenAd.show(MainActivity.this);
+  }
+
+  /**
+   * Loads the rewarded interstitial ad.
+   */
+  private void loadRewardedInterstitial() {
+    loadRewardedInterstitialButton.setEnabled(false);
+
+    RewardedInterstitialAd.load(MainActivity.this,
+        getRewardedInterstitialAdUnitId(),
+        new AdRequest.Builder().build(),
+        new RewardedInterstitialAdLoadCallback() {
+          @Override
+          public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
+            Log.d(LOG_TAG, "Rewarded Interstitial Ad loaded: " + ad.getResponseInfo());
+
+            rewardedInterstitialAd = ad;
+            rewardedInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+              @Override
+              public void onAdFailedToShowFullScreenContent(@NonNull AdError error) {
+                Log.d(LOG_TAG, "Failed to show rewarded interstitial ad: " + error);
+                Toast.makeText(MainActivity.this,
+                    "Failed to show rewarded interstitial ad. See logcat for details.",
+                    Toast.LENGTH_SHORT).show();
+                loadRewardedInterstitialButton.setEnabled(true);
+              }
+
+              @Override
+              public void onAdDismissedFullScreenContent() {
+                loadRewardedInterstitialButton.setEnabled(true);
+                showRewardedInterstitialButton.setEnabled(false);
+              }
+            });
+            showRewardedInterstitialButton.setEnabled(true);
+          }
+
+          @Override
+          public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+            Log.d(LOG_TAG, "Failed to load rewarded interstitial ad: " + loadAdError.getResponseInfo());
+            Toast.makeText(MainActivity.this,
+                "Failed to load rewarded interstitial ad. See logcat for details.",
+                Toast.LENGTH_SHORT).show();
+            appOpenAd = null;
+            loadRewardedInterstitialButton.setEnabled(true);
+          }
+        });
+  }
+
+  /**
+   * Shows the rewarded interstitial ad.
+   */
+  private void showRewardedInterstitial() {
+    if (rewardedInterstitialAd == null) {
+      Toast.makeText(MainActivity.this,
+          "Rewarded interstitial ad is not ready to be shown.",
+          Toast.LENGTH_SHORT).show();
+      return;
+    }
+
+    showRewardedInterstitialButton.setEnabled(false);
+    rewardedInterstitialAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+      @Override
+      public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+        String rewardMessage = String.format(Locale.getDefault(),
+            "User earned reward. Type: %s, amount: %d",
+            rewardItem.getType(), rewardItem.getAmount());
+        Log.d(LOG_TAG, rewardMessage);
+        Toast.makeText(MainActivity.this, rewardMessage, Toast.LENGTH_SHORT).show();
+      }
+    });
   }
 
   /**

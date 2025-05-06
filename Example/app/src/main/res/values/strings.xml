@@ -2,12 +2,16 @@
   <string name="app_name">Mediation Sample</string>
   <string name="ad_attribution">Ad</string>
 
+  <string name="customevent_app_open_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/8980988583</string>
   <string name="customevent_banner_ad_unit_id" translatable="false">
     ca-app-pub-3940256099942544/2336528657</string>
   <string name="customevent_interstitial_ad_unit_id" translatable="false">
     ca-app-pub-3940256099942544/4013406551</string>
-  <string name="customevent_native_ad_unit_id" translatable="false">
-    ca-app-pub-3940256099942544/9051804115</string>
   <string name="customevent_rewarded_ad_unit_id" translatable="false">
     ca-app-pub-3940256099942544/6223236111</string>
+  <string name="customevent_rewarded_interstitial_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/5642538212</string>
+  <string name="customevent_native_ad_unit_id" translatable="false">
+    ca-app-pub-3940256099942544/9051804115</string>
 </resources>

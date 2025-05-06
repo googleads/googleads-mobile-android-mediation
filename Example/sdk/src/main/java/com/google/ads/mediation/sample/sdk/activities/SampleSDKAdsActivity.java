@@ -169,6 +169,5 @@ public class SampleSDKAdsActivity extends AppCompatActivity {
     if (isSkippable) {
       super.onBackPressed();
     }
-
   }
 }

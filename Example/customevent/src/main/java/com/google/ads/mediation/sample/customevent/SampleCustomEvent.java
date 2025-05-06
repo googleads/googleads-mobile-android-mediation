@@ -26,6 +26,9 @@ import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -66,6 +69,8 @@ public class SampleCustomEvent extends Adapter {
    */
   public static final double SAMPLE_SDK_IMAGE_SCALE = 1.0;
 
+  private SampleAppOpenCustomEventLoader appOpenLoader;
+
   private SampleBannerCustomEventLoader bannerLoader;
 
   private SampleInterstitialCustomEventLoader interstitialLoader;
@@ -73,6 +78,14 @@ public class SampleCustomEvent extends Adapter {
   private SampleRewardedCustomEventLoader rewardedLoader;
 
   private SampleNativeCustomEventLoader nativeLoader;
+
+  @Override
+  public void loadAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    appOpenLoader = new SampleAppOpenCustomEventLoader(adConfiguration, callback);
+    appOpenLoader.loadAd();
+  }
 
   @Override
   public void loadBannerAd(
@@ -93,14 +106,6 @@ public class SampleCustomEvent extends Adapter {
   }
 
   @Override
-  public void loadNativeAdMapper(
-      @NonNull MediationNativeAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback) {
-    nativeLoader = new SampleNativeCustomEventLoader(adConfiguration, callback);
-    nativeLoader.loadAd();
-  }
-
-  @Override
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
@@ -112,16 +117,34 @@ public class SampleCustomEvent extends Adapter {
     rewardedLoader.loadAd();
   }
 
-  // This method won't be called for custom events.
   @Override
-  public void initialize(Context context,
-      InitializationCompleteCallback initializationCompleteCallback,
-      List<MediationConfiguration> list) {
-
-    return;
+  public void loadRewardedInterstitialAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    // The Sample SDK does not distinguish between rewarded and rewarded interstitial ads.
+    // Load a rewarded ad instead.
+    loadRewardedAd(adConfiguration, callback);
   }
 
   @Override
+  public void loadNativeAdMapper(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback) {
+    nativeLoader = new SampleNativeCustomEventLoader(adConfiguration, callback);
+    nativeLoader.loadAd();
+  }
+
+  @Override
+  public void initialize(@NonNull Context context,
+      @NonNull InitializationCompleteCallback initializationCompleteCallback,
+      @NonNull List<MediationConfiguration> list) {
+    // The Sample SDK does not have a method to initialize.
+    // Therefore, call the success callback immediately.
+    initializationCompleteCallback.onInitializationSucceeded();
+  }
+
+  @Override
+  @NonNull
   public VersionInfo getVersionInfo() {
     String versionString = BuildConfig.ADAPTER_VERSION;
     String[] splits = versionString.split("\\.");
@@ -137,6 +160,7 @@ public class SampleCustomEvent extends Adapter {
   }
 
   @Override
+  @NonNull
   public VersionInfo getSDKVersionInfo() {
     String versionString = SampleAdRequest.getSDKVersion();
     String[] splits = versionString.split("\\.");
@@ -157,8 +181,9 @@ public class SampleCustomEvent extends Adapter {
    * @param mediationAdConfiguration The mediation request with targeting information.
    * @return The created {@link SampleAdRequest}.
    */
+  @NonNull
   public static SampleAdRequest createSampleRequest(
-      MediationAdConfiguration mediationAdConfiguration) {
+      @NonNull MediationAdConfiguration mediationAdConfiguration) {
     SampleAdRequest request = new SampleAdRequest();
     request.setTestMode(mediationAdConfiguration.isTestRequest());
     request.setKeywords(mediationAdConfiguration.getMediationExtras().keySet());

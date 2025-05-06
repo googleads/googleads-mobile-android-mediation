@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleAdRequest;
 import com.google.ads.mediation.sample.sdk.SampleErrorCode;
 import com.google.ads.mediation.sample.sdk.SampleRewardedAd;
@@ -42,10 +43,10 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
   private static final String TAG = "RewardedCustomEvent";
 
   public SampleRewardedCustomEventLoader(
-      MediationRewardedAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     this.mediationRewardedAdConfiguration = adConfiguration;
-    this.mediationAdLoadCallback = adLoadCallback;
+    this.mediationAdLoadCallback = callback;
   }
 
   /** Loads the rewarded ad from the third party ad network. */
@@ -63,7 +64,7 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
 
     SampleAdRequest request = new SampleAdRequest();
     sampleRewardedAd = new SampleRewardedAd(serverParameter);
-    sampleRewardedAd.setListener(this);
+    sampleRewardedAd.setListener(SampleRewardedCustomEventLoader.this);
     Log.i(TAG, "Start fetching rewarded ad.");
     sampleRewardedAd.loadAd(request);
   }
@@ -81,7 +82,7 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
   }
 
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     if (!(context instanceof Activity)) {
       rewardedAdCallback.onAdFailedToShow(
           SampleCustomEventError.createCustomEventNoActivityContextError());
@@ -100,10 +101,11 @@ public class SampleRewardedCustomEventLoader extends SampleRewardedAdListener
   }
 
   @Override
-  public void onAdRewarded(final String rewardType, final int amount) {
+  public void onAdRewarded(@NonNull final String rewardType, final int amount) {
     RewardItem rewardItem =
         new RewardItem() {
           @Override
+          @NonNull
           public String getType() {
             return rewardType;
           }
