@@ -14,7 +14,15 @@
 
 package com.google.ads.mediation.verve
 
+import android.app.Application
 import android.content.Context
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -34,6 +42,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import net.pubnative.lite.sdk.HyBid
 
 /**
  * Verve Adapter for GMA SDK used to initialize and load ads from the Verve SDK. This class should
@@ -44,16 +53,48 @@ class VerveMediationAdapter : RtbAdapter() {
   private lateinit var bannerAd: VerveBannerAd
   private lateinit var interstitialAd: VerveInterstitialAd
   private lateinit var rewardedAd: VerveRewardedAd
-  private lateinit var rewardedInterstitialAd: VerveRewardedInterstitialAd
+  private lateinit var rewardedInterstitialAd: VerveRewardedAd
   private lateinit var nativeAd: VerveNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val sdkVersion = HyBid.getHyBidVersion()
+    val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+    if (splits.size >= 3) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+        sdkVersion,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
-  override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+  override fun getVersionInfo(): VersionInfo =
+    adapterVersionDelegate?.let { getVersionInfo(it) }
+      ?: getVersionInfo(BuildConfig.ADAPTER_VERSION)
+
+  private fun getVersionInfo(versionString: String): VersionInfo {
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 4) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt() * 100 + splits[3].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
@@ -62,13 +103,59 @@ class VerveMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    val requestConfiguration: RequestConfiguration = MobileAds.getRequestConfiguration()
+    val isChildUser =
+      (requestConfiguration.tagForChildDirectedTreatment ==
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) ||
+        requestConfiguration.tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    if (isChildUser) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER)
+      return
+    }
+    val appTokens =
+      mediationConfigurations.mapNotNull {
+        val sourceId = it.serverParameters.getString(APP_TOKEN_KEY)
+        if (sourceId.isNullOrEmpty()) {
+          null
+        } else {
+          sourceId
+        }
+      }
+    if (appTokens.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      return
+    }
+
+    val appTokenForInit = appTokens[0]
+    if (appTokenForInit.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      return
+    }
+    if (appTokens.size > 1) {
+      val message =
+        "Multiple $APP_TOKEN_KEY entries found: ${appTokens}. Using '${appTokenForInit}' to initialize the BidMachine SDK"
+      Log.w(TAG, message)
+    }
+    HyBid.setTestMode(VerveExtras.isTestMode)
+    HyBid.initialize(appTokenForInit, context.applicationContext as Application) { success ->
+      if (success) {
+        initializationCompleteCallback.onInitializationSucceeded()
+      } else {
+        initializationCompleteCallback.onInitializationFailed(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK)
+      }
+    }
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    val adSize = signalData.adSize
+    if (adSize != null && VerveBannerAd.mapAdSize(adSize, signalData.context) == null) {
+      val adError =
+        AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
+      callback.onFailure(adError)
+      return
+    }
+    val signals = HyBid.getCustomRequestSignalData(signalData.context, "Admob")
+    callback.onSuccess(signals)
   }
 
   override fun loadRtbBannerAd(
@@ -106,8 +193,8 @@ class VerveMediationAdapter : RtbAdapter() {
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
     VerveRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
-      rewardedAd = it
-      rewardedAd.loadAd()
+      rewardedInterstitialAd = it
+      rewardedInterstitialAd.loadAd()
     }
   }
 
@@ -123,7 +210,19 @@ class VerveMediationAdapter : RtbAdapter() {
 
   companion object {
     private val TAG = VerveMediationAdapter::class.simpleName
+    @VisibleForTesting var adapterVersionDelegate: String? = null
+    const val APP_TOKEN_KEY = "AppToken"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "net.pubnative.lite.sdk"
+    const val ERROR_CODE_UNSUPPORTED_AD_SIZE = 101
+    const val ERROR_MSG_UNSUPPORTED_AD_SIZE = "HyBid: Unsupported Ad Size requested"
+    const val ERROR_CODE_AD_LOAD_FAILED_TO_LOAD = 102
+    const val ERROR_MSG_MISSING_APP_TOKEN = "AppToken is missing or empty"
+    const val ERROR_CODE_FULLSCREEN_AD_IS_NULL = 103
+    const val ERROR_MSG_FULLSCREEN_AD_IS_NULL = "Attempted to show a null fullscreen ad"
+    const val ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK =
+      "There was an internal error during the initialization of HyBid SDK."
+    const val ERROR_MSG_CHILD_USER =
+      "MobileAds.getRequestConfiguration() indicates the user is a child. Verve will be dropped"
   }
 }
