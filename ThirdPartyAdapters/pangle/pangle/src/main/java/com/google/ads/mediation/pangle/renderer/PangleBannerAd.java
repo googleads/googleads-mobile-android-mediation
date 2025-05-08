@@ -167,7 +167,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  private PAGBannerSize getBannerSizeFromGoogleAdSize(Context context, AdSize adSize) {
+  static PAGBannerSize getBannerSizeFromGoogleAdSize(Context context, AdSize adSize) {
     if (adSize != null) {
       if (adSize.getWidth() == PAGBannerSize.BANNER_W_320_H_50.getWidth() && adSize.getHeight() == PAGBannerSize.BANNER_W_320_H_50.getHeight()) {
         return PAGBannerSize.BANNER_W_320_H_50;

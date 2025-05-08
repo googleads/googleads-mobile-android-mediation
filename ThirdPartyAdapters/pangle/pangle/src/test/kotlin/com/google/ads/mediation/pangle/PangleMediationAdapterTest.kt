@@ -3,8 +3,9 @@ package com.google.ads.mediation.pangle
 import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGDoNotSellType
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGPAConsentType
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType
+import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback
 import com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.pangle.PangleMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
@@ -13,7 +14,6 @@ import com.google.ads.mediation.pangle.renderer.PangleBannerAd
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd
-import com.google.ads.mediation.pangle.utils.DoNotSellTypesProvider
 import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
 import com.google.ads.mediation.pangle.utils.GmaChildDirectedTagsProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
@@ -75,13 +75,12 @@ class PangleMediationAdapterTest {
   private val nativeAd: PangleNativeAd = mock()
   private val rewardedAd: PangleRewardedAd = mock()
   private val pangleFactory: PangleFactory = mock {
-    on { createPangleAppOpenAd(any(), any(), any(), any(), any()) } doReturn appOpenAd
-    on { createPangleBannerAd(any(), any(), any(), any(), any()) } doReturn bannerAd
-    on { createPangleInterstitialAd(any(), any(), any(), any(), any()) } doReturn interstitialAd
-    on { createPangleNativeAd(any(), any(), any(), any(), any()) } doReturn nativeAd
-    on { createPangleRewardedAd(any(), any(), any(), any(), any()) } doReturn rewardedAd
+    on { createPangleAppOpenAd(any(), any(), any(), any()) } doReturn appOpenAd
+    on { createPangleBannerAd(any(), any(), any(), any()) } doReturn bannerAd
+    on { createPangleInterstitialAd(any(), any(), any(), any()) } doReturn interstitialAd
+    on { createPangleNativeAd(any(), any(), any(), any()) } doReturn nativeAd
+    on { createPangleRewardedAd(any(), any(), any(), any()) } doReturn rewardedAd
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val initializationCompleteCallback: InitializationCompleteCallback = mock()
   private val appOpenAdConfig: MediationAppOpenAdConfiguration = mock()
   private val appOpenAdLoadCallback:
@@ -106,16 +105,15 @@ class PangleMediationAdapterTest {
 
   @Before
   fun setUp() {
-    // Resetting the GDPR and the DoNotSellInformation to their default value.
+    // Resetting the GDPR and the PA Consent Information to their default value.
     PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setDoNotSell(PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT)
+    PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
 
     pangleMediationAdapter =
       PangleMediationAdapter(
         pangleInitializer,
         pangleSdkWrapper,
-        pangleFactory,
-        panglePrivacyConfig,
+        pangleFactory
       )
   }
 
@@ -135,7 +133,8 @@ class PangleMediationAdapterTest {
     // Pangle SDK.
     inOrder(pangleSdkWrapper) {
       verify(pangleSdkWrapper).setUserData(USER_DATA_VALUE)
-      verify(pangleSdkWrapper).getBiddingToken(biddingTokenCallbackCaptor.capture())
+      verify(pangleSdkWrapper).getBiddingToken(context, PAGBiddingRequest().apply {
+        adxId = PangleConstants.ADX_ID},biddingTokenCallbackCaptor.capture())
     }
     val biddingTokenCallback = biddingTokenCallbackCaptor.firstValue
     biddingTokenCallback.onBiddingTokenCollected(BIDDING_TOKEN)
@@ -216,10 +215,10 @@ class PangleMediationAdapterTest {
       listOf(buildProperMediationConfig()),
     )
 
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(childDirectedTag)
+    // pangleInitializer reads the PA value from PangleMediationAdapter. So, we should ensure that
+    // PangleMediationAdapter.setPAConsent() is called before pangleInitializer.initialize().
+    inOrder(pangleInitializer) {
+      PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
       verify(pangleInitializer).initialize(any(), any(), any())
     }
   }
@@ -263,47 +262,6 @@ class PangleMediationAdapterTest {
     PangleMediationAdapter.setGDPRConsent(gdprConsent, pangleSdkWrapper)
 
     verify(pangleSdkWrapper).setGdprConsent(gdprConsent)
-  }
-
-  @Test
-  fun getDoNotSell_returnTheUpdatedValueWhenCalled() {
-    // Given the initial PangleMediationAdapter state
-    // When the DoNotSell is updated
-    PangleMediationAdapter.setDoNotSell(PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL)
-
-    // Then getDoNotsell() must return the updated value
-    assertThat(PangleMediationAdapter.getDoNotSell())
-      .isEqualTo(PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_NOT_SELL)
-  }
-
-  @Test
-  fun setDoNotSell_ignoresValuesOutsideTheThreeAccepted() {
-    // Given the initial PangleMediationAdapter state
-    // When DoNotSell is updated to a different range od values that are not allowed.
-    PangleMediationAdapter.setDoNotSell(-2)
-    // Then the value is only updated when valid options are sent (-1, 0, 1).
-    assertThat(PangleMediationAdapter.getDoNotSell())
-      .isEqualTo(PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT)
-    PangleMediationAdapter.setDoNotSell(2)
-    assertThat(PangleMediationAdapter.getDoNotSell())
-      .isEqualTo(PAGDoNotSellType.PAG_DO_NOT_SELL_TYPE_DEFAULT)
-    PangleMediationAdapter.setDoNotSell(-1)
-    assertThat(PangleMediationAdapter.getDoNotSell()).isEqualTo(-1)
-    PangleMediationAdapter.setDoNotSell(0)
-    assertThat(PangleMediationAdapter.getDoNotSell()).isEqualTo(0)
-    PangleMediationAdapter.setDoNotSell(1)
-    assertThat(PangleMediationAdapter.getDoNotSell()).isEqualTo(1)
-  }
-
-  @Test
-  fun setDoNotSell_ifPangleSDKIsInitialized_setsDoNotSellOnPangleSdk(
-    @TestParameter(valuesProvider = DoNotSellTypesProvider::class) doNotSellType: Int
-  ) {
-    whenever(pangleSdkWrapper.isInitSuccess()).thenReturn(true)
-
-    PangleMediationAdapter.setDoNotSell(doNotSellType, pangleSdkWrapper)
-
-    verify(pangleSdkWrapper).setDoNotSell(doNotSellType)
   }
 
   @Test
@@ -362,8 +320,7 @@ class PangleMediationAdapterTest {
         appOpenAdConfig,
         appOpenAdLoadCallback,
         pangleInitializer,
-        pangleSdkWrapper,
-        panglePrivacyConfig,
+        pangleSdkWrapper
       )
     verify(appOpenAd).render()
   }
@@ -377,8 +334,7 @@ class PangleMediationAdapterTest {
         bannerAdConfig,
         bannerAdLoadCallback,
         pangleInitializer,
-        pangleSdkWrapper,
-        panglePrivacyConfig,
+        pangleSdkWrapper
       )
     verify(bannerAd).render()
   }
@@ -392,8 +348,7 @@ class PangleMediationAdapterTest {
         interstitialAdConfig,
         interstitialAdLoadCallback,
         pangleInitializer,
-        pangleSdkWrapper,
-        panglePrivacyConfig,
+        pangleSdkWrapper
       )
     verify(interstitialAd).render()
   }
@@ -407,8 +362,7 @@ class PangleMediationAdapterTest {
         nativeAdConfig,
         nativeAdLoadCallback,
         pangleInitializer,
-        pangleSdkWrapper,
-        panglePrivacyConfig,
+        pangleSdkWrapper
       )
     verify(nativeAd).render()
   }
@@ -422,8 +376,7 @@ class PangleMediationAdapterTest {
         rewardedAdConfig,
         rewardedAdLoadCallback,
         pangleInitializer,
-        pangleSdkWrapper,
-        panglePrivacyConfig,
+        pangleSdkWrapper
       )
     verify(rewardedAd).render()
   }

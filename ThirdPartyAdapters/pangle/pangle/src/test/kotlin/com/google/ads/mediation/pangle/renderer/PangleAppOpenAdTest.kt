@@ -12,7 +12,6 @@ import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd.ERROR_MSG_INVALID_PLACEMENT_ID
@@ -72,7 +71,6 @@ class PangleAppOpenAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagAppOpenRequest() } doReturn pagAppOpenRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val pagAppOpenAd: PAGAppOpenAd = mock()
   private val pagAdInteractionListenerCaptor = argumentCaptor<PAGAppOpenAdInteractionListener>()
   private val extraInfoCaptor = argumentCaptor<Map<String, Any>>()
@@ -117,22 +115,6 @@ class PangleAppOpenAdTest {
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
   }
 
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given an appOpenAd
-    initializeAppOpenAd(gmaChildDirectedTag)
-
-    appOpenAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
-  }
 
   /**
    * render() test for the case where bid response is available. This is how render() will be called
@@ -318,8 +300,7 @@ class PangleAppOpenAdTest {
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        pangleFactory,
-        panglePrivacyConfig,
+        pangleFactory
       )
   }
 

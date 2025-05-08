@@ -13,7 +13,6 @@ import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleConstants.PANGLE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
@@ -72,7 +71,6 @@ class PangleInterstitialAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagInterstitialRequest() } doReturn pagInterstitialRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val pagInterstitialAd: PAGInterstitialAd = mock()
   private val pagAdInteractionListenerCaptor =
     argumentCaptor<PAGInterstitialAdInteractionListener>()
@@ -116,23 +114,6 @@ class PangleInterstitialAdTest {
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
-  }
-
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given an interstitialAd
-    initializeInterstitialAd(gmaChildDirectedTag)
-
-    interstitialAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
   }
 
   /**
@@ -321,8 +302,7 @@ class PangleInterstitialAdTest {
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        pangleFactory,
-        panglePrivacyConfig,
+        pangleFactory
       )
   }
 

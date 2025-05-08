@@ -13,7 +13,6 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
@@ -73,7 +72,6 @@ class PangleRewardedAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagRewardedRequest() } doReturn pagRewardedRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val pagRewardedAd: PAGRewardedAd = mock()
   private val pagAdInteractionListenerCaptor = argumentCaptor<PAGRewardedAdInteractionListener>()
   private val pagRewardItem: PAGRewardItem = mock()
@@ -120,22 +118,6 @@ class PangleRewardedAdTest {
     // TODO(b/272102212): Refactor Pangle Rtb classes for better unit testing.
   }
 
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given a rewardedAd
-    initializeRewardedAd(gmaChildDirectedTag)
-
-    rewardedAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
-  }
 
   /**
    * render() test for the case where bid response is available. This is how render() will be called
@@ -336,8 +318,7 @@ class PangleRewardedAdTest {
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        pangleFactory,
-        panglePrivacyConfig,
+        pangleFactory
       )
   }
 

@@ -11,11 +11,9 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
-import com.google.ads.mediation.pangle.utils.GmaChildDirectedTagsProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_CODE
@@ -70,7 +68,6 @@ class PangleBannerAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagBannerRequest(any()) } doReturn pagBannerRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   val context = ApplicationProvider.getApplicationContext<Context>()
   private val extraInfoCaptor = argumentCaptor<Map<String, Any>>()
 
@@ -118,23 +115,6 @@ class PangleBannerAdTest {
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
   }
 
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given the bannerAd with its proper configuration and the tag for Child directed treatment.
-    initializeBannerAd(gmaChildDirectedTag)
-
-    // When render() is called
-    bannerAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
-  }
 
   /**
    * render() test for the case where bid response is available. This is how render() will be called
@@ -284,15 +264,6 @@ class PangleBannerAdTest {
     verify(bannerAdCallback).reportAdClicked()
   }
 
-  @Test
-  fun getSupportedBannerSizes_returnsCorrectListOfSupportedBannerSizes() {
-    val supportedBannerSizes = PangleBannerAd.getSupportedBannerSizes()
-
-    assertThat(supportedBannerSizes.size).isEqualTo(3)
-    assertThat(supportedBannerSizes).contains(AdSize(320, 50))
-    assertThat(supportedBannerSizes).contains(AdSize.MEDIUM_RECTANGLE)
-    assertThat(supportedBannerSizes).contains(AdSize.LEADERBOARD)
-  }
 
   private fun loadPangleAd() {
     mockPangleSdkInitializationSuccess(pangleInitializer)
@@ -338,8 +309,7 @@ class PangleBannerAdTest {
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        pangleFactory,
-        panglePrivacyConfig,
+        pangleFactory
       )
   }
 
