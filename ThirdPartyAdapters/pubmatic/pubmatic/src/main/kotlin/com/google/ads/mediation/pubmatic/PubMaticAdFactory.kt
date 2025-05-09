@@ -1,6 +1,7 @@
 package com.google.ads.mediation.pubmatic
 
 import android.content.Context
+import com.pubmatic.sdk.nativead.POBNativeAdLoader
 import com.pubmatic.sdk.openwrap.banner.POBBannerView
 import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial
 import com.pubmatic.sdk.rewardedad.POBRewardedAd
@@ -13,4 +14,6 @@ interface PubMaticAdFactory {
   fun createPOBRewardedAd(context: Context): POBRewardedAd
 
   fun createPOBBannerView(context: Context): POBBannerView
+
+  fun createPOBNativeAdLoader(context: Context): POBNativeAdLoader
 }

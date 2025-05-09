@@ -210,10 +210,11 @@ class PubMaticMediationAdapter(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
     callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
-    PubMaticNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
-      nativeAd = it
-      nativeAd.loadAd()
-    }
+    PubMaticNativeAd.newInstance(mediationNativeAdConfiguration, callback, pubMaticAdFactory)
+      .onSuccess {
+        nativeAd = it
+        nativeAd.loadAd()
+      }
   }
 
   companion object {

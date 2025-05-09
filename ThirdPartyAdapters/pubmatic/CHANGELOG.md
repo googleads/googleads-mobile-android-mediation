@@ -1,4 +1,4 @@
 ## PubMatic Android Mediation Adapter Changelog
 
 #### Next Version
-- Initial release.
+- Initial release. Supports bidding for banner, interstitial, rewarded and native ad formats.
