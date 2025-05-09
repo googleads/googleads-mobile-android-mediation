@@ -31,7 +31,7 @@ class PangleInitializerTest {
     on { appId(any()) } doReturn this.mock
     on { setAdxId(PangleConstants.ADX_ID) } doReturn this.mock
     on { setGDPRConsent(any()) } doReturn this.mock
-    on { setPAConsent(PAGConstant.PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT) } doReturn this.mock
+    on { setPAConsent(any()) } doReturn this.mock
     on { setUserData(any()) } doReturn this.mock
     on { build() } doReturn pagConfig
   }

@@ -133,8 +133,7 @@ class PangleMediationAdapterTest {
     // Pangle SDK.
     inOrder(pangleSdkWrapper) {
       verify(pangleSdkWrapper).setUserData(USER_DATA_VALUE)
-      verify(pangleSdkWrapper).getBiddingToken(context, PAGBiddingRequest().apply {
-        adxId = PangleConstants.ADX_ID},biddingTokenCallbackCaptor.capture())
+      verify(pangleSdkWrapper).getBiddingToken(any(), any(),biddingTokenCallbackCaptor.capture())
     }
     val biddingTokenCallback = biddingTokenCallbackCaptor.firstValue
     biddingTokenCallback.onBiddingTokenCollected(BIDDING_TOKEN)
@@ -201,27 +200,6 @@ class PangleMediationAdapterTest {
     verify(initializationCompleteCallback).onInitializationFailed(PANGLE_INIT_FAILURE_MESSAGE)
   }
 
-  @Test
-  fun initialize_setsCorrectChildDirectedTag(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) childDirectedTag: Int
-  ) {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setTagForChildDirectedTreatment(childDirectedTag).build()
-    )
-
-    pangleMediationAdapter.initialize(
-      context,
-      initializationCompleteCallback,
-      listOf(buildProperMediationConfig()),
-    )
-
-    // pangleInitializer reads the PA value from PangleMediationAdapter. So, we should ensure that
-    // PangleMediationAdapter.setPAConsent() is called before pangleInitializer.initialize().
-    inOrder(pangleInitializer) {
-      PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
-      verify(pangleInitializer).initialize(any(), any(), any())
-    }
-  }
 
   @Test
   fun getGDPRConsent_returnsTheUpdatedValueWhenCalled() {

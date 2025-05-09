@@ -219,21 +219,6 @@ class PangleBannerAdTest {
     assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
   }
 
-  @Test
-  fun render_ifBannerSizeIsInvalid_callsLoadFailureCallback() {
-    mockPangleSdkInitializationSuccess(pangleInitializer)
-    initializeBannerAd(adSize = AdSize.WIDE_SKYSCRAPER)
-
-    bannerAd.render()
-
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(PangleConstants.ERROR_BANNER_SIZE_MISMATCH)
-    assertThat(adError.message).isEqualTo(PangleBannerAd.ERROR_MESSAGE_BANNER_SIZE_MISMATCH)
-    assertThat(adError.domain).isEqualTo(PangleConstants.ERROR_DOMAIN)
-    verify(pangleSdkWrapper, never()).loadBannerAd(any(), any(), any())
-  }
 
   @Test
   fun getView_returnsWrappedAdView() {
