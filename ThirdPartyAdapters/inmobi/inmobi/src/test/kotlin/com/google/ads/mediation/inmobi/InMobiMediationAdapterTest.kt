@@ -178,7 +178,7 @@ class InMobiMediationAdapterTest {
     val adError =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-        InMobiMediationAdapter.ERROR_MESSAGE_FOR_INVALID_ACCOUNTID
+        InMobiMediationAdapter.ERROR_MESSAGE_FOR_INVALID_ACCOUNTID,
       )
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
@@ -220,7 +220,7 @@ class InMobiMediationAdapterTest {
     val adError =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
+        "InMobi SDK initialization failed",
       )
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
       val listener = it.arguments[2] as Listener
@@ -259,7 +259,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
   }
 
@@ -271,7 +271,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
   }
 
@@ -283,7 +283,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
+      bannerAdLoadCallback,
     )
   }
 
@@ -292,7 +292,7 @@ class InMobiMediationAdapterTest {
     val error =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
+        "InMobi SDK initialization failed",
       )
 
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
@@ -335,69 +335,6 @@ class InMobiMediationAdapterTest {
     assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
     verify(inMobiBannerWrapper).setKeywords(anyString())
     verify(inMobiBannerWrapper).load()
-  }
-
-  @Test
-  fun loadRtbBannerAd_invalidBannerSize_invokesFailureCallback() {
-    whenever(bannerAdConfiguration.adSize).thenReturn(AdSize(350, 100))
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    assertFailureCallbackAdError(InMobiConstants.ERROR_BANNER_SIZE_MISMATCH, bannerAdLoadCallback)
-  }
-
-  @Test
-  fun loadRtbBannerAd_withoutAccountId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbBannerAd_withoutPlacementId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbBannerAd_invalidPlacementId_invokesFailureCallback() {
-    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      bannerAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbBannerAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
-    val error =
-      InMobiConstants.createAdapterError(
-        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
-      )
-
-    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
-      val listener = it.arguments[2] as Listener
-      listener.onInitializeError(error)
-    }
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    verify(bannerAdLoadCallback).onFailure(error)
   }
 
   @Test
@@ -444,7 +381,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
+      interstitialAdLoadCallback,
     )
   }
 
@@ -456,7 +393,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
+      interstitialAdLoadCallback,
     )
   }
 
@@ -468,7 +405,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
+      interstitialAdLoadCallback,
     )
   }
 
@@ -477,7 +414,7 @@ class InMobiMediationAdapterTest {
     val error =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
+        "InMobi SDK initialization failed",
       )
 
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
@@ -504,60 +441,6 @@ class InMobiMediationAdapterTest {
     assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
     verify(inMobiInterstitialWrapper).setKeywords(anyString())
     verify(inMobiInterstitialWrapper).load()
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_withoutAccountId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
-
-    adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_withoutPlacementId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
-
-    adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_invalidPlacementId_invokesFailureCallback() {
-    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
-
-    adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      interstitialAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbInterstitialAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
-    val error =
-      InMobiConstants.createAdapterError(
-        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
-      )
-
-    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
-      val listener = it.arguments[2] as Listener
-      listener.onInitializeError(error)
-    }
-
-    adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
-
-    verify(interstitialAdLoadCallback).onFailure(error)
   }
 
   @Test
@@ -588,7 +471,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
   }
 
@@ -600,7 +483,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
   }
 
@@ -612,7 +495,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
+      rewardedAdLoadCallback,
     )
   }
 
@@ -621,7 +504,7 @@ class InMobiMediationAdapterTest {
     val error =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
+        "InMobi SDK initialization failed",
       )
 
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
@@ -648,60 +531,6 @@ class InMobiMediationAdapterTest {
     assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
     verify(inMobiInterstitialWrapper).setKeywords(anyString())
     verify(inMobiInterstitialWrapper).load()
-  }
-
-  @Test
-  fun loadRtbRewardedAd_withoutAccountId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
-
-    adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbRewardedAd_withoutPlacementId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
-
-    adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbRewardedAd_invalidPlacementId_invokesFailureCallback() {
-    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
-
-    adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      rewardedAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbRewardedAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
-    val error =
-      InMobiConstants.createAdapterError(
-        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
-      )
-
-    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
-      val listener = it.arguments[2] as Listener
-      listener.onInitializeError(error)
-    }
-
-    adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
-
-    verify(rewardedAdLoadCallback).onFailure(error)
   }
 
   @Test
@@ -732,7 +561,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
   }
 
@@ -744,7 +573,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
   }
 
@@ -756,7 +585,7 @@ class InMobiMediationAdapterTest {
 
     assertFailureCallbackAdError(
       InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      nativeAdLoadCallback
+      nativeAdLoadCallback,
     )
   }
 
@@ -765,7 +594,7 @@ class InMobiMediationAdapterTest {
     val error =
       InMobiConstants.createAdapterError(
         InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
+        "InMobi SDK initialization failed",
       )
 
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
@@ -795,48 +624,6 @@ class InMobiMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbNativeAd_withoutPlacementId_invokesFailureCallback() {
-    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
-
-    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      nativeAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbNativeAd_invalidPlacementId_invokesFailureCallback() {
-    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
-
-    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
-
-    assertFailureCallbackAdError(
-      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
-      nativeAdLoadCallback
-    )
-  }
-
-  @Test
-  fun loadRtbNativeAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
-    val error =
-      InMobiConstants.createAdapterError(
-        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
-        "InMobi SDK initialization failed"
-      )
-
-    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
-      val listener = it.arguments[2] as Listener
-      listener.onInitializeError(error)
-    }
-
-    adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
-
-    verify(nativeAdLoadCallback).onFailure(error)
-  }
-
-  @Test
   fun loadRtbNativeAd_ifInMobiSDkInitialized_loadsNativeAd() {
     whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
       val listener = it.arguments[2] as Listener
@@ -857,7 +644,7 @@ class InMobiMediationAdapterTest {
 
   private fun <MediationAdT, MediationAdCallbackT> assertFailureCallbackAdError(
     error: Int,
-    adLoadCallback: MediationAdLoadCallback<MediationAdT, MediationAdCallbackT>
+    adLoadCallback: MediationAdLoadCallback<MediationAdT, MediationAdCallbackT>,
   ) {
     val captor = argumentCaptor<AdError>()
     verify(adLoadCallback).onFailure(captor.capture())

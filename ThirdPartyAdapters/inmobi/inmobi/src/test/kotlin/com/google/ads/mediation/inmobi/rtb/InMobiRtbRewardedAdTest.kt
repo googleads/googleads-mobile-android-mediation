@@ -1,10 +1,12 @@
 package com.google.ads.mediation.inmobi.rtb
 
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
+import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
@@ -62,10 +64,11 @@ class InMobiRtbRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(false)
     whenever(rewardedAdConfiguration.bidResponse).thenReturn("BiddingToken")
+    whenever(rewardedAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_PLACEMENT_ID to "67890")
 
-    val placementId = 67890L
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    rtbRewardedAd.createAndLoadRewardAd(context, placementId, mediationAdLoadCallback)
+    rtbRewardedAd.loadAd()
     // mimic an ad load
     rtbRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     rtbRewardedAd.showAd(context)
@@ -82,10 +85,11 @@ class InMobiRtbRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(true)
     whenever(rewardedAdConfiguration.bidResponse).thenReturn("BiddingToken")
+    whenever(rewardedAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_PLACEMENT_ID to "67890")
 
-    val placementId = 67890L
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    rtbRewardedAd.createAndLoadRewardAd(context, placementId, mediationAdLoadCallback)
+    rtbRewardedAd.loadAd()
     rtbRewardedAd.showAd(context)
 
     verify(inMobiRewardedWrapper).show()

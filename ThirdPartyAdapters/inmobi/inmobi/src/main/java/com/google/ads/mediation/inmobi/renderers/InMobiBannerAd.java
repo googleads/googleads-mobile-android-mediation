@@ -14,12 +14,10 @@
 
 package com.google.ads.mediation.inmobi.renderers;
 
-import static com.google.ads.mediation.inmobi.InMobiConstants.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -50,9 +48,9 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   protected final MediationBannerAdConfiguration mediationBannerAdConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
+  protected InMobiInitializer inMobiInitializer;
   private MediationBannerAdCallback mediationBannerAdCallback;
   private InMobiAdViewHolder inMobiAdViewHolder;
-  private InMobiInitializer inMobiInitializer;
   private InMobiAdFactory inMobiAdFactory;
 
   public InMobiBannerAd(
@@ -71,51 +69,10 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   /** Invokes the InMobi SDK method for loading the ad. */
   protected abstract void internalLoadAd(InMobiBannerWrapper adView);
 
-  public void loadAd() {
-    final Context context = mediationBannerAdConfiguration.getContext();
-    final AdSize closestBannerSize =
-        InMobiAdapterUtils.findClosestBannerSize(
-            context, mediationBannerAdConfiguration.getAdSize());
-    if (closestBannerSize == null) {
-      AdError bannerSizeError =
-          InMobiConstants.createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              String.format(
-                  "The requested banner size: %s is not supported by InMobi SDK.",
-                  mediationBannerAdConfiguration.getAdSize()));
-      Log.e(TAG, bannerSizeError.toString());
-      mediationAdLoadCallback.onFailure(bannerSizeError);
-      return;
-    }
+  public abstract void loadAd();
 
-    final Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
-    final String accountId = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountId, placementId);
-    if (error != null) {
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    inMobiInitializer.init(
-        context,
-        accountId,
-        new InMobiInitializer.Listener() {
-          @Override
-          public void onInitializeSuccess() {
-            createAndLoadBannerAd(context, placementId, closestBannerSize);
-          }
-
-          @Override
-          public void onInitializeError(@NonNull AdError error) {
-            Log.w(TAG, error.toString());
-            mediationAdLoadCallback.onFailure(error);
-          }
-        });
-  }
-
-  private void createAndLoadBannerAd(final Context context, final long placementId,
-      AdSize mediationBannerSize) {
+  protected void createAndLoadBannerAd(
+      final Context context, final long placementId, AdSize mediationBannerSize) {
     // Set the COPPA value in inMobi SDK
     InMobiAdapterUtils.setIsAgeRestricted();
 

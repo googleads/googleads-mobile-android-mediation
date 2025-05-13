@@ -1,10 +1,12 @@
 package com.google.ads.mediation.inmobi.rtb
 
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
+import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
@@ -53,7 +55,7 @@ class InMobiRtbInterstitialAdTest {
         interstitialAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory
+        inMobiAdFactory,
       )
   }
 
@@ -64,9 +66,10 @@ class InMobiRtbInterstitialAdTest {
     whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(true)
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationInterstitialAdCallback)
+    whenever(interstitialAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_PLACEMENT_ID to "67890")
 
-    val placementId = 67890L
-    rtbInterstitialAd.createAndLoadInterstitialAd(context, placementId)
+    rtbInterstitialAd.loadAd()
     rtbInterstitialAd.showAd(context)
 
     verify(inMobiInterstitialWrapper).show()
@@ -78,8 +81,9 @@ class InMobiRtbInterstitialAdTest {
       .thenReturn(inMobiInterstitialWrapper)
     whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(false)
-    val placementId = 67890L
-    rtbInterstitialAd.createAndLoadInterstitialAd(context, placementId)
+    whenever(interstitialAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_PLACEMENT_ID to "67890")
+    rtbInterstitialAd.loadAd()
     // mimic an ad load.
     rtbInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
 
@@ -115,7 +119,7 @@ class InMobiRtbInterstitialAdTest {
 
     rtbInterstitialAd.onAdLoadFailed(
       inMobiInterstitialWrapper.inMobiInterstitial,
-      inMobiAdRequestStatus
+      inMobiAdRequestStatus,
     )
 
     val captor = argumentCaptor<AdError>()

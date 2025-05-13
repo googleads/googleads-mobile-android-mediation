@@ -1,5 +1,7 @@
 package com.google.ads.mediation.inmobi.rtb;
 
+import android.content.Context;
+import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
@@ -27,6 +29,16 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
+  }
+
+  @Override
+  public void loadAd() {
+    final Context context = mediationInterstitialAdConfiguration.getContext();
+    final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
+
+    createAndLoadInterstitialAd(context, placementId);
   }
 
   @Override

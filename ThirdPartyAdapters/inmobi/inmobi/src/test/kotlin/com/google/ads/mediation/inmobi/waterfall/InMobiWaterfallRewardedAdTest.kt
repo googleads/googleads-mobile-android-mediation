@@ -1,10 +1,13 @@
 package com.google.ads.mediation.inmobi.waterfall
 
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
+import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_ACCOUNT_ID
+import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
@@ -23,6 +26,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -58,13 +62,19 @@ class InMobiWaterfallRewardedAdTest {
 
   @Test
   fun onShowAd_ifRewardedAdNotReady_invokesRewardedAdCallback() {
+    val initializerListenerCaptor = argumentCaptor<InMobiInitializer.Listener>()
     whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(false)
-
     val placementId = 67890L
+    whenever(rewardedAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    waterfallRewardedAd.createAndLoadRewardAd(context, placementId, mediationAdLoadCallback)
+    waterfallRewardedAd.loadAd()
+    verify(inMobiInitializer)
+      .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
+    initializerListenerCaptor.firstValue.onInitializeSuccess()
     // mimic an ad load
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.showAd(context)
@@ -77,13 +87,19 @@ class InMobiWaterfallRewardedAdTest {
 
   @Test
   fun onShowAd_ifRewardedAdIsReady_AdIsShown() {
+    val initializerListenerCaptor = argumentCaptor<InMobiInitializer.Listener>()
     whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(true)
-
     val placementId = 67890L
+    whenever(rewardedAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    waterfallRewardedAd.createAndLoadRewardAd(context, placementId, mediationAdLoadCallback)
+    waterfallRewardedAd.loadAd()
+    verify(inMobiInitializer)
+      .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
+    initializerListenerCaptor.firstValue.onInitializeSuccess()
     waterfallRewardedAd.showAd(context)
 
     verify(inMobiRewardedWrapper).show()

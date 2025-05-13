@@ -20,16 +20,13 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
-import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -51,8 +48,8 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
   protected final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
+  protected InMobiInitializer inMobiInitializer;
   private MediationRewardedAdCallback rewardedAdCallback;
-  private InMobiInitializer inMobiInitializer;
   private InMobiAdFactory inMobiAdFactory;
 
   public InMobiRewardedAd(
@@ -70,33 +67,7 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
   /** Invokes the third-party method for loading the ad. */
   protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper);
 
-  public void loadAd() {
-    final Context context = mediationRewardedAdConfiguration.getContext();
-    final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-
-    final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
-    if (error != null) {
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    inMobiInitializer.init(context, accountID, new Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        createAndLoadRewardAd(context, placementId, mediationAdLoadCallback);
-      }
-
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.toString());
-        if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(error);
-        }
-      }
-    });
-  }
+  public abstract void loadAd();
 
   // region MediationRewardedAd implementation.
   @Override
@@ -114,11 +85,13 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
 
     inMobiRewardedAdWrapper.show();
   }
+
   // endregion
 
   // region Rewarded adapter utility classes.
-  @VisibleForTesting
-  public void createAndLoadRewardAd(Context context, long placementId,
+  protected void createAndLoadRewardAd(
+      Context context,
+      long placementId,
       final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
     inMobiRewardedAdWrapper = inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, InMobiRewardedAd.this);

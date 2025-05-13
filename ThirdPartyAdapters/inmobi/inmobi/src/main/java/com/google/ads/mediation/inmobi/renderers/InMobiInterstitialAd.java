@@ -20,11 +20,9 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
@@ -49,8 +47,8 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
   protected final MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
+  protected InMobiInitializer inMobiInitializer;
   private MediationInterstitialAdCallback interstitialAdCallback;
-  private InMobiInitializer inMobiInitializer;
 
   private InMobiAdFactory inMobiAdFactory;
 
@@ -69,36 +67,9 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
   /** Invokes the third-party method for loading the ad. */
   protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper);
 
-  public void loadAd() {
-    final Context context = mediationInterstitialAdConfiguration.getContext();
-    final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+  public abstract void loadAd();
 
-    final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
-    if (error != null) {
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    inMobiInitializer.init(context, accountID, new InMobiInitializer.Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        createAndLoadInterstitialAd(context, placementId);
-      }
-
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.toString());
-        if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(error);
-        }
-      }
-    });
-  }
-
-  @VisibleForTesting
-  public void createAndLoadInterstitialAd(final Context context, long placementId) {
+  protected void createAndLoadInterstitialAd(final Context context, long placementId) {
     inMobiInterstitialWrapper =
         inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, this);
 

@@ -1,5 +1,10 @@
 package com.google.ads.mediation.inmobi.waterfall;
 
+import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
@@ -8,6 +13,7 @@ import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
 import com.google.ads.mediation.inmobi.renderers.InMobiInterstitialAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -27,6 +33,38 @@ public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
+  }
+
+  @Override
+  public void loadAd() {
+    final Context context = mediationInterstitialAdConfiguration.getContext();
+    final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+
+    final String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
+    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
+    if (error != null) {
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    inMobiInitializer.init(
+        context,
+        accountID,
+        new InMobiInitializer.Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            createAndLoadInterstitialAd(context, placementId);
+          }
+
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            Log.w(TAG, error.toString());
+            if (mediationAdLoadCallback != null) {
+              mediationAdLoadCallback.onFailure(error);
+            }
+          }
+        });
   }
 
   @Override

@@ -17,7 +17,6 @@ package com.google.ads.mediation.inmobi.renderers;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -65,35 +64,9 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
   /** Invokes the third-party method for loading the ad. */
   protected abstract void internalLoadAd(InMobiNativeWrapper inMobiNativeWrapper);
 
-  public void loadAd() {
-    final Context context = mediationNativeAdConfiguration.getContext();
-    Bundle serverParameters = mediationNativeAdConfiguration.getServerParameters();
+  public abstract void loadAd();
 
-    String accountID = serverParameters.getString(InMobiAdapterUtils.KEY_ACCOUNT_ID);
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-    AdError error = InMobiAdapterUtils.validateInMobiAdLoadParams(accountID, placementId);
-    if (error != null) {
-      mediationAdLoadCallback.onFailure(error);
-      return;
-    }
-
-    inMobiInitializer.init(context, accountID, new InMobiInitializer.Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        createAndLoadNativeAd(context, placementId);
-      }
-
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        Log.w(TAG, error.toString());
-        if (mediationAdLoadCallback != null) {
-          mediationAdLoadCallback.onFailure(error);
-        }
-      }
-    });
-  }
-
-  private void createAndLoadNativeAd(final Context context, long placementId) {
+  protected void createAndLoadNativeAd(final Context context, long placementId) {
     inMobiNativeWrapper = inMobiAdFactory.createInMobiNativeWrapper
         (context, placementId, InMobiNativeAd.this);
 
