@@ -82,15 +82,13 @@ public class PangleFactory {
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
-      @NonNull PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      @NonNull PangleSdkWrapper pangleSdkWrapper) {
     return new PangleAppOpenAd(
         mediationAppOpenAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        this,
-        panglePrivacyConfig);
+        this);
   }
 
   PangleBannerAd createPangleBannerAd(
@@ -99,15 +97,13 @@ public class PangleFactory {
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
-      @NonNull PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      @NonNull PangleSdkWrapper pangleSdkWrapper) {
     return new PangleBannerAd(
         mediationBannerAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        this,
-        panglePrivacyConfig);
+        this);
   }
 
   PangleInterstitialAd createPangleInterstitialAd(
@@ -116,15 +112,13 @@ public class PangleFactory {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
-      PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      PangleSdkWrapper pangleSdkWrapper) {
     return new PangleInterstitialAd(
         mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        this,
-        panglePrivacyConfig);
+        this);
   }
 
   PangleNativeAd createPangleNativeAd(
@@ -133,15 +127,13 @@ public class PangleFactory {
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
-      PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      PangleSdkWrapper pangleSdkWrapper) {
     return new PangleNativeAd(
         mediationNativeAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        this,
-        panglePrivacyConfig);
+        this);
   }
 
   PangleRewardedAd createPangleRewardedAd(
@@ -150,14 +142,12 @@ public class PangleFactory {
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
-      PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      PangleSdkWrapper pangleSdkWrapper) {
     return new PangleRewardedAd(
         mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
-        this,
-        panglePrivacyConfig);
+        this);
   }
 }

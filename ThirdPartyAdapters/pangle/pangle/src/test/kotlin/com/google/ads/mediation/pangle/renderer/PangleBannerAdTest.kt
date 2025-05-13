@@ -11,11 +11,9 @@ import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
-import com.google.ads.mediation.pangle.utils.GmaChildDirectedTagsProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_CODE
@@ -33,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,7 +40,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -70,7 +66,6 @@ class PangleBannerAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagBannerRequest(any()) } doReturn pagBannerRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   val context = ApplicationProvider.getApplicationContext<Context>()
   private val extraInfoCaptor = argumentCaptor<Map<String, Any>>()
 
@@ -116,24 +111,6 @@ class PangleBannerAdTest {
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
-  }
-
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given the bannerAd with its proper configuration and the tag for Child directed treatment.
-    initializeBannerAd(gmaChildDirectedTag)
-
-    // When render() is called
-    bannerAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
   }
 
   /**
@@ -195,7 +172,7 @@ class PangleBannerAdTest {
 
     verify(pagBannerAd).setAdInteractionListener(any())
     assertThat(bannerAd.wrappedAdView.childCount).isEqualTo(1)
-    assertThat(bannerAd.wrappedAdView.get(0)).isEqualTo(pangleBannerView)
+    assertThat(bannerAd.wrappedAdView[0]).isEqualTo(pangleBannerView)
     verify(mediationAdLoadCallback).onSuccess(any())
   }
 
@@ -240,22 +217,6 @@ class PangleBannerAdTest {
   }
 
   @Test
-  fun render_ifBannerSizeIsInvalid_callsLoadFailureCallback() {
-    mockPangleSdkInitializationSuccess(pangleInitializer)
-    initializeBannerAd(adSize = AdSize.WIDE_SKYSCRAPER)
-
-    bannerAd.render()
-
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(PangleConstants.ERROR_BANNER_SIZE_MISMATCH)
-    assertThat(adError.message).isEqualTo(PangleBannerAd.ERROR_MESSAGE_BANNER_SIZE_MISMATCH)
-    assertThat(adError.domain).isEqualTo(PangleConstants.ERROR_DOMAIN)
-    verify(pangleSdkWrapper, never()).loadBannerAd(any(), any(), any())
-  }
-
-  @Test
   fun getView_returnsWrappedAdView() {
     // Load Pangle ad so that wrappedAdView is set.
     loadPangleAd()
@@ -282,16 +243,6 @@ class PangleBannerAdTest {
     bannerAd.onAdClicked()
 
     verify(bannerAdCallback).reportAdClicked()
-  }
-
-  @Test
-  fun getSupportedBannerSizes_returnsCorrectListOfSupportedBannerSizes() {
-    val supportedBannerSizes = PangleBannerAd.getSupportedBannerSizes()
-
-    assertThat(supportedBannerSizes.size).isEqualTo(3)
-    assertThat(supportedBannerSizes).contains(AdSize(320, 50))
-    assertThat(supportedBannerSizes).contains(AdSize.MEDIUM_RECTANGLE)
-    assertThat(supportedBannerSizes).contains(AdSize.LEADERBOARD)
   }
 
   private fun loadPangleAd() {
@@ -339,7 +290,6 @@ class PangleBannerAdTest {
         pangleInitializer,
         pangleSdkWrapper,
         pangleFactory,
-        panglePrivacyConfig,
       )
   }
 

@@ -32,7 +32,6 @@ import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleRequestHelper;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
@@ -53,7 +52,6 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
   private final PangleInitializer pangleInitializer;
   private final PangleSdkWrapper pangleSdkWrapper;
   private final PangleFactory pangleFactory;
-  private final PanglePrivacyConfig panglePrivacyConfig;
 
   private MediationAppOpenAdCallback appOpenAdCallback;
   private PAGAppOpenAd pagAppOpenAd;
@@ -65,18 +63,15 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PangleFactory pangleFactory,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      @NonNull PangleFactory pangleFactory) {
     adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
-    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     final String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

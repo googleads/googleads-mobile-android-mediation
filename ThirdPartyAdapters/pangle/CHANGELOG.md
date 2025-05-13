@@ -1,5 +1,9 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Added adaptive banner style.
+- V71 SDK upgrade removes the CCPA flag. The CCPA flag is replaced by the new PA consent field in the current version
+
 #### Version 6.5.0.8.0
 - Verified compatibility with Pangle SDK version 6.5.0.8.
 

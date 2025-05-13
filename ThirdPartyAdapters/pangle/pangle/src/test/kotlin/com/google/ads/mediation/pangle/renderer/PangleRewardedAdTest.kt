@@ -13,11 +13,9 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
-import com.google.ads.mediation.pangle.utils.GmaChildDirectedTagsProvider
 import com.google.ads.mediation.pangle.utils.TestConstants
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
@@ -33,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,7 +40,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -73,7 +69,6 @@ class PangleRewardedAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagRewardedRequest() } doReturn pagRewardedRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val pagRewardedAd: PAGRewardedAd = mock()
   private val pagAdInteractionListenerCaptor = argumentCaptor<PAGRewardedAdInteractionListener>()
   private val pagRewardItem: PAGRewardItem = mock()
@@ -118,23 +113,6 @@ class PangleRewardedAdTest {
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
     // TODO(b/272102212): Refactor Pangle Rtb classes for better unit testing.
-  }
-
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given a rewardedAd
-    initializeRewardedAd(gmaChildDirectedTag)
-
-    rewardedAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
   }
 
   /**
@@ -337,7 +315,6 @@ class PangleRewardedAdTest {
         pangleInitializer,
         pangleSdkWrapper,
         pangleFactory,
-        panglePrivacyConfig,
       )
   }
 

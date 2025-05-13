@@ -35,18 +35,14 @@ import com.google.ads.mediation.pangle.PangleConstants;
 import com.google.ads.mediation.pangle.PangleFactory;
 import com.google.ads.mediation.pangle.PangleInitializer;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
-import com.google.ads.mediation.pangle.PanglePrivacyConfig;
 import com.google.ads.mediation.pangle.PangleRequestHelper;
 import com.google.ads.mediation.pangle.PangleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteractionListener {
 
@@ -60,7 +56,6 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   private final PangleInitializer pangleInitializer;
   private final PangleSdkWrapper pangleSdkWrapper;
   private final PangleFactory pangleFactory;
-  private final PanglePrivacyConfig panglePrivacyConfig;
   private MediationBannerAdCallback bannerAdCallback;
   @VisibleForTesting FrameLayout wrappedAdView;
 
@@ -71,18 +66,15 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
-      @NonNull PangleFactory pangleFactory,
-      @NonNull PanglePrivacyConfig panglePrivacyConfig) {
+      @NonNull PangleFactory pangleFactory) {
     this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
-    this.panglePrivacyConfig = panglePrivacyConfig;
   }
 
   public void render() {
-    panglePrivacyConfig.setCoppa(adConfiguration.taggedForChildDirectedTreatment());
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
@@ -105,10 +97,9 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            AdSize closestSize =
-                MediationUtils.findClosestSize(
-                    context, adConfiguration.getAdSize(), getSupportedBannerSizes());
-            if (closestSize == null) {
+            AdSize googleAdSize = adConfiguration.getAdSize();
+            PAGBannerSize bannerSize = getBannerSizeFromGoogleAdSize(context, googleAdSize);
+            if (bannerSize == null) {
               AdError error =
                   PangleConstants.createAdapterError(
                       ERROR_BANNER_SIZE_MISMATCH, ERROR_MESSAGE_BANNER_SIZE_MISMATCH);
@@ -119,9 +110,7 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
 
             wrappedAdView = new FrameLayout(context);
 
-            PAGBannerRequest request =
-                pangleFactory.createPagBannerRequest(
-                    new PAGBannerSize(closestSize.getWidth(), closestSize.getHeight()));
+            PAGBannerRequest request = pangleFactory.createPagBannerRequest(bannerSize);
             request.setAdString(bidResponse);
             PangleRequestHelper.setWatermarkString(request, bidResponse, adConfiguration);
             pangleSdkWrapper.loadBannerAd(
@@ -177,12 +166,30 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  @VisibleForTesting
-  static List<AdSize> getSupportedBannerSizes() {
-    ArrayList<AdSize> supportedSizes = new ArrayList<>(3);
-    supportedSizes.add(new AdSize(320, 50));
-    supportedSizes.add(new AdSize(300, 250));
-    supportedSizes.add(new AdSize(728, 90));
-    return supportedSizes;
+  static PAGBannerSize getBannerSizeFromGoogleAdSize(Context context, AdSize adSize) {
+    if (adSize != null) {
+      if (adSize.getWidth() == PAGBannerSize.BANNER_W_320_H_50.getWidth()
+          && adSize.getHeight() == PAGBannerSize.BANNER_W_320_H_50.getHeight()) {
+        return PAGBannerSize.BANNER_W_320_H_50;
+      } else if (adSize.getWidth() == PAGBannerSize.BANNER_W_300_H_250.getWidth()
+          && adSize.getHeight() == PAGBannerSize.BANNER_W_300_H_250.getHeight()) {
+        return PAGBannerSize.BANNER_W_300_H_250;
+      } else if (adSize.getWidth() == PAGBannerSize.BANNER_W_728_H_90.getWidth()
+          && adSize.getHeight() == PAGBannerSize.BANNER_W_728_H_90.getHeight()) {
+        return PAGBannerSize.BANNER_W_728_H_90;
+      } else {
+        PAGBannerSize pagAnchoredSize =
+            PAGBannerSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                context, adSize.getWidth());
+        if (adSize.getWidth() == pagAnchoredSize.getWidth()
+            && adSize.getHeight() == pagAnchoredSize.getHeight()) {
+          return pagAnchoredSize;
+        } else {
+          return PAGBannerSize.getInlineAdaptiveBannerAdSize(adSize.getWidth(), adSize.getHeight());
+        }
+      }
+    }
+    return null;
   }
+
 }

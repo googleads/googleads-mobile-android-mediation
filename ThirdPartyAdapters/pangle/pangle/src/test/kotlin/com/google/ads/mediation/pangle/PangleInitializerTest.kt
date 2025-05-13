@@ -2,18 +2,9 @@ package com.google.ads.mediation.pangle
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_CHILD
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_DEFAULT
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGChildDirectedType.PAG_CHILD_DIRECTED_TYPE_NON_CHILD
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig
-import com.google.ads.mediation.pangle.utils.ChildDirectedTypesProvider
-import com.google.ads.mediation.pangle.utils.DoNotSellTypesProvider
 import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.testing.junit.testparameterinjector.TestParameter
-import com.google.testing.junit.testparameterinjector.TestParameters
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -37,16 +28,16 @@ class PangleInitializerTest {
   private val pagConfig: PAGConfig = mock()
   private val pagConfigBuilder: PAGConfig.Builder = mock {
     on { appId(any()) } doReturn this.mock
-    on { setChildDirected(any()) } doReturn this.mock
+    on { setAdxId(PangleConstants.ADX_ID) } doReturn this.mock
     on { setGDPRConsent(any()) } doReturn this.mock
-    on { setDoNotSell(any()) } doReturn this.mock
+    on { setPAConsent(any()) } doReturn this.mock
     on { setUserData(any()) } doReturn this.mock
     on { build() } doReturn pagConfig
   }
   private val pangleFactory: PangleFactory = mock {
     on { createPAGConfigBuilder() } doReturn pagConfigBuilder
   }
-  private val panglePrivacyConfig = PanglePrivacyConfig(pangleSdkWrapper)
+
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val initializerListener: PangleInitializer.Listener = mock()
 
@@ -156,36 +147,6 @@ class PangleInitializerTest {
   }
 
   @Test
-  fun initialize_ifTFCDIsUnspecified_configuresPangleSdkWithDefaultChildDirectedType(
-  ) {
-    panglePrivacyConfig.setCoppa(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
-
-    pangleInitializer.initialize(context, APP_ID, initializerListener)
-
-    verify(pagConfigBuilder).setChildDirected(PAG_CHILD_DIRECTED_TYPE_DEFAULT)
-  }
-
-  @Test
-  fun initialize_ifTFCDIsFalse_configuresPangleSdkWithChildDirectedTypeAsNonChild(
-  ) {
-    panglePrivacyConfig.setCoppa(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE)
-
-    pangleInitializer.initialize(context, APP_ID, initializerListener)
-
-    verify(pagConfigBuilder).setChildDirected(PAG_CHILD_DIRECTED_TYPE_NON_CHILD)
-  }
-
-  @Test
-  fun initialize_ifTFCDIsTrue_configuresPangleSdkWithChildDirectedTypeAsChild(
-  ) {
-    panglePrivacyConfig.setCoppa(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-
-    pangleInitializer.initialize(context, APP_ID, initializerListener)
-
-    verify(pagConfigBuilder).setChildDirected(PAG_CHILD_DIRECTED_TYPE_CHILD)
-  }
-
-  @Test
   fun initialize_configuresPangleSdkWithCorrectGDPRConsent(
     @TestParameter(valuesProvider = GDPRConsentTypesProvider::class) gdprConsent: Int
   ) {
@@ -194,17 +155,6 @@ class PangleInitializerTest {
     pangleInitializer.initialize(context, APP_ID, initializerListener)
 
     verify(pagConfigBuilder).setGDPRConsent(gdprConsent)
-  }
-
-  @Test
-  fun initialize_configuresPangleSdkWithCorrectDoNotSellType(
-    @TestParameter(valuesProvider = DoNotSellTypesProvider::class) doNotSell: Int
-  ) {
-    PangleMediationAdapter.setDoNotSell(doNotSell)
-
-    pangleInitializer.initialize(context, APP_ID, initializerListener)
-
-    verify(pagConfigBuilder).setDoNotSell(doNotSell)
   }
 
   companion object {

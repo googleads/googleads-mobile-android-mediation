@@ -12,12 +12,10 @@ import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
-import com.google.ads.mediation.pangle.PanglePrivacyConfig
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd.ERROR_MSG_INVALID_PLACEMENT_ID
 import com.google.ads.mediation.pangle.utils.AdErrorMatcher
-import com.google.ads.mediation.pangle.utils.GmaChildDirectedTagsProvider
 import com.google.ads.mediation.pangle.utils.TestConstants
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
@@ -33,7 +31,6 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,7 +40,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -72,7 +68,6 @@ class PangleAppOpenAdTest {
   private val pangleFactory: PangleFactory = mock {
     on { createPagAppOpenRequest() } doReturn pagAppOpenRequest
   }
-  private val panglePrivacyConfig: PanglePrivacyConfig = mock()
   private val pagAppOpenAd: PAGAppOpenAd = mock()
   private val pagAdInteractionListenerCaptor = argumentCaptor<PAGAppOpenAdInteractionListener>()
   private val extraInfoCaptor = argumentCaptor<Map<String, Any>>()
@@ -115,23 +110,6 @@ class PangleAppOpenAdTest {
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
-  }
-
-  @Test
-  fun render_setsCoppaAndThenInitializesPangleSdk(
-    @TestParameter(valuesProvider = GmaChildDirectedTagsProvider::class) gmaChildDirectedTag: Int
-  ) {
-    // Given an appOpenAd
-    initializeAppOpenAd(gmaChildDirectedTag)
-
-    appOpenAd.render()
-
-    // pangleInitializer reads the coppa value from panglePrivacyConfig. So, we should ensure that
-    // panglePrivacyConfig.setCoppa() is called before pangleInitializer.initialize().
-    inOrder(panglePrivacyConfig, pangleInitializer) {
-      verify(panglePrivacyConfig).setCoppa(gmaChildDirectedTag)
-      verify(pangleInitializer).initialize(eq(context), eq(APP_ID_VALUE), any())
-    }
   }
 
   /**
@@ -319,7 +297,6 @@ class PangleAppOpenAdTest {
         pangleInitializer,
         pangleSdkWrapper,
         pangleFactory,
-        panglePrivacyConfig,
       )
   }
 
