@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 10.8.3.1 (In progress)
 - Skip account ID and placement ID validation during RTB ad loading.
 - Load a banner ad with the request banner size if the adapter fails to find the closest supported ad size.
 
