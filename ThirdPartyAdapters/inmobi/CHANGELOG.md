@@ -4,6 +4,13 @@
 - Skip account ID and placement ID validation during RTB ad loading.
 - Load a banner ad with the request banner size if the adapter fails to find the closest supported ad size.
 
+#### Version 10.8.3.0
+- Verified compatibility with InMobi Kotlin SDK version 10.8.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.2.0.
+- InMobi Kotlin SDK version 10.8.3.
+
 #### Version 10.8.2.0
 - Verified compatibility with InMobi Kotlin SDK version 10.8.2.
 
