@@ -30,7 +30,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 25031701  // FiveAd SDK micro number as 6 digits instead of 8 (YYMMDD) + two digits for adapter patch.
+        versionCode 25051900  // FiveAd SDK micro number as 6 digits instead of 8 (YYMMDD) + two digits for adapter patch.
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
