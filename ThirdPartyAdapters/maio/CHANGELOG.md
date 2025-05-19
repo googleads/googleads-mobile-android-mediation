@@ -1,5 +1,7 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Version 2.0.4.0 (In progress)
+
 #### Version 2.0.3.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
