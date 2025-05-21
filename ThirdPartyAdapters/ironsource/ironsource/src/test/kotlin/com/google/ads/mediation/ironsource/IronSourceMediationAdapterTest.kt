@@ -418,21 +418,6 @@ class IronSourceMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbInterstitialAd_notInitialized_expectOnFailureCallbackWithAdError() {
-    val mediationAdConfiguration = createMediationInterstitialAdConfiguration(context)
-
-    adapter.loadRtbInterstitialAdWithFailure(
-      mediationAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      AdError(
-        ERROR_SDK_NOT_INITIALIZED,
-        getUninitializedErrorMessage(adFormat = "RTB interstitial"),
-        IRONSOURCE_SDK_ERROR_DOMAIN,
-      ),
-    )
-  }
-
-  @Test
   fun loadRtbInterstitialAd_emptyInstanceId_expectOnFailureCallbackWithAdError() {
     adapter.setIsInitialized(true)
     val mediationAdConfiguration =
@@ -534,21 +519,6 @@ class IronSourceMediationAdapterTest {
 
       it.verify { IronSource.loadISDemandOnlyRewardedVideo(activity, "0") }
     }
-  }
-
-  @Test
-  fun loadRtbRewardedAd_notInitialized_expectOnFailureCallbackWithAdError() {
-    val mediationAdConfiguration = createMediationRewardedAdConfiguration(context)
-
-    adapter.loadRtbRewardedAdWithFailure(
-      mediationAdConfiguration,
-      mockRewardedAdLoadCallback,
-      AdError(
-        ERROR_SDK_NOT_INITIALIZED,
-        getUninitializedErrorMessage(adFormat = "RTB rewarded"),
-        ADAPTER_ERROR_DOMAIN,
-      ),
-    )
   }
 
   @Test

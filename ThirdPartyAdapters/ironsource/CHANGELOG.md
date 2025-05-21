@@ -1,5 +1,10 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next version
+- Updated to not check for IronSource SDK init state when loading RTB ads. Will
+  let IronSource SDK handle the init check. This may fix load failure issues on
+  some apps.
+
 #### Version 8.8.0.0
 - Verified compatibility with ironSource SDK version 8.8.0.
 

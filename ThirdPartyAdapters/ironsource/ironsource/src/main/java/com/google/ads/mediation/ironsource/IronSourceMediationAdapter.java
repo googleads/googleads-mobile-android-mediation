@@ -269,19 +269,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    if (!isInitialized.get()) {
-      AdError adError =
-          new AdError(
-              ERROR_SDK_NOT_INITIALIZED,
-              "Failed to load IronSource RTB rewarded ad since IronSource SDK is not "
-                  + "initialized.",
-              ADAPTER_ERROR_DOMAIN);
-
-      Log.w(TAG, adError.getMessage());
-      callback.onFailure(adError);
-      return;
-    }
-
     IronSourceRtbRewardedAd ironSourceRtbRewardedAd =
         new IronSourceRtbRewardedAd(adConfiguration, callback);
     ironSourceRtbRewardedAd.loadRtbAd();
@@ -331,18 +318,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback) {
-    if (!isInitialized.get()) {
-      AdError loadError =
-          new AdError(
-              ERROR_SDK_NOT_INITIALIZED,
-              "Failed to load IronSource RTB interstitial ad since IronSource SDK is not "
-                  + "initialized.",
-              IRONSOURCE_SDK_ERROR_DOMAIN);
-      Log.w(TAG, loadError.getMessage());
-      mediationAdLoadCallback.onFailure(loadError);
-      return;
-    }
-
     IronSourceRtbInterstitialAd ironSourceRtbInterstitialAd =
         new IronSourceRtbInterstitialAd(
             mediationInterstitialAdConfiguration, mediationAdLoadCallback);
@@ -355,18 +330,6 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
-    if (!isInitialized.get()) {
-      AdError loadError =
-          new AdError(
-              ERROR_SDK_NOT_INITIALIZED,
-              "Failed to load IronSource RTB interstitial ad since IronSource SDK is not "
-                  + "initialized.",
-              IRONSOURCE_SDK_ERROR_DOMAIN);
-      Log.w(TAG, loadError.getMessage());
-      mediationAdLoadCallback.onFailure(loadError);
-      return;
-    }
-
     IronSourceRtbBannerAd ironSourceRtbBannerAd =
         new IronSourceRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
     ironSourceRtbBannerAd.loadRtbAd();
