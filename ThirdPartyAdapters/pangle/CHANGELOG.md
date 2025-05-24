@@ -1,8 +1,14 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Next Version
-- Added adaptive banner style.
-- V71 SDK upgrade removes the CCPA flag. The CCPA flag is replaced by the new PA consent field in the current version
+#### Version 7.1.0.8.0
+- Updated the privacy APIs from the `PangleMediationAdapter` class.
+- Removed `PangleMediationAdapter.setDoNotSell()`. Use `PangleMediationAdapter.setPAConsent()`
+- Added support for adaptive banner ad sizes.
+- Verified compatibility with Pangle SDK version 7.1.0.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.2.0.
+- Pangle SDK version 7.1.0.8.
 
 #### Version 6.5.0.8.0
 - Verified compatibility with Pangle SDK version 6.5.0.8.
