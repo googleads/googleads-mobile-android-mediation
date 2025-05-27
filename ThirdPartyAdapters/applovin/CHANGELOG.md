@@ -1,5 +1,7 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 13.3.0.0 (In progress)
+
 #### Version 13.2.0.1
 - Updated the adapter to set plugin version when initializing Applovin SDK. This fixes an initialization error some publishers were facing on 13.2.0.0.
 
