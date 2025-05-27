@@ -1,5 +1,8 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next version
+- Refactored the error codes into a new DTExchangeErrorCodes.kt file.
+
 #### Version 8.3.7.0
 - Updated adapter to support bidding for banner and interstitial ad formats.
 - Verified compatibility with DT Exchange SDK 8.3.7.

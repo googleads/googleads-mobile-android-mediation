@@ -10,10 +10,6 @@ import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListener
 import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveUnitController
-import com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_WRONG_CONTROLLER_TYPE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -52,7 +48,11 @@ class DTExchangeBannerAd(
   override fun onInneractiveSuccessfulAdRequest(iAdSpot: InneractiveAdSpot?) {
     if (!adSpot.isReady) {
       val adError =
-        AdError(ERROR_AD_NOT_READY, "DT Exchange's banner ad spot is not ready.", ERROR_DOMAIN)
+        AdError(
+          DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+          "DT Exchange's banner ad spot is not ready.",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
       adSpot.destroy()
@@ -62,7 +62,12 @@ class DTExchangeBannerAd(
     val controller = adSpot.selectedUnitController as? InneractiveAdViewUnitController
     if (controller == null) {
       val message = "Unexpected controller type."
-      val adError = AdError(ERROR_WRONG_CONTROLLER_TYPE, message, ERROR_DOMAIN)
+      val adError =
+        AdError(
+          DTExchangeErrorCodes.ERROR_WRONG_CONTROLLER_TYPE,
+          message,
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
       adSpot.destroy()
@@ -77,7 +82,7 @@ class DTExchangeBannerAd(
     adSpot: InneractiveAdSpot?,
     errorCode: InneractiveErrorCode,
   ) {
-    val adError = getAdError(errorCode)
+    val adError = DTExchangeErrorCodes.getAdError(errorCode)
     mediationAdLoadCallback.onFailure(adError)
     adSpot?.destroy()
   }

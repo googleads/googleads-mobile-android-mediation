@@ -391,9 +391,9 @@ class FyberMediationAdapterTest {
 
     val expectedAdError =
       AdError(
-        FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
+        DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
         "App ID is null or empty.",
-        FyberMediationAdapter.ERROR_DOMAIN,
+        DTExchangeErrorCodes.ERROR_DOMAIN,
       )
     verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -424,7 +424,7 @@ class FyberMediationAdapterTest {
       AdError(
         202,
         "DT Exchange failed to initialize with reason: $fyberErrorCodeMessage",
-        FyberMediationAdapter.ERROR_DOMAIN,
+        DTExchangeErrorCodes.ERROR_DOMAIN,
       )
     verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }

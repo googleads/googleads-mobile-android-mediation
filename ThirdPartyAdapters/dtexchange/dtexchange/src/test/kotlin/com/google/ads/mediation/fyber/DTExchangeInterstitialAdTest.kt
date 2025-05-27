@@ -10,8 +10,6 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -58,9 +56,9 @@ class DTExchangeInterstitialAdTest {
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
       val expectedAdError =
         AdError(
-          ERROR_AD_NOT_READY,
+          DTExchangeErrorCodes.ERROR_AD_NOT_READY,
           "DT Exchange's interstitial ad spot is not ready.",
-          ERROR_DOMAIN,
+          DTExchangeErrorCodes.ERROR_DOMAIN,
         )
       dtExchangeInterstitialAd.loadAd()
 
@@ -99,7 +97,7 @@ class DTExchangeInterstitialAdTest {
       AdError(
         307,
         "DT Exchange failed to request ad with reason: Failed Due To load timeout",
-        ERROR_DOMAIN,
+        DTExchangeErrorCodes.ERROR_DOMAIN,
       )
 
     dtExchangeInterstitialAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)

@@ -25,7 +25,6 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentContr
 import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -96,7 +95,7 @@ class FyberRewardedVideoRendererTest {
     val fyberErrorCodeMessage = InneractiveErrorCode.NO_FILL.toString()
     assertThat(capturedError.message)
       .isEqualTo("DT Exchange failed to request ad with reason: $fyberErrorCodeMessage")
-    assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(capturedError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 
   @Test
@@ -126,9 +125,9 @@ class FyberRewardedVideoRendererTest {
 
     verify(mockAdLoadCallback).onFailure(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS)
+    assertThat(capturedError.code).isEqualTo(DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS)
     assertThat(capturedError.message).isEqualTo("Spot ID is null or empty.")
-    assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(capturedError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 
   // endregion
@@ -160,10 +159,10 @@ class FyberRewardedVideoRendererTest {
     verify(mockRewardedAdCallback).onAdFailedToShow(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
     assertThat(capturedError.code)
-      .isEqualTo(FyberMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE)
+      .isEqualTo(DTExchangeErrorCodes.ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE)
     assertThat(capturedError.message)
       .isEqualTo("Cannot show a rewarded ad without an activity context.")
-    assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(capturedError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 
   @Test
@@ -180,9 +179,9 @@ class FyberRewardedVideoRendererTest {
 
       verify(mockRewardedAdCallback).onAdFailedToShow(adErrorCaptor.capture())
       val capturedError = adErrorCaptor.firstValue
-      assertThat(capturedError.code).isEqualTo(FyberMediationAdapter.ERROR_AD_NOT_READY)
+      assertThat(capturedError.code).isEqualTo(DTExchangeErrorCodes.ERROR_AD_NOT_READY)
       assertThat(capturedError.message).isEqualTo("DT Exchange's rewarded spot is not ready.")
-      assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+      assertThat(capturedError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
     }
   }
 

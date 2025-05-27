@@ -10,9 +10,6 @@ import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.fyber.inneractive.sdk.external.InneractiveUnitController
-import com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -65,9 +62,9 @@ class DTExchangeInterstitialAd(
     if (!adSpot.isReady) {
       val adError =
         AdError(
-          ERROR_AD_NOT_READY,
+          DTExchangeErrorCodes.ERROR_AD_NOT_READY,
           "DT Exchange's interstitial ad spot is not ready.",
-          ERROR_DOMAIN,
+          DTExchangeErrorCodes.ERROR_DOMAIN,
         )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
@@ -81,7 +78,7 @@ class DTExchangeInterstitialAd(
     iAdSpot: InneractiveAdSpot?,
     errorCode: InneractiveErrorCode,
   ) {
-    val adError = getAdError(errorCode)
+    val adError = DTExchangeErrorCodes.getAdError(errorCode)
     mediationAdLoadCallback.onFailure(adError)
     iAdSpot?.destroy()
   }

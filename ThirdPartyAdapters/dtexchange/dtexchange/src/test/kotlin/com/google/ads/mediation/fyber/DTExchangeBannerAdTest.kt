@@ -11,9 +11,6 @@ import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_WRONG_CONTROLLER_TYPE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -59,7 +56,11 @@ class DTExchangeBannerAdTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
       val expectedAdError =
-        AdError(ERROR_AD_NOT_READY, "DT Exchange's banner ad spot is not ready.", ERROR_DOMAIN)
+        AdError(
+          DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+          "DT Exchange's banner ad spot is not ready.",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
       dtExchangeBannerAd.loadAd()
 
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
@@ -81,7 +82,11 @@ class DTExchangeBannerAdTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
       val expectedAdError =
-        AdError(ERROR_WRONG_CONTROLLER_TYPE, "Unexpected controller type.", ERROR_DOMAIN)
+        AdError(
+          DTExchangeErrorCodes.ERROR_WRONG_CONTROLLER_TYPE,
+          "Unexpected controller type.",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
       dtExchangeBannerAd.loadAd()
 
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
@@ -122,7 +127,7 @@ class DTExchangeBannerAdTest {
       AdError(
         307,
         "DT Exchange failed to request ad with reason: Failed Due To load timeout",
-        ERROR_DOMAIN,
+        DTExchangeErrorCodes.ERROR_DOMAIN,
       )
 
     dtExchangeBannerAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)

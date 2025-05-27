@@ -14,11 +14,6 @@
 
 package com.google.ads.mediation.fyber;
 
-import static com.google.ads.mediation.fyber.FyberAdapterUtils.getAdError;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_AD_NOT_READY;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.fyber.FyberMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.fyber.FyberMediationAdapter.TAG;
 
 import android.app.Activity;
@@ -41,41 +36,36 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
-/**
- * Class for rendering a DT Exchange rewarded video.
- */
-public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestListener,
-    InneractiveFullscreenAdEventsListener, InneractiveFullScreenAdRewardedListener {
+/** Class for rendering a DT Exchange rewarded video. */
+public class FyberRewardedVideoRenderer
+    implements MediationRewardedAd,
+        RequestListener,
+        InneractiveFullscreenAdEventsListener,
+        InneractiveFullScreenAdRewardedListener {
 
-  /**
-   * AdMob's Rewarded ad configuration object.
-   */
+  /** AdMob's Rewarded ad configuration object. */
   private final MediationRewardedAdConfiguration adConfiguration;
 
-  /**
-   * AdMob's callback object.
-   */
+  /** AdMob's callback object. */
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
 
-  /**
-   * AbMob's rewarded ad callback. as returned from {@link MediationAdLoadCallback#onSuccess}.
-   */
+  /** AbMob's rewarded ad callback. as returned from {@link MediationAdLoadCallback#onSuccess}. */
   private MediationRewardedAdCallback rewardedAdCallback;
 
-  /**
-   * The Spot object for the rewarded ad.
-   */
+  /** The Spot object for the rewarded ad. */
   private InneractiveAdSpot rewardedSpot;
+
   private InneractiveFullscreenUnitController unitController;
 
   /**
    * Constructor.
    *
    * @param adConfiguration AdMob interstitial ad configuration.
-   * @param adLoadCallback  AdMob load callback.
+   * @param adLoadCallback AdMob load callback.
    */
-  FyberRewardedVideoRenderer(MediationRewardedAdConfiguration adConfiguration,
+  FyberRewardedVideoRenderer(
+      MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
     this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
@@ -84,11 +74,14 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   /** Requests waterfall interstitial ad from DTExchange SDK */
   void loadWaterfallAd() {
     // Check that we got a valid Spot ID from the server.
-    String spotId = adConfiguration.getServerParameters()
-        .getString(FyberMediationAdapter.KEY_SPOT_ID);
+    String spotId =
+        adConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
     if (TextUtils.isEmpty(spotId)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Spot ID is null or empty.",
-          ERROR_DOMAIN);
+      AdError error =
+          new AdError(
+              DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
+              "Spot ID is null or empty.",
+              DTExchangeErrorCodes.ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       adLoadCallback.onFailure(error);
       return;
@@ -118,9 +111,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
     FyberAdapterUtils.updateFyberExtraParams(adConfiguration.getMediationExtras());
   }
 
-  /**
-   * Creates a listener for DT Exchange's fullscreen placement events.
-   */
+  /** Creates a listener for DT Exchange's fullscreen placement events. */
   private void registerFyberAdListeners() {
     unitController.setEventsListener(FyberRewardedVideoRenderer.this);
     // Official rewarded interface for both Video and display ads (Since Marketplace 7.6.0)
@@ -136,9 +127,11 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   public void showAd(@NonNull Context context) {
     // We need an activity context to show rewarded ads.
     if (!(context instanceof Activity)) {
-      AdError error = new AdError(ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
-          "Cannot show a rewarded ad without an activity context.",
-          ERROR_DOMAIN);
+      AdError error =
+          new AdError(
+              DTExchangeErrorCodes.ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE,
+              "Cannot show a rewarded ad without an activity context.",
+              DTExchangeErrorCodes.ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdFailedToShow(error);
@@ -149,8 +142,11 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
     if (rewardedSpot != null && unitController != null && rewardedSpot.isReady()) {
       unitController.show((Activity) context);
     } else if (rewardedAdCallback != null) {
-      AdError error = new AdError(ERROR_AD_NOT_READY, "DT Exchange's rewarded spot is not ready.",
-          ERROR_DOMAIN);
+      AdError error =
+          new AdError(
+              DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+              "DT Exchange's rewarded spot is not ready.",
+              DTExchangeErrorCodes.ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       rewardedAdCallback.onAdFailedToShow(error);
     }
@@ -165,8 +161,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   private boolean isVideoAdAvailable(InneractiveFullscreenUnitController controller) {
     return controller != null
         && controller.getSelectedContentController() != null
-        && controller.getSelectedContentController() instanceof
-        InneractiveFullscreenVideoContentController;
+        && controller.getSelectedContentController()
+            instanceof InneractiveFullscreenVideoContentController;
   }
 
   // region Fyber's RequestListener implementation
@@ -178,12 +174,13 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   }
 
   @Override
-  public void onInneractiveFailedAdRequest(@NonNull InneractiveAdSpot adSpot,
-      @NonNull InneractiveErrorCode errorCode) {
-    AdError error = getAdError(errorCode);
+  public void onInneractiveFailedAdRequest(
+      @NonNull InneractiveAdSpot adSpot, @NonNull InneractiveErrorCode errorCode) {
+    AdError error = DTExchangeErrorCodes.getAdError(errorCode);
     Log.w(TAG, error.getMessage());
     adLoadCallback.onFailure(error);
   }
+
   // endregion
 
   // region Fyber's InneractiveFullscreenAdEventsListener implementation
@@ -215,8 +212,8 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   }
 
   @Override
-  public void onAdEnteredErrorState(@NonNull InneractiveAdSpot inneractiveAdSpot,
-      @NonNull AdDisplayError adDisplayError) {
+  public void onAdEnteredErrorState(
+      @NonNull InneractiveAdSpot inneractiveAdSpot, @NonNull AdDisplayError adDisplayError) {
     // No relevant events to be forwarded to the GMA SDK.
   }
 
@@ -224,6 +221,7 @@ public class FyberRewardedVideoRenderer implements MediationRewardedAd, RequestL
   public void onAdWillCloseInternalBrowser(@NonNull InneractiveAdSpot inneractiveAdSpot) {
     // No relevant events to be forwarded to the GMA SDK.
   }
+
   // endregion
 
   // region Fyber's InneractiveFullScreenAdRewardedListener implementation
