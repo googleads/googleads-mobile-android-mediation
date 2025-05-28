@@ -24,6 +24,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -41,6 +42,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -190,13 +192,41 @@ public class UnityMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
-    UnityAds.getToken(
-        token -> {
-          if (token == null) {
-            token = "";
-          }
-          signalCallbacks.onSuccess(token);
-        });
+    com.unity3d.ads.AdFormat unityAdFormat = null;
+    List<MediationConfiguration> mediationConfigurations = rtbSignalData.getConfigurations();
+    if (!mediationConfigurations.isEmpty()) {
+      AdFormat adFormat = mediationConfigurations.get(0).getFormat();
+      if (adFormat == AdFormat.BANNER) {
+        unityAdFormat = com.unity3d.ads.AdFormat.BANNER;
+      } else if (adFormat == AdFormat.REWARDED || adFormat == AdFormat.REWARDED_INTERSTITIAL) {
+        unityAdFormat = com.unity3d.ads.AdFormat.REWARDED;
+      } else if (adFormat == AdFormat.INTERSTITIAL) {
+        unityAdFormat = com.unity3d.ads.AdFormat.INTERSTITIAL;
+      } else {
+        Log.w(TAG, "Unsupported ad format for Unity Ads: " + adFormat);
+      }
+    }
+
+    if (unityAdFormat != null) {
+      TokenConfiguration tokenConfiguration = new TokenConfiguration(unityAdFormat);
+      UnityAds.getToken(
+              tokenConfiguration,
+              token -> {
+                if (token == null) {
+                  token = "";
+                }
+                signalCallbacks.onSuccess(token);
+              });
+    } else {
+      UnityAds.getToken(
+              token -> {
+                if (token == null) {
+                  token = "";
+                }
+                signalCallbacks.onSuccess(token);
+              });
+    }
+
   }
 
   @VisibleForTesting
