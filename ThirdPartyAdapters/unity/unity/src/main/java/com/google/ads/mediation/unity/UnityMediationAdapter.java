@@ -22,9 +22,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
@@ -44,7 +46,9 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
@@ -156,6 +160,9 @@ public class UnityMediationAdapter extends RtbAdapter {
   static final String KEY_PLACEMENT_ID = "zoneId";
 
   static final String KEY_WATERMARK = "watermark";
+
+  private final UnityAdsWrapper unityAdsWrapper;
+
   private final UnityInitializer unityInitializer;
 
   private final UnityBannerViewFactory unityBannerViewFactory;
@@ -184,6 +191,7 @@ public class UnityMediationAdapter extends RtbAdapter {
 
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
+    unityAdsWrapper = new UnityAdsWrapper();
     unityBannerViewFactory = new UnityBannerViewFactory();
     this.unityAdsLoader = new UnityAdsLoader();
   }
@@ -191,10 +199,13 @@ public class UnityMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    AdFormat adFormat = getAdFormat(rtbSignalData);
+    com.unity3d.ads.AdFormat unityAdFormat = null;
+
     // For banner ad format, Unity Ads SDK requires an activity context to load the banner ad. So,
     // fail here so that Unity bidder will not bid if the ad request was made with a non-activity
     // context.
-    if (getAdFormat(rtbSignalData) == AdFormat.BANNER
+    if (adFormat == AdFormat.BANNER
         && !(rtbSignalData.getContext() instanceof Activity)) {
       signalCallbacks.onFailure(
           new AdError(
@@ -204,21 +215,45 @@ public class UnityMediationAdapter extends RtbAdapter {
       return;
     }
 
-    UnityAds.getToken(
-        token -> {
-          if (token == null) {
-            token = "";
-          }
-          signalCallbacks.onSuccess(token);
-        });
+    if (adFormat == AdFormat.BANNER) {
+        unityAdFormat = com.unity3d.ads.AdFormat.BANNER;
+    } else if (adFormat == AdFormat.REWARDED || adFormat == AdFormat.REWARDED_INTERSTITIAL) {
+        unityAdFormat = com.unity3d.ads.AdFormat.REWARDED;
+    } else if (adFormat == AdFormat.INTERSTITIAL) {
+        unityAdFormat = com.unity3d.ads.AdFormat.INTERSTITIAL;
+    } else {
+        Log.w(TAG, "Unsupported ad format for Unity Ads: " + adFormat);
+    }
+
+    if (unityAdFormat != null) {
+      TokenConfiguration tokenConfiguration = new TokenConfiguration(unityAdFormat);
+      unityAdsWrapper.getToken(
+              tokenConfiguration,
+              token -> {
+                  if (token == null) {
+                      token = "";
+                  }
+                  signalCallbacks.onSuccess(token);
+              });
+    } else {
+      unityAdsWrapper.getToken(
+              token -> {
+                if (token == null) {
+                  token = "";
+                }
+                signalCallbacks.onSuccess(token);
+              });
+    }
   }
 
   @VisibleForTesting
   UnityMediationAdapter(
       UnityInitializer unityInitializer,
+      UnityAdsWrapper unityAdsWrapper,
       UnityBannerViewFactory unityBannerViewFactory,
       UnityAdsLoader unityAdsLoader) {
     this.unityInitializer = unityInitializer;
+    this.unityAdsWrapper = unityAdsWrapper;
     this.unityBannerViewFactory = unityBannerViewFactory;
     this.unityAdsLoader = unityAdsLoader;
   }
