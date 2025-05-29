@@ -2,6 +2,7 @@
 
 #### Version 8.4.0.0 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues.
+- Added watermark on bidding ads.
 
 #### Version 8.3.8.0
 - Refactored the error codes into a new DTExchangeErrorCodes.kt file.
