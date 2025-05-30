@@ -21,10 +21,13 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
 import com.unity3d.ads.metadata.MetaData;
@@ -254,5 +257,14 @@ public class UnityAdsAdapterUtils {
    */
   public static boolean areValidIds(String gameId, String placementId) {
     return !TextUtils.isEmpty(gameId) && !TextUtils.isEmpty(placementId);
+  }
+
+  /** Gets the ad format from RtbSignalData. */
+  @Nullable
+  static AdFormat getAdFormat(RtbSignalData rtbSignalData) {
+    for (MediationConfiguration mediationConfiguration : rtbSignalData.getConfigurations()) {
+      return mediationConfiguration.getFormat();
+    }
+    return null;
   }
 }

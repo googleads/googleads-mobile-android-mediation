@@ -15,7 +15,9 @@
 package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getAdFormat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -24,6 +26,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -103,9 +106,7 @@ public class UnityMediationAdapter extends RtbAdapter {
    */
   static final int ERROR_NULL_CONTEXT = 104;
 
-  /**
-   * Tried to show an ad with a non-Activity context.
-   */
+  /** Tried to load or show an ad with a non-Activity context. */
   static final int ERROR_CONTEXT_NOT_ACTIVITY = 105;
 
   /**
@@ -190,6 +191,19 @@ public class UnityMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
+    // For banner ad format, Unity Ads SDK requires an activity context to load the banner ad. So,
+    // fail here so that Unity bidder will not bid if the ad request was made with a non-activity
+    // context.
+    if (getAdFormat(rtbSignalData) == AdFormat.BANNER
+        && !(rtbSignalData.getContext() instanceof Activity)) {
+      signalCallbacks.onFailure(
+          new AdError(
+              ERROR_CONTEXT_NOT_ACTIVITY,
+              "Unity Ads RTB Banner ads require activity context",
+              ADAPTER_ERROR_DOMAIN));
+      return;
+    }
+
     UnityAds.getToken(
         token -> {
           if (token == null) {

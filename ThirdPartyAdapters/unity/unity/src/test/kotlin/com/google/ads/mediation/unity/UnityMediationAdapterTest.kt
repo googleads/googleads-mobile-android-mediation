@@ -36,6 +36,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError
@@ -55,6 +57,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.notNull
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
@@ -72,6 +75,8 @@ class UnityMediationAdapterTest {
   private lateinit var mediationRewardedAdConfiguration: MediationRewardedAdConfiguration
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
+  private val nonActivityContext: Context = ApplicationProvider.getApplicationContext()
+
   private val initializationCompleteCallback: InitializationCompleteCallback = mock()
   private val mediationBannerAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
@@ -88,6 +93,7 @@ class UnityMediationAdapterTest {
   private val mediationMetadata: MediationMetaData = mock()
   private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
   private val unityBannerViewFactory: UnityBannerViewFactory = mock()
+  private val signalCallbacks: SignalCallbacks = mock()
 
   @Before
   fun setUp() {
@@ -198,6 +204,26 @@ class UnityMediationAdapterTest {
       verify(mediationMetadata).commit()
       verify(unityAdsWrapper).initialize(any(), any(), any())
     }
+  }
+
+  @Test
+  fun collectSignals_forBannerFormatAndNonActivityContext_fails() {
+    val rtbSignalData =
+      RtbSignalData(
+        nonActivityContext,
+        listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
+        /* networkExtras= */ bundleOf(),
+        AdSize.BANNER,
+      )
+
+    unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
+    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    verifyNoMoreInteractions(signalCallbacks)
   }
 
   @Test
