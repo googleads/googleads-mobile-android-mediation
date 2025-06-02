@@ -1,6 +1,6 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 4.15.0.0 (In progress)
 - Updated to fail signal collection for RTB banner ads if the context is not an
   activity (since Unity Ads SDK requires activity context to load RTB banner
   ads). This fix will increase ad load success rate for publishers.
