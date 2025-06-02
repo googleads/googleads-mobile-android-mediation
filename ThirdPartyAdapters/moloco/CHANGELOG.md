@@ -1,5 +1,7 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Version 3.10.0.0 (In progress)
+
 #### Version 3.9.0.0
 - Verified compatibility with Moloco SDK 3.9.0.
 
