@@ -1,3 +1,5 @@
 include ':liftoffmonetize'
 include 'adaptertestkit'
 project(":adaptertestkit").projectDir = file("../adaptertestkit")
+include ':common'
+project(":common").projectDir = file("../common")

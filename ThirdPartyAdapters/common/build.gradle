@@ -1,0 +1,28 @@
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.android'
+}
+
+android {
+  namespace 'com.google.ads.mediation.common'
+  compileSdk 34
+
+  defaultConfig {
+    minSdk 23
+    multiDexEnabled true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
+
+  kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
+  }
+
+}
+
+dependencies {
+  implementation 'com.google.android.gms:play-services-ads:24.0.0'
+}

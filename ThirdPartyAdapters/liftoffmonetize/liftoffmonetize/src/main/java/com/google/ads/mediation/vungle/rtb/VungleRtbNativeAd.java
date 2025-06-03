@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.vungle.rtb;
 
+import static com.google.ads.mediation.common.NativeAdHelper.runtimeGmaSdkListensToAdapterReportedImpressions;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
@@ -50,6 +51,12 @@ import com.vungle.ads.internal.ui.view.MediaView;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Loads Liftoff's native ad and maps Liftoff's native ad assets to Google SDK's native ad assets.
+ *
+ * <p>Note: Though this class is named "Rtb", it is used for loading both waterfall and RTB native
+ * ads. TODO: Fix the name of this class.
+ */
 public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAdListener {
 
   private final MediationNativeAdConfiguration adConfiguration;
@@ -267,7 +274,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
 
-    if (TextUtils.isEmpty(adMarkup)) {
+    if (runtimeGmaSdkListensToAdapterReportedImpressions()) {
       setOverrideImpressionRecording(true);
     }
     setOverrideClickHandling(true);

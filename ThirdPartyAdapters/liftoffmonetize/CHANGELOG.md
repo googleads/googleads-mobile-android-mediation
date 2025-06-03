@@ -1,5 +1,9 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next version
+- Sets overrideImpressionRecording to true for both waterfall and RTB native
+  ads.
+
 #### Version 7.5.0.0
 - Verified compatibility with Vungle SDK 7.5.0.
 

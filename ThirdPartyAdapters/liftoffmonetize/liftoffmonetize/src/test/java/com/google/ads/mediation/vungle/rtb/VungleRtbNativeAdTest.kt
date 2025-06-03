@@ -19,6 +19,8 @@ import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
 import com.google.ads.mediation.vungle.VungleMediationAdapter
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
@@ -118,7 +120,7 @@ class VungleRtbNativeAdTest {
   }
 
   @Test
-  fun onAdLoaded_ifBidResponseIsEmpty_setsOverrideImpressionRecordingAsTrue() {
+  fun onAdLoaded_ifRuntimeGmaSdkDoesNotListenToAdapterReportedImpressions_doesNotSetOverrideImpressionRecordingAsTrue() {
     adapterRtbNativeAd =
       VungleRtbNativeAd(
         createMediationNativeAdConfiguration(
@@ -134,7 +136,37 @@ class VungleRtbNativeAdTest {
       adapterRtbNativeAd.render()
     }
 
-    adapterRtbNativeAd.onAdLoaded(vungleNativeAd)
+    Mockito.mockStatic(MobileAds::class.java).use {
+      // Return a version of GMA SDK that doesn't listen to adapter-reported impressions.
+      whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 3, 0)
+      adapterRtbNativeAd.onAdLoaded(vungleNativeAd)
+    }
+
+    assertThat(adapterRtbNativeAd.overrideImpressionRecording).isFalse()
+  }
+
+  @Test
+  fun onAdLoaded_ifRuntimeGmaSdkListensToAdapterReportedImpressions_setsOverrideImpressionRecordingAsTrue() {
+    adapterRtbNativeAd =
+      VungleRtbNativeAd(
+        createMediationNativeAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        ),
+        nativeAdLoadCallback,
+        vungleFactory,
+      )
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render()
+    }
+
+    Mockito.mockStatic(MobileAds::class.java).use {
+      // Return a version of GMA SDK that listens to adapter-reported impressions.
+      whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 4, 0)
+      adapterRtbNativeAd.onAdLoaded(vungleNativeAd)
+    }
 
     assertThat(adapterRtbNativeAd.overrideImpressionRecording).isTrue()
   }
