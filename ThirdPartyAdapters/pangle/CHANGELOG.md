@@ -1,6 +1,11 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 7.2.0.3.0 (In progress)
+#### Version 7.2.0.3.0
+- Verified compatibility with Pangle SDK version 7.2.0.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.3.0.
+- Pangle SDK version 7.2.0.3.
 
 #### Version 7.1.0.8.0
 - Updated the privacy APIs from the `PangleMediationAdapter` class.
