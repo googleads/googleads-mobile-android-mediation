@@ -42,8 +42,8 @@ public abstract class AppLovinRewardedRenderer
 
   @VisibleForTesting
   protected static final String ERROR_MSG_MULTIPLE_REWARDED_AD =
-      "Cannot load multiple rewarded ads with the same Zone ID. Display one ad before attempting to"
-          + " load another.";
+      "Cannot load multiple rewarded ads with the same Zone ID. Let the first ad finish loading"
+          + " before attempting to load another.";
 
   @VisibleForTesting protected static final String ERROR_MSG_AD_NOT_READY = "Ad not ready to show.";
 

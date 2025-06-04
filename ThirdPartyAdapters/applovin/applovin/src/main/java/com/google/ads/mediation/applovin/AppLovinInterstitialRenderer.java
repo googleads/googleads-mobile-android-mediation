@@ -46,8 +46,8 @@ public abstract class AppLovinInterstitialRenderer
 
   @VisibleForTesting
   public static final String ERROR_MSG_MULTIPLE_INTERSTITIAL_AD =
-      " Cannot load multiple interstitial ads with the same Zone ID. Display one ad before"
-          + " attempting to load another. ";
+      " Cannot load multiple interstitial ads with the same Zone ID. Let the first ad finish"
+          + " loading before attempting to load another. ";
 
   protected final MediationInterstitialAdConfiguration interstitialAdConfiguration;
 
