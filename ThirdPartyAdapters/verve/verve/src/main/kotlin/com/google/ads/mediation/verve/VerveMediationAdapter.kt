@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.verve
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -97,8 +98,37 @@ class VerveMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    val appTokens =
+      mediationConfigurations.mapNotNull {
+        val sourceId = it.serverParameters.getString(APP_TOKEN_KEY)
+        if (sourceId.isNullOrEmpty()) {
+          null
+        } else {
+          sourceId
+        }
+      }
+    if (appTokens.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      return
+    }
+
+    val appTokenForInit = appTokens[0]
+    if (appTokenForInit.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      return
+    }
+    if (appTokens.size > 1) {
+      val message =
+        "Multiple $APP_TOKEN_KEY entries found: ${appTokens}. Using '${appTokenForInit}' to initialize the BidMachine SDK"
+      Log.w(TAG, message)
+    }
+    HyBid.initialize(appTokenForInit, context.applicationContext as Application) { success ->
+      if (success) {
+        initializationCompleteCallback.onInitializationSucceeded()
+      } else {
+        initializationCompleteCallback.onInitializationFailed(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK)
+      }
+    }
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
@@ -159,7 +189,11 @@ class VerveMediationAdapter : RtbAdapter() {
   companion object {
     private val TAG = VerveMediationAdapter::class.simpleName
     @VisibleForTesting var adapterVersionDelegate: String? = null
+    const val APP_TOKEN_KEY = "AppToken"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "net.pubnative.lite.sdk"
+    const val ERROR_MSG_MISSING_APP_TOKEN = "AppToken is missing or empty"
+    const val ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK =
+      "There was an internal error during the initialization of HyBid SDK."
   }
 }
