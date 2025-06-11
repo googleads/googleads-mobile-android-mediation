@@ -132,8 +132,8 @@ class VerveMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    val signals = HyBid.getCustomRequestSignalData(signalData.context, "Admob")
+    callback.onSuccess(signals)
   }
 
   override fun loadRtbBannerAd(

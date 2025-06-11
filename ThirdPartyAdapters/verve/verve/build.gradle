@@ -30,6 +30,7 @@ android {
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     compileOptions {

@@ -18,6 +18,7 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
@@ -26,6 +27,8 @@ import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import net.pubnative.lite.sdk.HyBid
 import org.junit.Before
 import org.junit.Test
@@ -149,6 +152,28 @@ class VerveMediationAdapterTest {
       listenerCaptor.firstValue.onInitialisationFinished(/* success= */ false)
       verify(mockInitializationCallback)
         .onInitializationFailed(eq(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK))
+    }
+  }
+
+  // endregion
+
+  // region Signal collection tests
+  @Test
+  fun collectSignals_invokesOnSuccess() {
+    mockStatic(HyBid::class.java).use {
+      whenever(HyBid.getCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
+      val signalData =
+        RtbSignalData(
+          context,
+          /* configurations = */ listOf<MediationConfiguration>(),
+          /* networkExtras = */ bundleOf(),
+          /* adSize = */ null,
+        )
+      val mockSignalCallbacks = mock<SignalCallbacks>()
+
+      adapter.collectSignals(signalData, mockSignalCallbacks)
+
+      verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
     }
   }
 
