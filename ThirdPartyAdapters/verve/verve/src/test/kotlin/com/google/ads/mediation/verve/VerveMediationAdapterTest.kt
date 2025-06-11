@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,11 +21,21 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
+import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_UNSUPPORTED_AD_SIZE
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_MISSING_APP_TOKEN
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_UNSUPPORTED_AD_SIZE
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
@@ -175,6 +185,24 @@ class VerveMediationAdapterTest {
 
       verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
     }
+  }
+
+  // endregion
+
+  // region Banner tests
+  @Test
+  fun loadRtbBannerAd_withUnsupportedAdSize_invokesOnFailure() {
+    val bannerAdConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.FLUID)
+    val mockBannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbBannerAdWithFailure(
+      bannerAdConfiguration,
+      mockBannerAdLoadCallback,
+      expectedAdError,
+    )
   }
 
   // endregion

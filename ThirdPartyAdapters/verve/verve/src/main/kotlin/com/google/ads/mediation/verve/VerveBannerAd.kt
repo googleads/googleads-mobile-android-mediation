@@ -16,34 +16,76 @@ package com.google.ads.mediation.verve
 
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_UNSUPPORTED_AD_SIZE
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_UNSUPPORTED_AD_SIZE
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import net.pubnative.lite.sdk.views.HyBidAdView
+import net.pubnative.lite.sdk.views.HyBidBannerAdView
+import net.pubnative.lite.sdk.views.HyBidLeaderboardAdView
+import net.pubnative.lite.sdk.views.HyBidMRectAdView
+import net.pubnative.lite.sdk.views.PNAdView
 
 /**
  * Used to load Verve banner ads and mediate callbacks between Google Mobile Ads SDK and Verve SDK.
  */
 class VerveBannerAd
-private constructor(
+@VisibleForTesting
+internal constructor(
   private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  private val bidResponse: String,
+  private val adView: HyBidAdView,
   private val adSize: AdSize,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationBannerAd {
-  // TODO: Replace with 3p View. Ideally avoid lateinit and initialize in constructor.
-  private lateinit var adView: View
+) : MediationBannerAd, PNAdView.Listener {
+  private var bannerAdCallback: MediationBannerAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adViewLayoutParams =
+      ViewGroup.LayoutParams(adSize.getWidthInPixels(context), adSize.getHeightInPixels(context))
+    adView.layoutParams = adViewLayoutParams
+
+    adView.renderAd(bidResponse, this)
   }
 
-  override fun getView(): View {
-    // TODO: Implement this method.
-    return adView
+  override fun onAdLoaded() {
+    bannerAdCallback = mediationAdLoadCallback.onSuccess(this)
   }
+
+  override fun onAdLoadFailed(error: Throwable?) {
+    val errorMessage = if (error == null) "null" else error.message.toString()
+    val adError =
+      AdError(
+        ERROR_CODE_AD_LOAD_FAILED_TO_LOAD,
+        "Could not load banner ad. Error: $errorMessage",
+        SDK_ERROR_DOMAIN,
+      )
+    mediationAdLoadCallback.onFailure(adError)
+  }
+
+  override fun onAdImpression() {
+    bannerAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClick() {
+    bannerAdCallback?.apply {
+      reportAdClicked()
+      onAdOpened()
+      onAdLeftApplication()
+    }
+  }
+
+  override fun getView(): View = adView
 
   companion object {
     fun newInstance(
@@ -51,12 +93,29 @@ private constructor(
       mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
     ): Result<VerveBannerAd> {
       val context = mediationBannerAdConfiguration.context
-      val serverParameters = mediationBannerAdConfiguration.serverParameters
       val adSize = mediationBannerAdConfiguration.adSize
 
-      // TODO: Implement necessary initialization steps.
+      val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val verveBannerView =
+        when (adSize) {
+          AdSize.BANNER -> HyBidBannerAdView(context)
+          AdSize.MEDIUM_RECTANGLE -> HyBidMRectAdView(context)
+          AdSize.LEADERBOARD -> HyBidLeaderboardAdView(context)
+          else -> {
+            val adError =
+              AdError(
+                ERROR_CODE_UNSUPPORTED_AD_SIZE,
+                ERROR_MSG_UNSUPPORTED_AD_SIZE,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.message))
+          }
+        }
 
-      return Result.success(VerveBannerAd(context, mediationAdLoadCallback, adSize))
+      return Result.success(
+        VerveBannerAd(context, mediationAdLoadCallback, bidResponse, verveBannerView, adSize)
+      )
     }
   }
 }

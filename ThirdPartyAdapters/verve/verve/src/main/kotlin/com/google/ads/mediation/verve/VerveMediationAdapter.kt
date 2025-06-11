@@ -192,6 +192,9 @@ class VerveMediationAdapter : RtbAdapter() {
     const val APP_TOKEN_KEY = "AppToken"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
     const val SDK_ERROR_DOMAIN = "net.pubnative.lite.sdk"
+    const val ERROR_CODE_UNSUPPORTED_AD_SIZE = 101
+    const val ERROR_MSG_UNSUPPORTED_AD_SIZE = "HyBid: Unsupported Ad Size requested"
+    const val ERROR_CODE_AD_LOAD_FAILED_TO_LOAD = 102
     const val ERROR_MSG_MISSING_APP_TOKEN = "AppToken is missing or empty"
     const val ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK =
       "There was an internal error during the initialization of HyBid SDK."
