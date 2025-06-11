@@ -88,6 +88,15 @@ internal constructor(
   override fun getView(): View = adView
 
   companion object {
+    internal fun mapAdSize(adSize: AdSize, context: Context): HyBidAdView? {
+      return when (adSize) {
+        AdSize.BANNER -> HyBidBannerAdView(context)
+        AdSize.MEDIUM_RECTANGLE -> HyBidMRectAdView(context)
+        AdSize.LEADERBOARD -> HyBidLeaderboardAdView(context)
+        else -> null
+      }
+    }
+
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
       mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
@@ -96,22 +105,17 @@ internal constructor(
       val adSize = mediationBannerAdConfiguration.adSize
 
       val bidResponse = mediationBannerAdConfiguration.bidResponse
-      val verveBannerView =
-        when (adSize) {
-          AdSize.BANNER -> HyBidBannerAdView(context)
-          AdSize.MEDIUM_RECTANGLE -> HyBidMRectAdView(context)
-          AdSize.LEADERBOARD -> HyBidLeaderboardAdView(context)
-          else -> {
-            val adError =
-              AdError(
-                ERROR_CODE_UNSUPPORTED_AD_SIZE,
-                ERROR_MSG_UNSUPPORTED_AD_SIZE,
-                ADAPTER_ERROR_DOMAIN,
-              )
-            mediationAdLoadCallback.onFailure(adError)
-            return Result.failure(NoSuchElementException(adError.message))
-          }
-        }
+      val verveBannerView = mapAdSize(adSize, context)
+      if (verveBannerView == null) {
+        val adError =
+          AdError(
+            ERROR_CODE_UNSUPPORTED_AD_SIZE,
+            ERROR_MSG_UNSUPPORTED_AD_SIZE,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(adError)
+        return Result.failure(NoSuchElementException(adError.message))
+      }
 
       return Result.success(
         VerveBannerAd(context, mediationAdLoadCallback, bidResponse, verveBannerView, adSize)

@@ -18,6 +18,11 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -98,6 +103,15 @@ class VerveMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
+    val requestConfiguration: RequestConfiguration = MobileAds.getRequestConfiguration()
+    val isChildUser =
+      (requestConfiguration.tagForChildDirectedTreatment ==
+        TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) ||
+        requestConfiguration.tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    if (isChildUser) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER)
+      return
+    }
     val appTokens =
       mediationConfigurations.mapNotNull {
         val sourceId = it.serverParameters.getString(APP_TOKEN_KEY)
@@ -122,6 +136,7 @@ class VerveMediationAdapter : RtbAdapter() {
         "Multiple $APP_TOKEN_KEY entries found: ${appTokens}. Using '${appTokenForInit}' to initialize the BidMachine SDK"
       Log.w(TAG, message)
     }
+    HyBid.setTestMode(VerveExtras.isTestMode)
     HyBid.initialize(appTokenForInit, context.applicationContext as Application) { success ->
       if (success) {
         initializationCompleteCallback.onInitializationSucceeded()
@@ -132,6 +147,13 @@ class VerveMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
+    val adSize = signalData.adSize
+    if (adSize != null && VerveBannerAd.mapAdSize(adSize, signalData.context) == null) {
+      val adError =
+        AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
+      callback.onFailure(adError)
+      return
+    }
     val signals = HyBid.getCustomRequestSignalData(signalData.context, "Admob")
     callback.onSuccess(signals)
   }
@@ -200,5 +222,7 @@ class VerveMediationAdapter : RtbAdapter() {
     const val ERROR_MSG_FULLSCREEN_AD_IS_NULL = "Attempted to show a null fullscreen ad"
     const val ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK =
       "There was an internal error during the initialization of HyBid SDK."
+    const val ERROR_MSG_CHILD_USER =
+      "MobileAds.getRequestConfiguration() indicates the user is a child. Verve will be dropped"
   }
 }
