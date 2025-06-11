@@ -16,6 +16,7 @@ package com.google.ads.mediation.verve
 
 import android.content.Context
 import net.pubnative.lite.sdk.interstitial.HyBidInterstitialAd
+import net.pubnative.lite.sdk.rewarded.HyBidRewardedAd
 
 /**
  * Wrapper singleton to enable mocking of HyBid different ad formats for unit testing.
@@ -34,6 +35,14 @@ object VerveSdkFactory {
         // Using this constructor since older ones require an Activity, which shouldn't be used
         // when loading an Interstitial. During SDK bidding, zoneId should be irrelevant.
         HyBidInterstitialAd(context, /* zoneId= */ "", listener)
+
+      override fun createHyBidRewardedAd(
+        context: Context,
+        listener: HyBidRewardedAd.Listener,
+      ): HyBidRewardedAd =
+        // Using this constructor since older ones require an Activity, which shouldn't be used
+        // when loading an Interstitial. During SDK bidding, zoneId should be irrelevant.
+        HyBidRewardedAd(context, /* zoneId= */ "", listener)
     }
 }
 
@@ -43,4 +52,6 @@ interface SdkFactory {
     context: Context,
     listener: HyBidInterstitialAd.Listener,
   ): HyBidInterstitialAd
+
+  fun createHyBidRewardedAd(context: Context, listener: HyBidRewardedAd.Listener): HyBidRewardedAd
 }

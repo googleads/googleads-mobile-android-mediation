@@ -48,7 +48,7 @@ class VerveMediationAdapter : RtbAdapter() {
   private lateinit var bannerAd: VerveBannerAd
   private lateinit var interstitialAd: VerveInterstitialAd
   private lateinit var rewardedAd: VerveRewardedAd
-  private lateinit var rewardedInterstitialAd: VerveRewardedInterstitialAd
+  private lateinit var rewardedInterstitialAd: VerveRewardedAd
   private lateinit var nativeAd: VerveNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
@@ -170,7 +170,7 @@ class VerveMediationAdapter : RtbAdapter() {
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    VerveRewardedInterstitialAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    VerveRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
       rewardedInterstitialAd.loadAd()
     }
