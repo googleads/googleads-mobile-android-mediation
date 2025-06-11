@@ -15,6 +15,8 @@
 package com.google.ads.mediation.verve
 
 import android.content.Context
+import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -34,6 +36,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import net.pubnative.lite.sdk.HyBid
 
 /**
  * Verve Adapter for GMA SDK used to initialize and load ads from the Verve SDK. This class should
@@ -48,12 +51,44 @@ class VerveMediationAdapter : RtbAdapter() {
   private lateinit var nativeAd: VerveNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val sdkVersion = HyBid.getHyBidVersion()
+    val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+    if (splits.size >= 3) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+        sdkVersion,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
-  override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+  override fun getVersionInfo(): VersionInfo =
+    adapterVersionDelegate?.let { getVersionInfo(it) }
+      ?: getVersionInfo(BuildConfig.ADAPTER_VERSION)
+
+  private fun getVersionInfo(versionString: String): VersionInfo {
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 4) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt() * 100 + splits[3].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
+        versionString,
+      )
+    Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
   }
 
@@ -105,9 +140,9 @@ class VerveMediationAdapter : RtbAdapter() {
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    VerveRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
-      rewardedAd = it
-      rewardedAd.loadAd()
+    VerveRewardedInterstitialAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+      rewardedInterstitialAd = it
+      rewardedInterstitialAd.loadAd()
     }
   }
 
@@ -123,6 +158,7 @@ class VerveMediationAdapter : RtbAdapter() {
 
   companion object {
     private val TAG = VerveMediationAdapter::class.simpleName
+    @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
     const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
   }

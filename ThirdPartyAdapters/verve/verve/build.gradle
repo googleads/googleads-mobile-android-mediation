@@ -12,11 +12,11 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Verve"
     // String property to store version name.
-    stringVersion = "1.0.0.0"
+    stringVersion = "3.3.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
-    jacocoVersion = '0.8.8'
+    jacocoVersion = '0.8.13'
 }
 
 android {
@@ -26,7 +26,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 1
+        versionCode 3030000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -127,6 +127,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:24.2.0'
+    implementation 'net.pubnative:hybid.sdk:3.3.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'

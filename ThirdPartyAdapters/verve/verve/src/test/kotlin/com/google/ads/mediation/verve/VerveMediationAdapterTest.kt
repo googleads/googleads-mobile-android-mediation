@@ -17,9 +17,13 @@ package com.google.ads.mediation.verve
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import net.pubnative.lite.sdk.HyBid
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class VerveMediationAdapterTest {
@@ -33,15 +37,35 @@ class VerveMediationAdapterTest {
 
   // region Version tests
   @Test
+  fun getSDKVersionInfo_withInvalidVersion_returnsZeroes() {
+    mockStatic(HyBid::class.java).use {
+      whenever(HyBid.getHyBidVersion()) doReturn "3.2"
+
+      adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  @Test
   fun getSDKVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    mockStatic(HyBid::class.java).use {
+      whenever(HyBid.getHyBidVersion()) doReturn "3.2.1"
+
+      adapter.assertGetSdkVersion(expectedValue = "3.2.1")
+    }
+  }
+
+  @Test
+  fun getVersionInfo_withInvalidVersion_returnsZeroes() {
+    VerveMediationAdapter.adapterVersionDelegate = "1.2.3"
+
+    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
   }
 
   @Test
   fun getVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    VerveMediationAdapter.adapterVersionDelegate = "1.2.3.4"
+
+    adapter.assertGetVersionInfo(expectedValue = "1.2.304")
   }
 
   // endregion
