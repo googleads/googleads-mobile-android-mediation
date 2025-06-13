@@ -17,8 +17,13 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.util.TypedValue
+import android.util.TypedValue.COMPLEX_UNIT_DIP
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.core.net.toUri
+import coil3.load
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -164,6 +169,32 @@ private constructor(
     }
 
     images = listOf(PubMaticNativeAdImage(pobNativeAd?.mainImage?.imageURL))
+
+    val mainImage = pobNativeAd?.mainImage
+    if (mainImage != null) {
+      val mediaView = FrameLayout(context)
+      val widthInPixels =
+        TypedValue.applyDimension(
+            COMPLEX_UNIT_DIP,
+            mainImage.width.toFloat(),
+            context.resources.displayMetrics,
+          )
+          .toInt()
+      val heightInPixels =
+        TypedValue.applyDimension(
+            COMPLEX_UNIT_DIP,
+            mainImage.height.toFloat(),
+            context.resources.displayMetrics,
+          )
+          .toInt()
+      val adViewLayoutParams: FrameLayout.LayoutParams =
+        FrameLayout.LayoutParams(widthInPixels, heightInPixels)
+      val imageViewForMedia = ImageView(context)
+      imageViewForMedia.layoutParams = adViewLayoutParams
+      mediaView.addView(imageViewForMedia)
+      setMediaView(mediaView)
+      imageViewForMedia.load(mainImage.imageURL)
+    }
 
     val pobNativeAdInfoIcon = pobNativeAd?.adInfoIcon
     if (pobNativeAdInfoIcon != null) {

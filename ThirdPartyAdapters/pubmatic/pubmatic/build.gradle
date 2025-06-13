@@ -130,9 +130,11 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'com.google.android.gms:play-services-ads:24.1.0'
+    implementation 'com.google.android.gms:play-services-ads:24.4.0'
+    implementation 'io.coil-kt.coil3:coil:3.0.4'
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 
-    implementation 'com.pubmatic.sdk:openwrap:4.7.0-debug-02'
+    implementation 'com.pubmatic.sdk:openwrap:4.7.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
