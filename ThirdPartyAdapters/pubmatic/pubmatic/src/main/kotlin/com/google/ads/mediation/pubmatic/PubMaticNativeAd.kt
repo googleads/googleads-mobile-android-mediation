@@ -24,6 +24,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
+import com.google.ads.mediation.common.NativeAdHelper.runtimeGmaSdkListensToAdapterReportedImpressions
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -192,7 +193,9 @@ private constructor(
 
     setHasVideoContent(false)
     overrideClickHandling = true
-    overrideImpressionRecording = true
+    if (runtimeGmaSdkListensToAdapterReportedImpressions()) {
+      overrideImpressionRecording = true
+    }
   }
 
   private suspend fun loadImages() = suspendCancellableCoroutine { continuation ->

@@ -12,8 +12,10 @@ import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.FutureTarget
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
@@ -26,9 +28,11 @@ import com.pubmatic.sdk.nativead.response.POBNativeAdDataResponseAsset
 import com.pubmatic.sdk.nativead.response.POBNativeAdImageResponseAsset
 import com.pubmatic.sdk.nativead.response.POBNativeAdTitleResponseAsset
 import kotlinx.coroutines.Dispatchers
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
@@ -80,8 +84,12 @@ class PubMaticNativeAdTests {
       /*nativeAdOptions=*/ null,
     )
 
+  private lateinit var mockMobileAds: MockedStatic<MobileAds>
+
   @Before
   fun setUp() {
+    mockMobileAds = mockStatic(MobileAds::class.java)
+    whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 4, 0)
     PubMaticNativeAd.newInstance(
         mediationNativeAdConfiguration,
         mediationAdLoadCallback,
@@ -91,8 +99,13 @@ class PubMaticNativeAdTests {
       .onSuccess { pubMaticNativeAd = it }
   }
 
+  @After
+  fun tearDown() {
+    mockMobileAds.close()
+  }
+
   @Test
-  fun onAdReceived_mapsNativeAdAssetsAndInvokesLoadSuccessCallback() {
+  fun onAdReceived_mapsNativeAdAssetsAndInvokesLoadSuccessCallback_setsOverrideImpressionRecordingAsTrue() {
     val pobNativeAdTitleResponseAsset =
       mock<POBNativeAdTitleResponseAsset> { on { title } doReturn PUBMATIC_NATIVE_AD_TITLE }
     whenever(pobNativeAd.title) doReturn pobNativeAdTitleResponseAsset
@@ -146,6 +159,40 @@ class PubMaticNativeAdTests {
     assertThat(pubMaticNativeAd.overrideClickHandling).isTrue()
     assertThat(pubMaticNativeAd.overrideImpressionRecording).isTrue()
     verify(mediationAdLoadCallback).onSuccess(pubMaticNativeAd)
+  }
+
+  @Test
+  fun onAdReceived_mapsNativeAdAssetsAndInvokesLoadSuccessCallback_setsOverrideImpressionRecordingAsFalse() {
+    val pobNativeAdTitleResponseAsset =
+      mock<POBNativeAdTitleResponseAsset> { on { title } doReturn PUBMATIC_NATIVE_AD_TITLE }
+    whenever(pobNativeAd.title) doReturn pobNativeAdTitleResponseAsset
+    val pobNativeAdDescriptionAsset =
+      mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_NATIVE_AD_DESCRIPTION }
+    whenever(pobNativeAd.description) doReturn pobNativeAdDescriptionAsset
+    val pobNativeAdIconAsset =
+      mock<POBNativeAdImageResponseAsset> { on { imageURL } doReturn PUBMATIC_AD_ICON_URL }
+    whenever(pobNativeAd.icon) doReturn pobNativeAdIconAsset
+    val pobNativeAdCallToActionAsset =
+      mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_CALL_TO_ACTION_STRING }
+    whenever(pobNativeAd.callToAction) doReturn pobNativeAdCallToActionAsset
+    val pobNativeAdvertiserAsset =
+      mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_ADVERTISER }
+    whenever(pobNativeAd.advertiser) doReturn pobNativeAdvertiserAsset
+    val pobNativeAdPriceAsset =
+      mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_AD_PRICE }
+    whenever(pobNativeAd.price) doReturn pobNativeAdPriceAsset
+    val pobNativeAdRatingAsset =
+      mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_AD_RATING_STRING }
+    whenever(pobNativeAd.rating) doReturn pobNativeAdRatingAsset
+    val pobNativeAdMainImageAsset =
+      mock<POBNativeAdImageResponseAsset> { on { imageURL } doReturn PUBMATIC_AD_MAIN_IMAGE_URL }
+    whenever(pobNativeAd.mainImage) doReturn pobNativeAdMainImageAsset
+    whenever(pobNativeAd.adInfoIcon) doReturn pubMaticAdInfoIconView
+    whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 3, 0)
+
+    pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+
+    assertThat(pubMaticNativeAd.overrideImpressionRecording).isFalse()
   }
 
   @Test
