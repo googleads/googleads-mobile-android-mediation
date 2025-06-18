@@ -1,10 +1,15 @@
 package com.google.ads.mediation.pubmatic
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.request.FutureTarget
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
@@ -20,9 +25,11 @@ import com.pubmatic.sdk.nativead.POBNativeAdLoader
 import com.pubmatic.sdk.nativead.response.POBNativeAdDataResponseAsset
 import com.pubmatic.sdk.nativead.response.POBNativeAdImageResponseAsset
 import com.pubmatic.sdk.nativead.response.POBNativeAdTitleResponseAsset
+import kotlinx.coroutines.Dispatchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -79,6 +86,7 @@ class PubMaticNativeAdTests {
         mediationNativeAdConfiguration,
         mediationAdLoadCallback,
         pubMaticAdFactory,
+        Dispatchers.Unconfined,
       )
       .onSuccess { pubMaticNativeAd = it }
   }
@@ -110,8 +118,20 @@ class PubMaticNativeAdTests {
       mock<POBNativeAdImageResponseAsset> { on { imageURL } doReturn PUBMATIC_AD_MAIN_IMAGE_URL }
     whenever(pobNativeAd.mainImage) doReturn pobNativeAdMainImageAsset
     whenever(pobNativeAd.adInfoIcon) doReturn pubMaticAdInfoIconView
+    val mockRequestManager: RequestManager = mock<RequestManager>()
+    val mockRequestBuilder: RequestBuilder<Drawable?> = mock<RequestBuilder<Drawable?>>()
+    val mockFutureTarget: FutureTarget<Drawable?> = mock<FutureTarget<Drawable?>>()
+    val mockDrawable = mock<Drawable>()
+    mockStatic(Glide::class.java).use { mockedGlide ->
+      whenever(Glide.with(context)) doReturn mockRequestManager
+      whenever(mockRequestManager.asDrawable()) doReturn mockRequestBuilder
+      whenever(mockRequestBuilder.load(PUBMATIC_AD_ICON_URL)) doReturn mockRequestBuilder
+      whenever(mockRequestBuilder.load(PUBMATIC_AD_MAIN_IMAGE_URL)) doReturn mockRequestBuilder
+      whenever(mockRequestBuilder.submit()) doReturn mockFutureTarget
+      whenever(mockFutureTarget.get()) doReturn mockDrawable
 
-    pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+      pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    }
 
     assertThat(pubMaticNativeAd.headline).isEqualTo(PUBMATIC_NATIVE_AD_TITLE)
     assertThat(pubMaticNativeAd.body).isEqualTo(PUBMATIC_NATIVE_AD_DESCRIPTION)

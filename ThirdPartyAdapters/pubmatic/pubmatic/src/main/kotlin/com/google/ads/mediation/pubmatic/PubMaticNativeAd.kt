@@ -23,7 +23,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.net.toUri
-import coil3.load
+import com.bumptech.glide.Glide
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -38,6 +38,13 @@ import com.pubmatic.sdk.nativead.POBNativeAdLoader
 import com.pubmatic.sdk.nativead.POBNativeAdLoaderListener
 import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
  * Used to load PubMatic native ads and mediate callbacks between Google Mobile Ads SDK and PubMatic
@@ -51,6 +58,7 @@ private constructor(
   private val bidResponse: String,
   private val watermark: String,
   private val pubMaticAdFactory: PubMaticAdFactory,
+  private val adapterScope: CoroutineScope,
 ) : NativeAdMapper(), POBNativeAdLoaderListener, POBNativeAdListener {
 
   private var pobNativeAd: POBNativeAd? = null
@@ -67,7 +75,10 @@ private constructor(
   override fun onAdReceived(pobNativeAdLoader: POBNativeAdLoader, pobNativeAd: POBNativeAd) {
     this.pobNativeAd = pobNativeAd
     mapNativeAd()
-    mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(this)
+    adapterScope.async {
+      mapNativeAdAsync()
+      mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(this@PubMaticNativeAd)
+    }
   }
 
   override fun onFailedToLoad(pobNativeAdLoader: POBNativeAdLoader, pobError: POBError) {
@@ -120,18 +131,29 @@ private constructor(
     )
   }
 
-  class PubMaticNativeAdImage(imageUrl: String?) : Image() {
+  class PubMaticNativeAdImage(imageUrl: String?, drawable: Drawable?) : Image() {
 
     private var imageUri: Uri? = imageUrl?.toUri()
 
+    private val imageDrawable: Drawable? = drawable
+
     override fun getScale(): Double = 1.0 // Default scale is 1.0
 
-    override fun getDrawable(): Drawable? = null
+    override fun getDrawable(): Drawable? = imageDrawable
 
     override fun getUri(): Uri? = imageUri
   }
 
-  fun mapNativeAd() {
+  /** Maps PubMatic's native assets that must be done on main thread */
+  private fun mapNativeAd() {
+    val pobNativeAdInfoIcon = pobNativeAd?.adInfoIcon
+    if (pobNativeAdInfoIcon != null) {
+      adChoicesContent = pobNativeAdInfoIcon
+    }
+  }
+
+  /** Maps PubMatic's native assets that can be done on back thread and also downloads images */
+  private suspend fun mapNativeAdAsync() = coroutineScope {
     val pobNativeAdTitle = pobNativeAd?.title?.title
     if (pobNativeAdTitle != null) {
       headline = pobNativeAdTitle
@@ -142,7 +164,7 @@ private constructor(
       body = pobNativeAdDescription
     }
 
-    icon = PubMaticNativeAdImage(pobNativeAd?.icon?.imageURL)
+    loadImages()
 
     val pobNativeAdCallToAction = pobNativeAd?.callToAction?.value
     if (pobNativeAdCallToAction != null) {
@@ -168,7 +190,17 @@ private constructor(
       // Do nothing.
     }
 
-    images = listOf(PubMaticNativeAdImage(pobNativeAd?.mainImage?.imageURL))
+    setHasVideoContent(false)
+    overrideClickHandling = true
+    overrideImpressionRecording = true
+  }
+
+  private suspend fun loadImages() = suspendCancellableCoroutine { continuation ->
+    val iconUrl = pobNativeAd?.icon?.imageURL
+    if (iconUrl != null) {
+      val iconDrawable = Glide.with(context).asDrawable().load(iconUrl).submit().get()
+      icon = PubMaticNativeAdImage(iconUrl, iconDrawable)
+    }
 
     val mainImage = pobNativeAd?.mainImage
     if (mainImage != null) {
@@ -193,17 +225,12 @@ private constructor(
       imageViewForMedia.layoutParams = adViewLayoutParams
       mediaView.addView(imageViewForMedia)
       setMediaView(mediaView)
-      imageViewForMedia.load(mainImage.imageURL)
+      val image = Glide.with(context).asDrawable().load(mainImage.imageURL).submit().get()
+      images = listOf(PubMaticNativeAdImage(mainImage.imageURL, image))
+      imageViewForMedia.setImageDrawable(image)
     }
 
-    val pobNativeAdInfoIcon = pobNativeAd?.adInfoIcon
-    if (pobNativeAdInfoIcon != null) {
-      adChoicesContent = pobNativeAdInfoIcon
-    }
-
-    setHasVideoContent(false)
-    overrideClickHandling = true
-    overrideImpressionRecording = true
+    continuation.resume(true)
   }
 
   companion object {
@@ -212,15 +239,20 @@ private constructor(
       mediationNativeAdLoadCallback:
         MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
       pubMaticAdFactory: PubMaticAdFactory,
-    ) =
-      Result.success(
+      coroutineContext: CoroutineContext =
+        PubMaticAdFactory.BACKGROUND_EXECUTOR.asCoroutineDispatcher(),
+    ): Result<PubMaticNativeAd> {
+      val adapterScope = CoroutineScope(coroutineContext)
+      return Result.success(
         PubMaticNativeAd(
           context = mediationNativeAdConfiguration.context,
           mediationAdLoadCallback = mediationNativeAdLoadCallback,
           bidResponse = mediationNativeAdConfiguration.bidResponse,
           watermark = mediationNativeAdConfiguration.watermark,
           pubMaticAdFactory = pubMaticAdFactory,
+          adapterScope,
         )
       )
+    }
   }
 }
