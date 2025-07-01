@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next version
+- Removed 300x250 banner size support.
+
 #### Version 13.3.1.0
 - Verified compatibility with AppLovin SDK 13.3.1.
 
