@@ -1,6 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Next Release
+#### Version 4.7.0.1 (In progress)
 - Fixes internal dependencies
 
 #### 4.7.0.0
