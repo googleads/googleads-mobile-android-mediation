@@ -31,6 +31,7 @@ import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_D
 import com.google.ads.mediation.vungle.VungleMediationAdapter.getAdapterVersion
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdSize.BANNER
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -943,7 +944,11 @@ class VungleMediationAdapterTest {
   @Test
   fun loadRtbBannerAd_loadsLiftoffBannerAdWithBidResponse() {
     stubVungleInitializerToSucceed()
-    val vungleBannerAd = mock<VungleBannerView> { on { adConfig } doReturn vungleAdConfig }
+    val requestAdSize: AdSize = BANNER
+    val vungleBannerAd = mock<VungleBannerView> {
+      on { adConfig } doReturn vungleAdConfig
+      on { getAdViewSize() } doReturn VungleAdSize.BANNER
+    }
     whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
@@ -955,6 +960,7 @@ class VungleMediationAdapterTest {
             bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
           bidResponse = TEST_BID_RESPONSE,
           watermark = TEST_WATERMARK,
+          adSize = requestAdSize,
         ),
         mock(),
       )
@@ -965,9 +971,49 @@ class VungleMediationAdapterTest {
     verify(vungleBannerAd).load(TEST_BID_RESPONSE)
     val bannerAdCaptor = argumentCaptor<VungleRtbBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
-    val bannerLayout = bannerAdCaptor.firstValue.view
-    assertThat(bannerLayout.layoutParams.width).isEqualTo(BANNER.getWidthInPixels(context))
-    assertThat(bannerLayout.layoutParams.height).isEqualTo(BANNER.getHeightInPixels(context))
+    val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
+    assertThat(bannerAdView.getAdViewSize().width).isEqualTo(BANNER.getWidthInPixels(context))
+    assertThat(bannerAdView.getAdViewSize().height).isEqualTo(BANNER.getHeightInPixels(context))
+    verify(vungleAdConfig).setWatermark(TEST_WATERMARK)
+  }
+
+  @Test
+  fun loadRtbBannerAd_loadsLiftoffBannerAdWithBidResponse_adaptiveBanner() {
+    stubVungleInitializerToSucceed()
+    val requestAdaptiveAdSize: AdSize = AdSize.getInlineAdaptiveBannerAdSize(400, 240)
+    val vungleAdSize = VungleAdSize.getValidAdSizeFromSize(
+      requestAdaptiveAdSize.width,
+      requestAdaptiveAdSize.height,
+      TEST_PLACEMENT_ID
+    )
+    val vungleBannerAd = mock<VungleBannerView> {
+      on { adConfig } doReturn vungleAdConfig
+      on { getAdViewSize() } doReturn vungleAdSize
+    }
+    whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbBannerAd(
+        createMediationBannerAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+          adSize = requestAdaptiveAdSize,
+        ),
+        mock(),
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleBannerAd).load(TEST_BID_RESPONSE)
+    val bannerAdCaptor = argumentCaptor<VungleRtbBannerAd>()
+    verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
+    val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
+    assertThat(bannerAdView.getAdViewSize().width).isEqualTo(requestAdaptiveAdSize.getWidthInPixels(context))
+    assertThat(bannerAdView.getAdViewSize().height).isEqualTo(requestAdaptiveAdSize.getHeightInPixels(context))
     verify(vungleAdConfig).setWatermark(TEST_WATERMARK)
   }
 

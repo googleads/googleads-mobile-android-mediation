@@ -1,12 +1,6 @@
 package com.google.ads.mediation.vungle.rtb
 
 import android.content.Context
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.RelativeLayout
-import android.widget.RelativeLayout.CENTER_HORIZONTAL
-import android.widget.RelativeLayout.CENTER_VERTICAL
-import android.widget.RelativeLayout.TRUE
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -23,7 +17,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.BaseAd
 import com.vungle.ads.VungleBannerView
 import com.vungle.ads.VungleError
@@ -34,8 +27,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -95,16 +86,6 @@ class VungleRtbBannerAdTest {
 
     adapterRtbBannerAd.onAdLoaded(baseAd)
 
-    val layoutParamsCaptor = argumentCaptor<RelativeLayout.LayoutParams>()
-    verify(vungleBannerView, atLeastOnce()).layoutParams = layoutParamsCaptor.capture()
-    val layoutParams = layoutParamsCaptor.firstValue
-    assertThat(layoutParams.width).isEqualTo(WRAP_CONTENT)
-    assertThat(layoutParams.height).isEqualTo(WRAP_CONTENT)
-    assertThat(layoutParams.getRule(CENTER_HORIZONTAL)).isEqualTo(TRUE)
-    assertThat(layoutParams.getRule(CENTER_VERTICAL)).isEqualTo(TRUE)
-    val bannerLayout = adapterRtbBannerAd.view as ViewGroup
-    assertThat(bannerLayout.childCount).isEqualTo(1)
-    assertThat(bannerLayout.getChildAt(0)).isEqualTo(vungleBannerView)
     verify(bannerAdLoadCallback).onSuccess(adapterRtbBannerAd)
   }
 
