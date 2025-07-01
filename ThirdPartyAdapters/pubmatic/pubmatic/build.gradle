@@ -19,9 +19,9 @@ ext {
     jacocoVersion = '0.8.8'
 }
 
-kotlin {
-    jvmToolchain(11)
-}
+// kotlin {
+//     jvmToolchain(11)
+// }
 
 android {
     namespace 'com.google.ads.mediation.pubmatic'
@@ -132,7 +132,6 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:24.4.0'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
-    implementation project(':common')
 
     implementation 'com.pubmatic.sdk:openwrap:4.7.0'
 
