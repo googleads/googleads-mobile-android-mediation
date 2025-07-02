@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
@@ -51,7 +50,6 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   private MediationBannerAdCallback mediationBannerAdCallback;
 
   private VungleBannerView bannerAdView;
-  private RelativeLayout bannerLayout;
 
   private final VungleFactory vungleFactory;
 
@@ -102,11 +100,13 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
     String watermark = mediationBannerAdConfiguration.getWatermark();
 
     VungleInitializer.getInstance()
-        .initialize(appID, context,
+        .initialize(
+            appID,
+            context,
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                loadBanner(context, placementForPlay, adSize, bannerAdSize, adMarkup, watermark);
+                loadBanner(context, placementForPlay, bannerAdSize, adMarkup, watermark);
               }
 
               @Override
@@ -120,23 +120,9 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   private void loadBanner(
       Context context,
       String placementId,
-      AdSize gAdSize,
       VungleAdSize bannerAdSize,
       String adMarkup,
       String watermark) {
-    bannerLayout = new RelativeLayout(context);
-    int adLayoutHeight = gAdSize.getHeightInPixels(context);
-    // If the height is 0 (e.g. for inline adaptive banner requests), use the closest supported size
-    // as the height of the adLayout wrapper.
-    if (adLayoutHeight <= 0) {
-      float density = context.getResources().getDisplayMetrics().density;
-      adLayoutHeight = Math.round(bannerAdSize.getHeight() * density);
-    }
-    RelativeLayout.LayoutParams adViewLayoutParams =
-        new RelativeLayout.LayoutParams(gAdSize.getWidthInPixels(context),
-            adLayoutHeight);
-    bannerLayout.setLayoutParams(adViewLayoutParams);
-
     bannerAdView = vungleFactory.createBannerAd(context, placementId, bannerAdSize);
     bannerAdView.setAdListener(VungleRtbBannerAd.this);
 
@@ -144,21 +130,13 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
       bannerAdView.getAdConfig().setWatermark(watermark);
     }
 
-    // Add rules to ensure the banner ad is located at the center of the layout.
-    RelativeLayout.LayoutParams adParams =
-        new RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-    adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-    adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-    bannerLayout.addView(bannerAdView, adParams);
-
     bannerAdView.load(adMarkup);
   }
 
   @NonNull
   @Override
   public View getView() {
-    return bannerLayout;
+    return bannerAdView;
   }
 
   @Override

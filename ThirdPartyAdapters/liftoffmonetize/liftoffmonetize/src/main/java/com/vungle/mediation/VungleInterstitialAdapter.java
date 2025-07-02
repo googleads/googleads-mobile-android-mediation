@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -59,7 +58,6 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
   // banner/MREC
   private MediationBannerListener mediationBannerListener;
   private VungleBannerView bannerAdView;
-  private RelativeLayout bannerLayout;
 
   @Override
   public void requestInterstitialAd(@NonNull Context context,
@@ -188,7 +186,6 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
   public void onDestroy() {
     Log.d(TAG, "onDestroy: " + hashCode());
     if (bannerAdView != null) {
-      bannerLayout.removeAllViews();
       bannerAdView.finishAd();
       bannerAdView = null;
     }
@@ -248,31 +245,8 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
-                bannerLayout = new RelativeLayout(context);
-                int adLayoutHeight = adSize.getHeightInPixels(context);
-                // If the height is 0 (e.g. for inline adaptive banner requests), use the closest
-                // supported size
-                // as the height of the adLayout wrapper.
-                if (adLayoutHeight <= 0) {
-                  float density = context.getResources().getDisplayMetrics().density;
-                  adLayoutHeight = Math.round(bannerAdSize.getHeight() * density);
-                }
-                RelativeLayout.LayoutParams adViewLayoutParams =
-                    new RelativeLayout.LayoutParams(
-                        adSize.getWidthInPixels(context), adLayoutHeight);
-                bannerLayout.setLayoutParams(adViewLayoutParams);
-
                 bannerAdView = new VungleBannerView(context, placement, bannerAdSize);
                 bannerAdView.setAdListener(new VungleBannerListener());
-
-                // Add rules to ensure the banner ad is located at the center of the layout.
-                RelativeLayout.LayoutParams adParams =
-                    new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-                adParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-                adParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-                bannerLayout.addView(bannerAdView, adParams);
 
                 bannerAdView.load(null);
               }
@@ -347,7 +321,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
   @Override
   public View getBannerView() {
     Log.d(TAG, "getBannerView # instance: " + hashCode());
-    return bannerLayout;
+    return bannerAdView;
   }
 
   @NonNull
