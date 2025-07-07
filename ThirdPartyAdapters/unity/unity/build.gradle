@@ -9,7 +9,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "UnityAds"
     // String property to store version name.
-    stringVersion = "4.15.0.0"
+    stringVersion = "4.15.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
 }
@@ -22,7 +22,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 4150000
+        versionCode 4150100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         android.buildFeatures.buildConfig true
@@ -43,9 +43,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.unity3d.ads:unity-ads:4.15.0'
+    implementation 'com.unity3d.ads:unity-ads:4.15.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:24.3.0'
+    implementation 'com.google.android.gms:play-services-ads:24.4.0'
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'
