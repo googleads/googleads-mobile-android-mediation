@@ -2,6 +2,7 @@
 
 #### Next version
 - Removed 300x250 banner size support.
+- Fixes banner's height issue.
 
 #### Version 13.3.1.0
 - Verified compatibility with AppLovin SDK 13.3.1.

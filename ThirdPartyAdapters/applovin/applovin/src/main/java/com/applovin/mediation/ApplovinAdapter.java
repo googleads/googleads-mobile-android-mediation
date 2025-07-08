@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.applovin.adview.AppLovinAdView;
@@ -73,6 +74,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   private MediationInterstitialListener mediationInterstitialListener;
 
   // Banner objects.
+  private FrameLayout adViewWrapper;
   private AppLovinAdView adView;
 
   // Controlled fields.
@@ -246,6 +248,12 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
       return;
     }
 
+    FrameLayout.LayoutParams adViewLayoutParams =
+        new FrameLayout.LayoutParams(
+            adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
+    adViewWrapper = new FrameLayout(context);
+    adViewWrapper.setLayoutParams(adViewLayoutParams);
+
     AppLovinInitializer.getInstance()
         .initialize(
             context,
@@ -266,6 +274,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
                 adView.setAdDisplayListener(listener);
                 adView.setAdClickListener(listener);
                 adView.setAdViewEventListener(listener);
+                adViewWrapper.addView(adView);
 
                 if (!TextUtils.isEmpty(zoneId)) {
                   sdk.getAdService().loadNextAdForZoneId(zoneId, listener);
@@ -279,7 +288,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter
   @NonNull
   @Override
   public View getBannerView() {
-    return adView;
+    return adViewWrapper;
   }
   // endregion
 

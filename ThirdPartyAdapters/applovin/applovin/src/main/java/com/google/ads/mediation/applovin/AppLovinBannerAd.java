@@ -109,7 +109,7 @@ public class AppLovinBannerAd
   public void loadAd() {
     context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
-    AdSize adSize = mediationBannerAdConfiguration.getAdSize();
+    final AdSize adSize = mediationBannerAdConfiguration.getAdSize();
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
@@ -141,7 +141,8 @@ public class AppLovinBannerAd
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
 
             Log.d(TAG, "Requesting banner of size " + appLovinAdSize + " for zone: " + zoneId);
-            appLovinAdViewWrapper = appLovinAdFactory.createAdView(sdk, appLovinAdSize, context);
+            appLovinAdViewWrapper =
+                appLovinAdFactory.createAdView(sdk, appLovinAdSize, adSize, context);
 
             appLovinAdViewWrapper.setAdDisplayListener(AppLovinBannerAd.this);
             appLovinAdViewWrapper.setAdClickListener(AppLovinBannerAd.this);

@@ -15,6 +15,7 @@
 package com.google.ads.mediation.applovin;
 
 import android.content.Context;
+import android.widget.FrameLayout;
 import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinAdViewEventListener;
 import com.applovin.sdk.AppLovinAd;
@@ -22,22 +23,32 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
+import com.google.android.gms.ads.AdSize;
 
 /**
- * Wrapper class for an instance {@link AppLovinAdView} created by {@link AppLovinAdViewFactory}. It
- * is used as a layer between the Adapter's and the AppLovin SDK to facilitate unit testing.
+ * Wrapper class for an instance {@link AppLovinAdView} created by {@link AppLovinAdFactory}. It is
+ * used as a layer between the Adapter's and the AppLovin SDK to facilitate unit testing.
  */
 class AppLovinAdViewWrapper {
 
   private final AppLovinAdView appLovinAdView;
+  private final FrameLayout adViewWrapper;
 
-  private AppLovinAdViewWrapper(AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, Context context) {
+  private AppLovinAdViewWrapper(
+      AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, FrameLayout adViewWrapper, Context context) {
     appLovinAdView = new AppLovinAdView(sdk, appLovinAdSize, context);
+    this.adViewWrapper = adViewWrapper;
+    this.adViewWrapper.addView(appLovinAdView);
   }
 
   public static AppLovinAdViewWrapper newInstance(
-      AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, Context context) {
-    return new AppLovinAdViewWrapper(sdk, appLovinAdSize, context);
+      AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, AdSize adSize, Context context) {
+    FrameLayout.LayoutParams adViewLayoutParams =
+        new FrameLayout.LayoutParams(
+            adSize.getWidthInPixels(context), adSize.getHeightInPixels(context));
+    FrameLayout adViewWrapper = new FrameLayout(context);
+    adViewWrapper.setLayoutParams(adViewLayoutParams);
+    return new AppLovinAdViewWrapper(sdk, appLovinAdSize, adViewWrapper, context);
   }
 
   public void setAdDisplayListener(AppLovinAdDisplayListener adDisplayListener) {
@@ -56,7 +67,7 @@ class AppLovinAdViewWrapper {
     appLovinAdView.renderAd(ad);
   }
 
-  public AppLovinAdView getAppLovinAdView() {
-    return appLovinAdView;
+  public FrameLayout getAppLovinAdView() {
+    return adViewWrapper;
   }
 }

@@ -20,12 +20,13 @@ import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
+import com.google.android.gms.ads.AdSize;
 
 /** A factory to create {@link AppLovinAdView} for AppLovin ads. */
 public class AppLovinAdFactory {
   AppLovinAdViewWrapper createAdView(
-      AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, Context context) {
-    return AppLovinAdViewWrapper.newInstance(sdk, appLovinAdSize, context);
+      AppLovinSdk sdk, AppLovinAdSize appLovinAdSize, AdSize adSize, Context context) {
+    return AppLovinAdViewWrapper.newInstance(sdk, appLovinAdSize, adSize, context);
   }
 
   public AppLovinInterstitialAdDialog createInterstitialAdDialog(AppLovinSdk sdk, Context context) {
