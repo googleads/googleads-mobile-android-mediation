@@ -34,6 +34,7 @@ import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.ads.mediation.vungle.waterfall.VungleWaterfallAppOpenAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -529,5 +530,31 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
 
   static String getAdapterVersion() {
     return BuildConfig.ADAPTER_VERSION;
+  }
+
+  /**
+   * Checks whether the runtime GMA SDK is a version of GMA SDK that listens to adapter-reported
+   * native ad impressions.
+   *
+   * <p>GMA SDK versions >= 24.4.0 listen to adapter-reported native ad impressions.
+   */
+  public static boolean runtimeGmaSdkListensToAdapterReportedImpressions() {
+    return isVersionGreaterThanOrEqualTo(
+        MobileAds.getVersion(),
+        new VersionInfo(/* majorVersion= */ 24, /* minorVersion= */ 4, /* microVersion= */ 0));
+  }
+
+  /** Returns true iff version1 is greater than or equal to version2. */
+  private static boolean isVersionGreaterThanOrEqualTo(VersionInfo version1, VersionInfo version2) {
+    if (version1.getMajorVersion() > version2.getMajorVersion()) {
+      return true;
+    } else if (version1.getMajorVersion() == version2.getMajorVersion()) {
+      if (version1.getMinorVersion() > version2.getMinorVersion()) {
+        return true;
+      } else if (version1.getMinorVersion() == version2.getMinorVersion()) {
+        return version1.getMicroVersion() >= version2.getMicroVersion();
+      }
+    }
+    return false;
   }
 }
