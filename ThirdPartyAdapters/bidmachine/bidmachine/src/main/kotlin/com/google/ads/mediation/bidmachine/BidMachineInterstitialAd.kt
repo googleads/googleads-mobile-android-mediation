@@ -22,11 +22,13 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.interstitial.InterstitialAd
 import io.bidmachine.interstitial.InterstitialListener
 import io.bidmachine.interstitial.InterstitialRequest
@@ -43,6 +45,7 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationInterstitialAd, InterstitialRequest.AdRequestListener, InterstitialListener {
   @VisibleForTesting internal var interstitialRequestBuilder = InterstitialRequest.Builder()
   private lateinit var bidMachineInterstitialAd: InterstitialAd
@@ -81,6 +84,9 @@ private constructor(
       interstitialRequest.destroy()
       return
     }
+    bidMachineInterstitialAd.setRendererConfiguration(
+      RendererConfiguration(mapOf(WATERMARK_KEY to watermark))
+    )
     bidMachineInterstitialAd.setListener(this)
     bidMachineInterstitialAd.load(interstitialRequest)
   }
@@ -138,8 +144,11 @@ private constructor(
     ): Result<BidMachineInterstitialAd> {
       val context = mediationInterstitialAdConfiguration.context
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val watermark = mediationInterstitialAdConfiguration.watermark
 
-      return Result.success(BidMachineInterstitialAd(context, mediationAdLoadCallback, bidResponse))
+      return Result.success(
+        BidMachineInterstitialAd(context, mediationAdLoadCallback, bidResponse, watermark)
+      )
     }
   }
 }
