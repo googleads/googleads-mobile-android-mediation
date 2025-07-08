@@ -16,6 +16,7 @@ package com.google.ads.mediation.pubmatic
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
@@ -64,8 +65,11 @@ class PubMaticMediationAdapter(
   private lateinit var rewardedAd: PubMaticRewardedAd
   private lateinit var nativeAd: PubMaticNativeAd
 
-  override fun getSDKVersionInfo(): VersionInfo {
-    val sdkVersion = OpenWrapSDK.getVersion()
+  override fun getSDKVersionInfo(): VersionInfo =
+    pubMaticSdkVersionDelegate?.let { getSDKVersionInfo(it) }
+      ?: getSDKVersionInfo(OpenWrapSDK.getVersion())
+
+  private fun getSDKVersionInfo(sdkVersion: String): VersionInfo {
     val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
     if (splits.size >= 3) {
@@ -80,8 +84,11 @@ class PubMaticMediationAdapter(
     return VersionInfo(0, 0, 0)
   }
 
-  override fun getVersionInfo(): VersionInfo {
-    val adapterVersion = BuildConfig.ADAPTER_VERSION
+  override fun getVersionInfo(): VersionInfo =
+    adapterVersionDelegate?.let { getVersionInfo(it) }
+      ?: getVersionInfo(BuildConfig.ADAPTER_VERSION)
+
+  private fun getVersionInfo(adapterVersion: String): VersionInfo {
     val splits = adapterVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     if (splits.size >= 4) {
       val major = splits[0].toInt()
@@ -219,6 +226,8 @@ class PubMaticMediationAdapter(
 
   companion object {
     private val TAG = PubMaticMediationAdapter::class.simpleName
+    @VisibleForTesting var pubMaticSdkVersionDelegate: String? = null
+    @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.pubmatic"
     const val SDK_ERROR_DOMAIN = "com.pubmatic.sdk"
     const val KEY_PUBLISHER_ID = "publisher_id"

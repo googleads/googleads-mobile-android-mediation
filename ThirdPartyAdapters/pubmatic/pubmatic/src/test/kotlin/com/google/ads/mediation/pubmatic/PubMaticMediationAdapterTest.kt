@@ -18,6 +18,8 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
+import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_AD_FORMAT
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
@@ -116,26 +118,22 @@ class PubMaticMediationAdapterTest {
   // region Version tests
   @Test
   fun getSDKVersionInfo_returnsValidVersionInfo() {
-    val sdkVersion = adapter.sdkVersionInfo
+    PubMaticMediationAdapter.pubMaticSdkVersionDelegate = "1.2.3"
 
-    assertThat(sdkVersion.majorVersion).isGreaterThan(0)
-    assertThat(sdkVersion.majorVersion).isLessThan(100)
-    assertThat(sdkVersion.minorVersion).isAtLeast(0)
-    assertThat(sdkVersion.minorVersion).isLessThan(100)
-    assertThat(sdkVersion.microVersion).isAtLeast(0)
-    assertThat(sdkVersion.microVersion).isLessThan(100)
+    adapter.assertGetSdkVersion(expectedValue = "1.2.3")
+
+    // Resetting value
+    PubMaticMediationAdapter.pubMaticSdkVersionDelegate = null
   }
 
   @Test
   fun getVersionInfo_returnsValidVersionInfo() {
-    val adapterVersion = adapter.versionInfo
+    PubMaticMediationAdapter.adapterVersionDelegate = "1.2.3.4"
 
-    assertThat(adapterVersion.majorVersion).isGreaterThan(0)
-    assertThat(adapterVersion.majorVersion).isLessThan(100)
-    assertThat(adapterVersion.minorVersion).isAtLeast(0)
-    assertThat(adapterVersion.minorVersion).isLessThan(100)
-    assertThat(adapterVersion.microVersion).isAtLeast(0)
-    assertThat(adapterVersion.microVersion).isLessThan(100)
+    adapter.assertGetVersionInfo(expectedValue = "1.2.304")
+
+    // Resetting value
+    PubMaticMediationAdapter.adapterVersionDelegate = null
   }
 
   // endregion
