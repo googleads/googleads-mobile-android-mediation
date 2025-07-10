@@ -3,6 +3,9 @@
 #### Version 7.5.0.1 (In progress)
 - Sets overrideImpressionRecording to true for both waterfall and RTB native
   ads.
+Built and tested with:
+- Google Mobile Ads SDK version 24.4.0.
+- Vungle SDK version 7.5.0.
 
 #### Version 7.5.0.0
 - Verified compatibility with Vungle SDK 7.5.0.
