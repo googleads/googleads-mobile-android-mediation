@@ -18,7 +18,7 @@ public class IronSourceConstants {
   static final String MEDIATION_NAME = "AdMob";
 
   /** Constant used for IronSource adapter version internal reporting. */
-  static final String IADS_ADAPTER_VERSION = "510";
+  static final String IADS_ADAPTER_VERSION = "511";
 
   static final String IADS = "iAds";
 
