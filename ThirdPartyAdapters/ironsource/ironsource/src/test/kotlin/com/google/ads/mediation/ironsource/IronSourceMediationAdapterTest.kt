@@ -91,8 +91,8 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getSDKVersionInfo_validSDKVersionFor3Digits_returnsTheSameVersion() {
-    mockStatic(IronSourceUtils::class.java).use {
-      whenever(getSDKVersion()) doReturn "7.3.2"
+    mockStatic(IronSourceAds::class.java).use {
+      whenever(getSDKVersion()) doReturn "8.3.2"
 
       adapter.assertGetSdkVersion(expectedValue = "7.3.2")
     }
@@ -118,7 +118,7 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getVersionInfo_validVersionWith4Digits_returnsTheSameVersion() {
-    mockStatic(IronSourceAdapterUtils::class.java).use {
+    mockStatic(IronSourceAds::class.java).use {
       whenever(getAdapterVersion()) doReturn "7.3.2.1"
 
       adapter.assertGetVersionInfo(expectedValue = "7.3.201")
@@ -127,7 +127,7 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getVersionInfo_validVersionWith5Digits_returnsTheSameVersion() {
-    mockStatic(IronSourceAdapterUtils::class.java).use {
+    mockStatic(IronSourceAds::class.java).use {
       whenever(getAdapterVersion()) doReturn "7.3.2.1.8"
 
       adapter.assertGetVersionInfo(expectedValue = "7.3.20108")
@@ -136,7 +136,7 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getVersionInfo_invalidVersion_returnsZeros() {
-    mockStatic(IronSourceAdapterUtils::class.java).use {
+    mockStatic(IronSourceAds::class.java).use {
       whenever(getAdapterVersion()) doReturn "7.3.2"
 
       adapter.assertGetVersionInfo(expectedValue = "0.0.0")
