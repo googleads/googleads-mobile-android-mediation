@@ -1,5 +1,7 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.27.2.0 (In progress)
+
 #### Version 5.27.1.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
