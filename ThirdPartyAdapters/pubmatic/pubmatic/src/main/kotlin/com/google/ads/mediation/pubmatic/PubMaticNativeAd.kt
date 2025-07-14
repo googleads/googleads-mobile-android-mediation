@@ -149,7 +149,10 @@ private constructor(
   private fun mapNativeAd() {
     val pobNativeAdInfoIcon = pobNativeAd?.adInfoIcon
     if (pobNativeAdInfoIcon != null) {
-      adChoicesContent = pobNativeAdInfoIcon
+      // Wrapping on a layout to keep layoutParams
+      val frameLayout = FrameLayout(context)
+      frameLayout.addView(pobNativeAdInfoIcon)
+      adChoicesContent = frameLayout
     }
   }
 

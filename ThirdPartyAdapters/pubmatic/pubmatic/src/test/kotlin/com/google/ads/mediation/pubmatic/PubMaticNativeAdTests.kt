@@ -3,6 +3,7 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -154,7 +155,8 @@ class PubMaticNativeAdTests {
     assertThat(pubMaticNativeAd.price).isEqualTo(PUBMATIC_AD_PRICE)
     assertThat(pubMaticNativeAd.starRating).isEqualTo(PUBMATIC_AD_RATING_STRING.toDouble())
     assertThat(pubMaticNativeAd.images[0].uri.toString()).isEqualTo(PUBMATIC_AD_MAIN_IMAGE_URL)
-    assertThat(pubMaticNativeAd.adChoicesContent).isEqualTo(pubMaticAdInfoIconView)
+    val adChoicesContentLayout = pubMaticNativeAd.adChoicesContent as FrameLayout
+    assertThat(adChoicesContentLayout.getChildAt(0)).isEqualTo(pubMaticAdInfoIconView)
     assertThat(pubMaticNativeAd.hasVideoContent()).isFalse()
     assertThat(pubMaticNativeAd.overrideClickHandling).isTrue()
     assertThat(pubMaticNativeAd.overrideImpressionRecording).isTrue()
