@@ -105,7 +105,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   @NonNull
   @Override
   public VersionInfo getSDKVersionInfo() {
-    String versionString = IronSourceUtils.getSDKVersion();
+    String versionString = IronSourceAds.getSdkVersion();
     String[] splits = versionString.split("\\.");
 
     if (splits.length >= 3) {

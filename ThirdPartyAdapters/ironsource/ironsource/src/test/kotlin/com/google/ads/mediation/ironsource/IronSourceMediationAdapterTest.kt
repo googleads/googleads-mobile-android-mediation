@@ -46,11 +46,10 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.IronSource.createBannerForDemandOnly
 import com.ironsource.mediationsdk.demandOnly.ISDemandOnlyBannerLayout
-import com.ironsource.mediationsdk.utils.IronSourceUtils
-import com.ironsource.mediationsdk.utils.IronSourceUtils.getSDKVersion
 import com.unity3d.ironsourceads.InitListener
 import com.unity3d.ironsourceads.InitRequest
 import com.unity3d.ironsourceads.IronSourceAds
+import com.unity3d.ironsourceads.IronSourceAds.getSdkVersion
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -91,17 +90,17 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getSDKVersionInfo_validSDKVersionFor3Digits_returnsTheSameVersion() {
-    mockStatic(IronSourceUtils::class.java).use {
-      whenever(getSDKVersion()) doReturn "7.3.2"
+    mockStatic(IronSourceAds::class.java).use {
+      whenever(getSdkVersion()) doReturn "8.3.2"
 
-      adapter.assertGetSdkVersion(expectedValue = "7.3.2")
+      adapter.assertGetSdkVersion(expectedValue = "8.3.2")
     }
   }
 
   @Test
   fun getSDKVersionInfo_validSDKVersionFor4Digits_returnsTheSameVersion() {
-    mockStatic(IronSourceUtils::class.java).use {
-      whenever(getSDKVersion()) doReturn "7.3.2.1"
+    mockStatic(IronSourceAds::class.java).use {
+      whenever(getSdkVersion()) doReturn "7.3.2.1"
 
       adapter.assertGetSdkVersion(expectedValue = "7.3.201")
     }
@@ -109,8 +108,8 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun getSDKVersionInfo_invalidSDKVersion_returnsZeros() {
-    mockStatic(IronSourceUtils::class.java).use {
-      whenever(getSDKVersion()) doReturn "3.2"
+    mockStatic(IronSourceAds::class.java).use {
+      whenever(getSdkVersion()) doReturn "3.2"
 
       adapter.assertGetSdkVersion(expectedValue = "0.0.0")
     }
