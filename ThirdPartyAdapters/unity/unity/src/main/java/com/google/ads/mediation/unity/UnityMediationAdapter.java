@@ -22,11 +22,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -46,8 +47,8 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.TokenConfiguration;
-import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
