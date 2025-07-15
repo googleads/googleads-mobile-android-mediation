@@ -1,7 +1,11 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Version 4.7.1.1 (In progress)
+#### Version 4.7.1.1
 - Fixed size of AdChoices Icon
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.4.0.
+- Pubmatic SDK version 4.7.1.
 
 #### Version 4.7.1.0
 - Verified compatibility with Pubmatic SDK 4.7.1.
