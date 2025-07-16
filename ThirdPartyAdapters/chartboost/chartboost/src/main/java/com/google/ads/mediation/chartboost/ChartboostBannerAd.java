@@ -35,6 +35,7 @@ import com.chartboost.sdk.events.ClickEvent;
 import com.chartboost.sdk.events.ImpressionEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
+import com.chartboost.sdk.impl.z7;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -189,6 +190,11 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     if (bannerAdCallback != null) {
       bannerAdCallback.reportAdClicked();
     }
+  }
+
+  @Override
+  public void onAdExpired(@NonNull z7 ad) {
+    Log.d(TAG, "Chartboost banner ad Expired.");
   }
 
   @NonNull

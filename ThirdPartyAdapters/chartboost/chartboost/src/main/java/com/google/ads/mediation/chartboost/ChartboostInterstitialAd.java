@@ -34,6 +34,7 @@ import com.chartboost.sdk.events.DismissEvent;
 import com.chartboost.sdk.events.ImpressionEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
+import com.chartboost.sdk.impl.z7;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -188,5 +189,10 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
       AdError error = ChartboostConstants.createSDKError(clickError);
       Log.w(TAG, error.toString());
     }
+  }
+
+  @Override
+  public void onAdExpired(@NonNull z7 ad) {
+    Log.d(TAG, "Chartboost interstitial ad Expired.");
   }
 }

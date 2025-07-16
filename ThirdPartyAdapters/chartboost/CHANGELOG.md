@@ -1,5 +1,7 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Version 9.9.0.0 (In progress)
+
 #### Version 9.8.3.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
