@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
 apply plugin: 'org.jetbrains.kotlin.android'
 
@@ -12,6 +13,8 @@ ext {
     stringVersion = "4.15.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
+    // Jacoco version to generate code coverage data
+    jacocoVersion = '0.8.13'
 }
 
 android {
@@ -32,6 +35,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -40,6 +46,73 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+    sourceSets {
+        test.kotlin.srcDirs += 'src/test/kotlin'
+    }
+
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
+        }
+        unitTests {
+            includeAndroidResources = true
+            unitTests.returnDefaultValues = true
+        }
+    }
+}
+
+tasks.withType(Test) {
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED"
+        exceptionFormat = 'full'
+    }
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion= "$jacocoVersion"
+}
+
+task jacocoTestReport(type: JacocoReport,
+        dependsOn: ['testDebugUnitTest',
+                    'createDebugCoverageReport']) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    def fileFilter = ['androidx/**/*.*',
+                      '**/view/*.*',
+                      '**/data/*.*',
+                      '**/data/model/*.*',
+                      '**/generated/callback/*.*',
+                      '**/lambda$*.class',
+                      '**/lambda.class',
+                      '**/*lambda.class',
+                      '**/*lambda*.class']
+
+    def debugTree = fileTree(dir:
+            "${buildDir}/intermediates/javac/debug/classes",
+            excludes: fileFilter
+    )
+    def debugKotlinTree = fileTree(dir:
+            "${buildDir}/tmp/kotlin-classes/debug",
+            excludes: fileFilter
+    )
+
+    def mainSrc = "$project.projectDir/src/main/kotlin"
+
+    getSourceDirectories().setFrom(files([mainSrc]))
+    getClassDirectories().setFrom(files([debugTree, debugKotlinTree]))
+    getExecutionData().setFrom(fileTree(dir: "${buildDir}", includes:[
+            "/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"]))
 }
 
 dependencies {
