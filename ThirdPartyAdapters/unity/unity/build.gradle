@@ -107,7 +107,7 @@ task jacocoTestReport(type: JacocoReport,
             excludes: fileFilter
     )
 
-    def mainSrc = "$project.projectDir/src/main/kotlin"
+    def mainSrc = "$project.projectDir/src/main/java"
 
     getSourceDirectories().setFrom(files([mainSrc]))
     getClassDirectories().setFrom(files([debugTree, debugKotlinTree]))
