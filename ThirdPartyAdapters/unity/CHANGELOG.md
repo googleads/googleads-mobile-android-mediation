@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
+
 #### Version 4.16.4.0 (In progress)
 
 #### Version 4.16.3.0

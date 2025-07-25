@@ -15,9 +15,13 @@
 package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN;
+import static com.google.ads.mediation.unity.UnityMediationAdapter.TAG;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
@@ -34,6 +38,7 @@ import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Utility class for the Unity adapter.
@@ -53,6 +58,16 @@ public class UnityAdsAdapterUtils {
     VIDEO_START,
     REWARD,
     VIDEO_COMPLETE
+  }
+
+  /** Represents the result of a consent check for advertising purposes. */
+  public enum ConsentResult {
+    /** The consent status could not be determined, or consent does not apply. */
+    UNKNOWN,
+    /** The user has given their consent. */
+    TRUE,
+    /** The user has explicitly declined consent. */
+    FALSE
   }
 
   /**
@@ -272,5 +287,138 @@ public class UnityAdsAdapterUtils {
       return mediationConfiguration.getFormat();
     }
     return null;
+  }
+
+  /**
+   * Checks whether the user provided consent to a Google Ad Tech Provider (ATP) in Google’s
+   * Additional Consent technical specification. For more details, see <a
+   * href="https://support.google.com/admob/answer/9681920">Google’s Additional Consent technical
+   * specification</a>.
+   *
+   * <p>Returns {@link ConsentResult#UNKNOWN} if GDPR does not apply or if positive or negative
+   * consent was not explicitly detected.
+   *
+   * @param context {@link Context} object of your application
+   * @param vendorId a Google Ad Tech Provider (ATP) ID from
+   *     https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   * @return A {@link ConsentResult} indicating consent for the given ATP.
+   */
+  static @NonNull ConsentResult hasACConsent(@NonNull Context context, int vendorId) {
+    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+    int gdprApplies = -1;
+    try {
+      gdprApplies = sharedPref.getInt("IABTCF_gdprApplies", -1);
+    } catch (ClassCastException exception) {
+      Log.w(
+          TAG,
+          "Could not parse IABTCF_gdprApplies as an integer. Did your CMP write it correctly?",
+          exception);
+    }
+
+    if (gdprApplies != 1) {
+      return ConsentResult.UNKNOWN;
+    }
+
+    String additionalConsentString = "";
+    try {
+      additionalConsentString = sharedPref.getString("IABTCF_AddtlConsent", "");
+    } catch (ClassCastException exception) {
+      Log.w(
+          TAG,
+          "Could not parse IABTCF_AddtlConsent as a string. Did your CMP write it correctly?",
+          exception);
+    }
+
+    if (TextUtils.isEmpty(additionalConsentString)) {
+      return ConsentResult.UNKNOWN;
+    }
+
+    String vendorIdString = String.valueOf(vendorId);
+    String[] additionalConsentParts = additionalConsentString.split("~");
+
+    int version;
+    try {
+      version = Integer.parseInt(String.valueOf(additionalConsentString.charAt(0)));
+    } catch (Exception exception) {
+      Log.w(
+          TAG,
+          "Could not parse the IABTCF_AddtlConsent spec version. Did your CMP write it correctly?",
+          exception);
+      return ConsentResult.UNKNOWN;
+    }
+
+    if (version == 1) {
+      // Spec version 1
+      Log.w(
+          TAG,
+          "The IABTCF_AddtlConsent string uses version 1 of Google’s Additional Consent spec."
+              + " Version 1 does not report vendors to whom the user denied consent. To detect"
+              + " vendors that the user denied consent, upgrade to a CMP that supports version 2 of"
+              + " Google's Additional Consent technical specification.");
+
+      if (additionalConsentParts.length == 1) {
+        // The AC string had no consented vendor.
+        return ConsentResult.UNKNOWN;
+      } else if (additionalConsentParts.length == 2) {
+        String[] consentedIds = additionalConsentParts[1].split("\\.");
+        if (Arrays.asList(consentedIds).contains(vendorIdString)) {
+          return ConsentResult.TRUE;
+        }
+      } else {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". String had more parts than"
+                    + " expected. Did your CMP write IABTCF_AddtlConsent correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      return ConsentResult.UNKNOWN;
+    } else if (version >= 2) {
+      // Spec version 2
+      if (additionalConsentParts.length < 3) {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". String had less parts than"
+                    + " expected. Did your CMP write IABTCF_AddtlConsent correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      String[] disclosedIds = additionalConsentParts[2].split("\\.");
+      if (!disclosedIds[0].equals("dv")) {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". Expected disclosed vendors"
+                    + " part to have the string \"dv.\". Did your CMP write IABTCF_AddtlConsent"
+                    + " correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      String[] consentedIds = additionalConsentParts[1].split("\\.");
+      if (Arrays.asList(consentedIds).contains(vendorIdString)) {
+        return ConsentResult.TRUE;
+      }
+
+      if (Arrays.asList(disclosedIds).contains(vendorIdString)) {
+        return ConsentResult.FALSE;
+      }
+
+      return ConsentResult.UNKNOWN;
+    } else {
+      // Unknown spec version
+      String errorMessage =
+          String.format(
+              "Could not parse the IABTCF_AddtlConsent string: \"%s\". Spec version was unexpected."
+                  + " Did your CMP write IABTCF_AddtlConsent correctly?",
+              additionalConsentString);
+      Log.w(TAG, errorMessage);
+      return ConsentResult.UNKNOWN;
+    }
   }
 }
