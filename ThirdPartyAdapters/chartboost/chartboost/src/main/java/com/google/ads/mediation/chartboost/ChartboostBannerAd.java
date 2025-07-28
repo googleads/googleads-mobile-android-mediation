@@ -32,10 +32,10 @@ import com.chartboost.sdk.events.CacheError;
 import com.chartboost.sdk.events.CacheEvent;
 import com.chartboost.sdk.events.ClickError;
 import com.chartboost.sdk.events.ClickEvent;
+import com.chartboost.sdk.events.ExpirationEvent;
 import com.chartboost.sdk.events.ImpressionEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
-import com.chartboost.sdk.impl.z7;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -45,9 +45,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
-  /**
-   * A container view that holds Chartboost's {@link Banner} view.
-   */
+  /** A container view that holds Chartboost's {@link Banner} view. */
   private FrameLayout bannerContainer;
 
   private final MediationBannerAdConfiguration bannerAdConfiguration;
@@ -57,8 +55,9 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   public ChartboostBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd,
-          MediationBannerAdCallback> mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     this.bannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
@@ -80,45 +79,48 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       return;
     }
     AdSize adSize = bannerAdConfiguration.getAdSize();
-    Banner.BannerSize supportedAdSize = ChartboostAdapterUtils.findClosestBannerSize(context,
-        adSize);
+    Banner.BannerSize supportedAdSize =
+        ChartboostAdapterUtils.findClosestBannerSize(context, adSize);
     if (supportedAdSize == null) {
-      String errorMessage = String.format(
-          "The requested banner size: %s is not supported by Chartboost SDK.", adSize);
+      String errorMessage =
+          String.format(
+              "The requested banner size: %s is not supported by Chartboost SDK.", adSize);
       AdError error =
-          ChartboostConstants.createAdapterError(
-              ERROR_BANNER_SIZE_MISMATCH,
-              errorMessage);
+          ChartboostConstants.createAdapterError(ERROR_BANNER_SIZE_MISMATCH, errorMessage);
       Log.e(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
     }
 
     final String location = chartboostParams.getLocation();
-    ChartboostAdapterUtils.updateCoppaStatus(context, bannerAdConfiguration.taggedForChildDirectedTreatment());
+    ChartboostAdapterUtils.updateCoppaStatus(
+        context, bannerAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
-          @Override
-          public void onInitializationSucceeded() {
-            createAndLoadBannerAd(context, location, supportedAdSize);
-          }
+        .initialize(
+            context,
+            chartboostParams,
+            new ChartboostInitializer.Listener() {
+              @Override
+              public void onInitializationSucceeded() {
+                createAndLoadBannerAd(context, location, supportedAdSize);
+              }
 
-          @Override
-          public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.toString());
-            mediationAdLoadCallback.onFailure(error);
-          }
-        });
+              @Override
+              public void onInitializationFailed(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                mediationAdLoadCallback.onFailure(error);
+              }
+            });
   }
 
-  private void createAndLoadBannerAd(@NonNull Context context,
+  private void createAndLoadBannerAd(
+      @NonNull Context context,
       @Nullable String location,
       @Nullable Banner.BannerSize supportedAdSize) {
     if (TextUtils.isEmpty(location)) {
       AdError error =
           ChartboostConstants.createAdapterError(
-              ERROR_INVALID_SERVER_PARAMETERS,
-              "Missing or invalid location.");
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.");
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
       return;
@@ -129,8 +131,13 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     FrameLayout.LayoutParams paramsLayout =
         new FrameLayout.LayoutParams(
             closestSize.getWidthInPixels(context), closestSize.getHeightInPixels(context));
-    Banner chartboostBannerAd = new Banner(context, location, supportedAdSize,
-        ChartboostBannerAd.this, ChartboostAdapterUtils.getChartboostMediation());
+    Banner chartboostBannerAd =
+        new Banner(
+            context,
+            location,
+            supportedAdSize,
+            ChartboostBannerAd.this,
+            ChartboostAdapterUtils.getChartboostMediation());
     bannerContainer.addView(chartboostBannerAd, paramsLayout);
     // Chartboost banner requires cache call to be loaded. It has to be done before show call.
     chartboostBannerAd.cache();
@@ -173,8 +180,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     }
 
     Log.d(TAG, "Chartboost banner ad has been loaded.");
-    bannerAdCallback =
-        mediationAdLoadCallback.onSuccess(ChartboostBannerAd.this);
+    bannerAdCallback = mediationAdLoadCallback.onSuccess(ChartboostBannerAd.this);
     cacheEvent.getAd().show();
   }
 
@@ -193,7 +199,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   }
 
   @Override
-  public void onAdExpired(@NonNull z7 ad) {
+  public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
     Log.d(TAG, "Chartboost banner ad Expired.");
   }
 

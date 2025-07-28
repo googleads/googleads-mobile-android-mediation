@@ -30,11 +30,11 @@ import com.chartboost.sdk.events.CacheEvent;
 import com.chartboost.sdk.events.ClickError;
 import com.chartboost.sdk.events.ClickEvent;
 import com.chartboost.sdk.events.DismissEvent;
+import com.chartboost.sdk.events.ExpirationEvent;
 import com.chartboost.sdk.events.ImpressionEvent;
 import com.chartboost.sdk.events.RewardEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
-import com.chartboost.sdk.impl.z7;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -52,8 +52,9 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   public ChartboostRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd,
-          MediationRewardedAdCallback> mediationAdLoadCallback) {
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
     this.rewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
@@ -76,22 +77,29 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     }
 
     final String location = chartboostParams.getLocation();
-    ChartboostAdapterUtils.updateCoppaStatus(context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
+    ChartboostAdapterUtils.updateCoppaStatus(
+        context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
     ChartboostInitializer.getInstance()
-        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
-          @Override
-          public void onInitializationSucceeded() {
-            chartboostRewardedAd = new Rewarded(location, ChartboostRewardedAd.this,
-                ChartboostAdapterUtils.getChartboostMediation());
-            chartboostRewardedAd.cache();
-          }
+        .initialize(
+            context,
+            chartboostParams,
+            new ChartboostInitializer.Listener() {
+              @Override
+              public void onInitializationSucceeded() {
+                chartboostRewardedAd =
+                    new Rewarded(
+                        location,
+                        ChartboostRewardedAd.this,
+                        ChartboostAdapterUtils.getChartboostMediation());
+                chartboostRewardedAd.cache();
+              }
 
-          @Override
-          public void onInitializationFailed(@NonNull AdError error) {
-            Log.w(TAG, error.toString());
-            mediationAdLoadCallback.onFailure(error);
-          }
-        });
+              @Override
+              public void onInitializationFailed(@NonNull AdError error) {
+                Log.w(TAG, error.toString());
+                mediationAdLoadCallback.onFailure(error);
+              }
+            });
   }
 
   @Override
@@ -99,8 +107,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     if (chartboostRewardedAd == null || !chartboostRewardedAd.isCached()) {
       AdError error =
           ChartboostConstants.createAdapterError(
-              ERROR_AD_NOT_READY,
-              "Chartboost rewarded ad is not yet ready to be shown.");
+              ERROR_AD_NOT_READY, "Chartboost rewarded ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
       return;
     }
@@ -159,8 +166,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     if (cacheError == null) {
       Log.d(TAG, "Chartboost rewarded ad has been loaded.");
       if (mediationAdLoadCallback != null) {
-        rewardedAdCallback =
-            mediationAdLoadCallback.onSuccess(ChartboostRewardedAd.this);
+        rewardedAdCallback = mediationAdLoadCallback.onSuccess(ChartboostRewardedAd.this);
       }
     } else {
       AdError error = ChartboostConstants.createSDKError(cacheError);
@@ -185,7 +191,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
   }
 
   @Override
-  public void onAdExpired(@NonNull z7 ad) {
+  public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
     Log.d(TAG, "Chartboost banner ad Expired.");
   }
 }
