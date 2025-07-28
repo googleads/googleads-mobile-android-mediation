@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 8.3.8.0 (In progress)
 - Refactored the error codes into a new DTExchangeErrorCodes.kt file.
 
 #### Version 8.3.7.0
