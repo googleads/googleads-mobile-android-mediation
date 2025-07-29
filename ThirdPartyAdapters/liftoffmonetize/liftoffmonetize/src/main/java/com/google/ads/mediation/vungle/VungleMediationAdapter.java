@@ -536,11 +536,21 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
    * Checks whether the runtime GMA SDK is a version of GMA SDK that listens to adapter-reported
    * native ad impressions.
    *
-   * <p>GMA SDK versions >= 24.4.0 listen to adapter-reported native ad impressions.
+   * <p>GMA SDK versions >= 24.4.0 or < 6.5.0 listen to adapter-reported native ad impressions.
    */
   public static boolean runtimeGmaSdkListensToAdapterReportedImpressions() {
+    VersionInfo gmaSdkVersion = MobileAds.getVersion();
+    if (isVersionLowerThan(
+            gmaSdkVersion,
+            new VersionInfo(/* majorVersion= */ 6, /* minorVersion= */ 5, /* microVersion= */ 0))
+        && isVersionGreaterThanOrEqualTo(
+            gmaSdkVersion,
+            new VersionInfo(
+                /* majorVersion= */ 0, /* minorVersion= */ 18, /* microVersion= */ 0))) {
+      return true;
+    }
     return isVersionGreaterThanOrEqualTo(
-        MobileAds.getVersion(),
+        gmaSdkVersion,
         new VersionInfo(/* majorVersion= */ 24, /* minorVersion= */ 4, /* microVersion= */ 0));
   }
 
@@ -553,6 +563,20 @@ public class VungleMediationAdapter extends RtbAdapter implements MediationRewar
         return true;
       } else if (version1.getMinorVersion() == version2.getMinorVersion()) {
         return version1.getMicroVersion() >= version2.getMicroVersion();
+      }
+    }
+    return false;
+  }
+
+  /** Returns true iff version1 is less than version2. */
+  private static boolean isVersionLowerThan(VersionInfo version1, VersionInfo version2) {
+    if (version1.getMajorVersion() < version2.getMajorVersion()) {
+      return true;
+    } else if (version1.getMajorVersion() == version2.getMajorVersion()) {
+      if (version1.getMinorVersion() < version2.getMinorVersion()) {
+        return true;
+      } else if (version1.getMinorVersion() == version2.getMinorVersion()) {
+        return version1.getMicroVersion() < version2.getMicroVersion();
       }
     }
     return false;
