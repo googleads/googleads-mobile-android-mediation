@@ -49,6 +49,8 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import com.google.common.truth.Truth.assertThat
+import io.bidmachine.AdPlacementConfig
 import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.BidTokenCallback
@@ -64,6 +66,7 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
@@ -266,7 +269,7 @@ class BidMachineMediationAdapterTest {
     adapter.collectSignals(signalData, mockSignalCallbacks)
 
     mockBidMachine.verify {
-      BidMachine.getBidToken(eq(context), eq(AdsFormat.Interstitial), tokenCallbackCaptor.capture())
+      BidMachine.getBidToken(eq(context), any<AdPlacementConfig>(), tokenCallbackCaptor.capture())
     }
     tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
     mockSignalCallbacks.onSuccess(TEST_BID_RESPONSE)
@@ -302,15 +305,20 @@ class BidMachineMediationAdapterTest {
         /* adSize = */ null,
       )
     val mockSignalCallbacks: SignalCallbacks = mock()
+    val configCaptor = argumentCaptor<AdPlacementConfig>()
 
     adapter.collectSignals(signalDataBanner, mockSignalCallbacks)
-    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Banner), any()) }
 
     adapter.collectSignals(signalDataRewarded, mockSignalCallbacks)
-    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Rewarded), any()) }
 
     adapter.collectSignals(signalDataNative, mockSignalCallbacks)
-    mockBidMachine.verify { BidMachine.getBidToken(eq(context), eq(AdsFormat.Native), any()) }
+    mockBidMachine.verify(
+      { BidMachine.getBidToken(eq(context), configCaptor.capture(), any()) },
+      times(3),
+    )
+    assertThat(configCaptor.firstValue.adsFormat).isEqualTo(AdsFormat.Banner)
+    assertThat(configCaptor.secondValue.adsFormat).isEqualTo(AdsFormat.Rewarded)
+    assertThat(configCaptor.thirdValue.adsFormat).isEqualTo(AdsFormat.Native)
   }
 
   // endregion

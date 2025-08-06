@@ -40,6 +40,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import io.bidmachine.AdPlacementConfig
 import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.banner.BannerView
@@ -158,7 +159,9 @@ class BidMachineMediationAdapter : RtbAdapter() {
       callback.onFailure(adError)
       return
     }
-    BidMachine.getBidToken(signalData.context, adsFormat) { bidToken ->
+    val placementId = signalData.configurations[0].serverParameters.getString(PLACEMENT_ID_KEY)
+    val adPlacementConfig = AdPlacementConfig(adsFormat, placementId, customParams = null)
+    BidMachine.getBidToken(signalData.context, adPlacementConfig) { bidToken ->
       callback.onSuccess(bidToken)
     }
   }
