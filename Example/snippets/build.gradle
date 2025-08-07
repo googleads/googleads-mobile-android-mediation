@@ -1,15 +1,14 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdk rootProject.ext.compileSdkVersion
-    namespace "com.google.ads.mediation.sample.mediationsample"
+    namespace "com.google.ads.mediation.snippets"
 
     defaultConfig {
-        applicationId "com.google.ads.mediation.sample.mediationsample"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0.0"
     }
     buildFeatures {
         buildConfig = true
@@ -23,8 +22,10 @@ android {
 }
 
 dependencies {
-    implementation rootProject.ext.appcompat
+    implementation project(':sdk')
     implementation rootProject.ext.playServicesAds
-    implementation project(':customevent')
-    implementation project(':snippets')
+    implementation rootProject.ext.appcompat
+
+    // Include Mediation SDK Adapter dependencies.
+    implementation("com.google.ads.mediation:applovin:+")
 }
