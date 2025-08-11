@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Moloco"
     // String property to store version name.
-    stringVersion = "3.12.0.0"
+    stringVersion = "3.12.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -30,7 +30,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 3120000
+        versionCode 3120100
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -131,7 +131,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:24.5.0'
-    implementation 'com.moloco.sdk:moloco-sdk:3.12.0'
+    implementation 'com.moloco.sdk:moloco-sdk:3.12.1'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
