@@ -12,7 +12,7 @@ ext {
     // String property to store the artifact id.
     stringArtifactId = "vungle"
     // String property to store version name.
-    stringVersion = "7.5.0.1"
+    stringVersion = "7.5.1.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 7050001
+        versionCode 7050100
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
@@ -119,9 +119,9 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.vungle:vungle-ads:7.5.0'
+    implementation 'com.vungle:vungle-ads:7.5.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:24.3.0'
+    implementation 'com.google.android.gms:play-services-ads:24.5.0'
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'junit:junit:4.13.2'

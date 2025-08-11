@@ -114,7 +114,7 @@ class VungleRtbNativeAdTest {
     assertThat(adIcon.drawable).isNull()
     assertThat(adIcon.uri.toString()).isEqualTo(APP_ICON_URL)
     assertThat(adIcon.scale).isEqualTo(1)
-    assertThat(adapterRtbNativeAd.overrideImpressionRecording).isFalse()
+    assertThat(adapterRtbNativeAd.overrideImpressionRecording).isTrue()
     assertThat(adapterRtbNativeAd.overrideClickHandling).isTrue()
     verify(nativeAdLoadCallback).onSuccess(adapterRtbNativeAd)
   }

@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.5.1.0 (In progress)
+
 #### Version 7.5.0.1
 - Sets `overrideImpressionRecording` to true for both waterfall and RTB native ads.
 
