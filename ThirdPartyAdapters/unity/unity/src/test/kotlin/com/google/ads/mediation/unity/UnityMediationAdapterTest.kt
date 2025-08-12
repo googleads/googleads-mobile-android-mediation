@@ -43,6 +43,7 @@ import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError
 import com.unity3d.ads.UnityAdsLoadOptions
 import com.unity3d.ads.metadata.MediationMetaData
+import com.unity3d.services.banners.UnityBannerSize
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -421,6 +422,33 @@ class UnityMediationAdapterTest {
       verify(unityBannerViewWrapper).setListener(any())
       verify(unityBannerViewWrapper).load(any())
     }
+  }
+
+  @Test
+  fun loadRtbBannerAd_evenForNonStandardUnityBannerSize_loads() {
+    // Medium rectangle is a "non-standard" size for Unity Ads SDK.
+    adSize = AdSize.MEDIUM_RECTANGLE
+    doAnswer { invocation ->
+        val args = invocation.arguments
+        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+      }
+      .whenever(unityInitializer)
+      .initializeUnityAds(any(), any(), any())
+    mediationBannerAdConfiguration = initializeBannerAd(activity, "testBidResponse")
+    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn mock()
+
+    unityMediationAdapter.loadRtbBannerAd(
+      mediationBannerAdConfiguration,
+      mediationBannerAdLoadCallback,
+    )
+
+    val unityBannerSizeCaptor = argumentCaptor<UnityBannerSize>()
+    verify(unityBannerViewFactory)
+      .createBannerView(eq(activity), eq(TEST_PLACEMENT_ID), unityBannerSizeCaptor.capture())
+    val unityBannerSize = unityBannerSizeCaptor.firstValue
+    assertThat(unityBannerSize.width).isEqualTo(AdSize.MEDIUM_RECTANGLE.width)
+    assertThat(unityBannerSize.height).isEqualTo(AdSize.MEDIUM_RECTANGLE.height)
+    verify(unityBannerViewWrapper).load(any())
   }
 
   private fun initializeBannerAd(context: Context, bidResponse: String) =

@@ -212,8 +212,8 @@ public class UnityAdsAdapterUtils {
   }
 
   @Nullable
-  public static UnityBannerSize getUnityBannerSize(@NonNull Context context,
-      @NonNull AdSize adSize) {
+  public static UnityBannerSize getUnityBannerSize(
+      @NonNull Context context, @NonNull AdSize adSize, boolean isRtb) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
@@ -223,7 +223,11 @@ public class UnityAdsAdapterUtils {
       return new UnityBannerSize(closestSize.getWidth(), closestSize.getHeight());
     }
 
-    return null;
+    if (isRtb) {
+      return new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
+    } else {
+      return null;
+    }
   }
 
   /**

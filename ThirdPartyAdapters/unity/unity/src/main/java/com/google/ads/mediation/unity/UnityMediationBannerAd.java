@@ -25,6 +25,7 @@ import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import androidx.annotation.Keep;
@@ -188,8 +189,13 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     }
     final Activity activity = (Activity) context;
 
+    final String adMarkup = mediationBannerAdConfiguration.getBidResponse();
+
+    // It is RTB if adMarkup is not empty.
+    boolean isRtb = !TextUtils.isEmpty(adMarkup);
+
     final UnityBannerSize unityBannerSize =
-        UnityAdsAdapterUtils.getUnityBannerSize(context, adSize);
+        UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, isRtb);
     if (unityBannerSize == null) {
       String errorMessage = ERROR_MSG_NO_MATCHING_AD_SIZE + adSize;
       AdError adError =
@@ -199,8 +205,6 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       mediationBannerAdLoadCallback.onFailure(adError);
       return;
     }
-
-    final String adMarkup = mediationBannerAdConfiguration.getBidResponse();
 
     unityInitializer.initializeUnityAds(
         context,

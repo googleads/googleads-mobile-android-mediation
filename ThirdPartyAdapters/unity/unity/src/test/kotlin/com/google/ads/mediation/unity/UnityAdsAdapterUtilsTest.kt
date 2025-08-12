@@ -199,7 +199,8 @@ class UnityAdsAdapterUtilsTest {
   fun getUnityBannerSize_returnsNullOnInvalidSize() {
     val adSize = AdSize.WIDE_SKYSCRAPER
 
-    val unityBannerAdSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize)
+    val unityBannerAdSize =
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
 
     assertThat(unityBannerAdSize).isNull()
   }
@@ -208,7 +209,8 @@ class UnityAdsAdapterUtilsTest {
   fun getUnityBannerSize_returnsCorrectBannerSize() {
     val adSize = AdSize.BANNER
 
-    val unityBannerAdSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize)
+    val unityBannerAdSize =
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
 
     assertThat(unityBannerAdSize).isNotNull()
     assertThat(unityBannerAdSize?.width).isEqualTo(320)
@@ -219,7 +221,8 @@ class UnityAdsAdapterUtilsTest {
   fun getUnityBannerSize_returnsCorrectLeaderboardSize() {
     val adSize = AdSize.LEADERBOARD
 
-    val unityBannerAdSize = UnityAdsAdapterUtils.getUnityBannerSize(context, adSize)
+    val unityBannerAdSize =
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
 
     assertThat(unityBannerAdSize).isNotNull()
     assertThat(unityBannerAdSize?.width).isEqualTo(728)
