@@ -1,6 +1,6 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 4.16.0.1 (In progress)
 - Removed size check from the adapter for banner RTB ads.
 
 #### Version 4.16.0.0

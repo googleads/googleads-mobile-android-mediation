@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "UnityAds"
     // String property to store version name.
-    stringVersion = "4.16.0.0"
+    stringVersion = "4.16.0.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 4160000
+        versionCode 4160001
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         android.buildFeatures.buildConfig true
