@@ -1,6 +1,11 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Version 7.5.1.0 (In progress)
+#### Version 7.5.1.0
+- Verified compatibility with Vungle SDK 7.5.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.5.0.
+- Vungle SDK version 7.5.1.
 
 #### Version 7.5.0.1
 - Sets `overrideImpressionRecording` to true for both waterfall and RTB native ads.
