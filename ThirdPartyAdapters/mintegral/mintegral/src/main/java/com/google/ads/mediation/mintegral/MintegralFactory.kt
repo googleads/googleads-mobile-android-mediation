@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener
+import com.mbridge.msdk.out.MBBannerView
 import com.mbridge.msdk.out.MBSplashHandler
 import com.mbridge.msdk.out.MBSplashLoadWithCodeListener
 import com.mbridge.msdk.out.MBSplashShowListener
@@ -129,6 +130,8 @@ object MintegralFactory {
         instance?.showFromBid()
       }
     }
+
+  @JvmStatic fun createMBBannerView(context: Context) = MBBannerView(context)
 }
 
 /** Declares the methods that will invoke the [MBSplashHandler] methods */

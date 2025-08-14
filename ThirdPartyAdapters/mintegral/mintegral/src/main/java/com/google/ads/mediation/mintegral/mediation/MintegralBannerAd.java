@@ -33,7 +33,6 @@ import com.mbridge.msdk.out.BannerAdWithCodeListener;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
 import com.mbridge.msdk.out.MBridgeIds;
-
 import java.util.ArrayList;
 
 public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements
@@ -58,33 +57,51 @@ public abstract class MintegralBannerAd extends BannerAdWithCodeListener impleme
   public abstract void loadAd();
 
   @Nullable
-  public static BannerSize getMintegralBannerSizeFromAdMobAdSize(@NonNull AdSize adSize,
-      @NonNull Context context) {
+  public static BannerSize getMintegralBannerSizeFromAdMobAdSize(
+      @NonNull AdSize adSize, @NonNull Context context, boolean isRtb) {
+    // Sizes supported by Mintegral for Waterfall ad requests.
     ArrayList<AdSize> supportedAdSizes = new ArrayList<>();
     supportedAdSizes.add(new AdSize(320, 50));
     supportedAdSizes.add(new AdSize(300, 250));
     supportedAdSizes.add(new AdSize(728, 90));
 
     AdSize closestSize = MediationUtils.findClosestSize(context, adSize, supportedAdSizes);
-    if (closestSize == null) {
+
+    // Size to be used for making the Mintegral ad request. This is a Google size object.
+    AdSize googleSizeForMintegral = null;
+
+    if (closestSize != null) {
+      googleSizeForMintegral = closestSize;
+    } else if (isRtb) {
+      // In the case of RTB, if closestSize is null, just use the requested size and let Mintegral
+      // SDK handle it.
+      googleSizeForMintegral = adSize;
+    } else {
+      // If not RTB (i.e. Waterfall), if closestSize is null, just return null since we couldn't
+      // find an ad size supported by Mintegral for Waterfall ad requests.
       return null;
     }
 
-    BannerSize bannerSize = null;
-    if (closestSize.equals(AdSize.BANNER)) { // 320 * 50
-      bannerSize = new BannerSize(BannerSize.STANDARD_TYPE, 0, 0);
+    // Convert Google's ad size object googleSizeForMintegral to Mintegral's ad size object
+    // mintegralSize.
+    BannerSize mintegralSize = null;
+    if (googleSizeForMintegral.equals(AdSize.BANNER)) { // 320 * 50
+      mintegralSize = new BannerSize(BannerSize.STANDARD_TYPE, 0, 0);
     }
-    if (closestSize.equals(AdSize.MEDIUM_RECTANGLE)) { // 300 * 250
-      bannerSize = new BannerSize(BannerSize.MEDIUM_TYPE, 0, 0);
+    if (googleSizeForMintegral.equals(AdSize.MEDIUM_RECTANGLE)) { // 300 * 250
+      mintegralSize = new BannerSize(BannerSize.MEDIUM_TYPE, 0, 0);
     }
-    if (closestSize.equals(AdSize.LEADERBOARD)) { // 728 * 90
-      bannerSize = new BannerSize(BannerSize.SMART_TYPE, closestSize.getWidth(), 0);
+    if (googleSizeForMintegral.equals(AdSize.LEADERBOARD)) { // 728 * 90
+      mintegralSize = new BannerSize(BannerSize.SMART_TYPE, googleSizeForMintegral.getWidth(), 0);
     }
-    if (bannerSize == null) {
-      bannerSize = new BannerSize(BannerSize.DEV_SET_TYPE, closestSize.getWidth(),
-          closestSize.getHeight());
+    if (mintegralSize == null) {
+      mintegralSize =
+          new BannerSize(
+              BannerSize.DEV_SET_TYPE,
+              googleSizeForMintegral.getWidth(),
+              googleSizeForMintegral.getHeight());
     }
-    return bannerSize;
+    return mintegralSize;
   }
 
   @NonNull

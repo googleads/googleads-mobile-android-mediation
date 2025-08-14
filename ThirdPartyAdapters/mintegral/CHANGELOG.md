@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next version
+- Removed size check from the adapter for banner RTB ads.
+
 #### Version 16.9.91.0
 - Verified compatibility with Mintegral SDK 16.9.91.
 
