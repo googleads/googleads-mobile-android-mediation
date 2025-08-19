@@ -33,11 +33,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: "Install Gradle"
-        run: |
-          brew install gradle
-      - name: "Build Example"
+      - name: "Build Example App"
         run: |
           cd Example/
-          gradle wrapper
           ./gradlew build
