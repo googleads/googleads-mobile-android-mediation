@@ -39,5 +39,4 @@ jobs:
       - name: "Build Example"
         run: |
           cd Example/
-          gradle wrapper
           ./gradlew build
