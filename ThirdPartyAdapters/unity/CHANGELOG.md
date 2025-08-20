@@ -2,8 +2,12 @@
 
 #### Version 4.16.1.0 (In progress)
 
-#### Version 4.16.0.1 (In progress)
+#### Version 4.16.0.1
 - Removed size check from the adapter for banner RTB ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.5.0.
+- Unity Ads SDK version 4.16.0.
 
 #### Version 4.16.0.0
 - Verified compatibility with Unity Ads SDK 4.16.0.
