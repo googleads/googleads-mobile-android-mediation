@@ -14,7 +14,21 @@ import com.pubmatic.sdk.rewardedad.POBRewardedAd
 class PubMaticAdFactoryImpl : PubMaticAdFactory {
   override fun createPOBInterstitial(context: Context) = POBInterstitial(context)
 
+  override fun createPOBInterstitial(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ) = POBInterstitial(context, pubId, profileId, adUnit)
+
   override fun createPOBRewardedAd(context: Context) = POBRewardedAd.getRewardedAd(context)
+
+  override fun createPOBRewardedAd(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ) = POBRewardedAd.getRewardedAd(context, pubId, profileId, adUnit)
 
   override fun createPOBBannerView(context: Context) = POBBannerView(context)
 

@@ -1,5 +1,9 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Next Version
+- Adds support for waterfall interstitial ads.
+- Adds support for waterfall rewarded ads.
+
 #### Version 4.8.0.0
 - Verified compatibility with Pubmatic SDK 4.8.0.
 
