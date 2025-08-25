@@ -16,7 +16,21 @@ import kotlin.time.Duration.Companion.seconds
 interface PubMaticAdFactory {
   fun createPOBInterstitial(context: Context): POBInterstitial
 
+  fun createPOBInterstitial(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ): POBInterstitial
+
   fun createPOBRewardedAd(context: Context): POBRewardedAd
+
+  fun createPOBRewardedAd(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ): POBRewardedAd?
 
   fun createPOBBannerView(context: Context): POBBannerView
 

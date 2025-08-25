@@ -85,6 +85,7 @@ class PubMaticRewardedAdTests {
         mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         pubMaticAdFactory,
+        isRtb = true,
       )
       .onSuccess { pubMaticRewardedAd = it }
   }
