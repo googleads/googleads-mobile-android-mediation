@@ -176,6 +176,22 @@ class PubMaticMediationAdapter(
     )
   }
 
+  override fun loadInterstitialAd(
+    mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
+    callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+  ) {
+    PubMaticInterstitialAd.newInstance(
+        mediationInterstitialAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRtb = false,
+      )
+      .onSuccess {
+        interstitialAd = it
+        interstitialAd.loadAd()
+      }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
@@ -195,6 +211,7 @@ class PubMaticMediationAdapter(
         mediationInterstitialAdConfiguration,
         callback,
         pubMaticAdFactory,
+        isRtb = true,
       )
       .onSuccess {
         interstitialAd = it
@@ -232,12 +249,20 @@ class PubMaticMediationAdapter(
     const val SDK_ERROR_DOMAIN = "com.pubmatic.sdk"
     const val KEY_PUBLISHER_ID = "publisher_id"
     const val KEY_PROFILE_ID = "profile_id"
+    const val KEY_AD_UNIT = "ad_unit_id"
 
     const val ERROR_MISSING_PUBLISHER_ID = 101
+    const val ERROR_MISSING_PUBLISHER_ID_MSG = "Missing or empty Publisher Id"
 
     const val ERROR_INVALID_AD_FORMAT = 102
 
     const val ERROR_AD_NOT_READY = 103
+
+    const val ERROR_MISSING_OR_INVALID_PROFILE_ID = 104
+    const val ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG = "Missing or invalid Profile Id"
+
+    const val ERROR_MISSING_AD_UNIT_ID = 105
+    const val ERROR_MISSING_AD_UNIT_ID_MSG = "Missing or empty Ad Unit Id"
 
     /**
      * Gets the PubMatic publisher ID from ad unit mappings.
