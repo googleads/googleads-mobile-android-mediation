@@ -134,8 +134,10 @@ class MolocoMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    Moloco.getBidToken(signalData.context) { bidToken: String, errorType: MolocoAdError.ErrorType?
-      ->
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
+    Moloco.getBidToken(mediationInfo = mediationInfo, context = signalData.context) {
+      bidToken: String,
+      errorType: MolocoAdError.ErrorType? ->
       if (errorType != null) {
         val adError = AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
         callback.onFailure(adError)

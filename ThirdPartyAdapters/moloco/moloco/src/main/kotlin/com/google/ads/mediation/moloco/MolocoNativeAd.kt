@@ -18,12 +18,14 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.moloco.sdk.publisher.AdLoad
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
@@ -44,7 +46,12 @@ private constructor(
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE) internal var nativeAd: NativeAd? = null
 
   fun loadAd() {
-    Moloco.createNativeAd(adUnitId, watermark) { returnedAd, adCreateError ->
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
+    Moloco.createNativeAd(
+      mediationInfo = mediationInfo,
+      adUnitId = adUnitId,
+      watermarkString = watermark,
+    ) { returnedAd, adCreateError ->
       if (returnedAd == null) {
         val adError =
           if (adCreateError != null) {

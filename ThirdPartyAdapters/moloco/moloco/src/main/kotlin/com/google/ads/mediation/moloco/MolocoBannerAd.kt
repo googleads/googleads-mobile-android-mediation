@@ -15,6 +15,7 @@
 package com.google.ads.mediation.moloco
 
 import android.view.View
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -26,6 +27,7 @@ import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.Banner
 import com.moloco.sdk.publisher.BannerAdShowListener
 import com.moloco.sdk.publisher.CreateBannerCallback
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
@@ -72,15 +74,31 @@ private constructor(
           molocoAd.load(bidResponse, this@MolocoBannerAd)
         }
       }
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
     when (adSize) {
       AdSize.LEADERBOARD -> {
-        Moloco.createBannerTablet(adUnitId, watermark, createBannerCallback)
+        Moloco.createBannerTablet(
+          mediationInfo = mediationInfo,
+          adUnitId = adUnitId,
+          watermarkString = watermark,
+          callback = createBannerCallback,
+        )
       }
       AdSize.MEDIUM_RECTANGLE -> {
-        Moloco.createMREC(adUnitId, watermark, createBannerCallback)
+        Moloco.createMREC(
+          mediationInfo = mediationInfo,
+          adUnitId = adUnitId,
+          watermarkString = watermark,
+          callback = createBannerCallback,
+        )
       }
       else -> {
-        Moloco.createBanner(adUnitId, watermark, createBannerCallback)
+        Moloco.createBanner(
+          mediationInfo = mediationInfo,
+          adUnitId = adUnitId,
+          watermarkString = watermark,
+          callback = createBannerCallback,
+        )
       }
     }
   }

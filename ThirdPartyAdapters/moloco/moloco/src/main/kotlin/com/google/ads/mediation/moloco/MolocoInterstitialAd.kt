@@ -15,6 +15,7 @@
 package com.google.ads.mediation.moloco
 
 import android.content.Context
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -24,6 +25,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.InterstitialAd
 import com.moloco.sdk.publisher.InterstitialAdShowListener
+import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
@@ -45,7 +47,12 @@ private constructor(
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
-    Moloco.createInterstitial(adUnitId, watermark) { returnedAd, molocoError ->
+    val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
+    Moloco.createInterstitial(
+      mediationInfo = mediationInfo,
+      adUnitId = adUnitId,
+      watermarkString = watermark,
+    ) { returnedAd, molocoError ->
       if (molocoError != null) {
         val adError = AdError(molocoError.errorCode, molocoError.description, SDK_ERROR_DOMAIN)
         mediationAdLoadCallback.onFailure(adError)

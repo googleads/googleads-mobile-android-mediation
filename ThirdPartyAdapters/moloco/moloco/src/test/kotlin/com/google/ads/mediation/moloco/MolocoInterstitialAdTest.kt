@@ -35,6 +35,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -149,6 +150,7 @@ class MolocoInterstitialAdTest {
       val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
       mockedMoloco.verify {
         Moloco.createInterstitial(
+          any(),
           eq(TEST_AD_UNIT),
           eq(TEST_WATERMARK),
           createInterstitialCaptor.capture(),
