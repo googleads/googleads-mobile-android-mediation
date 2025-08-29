@@ -84,6 +84,7 @@ class PubMaticInterstitialAdTests {
         mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         pubMaticAdFactory,
+        isRtb = true,
       )
       .onSuccess { pubMaticInterstitialAd = it }
   }
