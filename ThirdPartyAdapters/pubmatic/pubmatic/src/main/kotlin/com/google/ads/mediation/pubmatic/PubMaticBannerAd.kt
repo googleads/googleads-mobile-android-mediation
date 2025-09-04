@@ -14,8 +14,20 @@
 
 package com.google.ads.mediation.pubmatic
 
-import android.content.Context
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_BANNER_AD_SIZE
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_BANNER_AD_SIZE_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_AD_UNIT
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.getPubMaticBannerAdSize
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -26,6 +38,7 @@ import com.pubmatic.sdk.openwrap.banner.POBBannerView
 import com.pubmatic.sdk.openwrap.banner.POBBannerView.POBBannerViewListener
 import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
+import java.lang.RuntimeException
 
 /**
  * Used to load PubMatic banner ads and mediate callbacks between Google Mobile Ads SDK and PubMatic
@@ -33,16 +46,13 @@ import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
  */
 class PubMaticBannerAd
 private constructor(
-  context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  pubMaticAdFactory: PubMaticAdFactory,
+  private val pobBannerView: POBBannerView,
+  private val isRTB: Boolean,
 ) : MediationBannerAd, POBBannerViewListener() {
-
-  /** PubMatic SDK's banner view object. */
-  private val pobBannerView: POBBannerView = pubMaticAdFactory.createPOBBannerView(context)
 
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
 
@@ -50,8 +60,12 @@ private constructor(
     pobBannerView.setListener(this)
     // Pause auto-refresh since the GMA SDK will handle the banner refresh logic.
     pobBannerView.pauseAutoRefresh()
-    pobBannerView.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
-    pobBannerView.loadAd(bidResponse, POBBiddingHost.ADMOB)
+    if (isRTB) {
+      pobBannerView.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
+      pobBannerView.loadAd(bidResponse, POBBiddingHost.ADMOB)
+      return
+    }
+    pobBannerView.loadAd()
   }
 
   override fun getView() = pobBannerView
@@ -92,15 +106,67 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
       pubMaticAdFactory: PubMaticAdFactory,
-    ) =
-      Result.success(
+      isRTB: Boolean,
+    ): Result<PubMaticBannerAd> {
+      val context = mediationBannerAdConfiguration.context
+      val pobBannerAd =
+        if (isRTB) {
+          pubMaticAdFactory.createPOBBannerView(context)
+        } else {
+          val adSize = mediationBannerAdConfiguration.adSize
+          val pobAdSize = getPubMaticBannerAdSize(context, adSize)
+          if (pobAdSize == null) {
+            val adError =
+              AdError(
+                ERROR_INVALID_BANNER_AD_SIZE,
+                ERROR_INVALID_BANNER_AD_SIZE_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(RuntimeException(adError.toString()))
+          }
+          val serverParameters = mediationBannerAdConfiguration.serverParameters
+          val pubId = serverParameters.getString(KEY_PUBLISHER_ID)
+          val profileId = serverParameters.getString(KEY_PROFILE_ID)?.toIntOrNull()
+          val adUnit = serverParameters.getString(KEY_AD_UNIT)
+          if (pubId.isNullOrEmpty()) {
+            val adError =
+              AdError(
+                ERROR_MISSING_PUBLISHER_ID,
+                ERROR_MISSING_PUBLISHER_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (profileId == null) {
+            val adError =
+              AdError(
+                ERROR_MISSING_OR_INVALID_PROFILE_ID,
+                ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (adUnit.isNullOrEmpty()) {
+            val adError =
+              AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          pubMaticAdFactory.createPOBBannerView(context, pubId, profileId, adUnit, pobAdSize)
+        }
+
+      return Result.success(
         PubMaticBannerAd(
-          mediationBannerAdConfiguration.context,
           mediationAdLoadCallback,
           mediationBannerAdConfiguration.bidResponse,
           mediationBannerAdConfiguration.watermark,
-          pubMaticAdFactory,
+          pobBannerAd,
+          isRTB,
         )
       )
+    }
   }
 }

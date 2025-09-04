@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.MediationUtils
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -46,6 +47,7 @@ import com.pubmatic.sdk.common.OpenWrapSDK
 import com.pubmatic.sdk.common.OpenWrapSDKConfig
 import com.pubmatic.sdk.common.OpenWrapSDKInitializer
 import com.pubmatic.sdk.common.POBAdFormat
+import com.pubmatic.sdk.common.POBAdSize
 import com.pubmatic.sdk.common.POBError
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import com.pubmatic.sdk.openwrap.core.signal.POBSignalConfig
@@ -176,6 +178,22 @@ class PubMaticMediationAdapter(
     )
   }
 
+  override fun loadBannerAd(
+    mediationBannerAdConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    PubMaticBannerAd.newInstance(
+        mediationBannerAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRTB = false,
+      )
+      .onSuccess {
+        bannerAd = it
+        bannerAd.loadAd()
+      }
+  }
+
   override fun loadInterstitialAd(
     mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
     callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
@@ -212,7 +230,12 @@ class PubMaticMediationAdapter(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    PubMaticBannerAd.newInstance(mediationBannerAdConfiguration, callback, pubMaticAdFactory)
+    PubMaticBannerAd.newInstance(
+        mediationBannerAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRTB = true,
+      )
       .onSuccess {
         bannerAd = it
         bannerAd.loadAd()
@@ -288,6 +311,10 @@ class PubMaticMediationAdapter(
     const val ERROR_NULL_REWARDED_AD = 106
     const val ERROR_NULL_REWARDED_AD_MSG = "Returned Rewarded ad is null"
 
+    const val ERROR_INVALID_BANNER_AD_SIZE = 107
+
+    const val ERROR_INVALID_BANNER_AD_SIZE_MSG = "Invalid banner ad size"
+
     /**
      * Gets the PubMatic publisher ID from ad unit mappings.
      *
@@ -356,5 +383,25 @@ class PubMaticMediationAdapter(
         AdFormat.NATIVE -> POBAdFormat.NATIVE
         else -> null
       }
+
+    /**
+     * Maps Google banner ad size to a valid PubMatic banner size.
+     *
+     * Returns null if the banner size is not supported by PubMatic.
+     */
+    fun getPubMaticBannerAdSize(context: Context, adSize: AdSize): POBAdSize? {
+      val potentials = listOf(AdSize.BANNER, AdSize.MEDIUM_RECTANGLE)
+
+      val closestSize = MediationUtils.findClosestSize(context, adSize, potentials)
+      return when (closestSize) {
+        AdSize.BANNER -> POBAdSize.BANNER_SIZE_320x50
+        AdSize.MEDIUM_RECTANGLE -> POBAdSize.BANNER_SIZE_300x250
+        AdSize.FULL_BANNER -> POBAdSize.BANNER_SIZE_468x60
+        AdSize.LARGE_BANNER -> POBAdSize.BANNER_SIZE_320x100
+        AdSize.LEADERBOARD -> POBAdSize.BANNER_SIZE_728x90
+        AdSize.WIDE_SKYSCRAPER -> POBAdSize.BANNER_SIZE_120x600
+        else -> null
+      }
+    }
   }
 }

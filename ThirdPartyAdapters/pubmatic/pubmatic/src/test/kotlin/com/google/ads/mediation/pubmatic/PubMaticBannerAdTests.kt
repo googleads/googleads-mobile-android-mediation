@@ -18,8 +18,6 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.pubmatic.PubMaticAdFactory
-import com.google.ads.mediation.pubmatic.PubMaticBannerAd
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -85,6 +83,7 @@ class PubMaticBannerAdTests {
         mediationBannerAdConfiguration,
         mediationAdLoadCallback,
         pubMaticAdFactory,
+        isRTB = true,
       )
       .onSuccess { pubMaticBannerAd = it }
   }
