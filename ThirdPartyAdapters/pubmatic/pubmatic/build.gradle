@@ -16,7 +16,7 @@ ext {
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
-    jacocoVersion = '0.8.8'
+    jacocoVersion = '0.8.13'
 }
 
 // kotlin {

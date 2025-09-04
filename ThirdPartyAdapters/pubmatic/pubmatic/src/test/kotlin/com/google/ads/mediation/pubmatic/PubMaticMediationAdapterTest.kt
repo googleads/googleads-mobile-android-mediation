@@ -18,11 +18,21 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_AD_FORMAT
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_AD_UNIT
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
@@ -34,8 +44,11 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -63,9 +76,11 @@ import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 
@@ -105,6 +120,9 @@ class PubMaticMediationAdapterTest {
   private val pubMaticAdFactory =
     mock<PubMaticAdFactory> {
       on { createPOBInterstitial(any()) } doReturn pobInterstitial
+      on {
+        createPOBInterstitial(context, TEST_PUBLISHER_ID, TEST_PROFILE_ID_1.toInt(), TEST_AD_UNIT)
+      } doReturn pobInterstitial
       on { createPOBRewardedAd(any()) } doReturn pobRewardedAd
       on { createPOBBannerView(any()) } doReturn pobBannerView
       on { createPOBNativeAdLoader(any()) } doReturn pobNativeAdLoader
@@ -461,6 +479,92 @@ class PubMaticMediationAdapterTest {
 
   // endregion
 
+  // region Waterfall ad load tests.
+
+  @Test
+  fun loadInterstitialAd_loadsPubMaticInterstitial() {
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to TEST_PROFILE_ID_1,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+
+    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mock())
+
+    verify(pobInterstitial).setListener(any())
+    verify(pobInterstitial, never()).loadAd(any(), any())
+    verify(pobInterstitial).loadAd()
+  }
+
+  @Test
+  fun loadInterstitialAd_withMissingPublisherId_invokesOnFailure() {
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(KEY_PROFILE_ID to TEST_PROFILE_ID_1, KEY_AD_UNIT to TEST_AD_UNIT),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_PUBLISHER_ID, ERROR_MISSING_PUBLISHER_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_withInvalidProfileId_invokesOnFailure() {
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to INVALID_PROFILE_ID,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    val extectedAdError =
+      AdError(
+        ERROR_MISSING_OR_INVALID_PROFILE_ID,
+        ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+        ADAPTER_ERROR_DOMAIN,
+      )
+
+    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(extectedAdError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_withMissingAdUnit_invokesOnFailure() {
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(KEY_PUBLISHER_ID to TEST_PUBLISHER_ID, KEY_PROFILE_ID to TEST_PROFILE_ID_1),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
   // region RTB ad load tests.
 
   @Test
@@ -566,6 +670,7 @@ class PubMaticMediationAdapterTest {
     const val TEST_PROFILE_ID_2 = "5678"
     // Profile ID should be parsable as an integer.
     const val INVALID_PROFILE_ID = "a123"
+    const val TEST_AD_UNIT = "test_ad_unit"
     const val OPENWRAP_INIT_ERROR_CODE = 1001
     const val OPENWRAP_INIT_ERROR_MSG = "Init failed"
     const val PUBMATIC_SIGNALS = "PubMatic-SDK-collected signals"

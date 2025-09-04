@@ -17,6 +17,15 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_AD_NOT_READY
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_AD_UNIT
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -28,6 +37,7 @@ import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial
 import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial.POBInterstitialListener
+import java.util.NoSuchElementException
 
 /**
  * Used to load PubMatic interstitial ads and mediate callbacks between Google Mobile Ads SDK and
@@ -35,23 +45,25 @@ import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial.POBInterstitialLis
  */
 class PubMaticInterstitialAd
 private constructor(
-  context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  pubMaticAdFactory: PubMaticAdFactory,
+  private val pobInterstitial: POBInterstitial,
+  private val isRtb: Boolean,
 ) : MediationInterstitialAd, POBInterstitialListener() {
-
-  /** PubMatic SDK's interstitial ad object. */
-  private val pobInterstitial: POBInterstitial = pubMaticAdFactory.createPOBInterstitial(context)
 
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
     pobInterstitial.setListener(this)
-    pobInterstitial.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
-    pobInterstitial.loadAd(bidResponse, POBBiddingHost.ADMOB)
+    if (isRtb) {
+      pobInterstitial.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
+      pobInterstitial.loadAd(bidResponse, POBBiddingHost.ADMOB)
+      return
+    }
+
+    pobInterstitial.loadAd()
   }
 
   override fun onAdReceived(pobInterstitial: POBInterstitial) {
@@ -106,14 +118,53 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
       pubMaticAdFactory: PubMaticAdFactory,
+      isRtb: Boolean,
     ): Result<PubMaticInterstitialAd> {
+      val context = mediationInterstitialAdConfiguration.context
+      val pobInterstitial =
+        if (isRtb) {
+          pubMaticAdFactory.createPOBInterstitial(context)
+        } else {
+          val serverParameters = mediationInterstitialAdConfiguration.serverParameters
+          val pubId = serverParameters.getString(KEY_PUBLISHER_ID)
+          val profileId = serverParameters.getString(KEY_PROFILE_ID)?.toIntOrNull()
+          val adUnit = serverParameters.getString(KEY_AD_UNIT)
+          if (pubId.isNullOrEmpty()) {
+            val adError =
+              AdError(
+                ERROR_MISSING_PUBLISHER_ID,
+                ERROR_MISSING_PUBLISHER_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (profileId == null) {
+            val adError =
+              AdError(
+                ERROR_MISSING_OR_INVALID_PROFILE_ID,
+                ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (adUnit.isNullOrEmpty()) {
+            val adError =
+              AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          pubMaticAdFactory.createPOBInterstitial(context, pubId, profileId, adUnit)
+        }
+
       return Result.success(
         PubMaticInterstitialAd(
-          mediationInterstitialAdConfiguration.context,
           mediationAdLoadCallback,
           mediationInterstitialAdConfiguration.bidResponse,
           mediationInterstitialAdConfiguration.watermark,
-          pubMaticAdFactory,
+          pobInterstitial,
+          isRtb,
         )
       )
     }
