@@ -17,6 +17,17 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_AD_NOT_READY
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_NULL_REWARDED_AD
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_NULL_REWARDED_AD_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_AD_UNIT
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PROFILE_ID
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -28,6 +39,7 @@ import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
 import com.pubmatic.sdk.openwrap.core.POBReward
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import com.pubmatic.sdk.rewardedad.POBRewardedAd
+import java.lang.NullPointerException
 
 /**
  * Used to load PubMatic rewarded ads and mediate callbacks between Google Mobile Ads SDK and
@@ -35,23 +47,24 @@ import com.pubmatic.sdk.rewardedad.POBRewardedAd
  */
 class PubMaticRewardedAd
 private constructor(
-  context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  pubMaticAdFactory: PubMaticAdFactory,
+  private val pobRewardedAd: POBRewardedAd,
+  private val isRtb: Boolean,
 ) : MediationRewardedAd, POBRewardedAd.POBRewardedAdListener() {
-
-  /** PubMatic SDK's rewarded ad object. */
-  private val pobRewardedAd: POBRewardedAd = pubMaticAdFactory.createPOBRewardedAd(context)
 
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
 
   fun loadAd() {
     pobRewardedAd.setListener(this)
-    pobRewardedAd.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
-    pobRewardedAd.loadAd(bidResponse, POBBiddingHost.ADMOB)
+    if (isRtb) {
+      pobRewardedAd.addExtraInfo(KEY_POB_ADMOB_WATERMARK, watermark)
+      pobRewardedAd.loadAd(bidResponse, POBBiddingHost.ADMOB)
+      return
+    }
+    pobRewardedAd.loadAd()
   }
 
   override fun onAdReceived(pobRewardedAd: POBRewardedAd) {
@@ -106,15 +119,61 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
       pubMaticAdFactory: PubMaticAdFactory,
-    ) =
-      Result.success(
+      isRtb: Boolean,
+    ): Result<PubMaticRewardedAd> {
+      val context = mediationRewardedAdConfiguration.context
+      val pobRewardedAd =
+        if (isRtb) {
+          pubMaticAdFactory.createPOBRewardedAd(context)
+        } else {
+          val serverParameters = mediationRewardedAdConfiguration.serverParameters
+          val pubId = serverParameters.getString(KEY_PUBLISHER_ID)
+          val profileId = serverParameters.getString(KEY_PROFILE_ID)?.toIntOrNull()
+          val adUnit = serverParameters.getString(KEY_AD_UNIT)
+          if (pubId.isNullOrEmpty()) {
+            val adError =
+              AdError(
+                ERROR_MISSING_PUBLISHER_ID,
+                ERROR_MISSING_PUBLISHER_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (profileId == null) {
+            val adError =
+              AdError(
+                ERROR_MISSING_OR_INVALID_PROFILE_ID,
+                ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+                ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          if (adUnit.isNullOrEmpty()) {
+            val adError =
+              AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+            mediationAdLoadCallback.onFailure(adError)
+            return Result.failure(NoSuchElementException(adError.toString()))
+          }
+          pubMaticAdFactory.createPOBRewardedAd(context, pubId, profileId, adUnit)
+        }
+
+      if (pobRewardedAd == null) {
+        val adError = AdError(ERROR_NULL_REWARDED_AD, ERROR_NULL_REWARDED_AD_MSG, SDK_ERROR_DOMAIN)
+        mediationAdLoadCallback.onFailure(adError)
+        return Result.failure(NullPointerException())
+      }
+
+      return Result.success(
         PubMaticRewardedAd(
-          mediationRewardedAdConfiguration.context,
           mediationAdLoadCallback,
           mediationRewardedAdConfiguration.bidResponse,
           mediationRewardedAdConfiguration.watermark,
-          pubMaticAdFactory,
+          pobRewardedAd,
+          isRtb,
         )
       )
+    }
   }
 }

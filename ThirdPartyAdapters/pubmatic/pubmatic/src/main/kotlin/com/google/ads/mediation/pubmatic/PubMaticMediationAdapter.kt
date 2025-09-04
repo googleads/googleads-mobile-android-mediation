@@ -192,6 +192,22 @@ class PubMaticMediationAdapter(
       }
   }
 
+  override fun loadRewardedAd(
+    mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    PubMaticRewardedAd.newInstance(
+        mediationRewardedAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRtb = false,
+      )
+      .onSuccess {
+        rewardedAd = it
+        rewardedAd.loadAd()
+      }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
@@ -223,7 +239,12 @@ class PubMaticMediationAdapter(
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    PubMaticRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, pubMaticAdFactory)
+    PubMaticRewardedAd.newInstance(
+        mediationRewardedAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRtb = true,
+      )
       .onSuccess {
         rewardedAd = it
         rewardedAd.loadAd()
@@ -263,6 +284,9 @@ class PubMaticMediationAdapter(
 
     const val ERROR_MISSING_AD_UNIT_ID = 105
     const val ERROR_MISSING_AD_UNIT_ID_MSG = "Missing or empty Ad Unit Id"
+
+    const val ERROR_NULL_REWARDED_AD = 106
+    const val ERROR_NULL_REWARDED_AD_MSG = "Returned Rewarded ad is null"
 
     /**
      * Gets the PubMatic publisher ID from ad unit mappings.

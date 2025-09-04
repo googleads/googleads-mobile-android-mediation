@@ -23,6 +23,13 @@ class PubMaticAdFactoryImpl : PubMaticAdFactory {
 
   override fun createPOBRewardedAd(context: Context) = POBRewardedAd.getRewardedAd(context)
 
+  override fun createPOBRewardedAd(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ) = POBRewardedAd.getRewardedAd(context, pubId, profileId, adUnit)
+
   override fun createPOBBannerView(context: Context) = POBBannerView(context)
 
   override fun createPOBNativeAdLoader(context: Context) = POBNativeAdLoader(context)

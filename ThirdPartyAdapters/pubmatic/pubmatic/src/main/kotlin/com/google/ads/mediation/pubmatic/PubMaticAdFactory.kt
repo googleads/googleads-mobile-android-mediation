@@ -25,6 +25,13 @@ interface PubMaticAdFactory {
 
   fun createPOBRewardedAd(context: Context): POBRewardedAd
 
+  fun createPOBRewardedAd(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ): POBRewardedAd?
+
   fun createPOBBannerView(context: Context): POBBannerView
 
   fun createPOBNativeAdLoader(context: Context): POBNativeAdLoader

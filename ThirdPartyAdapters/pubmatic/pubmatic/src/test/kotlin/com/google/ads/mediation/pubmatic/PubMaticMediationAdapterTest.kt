@@ -22,6 +22,7 @@ import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_AD_FORMAT
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_AD_UNIT_ID
@@ -30,6 +31,8 @@ import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERRO
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_MISSING_PUBLISHER_ID_MSG
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_NULL_REWARDED_AD
+import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_NULL_REWARDED_AD_MSG
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_AD_UNIT
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PROFILE_ID
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.KEY_PUBLISHER_ID
@@ -51,6 +54,8 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
@@ -124,6 +129,9 @@ class PubMaticMediationAdapterTest {
         createPOBInterstitial(context, TEST_PUBLISHER_ID, TEST_PROFILE_ID_1.toInt(), TEST_AD_UNIT)
       } doReturn pobInterstitial
       on { createPOBRewardedAd(any()) } doReturn pobRewardedAd
+      on {
+        createPOBRewardedAd(context, TEST_PUBLISHER_ID, TEST_PROFILE_ID_1.toInt(), TEST_AD_UNIT)
+      } doReturn pobRewardedAd
       on { createPOBBannerView(any()) } doReturn pobBannerView
       on { createPOBNativeAdLoader(any()) } doReturn pobNativeAdLoader
     }
@@ -559,6 +567,111 @@ class PubMaticMediationAdapterTest {
       AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
 
     adapter.loadInterstitialAd(mediationInterstitialAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_loadsPubMaticInterstitial() {
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to TEST_PROFILE_ID_1,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+
+    adapter.loadRewardedAd(mediationRewardedAdConfiguration, mock())
+
+    verify(pobRewardedAd).setListener(any())
+    verify(pobRewardedAd, never()).loadAd(any(), any())
+    verify(pobRewardedAd).loadAd()
+  }
+
+  @Test
+  fun loadRewardedAd_withMissingPublisherId_invokesOnFailure() {
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(KEY_PROFILE_ID to TEST_PROFILE_ID_1, KEY_AD_UNIT to TEST_AD_UNIT),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_PUBLISHER_ID, ERROR_MISSING_PUBLISHER_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedAd(mediationRewardedAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withInvalidProfileId_invokesOnFailure() {
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to INVALID_PROFILE_ID,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val extectedAdError =
+      AdError(
+        ERROR_MISSING_OR_INVALID_PROFILE_ID,
+        ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+        ADAPTER_ERROR_DOMAIN,
+      )
+
+    adapter.loadRewardedAd(mediationRewardedAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(extectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withMissingAdUnit_invokesOnFailure() {
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(KEY_PUBLISHER_ID to TEST_PUBLISHER_ID, KEY_PROFILE_ID to TEST_PROFILE_ID_1),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedAd(mediationRewardedAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_whenReturnedRewardedAdIsNull_invokesOnFailure() {
+    whenever(pubMaticAdFactory.createPOBRewardedAd(any(), any(), any(), any())) doReturn null
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to TEST_PROFILE_ID_1,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+    val mockCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_NULL_REWARDED_AD, ERROR_NULL_REWARDED_AD_MSG, SDK_ERROR_DOMAIN)
+
+    adapter.loadRewardedAd(mediationRewardedAdConfiguration, mockCallback)
 
     verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
