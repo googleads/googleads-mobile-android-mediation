@@ -23,6 +23,7 @@ import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_INVALID_AD_FORMAT
@@ -58,10 +59,12 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -148,6 +151,9 @@ class PubMaticMediationAdapterTest {
         )
       } doReturn pobBannerView
       on { createPOBNativeAdLoader(any()) } doReturn pobNativeAdLoader
+      on {
+        createPOBNativeAdLoader(context, TEST_PUBLISHER_ID, TEST_PROFILE_ID_1.toInt(), TEST_AD_UNIT)
+      } doReturn pobNativeAdLoader
     }
 
   @Before
@@ -791,6 +797,89 @@ class PubMaticMediationAdapterTest {
       AdError(ERROR_INVALID_BANNER_AD_SIZE, ERROR_INVALID_BANNER_AD_SIZE_MSG, ADAPTER_ERROR_DOMAIN)
 
     adapter.loadBannerAd(mediationBannerAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadNativeAdMapper_disablesAutoRefreshAndSetsWatermarkAndLoadsPubMaticBannerAd() {
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        isTesting = true,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to TEST_PROFILE_ID_1,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfiguration, mock())
+
+    verify(pobNativeAdLoader).setAdLoaderListener(any())
+    verify(pobNativeAdLoader, never()).addExtraInfo(any(), any())
+    verify(pobNativeAdLoader).loadAd()
+  }
+
+  @Test
+  fun loadNativeAdMapper_withMissingPublisherId_invokesOnFailure() {
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        isTesting = true,
+        serverParameters =
+          bundleOf(KEY_PROFILE_ID to TEST_PROFILE_ID_1, KEY_AD_UNIT to TEST_AD_UNIT),
+      )
+    val mockCallback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_PUBLISHER_ID, ERROR_MISSING_PUBLISHER_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadNativeAdMapper_withInvalidProfileId_invokesOnFailure() {
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        isTesting = true,
+        serverParameters =
+          bundleOf(
+            KEY_PUBLISHER_ID to TEST_PUBLISHER_ID,
+            KEY_PROFILE_ID to INVALID_PROFILE_ID,
+            KEY_AD_UNIT to TEST_AD_UNIT,
+          ),
+      )
+    val mockCallback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val expectedAdError =
+      AdError(
+        ERROR_MISSING_OR_INVALID_PROFILE_ID,
+        ERROR_MISSING_OR_INVALID_PROFILE_ID_MSG,
+        ADAPTER_ERROR_DOMAIN,
+      )
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfiguration, mockCallback)
+
+    verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadNativeAdMapper_withMissingAdUnit_invokesOnFailure() {
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        isTesting = true,
+        serverParameters =
+          bundleOf(KEY_PUBLISHER_ID to TEST_PUBLISHER_ID, KEY_PROFILE_ID to TEST_PROFILE_ID_1),
+      )
+    val mockCallback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfiguration, mockCallback)
 
     verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }

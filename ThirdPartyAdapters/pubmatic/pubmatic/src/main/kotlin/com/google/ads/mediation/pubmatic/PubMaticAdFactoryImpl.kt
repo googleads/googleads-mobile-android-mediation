@@ -3,6 +3,7 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import com.pubmatic.sdk.common.POBAdSize
 import com.pubmatic.sdk.nativead.POBNativeAdLoader
+import com.pubmatic.sdk.nativead.datatype.POBNativeTemplateType
 import com.pubmatic.sdk.openwrap.banner.POBBannerView
 import com.pubmatic.sdk.openwrap.interstitial.POBInterstitial
 import com.pubmatic.sdk.rewardedad.POBRewardedAd
@@ -42,4 +43,11 @@ class PubMaticAdFactoryImpl : PubMaticAdFactory {
   ) = POBBannerView(context, pubId, profileId, adUnit, pobAdSize)
 
   override fun createPOBNativeAdLoader(context: Context) = POBNativeAdLoader(context)
+
+  override fun createPOBNativeAdLoader(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ) = POBNativeAdLoader(context, pubId, profileId, adUnit, POBNativeTemplateType.CUSTOM)
 }

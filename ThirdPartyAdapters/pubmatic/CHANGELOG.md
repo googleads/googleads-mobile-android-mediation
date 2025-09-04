@@ -3,7 +3,8 @@
 #### Next Version
 - Adds support for waterfall interstitial ads.
 - Adds support for waterfall rewarded ads.
-- Adds support for waterfall banner ads
+- Adds support for waterfall banner ads.
+- Adds support for waterfall native ads.
 
 #### Version 4.8.0.0
 - Verified compatibility with Pubmatic SDK 4.8.0.

@@ -45,6 +45,13 @@ interface PubMaticAdFactory {
 
   fun createPOBNativeAdLoader(context: Context): POBNativeAdLoader
 
+  fun createPOBNativeAdLoader(
+    context: Context,
+    pubId: String,
+    profileId: Int,
+    adUnit: String,
+  ): POBNativeAdLoader
+
   companion object {
     private const val MIN_NUMBER_GENERIC_WORKERS = 2
     private const val MAX_NUMBER_GENERIC_WORKERS = Integer.MAX_VALUE

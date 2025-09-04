@@ -226,6 +226,22 @@ class PubMaticMediationAdapter(
       }
   }
 
+  override fun loadNativeAdMapper(
+    mediationNativeAdConfiguration: MediationNativeAdConfiguration,
+    callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+  ) {
+    PubMaticNativeAd.newInstance(
+        mediationNativeAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRtb = false,
+      )
+      .onSuccess {
+        nativeAd = it
+        nativeAd.loadAd()
+      }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
@@ -278,7 +294,12 @@ class PubMaticMediationAdapter(
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
     callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
-    PubMaticNativeAd.newInstance(mediationNativeAdConfiguration, callback, pubMaticAdFactory)
+    PubMaticNativeAd.newInstance(
+        mediationNativeAdConfiguration,
+        callback,
+        pubMaticAdFactory,
+        isRtb = true,
+      )
       .onSuccess {
         nativeAd = it
         nativeAd.loadAd()

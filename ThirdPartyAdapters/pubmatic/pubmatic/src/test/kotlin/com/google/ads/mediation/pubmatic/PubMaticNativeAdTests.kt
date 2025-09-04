@@ -96,6 +96,7 @@ class PubMaticNativeAdTests {
         mediationAdLoadCallback,
         pubMaticAdFactory,
         Dispatchers.Unconfined,
+        isRtb = true,
       )
       .onSuccess { pubMaticNativeAd = it }
   }
