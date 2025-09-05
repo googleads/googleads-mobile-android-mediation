@@ -9,6 +9,10 @@ import com.facebook.ads.RewardedVideoAd;
 /**  A factory for creating Meta Ads SDK objects. */
 public class MetaFactory {
 
+  public InterstitialAd createAppOpenAd(Context context, String placementId) {
+    return new InterstitialAd(context, placementId);
+  }
+
   public InterstitialAd createInterstitialAd(Context context, String placementId) {
     return new InterstitialAd(context, placementId);
   }
