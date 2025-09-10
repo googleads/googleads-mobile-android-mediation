@@ -14,7 +14,11 @@
 
 package com.google.ads.mediation.snippets.java;
 
+import android.os.Bundle;
+import com.applovin.mediation.AppLovinExtras;
+import com.applovin.mediation.ApplovinAdapter;
 import com.applovin.sdk.AppLovinPrivacySettings;
+import com.google.android.gms.ads.AdRequest;
 
 /**
  * Java code snippets for
@@ -33,5 +37,13 @@ public class AppLovinMediationSnippets {
     // [START set_do_not_sell]
     AppLovinPrivacySettings.setDoNotSell(true);
     // [END set_do_not_sell]
+  }
+
+  private void setMuteAudio() {
+    // [START set_mute_audio]
+    Bundle extras = new AppLovinExtras.Builder().setMuteAudio(true).build();
+    AdRequest request =
+        new AdRequest.Builder().addNetworkExtrasBundle(ApplovinAdapter.class, extras).build();
+    // [END set_mute_audio]
   }
 }
