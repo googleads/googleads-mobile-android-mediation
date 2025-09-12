@@ -165,6 +165,7 @@ class BidMachineRewardedAdTest {
     bidMachineRewardedAd.onAdImpression(mockRewardedAd)
 
     verify(mockRewardedAdCallback).reportAdImpression()
+    verify(mockRewardedAdCallback).onAdOpened()
   }
 
   @Test

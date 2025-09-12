@@ -110,6 +110,7 @@ private constructor(
 
   override fun onAdImpression(interstitialAd: InterstitialAd) {
     interstitialAdCallback?.reportAdImpression()
+    interstitialAdCallback?.onAdOpened()
   }
 
   override fun onAdShowFailed(interstitialAd: InterstitialAd, bMError: BMError) {
