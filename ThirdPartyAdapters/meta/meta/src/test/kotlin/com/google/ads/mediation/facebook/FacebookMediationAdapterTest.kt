@@ -233,7 +233,7 @@ class FacebookMediationAdapterTest {
       facebookMediationAdapter.mediationAdapterInitializeVerifyNoFailure(
         context,
         mockInitializationCompleteCallback,
-        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_APP_ID)
+        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_APP_ID),
       )
 
       verify(mockInitSettingsBuilder).initialize()
@@ -254,7 +254,7 @@ class FacebookMediationAdapterTest {
       facebookMediationAdapter.mediationAdapterInitializeVerifySuccess(
         context,
         mockInitializationCompleteCallback,
-        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_PLACEMENT_ID)
+        bundleOf(RTB_PLACEMENT_PARAMETER to TEST_PLACEMENT_ID),
       )
     }
   }
@@ -276,29 +276,47 @@ class FacebookMediationAdapterTest {
         context,
         mockInitializationCompleteCallback,
         bundleOf(RTB_PLACEMENT_PARAMETER to TEST_PLACEMENT_ID),
-        expectedError = initializerError.message
+        expectedError = initializerError.message,
       )
     }
   }
 
   @Test
-  fun initialize_withEmptyMediationConfigurations_invokesOnInitializationFailed() {
-    facebookMediationAdapter.mediationAdapterInitializeVerifyFailure(
-      context,
-      mockInitializationCompleteCallback,
-      bundleOf(),
-      "Initialization failed. No placement IDs found."
-    )
+  fun initialize_withEmptyMediationConfigurations_succeeds() {
+    mockStatic(FacebookInitializer::class.java).use {
+      val mockInitializer: FacebookInitializer = mock()
+      whenever(FacebookInitializer.getInstance()) doReturn mockInitializer
+      whenever(mockInitializer.initialize(any(), any<ArrayList<String>>(), any())) doAnswer
+        { invocation ->
+          val arguments = invocation.arguments
+          (arguments[2] as FacebookInitializer.Listener).onInitializeSuccess()
+        }
+
+      facebookMediationAdapter.mediationAdapterInitializeVerifySuccess(
+        context,
+        mockInitializationCompleteCallback,
+        bundleOf(),
+      )
+    }
   }
 
   @Test
-  fun initialize_withEmptyPlacementId_invokesOnInitializationFailed() {
-    facebookMediationAdapter.mediationAdapterInitializeVerifyFailure(
-      context,
-      mockInitializationCompleteCallback,
-      bundleOf(RTB_PLACEMENT_PARAMETER to ""),
-      "Initialization failed. No placement IDs found."
-    )
+  fun initialize_withEmptyPlacementId_succeeds() {
+    mockStatic(FacebookInitializer::class.java).use {
+      val mockInitializer: FacebookInitializer = mock()
+      whenever(FacebookInitializer.getInstance()) doReturn mockInitializer
+      whenever(mockInitializer.initialize(any(), any<ArrayList<String>>(), any())) doAnswer
+        { invocation ->
+          val arguments = invocation.arguments
+          (arguments[2] as FacebookInitializer.Listener).onInitializeSuccess()
+        }
+
+      facebookMediationAdapter.mediationAdapterInitializeVerifySuccess(
+        context,
+        mockInitializationCompleteCallback,
+        bundleOf(RTB_PLACEMENT_PARAMETER to ""),
+      )
+    }
   }
 
   // endregion
@@ -311,13 +329,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbBannerAdWithFailure(
       mediationBannerAdConfiguration,
       mockBannerAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -330,13 +348,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbBannerAdWithFailure(
       mediationBannerAdConfiguration,
       mockBannerAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -351,20 +369,20 @@ class FacebookMediationAdapterTest {
       metaFactory.createMetaAdView(
         context,
         AdapterTestKitConstants.TEST_PLACEMENT_ID,
-        mediationBannerAdConfiguration.bidResponse
+        mediationBannerAdConfiguration.bidResponse,
       )
     ) doThrow exception
     val expectedAdError =
       AdError(
         FacebookMediationAdapter.ERROR_ADVIEW_CONSTRUCTOR_EXCEPTION,
         "Failed to create banner ad: " + exception.message,
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbBannerAdWithFailure(
       mediationBannerAdConfiguration,
       mockBannerAdLoadCallback,
-      expectedAdError
+      expectedAdError,
     )
   }
 
@@ -377,19 +395,19 @@ class FacebookMediationAdapterTest {
       createMediationBannerAdConfiguration(
         context = context,
         serverParameters = serverParameters,
-        watermark = WATERMARK
+        watermark = WATERMARK,
       )
     whenever(
       metaFactory.createMetaAdView(
         context,
         AdapterTestKitConstants.TEST_PLACEMENT_ID,
-        mediationBannerAdConfiguration.bidResponse
+        mediationBannerAdConfiguration.bidResponse,
       )
     ) doReturn metaBannerAd
 
     facebookMediationAdapter.loadRtbBannerAd(
       mediationBannerAdConfiguration,
-      mockBannerAdLoadCallback
+      mockBannerAdLoadCallback,
     )
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
@@ -414,13 +432,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty. ",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbInterstitialAdWithFailure(
       mediationInterstitialAdConfiguration,
       mockInterstitialAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -430,19 +448,19 @@ class FacebookMediationAdapterTest {
     val mediationInterstitialAdConfiguration =
       createMediationInterstitialAdConfiguration(
         context = context,
-        serverParameters = serverParameters
+        serverParameters = serverParameters,
       )
     val expectedError =
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty. ",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbInterstitialAdWithFailure(
       mediationInterstitialAdConfiguration,
       mockInterstitialAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -462,7 +480,7 @@ class FacebookMediationAdapterTest {
 
     facebookMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback
+      mockInterstitialAdLoadCallback,
     )
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
@@ -482,13 +500,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbRewardedAdWithFailure(
       mediationRewardedAdConfiguration,
       mockRewardedAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -501,13 +519,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbRewardedAdWithFailure(
       mediationRewardedAdConfiguration,
       mockRewardedAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -522,7 +540,7 @@ class FacebookMediationAdapterTest {
         serverParameters = serverParameters,
         taggedForChildDirectedTreatment = 1,
         watermark = WATERMARK,
-        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
       )
     whenever(
       metaFactory.createRewardedAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
@@ -530,7 +548,7 @@ class FacebookMediationAdapterTest {
 
     facebookMediationAdapter.loadRtbRewardedAd(
       mediationRewardedAdConfiguration,
-      mockRewardedAdLoadCallback
+      mockRewardedAdLoadCallback,
     )
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
@@ -556,13 +574,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbNativeAdWithFailure(
       mediationNativeAdConfiguration,
       mockNativeAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -575,13 +593,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbNativeAdWithFailure(
       mediationNativeAdConfiguration,
       mockNativeAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -596,7 +614,7 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
         "Failed to create native ad from bid payload: " + exception.message,
-        ERROR_DOMAIN
+        ERROR_DOMAIN,
       )
     mockStatic(NativeAdBase::class.java).use {
       whenever(fromBidPayload(any(), any(), any())) doThrow exception
@@ -604,7 +622,7 @@ class FacebookMediationAdapterTest {
       facebookMediationAdapter.loadRtbNativeAdWithFailure(
         mediationNativeAdConfiguration,
         mockNativeAdLoadCallback,
-        expectedAdError
+        expectedAdError,
       )
     }
   }
@@ -620,14 +638,14 @@ class FacebookMediationAdapterTest {
         serverParameters = serverParameters,
         taggedForChildDirectedTreatment = 1,
         watermark = WATERMARK,
-        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
       )
     mockStatic(NativeAdBase::class.java).use {
       whenever(fromBidPayload(any(), any(), any())) doReturn metaNativeAd
 
       facebookMediationAdapter.loadRtbNativeAd(
         mediationNativeAdConfiguration,
-        mockNativeAdLoadCallback
+        mockNativeAdLoadCallback,
       )
 
       val extraHintsCaptor = argumentCaptor<ExtraHints>()
@@ -640,7 +658,7 @@ class FacebookMediationAdapterTest {
         withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
         withPreloadedIconView(
           NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
-          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE
+          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
         )
       }
       verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
@@ -659,13 +677,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbRewardedInterstitialAdWithFailure(
       rewardedInterstitialAdConfiguration,
       mockRewardedAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -678,13 +696,13 @@ class FacebookMediationAdapterTest {
       AdError(
         FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to request ad. PlacementID is null or empty.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
     facebookMediationAdapter.loadRtbRewardedInterstitialAdWithFailure(
       rewardedInterstitialAdConfiguration,
       mockRewardedAdLoadCallback,
-      expectedError
+      expectedError,
     )
   }
 
@@ -699,7 +717,7 @@ class FacebookMediationAdapterTest {
         serverParameters = serverParameters,
         taggedForChildDirectedTreatment = 1,
         watermark = WATERMARK,
-        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
+        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
       )
     whenever(
       metaFactory.createRewardedAd(context, AdapterTestKitConstants.TEST_PLACEMENT_ID)
@@ -707,7 +725,7 @@ class FacebookMediationAdapterTest {
 
     facebookMediationAdapter.loadRtbRewardedInterstitialAd(
       rewardedInterstitialAdConfiguration,
-      mockRewardedAdLoadCallback
+      mockRewardedAdLoadCallback,
     )
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()

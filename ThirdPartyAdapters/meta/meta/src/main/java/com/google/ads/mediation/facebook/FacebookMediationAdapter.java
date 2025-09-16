@@ -221,12 +221,6 @@ public class FacebookMediationAdapter extends RtbAdapter {
       }
     }
 
-    if (placements.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(
-          "Initialization failed. No placement IDs found.");
-      return;
-    }
-
     FacebookInitializer.getInstance().initialize(context, placements,
         new FacebookInitializer.Listener() {
           @Override
