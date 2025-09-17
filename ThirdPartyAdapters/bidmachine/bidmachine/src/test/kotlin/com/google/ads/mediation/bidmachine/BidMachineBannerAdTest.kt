@@ -78,7 +78,7 @@ class BidMachineBannerAdTest {
         serverParameters = serverParams,
         watermark = TEST_WATERMARK,
       )
-    BidMachineBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    BidMachineBannerAd.newInstance(adConfiguration, mockAdLoadCallback, isRtb = false).onSuccess {
       bidMachineBannerAd = it
     }
   }

@@ -55,6 +55,7 @@ import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.BidTokenCallback
 import io.bidmachine.InitializationCallback
+import io.bidmachine.banner.BannerSize
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -325,15 +326,103 @@ class BidMachineMediationAdapterTest {
 
   // region banner tests
   @Test
-  fun loadRtbBannerAd_withNonSupportedAdSize_invokesOnFailure() {
+  fun loadWaterfallBannerAd_withRequestedSizeCloseToRegularBanner_bannerAdObjectIsInitializedWithRegularBannerSize() {
     val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize.FULL_BANNER)
+      createMediationBannerAdConfiguration(context, adSize = AdSize(330, 60))
+
+    adapter.loadBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
+  }
+
+  @Test
+  fun loadWaterfallBannerAd_withRequestedSizeCloseToMediumRectangle_bannerAdObjectIsInitializedWithMediumRectangleSize() {
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(310, 260))
+
+    adapter.loadBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_300x250)
+  }
+
+  @Test
+  fun loadWaterfallBannerAd_withRequestedSizeCloseToLeaderboard_bannerAdObjectIsInitializedWithLeaderboardSize() {
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(740, 100))
+
+    adapter.loadBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_728x90)
+  }
+
+  @Test
+  fun loadWaterfallBannerAd_withRequestedSizeNotCloseToAnyBidMachineSupportedSize_invokesOnFailure() {
+    // Ad size of 320x100 will fail the height check when comparing to supported BidMachine banner
+    // sizes.
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(320, 100))
     val expectedAdError =
       AdError(ERROR_CODE_INVALID_AD_SIZE, ERROR_MSG_INVALID_AD_SIZE, ADAPTER_ERROR_DOMAIN)
 
-    adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
 
     verify(mockBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRtbBannerAd_withRequestedSizeCloseToRegularBanner_bannerAdObjectIsInitializedWithRegularBannerSize() {
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(330, 60))
+
+    adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
+  }
+
+  @Test
+  fun loadRtbBannerAd_withRequestedSizeCloseToMediumRectangle_bannerAdObjectIsInitializedWithMediumRectangleSize() {
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(310, 260))
+
+    adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_300x250)
+  }
+
+  @Test
+  fun loadRtbBannerAd_withRequestedSizeCloseToLeaderboard_bannerAdObjectIsInitializedWithLeaderboardSize() {
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(740, 100))
+
+    adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_728x90)
+  }
+
+  @Test
+  fun loadRtbBannerAd_withRequestedSizeNotCloseToAnyBidMachineSupportedSize_bannerAdObjectIsInitializedWithRegularBannerSize() {
+    // Ad size of 320x100 will fail the height check when comparing to supported BidMachine banner
+    // sizes.
+    val bannerAdConfiguration =
+      createMediationBannerAdConfiguration(context, adSize = AdSize(320, 100))
+
+    adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+
+    // Check that the bannerAd object is initialized.
+    assertThat(adapter.bannerAd).isNotNull()
+    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
   }
 
   // endregion
