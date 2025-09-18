@@ -1,5 +1,8 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Next version
+- Added `MediationAdCallback.onAdOpened()` call when BidMachine's `onAdImpression()` callback is received for full-screen ads. This ensures that publishers recieve the correct callbacks when full-screen ad is displayed.
+
 #### Version 3.3.0.0
 - Initial release.
 

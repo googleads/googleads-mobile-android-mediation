@@ -166,6 +166,7 @@ class BidMachineInterstitialAdTest {
     bidMachineInterstitialAd.onAdImpression(mockInterstitialAd)
 
     verify(mockInterstitialAdCallback).reportAdImpression()
+    verify(mockInterstitialAdCallback).onAdOpened()
   }
 
   @Test

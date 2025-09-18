@@ -107,6 +107,7 @@ private constructor(
 
   override fun onAdImpression(rewardedAd: RewardedAd) {
     rewardedAdCallback?.reportAdImpression()
+    rewardedAdCallback?.onAdOpened()
   }
 
   override fun onAdShowFailed(rewardedAd: RewardedAd, bMError: BMError) {
