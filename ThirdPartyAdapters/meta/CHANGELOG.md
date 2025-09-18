@@ -1,9 +1,14 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Version 6.20.0.1 (In progress)
+#### Version 6.20.0.1
 - Removed the check that fails initialization if there are no placement IDs.
   Removed this to allow for RTB to work even if a publisher doesn't define ad
   unit mappings.
+- Verified compatibility with Meta Audience Network SDK v6.20.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.6.0.
+- Meta Audience Network SDK version 6.20.0.
 
 #### Version 6.20.0.0
 - Verified compatibility with Meta Audience Network SDK v6.20.0.
