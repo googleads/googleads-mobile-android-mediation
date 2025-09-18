@@ -2,6 +2,7 @@ package com.google.ads.mediation.inmobi.waterfall
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.inmobi.InMobiAdFactory
@@ -61,7 +62,7 @@ class InMobiWaterfallNativeAdTest {
         nativeAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory
+        inMobiAdFactory,
       )
   }
 
@@ -69,12 +70,15 @@ class InMobiWaterfallNativeAdTest {
   fun onAdLoadSucceeded_whenNativeAdOptionsNotNullAndValid_invokesOnSuccessCallback() {
     waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
 
-    Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.headline).isEqualTo(wrappedNativeAd.adTitle)
+    Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.headline)
+      .isEqualTo(wrappedNativeAd.adTitle)
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.body)
       .isEqualTo(wrappedNativeAd.adDescription)
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.callToAction)
       .isEqualTo(wrappedNativeAd.adCtaText)
-    Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.extras.get(InMobiNetworkValues.LANDING_URL))
+    Truth.assertThat(
+        waterfallNativeAd.inMobiUnifiedNativeAdMapper.extras.get(InMobiNetworkValues.LANDING_URL)
+      )
       .isEqualTo(wrappedNativeAd.adLandingPageUrl)
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.icon.drawable).isNull()
     val iconURL = URL(wrappedNativeAd.adIconUrl)
@@ -157,10 +161,20 @@ class InMobiWaterfallNativeAdTest {
   fun onAdImpression_invokesReportAdImpression() {
     // mimic an ad load first
     waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
-    
+
     waterfallNativeAd.onAdImpression(inMobiNativeWrapper.inMobiNative)
 
     verify(mediationNativeAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun untrackView_invokesDestroy() {
+    // mimic an ad load first
+    waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    waterfallNativeAd.inMobiUnifiedNativeAdMapper.untrackView(View(context))
+
+    verify(wrappedNativeAd).destroy()
   }
 
   private fun setupWrappedInMobiNativeAd(): Unit {

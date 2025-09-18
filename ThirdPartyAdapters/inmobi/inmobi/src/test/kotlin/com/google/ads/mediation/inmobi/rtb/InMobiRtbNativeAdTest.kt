@@ -2,6 +2,7 @@ package com.google.ads.mediation.inmobi.rtb
 
 import android.content.Context
 import android.net.Uri
+import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.inmobi.InMobiAdFactory
@@ -19,6 +20,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
+import java.net.URL
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,7 +30,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.net.URL
 
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbNativeAdTest {
@@ -61,7 +62,7 @@ class InMobiRtbNativeAdTest {
         nativeAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory
+        inMobiAdFactory,
       )
   }
 
@@ -161,6 +162,16 @@ class InMobiRtbNativeAdTest {
     rtbNativeAd.onAdImpression(inMobiNativeWrapper.inMobiNative)
 
     verify(mediationNativeAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun untrackView_invokesDestroy() {
+    // mimic an ad load first
+    rtbNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    rtbNativeAd.inMobiUnifiedNativeAdMapper.untrackView(View(context))
+
+    verify(wrappedNativeAd).destroy()
   }
 
   private fun setupWrappedInMobiNativeAd(): Unit {

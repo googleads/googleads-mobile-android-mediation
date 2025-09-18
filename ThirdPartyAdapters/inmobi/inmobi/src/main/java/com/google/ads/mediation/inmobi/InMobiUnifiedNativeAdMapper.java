@@ -30,14 +30,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.inmobi.renderers.InMobiNativeAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
-import com.inmobi.ads.InMobiNative;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -223,7 +221,7 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
 
   @Override
   public void untrackView(View view) {
-    inMobiNativeWrapper.pause();
+    inMobiNativeWrapper.destroy();
   }
 
   @Override

@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Native Ads now call destroy() when untrackView is called.
+
 #### Version 10.8.7.0
 - Verified compatibility with InMobi Kotlin SDK version 10.8.7.
 

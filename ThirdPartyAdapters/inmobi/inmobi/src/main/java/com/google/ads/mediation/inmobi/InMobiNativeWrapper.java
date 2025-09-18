@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.ads.listeners.VideoEventListener;
-import java.net.PortUnreachableException;
 import java.util.Map;
 import org.json.JSONObject;
 
@@ -96,7 +95,7 @@ public class InMobiNativeWrapper {
     inMobiNative.resume();
   }
 
-  public void pause() {
-    inMobiNative.pause();
+  public void destroy() {
+    inMobiNative.destroy();
   }
 }
