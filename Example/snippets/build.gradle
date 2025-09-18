@@ -26,4 +26,5 @@ dependencies {
 
     // Include Mediation SDK Adapter dependencies.
     implementation("com.google.ads.mediation:applovin:+")
+    implementation("com.google.ads.mediation:ironsource:+")
 }
