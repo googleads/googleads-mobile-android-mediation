@@ -15,14 +15,17 @@
 package com.google.ads.mediation.bidmachine
 
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -61,15 +64,37 @@ class BidMachineInterstitialAdTest {
 
   @Before
   fun setUp() {
+    val serverParams = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID)
     val adConfiguration =
-      createMediationInterstitialAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = serverParams,
+      )
     BidMachineInterstitialAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
       bidMachineInterstitialAd = it
     }
   }
 
   @Test
-  fun loadAd_invokesBidMachineRequest() {
+  fun loadWaterfallAd_invokesBidMachineRequest() {
+    val mockInterstitialRequestBuilder =
+      mock<InterstitialRequest.Builder> {
+        on { setPlacementId(eq(TEST_PLACEMENT_ID)) } doReturn it
+        on { setListener(any()) } doReturn it
+        on { build() } doReturn mockInterstitialRequest
+      }
+    bidMachineInterstitialAd.interstitialRequestBuilder = mockInterstitialRequestBuilder
+
+    bidMachineInterstitialAd.loadWaterfallAd(mockInterstitialAd)
+
+    verify(mockInterstitialRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
+    verify(mockInterstitialRequestBuilder).setListener(eq(bidMachineInterstitialAd))
+    verify(mockInterstitialRequest).request(eq(context))
+  }
+
+  @Test
+  fun loadRtbAd_invokesBidMachineRequest() {
     val mockInterstitialRequestBuilder =
       mock<InterstitialRequest.Builder> {
         on { setBidPayload(eq(TEST_BID_RESPONSE)) } doReturn it
@@ -78,7 +103,7 @@ class BidMachineInterstitialAdTest {
       }
     bidMachineInterstitialAd.interstitialRequestBuilder = mockInterstitialRequestBuilder
 
-    bidMachineInterstitialAd.loadAd(mockInterstitialAd)
+    bidMachineInterstitialAd.loadRtbAd(mockInterstitialAd)
 
     verify(mockInterstitialRequestBuilder).setBidPayload(eq(TEST_BID_RESPONSE))
     verify(mockInterstitialRequestBuilder).setListener(eq(bidMachineInterstitialAd))
@@ -87,7 +112,7 @@ class BidMachineInterstitialAdTest {
 
   @Test
   fun showAd_invokesBidMachineShow() {
-    bidMachineInterstitialAd.loadAd(mockInterstitialAd)
+    bidMachineInterstitialAd.loadRtbAd(mockInterstitialAd)
 
     bidMachineInterstitialAd.showAd(context)
 
@@ -96,7 +121,7 @@ class BidMachineInterstitialAdTest {
 
   @Test
   fun onRequestSuccess_invokesBannerViewLoad() {
-    bidMachineInterstitialAd.loadAd(mockInterstitialAd)
+    bidMachineInterstitialAd.loadRtbAd(mockInterstitialAd)
 
     bidMachineInterstitialAd.onRequestSuccess(mockInterstitialRequest, mock())
 
@@ -109,7 +134,7 @@ class BidMachineInterstitialAdTest {
     whenever(mockInterstitialRequest.isExpired) doReturn true
     val expectedAdError =
       AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    bidMachineInterstitialAd.loadAd(mockInterstitialAd)
+    bidMachineInterstitialAd.loadRtbAd(mockInterstitialAd)
 
     bidMachineInterstitialAd.onRequestSuccess(mockInterstitialRequest, mock())
 
@@ -151,7 +176,7 @@ class BidMachineInterstitialAdTest {
   fun onAdLoadFailed_invokesOnFailure() {
     val bMError = BMError.AlreadyShown
     val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    bidMachineInterstitialAd.loadAd(mockInterstitialAd)
+    bidMachineInterstitialAd.loadRtbAd(mockInterstitialAd)
 
     bidMachineInterstitialAd.onAdLoadFailed(mockInterstitialAd, bMError)
 
