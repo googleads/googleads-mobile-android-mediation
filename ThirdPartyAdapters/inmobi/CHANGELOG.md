@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 10.8.7.1 (In progress)
 - Native Ads now call destroy() when untrackView is called.
 
 #### Version 10.8.7.0
