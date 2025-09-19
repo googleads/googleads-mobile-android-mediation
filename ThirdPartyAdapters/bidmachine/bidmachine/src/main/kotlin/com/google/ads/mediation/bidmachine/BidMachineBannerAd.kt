@@ -23,12 +23,14 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_SIZE
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.banner.BannerListener
 import io.bidmachine.banner.BannerRequest
 import io.bidmachine.banner.BannerSize
@@ -47,6 +49,7 @@ internal constructor(
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bannerSize: BannerSize,
   private val bidResponse: String,
+  private val watermark: String,
 ) : MediationBannerAd, BannerRequest.AdRequestListener, BannerListener {
   private var bannerAdCallback: MediationBannerAdCallback? = null
   @VisibleForTesting internal var bannerRequestBuilder = BannerRequest.Builder()
@@ -70,6 +73,7 @@ internal constructor(
       bannerRequest.destroy()
       return
     }
+    adView.setRendererConfiguration(RendererConfiguration(mapOf(WATERMARK_KEY to watermark)))
     adView.load(bannerRequest)
   }
 
@@ -130,6 +134,7 @@ internal constructor(
       val context = mediationBannerAdConfiguration.context
       val adSize = mediationBannerAdConfiguration.adSize
       val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val watermark = mediationBannerAdConfiguration.watermark
 
       val bannerSize = mapAdSizeToBidMachineBannerSize(adSize)
       if (bannerSize == null) {
@@ -140,7 +145,7 @@ internal constructor(
       }
 
       return Result.success(
-        BidMachineBannerAd(context, mediationAdLoadCallback, bannerSize, bidResponse)
+        BidMachineBannerAd(context, mediationAdLoadCallback, bannerSize, bidResponse, watermark)
       )
     }
   }

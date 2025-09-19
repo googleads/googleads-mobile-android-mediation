@@ -19,6 +19,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -30,6 +31,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.banner.BannerRequest
 import io.bidmachine.banner.BannerSize
 import io.bidmachine.banner.BannerView
@@ -39,6 +41,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -68,6 +71,7 @@ class BidMachineBannerAdTest {
         context = context,
         bidResponse = TEST_BID_RESPONSE,
         adSize = AdSize.BANNER,
+        watermark = TEST_WATERMARK,
       )
     BidMachineBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
       bidMachineBannerAd = it
@@ -106,9 +110,12 @@ class BidMachineBannerAdTest {
   @Test
   fun onRequestSuccess_invokesBannerViewLoad() {
     bidMachineBannerAd.loadAdOnBannerView(mockBannerView)
+    val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
 
     bidMachineBannerAd.onRequestSuccess(mockBannerRequest, mock())
 
+    verify(mockBannerView).setRendererConfiguration(rendererConfigCaptor.capture())
+    assertThat(rendererConfigCaptor.firstValue.getWatermark()).isEqualTo(TEST_WATERMARK)
     verify(mockBannerView).load(mockBannerRequest)
   }
 

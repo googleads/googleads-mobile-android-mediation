@@ -19,6 +19,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -28,6 +29,8 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import com.google.common.truth.Truth.assertThat
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.nativead.NativeAd
 import io.bidmachine.nativead.NativePublicData
 import io.bidmachine.nativead.NativeRequest
@@ -37,6 +40,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -70,7 +74,11 @@ class BidMachineNativeAdTest {
   @Before
   fun setUp() {
     val adConfiguration =
-      createMediationNativeAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
+      createMediationNativeAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+      )
     BidMachineNativeAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
       bidMachineNativeAd = it
     }
@@ -89,16 +97,19 @@ class BidMachineNativeAdTest {
   }
 
   @Test
-  fun onRequestSuccess_invokesBannerViewLoad() {
+  fun onRequestSuccess_invokesLoad() {
     bidMachineNativeAd.loadAd(mockNativeAd)
+    val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
 
     bidMachineNativeAd.onRequestSuccess(mockNativeRequest, mock())
 
+    verify(mockNativeAd).setRendererConfiguration(rendererConfigCaptor.capture())
+    assertThat(rendererConfigCaptor.firstValue.getWatermark()).isEqualTo(TEST_WATERMARK)
     verify(mockNativeAd).load(mockNativeRequest)
   }
 
   @Test
-  fun onRequestSuccess_withExpiredBannerRequest_invokesOnFailure() {
+  fun onRequestSuccess_withExpiredAdRequest_invokesOnFailure() {
     whenever(mockNativeRequest.isExpired) doReturn true
     val expectedAdError =
       AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
