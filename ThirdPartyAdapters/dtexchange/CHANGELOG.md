@@ -9,7 +9,7 @@ Built and tested with:
 - DT Exchange SDK version 8.3.8.
 
 #### Version 8.3.7.0
-- Updated adapter to support bidding for banner and interstitial ad formats.
+- Updated adapter to support bidding for banner, interstitial and rewarded ad formats.
 - Verified compatibility with DT Exchange SDK 8.3.7.
 
 Built and tested with:
