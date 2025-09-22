@@ -22,6 +22,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_SIZE
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_SIZE
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -47,16 +48,27 @@ internal constructor(
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bannerSize: BannerSize,
   private val bidResponse: String,
+  private val placementId: String?,
 ) : MediationBannerAd, BannerRequest.AdRequestListener, BannerListener {
   private var bannerAdCallback: MediationBannerAdCallback? = null
   @VisibleForTesting internal var bannerRequestBuilder = BannerRequest.Builder()
   private lateinit var adView: BannerView
 
-  fun loadAdOnBannerView(bannerView: BannerView) {
-    adView = bannerView
-    adView.setListener(this)
+  fun loadWaterfallAd(bannerView: BannerView) {
+    val bannerRequest =
+      bannerRequestBuilder.setSize(bannerSize).setPlacementId(placementId).setListener(this).build()
+    loadAdOnBannerView(bannerView, bannerRequest)
+  }
+
+  fun loadRtbAd(bannerView: BannerView) {
     val bannerRequest =
       bannerRequestBuilder.setSize(bannerSize).setBidPayload(bidResponse).setListener(this).build()
+    loadAdOnBannerView(bannerView, bannerRequest)
+  }
+
+  private fun loadAdOnBannerView(bannerView: BannerView, bannerRequest: BannerRequest) {
+    adView = bannerView
+    adView.setListener(this)
     bannerRequest.request(context)
   }
 
@@ -130,6 +142,7 @@ internal constructor(
       val context = mediationBannerAdConfiguration.context
       val adSize = mediationBannerAdConfiguration.adSize
       val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val placementId = mediationBannerAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
       val bannerSize = mapAdSizeToBidMachineBannerSize(adSize)
       if (bannerSize == null) {
@@ -140,7 +153,7 @@ internal constructor(
       }
 
       return Result.success(
-        BidMachineBannerAd(context, mediationAdLoadCallback, bannerSize, bidResponse)
+        BidMachineBannerAd(context, mediationAdLoadCallback, bannerSize, bidResponse, placementId)
       )
     }
   }

@@ -1,6 +1,7 @@
 ## BidMachine Android Mediation Adapter Changelog
 
 #### Next Version
+- Adds support for waterfall banner ads.
 - Adds support for waterfall interstitial ads.
 - Adds support for waterfall rewarded ads.
 
