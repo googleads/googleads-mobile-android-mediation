@@ -25,6 +25,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_NATIVE_AD_DATA
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_NATIVE_AD_DATA
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -49,16 +50,26 @@ private constructor(
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val bidResponse: String,
+  private val placementId: String?,
 ) : NativeAdMapper(), NativeRequest.AdRequestListener, NativeListener {
   private var nativeAdCallback: MediationNativeAdCallback? = null
   @VisibleForTesting internal var nativeRequestBuilder = NativeRequest.Builder()
   private lateinit var bidMachineNativeAd: NativeAd
   private var bidMachineMediaView: NativeMediaView? = null
 
-  fun loadAd(nativeAd: NativeAd) {
+  fun loadWaterfallAd(nativeAd: NativeAd) {
+    val nativeRequest = nativeRequestBuilder.setPlacementId(placementId).setListener(this).build()
+    loadAd(nativeAd, nativeRequest)
+  }
+
+  fun loadRtbAd(nativeAd: NativeAd) {
+    val nativeRequest = nativeRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
+    loadAd(nativeAd, nativeRequest)
+  }
+
+  private fun loadAd(nativeAd: NativeAd, nativeRequest: NativeRequest) {
     bidMachineNativeAd = nativeAd
     bidMachineNativeAd.setListener(this)
-    val nativeRequest = nativeRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
     nativeRequest.request(context)
   }
 
@@ -169,8 +180,11 @@ private constructor(
     ): Result<BidMachineNativeAd> {
       val context = mediationNativeAdConfiguration.context
       val bidResponse = mediationNativeAdConfiguration.bidResponse
+      val placementId = mediationNativeAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
-      return Result.success(BidMachineNativeAd(context, mediationNativeAdLoadCallback, bidResponse))
+      return Result.success(
+        BidMachineNativeAd(context, mediationNativeAdLoadCallback, bidResponse, placementId)
+      )
     }
   }
 }
