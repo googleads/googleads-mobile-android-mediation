@@ -21,6 +21,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -43,15 +44,26 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
+  private val placementId: String?,
 ) : MediationInterstitialAd, InterstitialRequest.AdRequestListener, InterstitialListener {
   @VisibleForTesting internal var interstitialRequestBuilder = InterstitialRequest.Builder()
   private lateinit var bidMachineInterstitialAd: InterstitialAd
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
-  fun loadAd(interstitialAd: InterstitialAd) {
-    bidMachineInterstitialAd = interstitialAd
+  fun loadWaterfallAd(interstitialAd: InterstitialAd) {
+    val interstitialRequest =
+      interstitialRequestBuilder.setPlacementId(placementId).setListener(this).build()
+    loadAd(interstitialAd, interstitialRequest)
+  }
+
+  fun loadRtbAd(interstitialAd: InterstitialAd) {
     val interstitialRequest =
       interstitialRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
+    loadAd(interstitialAd, interstitialRequest)
+  }
+
+  private fun loadAd(interstitialAd: InterstitialAd, interstitialRequest: InterstitialRequest) {
+    bidMachineInterstitialAd = interstitialAd
     interstitialRequest.request(context)
   }
 
@@ -138,8 +150,12 @@ private constructor(
     ): Result<BidMachineInterstitialAd> {
       val context = mediationInterstitialAdConfiguration.context
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val placementId =
+        mediationInterstitialAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
-      return Result.success(BidMachineInterstitialAd(context, mediationAdLoadCallback, bidResponse))
+      return Result.success(
+        BidMachineInterstitialAd(context, mediationAdLoadCallback, bidResponse, placementId)
+      )
     }
   }
 }
