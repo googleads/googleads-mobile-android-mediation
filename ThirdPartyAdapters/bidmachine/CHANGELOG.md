@@ -2,6 +2,7 @@
 
 #### Next Version
 - Adds support for waterfall interstitial ads.
+- Adds support for waterfall rewarded ads.
 
 #### Version 3.4.0.0 (In progress)
 - Added `MediationAdCallback.onAdOpened()` call when BidMachine's `onAdImpression()` callback is received for full-screen ads. This ensures that publishers recieve the correct callbacks when full-screen ad is displayed.

@@ -21,6 +21,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -43,15 +44,26 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
+  private val placementId: String?,
 ) : MediationRewardedAd, RewardedRequest.AdRequestListener, RewardedListener {
   @VisibleForTesting internal var rewardedRequestBuilder = RewardedRequest.Builder()
   private lateinit var bidMachineRewardedAd: RewardedAd
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
-  fun loadAd(rewardedAd: RewardedAd) {
-    bidMachineRewardedAd = rewardedAd
+  fun loadWaterfallAd(rewardedAd: RewardedAd) {
+    val rewardedRequest =
+      rewardedRequestBuilder.setPlacementId(placementId).setListener(this).build()
+    loadAd(rewardedAd, rewardedRequest)
+  }
+
+  fun loadRtbAd(rewardedAd: RewardedAd) {
     val rewardedRequest =
       rewardedRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
+    loadAd(rewardedAd, rewardedRequest)
+  }
+
+  private fun loadAd(rewardedAd: RewardedAd, rewardedRequest: RewardedRequest) {
+    bidMachineRewardedAd = rewardedAd
     rewardedRequest.request(context)
   }
 
@@ -139,8 +151,12 @@ private constructor(
     ): Result<BidMachineRewardedAd> {
       val context = mediationRewardedAdConfiguration.context
       val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      val placementId =
+        mediationRewardedAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
-      return Result.success(BidMachineRewardedAd(context, mediationAdLoadCallback, bidResponse))
+      return Result.success(
+        BidMachineRewardedAd(context, mediationAdLoadCallback, bidResponse, placementId)
+      )
     }
   }
 }

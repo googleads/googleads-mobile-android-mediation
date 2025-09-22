@@ -177,6 +177,17 @@ class BidMachineMediationAdapter : RtbAdapter() {
     }
   }
 
+  override fun loadRewardedAd(
+    mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+      rewardedAd = it
+      val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
+      rewardedAd.loadWaterfallAd(bidMachineRewardedAd)
+    }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
@@ -206,7 +217,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
       val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
-      rewardedAd.loadAd(bidMachineRewardedAd)
+      rewardedAd.loadRtbAd(bidMachineRewardedAd)
     }
   }
 
