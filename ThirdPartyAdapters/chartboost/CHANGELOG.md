@@ -1,5 +1,7 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Version 9.10.0.0 (In progress)
+
 #### Version 9.9.3.0
 - Verified compatibility with Chartboost SDK version 9.9.3.
 
