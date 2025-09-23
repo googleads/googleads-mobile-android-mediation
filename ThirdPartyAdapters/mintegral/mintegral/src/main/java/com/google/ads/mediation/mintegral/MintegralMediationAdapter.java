@@ -14,8 +14,13 @@
 
 package com.google.ads.mediation.mintegral;
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_CODE_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN;
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.mintegral.MintegralConstants.createSdkError;
+import static com.google.ads.mediation.mintegral.MintegralUtils.getMintegralSlotIdentifiers;
+import static com.google.ads.mediation.mintegral.MintegralUtils.shouldRestrictMultipleAdsLoad;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -61,17 +66,32 @@ import com.mbridge.msdk.foundation.same.net.Aa;
 import com.mbridge.msdk.mbbid.out.BidManager;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MintegralMediationAdapter extends RtbAdapter {
 
   public static final String TAG = MintegralMediationAdapter.class.getSimpleName();
+
+  /**
+   * A hash map to hold Mintegral slot identifiers of loaded ads which are yet to be shown.
+   *
+   * <p>The keys are Mintegral slot identifiers. The values are weak references to loaded ad
+   * objects.
+   *
+   * <p>This is used only MintegralUtils.shouldRestrictMultipleAdsLoad() is true.
+   */
+  public static final Map<MintegralSlotIdentifier, WeakReference<Object>> loadedSlotIdentifiers =
+      new ConcurrentHashMap<>();
+
   private static MBridgeSDK mBridgeSDK;
+
   private MintegralWaterfallBannerAd mintegralWaterfallBannerAd;
   private MintegralWaterfallInterstitialAd mintegralInterstitialAd;
   private MintegralWaterfallRewardedAd mintegralRewardedAd;
@@ -97,6 +117,18 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(@NonNull RtbSignalData rtbSignalData,
       @NonNull SignalCallbacks signalCallbacks) {
+    if (shouldRestrictMultipleAdsLoad()) {
+      List<MintegralSlotIdentifier> mintegralSlotIdentifiers =
+          getMintegralSlotIdentifiers(rtbSignalData);
+      for (MintegralSlotIdentifier mintegralSlotIdentifier : mintegralSlotIdentifiers) {
+        if (loadedSlotIdentifiers.containsKey(mintegralSlotIdentifier)
+            && loadedSlotIdentifiers.get(mintegralSlotIdentifier).get() != null) {
+          signalCallbacks.onFailure(
+              new AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN));
+          return;
+        }
+      }
+    }
     String buyerUid = BidManager.getBuyerUid(rtbSignalData.getContext());
     signalCallbacks.onSuccess(buyerUid);
   }

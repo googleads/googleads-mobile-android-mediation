@@ -15,11 +15,14 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+import static com.google.ads.mediation.mintegral.MintegralUtils.shouldRestrictMultipleAdsLoad;
 
 import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralRewardedAd;
 import com.google.android.gms.ads.AdError;
@@ -29,7 +32,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidRewardVideoHandler;
-
+import java.lang.ref.WeakReference;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,6 +58,12 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
       adLoadCallback.onFailure(error);
       return;
     }
+
+    if (shouldRestrictMultipleAdsLoad()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
     mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId,
         adUnitId);
     try {

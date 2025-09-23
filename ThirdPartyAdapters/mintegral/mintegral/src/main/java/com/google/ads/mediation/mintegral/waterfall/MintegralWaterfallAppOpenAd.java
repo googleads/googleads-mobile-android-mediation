@@ -14,6 +14,11 @@
 
 package com.google.ads.mediation.mintegral.waterfall;
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_CODE_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+import static com.google.ads.mediation.mintegral.MintegralUtils.shouldRestrictMultipleAdsLoad;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,6 +28,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralAppOpenAd;
 import com.google.android.gms.ads.AdError;
@@ -30,6 +36,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
+import java.lang.ref.WeakReference;
 
 /**
  * Used to show Mintegral splash ads and mediate callbacks between Google Mobile Ads SDK and
@@ -54,6 +61,19 @@ public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
       adLoadCallback.onFailure(error);
       return;
     }
+
+    if (shouldRestrictMultipleAdsLoad()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      if (loadedSlotIdentifiers.containsKey(mintegralSlotIdentifier)
+          && loadedSlotIdentifiers.get(mintegralSlotIdentifier).get() != null) {
+        adLoadCallback.onFailure(
+            new AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN));
+        return;
+      }
+
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
     splashAdWrapper = MintegralFactory.createSplashAdWrapper();
     splashAdWrapper.createAd(placementId, adUnitId);
     splashAdWrapper.setSplashLoadListener(this);

@@ -27,8 +27,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.out.MBConfiguration;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MintegralUtils {
 
@@ -105,5 +111,53 @@ public class MintegralUtils {
     boolean isTaggedForChildDirected =
         tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
     mBridgeSDK.setCoppaStatus(context, isTaggedForChildDirected);
+  }
+
+  /**
+   * Returns whether to restrict loading multiple full-screen ads for a single Mintegral slot ID at
+   * the same time.
+   *
+   * <p>If true, loading of a second ad for a full-screen slot will be prevented until the
+   * previously loaded ad has been shown.
+   */
+  public static boolean shouldRestrictMultipleAdsLoad() {
+    try {
+      Class<?> adapterSettingsClass =
+          Class.forName("com.google.android.gms.ads.internal.adaptersettings.AdapterSettings");
+      Method getInstanceMethod = adapterSettingsClass.getDeclaredMethod("getInstance");
+      getInstanceMethod.setAccessible(true);
+      Object settings = getInstanceMethod.invoke(null);
+      Method getBooleanMethod =
+          settings.getClass().getDeclaredMethod("getBoolean", String.class, boolean.class);
+      getBooleanMethod.setAccessible(true);
+      return (boolean)
+          getBooleanMethod.invoke(
+              settings,
+              /* key= */ "adapter:mintegral_restrict_multiple_ads_load",
+              /* defaultValue= */ false);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NullPointerException e) {
+      // Default to false if there is an exception.
+      return false;
+    }
+  }
+
+  /** Get the Mintegral slot identifiers in RtbSignalData. */
+  public static List<MintegralSlotIdentifier> getMintegralSlotIdentifiers(
+      RtbSignalData rtbSignalData) {
+    List<MintegralSlotIdentifier> mintegralSlotIdentifiers = new ArrayList<>();
+    for (MediationConfiguration adConfiguration : rtbSignalData.getConfigurations()) {
+      String adUnitId =
+          adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+      String placementId =
+          adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+      if (!TextUtils.isEmpty(adUnitId) && !TextUtils.isEmpty(placementId)) {
+        mintegralSlotIdentifiers.add(new MintegralSlotIdentifier(adUnitId, placementId));
+      }
+    }
+    return mintegralSlotIdentifiers;
   }
 }
