@@ -27,11 +27,13 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_NATIVE_AD_DATA
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.models.AuctionResult
 import io.bidmachine.nativead.NativeAd
 import io.bidmachine.nativead.NativeListener
@@ -50,6 +52,7 @@ private constructor(
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val bidResponse: String,
+  private val watermark: String,
   private val placementId: String?,
 ) : NativeAdMapper(), NativeRequest.AdRequestListener, NativeListener {
   private var nativeAdCallback: MediationNativeAdCallback? = null
@@ -81,6 +84,9 @@ private constructor(
       nativeRequest.destroy()
       return
     }
+    bidMachineNativeAd.setRendererConfiguration(
+      RendererConfiguration(mapOf(WATERMARK_KEY to watermark))
+    )
     bidMachineNativeAd.load(nativeRequest)
   }
 
@@ -180,10 +186,17 @@ private constructor(
     ): Result<BidMachineNativeAd> {
       val context = mediationNativeAdConfiguration.context
       val bidResponse = mediationNativeAdConfiguration.bidResponse
+      val watermark = mediationNativeAdConfiguration.watermark
       val placementId = mediationNativeAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
       return Result.success(
-        BidMachineNativeAd(context, mediationNativeAdLoadCallback, bidResponse, placementId)
+        BidMachineNativeAd(
+          context,
+          mediationNativeAdLoadCallback,
+          bidResponse,
+          watermark,
+          placementId,
+        )
       )
     }
   }

@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -31,6 +32,8 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.common.truth.Truth.assertThat
+import io.bidmachine.RendererConfiguration
 import io.bidmachine.rewarded.RewardedAd
 import io.bidmachine.rewarded.RewardedRequest
 import io.bidmachine.utils.BMError
@@ -39,6 +42,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -69,6 +73,7 @@ class BidMachineRewardedAdTest {
         context = context,
         bidResponse = TEST_BID_RESPONSE,
         serverParameters = serverParams,
+        watermark = TEST_WATERMARK,
       )
     BidMachineRewardedAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
       bidMachineRewardedAd = it
@@ -119,17 +124,20 @@ class BidMachineRewardedAdTest {
   }
 
   @Test
-  fun onRequestSuccess_invokesBannerViewLoad() {
+  fun onRequestSuccess_invokesLoad() {
     bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
 
     bidMachineRewardedAd.onRequestSuccess(mockRewardedRequest, mock())
 
+    verify(mockRewardedAd).setRendererConfiguration(rendererConfigCaptor.capture())
+    assertThat(rendererConfigCaptor.firstValue.getWatermark()).isEqualTo(TEST_WATERMARK)
     verify(mockRewardedAd).setListener(eq(bidMachineRewardedAd))
     verify(mockRewardedAd).load(mockRewardedRequest)
   }
 
   @Test
-  fun onRequestSuccess_withExpiredBannerRequest_invokesOnFailure() {
+  fun onRequestSuccess_withExpiredAdRequest_invokesOnFailure() {
     whenever(mockRewardedRequest.isExpired) doReturn true
     val expectedAdError =
       AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)

@@ -278,6 +278,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
     const val PLACEMENT_ID_KEY = "placement_id"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
     const val SDK_ERROR_DOMAIN = "io.bidmachine"
+    const val WATERMARK_KEY = "google_watermark"
     @VisibleForTesting const val ERROR_MSG_MISSING_SOURCE_ID = "Source Id is missing or empty"
     const val ERROR_CODE_NO_PLACEMENT_ID = 100
     const val ERROR_MSG_NO_PLACEMENT_ID = "Invalid or empty placement id received."
