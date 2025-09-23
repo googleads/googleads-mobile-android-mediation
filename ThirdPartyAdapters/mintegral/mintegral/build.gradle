@@ -116,7 +116,7 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-ads:24.5.0'
+    implementation 'com.google.android.gms:play-services-ads:24.6.0'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:16.9.91'
 

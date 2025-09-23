@@ -92,7 +92,11 @@ class MintegralMediationAdapterTest {
 
   @Before
   fun setUp() {
-    mintegralMediationAdapter = MintegralMediationAdapter(SynchronousExecutorService())
+    mintegralMediationAdapter =
+      MintegralMediationAdapter(
+        SynchronousExecutorService(),
+        /*flagValueGetter=*/ mock { on { shouldRestrictMultipleAdLoads() } doReturn false },
+      )
   }
 
   // region version tests

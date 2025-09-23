@@ -27,8 +27,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.out.MBConfiguration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MintegralUtils {
 
@@ -105,5 +109,21 @@ public class MintegralUtils {
     boolean isTaggedForChildDirected =
         tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
     mBridgeSDK.setCoppaStatus(context, isTaggedForChildDirected);
+  }
+
+  /** Get the Mintegral slot identifiers in RtbSignalData. */
+  public static List<MintegralSlotIdentifier> getMintegralSlotIdentifiers(
+      RtbSignalData rtbSignalData) {
+    List<MintegralSlotIdentifier> mintegralSlotIdentifiers = new ArrayList<>();
+    for (MediationConfiguration adConfiguration : rtbSignalData.getConfigurations()) {
+      String adUnitId =
+          adConfiguration.getServerParameters().getString(MintegralConstants.AD_UNIT_ID);
+      String placementId =
+          adConfiguration.getServerParameters().getString(MintegralConstants.PLACEMENT_ID);
+      if (!TextUtils.isEmpty(adUnitId) && !TextUtils.isEmpty(placementId)) {
+        mintegralSlotIdentifiers.add(new MintegralSlotIdentifier(adUnitId, placementId));
+      }
+    }
+    return mintegralSlotIdentifiers;
   }
 }

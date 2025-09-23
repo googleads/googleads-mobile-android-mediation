@@ -14,11 +14,18 @@
 
 package com.google.ads.mediation.mintegral.waterfall;
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_CODE_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
 import com.google.ads.mediation.mintegral.MintegralNewInterstitialAdWrapper;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralInterstitialAd;
 import com.google.android.gms.ads.AdError;
@@ -27,6 +34,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
+import java.lang.ref.WeakReference;
 
 public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
@@ -34,9 +42,11 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
   public MintegralWaterfallInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    super(adConfiguration, callback);
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback,
+      FlagValueGetter flagValueGetter) {
+    super(adConfiguration, callback, flagValueGetter);
   }
 
   @Override
@@ -50,6 +60,19 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
       adLoadCallback.onFailure(error);
       return;
     }
+
+    if (flagValueGetter.shouldRestrictMultipleAdLoads()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      WeakReference<Object> adObjectReference = loadedSlotIdentifiers.get(mintegralSlotIdentifier);
+      if (adObjectReference != null && adObjectReference.get() != null) {
+        adLoadCallback.onFailure(
+            new AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN));
+        return;
+      }
+
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
     mbNewInterstitialAdWrapper = MintegralFactory.createInterstitialHandler();
     mbNewInterstitialAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
     mbNewInterstitialAdWrapper.setInterstitialVideoListener(this);
