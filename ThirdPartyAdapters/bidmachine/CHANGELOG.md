@@ -1,12 +1,11 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next Version
-- Adds support for waterfall banner ads.
-- Adds support for waterfall interstitial ads.
-- Adds support for waterfall rewarded ads.
-- Adds support for waterfall native ads.
-
 #### Version 3.4.0.0 (In progress)
+- Added support for waterfall banner ads.
+- Added support for waterfall interstitial ads.
+- Added support for waterfall rewarded ads.
+- Added support for waterfall native ads.
+- Added watermark implementation.
 - Added `MediationAdCallback.onAdOpened()` call when BidMachine's `onAdImpression()` callback is received for full-screen ads. This ensures that publishers recieve the correct callbacks when full-screen ad is displayed.
 
 #### Version 3.3.0.0
