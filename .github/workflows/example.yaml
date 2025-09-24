@@ -40,4 +40,4 @@ jobs:
         run: |
           cd Example/
           gradle wrapper
-          ./gradlew build
+          ./gradlew build -P includeSnippets=true

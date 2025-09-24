@@ -1,1 +1,4 @@
-include ':app', ':customevent', ':snippets', ':sdk'
+include ':app', ':customevent', ':sdk'
+if (hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+    include ':snippets'
+}

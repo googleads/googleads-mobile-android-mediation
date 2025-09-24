@@ -26,5 +26,9 @@ dependencies {
     implementation rootProject.ext.appcompat
     implementation rootProject.ext.playServicesAds
     implementation project(':customevent')
-    implementation project(':snippets')
+
+    // Include partner mediation snippets if property is set explicitly to true.
+    if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+        implementation project(':snippets')
+    }
 }
