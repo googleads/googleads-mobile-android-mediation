@@ -35,4 +35,6 @@ dependencies {
     // Include Mediation SDK Adapter dependencies.
     implementation("com.google.ads.mediation:applovin:+")
     implementation("com.google.ads.mediation:ironsource:+")
+    implementation("com.unity3d.ads:unity-ads:+")
+    implementation("com.google.ads.mediation:unity:+")
 }
