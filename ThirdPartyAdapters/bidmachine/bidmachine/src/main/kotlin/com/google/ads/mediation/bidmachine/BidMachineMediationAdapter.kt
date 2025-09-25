@@ -54,7 +54,7 @@ import io.bidmachine.rewarded.RewardedAd
  */
 class BidMachineMediationAdapter : RtbAdapter() {
 
-  private lateinit var bannerAd: BidMachineBannerAd
+  lateinit var bannerAd: BidMachineBannerAd
   private lateinit var interstitialAd: BidMachineInterstitialAd
   private lateinit var rewardedAd: BidMachineRewardedAd
   private lateinit var nativeAd: BidMachineNativeAd
@@ -170,11 +170,12 @@ class BidMachineMediationAdapter : RtbAdapter() {
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
-      bannerAd = it
-      val bannerView = BannerView(mediationBannerAdConfiguration.context)
-      bannerAd.loadWaterfallAd(bannerView)
-    }
+    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback, isRtb = false)
+      .onSuccess {
+        bannerAd = it
+        val bannerView = BannerView(mediationBannerAdConfiguration.context)
+        bannerAd.loadWaterfallAd(bannerView)
+      }
   }
 
   override fun loadInterstitialAd(
@@ -214,11 +215,12 @@ class BidMachineMediationAdapter : RtbAdapter() {
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
-      bannerAd = it
-      val bannerView = BannerView(mediationBannerAdConfiguration.context)
-      bannerAd.loadRtbAd(bannerView)
-    }
+    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback, isRtb = true)
+      .onSuccess {
+        bannerAd = it
+        val bannerView = BannerView(mediationBannerAdConfiguration.context)
+        bannerAd.loadRtbAd(bannerView)
+      }
   }
 
   override fun loadRtbInterstitialAd(
