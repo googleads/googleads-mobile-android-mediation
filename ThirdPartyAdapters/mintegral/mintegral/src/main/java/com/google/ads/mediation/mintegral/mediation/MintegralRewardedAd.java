@@ -15,10 +15,13 @@
 package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+import static com.google.ads.mediation.mintegral.MintegralUtils.shouldRestrictMultipleAdsLoad;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -34,6 +37,9 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
   protected final MediationRewardedAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
+
+  protected MintegralSlotIdentifier mintegralSlotIdentifier;
+
   protected MediationRewardedAdCallback rewardedAdCallback;
 
   public MintegralRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
@@ -67,6 +73,9 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
 
   @Override
   public void onAdShow(MBridgeIds mBridgeIds) {
+    if (shouldRestrictMultipleAdsLoad()) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdOpened();
       rewardedAdCallback.reportAdImpression();
@@ -89,6 +98,9 @@ public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener im
 
   @Override
   public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    if (shouldRestrictMultipleAdsLoad()) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (rewardedAdCallback != null) {

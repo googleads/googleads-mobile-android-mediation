@@ -15,10 +15,13 @@
 package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+import static com.google.ads.mediation.mintegral.MintegralUtils.shouldRestrictMultipleAdsLoad;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralSplashAdWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -36,6 +39,8 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
   protected final MediationAppOpenAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
       adLoadCallback;
+
+  protected MintegralSlotIdentifier mintegralSlotIdentifier;
 
   protected MediationAppOpenAdCallback appOpenAdCallback;
   protected MintegralSplashAdWrapper splashAdWrapper;
@@ -69,6 +74,9 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
 
   @Override
   public void onShowSuccessed(MBridgeIds mBridgeIds) {
+    if (shouldRestrictMultipleAdsLoad()) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     if (appOpenAdCallback != null) {
       appOpenAdCallback.onAdOpened();
       appOpenAdCallback.reportAdImpression();
@@ -77,6 +85,9 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
 
   @Override
   public void onShowFailed(MBridgeIds mBridgeIds, String msg) {
+    if (shouldRestrictMultipleAdsLoad()) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     if (appOpenAdCallback != null) {
       AdError error =
           MintegralConstants.createSdkError(MintegralConstants.ERROR_MINTEGRAL_SDK, msg);
