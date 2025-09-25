@@ -61,7 +61,6 @@ import java.util.Map;
 
 public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
-  private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
   private NativeAdBase nativeAdBase;
   private MediationNativeAdCallback nativeAdCallback;
@@ -70,15 +69,13 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private final MetaFactory metaFactory;
 
   public FacebookRtbNativeAd(
-      @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
       MetaFactory metaFactory) {
     this.callback = callback;
-    this.adConfiguration = adConfiguration;
     this.metaFactory = metaFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationNativeAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {

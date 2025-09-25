@@ -1,5 +1,8 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next Version
+- Removed class-level references to mediation ad configurations where not needed to help with memory leak issues.
+
 #### Version 6.20.0.1
 - Removed the check that fails initialization if there are no placement IDs.
   Removed this to allow for RTB to work even if a publisher doesn't define ad

@@ -1,7 +1,7 @@
 package com.google.ads.mediation.facebook.rtb
 
 import android.content.Context
-import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
@@ -36,12 +36,10 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class FacebookRtbInterstitialAdTest {
 
-  /** The unit under test. */
-  private lateinit var adapterInterstitialAd: FacebookRtbInterstitialAd
-
-  private lateinit var mediationInterstitialAdConfig: MediationInterstitialAdConfiguration
-  private val serverParameters = Bundle()
   private val context: Context = ApplicationProvider.getApplicationContext()
+  private val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to TEST_AD_UNIT)
+  private val mediationInterstitialAdConfig: MediationInterstitialAdConfiguration =
+    createMediationInterstitialAdConfiguration(context, serverParameters = serverParameters)
   private val mediationInterstitialAdCallback: MediationInterstitialAdCallback = mock()
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
@@ -61,13 +59,12 @@ class FacebookRtbInterstitialAdTest {
   }
   private val metaAd: Ad = mock()
 
+  /** The unit under test. */
+  private lateinit var adapterInterstitialAd: FacebookRtbInterstitialAd
+
   @Before
   fun setUp() {
-    serverParameters.putString(RTB_PLACEMENT_PARAMETER, TEST_AD_UNIT)
-    mediationInterstitialAdConfig =
-      createMediationInterstitialAdConfiguration(context, serverParameters = serverParameters)
-    adapterInterstitialAd =
-      FacebookRtbInterstitialAd(mediationInterstitialAdConfig, mediationAdLoadCallback, metaFactory)
+    adapterInterstitialAd = FacebookRtbInterstitialAd(mediationAdLoadCallback, metaFactory)
   }
 
   @Test
@@ -86,7 +83,7 @@ class FacebookRtbInterstitialAdTest {
       AdError(
         AD_PRESENTATION_ERROR.errorCode,
         AD_PRESENTATION_ERROR.errorMessage,
-        FACEBOOK_SDK_ERROR_DOMAIN
+        FACEBOOK_SDK_ERROR_DOMAIN,
       )
     verify(mediationInterstitialAdCallback)
       .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
@@ -203,7 +200,7 @@ class FacebookRtbInterstitialAdTest {
 
   private fun renderAndLoadSuccessfully() {
     // As part of setting this test up, render the ad.
-    adapterInterstitialAd.render()
+    adapterInterstitialAd.render(mediationInterstitialAdConfig)
     // Simulate Meta ad load success.
     adapterInterstitialAd.onAdLoaded(metaAd)
   }

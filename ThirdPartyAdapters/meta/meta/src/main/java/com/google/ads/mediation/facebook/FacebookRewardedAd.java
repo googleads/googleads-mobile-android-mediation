@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdExtendedListener {
 
-  private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
@@ -64,14 +63,14 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
 
   private final MetaFactory metaFactory;
 
-  public FacebookRewardedAd(MediationRewardedAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback, MetaFactory metaFactory) {
-    this.adConfiguration = adConfiguration;
+  public FacebookRewardedAd(
+      MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
+      MetaFactory metaFactory) {
     this.mediationAdLoadCallback = callback;
     this.metaFactory = metaFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationRewardedAdConfiguration adConfiguration) {
     final Context context = adConfiguration.getContext();
     Bundle serverParameters = adConfiguration.getServerParameters();
     final String placementID = getPlacementID(serverParameters);
