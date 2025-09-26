@@ -274,6 +274,8 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       setIcon(new VungleNativeMappedImage(Uri.parse(iconUrl)));
     }
 
+    setMediaContentAspectRatio(nativeAd.getMediaAspectRatio());
+
     if (runtimeGmaSdkListensToAdapterReportedImpressions()) {
       setOverrideImpressionRecording(true);
     }
