@@ -59,23 +59,12 @@ public class IronSourceBannerAd implements MediationBannerAd {
 
   private ISDemandOnlyBannerLayout ironSourceBannerLayout;
 
-  private final AdSize adSize;
-
   private ISBannerSize bannerSizeIronSource;
 
-  private final Context context;
-
-  private final String instanceID;
-
   public IronSourceBannerAd(
-      @NonNull MediationBannerAdConfiguration bannerAdConfig,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
-    Bundle serverParameters = bannerAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
-    context = bannerAdConfig.getContext();
-    adSize = bannerAdConfig.getAdSize();
     adLoadCallback = mediationAdLoadCallback;
   }
 
@@ -127,10 +116,14 @@ public class IronSourceBannerAd implements MediationBannerAd {
     }
   }
 
-  public void loadAd() {
-    if (!isParamsValid()) {
+  public void loadAd(@NonNull MediationBannerAdConfiguration adConfiguration) {
+    if (!isParamsValid(adConfiguration)) {
       return;
     }
+
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
+    Context context = adConfiguration.getContext();
 
     Activity activity = (Activity) context;
     availableBannerInstances.put(instanceID, new WeakReference<>(this));
@@ -142,7 +135,11 @@ public class IronSourceBannerAd implements MediationBannerAd {
   }
 
   /** Checks if the parameters for loading this instance are valid. */
-  private boolean isParamsValid() {
+  private boolean isParamsValid(@NonNull MediationBannerAdConfiguration adConfiguration) {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
+    Context context = adConfiguration.getContext();
+
     // Check that the context is an Activity and that the instance ID is valid..
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
@@ -161,6 +158,7 @@ public class IronSourceBannerAd implements MediationBannerAd {
       return false;
     }
 
+    AdSize adSize = adConfiguration.getAdSize();
     bannerSizeIronSource = IronSourceAdapterUtils.getISBannerSizeFromGoogleAdSize(context, adSize);
     if (bannerSizeIronSource == null) {
       AdError sizeError =

@@ -44,7 +44,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.unity3d.ironsourceads.InitListener;
 import com.unity3d.ironsourceads.InitRequest;
 import com.unity3d.ironsourceads.IronSourceAds;
@@ -260,18 +259,16 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       return;
     }
 
-    IronSourceRewardedAd ironSourceRewardedAd =
-        new IronSourceRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    ironSourceRewardedAd.loadWaterfallAd();
+    IronSourceRewardedAd ironSourceRewardedAd = new IronSourceRewardedAd(mediationAdLoadCallback);
+    ironSourceRewardedAd.loadWaterfallAd(mediationRewardedAdConfiguration);
   }
 
   @Override
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    IronSourceRtbRewardedAd ironSourceRtbRewardedAd =
-        new IronSourceRtbRewardedAd(adConfiguration, callback);
-    ironSourceRtbRewardedAd.loadRtbAd();
+    IronSourceRtbRewardedAd ironSourceRtbRewardedAd = new IronSourceRtbRewardedAd(callback);
+    ironSourceRtbRewardedAd.loadRtbAd(adConfiguration);
   }
 
   @Override
@@ -308,8 +305,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
     }
 
     IronSourceInterstitialAd ironSourceInterstitialAd =
-        new IronSourceInterstitialAd(mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-    ironSourceInterstitialAd.loadWaterfallAd();
+        new IronSourceInterstitialAd(mediationAdLoadCallback);
+    ironSourceInterstitialAd.loadWaterfallAd(mediationInterstitialAdConfiguration);
   }
 
   @Override
@@ -319,9 +316,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback) {
     IronSourceRtbInterstitialAd ironSourceRtbInterstitialAd =
-        new IronSourceRtbInterstitialAd(
-            mediationInterstitialAdConfiguration, mediationAdLoadCallback);
-    ironSourceRtbInterstitialAd.loadRtbAd();
+        new IronSourceRtbInterstitialAd(mediationAdLoadCallback);
+    ironSourceRtbInterstitialAd.loadRtbAd(mediationInterstitialAdConfiguration);
   }
 
   @Override
@@ -331,8 +327,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
     IronSourceRtbBannerAd ironSourceRtbBannerAd =
-        new IronSourceRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-    ironSourceRtbBannerAd.loadRtbAd();
+        new IronSourceRtbBannerAd(mediationAdLoadCallback);
+    ironSourceRtbBannerAd.loadRtbAd(mediationBannerAdConfiguration);
   }
 
   @Override
@@ -352,9 +348,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       return;
     }
 
-    IronSourceBannerAd ironSourceBannerAd =
-        new IronSourceBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-    ironSourceBannerAd.loadAd();
+    IronSourceBannerAd ironSourceBannerAd = new IronSourceBannerAd(mediationAdLoadCallback);
+    ironSourceBannerAd.loadAd(mediationBannerAdConfiguration);
   }
 
   @VisibleForTesting

@@ -48,13 +48,12 @@ class IronSourceRtbBannerAdTest {
   private val mockBannerAd: BannerAdView =
     org.mockito.kotlin.mock { on { listener } doReturn mockIsListener }
 
-  private val ironSourceRtbBannerAd =
-    IronSourceRtbBannerAd(mockInterstitialAdConfig, bannerAdLoadCallback)
+  private val ironSourceRtbBannerAd = IronSourceRtbBannerAd(bannerAdLoadCallback)
 
   @Test
   fun onBannerAdLoaded_withValidBannerAd_expectOnSuccessCallback() {
     // Given
-    ironSourceRtbBannerAd.loadRtbAd()
+    ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig)
 
     // When
     ironSourceRtbBannerAd.onBannerAdLoaded(mockBannerAd)
@@ -68,7 +67,7 @@ class IronSourceRtbBannerAdTest {
   @Test
   fun onLoadBanner_withoutBannerAdLoaded_expectNoCallback() {
     // When
-    ironSourceRtbBannerAd.loadRtbAd()
+    ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig)
 
     // Then
     verifyNoInteractions(bannerAdLoadCallback)
@@ -86,7 +85,7 @@ class IronSourceRtbBannerAdTest {
   @Test
   fun onBannerAdLoadFailed_withValidBannerAd_expectOnFailureCallback() {
     // Given
-    ironSourceRtbBannerAd.loadRtbAd()
+    ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig)
     val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
     ironSourceRtbBannerAd.onBannerAdLoadFailed(ironSourceError)
 
@@ -105,7 +104,7 @@ class IronSourceRtbBannerAdTest {
   @Test
   fun onBannerAdShown_withValidBannerAd_expectReportAdImpression() {
     // Given
-    ironSourceRtbBannerAd.loadRtbAd()
+    ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbBannerAd.onBannerAdLoaded(mockBannerAd)
 
     // When
@@ -118,7 +117,7 @@ class IronSourceRtbBannerAdTest {
   @Test
   fun onBannerAdClicked_withValidBannerAd_expectOnBannerAdClickedCallbacks() {
     // Given
-    ironSourceRtbBannerAd.loadRtbAd()
+    ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbBannerAd.onBannerAdLoaded(mockBannerAd)
     ironSourceRtbBannerAd.onBannerAdShown(mockBannerAd)
 
