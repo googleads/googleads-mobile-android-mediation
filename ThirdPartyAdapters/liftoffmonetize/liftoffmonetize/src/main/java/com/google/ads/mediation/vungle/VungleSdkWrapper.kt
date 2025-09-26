@@ -15,6 +15,7 @@
 package com.google.ads.mediation.vungle
 
 import android.content.Context
+import com.vungle.ads.BidTokenCallback
 import com.vungle.ads.InitializationListener
 import com.vungle.ads.VungleAds
 
@@ -31,7 +32,7 @@ object VungleSdkWrapper {
   var delegate =
     object : SdkWrapper {
 
-      override fun getBiddingToken(context: Context): String? = VungleAds.getBiddingToken(context)
+      override fun getBiddingToken(context: Context, callback: BidTokenCallback) = VungleAds.getBiddingToken(context, callback)
 
       override fun getSdkVersion(): String = VungleAds.getSdkVersion()
 
@@ -47,7 +48,7 @@ object VungleSdkWrapper {
 
 /** Declares the methods that will invoke the Liftoff Monetize SDK */
 interface SdkWrapper {
-  fun getBiddingToken(context: Context): String?
+  fun getBiddingToken(context: Context, callback: BidTokenCallback)
 
   fun getSdkVersion(): String
 
