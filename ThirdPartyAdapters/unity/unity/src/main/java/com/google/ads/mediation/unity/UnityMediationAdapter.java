@@ -166,10 +166,10 @@ public class UnityMediationAdapter extends RtbAdapter {
 
   private final UnityAdsLoader unityAdsLoader;
 
-  /** UnityBannerAd instance. */
+  /** UnityMediationBannerAd instance. */
   private UnityMediationBannerAd bannerAd;
 
-  /** UnityBannerAd instance. */
+  /** UnityMediationBannerAd instance. */
   private UnityMediationBannerAd bannerRtbAd;
 
   /** UnityInterstitialAd instance. */
