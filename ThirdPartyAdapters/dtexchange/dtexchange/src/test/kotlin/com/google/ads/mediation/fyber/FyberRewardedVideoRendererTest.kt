@@ -62,15 +62,13 @@ class FyberRewardedVideoRendererTest {
   private val mockRewardedAdSpot: InneractiveAdSpot = mock()
   private val mockUnitController: InneractiveFullscreenUnitController = mock()
 
+  private val adConfiguration =
+    createMediationRewardedAdConfiguration(context = activity, serverParameters = serverParameters)
+
   // region Setup
   @Before
   fun setUp() {
-    val adConfiguration =
-      createMediationRewardedAdConfiguration(
-        context = activity,
-        serverParameters = serverParameters,
-      )
-    fyberRewardedAd = FyberRewardedVideoRenderer(adConfiguration, mockAdLoadCallback)
+    fyberRewardedAd = FyberRewardedVideoRenderer(mockAdLoadCallback)
   }
 
   // endregion
@@ -103,7 +101,7 @@ class FyberRewardedVideoRendererTest {
     Mockito.mockStatic(FyberFactory::class.java).use {
       whenever(FyberFactory.createRewardedAdSpot()).doReturn(mockRewardedAdSpot)
 
-      fyberRewardedAd.loadWaterfallAd()
+      fyberRewardedAd.loadWaterfallAd(adConfiguration)
 
       verify(mockRewardedAdSpot).requestAd(any())
     }
@@ -118,10 +116,10 @@ class FyberRewardedVideoRendererTest {
         serverParameters = invalidServerParameters,
       )
 
-    val invalidFyberRewardedAd = FyberRewardedVideoRenderer(adConfiguration, mockAdLoadCallback)
+    val invalidFyberRewardedAd = FyberRewardedVideoRenderer(mockAdLoadCallback)
 
     val adErrorCaptor = argumentCaptor<AdError>()
-    invalidFyberRewardedAd.loadWaterfallAd()
+    invalidFyberRewardedAd.loadWaterfallAd(adConfiguration)
 
     verify(mockAdLoadCallback).onFailure(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
@@ -276,12 +274,12 @@ class FyberRewardedVideoRendererTest {
 
   // region Utility methods
   private fun loadAndRenderAdSuccessfully() {
-    fyberRewardedAd.loadWaterfallAd()
+    fyberRewardedAd.loadWaterfallAd(adConfiguration)
     fyberRewardedAd.onInneractiveSuccessfulAdRequest(mockRewardedAdSpot)
   }
 
   private fun loadRtbAdSuccessfully() {
-    fyberRewardedAd.loadRtbAd()
+    fyberRewardedAd.loadRtbAd(adConfiguration)
     fyberRewardedAd.onInneractiveSuccessfulAdRequest(mockRewardedAdSpot)
   }
   // endregion

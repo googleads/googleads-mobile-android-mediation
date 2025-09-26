@@ -1,5 +1,8 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next version
+- Removed class-level references to Context. Can help reduce memory leak issues.
+
 #### Version 8.3.8.0
 - Refactored the error codes into a new DTExchangeErrorCodes.kt file.
 - Verified compatibility with DT Exchange SDK 8.3.8.

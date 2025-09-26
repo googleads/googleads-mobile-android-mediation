@@ -40,12 +40,12 @@ class DTExchangeBannerAdTest {
     mock {
       on { onSuccess(any()) } doReturn mockBannerAdCallback
     }
+  private val adConfiguration =
+    createMediationBannerAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
 
   @Before
   fun setUp() {
-    val adConfiguration =
-      createMediationBannerAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
-    dtExchangeBannerAd = DTExchangeBannerAd(adConfiguration, mockAdLoadCallback)
+    dtExchangeBannerAd = DTExchangeBannerAd(mockAdLoadCallback)
   }
 
   @Test
@@ -61,7 +61,7 @@ class DTExchangeBannerAdTest {
           "DT Exchange's banner ad spot is not ready.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
 
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
@@ -87,7 +87,7 @@ class DTExchangeBannerAdTest {
           "Unexpected controller type.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
 
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
@@ -108,7 +108,7 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
 
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
       val bannerView = dtExchangeBannerAd.view
@@ -148,7 +148,7 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       dtExchangeBannerAd.onAdImpression(mock())
@@ -169,7 +169,7 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       dtExchangeBannerAd.onAdClicked(mock())
@@ -190,7 +190,7 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       dtExchangeBannerAd.onAdWillCloseInternalBrowser(mock())
@@ -211,7 +211,7 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd()
+      dtExchangeBannerAd.loadAd(adConfiguration)
       dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       dtExchangeBannerAd.onAdWillOpenExternalApp(mock())

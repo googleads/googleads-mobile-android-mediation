@@ -160,8 +160,8 @@ public class FyberMediationAdapter extends RtbAdapter
               callback.onFailure(error);
               return;
             }
-            rewardedRenderer = new FyberRewardedVideoRenderer(configuration, callback);
-            rewardedRenderer.loadWaterfallAd();
+            rewardedRenderer = new FyberRewardedVideoRenderer(callback);
+            rewardedRenderer.loadWaterfallAd(configuration);
           }
         });
   }
@@ -678,8 +678,8 @@ public class FyberMediationAdapter extends RtbAdapter
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerRtbAd = new DTExchangeBannerAd(adConfiguration, callback);
-    bannerRtbAd.loadAd();
+    bannerRtbAd = new DTExchangeBannerAd(callback);
+    bannerRtbAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -688,17 +688,17 @@ public class FyberMediationAdapter extends RtbAdapter
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
-    interstitialRtbAd = new DTExchangeInterstitialAd(adConfiguration, callback);
-    interstitialRtbAd.loadAd();
+    interstitialRtbAd = new DTExchangeInterstitialAd(callback);
+    interstitialRtbAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedRenderer = new FyberRewardedVideoRenderer(adConfiguration, callback);
+    rewardedRenderer = new FyberRewardedVideoRenderer(callback);
     InneractiveAdManager.setMediationName(MEDIATOR_NAME);
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
-    rewardedRenderer.loadRtbAd();
+    rewardedRenderer.loadRtbAd(adConfiguration);
   }
 }

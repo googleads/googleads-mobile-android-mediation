@@ -42,10 +42,6 @@ public class FyberRewardedVideoRenderer
         RequestListener,
         InneractiveFullscreenAdEventsListener,
         InneractiveFullScreenAdRewardedListener {
-
-  /** AdMob's Rewarded ad configuration object. */
-  private final MediationRewardedAdConfiguration adConfiguration;
-
   /** AdMob's callback object. */
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
@@ -65,14 +61,12 @@ public class FyberRewardedVideoRenderer
    * @param adLoadCallback AdMob load callback.
    */
   FyberRewardedVideoRenderer(
-      MediationRewardedAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
-    this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
   }
 
   /** Requests waterfall interstitial ad from DTExchange SDK */
-  void loadWaterfallAd() {
+  void loadWaterfallAd(MediationRewardedAdConfiguration adConfiguration) {
     // Check that we got a valid Spot ID from the server.
     String spotId =
         adConfiguration.getServerParameters().getString(FyberMediationAdapter.KEY_SPOT_ID);
@@ -87,20 +81,20 @@ public class FyberRewardedVideoRenderer
       return;
     }
 
-    initializeFyberClasses();
+    initializeFyberClasses(adConfiguration);
 
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     rewardedSpot.requestAd(request);
   }
 
   /** Requests bidding interstitial ad from DTExchange SDK */
-  void loadRtbAd() {
+  void loadRtbAd(MediationRewardedAdConfiguration adConfiguration) {
     String bidResponse = adConfiguration.getBidResponse();
-    initializeFyberClasses();
+    initializeFyberClasses(adConfiguration);
     rewardedSpot.loadAd(bidResponse);
   }
 
-  private void initializeFyberClasses() {
+  private void initializeFyberClasses(MediationRewardedAdConfiguration adConfiguration) {
     rewardedSpot = FyberFactory.createRewardedAdSpot();
 
     unitController = FyberFactory.createInneractiveFullscreenUnitController();
