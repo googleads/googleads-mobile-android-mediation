@@ -28,6 +28,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -48,36 +49,21 @@ public class IronSourceRtbBannerAd
 
   @VisibleForTesting private MediationBannerAdCallback adLifecycleCallback;
 
-  private final Context context;
-
-  private final String instanceID;
-
-  private final String bidToken;
-
-  private final com.google.android.gms.ads.AdSize adSize;
-
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
-
-  private final String watermark;
 
   private FrameLayout ironSourceAdView;
 
   public IronSourceRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration bannerAdConfig,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
-    Bundle serverParameters = bannerAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
-    context = bannerAdConfig.getContext();
-    adSize = bannerAdConfig.getAdSize();
     adLoadCallback = mediationAdLoadCallback;
-    watermark = bannerAdConfig.getWatermark();
-    bidToken = bannerAdConfig.getBidResponse();
   }
 
-  public void loadRtbAd() {
+  public void loadRtbAd(@NonNull MediationBannerAdConfiguration adConfiguration) {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
           IronSourceAdapterUtils.buildAdErrorAdapterDomain(
@@ -86,8 +72,13 @@ public class IronSourceRtbBannerAd
       return;
     }
 
+    String watermark = adConfiguration.getWatermark();
     Bundle watermarkBundle = new Bundle();
     watermarkBundle.putString(WATERMARK, watermark);
+
+    Context context = adConfiguration.getContext();
+    AdSize adSize = adConfiguration.getAdSize();
+    String bidToken = adConfiguration.getBidResponse();
     BannerAdRequest adRequest =
         new BannerAdRequest.Builder(
                 context, instanceID, bidToken, getAdSizeFromGoogleAdSize(context, adSize))

@@ -58,8 +58,7 @@ class IronSourceRtbInterstitialAdTest {
 
   @Before
   fun setUp() {
-    ironSourceRtbInterstitialAd =
-      IronSourceRtbInterstitialAd(mockInterstitialAdConfig, mockMediationAdLoadCallback)
+    ironSourceRtbInterstitialAd = IronSourceRtbInterstitialAd(mockMediationAdLoadCallback)
   }
 
   @After
@@ -72,7 +71,7 @@ class IronSourceRtbInterstitialAdTest {
     // given
 
     // when
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
     // then
@@ -95,7 +94,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdLoadFailed_verifyOnFailureCallback() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     val ironSourceError = IronSourceError(123, "An error occurred")
 
     // when
@@ -139,7 +138,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdShowFailed_verifyOnAdFailedToShow() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
     val ironSourceError = IronSourceError(123, "An error occurred")
 
@@ -155,7 +154,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdShowFailed_withoutInterstitialAdCallbackInstance_verifyOnAdFailedToShow() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     val errorRes = "An error occurred"
     val errorCode = 123
     val ironSourceError = IronSourceError(errorCode, errorRes)
@@ -172,7 +171,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdOpened_verifyOnInterstitialAdOpenedCallbacks() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
     // when
@@ -186,7 +185,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdClosed_verifyOnAdClosedCallback() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
     // when
@@ -199,7 +198,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onInterstitialAdClicked_verifyReportAdClickedCallback() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
     // when
@@ -212,7 +211,7 @@ class IronSourceRtbInterstitialAdTest {
   @Test
   fun onAdEvents_withoutInterstitialAd_verifyNoCallbacks() {
     // given
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
 
     // when
     ironSourceRtbInterstitialAd.onInterstitialAdShown(mockInterstitialAd)
@@ -290,7 +289,7 @@ class IronSourceRtbInterstitialAdTest {
     val requestCaptor = argumentCaptor<InterstitialAdRequest>()
 
     // when
-    ironSourceRtbInterstitialAd.loadRtbAd()
+    ironSourceRtbInterstitialAd.loadRtbAd(mockInterstitialAdConfig)
 
     // then
     mockInterstitialAdLoader.verify { InterstitialAdLoader.loadAd(requestCaptor.capture(), any()) }

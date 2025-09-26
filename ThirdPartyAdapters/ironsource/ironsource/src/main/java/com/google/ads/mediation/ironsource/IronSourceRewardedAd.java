@@ -49,18 +49,12 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
-  private final Context context;
-
-  private final String instanceID;
+  private String instanceID;
 
   public IronSourceRewardedAd(
-      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
-    Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
-    context = rewardedAdConfiguration.getContext();
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
@@ -92,8 +86,21 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return mediationAdLoadCallback;
   }
 
-  private boolean loadValidConfig() {
-    if (!isParamsValid()) {
+  public void loadWaterfallAd(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
+
+    if (!loadValidConfig(adConfiguration)) {
+      return;
+    }
+
+    Context context = adConfiguration.getContext();
+    Activity activity = (Activity) context;
+    IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
+  }
+
+  private boolean loadValidConfig(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    if (!isParamsValid(adConfiguration)) {
       return false;
     }
 
@@ -102,17 +109,10 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return true;
   }
 
-  public void loadWaterfallAd() {
-    if (!loadValidConfig()) {
-      return;
-    }
-    Activity activity = (Activity) context;
-    IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
-  }
-
-  private boolean isParamsValid() {
-    // Check that the context is an Activity and that the instance ID is valid.
+  private boolean isParamsValid(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    Context context = adConfiguration.getContext();
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
+    // Check that the context is an Activity and that the instance ID is valid.
     if (loadError != null) {
       onAdFailedToLoad(loadError);
       return false;
