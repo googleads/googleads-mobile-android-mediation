@@ -29,6 +29,12 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class FacebookRewardedAdTest {
   private val context: Context = ApplicationProvider.getApplicationContext()
+  private val serverParameters =
+    bundleOf(
+      FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID
+    )
+  private val mediationRewardedAdConfiguration =
+    createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
   private val mediationRewardedAdCallback = mock<MediationRewardedAdCallback>()
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
@@ -56,16 +62,7 @@ class FacebookRewardedAdTest {
 
   @Before
   fun setup() {
-    val serverParameters =
-      bundleOf(
-        FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to
-          AdapterTestKitConstants.TEST_PLACEMENT_ID
-      )
-    val mediationRewardedAdConfiguration =
-      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
-
-    adapterRewardedAd =
-      FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback, metaFactory)
+    adapterRewardedAd = FacebookRewardedAd(mediationAdLoadCallback, metaFactory)
   }
 
   @Test
@@ -226,7 +223,7 @@ class FacebookRewardedAdTest {
       )
 
     // mimic an ad render
-    adapterRewardedAd.render()
+    adapterRewardedAd.render(mediationRewardedAdConfiguration)
     // invoke onError callback
     adapterRewardedAd.onError(facebookAd, metaAdError)
 
@@ -234,7 +231,7 @@ class FacebookRewardedAdTest {
   }
 
   private fun renderAndLoadSuccessfully() {
-    adapterRewardedAd.render()
+    adapterRewardedAd.render(mediationRewardedAdConfiguration)
 
     adapterRewardedAd.onAdLoaded(facebookAd)
   }
