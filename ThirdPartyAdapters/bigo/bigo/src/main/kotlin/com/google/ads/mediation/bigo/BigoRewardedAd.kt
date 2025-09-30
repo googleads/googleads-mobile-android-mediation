@@ -15,28 +15,79 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import java.lang.IllegalArgumentException
+import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdLoadListener
+import sg.bigo.ads.api.RewardAdInteractionListener
+import sg.bigo.ads.api.RewardVideoAd
 
 /**
  * Used to load Bigo rewarded ads and mediate callbacks between Google Mobile Ads SDK and Bigo SDK.
  */
 class BigoRewardedAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationRewardedAd {
+  private val bidResponse: String,
+  private val slotId: String,
+) : MediationRewardedAd, AdLoadListener<RewardVideoAd>, RewardAdInteractionListener {
+  private var rewardedAdCallback: MediationRewardedAdCallback? = null
+  private var rewardVideoAd: RewardVideoAd? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adRequest = BigoFactory.delegate.createRewardVideoAdRequest(bidResponse, slotId)
+    val rewardVideoAdLoader = BigoFactory.delegate.createRewardVideoAdLoader()
+    rewardVideoAdLoader.initializeAdLoader(loadListener = this)
+    rewardVideoAdLoader.loadAd(adRequest)
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    rewardVideoAd?.show()
+  }
+
+  override fun onError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    mediationAdLoadCallback.onFailure(gmaAdError)
+  }
+
+  override fun onAdLoaded(rewardVideoAd: RewardVideoAd) {
+    rewardVideoAd.setAdInteractionListener(this)
+    this.rewardVideoAd = rewardVideoAd
+    rewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdRewarded() {
+    rewardedAdCallback?.onUserEarnedReward()
+  }
+
+  override fun onAdError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    rewardedAdCallback?.onAdFailedToShow(gmaAdError)
+  }
+
+  override fun onAdImpression() {
+    rewardedAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked() {
+    rewardedAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdOpened() {
+    rewardedAdCallback?.onAdOpened()
+  }
+
+  override fun onAdClosed() {
+    rewardedAdCallback?.onAdClosed()
   }
 
   companion object {
@@ -45,12 +96,22 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
     ): Result<BigoRewardedAd> {
-      val context = mediationRewardedAdConfiguration.context
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
+      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      val slotId = serverParameters.getString(SLOT_ID_KEY)
 
-      // TODO: Implement necessary initialization steps.
+      if (slotId.isNullOrEmpty()) {
+        val gmaAdError =
+          BigoUtils.getGmaAdError(
+            ERROR_CODE_MISSING_SLOT_ID,
+            ERROR_MSG_MISSING_SLOT_ID,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(gmaAdError)
+        return Result.failure(IllegalArgumentException(gmaAdError.toString()))
+      }
 
-      return Result.success(BigoRewardedAd(context, mediationAdLoadCallback))
+      return Result.success(BigoRewardedAd(mediationAdLoadCallback, bidResponse, slotId))
     }
   }
 }
