@@ -119,7 +119,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.fyber:marketplace-sdk:8.3.8'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:24.5.0'
+    implementation 'com.google.android.gms:play-services-ads:24.6.0'
 
     testImplementation project(':adaptertestkit')
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"

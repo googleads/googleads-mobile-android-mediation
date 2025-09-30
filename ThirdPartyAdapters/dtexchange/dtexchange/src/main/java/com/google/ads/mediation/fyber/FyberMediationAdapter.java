@@ -58,9 +58,12 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdapter;
 import com.google.android.gms.ads.mediation.MediationInterstitialListener;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -123,6 +126,7 @@ public class FyberMediationAdapter extends RtbAdapter
 
   /** DT Exchange rewarded ad video renderer. */
   private FyberRewardedVideoRenderer rewardedRenderer;
+  private DTExchangeNativeAdMapper nativeAdMapper;
 
   /** Default Constructor. */
   public FyberMediationAdapter() {}
@@ -366,6 +370,11 @@ public class FyberMediationAdapter extends RtbAdapter
     if (interstitialActivityRef != null) {
       interstitialActivityRef.clear();
       interstitialActivityRef = null;
+    }
+
+    if (nativeAdMapper != null) {
+      nativeAdMapper.destroy();
+      nativeAdMapper = null;
     }
   }
 
@@ -701,4 +710,17 @@ public class FyberMediationAdapter extends RtbAdapter
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
     rewardedRenderer.loadRtbAd(adConfiguration);
   }
+
+  @Override
+  public void loadRtbNativeAdMapper(@NonNull MediationNativeAdConfiguration adConfiguration,
+                                    @NonNull
+                                    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback) {
+    if (nativeAdMapper != null) {
+      nativeAdMapper.destroy();
+      nativeAdMapper = null;
+    }
+    nativeAdMapper = new DTExchangeNativeAdMapper(adConfiguration, callback);
+    nativeAdMapper.loadAd();
+  }
+
 }
