@@ -40,6 +40,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import sg.bigo.ads.BigoAdSdk
+import sg.bigo.ads.api.AdConfig
 
 /**
  * Bigo Adapter for GMA SDK used to initialize and load ads from the Bigo SDK. This class should not
@@ -104,8 +105,40 @@ class BigoMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    if (BigoAdSdk.isInitialized()) {
+      initializationCompleteCallback.onInitializationSucceeded()
+      return
+    }
+
+    val applicationIds =
+      mediationConfigurations.mapNotNull {
+        val appId = it.serverParameters.getString(APP_ID_KEY)
+        if (appId.isNullOrEmpty()) {
+          null
+        } else {
+          appId
+        }
+      }
+    if (applicationIds.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
+      return
+    }
+    val appId = applicationIds[0]
+    if (appId.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
+      return
+    }
+    if (applicationIds.size > 1) {
+      val message =
+        "Multiple $APP_ID_KEY entries found: ${applicationIds}. Using '${appId}' to initialize the Bigo SDK"
+      Log.w(TAG, message)
+    }
+
+    val adConfig = AdConfig.Builder().setAppId(appId).build()
+
+    BigoAdSdk.initialize(context, adConfig) {
+      initializationCompleteCallback.onInitializationSucceeded()
+    }
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
@@ -179,5 +212,7 @@ class BigoMediationAdapter : RtbAdapter() {
     @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bigo"
     const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val APP_ID_KEY = "application_id"
+    const val ERROR_MSG_MISSING_APP_ID = "App Id to initialize Bigo SDK is empty or missing."
   }
 }
