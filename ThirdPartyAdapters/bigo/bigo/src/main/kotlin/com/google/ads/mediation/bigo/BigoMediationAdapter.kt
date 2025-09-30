@@ -54,7 +54,7 @@ class BigoMediationAdapter : RtbAdapter() {
   private lateinit var bannerAd: BigoBannerAd
   private lateinit var interstitialAd: BigoInterstitialAd
   private lateinit var rewardedAd: BigoRewardedAd
-  private lateinit var rewardedInterstitialAd: BigoRewardedInterstitialAd
+  private lateinit var rewardedInterstitialAd: BigoRewardedAd
   private lateinit var nativeAd: BigoNativeAd
   private lateinit var appOpenAd: BigoAppOpenAd
 
@@ -185,7 +185,8 @@ class BigoMediationAdapter : RtbAdapter() {
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    BigoRewardedInterstitialAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    // Reuses Rewarded Ads
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
       rewardedInterstitialAd.loadAd()
     }
@@ -225,8 +226,11 @@ class BigoMediationAdapter : RtbAdapter() {
     @VisibleForTesting var bigoSdkVersionDelegate: String? = null
     @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bigo"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "sg.bigo.ads"
     const val APP_ID_KEY = "application_id"
+    const val SLOT_ID_KEY = "slot_id"
     const val ERROR_MSG_MISSING_APP_ID = "App Id to initialize Bigo SDK is empty or missing."
+    const val ERROR_CODE_MISSING_SLOT_ID = 101
+    const val ERROR_MSG_MISSING_SLOT_ID = "Missing or empty Bigo Slot Id"
   }
 }
