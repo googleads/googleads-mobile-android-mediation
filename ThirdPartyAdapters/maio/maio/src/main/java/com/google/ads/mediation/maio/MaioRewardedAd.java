@@ -30,7 +30,6 @@ import jp.maio.sdk.android.v2.rewarded.Rewarded;
  */
 public class MaioRewardedAd implements MediationRewardedAd {
   private Rewarded maioRewarded;
-  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
@@ -38,13 +37,11 @@ public class MaioRewardedAd implements MediationRewardedAd {
   protected String zoneID;
 
   MaioRewardedAd(
-      MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback) {
-    this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.adLoadCallback = adLoadCallback;
   }
 
-  public void loadAd() {
+  public void loadAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     Context context = mediationRewardedAdConfiguration.getContext();
 
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();

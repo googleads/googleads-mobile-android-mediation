@@ -184,8 +184,8 @@ public class MaioMediationAdapter extends Adapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
-    interstitialAd = new MaioInterstitialAd(mediationInterstitialAdConfiguration, callback);
-    interstitialAd.loadAd();
+    interstitialAd = new MaioInterstitialAd(callback);
+    interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
 
   @Override
@@ -193,7 +193,7 @@ public class MaioMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new MaioRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback);
-    rewardedAd.loadAd();
+    rewardedAd = new MaioRewardedAd(mediationAdLoadCallback);
+    rewardedAd.loadAd(mediationRewardedAdConfiguration);
   }
 }
