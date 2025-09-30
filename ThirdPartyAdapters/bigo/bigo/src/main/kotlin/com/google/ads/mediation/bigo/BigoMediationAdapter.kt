@@ -147,8 +147,8 @@ class BigoMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    val bidToken = BigoAdSdk.getBidderToken()
+    callback.onSuccess(bidToken ?: "")
   }
 
   override fun loadRtbBannerAd(
