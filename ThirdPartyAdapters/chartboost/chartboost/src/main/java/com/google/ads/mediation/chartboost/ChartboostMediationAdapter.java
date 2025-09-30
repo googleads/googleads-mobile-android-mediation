@@ -213,25 +213,23 @@ public class ChartboostMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new ChartboostRewardedAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback);
-    rewardedAd.loadAd();
+    rewardedAd = new ChartboostRewardedAd(mediationAdLoadCallback);
+    rewardedAd.loadAd(mediationRewardedAdConfiguration);
   }
 
   @Override
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    interstitialAd = new ChartboostInterstitialAd(mediationInterstitialAdConfiguration,
-        mediationAdLoadCallback);
-    interstitialAd.loadAd();
+    interstitialAd = new ChartboostInterstitialAd(mediationAdLoadCallback);
+    interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    bannerAd = new ChartboostBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback);
-    bannerAd.loadAd();
+    bannerAd = new ChartboostBannerAd(mediationAdLoadCallback);
+    bannerAd.loadAd(mediationBannerAdConfiguration);
   }
 
   // region Public utility methods
