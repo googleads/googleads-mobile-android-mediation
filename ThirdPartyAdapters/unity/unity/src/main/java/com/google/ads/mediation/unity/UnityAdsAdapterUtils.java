@@ -205,6 +205,8 @@ public class UnityAdsAdapterUtils {
         return 506;
       case INTERNAL_ERROR:
         return 507;
+      case TIMEOUT:
+        return 508;
       // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
       // in the future.
     }
