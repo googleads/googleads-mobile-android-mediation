@@ -17,6 +17,8 @@ package com.google.ads.mediation.bigo
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.MobileAds.getRequestConfiguration
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -40,6 +42,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import sg.bigo.ads.BigoAdSdk
+import sg.bigo.ads.ConsentOptions
 import sg.bigo.ads.api.AdConfig
 
 /**
@@ -134,6 +137,8 @@ class BigoMediationAdapter : RtbAdapter() {
       Log.w(TAG, message)
     }
 
+    configureBigoPrivacy(context)
+
     val adConfig = AdConfig.Builder().setAppId(appId).build()
 
     BigoAdSdk.initialize(context, adConfig) {
@@ -204,6 +209,15 @@ class BigoMediationAdapter : RtbAdapter() {
       appOpenAd = it
       appOpenAd.loadAd()
     }
+  }
+
+  private fun configureBigoPrivacy(context: Context) {
+    val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
+    val isTaggedForChildDirected =
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    // A value of "true" indicates that the user is not a child under 13 years old, and a value of
+    // "false" indicates that the user is a child under 13 years old.
+    BigoAdSdk.setUserConsent(context, ConsentOptions.COPPA, !isTaggedForChildDirected)
   }
 
   internal companion object {

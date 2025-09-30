@@ -24,6 +24,8 @@ import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import org.junit.After
@@ -38,6 +40,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import sg.bigo.ads.BigoAdSdk
+import sg.bigo.ads.ConsentOptions
 
 @RunWith(AndroidJUnit4::class)
 class BigoMediationAdapterTest {
@@ -105,12 +108,17 @@ class BigoMediationAdapterTest {
   }
 
   @Test
-  fun initialize_invokesOnInitializationSucceeded() {
+  fun initialize_tagForChildTrue_invokesOnInitializationSucceededAndBigoCoppaToFalse() {
     val mediationConfiguration =
       MediationConfiguration(
         AdFormat.BANNER,
         /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
       )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
     val callbackCaptor = argumentCaptor<BigoAdSdk.InitListener>()
 
     adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
@@ -118,6 +126,49 @@ class BigoMediationAdapterTest {
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
     verify(mockInitializationCallback).onInitializationSucceeded()
+    mockBigoSdk.verify {
+      BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
+    }
+  }
+
+  @Test
+  fun initialize_tagForChildFalse_setBigoCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(true)) }
+  }
+
+  @Test
+  fun initialize_tagForChildUnspecified_setBigoCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(true)) }
   }
 
   // endregion
