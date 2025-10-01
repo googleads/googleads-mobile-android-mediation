@@ -1,5 +1,11 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Next version
+- Updated how the requested banner ad size is mapped to BidMachine's banner ad
+  size. Now allows for requested ad sizes that are close to a size supported by
+  BidMachine (instead of requiring the requested size to strictly match a
+  supported size).
+
 #### Version 3.4.0.0
 - Added waterfall support for banner, interstitial, rewarded and native ad formats.
 - Adapter now forwards `onAdOpened()` with `onAdImpression() ` for full-screen ads.
