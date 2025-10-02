@@ -23,21 +23,19 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
 
   public InMobiWaterfallRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     final Context context = mediationRewardedAdConfiguration.getContext();
     final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 
@@ -55,7 +53,7 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
         new Listener() {
           @Override
           public void onInitializeSuccess() {
-            createAndLoadRewardAd(context, placementId, mediationAdLoadCallback);
+            createAndLoadRewardAd(context, mediationRewardedAdConfiguration);
           }
 
           @Override
@@ -69,9 +67,12 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
   }
 
   @Override
-  protected void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper) {
+  protected void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiRewardedAdWrapper,
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationRewardedAdConfiguration.getContext(),
+        InMobiExtrasBuilder.build(
+            mediationRewardedAdConfiguration.getContext(),
             mediationRewardedAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());

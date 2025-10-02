@@ -18,6 +18,7 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -45,7 +46,6 @@ import java.util.Map;
 
 public abstract class InMobiBannerAd extends BannerAdEventListener implements MediationBannerAd {
 
-  protected final MediationBannerAdConfiguration mediationBannerAdConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
   protected InMobiInitializer inMobiInitializer;
@@ -54,31 +54,36 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
   private InMobiAdFactory inMobiAdFactory;
 
   public InMobiBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
-    this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.inMobiInitializer = inMobiInitializer;
     this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the InMobi SDK method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiBannerWrapper adView);
+  protected abstract void internalLoadAd(
+      @NonNull InMobiBannerWrapper adView,
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration);
 
-  public abstract void loadAd();
+  public abstract void loadAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration);
 
   protected void createAndLoadBannerAd(
-      final Context context, final long placementId, AdSize mediationBannerSize) {
+      @NonNull final Context context,
+      @NonNull AdSize mediationBannerSize,
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     // Set the COPPA value in inMobi SDK
     InMobiAdapterUtils.setIsAgeRestricted();
 
     InMobiAdapterUtils.configureGlobalTargeting(
         mediationBannerAdConfiguration.getMediationExtras());
 
+    final Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
     InMobiBannerWrapper inMobiBannerWrapper =
         inMobiAdFactory.createInMobiBannerWrapper(context, placementId);
     // Turn off automatic refresh.
@@ -109,7 +114,7 @@ public abstract class InMobiBannerAd extends BannerAdEventListener implements Me
             mediationBannerSize.getHeightInPixels(context)));
     inMobiAdViewHolder.addView(inMobiBannerWrapper);
 
-    internalLoadAd(inMobiBannerWrapper);
+    internalLoadAd(inMobiBannerWrapper, mediationBannerAdConfiguration);
   }
 
   @NonNull

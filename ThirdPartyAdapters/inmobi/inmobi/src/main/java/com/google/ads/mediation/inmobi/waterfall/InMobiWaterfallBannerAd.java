@@ -25,21 +25,19 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 public class InMobiWaterfallBannerAd extends InMobiBannerAd {
 
   public InMobiWaterfallBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationBannerAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     final Context context = mediationBannerAdConfiguration.getContext();
     final AdSize closestBannerSize =
         InMobiAdapterUtils.findClosestBannerSize(
@@ -71,7 +69,7 @@ public class InMobiWaterfallBannerAd extends InMobiBannerAd {
         new InMobiInitializer.Listener() {
           @Override
           public void onInitializeSuccess() {
-            createAndLoadBannerAd(context, placementId, closestBannerSize);
+            createAndLoadBannerAd(context, closestBannerSize, mediationBannerAdConfiguration);
           }
 
           @Override
@@ -83,9 +81,12 @@ public class InMobiWaterfallBannerAd extends InMobiBannerAd {
   }
 
   @Override
-  public void internalLoadAd(InMobiBannerWrapper adView) {
+  public void internalLoadAd(
+      @NonNull InMobiBannerWrapper adView,
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationBannerAdConfiguration.getContext(),
+        InMobiExtrasBuilder.build(
+            mediationBannerAdConfiguration.getContext(),
             mediationBannerAdConfiguration.getMediationExtras(),
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     adView.setExtras(inMobiExtras.getParameterMap());
