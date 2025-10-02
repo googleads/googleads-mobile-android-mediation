@@ -37,14 +37,13 @@ import org.json.JSONObject;
 public class MintegralRtbBannerAd extends MintegralBannerAd {
 
   public MintegralRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    super(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    super(mediationAdLoadCallback);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationBannerAdConfiguration adConfiguration) {
     BannerSize bannerSize =
         getMintegralBannerSizeFromAdMobAdSize(
             adConfiguration.getAdSize(), adConfiguration.getContext(), /* isRtb= */ true);

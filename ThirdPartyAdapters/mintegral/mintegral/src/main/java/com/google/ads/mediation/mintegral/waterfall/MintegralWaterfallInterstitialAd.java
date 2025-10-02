@@ -40,7 +40,7 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationInterstitialAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -58,7 +58,6 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbNewInterstitialAdWrapper.playVideoMute(
         muted
             ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE

@@ -34,14 +34,13 @@ import com.mbridge.msdk.out.MBBannerView;
 public class MintegralWaterfallBannerAd extends MintegralBannerAd {
 
   public MintegralWaterfallBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    super(mediationBannerAdConfiguration, mediationAdLoadCallback);
+    super(mediationAdLoadCallback);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationBannerAdConfiguration adConfiguration) {
     BannerSize bannerSize =
         getMintegralBannerSizeFromAdMobAdSize(
             adConfiguration.getAdSize(), adConfiguration.getContext(), /* isRtb= */ false);

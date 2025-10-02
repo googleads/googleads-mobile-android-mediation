@@ -2,10 +2,9 @@ package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 
+import android.content.Context;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -14,18 +13,23 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.mbridge.msdk.out.Campaign;
 import com.mbridge.msdk.out.Frame;
 import com.mbridge.msdk.out.NativeAdWithCodeListener;
-
 import java.util.List;
 
 public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
   protected MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback;
-  protected MediationNativeAdCallback nativeCallback;
+
   private MintegralNativeAd mintegralNativeAd;
 
-  public MintegralNativeAdListener(@NonNull MintegralNativeAd mintegralNativeAd) {
+  private final Context context;
+
+  public MintegralNativeAdListener(
+      @NonNull MintegralNativeAd mintegralNativeAd,
+      Context context,
+      MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> adLoadCallback) {
+    this.context = context;
     this.mintegralNativeAd = mintegralNativeAd;
-    this.adLoadCallback = mintegralNativeAd.adLoadCallback;
+    this.adLoadCallback = adLoadCallback;
   }
 
   @Override
@@ -37,8 +41,8 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
       adLoadCallback.onFailure(adError);
       return;
     }
-    mintegralNativeAd.mapNativeAd(list.get(0));
-    nativeCallback = adLoadCallback.onSuccess(mintegralNativeAd);
+    mintegralNativeAd.mapNativeAd(list.get(0), context);
+    mintegralNativeAd.nativeCallback = adLoadCallback.onSuccess(mintegralNativeAd);
   }
 
 
@@ -52,9 +56,9 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
   @Override
   public void onAdClick(Campaign campaign) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdClicked();
-      nativeCallback.onAdLeftApplication();
+    if (mintegralNativeAd.nativeCallback != null) {
+      mintegralNativeAd.nativeCallback.reportAdClicked();
+      mintegralNativeAd.nativeCallback.onAdLeftApplication();
     }
   }
 
@@ -65,8 +69,8 @@ public class MintegralNativeAdListener extends NativeAdWithCodeListener {
 
   @Override
   public void onLoggingImpression(int i) {
-    if (nativeCallback != null) {
-      nativeCallback.reportAdImpression();
+    if (mintegralNativeAd.nativeCallback != null) {
+      mintegralNativeAd.nativeCallback.reportAdImpression();
     }
   }
 }

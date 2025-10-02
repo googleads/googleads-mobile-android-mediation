@@ -60,9 +60,7 @@ class MintegralWaterfallAppOpenAdTest {
 
   @Before
   fun setUp() {
-    val adConfiguration =
-      createMediationAppOpenAdConfiguration(context = activity, serverParameters = serverParameters)
-    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(adConfiguration, mockAdLoadCallback)
+    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(mockAdLoadCallback)
   }
 
   @Test
@@ -71,7 +69,7 @@ class MintegralWaterfallAppOpenAdTest {
       /*mBridgeIds=*/ null,
       /*code=*/ 2,
       TEST_ERROR_MESSAGE,
-      /*reqType=*/ 3
+      /*reqType=*/ 3,
     )
 
     val expectedError = AdError(2, TEST_ERROR_MESSAGE, MINTEGRAL_SDK_ERROR_DOMAIN)
@@ -110,7 +108,7 @@ class MintegralWaterfallAppOpenAdTest {
       AdError(
         MintegralConstants.ERROR_MINTEGRAL_SDK,
         TEST_ERROR_MESSAGE,
-        MINTEGRAL_SDK_ERROR_DOMAIN
+        MINTEGRAL_SDK_ERROR_DOMAIN,
       )
     verify(mockAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
   }
@@ -119,7 +117,12 @@ class MintegralWaterfallAppOpenAdTest {
   fun showAd_invokesSplashAdShowWithLayout() {
     mockStatic(MintegralFactory::class.java).use {
       whenever(MintegralFactory.createSplashAdWrapper()) doReturn mockSplashAdWrapper
-      mintegralAppOpenAd.loadAd()
+      mintegralAppOpenAd.loadAd(
+        createMediationAppOpenAdConfiguration(
+          context = activity,
+          serverParameters = serverParameters,
+        )
+      )
 
       mintegralAppOpenAd.showAd(activity)
 
@@ -140,7 +143,12 @@ class MintegralWaterfallAppOpenAdTest {
   fun onDismiss_invokesOnAdClosedAndOnDestroy() {
     mockStatic(MintegralFactory::class.java).use {
       whenever(MintegralFactory.createSplashAdWrapper()) doReturn mockSplashAdWrapper
-      mintegralAppOpenAd.loadAd()
+      mintegralAppOpenAd.loadAd(
+        createMediationAppOpenAdConfiguration(
+          context = activity,
+          serverParameters = serverParameters,
+        )
+      )
       mintegralAppOpenAd.onLoadSuccessed(/* mBridgeIds= */ null, /* type= */ 1)
 
       mintegralAppOpenAd.onDismiss(/* mBridgeIds= */ null, /* type= */ 1)

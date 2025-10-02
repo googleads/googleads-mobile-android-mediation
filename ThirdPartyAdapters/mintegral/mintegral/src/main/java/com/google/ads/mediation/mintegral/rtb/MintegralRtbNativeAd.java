@@ -19,12 +19,11 @@ import static com.mbridge.msdk.MBridgeConstans.NATIVE_VIDEO_SUPPORT;
 
 import android.util.Log;
 import android.view.View;
-
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralNativeAd;
+import com.google.ads.mediation.mintegral.mediation.MintegralNativeAdListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -35,13 +34,11 @@ import com.google.android.gms.ads.nativead.NativeAdAssetNames;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.nativex.view.MBMediaView;
 import com.mbridge.msdk.out.MBBidNativeHandler;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MintegralRtbNativeAd extends MintegralNativeAd {
 
@@ -55,7 +52,7 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationNativeAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -80,7 +77,8 @@ public class MintegralRtbNativeAd extends MintegralNativeAd {
     } catch (JSONException jsonException) {
       Log.w(TAG, "Failed to apply watermark to Mintegral bidding native ad.", jsonException);
     }
-    mbBidNativeHandler.setAdListener(mintegralNativeAdListener);
+    mbBidNativeHandler.setAdListener(
+        new MintegralNativeAdListener(this, adConfiguration.getContext(), adLoadCallback));
     mbBidNativeHandler.bidLoad(bidToken);
   }
 

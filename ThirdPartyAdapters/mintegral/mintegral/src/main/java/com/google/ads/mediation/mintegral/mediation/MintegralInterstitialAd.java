@@ -19,37 +19,34 @@ import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
-
 public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements
     MediationInterstitialAd {
 
-  protected final MediationInterstitialAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
   protected MediationInterstitialAdCallback interstitialAdCallback;
 
+  protected final boolean muted;
+
   public MintegralInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
-    this.adConfiguration = adConfiguration;
+    muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     this.adLoadCallback = callback;
   }
 
-  /**
-   * Loads a Mintegral Interstitial ad.
-   */
-  public abstract void loadAd();
-
+  /** Loads a Mintegral Interstitial ad. */
+  public abstract void loadAd(MediationInterstitialAdConfiguration adConfiguration);
 
   @Override
   public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {

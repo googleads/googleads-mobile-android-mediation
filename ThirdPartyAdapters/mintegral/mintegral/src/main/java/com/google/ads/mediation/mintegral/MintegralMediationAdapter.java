@@ -223,8 +223,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    mintegralRtbBannerAd = new MintegralRtbBannerAd(adConfiguration, callback);
-    mintegralRtbBannerAd.loadAd();
+    mintegralRtbBannerAd = new MintegralRtbBannerAd(callback);
+    mintegralRtbBannerAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -232,37 +232,36 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
     mintegralRtbInterstitialAd = new MintegralRtbInterstitialAd(adConfiguration, callback);
-    mintegralRtbInterstitialAd.loadAd();
+    mintegralRtbInterstitialAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration, callback);
-    mintegralRtbNativeAd.loadAd();
+    mintegralRtbNativeAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback);
-    mintegralRtbRewardedAd.loadAd();
+    mintegralRtbRewardedAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadRtbAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    mintegralRtbAppOpenAd =
-        new MintegralRtbAppOpenAd(mediationAppOpenAdConfiguration, callback);
-    mintegralRtbAppOpenAd.loadAd();
+    mintegralRtbAppOpenAd = new MintegralRtbAppOpenAd(callback);
+    mintegralRtbAppOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    mintegralWaterfallBannerAd = new MintegralWaterfallBannerAd(adConfiguration, callback);
-    mintegralWaterfallBannerAd.loadAd();
+    mintegralWaterfallBannerAd = new MintegralWaterfallBannerAd(callback);
+    mintegralWaterfallBannerAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -270,29 +269,28 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
     mintegralInterstitialAd = new MintegralWaterfallInterstitialAd(adConfiguration, callback);
-    mintegralInterstitialAd.loadAd();
+    mintegralInterstitialAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     mintegralNativeAd = new MintegralWaterfallNativeAd(adConfiguration, callback);
-    mintegralNativeAd.loadAd();
+    mintegralNativeAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     mintegralRewardedAd = new MintegralWaterfallRewardedAd(adConfiguration, callback);
-    mintegralRewardedAd.loadAd();
+    mintegralRewardedAd.loadAd(adConfiguration);
   }
 
   @Override
   public void loadAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    mintegralWaterfallAppOpenAd =
-        new MintegralWaterfallAppOpenAd(mediationAppOpenAdConfiguration, callback);
-    mintegralWaterfallAppOpenAd.loadAd();
+    mintegralWaterfallAppOpenAd = new MintegralWaterfallAppOpenAd(callback);
+    mintegralWaterfallAppOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
 }

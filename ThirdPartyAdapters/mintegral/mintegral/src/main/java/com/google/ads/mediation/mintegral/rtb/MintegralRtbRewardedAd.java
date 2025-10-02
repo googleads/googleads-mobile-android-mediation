@@ -29,7 +29,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.out.MBBidRewardVideoHandler;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +43,7 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationRewardedAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -71,7 +70,6 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
         : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbBidRewardVideoHandler.showFromBid();
