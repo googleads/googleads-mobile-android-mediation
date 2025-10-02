@@ -43,7 +43,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 
 public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
-  private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback;
   private AdView adView;
   private FrameLayout wrappedAdView;
@@ -51,14 +50,14 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
 
   private final MetaFactory metaFactory;
 
-  public FacebookRtbBannerAd(MediationBannerAdConfiguration adConfiguration,
-      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback, MetaFactory metaFactory) {
-    this.adConfiguration = adConfiguration;
+  public FacebookRtbBannerAd(
+      MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback,
+      MetaFactory metaFactory) {
     this.callback = callback;
     this.metaFactory = metaFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationBannerAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
