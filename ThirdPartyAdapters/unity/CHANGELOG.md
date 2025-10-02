@@ -5,6 +5,8 @@
 - Removed old banner API implementation. Note: New banner API implementation
   already exists in the adapter and GMA SDK will use that.
 - Added an error code to identify show failure due to timeout.
+- Removed class-level references to `Context` objects to help with memory leak
+  issues.
 
 #### Version 4.16.1.0
 - Verified compatibility with Unity Ads SDK 4.16.1.
