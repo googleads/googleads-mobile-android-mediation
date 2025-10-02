@@ -51,31 +51,19 @@ public class IronSourceRtbRewardedAd
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
-  private final Context context;
-
-  private final String instanceID;
-
-  private final String bidToken;
-
   private RewardedAd ad = null;
 
-  private final String watermark;
-
   public IronSourceRtbRewardedAd(
-      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationRewardedAdLoadCallback) {
-    Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
-    context = rewardedAdConfiguration.getContext();
-    bidToken = rewardedAdConfiguration.getBidResponse();
-    watermark = rewardedAdConfiguration.getWatermark();
     mediationAdLoadCallback = mediationRewardedAdLoadCallback;
   }
 
   /** Attempts to load an ironSource @{link RewardedAd} using a Bid token. */
-  public void loadRtbAd() {
+  public void loadRtbAd(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
           IronSourceAdapterUtils.buildAdErrorAdapterDomain(
@@ -84,9 +72,11 @@ public class IronSourceRtbRewardedAd
       return;
     }
 
+    String watermark = adConfiguration.getWatermark();
     Bundle watermarkBundle = new Bundle();
     watermarkBundle.putString(WATERMARK, watermark);
 
+    String bidToken = adConfiguration.getBidResponse();
     RewardedAdRequest adRequest =
         new RewardedAdRequest.Builder(instanceID, bidToken)
             .withExtraParams(watermarkBundle)
@@ -98,7 +88,6 @@ public class IronSourceRtbRewardedAd
   /** Attempts to show the loaded @{link RewardedAd} bidding ad. */
   @Override
   public void showAd(@NonNull Context context) {
-    Log.d(TAG, String.format("Showing IronSource rewarded ad for instance ID: %s", instanceID));
     if (ad == null) {
       AdError contextError =
           IronSourceAdapterUtils.buildAdErrorAdapterDomain(
@@ -108,6 +97,7 @@ public class IronSourceRtbRewardedAd
     }
 
     try {
+      Log.d(TAG, "Showing IronSource rewarded ad");
       Activity activity = (Activity) context;
       ad.setListener(this);
       ad.show(activity);
