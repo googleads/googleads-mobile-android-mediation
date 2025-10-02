@@ -174,7 +174,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
       .onSuccess {
         bannerAd = it
         val bannerView = BannerView(mediationBannerAdConfiguration.context)
-        bannerAd.loadWaterfallAd(bannerView)
+        bannerAd.loadWaterfallAd(bannerView, mediationBannerAdConfiguration.context)
       }
   }
 
@@ -185,7 +185,10 @@ class BidMachineMediationAdapter : RtbAdapter() {
     BidMachineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
       val bidMachineInterstitialAd = InterstitialAd(mediationInterstitialAdConfiguration.context)
-      interstitialAd.loadWaterfallAd(bidMachineInterstitialAd)
+      interstitialAd.loadWaterfallAd(
+        bidMachineInterstitialAd,
+        mediationInterstitialAdConfiguration.context,
+      )
     }
   }
 
@@ -196,7 +199,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
       val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
-      rewardedAd.loadWaterfallAd(bidMachineRewardedAd)
+      rewardedAd.loadWaterfallAd(bidMachineRewardedAd, mediationRewardedAdConfiguration.context)
     }
   }
 
@@ -219,7 +222,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
       .onSuccess {
         bannerAd = it
         val bannerView = BannerView(mediationBannerAdConfiguration.context)
-        bannerAd.loadRtbAd(bannerView)
+        bannerAd.loadRtbAd(bannerView, mediationBannerAdConfiguration.context)
       }
   }
 
@@ -230,7 +233,10 @@ class BidMachineMediationAdapter : RtbAdapter() {
     BidMachineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
       val bidMachineInterstitialAd = InterstitialAd(mediationInterstitialAdConfiguration.context)
-      interstitialAd.loadRtbAd(bidMachineInterstitialAd)
+      interstitialAd.loadRtbAd(
+        bidMachineInterstitialAd,
+        mediationInterstitialAdConfiguration.context,
+      )
     }
   }
 
@@ -241,7 +247,7 @@ class BidMachineMediationAdapter : RtbAdapter() {
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
       val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
-      rewardedAd.loadRtbAd(bidMachineRewardedAd)
+      rewardedAd.loadRtbAd(bidMachineRewardedAd, mediationRewardedAdConfiguration.context)
     }
   }
 

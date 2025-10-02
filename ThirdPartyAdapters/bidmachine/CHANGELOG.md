@@ -1,6 +1,7 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next version
+#### Next Version
+- Removed class-level references to `Context` objects to help with memory leak issues.
 - Updated how the requested banner ad size is mapped to BidMachine's banner ad
   size. Now allows for requested ad sizes that are close to a size supported by
   BidMachine (instead of requiring the requested size to strictly match a
