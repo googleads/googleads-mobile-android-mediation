@@ -59,7 +59,7 @@ class VerveBannerAdTest {
   @Before
   fun setUp() {
     verveBannerAd =
-      VerveBannerAd(context, mockAdLoadCallback, TEST_BID_RESPONSE, mockHyBidAdView, AdSize.BANNER)
+      VerveBannerAd(mockAdLoadCallback, TEST_BID_RESPONSE, mockHyBidAdView, AdSize.BANNER)
   }
 
   @Test
@@ -109,7 +109,7 @@ class VerveBannerAdTest {
 
   @Test
   fun loadAd_invokesHyBidRenderAd() {
-    verveBannerAd.loadAd()
+    verveBannerAd.loadAd(context)
 
     verify(mockHyBidAdView).renderAd(eq(TEST_BID_RESPONSE), eq(verveBannerAd))
   }
