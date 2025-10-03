@@ -14,25 +14,155 @@
 
 package com.google.ads.mediation.bigo
 
-import android.content.Context
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdInteractionListener
+import sg.bigo.ads.api.AdLoadListener
+import sg.bigo.ads.api.MediaView
+import sg.bigo.ads.api.NativeAd
+import sg.bigo.ads.api.VideoController
 
 /**
  * Used to load Bigo native ads and mediate callbacks between Google Mobile Ads SDK and Bigo SDK.
  */
 class BigoNativeAd
 private constructor(
-  private val context: Context,
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : NativeAdMapper() {
+  private val bidResponse: String,
+  private val slotId: String,
+  private val mediaView: MediaView,
+  private val iconView: ImageView,
+) :
+  NativeAdMapper(),
+  AdLoadListener<NativeAd>,
+  AdInteractionListener,
+  VideoController.VideoLifeCallback {
+
+  private var nativeAdCallback: MediationNativeAdCallback? = null
+  private var nativeAd: NativeAd? = null
+  private var videoController: VideoController? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adRequest = BigoFactory.delegate.createNativeAdRequest(bidResponse, slotId)
+    val nativeAdLoader = BigoFactory.delegate.createNativeAdLoader()
+    nativeAdLoader.initializeAdLoader(loadListener = this)
+    nativeAdLoader.loadAd(adRequest)
+  }
+
+  override fun onError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    mediationNativeAdLoadCallback.onFailure(gmaAdError)
+  }
+
+  override fun onAdLoaded(nativeAd: NativeAd) {
+    nativeAd.setAdInteractionListener(this)
+    mapNativeAd(nativeAd)
+    this.nativeAd = nativeAd
+    nativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdError(adError: AdError) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdImpression() {
+    nativeAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked() {
+    nativeAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdOpened() {
+    nativeAdCallback?.onAdOpened()
+  }
+
+  override fun onAdClosed() {
+    nativeAdCallback?.onAdClosed()
+  }
+
+  override fun onVideoStart() {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onVideoPlay() {
+    nativeAdCallback?.onVideoPlay()
+  }
+
+  override fun onVideoPause() {
+    nativeAdCallback?.onVideoPause()
+  }
+
+  override fun onVideoEnd() {
+    nativeAdCallback?.onVideoComplete()
+  }
+
+  override fun onMuteChange(mute: Boolean) {
+    if (mute) {
+      nativeAdCallback?.onVideoMute()
+    } else {
+      nativeAdCallback?.onVideoUnmute()
+    }
+  }
+
+  override fun trackViews(
+    container: View,
+    clickableAssetViews: Map<String?, View?>,
+    nonClickableAssetViews: Map<String?, View?>,
+  ) {
+    nativeAd?.registerViewForInteraction(
+      container as ViewGroup,
+      mediaView,
+      iconView,
+      null,
+      clickableAssetViews.values.toList(),
+    )
+  }
+
+  private fun mapNativeAd(nativeAd: NativeAd) {
+    headline = nativeAd.title
+    body = nativeAd.description
+    if (nativeAd.hasIcon()) {
+      icon = NativeAdImage(iconView.drawable)
+    }
+    callToAction = nativeAd.callToAction
+    setMediaView(mediaView)
+    advertiser = nativeAd.advertiser
+    if (nativeAd.creativeType == NativeAd.CreativeType.VIDEO) {
+      setHasVideoContent(true)
+      videoController = nativeAd.videoController
+      videoController?.videoLifeCallback = this
+    }
+    mediaContentAspectRatio = nativeAd.mediaContentAspectRatio
+
+    overrideImpressionRecording = true
+    overrideClickHandling = true
+  }
+
+  internal class NativeAdImage(
+    private val drawable: Drawable?,
+    private val uri: Uri? = Uri.EMPTY,
+    private val scale: Double = 1.0,
+  ) : com.google.android.gms.ads.nativead.NativeAd.Image() {
+    override fun getScale(): Double = scale
+
+    override fun getDrawable(): Drawable? = drawable
+
+    override fun getUri(): Uri? = uri
   }
 
   companion object {
@@ -43,11 +173,29 @@ private constructor(
     ): Result<BigoNativeAd> {
       val context = mediationNativeAdConfiguration.context
       val serverParameters = mediationNativeAdConfiguration.serverParameters
-      val nativeAdOptions = mediationNativeAdConfiguration.nativeAdOptions
+      val bidResponse = mediationNativeAdConfiguration.bidResponse
+      val slotId = serverParameters.getString(SLOT_ID_KEY)
 
-      // TODO: Implement necessary initialization steps.
+      if (slotId.isNullOrEmpty()) {
+        val gmaAdError =
+          BigoUtils.getGmaAdError(
+            ERROR_CODE_MISSING_SLOT_ID,
+            ERROR_MSG_MISSING_SLOT_ID,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        mediationNativeAdLoadCallback.onFailure(gmaAdError)
+        return Result.failure(IllegalArgumentException(gmaAdError.toString()))
+      }
 
-      return Result.success(BigoNativeAd(context, mediationNativeAdLoadCallback))
+      return Result.success(
+        BigoNativeAd(
+          mediationNativeAdLoadCallback,
+          bidResponse,
+          slotId,
+          MediaView(context),
+          ImageView(context),
+        )
+      )
     }
   }
 }

@@ -18,18 +18,40 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationAppOpenAd
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import org.junit.After
@@ -39,6 +61,7 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -218,6 +241,102 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.getBidderToken() }
     mockSignalCallbacks.onSuccess("")
+  }
+
+  // endregion
+
+  // region Banner tests
+  @Test
+  fun loadRtbBannerAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.BANNER)
+    val mockBannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbBannerAd(adConfiguration, mockBannerAdLoadCallback)
+
+    verify(mockBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Interstitial tests
+  @Test
+  fun loadRtbInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationInterstitialAdConfiguration(context)
+    val mockInterstitialAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+
+    verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Rewarded tests
+  @Test
+  fun loadRtbRewardedAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val mockRewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbRewardedAd(adConfiguration, mockRewardedAdLoadCallback)
+
+    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Rewarded Interstitial tests
+  @Test
+  fun loadRtbRewardedInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val mockRewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbRewardedInterstitialAd(adConfiguration, mockRewardedAdLoadCallback)
+
+    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region AppOpen tests
+  @Test
+  fun loadRtbAppOpenAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationAppOpenAdConfiguration(context)
+    val mockAppOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbAppOpenAd(adConfiguration, mockAppOpenAdLoadCallback)
+
+    verify(mockAppOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Native tests
+  @Test
+  fun loadRtbNativeAdMapper_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationNativeAdConfiguration(context)
+    val mockNativeAdLoadCallback =
+      mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbNativeAdMapper(adConfiguration, mockNativeAdLoadCallback)
+
+    verify(mockNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion
