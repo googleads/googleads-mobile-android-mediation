@@ -1,6 +1,11 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Version 4.1.0.0 (In progress)
+#### Version 4.1.0.0
+- Verified compatibility with Moloco SDK 4.1.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.6.0.
+- Moloco SDK version 4.1.0.
 
 #### Version 4.0.0.0
 - Verified compatibility with Moloco SDK 4.0.0.
