@@ -20,6 +20,7 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -44,7 +45,6 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
     implements MediationInterstitialAd {
 
   private InMobiInterstitialWrapper inMobiInterstitialWrapper;
-  protected final MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
   protected InMobiInitializer inMobiInitializer;
@@ -53,23 +53,28 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
   private InMobiAdFactory inMobiAdFactory;
 
   public InMobiInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
-    this.mediationInterstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.inMobiInitializer = inMobiInitializer;
     this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the third-party method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper);
+  protected abstract void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiInterstitialWrapper,
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration);
 
-  public abstract void loadAd();
+  public abstract void loadAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration);
 
-  protected void createAndLoadInterstitialAd(final Context context, long placementId) {
+  protected void createAndLoadInterstitialAd(
+      final Context context,
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration) {
+    final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
     inMobiInterstitialWrapper =
         inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, this);
 
@@ -84,7 +89,7 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
       inMobiInterstitialWrapper.setWatermarkData(new WatermarkData(watermark, WATERMARK_ALPHA));
     }
 
-    internalLoadAd(inMobiInterstitialWrapper);
+    internalLoadAd(inMobiInterstitialWrapper, mediationInterstitialAdConfiguration);
   }
 
   @Override

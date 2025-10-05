@@ -58,8 +58,7 @@ class IronSourceRtbRewardedAdTest {
 
   @Before
   fun setUp() {
-    ironSourceRtbRewardedAd =
-      IronSourceRtbRewardedAd(mockRewardedAdConfig, mockMediationAdLoadCallback)
+    ironSourceRtbRewardedAd = IronSourceRtbRewardedAd(mockMediationAdLoadCallback)
   }
 
   @After
@@ -70,7 +69,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onLoadRtbAd_verifyOnSuccessCallback() {
     // When
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // Then
@@ -91,7 +90,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedAdLoadFailed_verifyOnFailureCallback() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     val errorRes = "An error occurred"
     val errorCode = 123
     val ironSourceError = IronSourceError(errorCode, errorRes)
@@ -120,7 +119,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedAdShowFailed_verifyOnAdFailedToShow() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     val errorRes = "An error occurred"
     val errorCode = 123
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
@@ -171,7 +170,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedAdOpened_withRewardedAd_verifyOnRewardedAdOpenedCallbacks() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // When
@@ -185,7 +184,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedAdClosed_withRewardedAd_verifyOnAdClosedCallback() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // When
@@ -198,7 +197,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedVideoAdRewarded_withRewardedAd_verifyOnRewardedCallbacks() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // When
@@ -212,7 +211,7 @@ class IronSourceRtbRewardedAdTest {
   @Test
   fun onRewardedAdClicked_withRewardedAd_verifyReportAdClickedCallback() {
     // Given
-    ironSourceRtbRewardedAd.loadRtbAd()
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // When

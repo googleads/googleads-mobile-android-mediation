@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralNativeAd;
+import com.google.ads.mediation.mintegral.mediation.MintegralNativeAdListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
@@ -48,7 +49,7 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationNativeAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -65,7 +66,8 @@ public class MintegralWaterfallNativeAd extends MintegralNativeAd {
     nativeProperties.put(NATIVE_VIDEO_SUPPORT, true);
     nativeProperties.put(MBridgeConstans.PROPERTIES_AD_NUM, 1);
     mbNativeHandler = new MBNativeHandler(nativeProperties, adConfiguration.getContext());
-    mbNativeHandler.setAdListener(mintegralNativeAdListener);
+    mbNativeHandler.setAdListener(
+        new MintegralNativeAdListener(this, adConfiguration.getContext(), adLoadCallback));
     mbNativeHandler.load();
   }
 

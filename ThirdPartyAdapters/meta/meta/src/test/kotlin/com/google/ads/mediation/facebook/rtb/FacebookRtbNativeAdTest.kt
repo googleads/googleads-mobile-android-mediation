@@ -26,7 +26,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
-import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -49,11 +48,22 @@ import org.mockito.kotlin.whenever
 class FacebookRtbNativeAdTest {
 
   private lateinit var facebookRtbNativeAd: FacebookRtbNativeAd
-  private lateinit var mediationNativeAdConfiguration: MediationNativeAdConfiguration
   private lateinit var metaNativeAd: NativeAd
   private lateinit var metaNativeBannerAd: NativeBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val serverParameters =
+    bundleOf(
+      FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID
+    )
+  private val mediationNativeAdConfiguration =
+    createMediationNativeAdConfiguration(
+      context = context,
+      serverParameters = serverParameters,
+      taggedForChildDirectedTreatment = 1,
+      watermark = TEST_WATERMARK,
+      bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
+    )
   private val nativeAdCallback = mock<MediationNativeAdCallback>()
   private val nativeAdLoadCallback:
     MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
@@ -76,10 +86,6 @@ class FacebookRtbNativeAdTest {
   private val metaAdIcon = mock<Image> { on { url } doReturn META_AD_ICON_URI }
   private val metaAdCoverImage = mock<Image> { on { url } doReturn META_AD_COVER_IMAGE_URI }
   private val nativeListenerCaptor = argumentCaptor<NativeAdListener>()
-  private val serverParameters =
-    bundleOf(
-      FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID
-    )
   private val metaMediaView = mock<MediaView>()
   private val metaFactory =
     mock<MetaFactory> { on { createMediaView(any()) } doReturn metaMediaView }
@@ -88,16 +94,7 @@ class FacebookRtbNativeAdTest {
 
   @Before
   fun setUp() {
-    mediationNativeAdConfiguration =
-      createMediationNativeAdConfiguration(
-        context = context,
-        serverParameters = serverParameters,
-        taggedForChildDirectedTreatment = 1,
-        watermark = TEST_WATERMARK,
-        bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE
-      )
-    facebookRtbNativeAd =
-      FacebookRtbNativeAd(mediationNativeAdConfiguration, nativeAdLoadCallback, metaFactory)
+    facebookRtbNativeAd = FacebookRtbNativeAd(nativeAdLoadCallback, metaFactory)
     metaNativeAd = mock {
       on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder
       on { adHeadline } doReturn META_AD_HEADLINE
@@ -125,7 +122,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnAdLoaded_withWrongAd_invokesLoadFailure() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val aWrongNativeAd: NativeAdBase = mock()
@@ -136,7 +133,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_WRONG_NATIVE_TYPE,
         "Ad Loaded is not a Native Ad.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -146,7 +143,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.adHeadline) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -156,7 +153,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -166,7 +163,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.adBodyText) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -176,7 +173,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -186,7 +183,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.adIcon) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -196,7 +193,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -206,7 +203,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.adCallToAction) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -216,7 +213,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -226,7 +223,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.adCoverImage) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -236,7 +233,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -246,7 +243,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaFactory.createMediaView(any())) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -256,7 +253,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS,
         "Ad from Meta Audience Network doesn't have all required assets.",
-        FacebookMediationAdapter.ERROR_DOMAIN
+        FacebookMediationAdapter.ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -265,7 +262,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnError_invokesLoadFailure() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val metaAdLoadError = com.facebook.ads.AdError(101, "Load error from Meta")
@@ -276,7 +273,7 @@ class FacebookRtbNativeAdTest {
       AdError(
         metaAdLoadError.errorCode,
         metaAdLoadError.errorMessage,
-        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN,
       )
     verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
@@ -285,7 +282,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnAdLoaded_setsNativeAdAssetsAndInvokesLoadSuccess() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -320,7 +317,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeAd.preloadedIconViewDrawable) doReturn iconViewDrawable
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -336,7 +333,7 @@ class FacebookRtbNativeAdTest {
     whenever(metaNativeBannerAd.adCoverImage) doReturn null
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
 
@@ -365,7 +362,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnMediaDownloaded_doesntCrash() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val nativeAdListener = nativeListenerCaptor.firstValue
@@ -381,7 +378,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnLoggingImpression_doesntCrash() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val nativeAdListener = nativeListenerCaptor.firstValue
@@ -397,7 +394,7 @@ class FacebookRtbNativeAdTest {
   fun nativeAdListenerOnAdClicked_reportsAdClickedAndAdOpenedAndAdLeftApplication() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val nativeAdListener = nativeListenerCaptor.firstValue
@@ -415,7 +412,7 @@ class FacebookRtbNativeAdTest {
   fun mediaViewListenerOnComplete_invokesOnVideoComplete() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val nativeAdListener = nativeListenerCaptor.firstValue
@@ -433,7 +430,7 @@ class FacebookRtbNativeAdTest {
   fun mediaViewListenerNoOpCallbacks_dontCrash() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
     val nativeAdListener = nativeListenerCaptor.firstValue
@@ -461,7 +458,7 @@ class FacebookRtbNativeAdTest {
   fun trackViews_ifIconIsImageView_registersViewWithIcon() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     val iconView = mock<ImageView>()
     val clickableAssets = mapOf(ASSET_ICON to iconView)
@@ -476,7 +473,7 @@ class FacebookRtbNativeAdTest {
   fun trackViews_ifIconIsNotImageView_registersViewWithoutIcon() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     val iconView = mock<View>()
     val clickableAssets = mapOf(ASSET_ICON to iconView)
@@ -491,7 +488,7 @@ class FacebookRtbNativeAdTest {
   fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsImageView_registersView() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     val iconView = mock<ImageView>()
     val clickableAssets = mapOf(ASSET_ICON to iconView)
@@ -506,7 +503,7 @@ class FacebookRtbNativeAdTest {
   fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsNotImageView_doesNotRegisterView() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     val iconView = mock<View>()
     val clickableAssets = mapOf(ASSET_ICON to iconView)
@@ -521,7 +518,7 @@ class FacebookRtbNativeAdTest {
   fun trackViews_ifNativeAdIsNativeBannerAdAndIconIsNull_doesNotRegisterView() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
 
     facebookRtbNativeAd.trackViews(gmaContainerView, emptyMap(), emptyMap())
@@ -536,7 +533,7 @@ class FacebookRtbNativeAdTest {
       mock<NativeAdBase> { on { buildLoadAdConfig() } doReturn metaNativeAdLoadConfigBuilder }
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn nativeAdBase
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
     val iconView = mock<View>()
     val clickableAssets = mapOf(ASSET_ICON to iconView)
@@ -554,7 +551,7 @@ class FacebookRtbNativeAdTest {
   fun unTrackView_unRegistersView() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
-      facebookRtbNativeAd.render()
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     }
 
     facebookRtbNativeAd.untrackView(gmaContainerView)

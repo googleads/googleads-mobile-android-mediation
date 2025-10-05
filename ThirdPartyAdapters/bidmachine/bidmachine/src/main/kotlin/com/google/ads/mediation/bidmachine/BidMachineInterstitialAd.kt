@@ -42,7 +42,6 @@ import io.bidmachine.utils.BMError
  */
 class BidMachineInterstitialAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
@@ -53,19 +52,23 @@ private constructor(
   private lateinit var bidMachineInterstitialAd: InterstitialAd
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
-  fun loadWaterfallAd(interstitialAd: InterstitialAd) {
+  fun loadWaterfallAd(interstitialAd: InterstitialAd, context: Context) {
     val interstitialRequest =
       interstitialRequestBuilder.setPlacementId(placementId).setListener(this).build()
-    loadAd(interstitialAd, interstitialRequest)
+    loadAd(interstitialAd, interstitialRequest, context)
   }
 
-  fun loadRtbAd(interstitialAd: InterstitialAd) {
+  fun loadRtbAd(interstitialAd: InterstitialAd, context: Context) {
     val interstitialRequest =
       interstitialRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAd(interstitialAd, interstitialRequest)
+    loadAd(interstitialAd, interstitialRequest, context)
   }
 
-  private fun loadAd(interstitialAd: InterstitialAd, interstitialRequest: InterstitialRequest) {
+  private fun loadAd(
+    interstitialAd: InterstitialAd,
+    interstitialRequest: InterstitialRequest,
+    context: Context,
+  ) {
     bidMachineInterstitialAd = interstitialAd
     interstitialRequest.request(context)
   }
@@ -154,20 +157,13 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
     ): Result<BidMachineInterstitialAd> {
-      val context = mediationInterstitialAdConfiguration.context
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
       val watermark = mediationInterstitialAdConfiguration.watermark
       val placementId =
         mediationInterstitialAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
       return Result.success(
-        BidMachineInterstitialAd(
-          context,
-          mediationAdLoadCallback,
-          bidResponse,
-          watermark,
-          placementId,
-        )
+        BidMachineInterstitialAd(mediationAdLoadCallback, bidResponse, watermark, placementId)
       )
     }
   }

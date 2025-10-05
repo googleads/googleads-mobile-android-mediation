@@ -44,7 +44,7 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationInterstitialAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -71,7 +71,6 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbBidNewInterstitialAdWrapper.playVideoMute(
         muted
             ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE

@@ -45,7 +45,9 @@ class UnityRewardedAdTest {
   private lateinit var unityRewardedAd: UnityRewardedAd
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-  private val rewardedAdConfiguration: MediationRewardedAdConfiguration = mock()
+  private val rewardedAdConfiguration: MediationRewardedAdConfiguration = mock {
+    on { watermark } doReturn TEST_WATERMARK
+  }
   private val rewardedAdCallback: MediationRewardedAdCallback = mock()
   private val rewardedAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
@@ -227,12 +229,11 @@ class UnityRewardedAdTest {
         UnityMediationAdapter.KEY_GAME_ID to TEST_GAME_ID,
       )
     whenever(rewardedAdConfiguration.context) doReturn activity
-    whenever(rewardedAdConfiguration.watermark) doReturn TEST_WATERMARK
     val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
     val unityAdsShowOptions: UnityAdsShowOptions = mock()
     whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
     whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(any())) doReturn unityAdsShowOptions
-    unityRewardedAd.loadAd()
+    unityRewardedAd.loadAd(rewardedAdConfiguration)
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_LOADED_PLACEMENT_ID)
 
     unityRewardedAd.showAd(activity)
@@ -260,7 +261,7 @@ class UnityRewardedAdTest {
     val unityAdsShowOptions: UnityAdsShowOptions = mock()
     whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
     whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(any())) doReturn unityAdsShowOptions
-    unityRewardedAd.loadAd()
+    unityRewardedAd.loadAd(rewardedAdConfiguration)
     val unityAdsLoadError = UnityAdsLoadError.NO_FILL
     unityRewardedAd.unityLoadListener.onUnityAdsFailedToLoad(
       null,

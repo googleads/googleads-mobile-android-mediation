@@ -34,6 +34,12 @@ import org.mockito.kotlin.whenever
 class FacebookRtbBannerAdTest {
 
   private val context: Context = ApplicationProvider.getApplicationContext()
+  private val serverParameters =
+    bundleOf(
+      FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID
+    )
+  private val mediationBannerAdConfiguration: MediationBannerAdConfiguration =
+    createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
   private val mediationBannerAdCallback = mock<MediationBannerAdCallback>()
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
@@ -54,20 +60,10 @@ class FacebookRtbBannerAdTest {
 
   /** The unit under test. */
   private lateinit var adapterBannerAd: FacebookRtbBannerAd
-  private lateinit var mediationBannerAdConfiguration: MediationBannerAdConfiguration
 
   @Before
   fun setup() {
-    val serverParameters =
-      bundleOf(
-        FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER to
-          AdapterTestKitConstants.TEST_PLACEMENT_ID
-      )
-    mediationBannerAdConfiguration =
-      createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
-
-    adapterBannerAd =
-      FacebookRtbBannerAd(mediationBannerAdConfiguration, mediationAdLoadCallback, metaFactory)
+    adapterBannerAd = FacebookRtbBannerAd(mediationAdLoadCallback, metaFactory)
   }
 
   @Test
@@ -77,7 +73,7 @@ class FacebookRtbBannerAdTest {
       com.google.android.gms.ads.AdError(
         metaAdError.errorCode,
         metaAdError.errorMessage,
-        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN
+        FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN,
       )
 
     // invoke onError callback
@@ -124,10 +120,10 @@ class FacebookRtbBannerAdTest {
       metaFactory.createMetaAdView(
         context,
         AdapterTestKitConstants.TEST_PLACEMENT_ID,
-        mediationBannerAdConfiguration.bidResponse
+        mediationBannerAdConfiguration.bidResponse,
       )
     ) doReturn metaBannerAdView
-    adapterBannerAd.render()
+    adapterBannerAd.render(mediationBannerAdConfiguration)
 
     val wrappedAdView = adapterBannerAd.view as ViewGroup
 

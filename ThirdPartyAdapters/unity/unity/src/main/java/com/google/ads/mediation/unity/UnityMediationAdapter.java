@@ -367,7 +367,7 @@ public class UnityMediationAdapter extends RtbAdapter {
             mediationAdLoadCallback,
             unityInitializer,
             unityAdsLoader);
-    rewardedAd.loadAd();
+    rewardedAd.loadAd(mediationRewardedAdConfiguration);
   }
 
   @Override
@@ -376,15 +376,17 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd =
         new UnityMediationBannerAd(
-            mediationBannerAdConfiguration, callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
-    bannerAd.loadAd();
+            callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
+    bannerAd.loadAd(mediationBannerAdConfiguration);
   }
 
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerRtbAd = new UnityMediationBannerAd(adConfiguration, callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
-    bannerRtbAd.loadAd();
+    bannerRtbAd =
+        new UnityMediationBannerAd(
+            callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
+    bannerRtbAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -393,7 +395,7 @@ public class UnityMediationAdapter extends RtbAdapter {
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
     interstitialAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
-    interstitialAd.loadAd();
+    interstitialAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -404,7 +406,7 @@ public class UnityMediationAdapter extends RtbAdapter {
               callback) {
     interstitialRtbAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
-    interstitialRtbAd.loadAd();
+    interstitialRtbAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -413,6 +415,6 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     rewardedRtbAd =
         new UnityRewardedAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
-    rewardedRtbAd.loadAd();
+    rewardedRtbAd.loadAd(adConfiguration);
   }
 }

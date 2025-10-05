@@ -38,7 +38,7 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationRewardedAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -56,7 +56,6 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
         : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
     mbRewardVideoHandler.show();

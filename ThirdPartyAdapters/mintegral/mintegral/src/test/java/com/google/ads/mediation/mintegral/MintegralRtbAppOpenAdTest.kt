@@ -43,20 +43,20 @@ class MintegralRtbAppOpenAdTest {
 
   @Before
   fun setUp() {
-    val adConfiguration =
-      createMediationAppOpenAdConfiguration(
-        context = activity,
-        serverParameters = serverParameters,
-        bidResponse = TEST_BID_RESPONSE
-      )
-    mintegralAppOpenAd = MintegralRtbAppOpenAd(adConfiguration, mockAdLoadCallback)
+    mintegralAppOpenAd = MintegralRtbAppOpenAd(mockAdLoadCallback)
   }
 
   @Test
   fun showAd_invokesSplashAdShowWithLayoutAndBidToken() {
     Mockito.mockStatic(MintegralFactory::class.java).use {
       whenever(MintegralFactory.createSplashAdWrapper()) doReturn mockSplashAdWrapper
-      mintegralAppOpenAd.loadAd()
+      mintegralAppOpenAd.loadAd(
+        createMediationAppOpenAdConfiguration(
+          context = activity,
+          serverParameters = serverParameters,
+          bidResponse = TEST_BID_RESPONSE,
+        )
+      )
 
       mintegralAppOpenAd.showAd(activity)
 

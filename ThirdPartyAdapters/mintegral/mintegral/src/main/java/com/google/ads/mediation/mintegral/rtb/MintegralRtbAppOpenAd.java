@@ -46,13 +46,12 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
   private String bidToken;
 
   public MintegralRtbAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    super(adConfiguration, callback);
+    super(callback);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationAppOpenAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String adUnitId = serverParameters.getString(MintegralConstants.AD_UNIT_ID);
     String placementId = serverParameters.getString(MintegralConstants.PLACEMENT_ID);

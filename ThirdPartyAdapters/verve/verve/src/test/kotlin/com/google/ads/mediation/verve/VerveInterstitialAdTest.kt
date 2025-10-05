@@ -70,14 +70,14 @@ class VerveInterstitialAdTest {
 
   @Test
   fun loadAd_invokesHyBidPrepareAd() {
-    verveInterstitialAd.loadAd()
+    verveInterstitialAd.loadAd(context)
 
     verify(mockHyBidInterstitialAd).prepareAd(eq(TEST_BID_RESPONSE))
   }
 
   @Test
   fun showAd_invokesHyBidShow() {
-    verveInterstitialAd.loadAd()
+    verveInterstitialAd.loadAd(context)
 
     verveInterstitialAd.showAd(context)
 

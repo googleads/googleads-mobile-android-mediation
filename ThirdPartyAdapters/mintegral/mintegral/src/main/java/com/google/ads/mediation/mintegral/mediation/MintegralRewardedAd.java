@@ -19,6 +19,7 @@ import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -31,22 +32,21 @@ import com.mbridge.msdk.out.RewardVideoWithCodeListener;
 public abstract class MintegralRewardedAd extends RewardVideoWithCodeListener implements
     MediationRewardedAd {
 
-  protected final MediationRewardedAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
   protected MediationRewardedAdCallback rewardedAdCallback;
 
+  protected final boolean muted;
+
   public MintegralRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           adLoadCallback) {
-    this.adConfiguration = adConfiguration;
+    muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     this.adLoadCallback = adLoadCallback;
   }
 
-  /**
-   * Loads a Mintegral rewarded ad.
-   */
-  public abstract void loadAd();
+  /** Loads a Mintegral rewarded ad. */
+  public abstract void loadAd(MediationRewardedAdConfiguration adConfiguration);
 
   @Override
   public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {

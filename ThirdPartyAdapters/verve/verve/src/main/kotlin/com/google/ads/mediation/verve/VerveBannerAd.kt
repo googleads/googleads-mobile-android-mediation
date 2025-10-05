@@ -41,7 +41,6 @@ import net.pubnative.lite.sdk.views.PNAdView
 class VerveBannerAd
 @VisibleForTesting
 internal constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bidResponse: String,
@@ -50,7 +49,7 @@ internal constructor(
 ) : MediationBannerAd, PNAdView.Listener {
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     val adViewLayoutParams =
       ViewGroup.LayoutParams(adSize.getWidthInPixels(context), adSize.getHeightInPixels(context))
     adView.layoutParams = adViewLayoutParams
@@ -118,7 +117,7 @@ internal constructor(
       }
 
       return Result.success(
-        VerveBannerAd(context, mediationAdLoadCallback, bidResponse, verveBannerView, adSize)
+        VerveBannerAd(mediationAdLoadCallback, bidResponse, verveBannerView, adSize)
       )
     }
   }

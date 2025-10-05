@@ -39,7 +39,9 @@ class UnityInterstitialAdTest {
   private lateinit var unityInterstitialAd: UnityInterstitialAd
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-  private val interstitialAdConfiguration: MediationInterstitialAdConfiguration = mock()
+  private val interstitialAdConfiguration: MediationInterstitialAdConfiguration = mock {
+    on { watermark } doReturn TEST_WATERMARK
+  }
   private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
   private val interstitialAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
@@ -145,12 +147,11 @@ class UnityInterstitialAdTest {
         UnityMediationAdapter.KEY_GAME_ID to TEST_GAME_ID,
       )
     whenever(interstitialAdConfiguration.context) doReturn activity
-    whenever(interstitialAdConfiguration.watermark) doReturn TEST_WATERMARK
     val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
     val unityAdsShowOptions: UnityAdsShowOptions = mock()
     whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
     whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(any())) doReturn unityAdsShowOptions
-    unityInterstitialAd.loadAd()
+    unityInterstitialAd.loadAd(interstitialAdConfiguration)
     unityInterstitialAd.onUnityAdsAdLoaded(TEST_LOADED_PLACEMENT_ID)
 
     unityInterstitialAd.showAd(activity)

@@ -38,14 +38,13 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 public class MintegralWaterfallAppOpenAd extends MintegralAppOpenAd {
 
   public MintegralWaterfallAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> adLoadCallback) {
-    super(adConfiguration, adLoadCallback);
+    super(adLoadCallback);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationAppOpenAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String adUnitId = serverParameters.getString(MintegralConstants.AD_UNIT_ID);
     String placementId = serverParameters.getString(MintegralConstants.PLACEMENT_ID);

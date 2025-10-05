@@ -10,7 +10,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
@@ -25,7 +24,6 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class InMobiWaterfallBannerAdTest {
-  private val bannerAdConfiguration = mock<MediationBannerAdConfiguration>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
@@ -44,12 +42,7 @@ class InMobiWaterfallBannerAdTest {
       .thenReturn(mediationBannerAdCallback)
 
     waterfallBannerAd =
-      InMobiWaterfallBannerAd(
-        bannerAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory
-      )
+      InMobiWaterfallBannerAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test
@@ -65,8 +58,7 @@ class InMobiWaterfallBannerAdTest {
   fun onAdLoadSucceeded_invokesOnSuccessCallback() {
     waterfallBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
 
-    verify(mediationAdLoadCallback)
-      .onSuccess(waterfallBannerAd)
+    verify(mediationAdLoadCallback).onSuccess(waterfallBannerAd)
   }
 
   @Test

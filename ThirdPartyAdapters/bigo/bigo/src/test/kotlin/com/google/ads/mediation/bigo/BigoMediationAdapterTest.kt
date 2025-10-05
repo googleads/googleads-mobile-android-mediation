@@ -14,37 +14,212 @@
 
 package com.google.ads.mediation.bigo
 
+import android.content.Context
+import androidx.core.os.bundleOf
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
+import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.rtb.RtbSignalData
+import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import sg.bigo.ads.BigoAdSdk
+import sg.bigo.ads.ConsentOptions
 
 @RunWith(AndroidJUnit4::class)
 class BigoMediationAdapterTest {
   // Subject of testing
   private lateinit var adapter: BigoMediationAdapter
+  private lateinit var mockBigoSdk: MockedStatic<BigoAdSdk>
+
+  private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val mockInitializationCallback: InitializationCompleteCallback = mock()
 
   @Before
   fun setUp() {
     adapter = BigoMediationAdapter()
+    mockBigoSdk = mockStatic(BigoAdSdk::class.java)
+  }
+
+  @After
+  fun tearDown() {
+    mockBigoSdk.close()
   }
 
   // region Version tests
   @Test
   fun getSDKVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    BigoMediationAdapter.bigoSdkVersionDelegate = "1.2.3"
+
+    adapter.assertGetSdkVersion(expectedValue = "1.2.3")
   }
 
   @Test
   fun getVersionInfo_returnsValidVersionInfo() {
-    // TODO: Update the version number returned.
-    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
+    BigoMediationAdapter.adapterVersionDelegate = "1.2.3.1"
+
+    adapter.assertGetVersionInfo(expectedValue = "1.2.301")
   }
 
   // endregion
 
-  // TODO: Add tests for the methods that are implemented in the adapter.
+  // region Initialize tests
+  @Test
+  fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
+    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+
+    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_ID))
+  }
+
+  @Test
+  fun initialize_withoutAnySourceId_invokesOnInitializationFailed() {
+    val mediationConfiguration =
+      MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_ID))
+  }
+
+  @Test
+  fun initialize_withEmptySourceId_invokesOnInitializationFailed() {
+    val mediationConfiguration =
+      MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf(APP_ID_KEY to ""))
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_ID))
+  }
+
+  @Test
+  fun initialize_tagForChildTrue_invokesOnInitializationSucceededAndBigoCoppaToFalse() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
+    val callbackCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
+    callbackCaptor.firstValue.onInitialized()
+    verify(mockInitializationCallback).onInitializationSucceeded()
+    mockBigoSdk.verify {
+      BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
+    }
+  }
+
+  @Test
+  fun initialize_tagForChildFalse_setBigoCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(true)) }
+  }
+
+  @Test
+  fun initialize_tagForChildUnspecified_setBigoCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(true)) }
+  }
+
+  // endregion
+
+  // region Collect Signals tests
+  @Test
+  fun collectSignals_invokesOnSuccess() {
+    whenever(BigoAdSdk.getBidderToken()) doReturn TEST_BID_RESPONSE
+    val configuration =
+      createMediationConfiguration(AdFormat.INTERSTITIAL, /* serverParameters= */ bundleOf())
+    val signalData =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf(configuration),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+
+    adapter.collectSignals(signalData, mockSignalCallbacks)
+
+    mockBigoSdk.verify { BigoAdSdk.getBidderToken() }
+    mockSignalCallbacks.onSuccess(TEST_BID_RESPONSE)
+  }
+
+  @Test
+  fun collectSignals_withNullSginals_invokesOnSuccessWithEmptySignals() {
+    whenever(BigoAdSdk.getBidderToken()) doReturn null
+    val configuration =
+      createMediationConfiguration(AdFormat.INTERSTITIAL, /* serverParameters= */ bundleOf())
+    val signalData =
+      RtbSignalData(
+        context,
+        /* configurations = */ listOf(configuration),
+        /* networkExtras = */ bundleOf(),
+        /* adSize = */ null,
+      )
+    val mockSignalCallbacks: SignalCallbacks = mock()
+
+    adapter.collectSignals(signalData, mockSignalCallbacks)
+
+    mockBigoSdk.verify { BigoAdSdk.getBidderToken() }
+    mockSignalCallbacks.onSuccess("")
+  }
+
+  // endregion
+
 }

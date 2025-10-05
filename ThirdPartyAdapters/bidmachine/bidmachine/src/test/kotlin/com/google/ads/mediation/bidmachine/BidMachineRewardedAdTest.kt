@@ -90,7 +90,7 @@ class BidMachineRewardedAdTest {
       }
     bidMachineRewardedAd.rewardedRequestBuilder = mockRewardedRequestBuilder
 
-    bidMachineRewardedAd.loadWaterfallAd(mockRewardedAd)
+    bidMachineRewardedAd.loadWaterfallAd(mockRewardedAd, context)
 
     verify(mockRewardedRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
     verify(mockRewardedRequestBuilder).setListener(eq(bidMachineRewardedAd))
@@ -107,7 +107,7 @@ class BidMachineRewardedAdTest {
       }
     bidMachineRewardedAd.rewardedRequestBuilder = mockRewardedRequestBuilder
 
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
 
     verify(mockRewardedRequestBuilder).setBidPayload(eq(TEST_BID_RESPONSE))
     verify(mockRewardedRequestBuilder).setListener(eq(bidMachineRewardedAd))
@@ -116,7 +116,7 @@ class BidMachineRewardedAdTest {
 
   @Test
   fun showAd_invokesBidMachineShow() {
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
 
     bidMachineRewardedAd.showAd(context)
 
@@ -125,7 +125,7 @@ class BidMachineRewardedAdTest {
 
   @Test
   fun onRequestSuccess_invokesLoad() {
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
     val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
 
     bidMachineRewardedAd.onRequestSuccess(mockRewardedRequest, mock())
@@ -141,7 +141,7 @@ class BidMachineRewardedAdTest {
     whenever(mockRewardedRequest.isExpired) doReturn true
     val expectedAdError =
       AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
 
     bidMachineRewardedAd.onRequestSuccess(mockRewardedRequest, mock())
 
@@ -183,7 +183,7 @@ class BidMachineRewardedAdTest {
   fun onAdLoadFailed_invokesOnFailure() {
     val bMError = BMError.AlreadyShown
     val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd)
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
 
     bidMachineRewardedAd.onAdLoadFailed(mockRewardedAd, bMError)
 

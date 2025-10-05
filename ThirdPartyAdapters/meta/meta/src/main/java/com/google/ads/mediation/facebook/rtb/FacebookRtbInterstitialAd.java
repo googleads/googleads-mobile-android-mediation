@@ -42,7 +42,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FacebookRtbInterstitialAd
     implements MediationInterstitialAd, InterstitialAdExtendedListener {
 
-  private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       callback;
   private InterstitialAd interstitialAd;
@@ -53,15 +52,13 @@ public class FacebookRtbInterstitialAd
   private final MetaFactory metaFactory;
 
   public FacebookRtbInterstitialAd(
-      MediationInterstitialAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback,
       MetaFactory metaFactory) {
-    this.adConfiguration = adConfiguration;
     this.callback = callback;
     this.metaFactory = metaFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
     if (TextUtils.isEmpty(placementID)) {

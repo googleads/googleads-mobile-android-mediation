@@ -66,8 +66,6 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationBannerAdLoadCallback;
 
-  private final MediationBannerAdConfiguration mediationBannerAdConfiguration;
-
   private final UnityInitializer unityInitializer;
 
   private final UnityBannerViewFactory unityBannerViewFactory;
@@ -82,14 +80,12 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       "Unity Ads initialization failed for game ID '%s' with error message: %s";
 
   public UnityMediationBannerAd(
-      @NonNull MediationBannerAdConfiguration bannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               bannerAdLoadCallback,
       @NonNull UnityInitializer unityInitializer,
       @NonNull UnityBannerViewFactory unityBannerViewFactory,
       @NonNull UnityAdsLoader unityAdsLoader) {
-    this.mediationBannerAdConfiguration = bannerAdConfiguration;
     this.mediationBannerAdLoadCallback = bannerAdLoadCallback;
     this.unityBannerViewFactory = unityBannerViewFactory;
     this.unityInitializer = unityInitializer;
@@ -158,7 +154,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     }
   }
 
-  public void loadAd() {
+  public void loadAd(MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     Context context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();

@@ -33,7 +33,6 @@ import com.mbridge.msdk.out.MBridgeIds;
 public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
     implements MediationAppOpenAd, MBSplashShowListener {
 
-  protected final MediationAppOpenAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
       adLoadCallback;
 
@@ -41,14 +40,12 @@ public abstract class MintegralAppOpenAd extends MBSplashLoadWithCodeListener
   protected MintegralSplashAdWrapper splashAdWrapper;
 
   protected MintegralAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> adLoadCallback) {
-    this.adConfiguration = adConfiguration;
     this.adLoadCallback = adLoadCallback;
   }
 
-  public abstract void loadAd();
+  public abstract void loadAd(MediationAppOpenAdConfiguration adConfiguration);
 
   @Override
   public void onLoadSuccessed(MBridgeIds mBridgeIds, int type) {

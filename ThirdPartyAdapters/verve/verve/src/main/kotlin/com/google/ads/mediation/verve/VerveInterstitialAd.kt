@@ -33,7 +33,6 @@ import net.pubnative.lite.sdk.interstitial.HyBidInterstitialAd
  */
 class VerveInterstitialAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
@@ -41,7 +40,7 @@ private constructor(
   private var hyBidInterstitialAd: HyBidInterstitialAd? = null
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     hyBidInterstitialAd = VerveSdkFactory.delegate.createHyBidInterstitialAd(context, this)
     hyBidInterstitialAd?.prepareAd(bidResponse)
   }
@@ -99,11 +98,8 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
     ): Result<VerveInterstitialAd> {
-      val context = mediationInterstitialAdConfiguration.context
-
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
-
-      return Result.success(VerveInterstitialAd(context, mediationAdLoadCallback, bidResponse))
+      return Result.success(VerveInterstitialAd(mediationAdLoadCallback, bidResponse))
     }
   }
 }

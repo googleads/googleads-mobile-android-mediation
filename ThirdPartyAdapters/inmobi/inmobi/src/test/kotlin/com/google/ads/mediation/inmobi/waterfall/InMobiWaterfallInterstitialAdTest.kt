@@ -53,12 +53,7 @@ class InMobiWaterfallInterstitialAdTest {
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationInterstitialAdCallback)
 
     waterfallInterstitialAd =
-      InMobiWaterfallInterstitialAd(
-        interstitialAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory,
-      )
+      InMobiWaterfallInterstitialAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test
@@ -71,7 +66,7 @@ class InMobiWaterfallInterstitialAdTest {
     val placementId = 67890L
     whenever(interstitialAdConfiguration.serverParameters) doReturn
       bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
-    waterfallInterstitialAd.loadAd()
+    waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
     initializerListenerCaptor.firstValue.onInitializeSuccess()
@@ -90,7 +85,7 @@ class InMobiWaterfallInterstitialAdTest {
     val placementId = 67890L
     whenever(interstitialAdConfiguration.serverParameters) doReturn
       bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
-    waterfallInterstitialAd.loadAd()
+    waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
     initializerListenerCaptor.firstValue.onInitializeSuccess()
