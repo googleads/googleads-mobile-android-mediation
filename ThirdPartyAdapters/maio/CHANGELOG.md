@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next version
+- Removed class-level references to Context. Can help reduce memory leak issues
+
 #### Version 2.0.5.0
 - Verified compatibility with maio SDK version 2.0.5.
 
