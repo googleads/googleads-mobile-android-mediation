@@ -3,7 +3,12 @@
 #### Next Version
 - Removed class-level references to `Context` objects to help with memory leak issues.
 
-#### Version 10.8.8.0 (In progress)
+#### Version 10.8.8.0
+- Verified compatibility with InMobi Kotlin SDK version 10.8.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.5.0.
+- InMobi Kotlin SDK version 10.8.8.
 
 #### Version 10.8.7.1
 - Native Ads now call destroy() when untrackView is called.
