@@ -48,21 +48,18 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   /** A container view that holds Chartboost's {@link Banner} view. */
   private FrameLayout bannerContainer;
 
-  private final MediationBannerAdConfiguration bannerAdConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
 
   public ChartboostBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback) {
-    this.bannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  public void loadAd() {
+  public void loadAd(MediationBannerAdConfiguration bannerAdConfiguration) {
     final Context context = bannerAdConfiguration.getContext();
     Bundle serverParameters = bannerAdConfiguration.getServerParameters();
 

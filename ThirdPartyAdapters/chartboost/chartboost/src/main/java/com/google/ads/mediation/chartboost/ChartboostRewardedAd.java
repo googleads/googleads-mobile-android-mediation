@@ -45,21 +45,18 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   private Rewarded chartboostRewardedAd;
 
-  private final MediationRewardedAdConfiguration rewardedAdConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   private MediationRewardedAdCallback rewardedAdCallback;
 
   public ChartboostRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
-    this.rewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  public void loadAd() {
+  public void loadAd(MediationRewardedAdConfiguration rewardedAdConfiguration) {
     final Context context = rewardedAdConfiguration.getContext();
     Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
 
