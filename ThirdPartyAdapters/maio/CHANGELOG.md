@@ -1,6 +1,6 @@
 ## maio Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 2.0.6.0 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues
 
 #### Version 2.0.5.0
