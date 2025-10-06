@@ -1,6 +1,6 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 7.6.0.0 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues.
 
 #### Version 7.5.1.0
