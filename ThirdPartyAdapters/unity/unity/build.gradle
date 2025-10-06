@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "UnityAds"
     // String property to store version name.
-    stringVersion = "4.16.1.0"
+    stringVersion = "4.16.2.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 4160100
+        versionCode 4160200
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         android.buildFeatures.buildConfig true
@@ -116,9 +116,9 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.unity3d.ads:unity-ads:4.16.1'
+    implementation 'com.unity3d.ads:unity-ads:4.16.2'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:24.5.0'
+    implementation 'com.google.android.gms:play-services-ads:24.6.0'
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'
