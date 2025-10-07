@@ -51,23 +51,20 @@ class VungleRtbBannerAdTest {
   private val baseAd = mock<BaseAd>()
   private val vungleFactory =
     mock<VungleFactory> { on { createBannerAd(any(), any(), any()) } doReturn vungleBannerView }
+  private val mediationBannerAdConfiguration =
+    createMediationBannerAdConfiguration(
+      context = context,
+      serverParameters =
+        bundleOf(
+          VungleConstants.KEY_APP_ID to TEST_APP_ID,
+          VungleConstants.KEY_PLACEMENT_ID to TEST_PLACEMENT_ID,
+        ),
+      bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
+    )
 
   @Before
   fun setUp() {
-    adapterRtbBannerAd =
-      VungleRtbBannerAd(
-        createMediationBannerAdConfiguration(
-          context = context,
-          serverParameters =
-            bundleOf(
-              VungleConstants.KEY_APP_ID to TEST_APP_ID,
-              VungleConstants.KEY_PLACEMENT_ID to TEST_PLACEMENT_ID,
-            ),
-          bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
-        ),
-        bannerAdLoadCallback,
-        vungleFactory,
-      )
+    adapterRtbBannerAd = VungleRtbBannerAd(bannerAdLoadCallback, vungleFactory)
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -81,7 +78,7 @@ class VungleRtbBannerAdTest {
   fun onAdLoaded_addsLiftoffBannerViewToBannerLayoutAndCallsLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbBannerAd.render()
+      adapterRtbBannerAd.render(mediationBannerAdConfiguration)
     }
 
     adapterRtbBannerAd.onAdLoaded(baseAd)
@@ -107,7 +104,7 @@ class VungleRtbBannerAdTest {
   private fun renderAdAndMockLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbBannerAd.render()
+      adapterRtbBannerAd.render(mediationBannerAdConfiguration)
     }
     adapterRtbBannerAd.onAdLoaded(baseAd)
   }

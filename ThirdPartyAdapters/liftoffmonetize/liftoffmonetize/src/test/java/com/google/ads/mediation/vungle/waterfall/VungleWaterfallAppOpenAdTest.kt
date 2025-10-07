@@ -59,22 +59,18 @@ class VungleWaterfallAppOpenAdTest {
       on { createInterstitialAd(any(), any(), any()) } doReturn vungleAppOpenAd
       on { createAdConfig() } doReturn mock()
     }
+  private val mediationAppOpenAdConfiguration =
+    createMediationAppOpenAdConfiguration(
+      context = context,
+      serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+      bidResponse = TEST_BID_RESPONSE,
+      watermark = TEST_WATERMARK,
+      mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+    )
 
   @Before
   fun setUp() {
-    adapterWaterfallAppOpenAd =
-      VungleWaterfallAppOpenAd(
-        createMediationAppOpenAdConfiguration(
-          context = context,
-          serverParameters =
-            bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
-        ),
-        appOpenAdLoadCallback,
-        vungleFactory,
-      )
+    adapterWaterfallAppOpenAd = VungleWaterfallAppOpenAd(appOpenAdLoadCallback, vungleFactory)
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -110,7 +106,7 @@ class VungleWaterfallAppOpenAdTest {
   fun showAd_ifLiftoffCanPlayAd_playsLiftoffAd() {
     Mockito.mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
-      adapterWaterfallAppOpenAd.render()
+      adapterWaterfallAppOpenAd.render(mediationAppOpenAdConfiguration)
     }
     whenever(vungleAppOpenAd.canPlayAd()) doReturn true
 
@@ -139,7 +135,7 @@ class VungleWaterfallAppOpenAdTest {
   private fun renderAdAndMockLoadSuccess() {
     Mockito.mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
-      adapterWaterfallAppOpenAd.render()
+      adapterWaterfallAppOpenAd.render(mediationAppOpenAdConfiguration)
     }
     adapterWaterfallAppOpenAd.onAdLoaded(vungleAppOpenAd)
   }

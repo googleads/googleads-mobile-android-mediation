@@ -1,5 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next Version
+- Removed class-level references to Context. Can help reduce memory leak issues.
+
 #### Version 7.5.1.0
 - Verified compatibility with Vungle SDK 7.5.1.
 

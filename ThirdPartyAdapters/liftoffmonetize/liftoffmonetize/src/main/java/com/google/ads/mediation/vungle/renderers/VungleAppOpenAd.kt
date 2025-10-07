@@ -25,7 +25,6 @@ import com.vungle.ads.VungleError
 
 /** Abstract class with app-open adapter logic common for both waterfall and RTB integrations. */
 abstract class VungleAppOpenAd(
-  private val mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
   private val vungleFactory: VungleFactory,
@@ -40,7 +39,7 @@ abstract class VungleAppOpenAd(
   private var mediationAppOpenAdCallback: MediationAppOpenAdCallback? = null
 
   /** Loads an app open ad. */
-  fun render() {
+  fun render(mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration) {
     val mediationExtras: Bundle = mediationAppOpenAdConfiguration.mediationExtras
     val serverParameters: Bundle = mediationAppOpenAdConfiguration.serverParameters
 

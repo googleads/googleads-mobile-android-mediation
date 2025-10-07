@@ -44,7 +44,6 @@ import com.vungle.mediation.VungleInterstitialAdapter;
 
 public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
 
-  private final MediationBannerAdConfiguration mediationBannerAdConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
   private MediationBannerAdCallback mediationBannerAdCallback;
@@ -54,17 +53,15 @@ public class VungleRtbBannerAd implements MediationBannerAd, BannerAdListener {
   private final VungleFactory vungleFactory;
 
   public VungleRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       VungleFactory vungleFactory) {
-    this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.vungleFactory = vungleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
 
     String appID = serverParameters.getString(KEY_APP_ID);
