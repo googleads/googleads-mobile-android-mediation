@@ -54,26 +54,21 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
   private AppLovinSdk sdk;
 
-  private Context context;
-
-  private Bundle networkExtras;
-
   // Flag to let multiple loading of ads
   private boolean enableMultipleAdLoading = false;
 
   public AppLovinWaterfallInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory) {
-    super(adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
+    super(callback, appLovinInitializer, appLovinAdFactory);
   }
 
   @Override
-  public void loadAd() {
-    context = interstitialAdConfiguration.getContext();
+  public void loadAd(@NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration) {
+    Context context = interstitialAdConfiguration.getContext();
     Bundle serverParameters = interstitialAdConfiguration.getServerParameters();
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
@@ -88,6 +83,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
     if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
+    networkExtras = interstitialAdConfiguration.getMediationExtras();
 
     appLovinInitializer.initialize(
         context,
@@ -110,7 +106,6 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
             // Store parent objects.
             sdk = appLovinInitializer.retrieveSdk(context);
-            AppLovinWaterfallInterstitialAd.this.networkExtras = networkExtras;
 
             Log.d(TAG, "Requesting interstitial for zone: " + zoneId);
 

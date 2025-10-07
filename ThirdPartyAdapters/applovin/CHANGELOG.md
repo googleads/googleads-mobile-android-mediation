@@ -3,6 +3,7 @@
 #### Next version
 - Removed old interstitial API implementation. Note: New interstitial API
   implementation already exists in the adapter and GMA SDK will use that.
+- Removed class-level references to Context. Can help reduce memory leak issues.
 
 #### Version 13.4.0.0
 - Verified compatibility with AppLovin SDK 13.4.0.
