@@ -25,6 +25,7 @@ import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
@@ -39,6 +40,8 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import org.junit.After
@@ -244,6 +247,22 @@ class BigoMediationAdapterTest {
     adapter.loadRtbInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
 
     verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Rewarded tests
+  @Test
+  fun loadRtbRewardedAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val mockRewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbRewardedAd(adConfiguration, mockRewardedAdLoadCallback)
+
+    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion

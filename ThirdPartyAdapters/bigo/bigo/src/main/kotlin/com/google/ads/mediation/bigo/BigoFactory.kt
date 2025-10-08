@@ -18,6 +18,9 @@ import sg.bigo.ads.api.AdLoadListener
 import sg.bigo.ads.api.InterstitialAd
 import sg.bigo.ads.api.InterstitialAdLoader
 import sg.bigo.ads.api.InterstitialAdRequest
+import sg.bigo.ads.api.RewardVideoAd
+import sg.bigo.ads.api.RewardVideoAdLoader
+import sg.bigo.ads.api.RewardVideoAdRequest
 
 /**
  * Wrapper singleton to enable mocking of Bigo different ad formats for unit testing.
@@ -44,6 +47,22 @@ object BigoFactory {
             instance?.loadAd(adRequest)
           }
         }
+
+      override fun createRewardVideoAdRequest(bidResponse: String, slotId: String) =
+        RewardVideoAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+
+      override fun createRewardVideoAdLoader() =
+        object : BigoRewardVideoAdLoaderWrapper {
+          private var instance: RewardVideoAdLoader? = null
+
+          override fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>) {
+            instance = RewardVideoAdLoader.Builder().withAdLoadListener(loadListener).build()
+          }
+
+          override fun loadAd(adRequest: RewardVideoAdRequest) {
+            instance?.loadAd(adRequest)
+          }
+        }
     }
 }
 
@@ -51,7 +70,11 @@ object BigoFactory {
 interface SdkFactory {
   fun createInterstitialAdRequest(bidResponse: String, slotId: String): InterstitialAdRequest
 
+  fun createRewardVideoAdRequest(bidResponse: String, slotId: String): RewardVideoAdRequest
+
   fun createInterstitialAdLoader(): BigoInterstitialAdLoaderWrapper
+
+  fun createRewardVideoAdLoader(): BigoRewardVideoAdLoaderWrapper
 }
 
 /**
@@ -63,4 +86,15 @@ interface BigoInterstitialAdLoaderWrapper {
   fun initializeAdLoader(loadListener: AdLoadListener<InterstitialAd>)
 
   fun loadAd(adRequest: InterstitialAdRequest)
+}
+
+/**
+ * Declares the methods that will invoke the [RewardVideoAdLoader] methods
+ *
+ * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
+ */
+interface BigoRewardVideoAdLoaderWrapper {
+  fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>)
+
+  fun loadAd(adRequest: RewardVideoAdRequest)
 }
