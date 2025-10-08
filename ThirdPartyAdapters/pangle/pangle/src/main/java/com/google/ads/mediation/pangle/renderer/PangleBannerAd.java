@@ -50,7 +50,6 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   public static final String ERROR_MESSAGE_BANNER_SIZE_MISMATCH =
       "Failed to request banner ad from Pangle. Invalid banner size.";
 
-  private final MediationBannerAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
@@ -60,21 +59,19 @@ public class PangleBannerAd implements MediationBannerAd, PAGBannerAdInteraction
   @VisibleForTesting FrameLayout wrappedAdView;
 
   public PangleBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
       @NonNull PangleFactory pangleFactory) {
-    this.adConfiguration = mediationBannerAdConfiguration;
     this.adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationBannerAdConfiguration adConfiguration) {
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);
