@@ -24,6 +24,7 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
@@ -34,12 +35,15 @@ import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MI
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
@@ -234,6 +238,22 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.getBidderToken() }
     mockSignalCallbacks.onSuccess("")
+  }
+
+  // endregion
+
+  // region Banner tests
+  @Test
+  fun loadRtbBannerAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.BANNER)
+    val mockBannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbBannerAd(adConfiguration, mockBannerAdLoadCallback)
+
+    verify(mockBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion

@@ -14,7 +14,11 @@
 
 package com.google.ads.mediation.bigo
 
+import android.content.Context
+import sg.bigo.ads.ad.banner.BigoAdView
 import sg.bigo.ads.api.AdLoadListener
+import sg.bigo.ads.api.AdSize
+import sg.bigo.ads.api.BannerAdRequest
 import sg.bigo.ads.api.InterstitialAd
 import sg.bigo.ads.api.InterstitialAdLoader
 import sg.bigo.ads.api.InterstitialAdRequest
@@ -35,6 +39,15 @@ object BigoFactory {
   /** Delegate used on unit tests to help mock calls to create Bigo formats. */
   internal var delegate: SdkFactory =
     object : SdkFactory {
+      override fun createBigoAdView(context: Context) = BigoAdView(context)
+
+      override fun createBannerAdRequest(bidResponse: String, slotId: String, adSize: AdSize) =
+        BannerAdRequest.Builder()
+          .withBid(bidResponse)
+          .withSlotId(slotId)
+          .withAdSizes(adSize)
+          .build()
+
       override fun createInterstitialAdRequest(bidResponse: String, slotId: String) =
         InterstitialAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
 
@@ -87,6 +100,10 @@ object BigoFactory {
 
 /** Declares the methods that will invoke the Bigo SDK */
 interface SdkFactory {
+  fun createBigoAdView(context: Context): BigoAdView
+
+  fun createBannerAdRequest(bidResponse: String, slotId: String, adSize: AdSize): BannerAdRequest
+
   fun createInterstitialAdRequest(bidResponse: String, slotId: String): InterstitialAdRequest
 
   fun createRewardVideoAdRequest(bidResponse: String, slotId: String): RewardVideoAdRequest
