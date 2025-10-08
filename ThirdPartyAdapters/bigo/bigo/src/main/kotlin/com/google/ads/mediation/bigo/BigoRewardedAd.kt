@@ -43,10 +43,10 @@ private constructor(
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
   private var rewardVideoAd: RewardVideoAd? = null
 
-  fun loadAd() {
+  fun loadAd(versionString: String) {
     val adRequest = BigoFactory.delegate.createRewardVideoAdRequest(bidResponse, slotId)
     val rewardVideoAdLoader = BigoFactory.delegate.createRewardVideoAdLoader()
-    rewardVideoAdLoader.initializeAdLoader(loadListener = this)
+    rewardVideoAdLoader.initializeAdLoader(loadListener = this, versionString)
     rewardVideoAdLoader.loadAd(adRequest)
   }
 

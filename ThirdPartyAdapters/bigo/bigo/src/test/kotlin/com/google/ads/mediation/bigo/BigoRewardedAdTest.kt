@@ -80,10 +80,10 @@ class BigoRewardedAdTest {
 
   @Test
   fun loadAd_invokesWrapperInitializeAdLoaderAndLoadAd() {
-    bigoRewardedAd.loadAd()
+    bigoRewardedAd.loadAd(TEST_VERSION_STRING)
 
     inOrder(mockRewardVideoAdLoader) {
-      verify(mockRewardVideoAdLoader).initializeAdLoader(bigoRewardedAd)
+      verify(mockRewardVideoAdLoader).initializeAdLoader(bigoRewardedAd, TEST_VERSION_STRING)
       verify(mockRewardVideoAdLoader).loadAd(mockRewardVideoAdRequest)
     }
   }
@@ -176,5 +176,6 @@ class BigoRewardedAdTest {
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_ERROR_CODE = 123
     const val TEST_ERROR_MSG = "testError"
+    const val TEST_VERSION_STRING = "testVersionString"
   }
 }

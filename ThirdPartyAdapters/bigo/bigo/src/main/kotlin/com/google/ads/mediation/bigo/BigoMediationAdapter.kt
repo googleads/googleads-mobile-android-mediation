@@ -17,6 +17,7 @@ package com.google.ads.mediation.bigo
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -57,6 +58,12 @@ class BigoMediationAdapter : RtbAdapter() {
   private lateinit var rewardedInterstitialAd: BigoRewardedAd
   private lateinit var nativeAd: BigoNativeAd
   private lateinit var appOpenAd: BigoAppOpenAd
+
+  val versionString: String
+
+  init {
+    versionString = "GMA_SDK_${MobileAds.getVersion()}_adapter_$versionInfo"
+  }
 
   override fun getSDKVersionInfo(): VersionInfo =
     bigoSdkVersionDelegate?.let { getSDKVersionInfo(it) }
@@ -167,7 +174,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadAd()
+      interstitialAd.loadAd(versionString)
     }
   }
 
@@ -177,7 +184,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd()
+      rewardedAd.loadAd(versionString)
     }
   }
 
@@ -188,7 +195,7 @@ class BigoMediationAdapter : RtbAdapter() {
     // Reuses Rewarded Ads
     BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
-      rewardedInterstitialAd.loadAd()
+      rewardedInterstitialAd.loadAd(versionString)
     }
   }
 
@@ -198,7 +205,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
-      nativeAd.loadAd()
+      nativeAd.loadAd(versionString)
     }
   }
 
@@ -208,7 +215,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoAppOpenAd.newInstance(mediationAppOpenAdConfiguration, callback).onSuccess {
       appOpenAd = it
-      appOpenAd.loadAd()
+      appOpenAd.loadAd(versionString)
     }
   }
 

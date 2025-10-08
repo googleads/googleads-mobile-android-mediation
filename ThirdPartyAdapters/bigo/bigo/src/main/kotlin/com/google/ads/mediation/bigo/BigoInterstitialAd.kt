@@ -45,10 +45,10 @@ private constructor(
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
   private var interstitialAd: InterstitialAd? = null
 
-  fun loadAd() {
+  fun loadAd(versionString: String) {
     val adRequest = BigoFactory.delegate.createInterstitialAdRequest(bidResponse, slotId)
     val interstitialAdLoader = BigoFactory.delegate.createInterstitialAdLoader()
-    interstitialAdLoader.initializeAdLoader(loadListener = this)
+    interstitialAdLoader.initializeAdLoader(loadListener = this, versionString)
     interstitialAdLoader.loadAd(adRequest)
   }
 

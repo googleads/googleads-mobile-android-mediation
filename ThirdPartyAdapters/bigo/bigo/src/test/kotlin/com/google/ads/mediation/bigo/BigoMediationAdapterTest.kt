@@ -27,6 +27,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfigura
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
+import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
@@ -47,8 +48,10 @@ import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import org.junit.After
@@ -318,6 +321,22 @@ class BigoMediationAdapterTest {
     adapter.loadRtbAppOpenAd(adConfiguration, mockAppOpenAdLoadCallback)
 
     verify(mockAppOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region Native tests
+  @Test
+  fun loadRtbNativeAdMapper_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationNativeAdConfiguration(context)
+    val mockNativeAdLoadCallback =
+      mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbNativeAdMapper(adConfiguration, mockNativeAdLoadCallback)
+
+    verify(mockNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion

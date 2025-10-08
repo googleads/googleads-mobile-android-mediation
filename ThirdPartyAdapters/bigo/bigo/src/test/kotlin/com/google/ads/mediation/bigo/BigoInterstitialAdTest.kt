@@ -80,10 +80,10 @@ class BigoInterstitialAdTest {
 
   @Test
   fun loadAd_invokesWrapperInitializeAdLoaderAndLoadAd() {
-    bigoInterstitialAd.loadAd()
+    bigoInterstitialAd.loadAd(TEST_VERSION_STRING)
 
     inOrder(mockInterstitialAdLoader) {
-      verify(mockInterstitialAdLoader).initializeAdLoader(bigoInterstitialAd)
+      verify(mockInterstitialAdLoader).initializeAdLoader(bigoInterstitialAd, TEST_VERSION_STRING)
       verify(mockInterstitialAdLoader).loadAd(mockInterstitialAdRequest)
     }
   }
@@ -167,5 +167,6 @@ class BigoInterstitialAdTest {
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_ERROR_CODE = 123
     const val TEST_ERROR_MSG = "testError"
+    const val TEST_VERSION_STRING = "testVersionString"
   }
 }

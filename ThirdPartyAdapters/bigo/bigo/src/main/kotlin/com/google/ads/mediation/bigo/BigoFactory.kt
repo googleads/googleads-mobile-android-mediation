@@ -22,6 +22,9 @@ import sg.bigo.ads.api.BannerAdRequest
 import sg.bigo.ads.api.InterstitialAd
 import sg.bigo.ads.api.InterstitialAdLoader
 import sg.bigo.ads.api.InterstitialAdRequest
+import sg.bigo.ads.api.NativeAd
+import sg.bigo.ads.api.NativeAdLoader
+import sg.bigo.ads.api.NativeAdRequest
 import sg.bigo.ads.api.RewardVideoAd
 import sg.bigo.ads.api.RewardVideoAdLoader
 import sg.bigo.ads.api.RewardVideoAdRequest
@@ -55,8 +58,15 @@ object BigoFactory {
         object : BigoInterstitialAdLoaderWrapper {
           private var instance: InterstitialAdLoader? = null
 
-          override fun initializeAdLoader(loadListener: AdLoadListener<InterstitialAd>) {
-            instance = InterstitialAdLoader.Builder().withAdLoadListener(loadListener).build()
+          override fun initializeAdLoader(
+            loadListener: AdLoadListener<InterstitialAd>,
+            version: String,
+          ) {
+            instance =
+              InterstitialAdLoader.Builder()
+                .withAdLoadListener(loadListener)
+                .withExt(version)
+                .build()
           }
 
           override fun loadAd(adRequest: InterstitialAdRequest) {
@@ -71,8 +81,15 @@ object BigoFactory {
         object : BigoRewardVideoAdLoaderWrapper {
           private var instance: RewardVideoAdLoader? = null
 
-          override fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>) {
-            instance = RewardVideoAdLoader.Builder().withAdLoadListener(loadListener).build()
+          override fun initializeAdLoader(
+            loadListener: AdLoadListener<RewardVideoAd>,
+            version: String,
+          ) {
+            instance =
+              RewardVideoAdLoader.Builder()
+                .withAdLoadListener(loadListener)
+                .withExt(version)
+                .build()
           }
 
           override fun loadAd(adRequest: RewardVideoAdRequest) {
@@ -87,11 +104,29 @@ object BigoFactory {
         object : BigoSplashAdLoaderWrapper {
           private var instance: SplashAdLoader? = null
 
-          override fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>) {
-            instance = SplashAdLoader.Builder().withAdLoadListener(loadListener).build()
+          override fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>, version: String) {
+            instance =
+              SplashAdLoader.Builder().withAdLoadListener(loadListener).withExt(version).build()
           }
 
           override fun loadAd(adRequest: SplashAdRequest) {
+            instance?.loadAd(adRequest)
+          }
+        }
+
+      override fun createNativeAdRequest(bidResponse: String, slotId: String) =
+        NativeAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+
+      override fun createNativeAdLoader(): BigoNativeAdLoaderWrapper =
+        object : BigoNativeAdLoaderWrapper {
+          private var instance: NativeAdLoader? = null
+
+          override fun initializeAdLoader(loadListener: AdLoadListener<NativeAd>, version: String) {
+            instance =
+              NativeAdLoader.Builder().withAdLoadListener(loadListener).withExt(version).build()
+          }
+
+          override fun loadAd(adRequest: NativeAdRequest) {
             instance?.loadAd(adRequest)
           }
         }
@@ -110,11 +145,15 @@ interface SdkFactory {
 
   fun createSplashAdRequest(bidResponse: String, slotId: String): SplashAdRequest
 
+  fun createNativeAdRequest(bidResponse: String, slotId: String): NativeAdRequest
+
   fun createInterstitialAdLoader(): BigoInterstitialAdLoaderWrapper
 
   fun createRewardVideoAdLoader(): BigoRewardVideoAdLoaderWrapper
 
   fun createSplashAdLoader(): BigoSplashAdLoaderWrapper
+
+  fun createNativeAdLoader(): BigoNativeAdLoaderWrapper
 }
 
 /**
@@ -123,7 +162,7 @@ interface SdkFactory {
  * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
  */
 interface BigoInterstitialAdLoaderWrapper {
-  fun initializeAdLoader(loadListener: AdLoadListener<InterstitialAd>)
+  fun initializeAdLoader(loadListener: AdLoadListener<InterstitialAd>, version: String)
 
   fun loadAd(adRequest: InterstitialAdRequest)
 }
@@ -134,7 +173,7 @@ interface BigoInterstitialAdLoaderWrapper {
  * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
  */
 interface BigoRewardVideoAdLoaderWrapper {
-  fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>)
+  fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>, version: String)
 
   fun loadAd(adRequest: RewardVideoAdRequest)
 }
@@ -145,7 +184,18 @@ interface BigoRewardVideoAdLoaderWrapper {
  * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
  */
 interface BigoSplashAdLoaderWrapper {
-  fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>)
+  fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>, version: String)
 
   fun loadAd(adRequest: SplashAdRequest)
+}
+
+/**
+ * Declares the methods that will invoke the [NativeAdLoader] methods
+ *
+ * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
+ */
+interface BigoNativeAdLoaderWrapper {
+  fun initializeAdLoader(loadListener: AdLoadListener<NativeAd>, version: String)
+
+  fun loadAd(adRequest: NativeAdRequest)
 }

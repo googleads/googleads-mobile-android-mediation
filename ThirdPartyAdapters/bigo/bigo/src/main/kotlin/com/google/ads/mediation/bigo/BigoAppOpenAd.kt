@@ -43,10 +43,10 @@ private constructor(
   private var appOpenAdCallback: MediationAppOpenAdCallback? = null
   private var splashAd: SplashAd? = null
 
-  fun loadAd() {
+  fun loadAd(versionString: String) {
     val adRequest = BigoFactory.delegate.createSplashAdRequest(bidResponse, slotId)
     val splashAdLoader = BigoFactory.delegate.createSplashAdLoader()
-    splashAdLoader.initializeAdLoader(loadListener = this)
+    splashAdLoader.initializeAdLoader(loadListener = this, versionString)
     splashAdLoader.loadAd(adRequest)
   }
 

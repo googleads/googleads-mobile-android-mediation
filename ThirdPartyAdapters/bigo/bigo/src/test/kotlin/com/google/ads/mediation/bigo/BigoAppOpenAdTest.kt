@@ -78,10 +78,10 @@ class BigoAppOpenAdTest {
 
   @Test
   fun loadAd_invokesWrapperInitializeAdLoaderAndLoadAd() {
-    bigoAppOpenAd.loadAd()
+    bigoAppOpenAd.loadAd(TEST_VERSION_STRING)
 
     inOrder(mockSplashAdLoader) {
-      verify(mockSplashAdLoader).initializeAdLoader(bigoAppOpenAd)
+      verify(mockSplashAdLoader).initializeAdLoader(bigoAppOpenAd, TEST_VERSION_STRING)
       verify(mockSplashAdLoader).loadAd(mockSplashAdRequest)
     }
   }
@@ -175,5 +175,6 @@ class BigoAppOpenAdTest {
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_ERROR_CODE = 123
     const val TEST_ERROR_MSG = "testError"
+    const val TEST_VERSION_STRING = "testVersionString"
   }
 }
