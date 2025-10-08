@@ -21,6 +21,9 @@ import sg.bigo.ads.api.InterstitialAdRequest
 import sg.bigo.ads.api.RewardVideoAd
 import sg.bigo.ads.api.RewardVideoAdLoader
 import sg.bigo.ads.api.RewardVideoAdRequest
+import sg.bigo.ads.api.SplashAd
+import sg.bigo.ads.api.SplashAdLoader
+import sg.bigo.ads.api.SplashAdRequest
 
 /**
  * Wrapper singleton to enable mocking of Bigo different ad formats for unit testing.
@@ -63,6 +66,22 @@ object BigoFactory {
             instance?.loadAd(adRequest)
           }
         }
+
+      override fun createSplashAdRequest(bidResponse: String, slotId: String) =
+        SplashAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+
+      override fun createSplashAdLoader() =
+        object : BigoSplashAdLoaderWrapper {
+          private var instance: SplashAdLoader? = null
+
+          override fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>) {
+            instance = SplashAdLoader.Builder().withAdLoadListener(loadListener).build()
+          }
+
+          override fun loadAd(adRequest: SplashAdRequest) {
+            instance?.loadAd(adRequest)
+          }
+        }
     }
 }
 
@@ -72,9 +91,13 @@ interface SdkFactory {
 
   fun createRewardVideoAdRequest(bidResponse: String, slotId: String): RewardVideoAdRequest
 
+  fun createSplashAdRequest(bidResponse: String, slotId: String): SplashAdRequest
+
   fun createInterstitialAdLoader(): BigoInterstitialAdLoaderWrapper
 
   fun createRewardVideoAdLoader(): BigoRewardVideoAdLoaderWrapper
+
+  fun createSplashAdLoader(): BigoSplashAdLoaderWrapper
 }
 
 /**
@@ -97,4 +120,15 @@ interface BigoRewardVideoAdLoaderWrapper {
   fun initializeAdLoader(loadListener: AdLoadListener<RewardVideoAd>)
 
   fun loadAd(adRequest: RewardVideoAdRequest)
+}
+
+/**
+ * Declares the methods that will invoke the [SplashAdLoader] methods
+ *
+ * This wrapper is needed to enable mocking of AdLoader operations and use it for unit testing.
+ */
+interface BigoSplashAdLoaderWrapper {
+  fun initializeAdLoader(loadListener: AdLoadListener<SplashAd>)
+
+  fun loadAd(adRequest: SplashAdRequest)
 }

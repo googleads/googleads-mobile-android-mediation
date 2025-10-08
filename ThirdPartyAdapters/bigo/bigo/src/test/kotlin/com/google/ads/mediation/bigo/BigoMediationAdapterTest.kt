@@ -23,6 +23,7 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
@@ -37,6 +38,8 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationAppOpenAd
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
@@ -279,6 +282,22 @@ class BigoMediationAdapterTest {
     adapter.loadRtbRewardedInterstitialAd(adConfiguration, mockRewardedAdLoadCallback)
 
     verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region AppOpen tests
+  @Test
+  fun loadRtbAppOpenAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationAppOpenAdConfiguration(context)
+    val mockAppOpenAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbAppOpenAd(adConfiguration, mockAppOpenAdLoadCallback)
+
+    verify(mockAppOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion
