@@ -267,4 +267,20 @@ class BigoMediationAdapterTest {
 
   // endregion
 
+  // region Rewarded Interstitial tests
+  @Test
+  fun loadRtbRewardedInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val mockRewardedAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRtbRewardedInterstitialAd(adConfiguration, mockRewardedAdLoadCallback)
+
+    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
 }

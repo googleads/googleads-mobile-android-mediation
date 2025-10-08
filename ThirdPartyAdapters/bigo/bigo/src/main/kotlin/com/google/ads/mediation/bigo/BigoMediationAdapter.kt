@@ -54,7 +54,7 @@ class BigoMediationAdapter : RtbAdapter() {
   private lateinit var bannerAd: BigoBannerAd
   private lateinit var interstitialAd: BigoInterstitialAd
   private lateinit var rewardedAd: BigoRewardedAd
-  private lateinit var rewardedInterstitialAd: BigoRewardedInterstitialAd
+  private lateinit var rewardedInterstitialAd: BigoRewardedAd
   private lateinit var nativeAd: BigoNativeAd
   private lateinit var appOpenAd: BigoAppOpenAd
 
@@ -185,7 +185,8 @@ class BigoMediationAdapter : RtbAdapter() {
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    BigoRewardedInterstitialAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    // Reuses Rewarded Ads
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
       rewardedInterstitialAd.loadAd()
     }
