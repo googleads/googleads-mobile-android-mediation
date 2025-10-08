@@ -36,6 +36,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
+import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +51,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  */
 class LineNativeAd
 private constructor(
-  private val context: Context,
+  private val weakContext: WeakReference<Context>,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -65,6 +66,10 @@ private constructor(
   private lateinit var nativeAd: FiveAdNative
 
   fun loadAd() {
+    val context = weakContext.get()
+    if (context == null) {
+      return
+    }
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -86,6 +91,10 @@ private constructor(
   }
 
   fun loadRtbAd() {
+    val context = weakContext.get()
+    if (context == null) {
+      return
+    }
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
@@ -137,12 +146,14 @@ private constructor(
 
   private suspend fun loadImages() = suspendCancellableCoroutine { continuation ->
     nativeAd.loadIconImageAsync { image ->
-      if (image != null) {
+      val context = weakContext.get()
+      if (image != null && context != null) {
         icon = LineNativeImage(image.toDrawable(context.resources))
       }
     }
     nativeAd.loadInformationIconImageAsync { image ->
-      if (image != null) {
+      val context = weakContext.get()
+      if (image != null && context != null) {
         val informationIcon = ImageView(context)
         informationIcon.setImageBitmap(image)
         adChoicesContent = informationIcon
@@ -242,7 +253,7 @@ private constructor(
       coroutineContext: CoroutineContext =
         LineSdkFactory.BACKGROUND_EXECUTOR.asCoroutineDispatcher(),
     ): Result<LineNativeAd> {
-      val context = mediationNativeAdConfiguration.context
+      val weakContext = WeakReference(mediationNativeAdConfiguration.context)
       val serverParameters = mediationNativeAdConfiguration.serverParameters
 
       val appId = serverParameters.getString(LineMediationAdapter.KEY_APP_ID)
@@ -265,7 +276,7 @@ private constructor(
 
       val instance =
         LineNativeAd(
-          context,
+          weakContext,
           appId,
           slotId,
           bidResponse,

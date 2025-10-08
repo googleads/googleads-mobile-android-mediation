@@ -38,7 +38,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
  */
 class LineRewardedAd
 private constructor(
-  private val context: Context,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -51,7 +50,7 @@ private constructor(
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
   private lateinit var rewardedAd: FiveAdVideoReward
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -71,7 +70,7 @@ private constructor(
     rewardedAd.loadAdAsync()
   }
 
-  fun loadRtbAd() {
+  fun loadRtbAd(context: Context) {
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
@@ -195,7 +194,6 @@ private constructor(
 
       return Result.success(
         LineRewardedAd(
-          mediationRewardedAdConfiguration.context,
           appId,
           slotId,
           bidResponse,

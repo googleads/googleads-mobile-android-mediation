@@ -38,7 +38,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
  */
 class LineInterstitialAd
 private constructor(
-  private val context: Context,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -51,7 +50,7 @@ private constructor(
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
   private lateinit var interstitialAd: FiveAdInterstitial
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -71,7 +70,7 @@ private constructor(
     interstitialAd.loadAdAsync()
   }
 
-  fun loadRtbAd() {
+  fun loadRtbAd(context: Context) {
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
@@ -194,7 +193,6 @@ private constructor(
 
       return Result.success(
         LineInterstitialAd(
-          mediationInterstitialAdConfiguration.context,
           appId,
           slotId,
           bidResponse,
