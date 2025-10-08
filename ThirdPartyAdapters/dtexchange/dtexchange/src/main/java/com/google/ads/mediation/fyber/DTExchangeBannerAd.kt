@@ -41,7 +41,8 @@ class DTExchangeBannerAd(
     adSpot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationBannerAdConfiguration.mediationExtras)
-    adSpot.loadAd(bidResponse)
+    val watermark = mediationBannerAdConfiguration.watermark
+    adSpot.loadAd(bidResponse, watermark)
   }
 
   override fun onInneractiveSuccessfulAdRequest(iAdSpot: InneractiveAdSpot?) {
