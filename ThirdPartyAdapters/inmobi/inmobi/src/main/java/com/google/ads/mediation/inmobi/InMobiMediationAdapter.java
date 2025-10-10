@@ -66,6 +66,10 @@ public class InMobiMediationAdapter extends RtbAdapter {
 
   public static final String TAG = InMobiMediationAdapter.class.getSimpleName();
 
+  private InMobiWaterfallRewardedAd inMobiWaterfallRewardedInterstitialAd;
+
+  private InMobiRtbRewardedAd inMobiRtbRewardedInterstitialAd;
+
   private InMobiWaterfallRewardedAd inMobiWaterfallRewardedAd;
 
   private InMobiWaterfallBannerAd inMobiWaterfallBannerAd;
@@ -240,6 +244,15 @@ public class InMobiMediationAdapter extends RtbAdapter {
   }
 
   @Override
+  public void loadRtbRewardedInterstitialAd(
+          @NonNull MediationRewardedAdConfiguration adConfiguration,
+          @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    inMobiRtbRewardedInterstitialAd =
+            new InMobiRtbRewardedAd(callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbRewardedInterstitialAd.loadAd(adConfiguration);
+  }
+
+  @Override
   public void loadRtbNativeAd(
       @NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
@@ -256,6 +269,18 @@ public class InMobiMediationAdapter extends RtbAdapter {
     inMobiWaterfallRewardedAd =
         new InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory);
     inMobiWaterfallRewardedAd.loadAd(adConfiguration);
+  }
+
+  @Override
+  public void loadRewardedInterstitialAd(
+          @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
+          final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> mediationAdLoadCallback) {
+    inMobiWaterfallRewardedInterstitialAd =
+            new InMobiWaterfallRewardedAd(
+                    mediationAdLoadCallback,
+                    inMobiInitializer,
+                    inMobiAdFactory);
+    inMobiWaterfallRewardedInterstitialAd.loadAd(mediationRewardedAdConfiguration);
   }
 
   @Override
