@@ -54,7 +54,7 @@ class DTExchangeMediationSnippets {
 
   private companion object {
     // Placeholder values for a user's consent string and US privacy string.
-    const val CONSENT_STRING = "consent_string"
-    const val US_PRIVACY_STRING = "us_privacy_string"
+    const val CONSENT_STRING = "TODO: Obtain GDPR CONSENT_STRING from your CMP"
+    const val US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP"
   }
 }

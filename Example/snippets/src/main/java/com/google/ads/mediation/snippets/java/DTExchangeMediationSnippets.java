@@ -29,8 +29,8 @@ import com.google.android.gms.ads.AdRequest;
 public class DTExchangeMediationSnippets {
 
   // Placeholder values for a user's consent string and US privacy string.
-  private static final String CONSENT_STRING = "consent_string";
-  private static final String US_PRIVACY_STRING = "us_privacy_string";
+  private static final String CONSENT_STRING = "TODO: Obtain GDPR CONSENT_STRING from your CMP";
+  private static final String US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP";
 
   private void setGdprConsent() {
     // [START set_gdpr_consent]
