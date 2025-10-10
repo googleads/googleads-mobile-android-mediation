@@ -164,7 +164,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      bannerAd.loadAd(versionString)
     }
   }
 

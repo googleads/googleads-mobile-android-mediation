@@ -81,12 +81,12 @@ class BigoBannerAdTest {
 
   @Test
   fun loadAd_invokesSetAdLoaderListenerSetAdInteractorListenerAndLoadAd() {
-    bigoBannerAd.loadAd()
+    bigoBannerAd.loadAd(TEST_VERSION_STRING)
 
     inOrder(mockBigoAdView) {
       verify(mockBigoAdView).setAdLoadListener(bigoBannerAd)
       verify(mockBigoAdView).setAdInteractionListener(bigoBannerAd)
-      verify(mockBigoAdView).loadAd(mockBannerAdRequest)
+      verify(mockBigoAdView).loadAd(mockBannerAdRequest, TEST_VERSION_STRING)
     }
   }
 
@@ -151,5 +151,6 @@ class BigoBannerAdTest {
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_ERROR_CODE = 123
     const val TEST_ERROR_MSG = "testError"
+    const val TEST_VERSION_STRING = "testVersionString"
   }
 }

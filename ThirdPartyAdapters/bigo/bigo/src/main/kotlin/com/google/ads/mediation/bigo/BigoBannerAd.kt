@@ -48,11 +48,11 @@ private constructor(
 
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(versionString: String) {
     val adRequest = BigoFactory.delegate.createBannerAdRequest(bidResponse, slotId, adSize)
     adView.setAdLoadListener(this)
     adView.setAdInteractionListener(this)
-    adView.loadAd(adRequest)
+    adView.loadAd(adRequest, versionString)
   }
 
   override fun getView(): View {
