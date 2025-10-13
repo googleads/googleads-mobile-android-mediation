@@ -1,5 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 4.16.3.0 (In progress)
+
 #### Version 4.16.2.0
 - Added format parameter when getting signal token from Unity Ads SDK.
 - Removed old banner API implementation. Note: New banner API implementation
