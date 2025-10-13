@@ -33,6 +33,7 @@ import com.google.ads.mediation.vungle.rtb.VungleRtbInterstitialAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbNativeAd;
 import com.google.ads.mediation.vungle.rtb.VungleRtbRewardedAd;
 import com.google.ads.mediation.vungle.waterfall.VungleWaterfallAppOpenAd;
+import com.google.ads.mediation.vungle.waterfall.VungleWaterfallBannerAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
@@ -264,6 +265,17 @@ public class VungleMediationAdapter extends RtbAdapter
   }
 
   @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    VungleInitializer.getInstance()
+        .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
+    VungleWaterfallBannerAd waterfallBannerAd =
+        new VungleWaterfallBannerAd(callback, vungleFactory);
+    waterfallBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration);
+  }
+
+  @Override
   public void loadRewardedAd(
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
@@ -490,7 +502,7 @@ public class VungleMediationAdapter extends RtbAdapter
     VungleInitializer.getInstance()
         .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
     rtbBannerAd = new VungleRtbBannerAd(mediationAdLoadCallback, vungleFactory);
-    rtbBannerAd.render(mediationBannerAdConfiguration);
+    rtbBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration);
   }
 
   @Override

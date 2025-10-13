@@ -2,6 +2,7 @@
 
 #### Next Version
 - Removed class-level references to Context. Can help reduce memory leak issues.
+- Added new API implementation for Waterfall Banner ad.
 
 #### Version 7.5.1.0
 - Verified compatibility with Vungle SDK 7.5.1.
