@@ -28,13 +28,6 @@ import com.google.android.gms.ads.AdRequest
  */
 class DTExchangeMediationSnippets {
 
-  private fun setGdprConsent() {
-    // [START set_gdpr_consent]
-    InneractiveAdManager.setGdprConsent(true)
-    InneractiveAdManager.setGdprConsentString(CONSENT_STRING)
-    // [END set_gdpr_consent]
-  }
-
   private fun setUSPrivacyString() {
     // [START set_us_privacy_string]
     InneractiveAdManager.setUSPrivacyString(US_PRIVACY_STRING)
@@ -53,8 +46,7 @@ class DTExchangeMediationSnippets {
   }
 
   private companion object {
-    // Placeholder values for a user's consent string and US privacy string.
-    const val CONSENT_STRING = "consent_string"
-    const val US_PRIVACY_STRING = "us_privacy_string"
+    // Placeholder value for a user's US privacy string.
+    const val US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP"
   }
 }
