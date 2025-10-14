@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 13.4.0.1 (In progress)
 - Removed old interstitial API implementation. Note: New interstitial API
   implementation already exists in the adapter and GMA SDK will use that.
 - Removed class-level references to Context. Can help reduce memory leak issues.
