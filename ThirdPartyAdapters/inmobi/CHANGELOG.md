@@ -1,6 +1,6 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 10.8.8.1 (In progress)
 - Removed class-level references to `Context` objects to help with memory leak issues.
 
 #### Version 10.8.8.0
