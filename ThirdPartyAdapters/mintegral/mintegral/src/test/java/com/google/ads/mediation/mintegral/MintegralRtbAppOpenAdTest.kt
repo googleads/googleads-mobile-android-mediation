@@ -40,10 +40,13 @@ class MintegralRtbAppOpenAdTest {
     mock {
       on { onSuccess(any()) } doReturn mockAdCallback
     }
+  private val flagValueGetter: FlagValueGetter = mock {
+    on { shouldRestrictMultipleAdLoads() } doReturn false
+  }
 
   @Before
   fun setUp() {
-    mintegralAppOpenAd = MintegralRtbAppOpenAd(mockAdLoadCallback)
+    mintegralAppOpenAd = MintegralRtbAppOpenAd(mockAdLoadCallback, flagValueGetter)
   }
 
   @Test
