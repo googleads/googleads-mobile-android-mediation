@@ -1,6 +1,6 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 9.10.0.1 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues.
 
 #### Version 9.10.0.0
