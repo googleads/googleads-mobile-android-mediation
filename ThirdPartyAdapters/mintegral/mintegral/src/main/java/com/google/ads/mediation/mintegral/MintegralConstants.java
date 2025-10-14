@@ -67,6 +67,17 @@ public class MintegralConstants {
    */
   public static final int ERROR_CODE_SDK_INIT_FAILED = 105;
 
+  /**
+   * Error returned if an ad for a Mintegral full-screen ad slot is already loaded and is yet to be
+   * shown.
+   *
+   * <p>This error is returned only if MintegralUtils.shouldRestrictMultipleAdsLoad() is true.
+   */
+  public static final int ERROR_CODE_AD_ALREADY_LOADED = 106;
+
+  public static final String ERROR_MSG_AD_ALREADY_LOADED =
+      "An ad for the Mintegral slot is already loaded and is yet to be shown.";
+
   @NonNull
   public static AdError createAdapterError(@AdapterError int errorCode,
       @NonNull String errorMessage) {

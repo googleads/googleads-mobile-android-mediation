@@ -49,10 +49,14 @@ class MintegralInterstitialAdTest {
       context = activity,
       serverParameters = serverParameters,
     )
+  private val flagValueGetter: FlagValueGetter = mock {
+    on { shouldRestrictMultipleAdLoads() } doReturn false
+  }
 
   @Before
   fun setUp() {
-    mintegralInterstitialAd = MintegralWaterfallInterstitialAd(adConfiguration, mockAdLoadCallback)
+    mintegralInterstitialAd =
+      MintegralWaterfallInterstitialAd(adConfiguration, mockAdLoadCallback, flagValueGetter)
   }
 
   @Test

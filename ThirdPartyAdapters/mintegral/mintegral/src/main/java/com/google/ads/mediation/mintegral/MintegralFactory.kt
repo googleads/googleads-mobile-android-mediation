@@ -20,9 +20,12 @@ import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener
 import com.mbridge.msdk.out.MBBannerView
+import com.mbridge.msdk.out.MBBidRewardVideoHandler
+import com.mbridge.msdk.out.MBRewardVideoHandler
 import com.mbridge.msdk.out.MBSplashHandler
 import com.mbridge.msdk.out.MBSplashLoadWithCodeListener
 import com.mbridge.msdk.out.MBSplashShowListener
+import com.mbridge.msdk.out.RewardVideoWithCodeListener
 import org.json.JSONObject
 
 /**
@@ -132,6 +135,64 @@ object MintegralFactory {
     }
 
   @JvmStatic fun createMBBannerView(context: Context) = MBBannerView(context)
+
+  @JvmStatic
+  fun createMintegralRewardedAdWrapper() =
+    object : MintegralRewardedAdWrapper {
+
+      private var instance: MBRewardVideoHandler? = null
+
+      override fun createAd(context: Context, placementId: String, adUnitId: String) {
+        instance = MBRewardVideoHandler(context, placementId, adUnitId)
+      }
+
+      override fun setRewardVideoListener(listener: RewardVideoWithCodeListener) {
+        instance?.setRewardVideoListener(listener)
+      }
+
+      override fun load() {
+        instance?.load()
+      }
+
+      override fun playVideoMute(muteConstant: Int) {
+        instance?.playVideoMute(muteConstant)
+      }
+
+      override fun show() {
+        instance?.show()
+      }
+    }
+
+  @JvmStatic
+  fun createMintegralBidRewardedAdWrapper() =
+    object : MintegralBidRewardedAdWrapper {
+
+      private var instance: MBBidRewardVideoHandler? = null
+
+      override fun createAd(context: Context, placementId: String, adUnitId: String) {
+        instance = MBBidRewardVideoHandler(context, placementId, adUnitId)
+      }
+
+      override fun setExtraInfo(jsonObject: JSONObject) {
+        instance?.setExtraInfo(jsonObject)
+      }
+
+      override fun setRewardVideoListener(listener: RewardVideoWithCodeListener) {
+        instance?.setRewardVideoListener(listener)
+      }
+
+      override fun loadFromBid(bidToken: String) {
+        instance?.loadFromBid(bidToken)
+      }
+
+      override fun playVideoMute(muteConstant: Int) {
+        instance?.playVideoMute(muteConstant)
+      }
+
+      override fun showFromBid() {
+        instance?.showFromBid()
+      }
+    }
 }
 
 /** Declares the methods that will invoke the [MBSplashHandler] methods */
@@ -173,6 +234,34 @@ interface MintegralBidNewInterstitialAdWrapper {
   fun setExtraInfo(jsonObject: JSONObject)
 
   fun setInterstitialVideoListener(listener: NewInterstitialWithCodeListener)
+
+  fun loadFromBid(bidToken: String)
+
+  fun playVideoMute(muteConstant: Int)
+
+  fun showFromBid()
+}
+
+interface MintegralRewardedAdWrapper {
+
+  fun createAd(context: Context, placementId: String, adUnitId: String)
+
+  fun setRewardVideoListener(listener: RewardVideoWithCodeListener)
+
+  fun load()
+
+  fun playVideoMute(muteConstant: Int)
+
+  fun show()
+}
+
+interface MintegralBidRewardedAdWrapper {
+
+  fun createAd(context: Context, placementId: String, adUnitId: String)
+
+  fun setExtraInfo(jsonObject: JSONObject)
+
+  fun setRewardVideoListener(listener: RewardVideoWithCodeListener)
 
   fun loadFromBid(bidToken: String)
 

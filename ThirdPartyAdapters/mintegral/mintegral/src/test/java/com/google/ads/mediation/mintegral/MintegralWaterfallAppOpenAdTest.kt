@@ -57,10 +57,13 @@ class MintegralWaterfallAppOpenAdTest {
     mock {
       on { onSuccess(any()) } doReturn mockAdCallback
     }
+  private val flagValueGetter: FlagValueGetter = mock {
+    on { shouldRestrictMultipleAdLoads() } doReturn false
+  }
 
   @Before
   fun setUp() {
-    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(mockAdLoadCallback)
+    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(mockAdLoadCallback, flagValueGetter)
   }
 
   @Test
