@@ -39,12 +39,13 @@ private constructor(
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
   private val slotId: String,
+  private val watermark: String,
 ) : MediationRewardedAd, AdLoadListener<RewardVideoAd>, RewardAdInteractionListener {
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
   private var rewardVideoAd: RewardVideoAd? = null
 
   fun loadAd(versionString: String) {
-    val adRequest = BigoFactory.delegate.createRewardVideoAdRequest(bidResponse, slotId)
+    val adRequest = BigoFactory.delegate.createRewardVideoAdRequest(bidResponse, slotId, watermark)
     val rewardVideoAdLoader = BigoFactory.delegate.createRewardVideoAdLoader()
     rewardVideoAdLoader.initializeAdLoader(loadListener = this, versionString)
     rewardVideoAdLoader.loadAd(adRequest)
@@ -99,6 +100,7 @@ private constructor(
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
       val bidResponse = mediationRewardedAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationRewardedAdConfiguration.watermark
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
@@ -111,7 +113,7 @@ private constructor(
         return Result.failure(IllegalArgumentException(gmaAdError.toString()))
       }
 
-      return Result.success(BigoRewardedAd(mediationAdLoadCallback, bidResponse, slotId))
+      return Result.success(BigoRewardedAd(mediationAdLoadCallback, bidResponse, slotId, watermark))
     }
   }
 }

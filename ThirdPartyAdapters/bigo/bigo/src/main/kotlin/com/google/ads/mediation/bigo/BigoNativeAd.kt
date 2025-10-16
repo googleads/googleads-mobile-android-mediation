@@ -52,6 +52,7 @@ private constructor(
   private val mediaView: MediaView,
   private val iconView: ImageView,
   private val adOptionsView: AdOptionsView,
+  private val watermark: String,
 ) :
   NativeAdMapper(),
   AdLoadListener<NativeAd>,
@@ -63,7 +64,7 @@ private constructor(
   private var videoController: VideoController? = null
 
   fun loadAd(versionString: String) {
-    val adRequest = BigoFactory.delegate.createNativeAdRequest(bidResponse, slotId)
+    val adRequest = BigoFactory.delegate.createNativeAdRequest(bidResponse, slotId, watermark)
     val nativeAdLoader = BigoFactory.delegate.createNativeAdLoader()
     nativeAdLoader.initializeAdLoader(loadListener = this, versionString)
     nativeAdLoader.loadAd(adRequest)
@@ -193,6 +194,7 @@ private constructor(
       val serverParameters = mediationNativeAdConfiguration.serverParameters
       val bidResponse = mediationNativeAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationNativeAdConfiguration.watermark
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
@@ -213,6 +215,7 @@ private constructor(
           MediaView(context),
           ImageView(context),
           AdOptionsView(context),
+          watermark,
         )
       )
     }

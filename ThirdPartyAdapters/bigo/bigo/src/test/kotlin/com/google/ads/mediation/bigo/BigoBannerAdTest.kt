@@ -59,7 +59,12 @@ class BigoBannerAdTest {
   private var mockBigoFactory =
     mock<SdkFactory> {
       on {
-        createBannerAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(AdSize.BANNER))
+        createBannerAdRequest(
+          eq(TEST_BID_RESPONSE),
+          eq(TEST_SLOT_ID),
+          eq(AdSize.BANNER),
+          eq(TEST_WATERMARK),
+        )
       } doReturn mockBannerAdRequest
       on { createBigoAdView(context) } doReturn mockBigoAdView
     }

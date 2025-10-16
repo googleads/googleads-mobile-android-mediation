@@ -57,8 +57,9 @@ class BigoInterstitialAdTest {
   private val mockInterstitialAdLoader = mock<BigoInterstitialAdLoaderWrapper>()
   private var mockBigoFactory =
     mock<SdkFactory> {
-      on { createInterstitialAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID)) } doReturn
-        mockInterstitialAdRequest
+      on {
+        createInterstitialAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
+      } doReturn mockInterstitialAdRequest
       on { createInterstitialAdLoader() } doReturn mockInterstitialAdLoader
     }
 

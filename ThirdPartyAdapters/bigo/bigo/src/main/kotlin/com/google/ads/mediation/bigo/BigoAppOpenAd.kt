@@ -39,12 +39,13 @@ private constructor(
     MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
   private val bidResponse: String,
   private val slotId: String,
+  private val watermark: String,
 ) : MediationAppOpenAd, AdLoadListener<SplashAd>, SplashAdInteractionListener {
   private var appOpenAdCallback: MediationAppOpenAdCallback? = null
   private var splashAd: SplashAd? = null
 
   fun loadAd(versionString: String) {
-    val adRequest = BigoFactory.delegate.createSplashAdRequest(bidResponse, slotId)
+    val adRequest = BigoFactory.delegate.createSplashAdRequest(bidResponse, slotId, watermark)
     val splashAdLoader = BigoFactory.delegate.createSplashAdLoader()
     splashAdLoader.initializeAdLoader(loadListener = this, versionString)
     splashAdLoader.loadAd(adRequest)
@@ -103,6 +104,7 @@ private constructor(
       val serverParameters = mediationAppOpenAdConfiguration.serverParameters
       val bidResponse = mediationAppOpenAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationAppOpenAdConfiguration.watermark
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
@@ -115,7 +117,7 @@ private constructor(
         return Result.failure(IllegalArgumentException(gmaAdError.toString()))
       }
 
-      return Result.success(BigoAppOpenAd(mediationAdLoadCallback, bidResponse, slotId))
+      return Result.success(BigoAppOpenAd(mediationAdLoadCallback, bidResponse, slotId, watermark))
     }
   }
 }

@@ -44,12 +44,14 @@ private constructor(
   private val bidResponse: String,
   private val slotId: String,
   private val adView: BigoAdView,
+  private val watermark: String,
 ) : MediationBannerAd, AdLoadListener<BigoAdView>, AdInteractionListener {
 
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
   fun loadAd(versionString: String) {
-    val adRequest = BigoFactory.delegate.createBannerAdRequest(bidResponse, slotId, adSize)
+    val adRequest =
+      BigoFactory.delegate.createBannerAdRequest(bidResponse, slotId, adSize, watermark)
     adView.setAdLoadListener(this)
     adView.setAdInteractionListener(this)
     adView.loadAd(adRequest, versionString)
@@ -99,6 +101,7 @@ private constructor(
         BigoUtils.mapAdSizeToBigoBannerSize(context, mediationBannerAdConfiguration.adSize)
       val bidResponse = mediationBannerAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationBannerAdConfiguration.watermark
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
@@ -119,7 +122,7 @@ private constructor(
       bigoAdView.layoutParams = layoutParams
 
       return Result.success(
-        BigoBannerAd(mediationAdLoadCallback, adSize, bidResponse, slotId, bigoAdView)
+        BigoBannerAd(mediationAdLoadCallback, adSize, bidResponse, slotId, bigoAdView, watermark)
       )
     }
   }

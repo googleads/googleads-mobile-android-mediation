@@ -44,15 +44,29 @@ object BigoFactory {
     object : SdkFactory {
       override fun createBigoAdView(context: Context) = BigoAdView(context)
 
-      override fun createBannerAdRequest(bidResponse: String, slotId: String, adSize: AdSize) =
+      override fun createBannerAdRequest(
+        bidResponse: String,
+        slotId: String,
+        adSize: AdSize,
+        watermark: String,
+      ) =
         BannerAdRequest.Builder()
           .withBid(bidResponse)
           .withSlotId(slotId)
           .withAdSizes(adSize)
+          .withWatermark(watermark)
           .build()
 
-      override fun createInterstitialAdRequest(bidResponse: String, slotId: String) =
-        InterstitialAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+      override fun createInterstitialAdRequest(
+        bidResponse: String,
+        slotId: String,
+        watermark: String,
+      ) =
+        InterstitialAdRequest.Builder()
+          .withBid(bidResponse)
+          .withSlotId(slotId)
+          .withWatermark(watermark)
+          .build()
 
       override fun createInterstitialAdLoader() =
         object : BigoInterstitialAdLoaderWrapper {
@@ -74,8 +88,16 @@ object BigoFactory {
           }
         }
 
-      override fun createRewardVideoAdRequest(bidResponse: String, slotId: String) =
-        RewardVideoAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+      override fun createRewardVideoAdRequest(
+        bidResponse: String,
+        slotId: String,
+        watermark: String,
+      ) =
+        RewardVideoAdRequest.Builder()
+          .withBid(bidResponse)
+          .withSlotId(slotId)
+          .withWatermark(watermark)
+          .build()
 
       override fun createRewardVideoAdLoader() =
         object : BigoRewardVideoAdLoaderWrapper {
@@ -97,8 +119,12 @@ object BigoFactory {
           }
         }
 
-      override fun createSplashAdRequest(bidResponse: String, slotId: String) =
-        SplashAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+      override fun createSplashAdRequest(bidResponse: String, slotId: String, watermark: String) =
+        SplashAdRequest.Builder()
+          .withBid(bidResponse)
+          .withSlotId(slotId)
+          .withWatermark(watermark)
+          .build()
 
       override fun createSplashAdLoader() =
         object : BigoSplashAdLoaderWrapper {
@@ -114,8 +140,12 @@ object BigoFactory {
           }
         }
 
-      override fun createNativeAdRequest(bidResponse: String, slotId: String) =
-        NativeAdRequest.Builder().withBid(bidResponse).withSlotId(slotId).build()
+      override fun createNativeAdRequest(bidResponse: String, slotId: String, watermark: String) =
+        NativeAdRequest.Builder()
+          .withBid(bidResponse)
+          .withSlotId(slotId)
+          .withWatermark(watermark)
+          .build()
 
       override fun createNativeAdLoader(): BigoNativeAdLoaderWrapper =
         object : BigoNativeAdLoaderWrapper {
@@ -137,15 +167,28 @@ object BigoFactory {
 interface SdkFactory {
   fun createBigoAdView(context: Context): BigoAdView
 
-  fun createBannerAdRequest(bidResponse: String, slotId: String, adSize: AdSize): BannerAdRequest
+  fun createBannerAdRequest(
+    bidResponse: String,
+    slotId: String,
+    adSize: AdSize,
+    watermark: String,
+  ): BannerAdRequest
 
-  fun createInterstitialAdRequest(bidResponse: String, slotId: String): InterstitialAdRequest
+  fun createInterstitialAdRequest(
+    bidResponse: String,
+    slotId: String,
+    watermark: String,
+  ): InterstitialAdRequest
 
-  fun createRewardVideoAdRequest(bidResponse: String, slotId: String): RewardVideoAdRequest
+  fun createRewardVideoAdRequest(
+    bidResponse: String,
+    slotId: String,
+    watermark: String,
+  ): RewardVideoAdRequest
 
-  fun createSplashAdRequest(bidResponse: String, slotId: String): SplashAdRequest
+  fun createSplashAdRequest(bidResponse: String, slotId: String, watermark: String): SplashAdRequest
 
-  fun createNativeAdRequest(bidResponse: String, slotId: String): NativeAdRequest
+  fun createNativeAdRequest(bidResponse: String, slotId: String, watermark: String): NativeAdRequest
 
   fun createInterstitialAdLoader(): BigoInterstitialAdLoaderWrapper
 

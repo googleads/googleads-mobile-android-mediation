@@ -57,8 +57,9 @@ class BigoRewardedAdTest {
   private val mockRewardVideoAdLoader = mock<BigoRewardVideoAdLoaderWrapper>()
   private var mockBigoFactory =
     mock<SdkFactory> {
-      on { createRewardVideoAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID)) } doReturn
-        mockRewardVideoAdRequest
+      on {
+        createRewardVideoAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
+      } doReturn mockRewardVideoAdRequest
       on { createRewardVideoAdLoader() } doReturn mockRewardVideoAdLoader
     }
 

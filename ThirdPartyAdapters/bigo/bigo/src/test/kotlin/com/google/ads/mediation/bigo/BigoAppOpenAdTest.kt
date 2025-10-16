@@ -57,8 +57,9 @@ class BigoAppOpenAdTest {
   private val mockSplashAdLoader = mock<BigoSplashAdLoaderWrapper>()
   private var mockBigoFactory =
     mock<SdkFactory> {
-      on { createSplashAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID)) } doReturn
-        mockSplashAdRequest
+      on {
+        createSplashAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
+      } doReturn mockSplashAdRequest
       on { createSplashAdLoader() } doReturn mockSplashAdLoader
     }
 

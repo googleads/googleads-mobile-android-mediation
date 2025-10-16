@@ -126,8 +126,8 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'com.google.android.gms:play-services-ads:24.6.0'
-    implementation 'com.bigossp:bigo-ads:5.5.1'
+    implementation 'com.google.android.gms:play-services-ads:24.7.0'
+    implementation 'com.bigossp:bigo-ads:5.5.2'
 
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'

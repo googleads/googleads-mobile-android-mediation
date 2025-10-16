@@ -40,13 +40,14 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
   private val slotId: String,
+  private val watermark: String,
 ) : MediationInterstitialAd, AdLoadListener<InterstitialAd>, AdInteractionListener {
 
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
   private var interstitialAd: InterstitialAd? = null
 
   fun loadAd(versionString: String) {
-    val adRequest = BigoFactory.delegate.createInterstitialAdRequest(bidResponse, slotId)
+    val adRequest = BigoFactory.delegate.createInterstitialAdRequest(bidResponse, slotId, watermark)
     val interstitialAdLoader = BigoFactory.delegate.createInterstitialAdLoader()
     interstitialAdLoader.initializeAdLoader(loadListener = this, versionString)
     interstitialAdLoader.loadAd(adRequest)
@@ -97,6 +98,7 @@ private constructor(
       val serverParameters = mediationInterstitialAdConfiguration.serverParameters
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationInterstitialAdConfiguration.watermark
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
@@ -109,7 +111,9 @@ private constructor(
         return Result.failure(IllegalArgumentException(gmaAdError.toString()))
       }
 
-      return Result.success(BigoInterstitialAd(mediationAdLoadCallback, bidResponse, slotId))
+      return Result.success(
+        BigoInterstitialAd(mediationAdLoadCallback, bidResponse, slotId, watermark)
+      )
     }
   }
 }

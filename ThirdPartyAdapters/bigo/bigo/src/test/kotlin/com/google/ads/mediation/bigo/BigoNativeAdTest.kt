@@ -58,8 +58,9 @@ class BigoNativeAdTest {
   private val mockNativeAdLoader = mock<BigoNativeAdLoaderWrapper>()
   private var mockBigoFactory =
     mock<SdkFactory> {
-      on { createNativeAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID)) } doReturn
-        mockNativeAdRequest
+      on {
+        createNativeAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
+      } doReturn mockNativeAdRequest
       on { createNativeAdLoader() } doReturn mockNativeAdLoader
     }
 
