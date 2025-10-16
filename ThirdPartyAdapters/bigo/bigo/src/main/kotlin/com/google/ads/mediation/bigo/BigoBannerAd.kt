@@ -14,35 +14,78 @@
 
 package com.google.ads.mediation.bigo
 
-import android.content.Context
+import android.view.Gravity
 import android.view.View
-import com.google.android.gms.ads.AdSize
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import sg.bigo.ads.ad.banner.BigoAdView
+import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdInteractionListener
+import sg.bigo.ads.api.AdLoadListener
+import sg.bigo.ads.api.AdSize
 
 /**
  * Used to load Bigo banner ads and mediate callbacks between Google Mobile Ads SDK and Bigo SDK.
  */
 class BigoBannerAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val adSize: AdSize,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationBannerAd {
-  // TODO: Replace with 3p View. Ideally avoid lateinit and initialize in constructor.
-  private lateinit var adView: View
+  private val bidResponse: String,
+  private val slotId: String,
+  private val adView: BigoAdView,
+) : MediationBannerAd, AdLoadListener<BigoAdView>, AdInteractionListener {
 
-  fun loadAd() {
-    // TODO: Implement this method.
+  private var bannerAdCallback: MediationBannerAdCallback? = null
+
+  fun loadAd(versionString: String) {
+    val adRequest = BigoFactory.delegate.createBannerAdRequest(bidResponse, slotId, adSize)
+    adView.setAdLoadListener(this)
+    adView.setAdInteractionListener(this)
+    adView.loadAd(adRequest, versionString)
   }
 
   override fun getView(): View {
-    // TODO: Implement this method.
     return adView
+  }
+
+  override fun onError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    mediationAdLoadCallback.onFailure(gmaAdError)
+  }
+
+  override fun onAdLoaded(bigoAdView: BigoAdView) {
+    bannerAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdError(adError: AdError) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdImpression() {
+    bannerAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked() {
+    bannerAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdOpened() {
+    bannerAdCallback?.onAdOpened()
+  }
+
+  override fun onAdClosed() {
+    bannerAdCallback?.onAdClosed()
   }
 
   companion object {
@@ -52,11 +95,32 @@ private constructor(
     ): Result<BigoBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
-      val adSize = mediationBannerAdConfiguration.adSize
+      val adSize =
+        BigoUtils.mapAdSizeToBigoBannerSize(context, mediationBannerAdConfiguration.adSize)
+      val bidResponse = mediationBannerAdConfiguration.bidResponse
+      val slotId = serverParameters.getString(SLOT_ID_KEY)
 
-      // TODO: Implement necessary initialization steps.
+      if (slotId.isNullOrEmpty()) {
+        val gmaAdError =
+          BigoUtils.getGmaAdError(
+            ERROR_CODE_MISSING_SLOT_ID,
+            ERROR_MSG_MISSING_SLOT_ID,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(gmaAdError)
+        return Result.failure(IllegalArgumentException(gmaAdError.toString()))
+      }
 
-      return Result.success(BigoBannerAd(context, mediationAdLoadCallback, adSize))
+      val bigoAdView = BigoFactory.delegate.createBigoAdView(context)
+      val width = ViewGroup.LayoutParams.MATCH_PARENT
+      val height = ViewGroup.LayoutParams.WRAP_CONTENT
+      val layoutParams = FrameLayout.LayoutParams(width, height)
+      layoutParams.gravity = Gravity.CENTER
+      bigoAdView.layoutParams = layoutParams
+
+      return Result.success(
+        BigoBannerAd(mediationAdLoadCallback, adSize, bidResponse, slotId, bigoAdView)
+      )
     }
   }
 }

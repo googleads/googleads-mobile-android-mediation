@@ -30,18 +30,13 @@ import com.google.ads.mediation.pangle.renderer.PangleRewardedAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
-import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
-import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
-import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
-import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 
 /**
@@ -77,14 +72,12 @@ public class PangleFactory {
   }
 
   PangleAppOpenAd createPangleAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper) {
     return new PangleAppOpenAd(
-        mediationAppOpenAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
@@ -92,14 +85,12 @@ public class PangleFactory {
   }
 
   PangleBannerAd createPangleBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper) {
     return new PangleBannerAd(
-        mediationBannerAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
@@ -107,14 +98,12 @@ public class PangleFactory {
   }
 
   PangleInterstitialAd createPangleInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper) {
     return new PangleInterstitialAd(
-        mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
@@ -122,14 +111,12 @@ public class PangleFactory {
   }
 
   PangleNativeAd createPangleNativeAd(
-      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper) {
     return new PangleNativeAd(
-        mediationNativeAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
@@ -137,14 +124,12 @@ public class PangleFactory {
   }
 
   PangleRewardedAd createPangleRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper) {
     return new PangleRewardedAd(
-        mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,

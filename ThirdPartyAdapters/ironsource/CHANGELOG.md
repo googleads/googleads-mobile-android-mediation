@@ -1,6 +1,6 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.0.0.1 (In progress)
 - Removed class-level references to `Context` objects to help with memory leak issues.
 
 #### Version 9.0.0.0

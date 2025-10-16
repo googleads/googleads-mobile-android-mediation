@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.applovin;
 
+import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,8 +50,6 @@ public abstract class AppLovinInterstitialRenderer
       " Cannot load multiple interstitial ads with the same Zone ID. Let the first ad finish"
           + " loading before attempting to load another. ";
 
-  protected final MediationInterstitialAdConfiguration interstitialAdConfiguration;
-
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       interstitialAdLoadCallback;
 
@@ -64,20 +63,20 @@ public abstract class AppLovinInterstitialRenderer
 
   @Nullable protected String zoneId;
 
+  @Nullable protected Bundle networkExtras;
+
   public AppLovinInterstitialRenderer(
-      @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory) {
-    interstitialAdConfiguration = adConfiguration;
     interstitialAdLoadCallback = callback;
     this.appLovinInitializer = appLovinInitializer;
     this.appLovinAdFactory = appLovinAdFactory;
   }
 
-  public abstract void loadAd();
+  public abstract void loadAd(@NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration);
 
   @Override
   public void adReceived(final AppLovinAd ad) {

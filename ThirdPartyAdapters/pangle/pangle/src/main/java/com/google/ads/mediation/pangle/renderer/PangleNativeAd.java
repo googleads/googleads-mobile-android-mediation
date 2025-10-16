@@ -57,7 +57,6 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   /** ID of Ad Choices text view asset. */
   @VisibleForTesting static final String ASSET_ID_ADCHOICES_TEXT_VIEW = "3012";
 
-  private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
@@ -67,21 +66,19 @@ public class PangleNativeAd extends UnifiedNativeAdMapper {
   private PAGNativeAd pagNativeAd;
 
   public PangleNativeAd(
-      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
           MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
       @NonNull PangleFactory pangleFactory) {
-    adConfiguration = mediationNativeAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationNativeAdConfiguration adConfiguration) {
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

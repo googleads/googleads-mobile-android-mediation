@@ -14,9 +14,18 @@
 
 package com.google.ads.mediation.mintegral.waterfall;
 
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_CODE_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN;
+import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralRewardedAdWrapper;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralRewardedAd;
 import com.google.android.gms.ads.AdError;
@@ -25,16 +34,18 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.out.MBRewardVideoHandler;
+import java.lang.ref.WeakReference;
 
 public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
 
-  private MBRewardVideoHandler mbRewardVideoHandler;
+  private MintegralRewardedAdWrapper mintegralRewardedAdWrapper;
 
-  public MintegralWaterfallRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          adLoadCallback) {
-    super(adConfiguration, adLoadCallback);
+  public MintegralWaterfallRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback,
+      FlagValueGetter flagValueGetter) {
+    super(adConfiguration, adLoadCallback, flagValueGetter);
   }
 
   @Override
@@ -48,16 +59,31 @@ public class MintegralWaterfallRewardedAd extends MintegralRewardedAd {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbRewardVideoHandler = new MBRewardVideoHandler(adConfiguration.getContext(), placementId,
-        adUnitId);
-    mbRewardVideoHandler.setRewardVideoListener(this);
-    mbRewardVideoHandler.load();
+
+    if (flagValueGetter.shouldRestrictMultipleAdLoads()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      WeakReference<Object> adObjectReference = loadedSlotIdentifiers.get(mintegralSlotIdentifier);
+      if (adObjectReference != null && adObjectReference.get() != null) {
+        adLoadCallback.onFailure(
+            new AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN));
+        return;
+      }
+
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
+    mintegralRewardedAdWrapper = MintegralFactory.createMintegralRewardedAdWrapper();
+    mintegralRewardedAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
+    mintegralRewardedAdWrapper.setRewardVideoListener(this);
+    mintegralRewardedAdWrapper.load();
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    mbRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbRewardVideoHandler.show();
+    mintegralRewardedAdWrapper.playVideoMute(
+        muted
+            ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+            : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mintegralRewardedAdWrapper.show();
   }
 }

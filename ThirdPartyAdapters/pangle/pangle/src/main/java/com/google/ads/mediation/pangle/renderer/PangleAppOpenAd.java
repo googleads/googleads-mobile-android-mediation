@@ -46,7 +46,6 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
   static final String ERROR_MSG_INVALID_PLACEMENT_ID =
       "Failed to load app open ad from Pangle. Missing or invalid Placement ID.";
 
-  private final MediationAppOpenAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
@@ -57,21 +56,19 @@ public class PangleAppOpenAd implements MediationAppOpenAd {
   private PAGAppOpenAd pagAppOpenAd;
 
   public PangleAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       @NonNull PangleSdkWrapper pangleSdkWrapper,
       @NonNull PangleFactory pangleFactory) {
-    adConfiguration = mediationAppOpenAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationAppOpenAdConfiguration adConfiguration) {
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     final String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

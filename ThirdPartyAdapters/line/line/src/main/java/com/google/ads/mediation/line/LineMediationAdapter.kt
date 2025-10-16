@@ -184,7 +184,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      bannerAd.loadAd(mediationBannerAdConfiguration.context)
     }
   }
 
@@ -194,7 +194,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadAd()
+      interstitialAd.loadAd(mediationInterstitialAdConfiguration.context)
     }
   }
 
@@ -204,7 +204,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd()
+      rewardedAd.loadAd(mediationRewardedAdConfiguration.context)
     }
   }
 
@@ -224,7 +224,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineBannerAd.newInstance(adConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadRtbAd()
+      bannerAd.loadRtbAd(adConfiguration.context)
     }
   }
 
@@ -234,7 +234,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineInterstitialAd.newInstance(adConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadRtbAd()
+      interstitialAd.loadRtbAd(adConfiguration.context)
     }
   }
 
@@ -244,7 +244,7 @@ class LineMediationAdapter : RtbAdapter() {
   ) {
     LineRewardedAd.newInstance(adConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadRtbAd()
+      rewardedAd.loadRtbAd(adConfiguration.context)
     }
   }
 

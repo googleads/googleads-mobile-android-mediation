@@ -13,10 +13,9 @@ import com.vungle.ads.AdConfig
  * implementation.
  */
 class VungleRtbAppOpenAd(
-  mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration,
   mediationAdLoadCallback: MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
   vungleFactory: VungleFactory,
-) : VungleAppOpenAd(mediationAppOpenAdConfiguration, mediationAdLoadCallback, vungleFactory) {
+) : VungleAppOpenAd(mediationAdLoadCallback, vungleFactory) {
 
   override fun getAdMarkup(
     mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration

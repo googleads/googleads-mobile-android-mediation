@@ -57,22 +57,18 @@ class VungleRtbInterstitialAdTest {
       on { createInterstitialAd(any(), any(), any()) } doReturn vungleInterstitialAd
       on { createAdConfig() } doReturn mock()
     }
+  private val mediationInterstitialAdConfiguration =
+    createMediationInterstitialAdConfiguration(
+      context = context,
+      serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+      bidResponse = TEST_BID_RESPONSE,
+      watermark = TEST_WATERMARK,
+      mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+    )
 
   @Before
   fun setUp() {
-    adapterRtbInterstitialAd =
-      VungleRtbInterstitialAd(
-        createMediationInterstitialAdConfiguration(
-          context = context,
-          serverParameters =
-            bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
-        ),
-        interstitialAdLoadCallback,
-        vungleFactory,
-      )
+    adapterRtbInterstitialAd = VungleRtbInterstitialAd(interstitialAdLoadCallback, vungleFactory)
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -108,7 +104,7 @@ class VungleRtbInterstitialAdTest {
   fun showAd_playsLiftoffAd() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbInterstitialAd.render()
+      adapterRtbInterstitialAd.render(mediationInterstitialAdConfiguration)
     }
 
     adapterRtbInterstitialAd.showAd(context)
@@ -119,7 +115,7 @@ class VungleRtbInterstitialAdTest {
   private fun renderAdAndMockLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbInterstitialAd.render()
+      adapterRtbInterstitialAd.render(mediationInterstitialAdConfiguration)
     }
     adapterRtbInterstitialAd.onAdLoaded(vungleInterstitialAd)
   }

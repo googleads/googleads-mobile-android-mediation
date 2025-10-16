@@ -1,15 +1,12 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
 #### Version 8.4.0.0
-- Added support for RTB Native Ads
+- Removed class-level references to Context. Can help reduce memory leak issues.
 - Verified compatibility with DT Exchange SDK 8.4.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 24.6.0.
 - DT Exchange SDK version 8.4.0.
-
-#### Next version
-- Removed class-level references to Context. Can help reduce memory leak issues.
 
 #### Version 8.3.8.0
 - Refactored the error codes into a new DTExchangeErrorCodes.kt file.

@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.applovin;
 
+import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,9 +48,6 @@ public abstract class AppLovinRewardedRenderer
 
   @VisibleForTesting protected static final String ERROR_MSG_AD_NOT_READY = "Ad not ready to show.";
 
-  /** Rewarded ad request configuration. */
-  protected final MediationRewardedAdConfiguration adConfiguration;
-
   /** Mediation callback for ad load events. */
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
@@ -59,6 +57,8 @@ public abstract class AppLovinRewardedRenderer
   protected final AppLovinAdFactory appLovinAdFactory;
 
   protected final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
+
+  protected Bundle networkExtras;
 
   /**
    * Mediation callback for rewarded ad events.
@@ -79,12 +79,10 @@ public abstract class AppLovinRewardedRenderer
   protected AppLovinIncentivizedInterstitial incentivizedInterstitial;
 
   protected AppLovinRewardedRenderer(
-      @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory,
       @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
-    this.adConfiguration = adConfiguration;
     this.adLoadCallback = callback;
     this.appLovinInitializer = appLovinInitializer;
     this.appLovinAdFactory = appLovinAdFactory;
@@ -94,7 +92,7 @@ public abstract class AppLovinRewardedRenderer
   /**
    * Loads an AppLovin rewarded ad.
    */
-  public abstract void loadAd();
+  public abstract void loadAd(@NonNull MediationRewardedAdConfiguration adConfiguration);
 
   // region AppLovinAdLoadListener implementation.
   @Override

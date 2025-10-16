@@ -1,6 +1,6 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.20.0.2 (In progress)
 - Removed class-level references to `Context` objects to help with memory leak issues.
 
 #### Version 6.20.0.1

@@ -71,7 +71,6 @@ public class PangleMediationAdapter extends RtbAdapter {
   private final PangleSdkWrapper pangleSdkWrapper;
   private final PangleFactory pangleFactory;
 
-
   private PangleAppOpenAd appOpenAd;
   private PangleBannerAd bannerAd;
   private PangleInterstitialAd interstitialAd;
@@ -84,7 +83,6 @@ public class PangleMediationAdapter extends RtbAdapter {
     pangleInitializer = PangleInitializer.getInstance();
     pangleSdkWrapper = new PangleSdkWrapper();
     pangleFactory = new PangleFactory();
-
   }
 
   @VisibleForTesting
@@ -235,10 +233,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       callback.onFailure(PangleConstants.createChildUserError());
       return;
     }
-    appOpenAd =
-        pangleFactory.createPangleAppOpenAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
-    appOpenAd.render();
+    appOpenAd = pangleFactory.createPangleAppOpenAd(callback, pangleInitializer, pangleSdkWrapper);
+    appOpenAd.render(adConfiguration);
   }
 
   @Override
@@ -250,10 +246,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       return;
     }
 
-    bannerAd =
-        pangleFactory.createPangleBannerAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
-    bannerAd.render();
+    bannerAd = pangleFactory.createPangleBannerAd(callback, pangleInitializer, pangleSdkWrapper);
+    bannerAd.render(adConfiguration);
   }
 
   @Override
@@ -268,9 +262,8 @@ public class PangleMediationAdapter extends RtbAdapter {
     }
 
     interstitialAd =
-        pangleFactory.createPangleInterstitialAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
-    interstitialAd.render();
+        pangleFactory.createPangleInterstitialAd(callback, pangleInitializer, pangleSdkWrapper);
+    interstitialAd.render(adConfiguration);
   }
 
   @Override
@@ -282,10 +275,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       return;
     }
 
-    nativeAd =
-        pangleFactory.createPangleNativeAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
-    nativeAd.render();
+    nativeAd = pangleFactory.createPangleNativeAd(callback, pangleInitializer, pangleSdkWrapper);
+    nativeAd.render(adConfiguration);
   }
 
   @Override
@@ -297,9 +288,8 @@ public class PangleMediationAdapter extends RtbAdapter {
       return;
     }
     rewardedAd =
-        pangleFactory.createPangleRewardedAd(
-            adConfiguration, callback, pangleInitializer, pangleSdkWrapper);
-    rewardedAd.render();
+        pangleFactory.createPangleRewardedAd(callback, pangleInitializer, pangleSdkWrapper);
+    rewardedAd.render(adConfiguration);
   }
 
   /**
@@ -360,5 +350,4 @@ public class PangleMediationAdapter extends RtbAdapter {
   public static int getPAConsent() {
     return PAGConfig.getPAConsent();
   }
-
 }

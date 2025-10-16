@@ -80,6 +80,7 @@ class PangleAppOpenAdTest {
         PangleConstants.APP_ID to APP_ID_VALUE,
         PangleConstants.PLACEMENT_ID to PLACEMENT_ID_VALUE,
       )
+    initializeAppOpenAd()
   }
 
   @Test
@@ -88,7 +89,7 @@ class PangleAppOpenAdTest {
     serverParameters.remove(PangleConstants.PLACEMENT_ID)
     initializeAppOpenAd() // ... without serverParameters send in the Bundle
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
@@ -106,7 +107,7 @@ class PangleAppOpenAdTest {
     // serverParameters and a bidResponse.
     initializeAppOpenAd()
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
@@ -122,7 +123,7 @@ class PangleAppOpenAdTest {
     // Initialize appOpen ad with BID_RESPONSE as bid response.
     initializeAppOpenAd()
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     verify(pagAppOpenRequest).setAdString(BID_RESPONSE)
     verify(pagAppOpenRequest).setExtraInfo(extraInfoCaptor.capture())
@@ -141,7 +142,7 @@ class PangleAppOpenAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeAppOpenAd(bidResponse = "", watermark = "")
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     verify(pagAppOpenRequest).setAdString("")
     // Verify that setExtraInfo is not called when watermark is empty.
@@ -155,7 +156,7 @@ class PangleAppOpenAdTest {
     stubPangleAppOpenAdLoadToSucceed()
     initializeAppOpenAd()
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     verify(mediationAdLoadCallback).onSuccess(appOpenAd)
   }
@@ -175,7 +176,7 @@ class PangleAppOpenAdTest {
       .loadAppOpenAd(any(), any(), any())
     initializeAppOpenAd()
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -190,7 +191,7 @@ class PangleAppOpenAdTest {
     mockPangleSdkInitializationFailure(pangleInitializer)
     initializeAppOpenAd()
 
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -291,13 +292,7 @@ class PangleAppOpenAdTest {
       )
 
     appOpenAd =
-      PangleAppOpenAd(
-        mediationAppOpenAdConfig,
-        mediationAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-        pangleFactory,
-      )
+      PangleAppOpenAd(mediationAdLoadCallback, pangleInitializer, pangleSdkWrapper, pangleFactory)
   }
 
   /** Mock a Pangle appOpen ad load. */
@@ -305,7 +300,7 @@ class PangleAppOpenAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     stubPangleAppOpenAdLoadToSucceed()
     initializeAppOpenAd()
-    appOpenAd.render()
+    appOpenAd.render(mediationAppOpenAdConfig)
   }
 
   // Stub pangleSdkWrapper.loadAppOpenAd() to succeed.

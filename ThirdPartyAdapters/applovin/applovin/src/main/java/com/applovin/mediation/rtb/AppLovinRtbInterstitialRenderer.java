@@ -34,23 +34,22 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialRenderer
     implements MediationInterstitialAd {
 
-  private final AppLovinSdk sdk;
+  private AppLovinSdk sdk;
 
   @Nullable private AppLovinInterstitialAdDialog interstitialAd;
 
   public AppLovinRtbInterstitialRenderer(
-      @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory) {
-    super(adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
-    sdk = appLovinInitializer.retrieveSdk(adConfiguration.getContext());
+    super(callback, appLovinInitializer, appLovinAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationInterstitialAdConfiguration interstitialAdConfiguration) {
+    sdk = appLovinInitializer.retrieveSdk(interstitialAdConfiguration.getContext());
     // Create interstitial object
     interstitialAd =
         appLovinAdFactory.createInterstitialAdDialog(sdk, interstitialAdConfiguration.getContext());
@@ -58,6 +57,7 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
     interstitialAd.setAdClickListener(this);
     interstitialAd.setAdVideoPlaybackListener(this);
     interstitialAd.setExtraInfo(KEY_WATERMARK, interstitialAdConfiguration.getWatermark());
+    networkExtras = interstitialAdConfiguration.getMediationExtras();
 
     // Load ad!
     sdk.getAdService().loadNextAdForAdToken(interstitialAdConfiguration.getBidResponse(), this);
@@ -66,7 +66,7 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
   @Override
   public void showAd(@NonNull Context context) {
     // Update mute state
-    boolean muted = AppLovinUtils.shouldMuteAudio(interstitialAdConfiguration.getMediationExtras());
+    boolean muted = AppLovinUtils.shouldMuteAudio(networkExtras);
     sdk.getSettings().setMuted(muted);
 
     interstitialAd.showAndRender(appLovinInterstitialAd);
