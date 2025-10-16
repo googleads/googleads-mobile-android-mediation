@@ -719,8 +719,8 @@ public class FyberMediationAdapter extends RtbAdapter
       nativeAdMapper.destroy();
       nativeAdMapper = null;
     }
-    nativeAdMapper = new DTExchangeNativeAdMapper(adConfiguration, callback);
-    nativeAdMapper.loadAd();
+    nativeAdMapper = new DTExchangeNativeAdMapper(callback);
+    nativeAdMapper.loadAd(adConfiguration);
   }
 
 }

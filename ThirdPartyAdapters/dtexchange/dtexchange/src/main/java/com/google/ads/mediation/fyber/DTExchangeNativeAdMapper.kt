@@ -1,10 +1,20 @@
 package com.google.ads.mediation.fyber
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import com.fyber.inneractive.sdk.external.*
+import com.fyber.inneractive.sdk.external.InneractiveAdSpot
+import com.fyber.inneractive.sdk.external.NativeAdContent
+import com.fyber.inneractive.sdk.external.InneractiveAdManager
+import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
+import com.fyber.inneractive.sdk.external.NativeAdUnitController
+import com.fyber.inneractive.sdk.external.NativeAdVideoContentController
+import com.fyber.inneractive.sdk.external.VideoContentListener
+import com.fyber.inneractive.sdk.external.NativeAdEventsListener
+import com.fyber.inneractive.sdk.external.InneractiveErrorCode
+import com.fyber.inneractive.sdk.external.MediaView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
@@ -13,18 +23,15 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdAssetNames
 
-private const val TAG = "DTExchangeNativeAdMapper"
-
 class DTExchangeNativeAdMapper(
-    private var mediationNativeAdConfiguration: MediationNativeAdConfiguration,
-    private var adLoadCallback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
+    private val adLoadCallback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
 ) : NativeAdMapper() {
 
     private var mediationNativeAdCallback: MediationNativeAdCallback? = null
     private var nativeAdSpot: InneractiveAdSpot? = null
     private var adContent: NativeAdContent? = null
 
-    fun loadAd() {
+    fun loadAd(mediationNativeAdConfiguration: MediationNativeAdConfiguration) {
         InneractiveAdManager.setMediationName(
             FyberMediationAdapter.MEDIATOR_NAME
         )
@@ -88,8 +95,9 @@ class DTExchangeNativeAdMapper(
                         content: NativeAdContent?
                     ) {
                         if (content != null) {
-                            mapNativeAd(content)
-                            mediationNativeAdCallback = adLoadCallback.onSuccess(this@DTExchangeNativeAdMapper)
+                            mapNativeAd(mediationNativeAdConfiguration.context, content)
+                            mediationNativeAdCallback =
+                                adLoadCallback.onSuccess(this@DTExchangeNativeAdMapper)
                         } else {
                             reportErrorAndDestroy(
                                 "content is NOT NativeAdContent", InneractiveErrorCode.SDK_INTERNAL_ERROR
@@ -148,8 +156,11 @@ class DTExchangeNativeAdMapper(
         nativeAdSpot = null
     }
 
-    private fun mapNativeAd(nativeAdContent: NativeAdContent) {
-        val mediaView = MediaView(mediationNativeAdConfiguration.context)
+    private fun mapNativeAd(
+        context: Context,
+        nativeAdContent: NativeAdContent
+    ) {
+        val mediaView = MediaView(context)
 
         nativeAdContent.bindMediaView(mediaView)
         adContent = nativeAdContent
@@ -188,5 +199,9 @@ class DTExchangeNativeAdMapper(
 
         override fun getScale() = 1.0
 
+    }
+
+    private companion object {
+        private const val TAG = "DTExchangeNativeAdMapper"
     }
 }
