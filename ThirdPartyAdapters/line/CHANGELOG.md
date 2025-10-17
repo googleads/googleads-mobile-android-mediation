@@ -1,7 +1,11 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Version 2.9.20250924.1 (In progress)
+#### Version 2.9.20250924.1
 - Removed class-level references to Context. Can help reduce memory leak issues.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- FiveAd SDK version 2.9.20250924.1.
 
 #### Version 2.9.20250924.0
 - Verified compatibility with FiveAd SDK version 2.9.20250924.
