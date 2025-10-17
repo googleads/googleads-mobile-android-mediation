@@ -189,7 +189,7 @@ class DTExchangeNativeAdMapper(
         mediationNativeAdCallback = null
     }
 
-    inner class NativeMappedImage(
+    class NativeMappedImage(
         private val uri: Uri
     ) : NativeAd.Image() {
 
