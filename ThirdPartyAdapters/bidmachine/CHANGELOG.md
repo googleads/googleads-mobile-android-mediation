@@ -1,11 +1,13 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Version 3.4.0.1 (In progress)
+#### Version 3.4.0.1
 - Removed class-level references to `Context` objects to help with memory leak issues.
-- Updated how the requested banner ad size is mapped to BidMachine's banner ad
-  size. Now allows for requested ad sizes that are close to a size supported by
-  BidMachine (instead of requiring the requested size to strictly match a
-  supported size).
+- Updated adapter to support banner ad requests that are close in size to its
+supported formats, instead of requiring an exact size match.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- BidMachine SDK version 3.4.0
 
 #### Version 3.4.0.0
 - Added waterfall support for banner, interstitial, rewarded and native ad formats.
