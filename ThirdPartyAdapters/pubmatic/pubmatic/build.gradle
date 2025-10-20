@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "PubMatic"
     // String property to store version name.
-    stringVersion = "4.9.1.0"
+    stringVersion = "4.10.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -30,7 +30,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 4090100
+        versionCode 4100000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -130,10 +130,10 @@ task jacocoTestReport(type: JacocoReport,
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'com.google.android.gms:play-services-ads:24.6.0'
+    implementation 'com.google.android.gms:play-services-ads:24.7.0'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
 
-    implementation 'com.pubmatic.sdk:openwrap:4.9.1'
+    implementation 'com.pubmatic.sdk:openwrap:4.10.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
