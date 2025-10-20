@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.6.0.0 (In progress)
+
 #### Version 7.5.1.1 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues.
 - Added new API implementation for Waterfall Banner ad.
