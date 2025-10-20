@@ -49,18 +49,16 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
 
-  private final Context context;
-
   private final String instanceID;
 
   public IronSourceRewardedAd(
-      @NonNull MediationRewardedAdConfiguration rewardedAdConfiguration,
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
-    Bundle serverParameters = rewardedAdConfiguration.getServerParameters();
+    Bundle serverParameters = adConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
-    context = rewardedAdConfiguration.getContext();
+
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
@@ -92,8 +90,8 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return mediationAdLoadCallback;
   }
 
-  private boolean loadValidConfig() {
-    if (!isParamsValid()) {
+  private boolean loadValidConfig(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    if (!isParamsValid(adConfiguration.getContext())) {
       return false;
     }
 
@@ -102,15 +100,16 @@ public class IronSourceRewardedAd implements MediationRewardedAd {
     return true;
   }
 
-  public void loadWaterfallAd() {
-    if (!loadValidConfig()) {
+  public void loadWaterfallAd(@NonNull MediationRewardedAdConfiguration adConfiguration) {
+    if (!loadValidConfig(adConfiguration)) {
       return;
     }
-    Activity activity = (Activity) context;
+
+    Activity activity = (Activity) adConfiguration.getContext();
     IronSource.loadISDemandOnlyRewardedVideo(activity, instanceID);
   }
 
-  private boolean isParamsValid() {
+  private boolean isParamsValid(@NonNull Context context) {
     // Check that the context is an Activity and that the instance ID is valid.
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {

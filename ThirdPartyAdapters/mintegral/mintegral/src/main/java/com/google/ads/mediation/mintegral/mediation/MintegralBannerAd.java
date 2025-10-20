@@ -38,23 +38,20 @@ import java.util.ArrayList;
 public abstract class MintegralBannerAd extends BannerAdWithCodeListener implements
     MediationBannerAd {
 
-  protected MediationBannerAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       adLoadCallback;
   protected MBBannerView mbBannerView;
   protected MediationBannerAdCallback bannerAdCallback;
 
-  public MintegralBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
-          mediationAdLoadCallback) {
-    this.adConfiguration = mediationBannerAdConfiguration;
+  public MintegralBannerAd(
+      @NonNull
+          MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+              mediationAdLoadCallback) {
     this.adLoadCallback = mediationAdLoadCallback;
   }
 
-  /**
-   * Loads a Mintegral banner ad.
-   */
-  public abstract void loadAd();
+  /** Loads a Mintegral banner ad. */
+  public abstract void loadAd(MediationBannerAdConfiguration adConfiguration);
 
   @Nullable
   public static BannerSize getMintegralBannerSizeFromAdMobAdSize(

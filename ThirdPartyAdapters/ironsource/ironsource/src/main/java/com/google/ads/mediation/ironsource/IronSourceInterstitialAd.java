@@ -49,18 +49,16 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
 
-  private final Context context;
-
   private final String instanceID;
 
   public IronSourceInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationInterstitialAdLoadCallback) {
-    Bundle serverParameters = interstitialAdConfig.getServerParameters();
+    Bundle serverParameters = adConfiguration.getServerParameters();
     instanceID = serverParameters.getString(KEY_INSTANCE_ID, DEFAULT_NON_RTB_INSTANCE_ID);
-    context = interstitialAdConfig.getContext();
+
     this.mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
@@ -93,17 +91,18 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
   }
 
   /** Attempts to load an @{link IronSource} interstitial ad. */
-  public void loadWaterfallAd() {
-    if (!loadValidConfig()) {
+  public void loadWaterfallAd(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
+    if (!loadValidConfig(adConfiguration)) {
       return;
     }
-    Activity activity = (Activity) context;
+
+    Activity activity = (Activity) adConfiguration.getContext();
     IronSource.loadISDemandOnlyInterstitial(activity, instanceID);
   }
 
   /** Returns true if all the parameters needed to load an ad are valid. */
-  private boolean loadValidConfig() {
-    if (!isParamsValid()) {
+  private boolean loadValidConfig(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
+    if (!isParamsValid(adConfiguration.getContext())) {
       return false;
     }
 
@@ -113,7 +112,7 @@ public class IronSourceInterstitialAd implements MediationInterstitialAd {
     return true;
   }
 
-  private boolean isParamsValid() {
+  private boolean isParamsValid(@NonNull Context context) {
     AdError loadError = IronSourceAdapterUtils.validateIronSourceAdLoadParams(context, instanceID);
     if (loadError != null) {
       onAdFailedToLoad(loadError);

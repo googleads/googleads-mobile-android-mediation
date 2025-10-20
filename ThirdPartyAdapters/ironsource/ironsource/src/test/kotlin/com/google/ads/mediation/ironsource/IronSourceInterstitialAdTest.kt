@@ -232,6 +232,6 @@ class IronSourceInterstitialAdTest {
     val mediationAdConfiguration = createMediationInterstitialAdConfiguration(activity)
     ironSourceInterstitialAd =
       IronSourceInterstitialAd(mediationAdConfiguration, interstitialAdLoadCallback)
-    ironSourceInterstitialAd.loadWaterfallAd()
+    ironSourceInterstitialAd.loadWaterfallAd(mediationAdConfiguration)
   }
 }

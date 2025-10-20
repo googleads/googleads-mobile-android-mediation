@@ -22,21 +22,20 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
 
   public InMobiWaterfallInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration) {
     final Context context = mediationInterstitialAdConfiguration.getContext();
     final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
 
@@ -54,7 +53,7 @@ public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
         new InMobiInitializer.Listener() {
           @Override
           public void onInitializeSuccess() {
-            createAndLoadInterstitialAd(context, placementId);
+            createAndLoadInterstitialAd(context, mediationInterstitialAdConfiguration);
           }
 
           @Override
@@ -68,10 +67,14 @@ public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
   }
 
   @Override
-  protected void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper) {
+  protected void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiInterstitialWrapper,
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationInterstitialAdConfiguration.getContext(),
-            mediationInterstitialAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_WATERFALL);
+        InMobiExtrasBuilder.build(
+            mediationInterstitialAdConfiguration.getContext(),
+            mediationInterstitialAdConfiguration.getMediationExtras(),
+            InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
 

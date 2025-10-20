@@ -42,7 +42,6 @@ import io.bidmachine.utils.BMError
  */
 class BidMachineRewardedAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
@@ -53,19 +52,19 @@ private constructor(
   private lateinit var bidMachineRewardedAd: RewardedAd
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
-  fun loadWaterfallAd(rewardedAd: RewardedAd) {
+  fun loadWaterfallAd(rewardedAd: RewardedAd, context: Context) {
     val rewardedRequest =
       rewardedRequestBuilder.setPlacementId(placementId).setListener(this).build()
-    loadAd(rewardedAd, rewardedRequest)
+    loadAd(rewardedAd, rewardedRequest, context)
   }
 
-  fun loadRtbAd(rewardedAd: RewardedAd) {
+  fun loadRtbAd(rewardedAd: RewardedAd, context: Context) {
     val rewardedRequest =
       rewardedRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAd(rewardedAd, rewardedRequest)
+    loadAd(rewardedAd, rewardedRequest, context)
   }
 
-  private fun loadAd(rewardedAd: RewardedAd, rewardedRequest: RewardedRequest) {
+  private fun loadAd(rewardedAd: RewardedAd, rewardedRequest: RewardedRequest, context: Context) {
     bidMachineRewardedAd = rewardedAd
     rewardedRequest.request(context)
   }
@@ -155,14 +154,13 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
     ): Result<BidMachineRewardedAd> {
-      val context = mediationRewardedAdConfiguration.context
       val bidResponse = mediationRewardedAdConfiguration.bidResponse
       val watermark = mediationRewardedAdConfiguration.watermark
       val placementId =
         mediationRewardedAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
       return Result.success(
-        BidMachineRewardedAd(context, mediationAdLoadCallback, bidResponse, watermark, placementId)
+        BidMachineRewardedAd(mediationAdLoadCallback, bidResponse, watermark, placementId)
       )
     }
   }

@@ -15,6 +15,7 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,8 +25,10 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralAppOpenAd;
 import com.google.android.gms.ads.AdError;
@@ -34,6 +37,7 @@ import com.google.android.gms.ads.mediation.MediationAppOpenAd;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
+import java.lang.ref.WeakReference;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,13 +50,13 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
   private String bidToken;
 
   public MintegralRtbAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    super(adConfiguration, callback);
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback,
+      FlagValueGetter flagValueGetter) {
+    super(callback, flagValueGetter);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationAppOpenAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     String adUnitId = serverParameters.getString(MintegralConstants.AD_UNIT_ID);
     String placementId = serverParameters.getString(MintegralConstants.PLACEMENT_ID);
@@ -62,6 +66,12 @@ public class MintegralRtbAppOpenAd extends MintegralAppOpenAd {
       adLoadCallback.onFailure(error);
       return;
     }
+
+    if (flagValueGetter.shouldRestrictMultipleAdLoads()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
     splashAdWrapper = MintegralFactory.createSplashAdWrapper();
     String watermark = adConfiguration.getWatermark();
     if(!TextUtils.isEmpty(watermark)) {

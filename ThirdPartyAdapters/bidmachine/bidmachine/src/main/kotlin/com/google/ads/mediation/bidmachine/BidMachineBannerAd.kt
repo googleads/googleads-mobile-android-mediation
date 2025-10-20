@@ -27,6 +27,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.MediationUtils
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
@@ -45,10 +46,9 @@ import io.bidmachine.utils.BMError
  */
 class BidMachineBannerAd
 internal constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-  private val bannerSize: BannerSize,
+  val bannerSize: BannerSize,
   private val bidResponse: String,
   private val watermark: String,
   private val placementId: String?,
@@ -57,19 +57,23 @@ internal constructor(
   @VisibleForTesting internal var bannerRequestBuilder = BannerRequest.Builder()
   private lateinit var adView: BannerView
 
-  fun loadWaterfallAd(bannerView: BannerView) {
+  fun loadWaterfallAd(bannerView: BannerView, context: Context) {
     val bannerRequest =
       bannerRequestBuilder.setSize(bannerSize).setPlacementId(placementId).setListener(this).build()
-    loadAdOnBannerView(bannerView, bannerRequest)
+    loadAdOnBannerView(bannerView, bannerRequest, context)
   }
 
-  fun loadRtbAd(bannerView: BannerView) {
+  fun loadRtbAd(bannerView: BannerView, context: Context) {
     val bannerRequest =
       bannerRequestBuilder.setSize(bannerSize).setBidPayload(bidResponse).setListener(this).build()
-    loadAdOnBannerView(bannerView, bannerRequest)
+    loadAdOnBannerView(bannerView, bannerRequest, context)
   }
 
-  private fun loadAdOnBannerView(bannerView: BannerView, bannerRequest: BannerRequest) {
+  private fun loadAdOnBannerView(
+    bannerView: BannerView,
+    bannerRequest: BannerRequest,
+    context: Context,
+  ) {
     adView = bannerView
     adView.setListener(this)
     bannerRequest.request(context)
@@ -131,25 +135,47 @@ internal constructor(
   }
 
   companion object {
-    private fun mapAdSizeToBidMachineBannerSize(adSize: AdSize): BannerSize? =
-      when (adSize) {
+    private fun mapAdSizeToBidMachineBannerSize(
+      context: Context,
+      adSize: AdSize,
+      isRtb: Boolean,
+    ): BannerSize? {
+      // List of banner ad sizes supported by BidMachine.
+      val supportedSizes = listOf(AdSize.BANNER, AdSize.MEDIUM_RECTANGLE, AdSize.LEADERBOARD)
+      // Find the supported size that is closest to the publisher-requested size.
+      val closestSupportedSize = MediationUtils.findClosestSize(context, adSize, supportedSizes)
+      return when (closestSupportedSize) {
         AdSize.BANNER -> BannerSize.Size_320x50
         AdSize.MEDIUM_RECTANGLE -> BannerSize.Size_300x250
         AdSize.LEADERBOARD -> BannerSize.Size_728x90
-        else -> null
+        else ->
+          if (isRtb) {
+            // In the case of RTB, if we cannot map the publisher-requested ad size to a
+            // BidMachine-supported ad size, just default to regular banner size and let BidMachine
+            // SDK load the ad using its rendering data (aka bid response).
+            BannerSize.Size_320x50
+          } else {
+            // In the case of Waterfall, if we cannot map the publisher-requested ad size to a
+            // BidMachine-supported ad size, return null here so that the load request fails.
+            null
+          }
       }
+    }
 
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
-      mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      mediationAdLoadCallback:
+        MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      // Indicates whether it is a Real-time Bidding (RTB) load request or a Waterfall load request.
+      isRtb: Boolean,
     ): Result<BidMachineBannerAd> {
-      val context = mediationBannerAdConfiguration.context
       val adSize = mediationBannerAdConfiguration.adSize
       val bidResponse = mediationBannerAdConfiguration.bidResponse
       val watermark = mediationBannerAdConfiguration.watermark
       val placementId = mediationBannerAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
 
-      val bannerSize = mapAdSizeToBidMachineBannerSize(adSize)
+      val bannerSize =
+        mapAdSizeToBidMachineBannerSize(mediationBannerAdConfiguration.context, adSize, isRtb)
       if (bannerSize == null) {
         val adError =
           AdError(ERROR_CODE_INVALID_AD_SIZE, ERROR_MSG_INVALID_AD_SIZE, ADAPTER_ERROR_DOMAIN)
@@ -158,14 +184,7 @@ internal constructor(
       }
 
       return Result.success(
-        BidMachineBannerAd(
-          context,
-          mediationAdLoadCallback,
-          bannerSize,
-          bidResponse,
-          watermark,
-          placementId,
-        )
+        BidMachineBannerAd(mediationAdLoadCallback, bannerSize, bidResponse, watermark, placementId)
       )
     }
   }

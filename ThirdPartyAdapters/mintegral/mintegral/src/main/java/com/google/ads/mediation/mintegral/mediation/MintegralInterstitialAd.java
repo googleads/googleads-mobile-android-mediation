@@ -15,41 +15,50 @@
 package com.google.ads.mediation.mintegral.mediation;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
+import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.mbridge.msdk.newinterstitial.out.NewInterstitialListener;
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener;
 import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.RewardInfo;
 
-
 public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeListener implements
     MediationInterstitialAd {
 
-  protected final MediationInterstitialAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
+
+  protected MintegralSlotIdentifier mintegralSlotIdentifier;
+
   protected MediationInterstitialAdCallback interstitialAdCallback;
 
-  public MintegralInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
-          callback) {
-    this.adConfiguration = adConfiguration;
+  protected final boolean muted;
+
+  protected final FlagValueGetter flagValueGetter;
+
+  public MintegralInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback,
+      FlagValueGetter flagValueGetter) {
+    muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     this.adLoadCallback = callback;
+    this.flagValueGetter = flagValueGetter;
   }
 
-  /**
-   * Loads a Mintegral Interstitial ad.
-   */
-  public abstract void loadAd();
-
+  /** Loads a Mintegral Interstitial ad. */
+  public abstract void loadAd(MediationInterstitialAdConfiguration adConfiguration);
 
   @Override
   public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {
@@ -64,6 +73,9 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
   @Override
   public void onResourceLoadFailWithCode(MBridgeIds mBridgeIds, int errorCode,
       String errorMessage) {
+    if (flagValueGetter.shouldRestrictMultipleAdLoads() && mintegralSlotIdentifier != null) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     adLoadCallback.onFailure(error);
@@ -71,6 +83,9 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
 
   @Override
   public void onAdShow(MBridgeIds mBridgeIds) {
+    if (flagValueGetter.shouldRestrictMultipleAdLoads() && mintegralSlotIdentifier != null) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdOpened();
       interstitialAdCallback.reportAdImpression();
@@ -86,6 +101,9 @@ public abstract class MintegralInterstitialAd extends NewInterstitialWithCodeLis
 
   @Override
   public void onShowFailWithCode(MBridgeIds mBridgeIds, int errorCode, String errorMessage) {
+    if (flagValueGetter.shouldRestrictMultipleAdLoads() && mintegralSlotIdentifier != null) {
+      loadedSlotIdentifiers.remove(mintegralSlotIdentifier);
+    }
     AdError error = MintegralConstants.createSdkError(errorCode, errorMessage);
     Log.w(TAG, error.toString());
     if (interstitialAdCallback != null) {

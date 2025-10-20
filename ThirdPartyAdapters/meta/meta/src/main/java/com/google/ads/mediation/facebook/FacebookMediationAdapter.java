@@ -245,17 +245,16 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
           mediationAdLoadCallback) {
-    banner = new FacebookRtbBannerAd(adConfiguration, mediationAdLoadCallback, metaFactory);
-    banner.render();
+    banner = new FacebookRtbBannerAd(mediationAdLoadCallback, metaFactory);
+    banner.render(adConfiguration);
   }
 
   @Override
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback) {
-    interstitial =
-        new FacebookRtbInterstitialAd(adConfiguration, mediationAdLoadCallback, metaFactory);
-    interstitial.render();
+    interstitial = new FacebookRtbInterstitialAd(mediationAdLoadCallback, metaFactory);
+    interstitial.render(adConfiguration);
   }
 
   @Override
@@ -263,28 +262,27 @@ public class FacebookMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new FacebookRewardedAd(mediationRewardedAdConfiguration, mediationAdLoadCallback, metaFactory);
-    rewardedAd.render();
+    rewardedAd = new FacebookRewardedAd(mediationAdLoadCallback, metaFactory);
+    rewardedAd.render(mediationRewardedAdConfiguration);
   }
 
   @Override
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
-    nativeAd =
-        new FacebookRtbNativeAd(
-            mediationNativeAdConfiguration, mediationAdLoadCallback, metaFactory);
-    nativeAd.render();
+    nativeAd = new FacebookRtbNativeAd(mediationAdLoadCallback, metaFactory);
+    nativeAd.render(mediationNativeAdConfiguration);
   }
 
   @Override
   public void loadRtbRewardedInterstitialAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
-    rewardedInterstitialAd = new FacebookRewardedInterstitialAd(mediationRewardedAdConfiguration,
-        mediationAdLoadCallback, metaFactory);
-    rewardedInterstitialAd.render();
+      @NonNull MediationRewardedAdConfiguration mediationAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
+              mediationAdLoadCallback) {
+    rewardedInterstitialAd =
+        new FacebookRewardedInterstitialAd(mediationAdLoadCallback, metaFactory);
+    rewardedInterstitialAd.render(mediationAdConfiguration);
   }
 
   /**

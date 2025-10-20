@@ -55,14 +55,14 @@ class VerveRewardedAdTest {
 
   @Test
   fun loadAd_invokesHyBidLoad() {
-    verveRewardedAd.loadAd()
+    verveRewardedAd.loadAd(context)
 
     verify(mockHyBidRewardedAd).prepareAd(eq(TEST_BID_RESPONSE))
   }
 
   @Test
   fun showAd_invokesHyBidShow() {
-    verveRewardedAd.loadAd()
+    verveRewardedAd.loadAd(context)
 
     verveRewardedAd.showAd(context)
 

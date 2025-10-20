@@ -29,6 +29,7 @@ import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INITIALIZATI
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.getAdapterVersion
+import com.google.ads.mediation.vungle.renderers.VungleBannerAd
 import com.google.ads.mediation.vungle.rtb.VungleRtbBannerAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -256,6 +257,172 @@ class VungleMediationAdapterTest {
     val appIdCaptor = argumentCaptor<String>()
     verify(mockVungleInitializer, times(1)).initialize(appIdCaptor.capture(), any(), any())
     assertThat(appIdCaptor.firstValue).isAnyOf(TEST_APP_ID_1, TEST_APP_ID_2)
+  }
+
+  @Test
+  fun loadBannerAd_updatesCoppaStatus() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadBannerAd(createMediationBannerAdConfiguration(context = context), mock())
+    }
+
+    verify(mockVungleInitializer).updateCoppaStatus(any())
+  }
+
+  @Test
+  fun loadBannerAd_loadsLiftoffBannerAd() {
+    stubVungleInitializerToSucceed()
+    val requestAdSize: AdSize = BANNER
+    val vungleBannerAd =
+      mock<VungleBannerView> {
+        on { adConfig } doReturn vungleAdConfig
+        on { getAdViewSize() } doReturn VungleAdSize.BANNER
+      }
+    whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadBannerAd(
+        createMediationBannerAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          adSize = requestAdSize,
+        ),
+        mock(),
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleFactory).createBannerAd(context, TEST_PLACEMENT_ID, VungleAdSize.BANNER)
+    verify(vungleBannerAd).load(null)
+    val bannerAdCaptor = argumentCaptor<VungleBannerAd>()
+    verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
+    val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
+    assertThat(bannerAdView.getAdViewSize().width).isEqualTo(BANNER.getWidthInPixels(context))
+    assertThat(bannerAdView.getAdViewSize().height).isEqualTo(BANNER.getHeightInPixels(context))
+  }
+
+  @Test
+  fun loadBannerAd_forAdaptiveBanner_loadsLiftoffBannerAd() {
+    stubVungleInitializerToSucceed()
+    val requestAdaptiveAdSize: AdSize = AdSize.getInlineAdaptiveBannerAdSize(400, 240)
+    val vungleAdSize =
+      VungleAdSize.getValidAdSizeFromSize(
+        requestAdaptiveAdSize.width,
+        requestAdaptiveAdSize.height,
+        TEST_PLACEMENT_ID,
+      )
+    val vungleBannerAd =
+      mock<VungleBannerView> {
+        on { adConfig } doReturn vungleAdConfig
+        on { getAdViewSize() } doReturn vungleAdSize
+      }
+    whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadBannerAd(
+        createMediationBannerAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          adSize = requestAdaptiveAdSize,
+        ),
+        mock(),
+      )
+    }
+
+    verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
+    verify(vungleBannerAd).load(null)
+    val bannerAdCaptor = argumentCaptor<VungleBannerAd>()
+    verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
+    val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
+    assertThat(bannerAdView.getAdViewSize().width)
+      .isEqualTo(requestAdaptiveAdSize.getWidthInPixels(context))
+    assertThat(bannerAdView.getAdViewSize().height)
+      .isEqualTo(requestAdaptiveAdSize.getHeightInPixels(context))
+  }
+
+  @Test
+  fun loadBannerAd_withoutAppId_callsLoadFailure() {
+    val bannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+
+    adapter.loadBannerAd(
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+      ),
+      bannerAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load bidding banner ad from Liftoff Monetize. " +
+          "Missing or invalid App ID configured for this ad source instance " +
+          "in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadBannerAd_withoutPlacementId_callsLoadFailure() {
+    val bannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+
+    adapter.loadBannerAd(
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1),
+      ),
+      bannerAdLoadCallback,
+    )
+
+    val expectedAdError =
+      AdError(
+        ERROR_INVALID_SERVER_PARAMETERS,
+        "Failed to load bidding banner ad from Liftoff Monetize. " +
+          "Missing or Invalid Placement ID configured for this ad source instance " +
+          "in the AdMob or Ad Manager UI.",
+        ERROR_DOMAIN,
+      )
+    verify(bannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadBannerAd_onLiftoffSdkInitializationError_callsLoadFailure() {
+    val liftoffSdkInitError =
+      AdError(
+        SDKError.Reason.UNKNOWN_ERROR_VALUE,
+        "Liftoff Monetize SDK initialization failed.",
+        VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
+      )
+    doAnswer { invocation ->
+        val args: Array<Any> = invocation.arguments
+        (args[2] as VungleInitializationListener).onInitializeError(liftoffSdkInitError)
+      }
+      .whenever(mockVungleInitializer)
+      .initialize(any(), any(), any())
+    val bannerAdLoadCallback =
+      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadBannerAd(
+        createMediationBannerAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        ),
+        bannerAdLoadCallback,
+      )
+    }
+
+    verify(bannerAdLoadCallback).onFailure(liftoffSdkInitError)
   }
 
   @Test

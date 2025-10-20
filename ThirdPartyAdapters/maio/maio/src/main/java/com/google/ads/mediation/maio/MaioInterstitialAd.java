@@ -29,20 +29,17 @@ import jp.maio.sdk.android.v2.request.MaioRequest;
  */
 public class MaioInterstitialAd implements MediationInterstitialAd, IInterstitialShowCallback {
 
-  private final MediationInterstitialAdConfiguration mediationAdConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
   private Interstitial maioInterstitial;
 
   public MaioInterstitialAd(
-      MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    mediationAdConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = callback;
   }
 
-  public void loadAd() {
+  public void loadAd(MediationInterstitialAdConfiguration mediationAdConfiguration) {
     Context context = mediationAdConfiguration.getContext();
     Bundle serverParameters = mediationAdConfiguration.getServerParameters();
 

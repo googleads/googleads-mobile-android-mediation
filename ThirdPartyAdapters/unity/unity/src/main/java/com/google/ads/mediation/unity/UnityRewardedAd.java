@@ -31,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -52,8 +53,6 @@ import java.util.UUID;
  * <p><b>Note:</b> This class is not thread-safe.
  */
 public class UnityRewardedAd implements MediationRewardedAd {
-
-  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
   /**
    * Mediation rewarded video ad listener used to forward ad load status to the Google Mobile Ads
@@ -77,6 +76,8 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
   /** Object ID used to track loaded/shown ads. */
   @Nullable private String objectId;
+
+  private final String watermark;
 
   /** IUnityAdsLoadListener instance. */
   @VisibleForTesting
@@ -107,15 +108,14 @@ public class UnityRewardedAd implements MediationRewardedAd {
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
       @NonNull UnityInitializer unityInitializer,
       @NonNull UnityAdsLoader unityAdsLoader) {
-    this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
+    watermark = mediationRewardedAdConfiguration.getWatermark();
     this.mediationAdLoadCallback = callback;
     this.unityInitializer = unityInitializer;
     this.unityAdsLoader = unityAdsLoader;
   }
 
   /** Loads a rewarded ad. */
-  public void loadAd() {
-
+  public void loadAd(MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     Context context = mediationRewardedAdConfiguration.getContext();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
     final String gameId = serverParameters.getString(UnityMediationAdapter.KEY_GAME_ID);
@@ -156,7 +156,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
     UnityAdsShowOptions unityAdsShowOptions =
         unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
-    unityAdsShowOptions.set(KEY_WATERMARK, mediationRewardedAdConfiguration.getWatermark());
+    unityAdsShowOptions.set(KEY_WATERMARK, watermark);
 
     // UnityAds can handle a null placement ID so show is always called here.
     unityAdsLoader.show(activity, placementId, unityAdsShowOptions, unityShowListener);
@@ -237,7 +237,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
       Log.d(TAG, logMessage);
       // TODO(b/280861464): Add setCoppa test when loading ad
       UnityAdsAdapterUtils.setCoppa(
-          mediationRewardedAdConfiguration.taggedForChildDirectedTreatment(), context);
+          MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
 
       objectId = UUID.randomUUID().toString();
       UnityAdsLoadOptions unityAdsLoadOptions =

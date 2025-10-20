@@ -164,7 +164,7 @@ class VerveMediationAdapter : RtbAdapter() {
   ) {
     VerveBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      bannerAd.loadAd(mediationBannerAdConfiguration.context)
     }
   }
 
@@ -174,7 +174,7 @@ class VerveMediationAdapter : RtbAdapter() {
   ) {
     VerveInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadAd()
+      interstitialAd.loadAd(mediationInterstitialAdConfiguration.context)
     }
   }
 
@@ -184,7 +184,7 @@ class VerveMediationAdapter : RtbAdapter() {
   ) {
     VerveRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd()
+      rewardedAd.loadAd(mediationRewardedAdConfiguration.context)
     }
   }
 
@@ -194,7 +194,7 @@ class VerveMediationAdapter : RtbAdapter() {
   ) {
     VerveRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
-      rewardedInterstitialAd.loadAd()
+      rewardedInterstitialAd.loadAd(mediationRewardedAdConfiguration.context)
     }
   }
 

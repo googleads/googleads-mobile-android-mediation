@@ -1,7 +1,24 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 4.16.3.0
+- Verified compatibility with Unity Ads SDK 4.16.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Unity Ads SDK version 4.16.3.
+
+#### Version 4.16.2.0
 - Added format parameter when getting signal token from Unity Ads SDK.
+- Removed old banner API implementation. Note: New banner API implementation
+  already exists in the adapter and GMA SDK will use that.
+- Added an error code to identify show failure due to timeout.
+- Removed class-level references to `Context` objects to help with memory leak
+  issues.
+- Verified compatibility with Unity Ads SDK 4.16.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.6.0.
+- Unity Ads SDK version 4.16.2.
 
 #### Version 4.16.1.0
 - Verified compatibility with Unity Ads SDK 4.16.1.

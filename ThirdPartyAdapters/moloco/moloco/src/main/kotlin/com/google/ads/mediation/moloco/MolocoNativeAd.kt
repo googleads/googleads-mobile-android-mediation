@@ -139,7 +139,7 @@ private constructor(
     }
   }
 
-  fun destroy() {
+  override fun destroy() {
     nativeAd?.destroy()
     nativeAd = null
   }

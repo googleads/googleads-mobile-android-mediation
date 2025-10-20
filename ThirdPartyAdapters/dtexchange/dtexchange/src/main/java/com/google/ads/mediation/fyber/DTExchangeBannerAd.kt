@@ -22,15 +22,14 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
  * DTExchange SDK.
  */
 class DTExchangeBannerAd(
-  private val mediationBannerAdConfiguration: MediationBannerAdConfiguration,
   private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
 ) : MediationBannerAd, InneractiveAdSpot.RequestListener, InneractiveAdViewEventsListener {
   private lateinit var adSpot: InneractiveAdSpot
   private lateinit var wrapperView: RelativeLayout
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(mediationBannerAdConfiguration: MediationBannerAdConfiguration) {
     InneractiveAdManager.setMediationName(FyberMediationAdapter.MEDIATOR_NAME)
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString())
 

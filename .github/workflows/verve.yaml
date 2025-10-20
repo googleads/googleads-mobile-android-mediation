@@ -42,5 +42,5 @@ jobs:
       - name: "Unit Tests"
         run: |
           cd ThirdPartyAdapters/verve/
-          gradle wrapper
+          gradle wrapper --gradle-version 8.5
           ./gradlew test --scan

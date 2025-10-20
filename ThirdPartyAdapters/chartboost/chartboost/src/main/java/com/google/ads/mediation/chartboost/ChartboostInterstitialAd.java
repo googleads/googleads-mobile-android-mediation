@@ -44,22 +44,18 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 public class ChartboostInterstitialAd implements MediationInterstitialAd, InterstitialCallback {
 
   private Interstitial chartboostInterstitialAd;
-
-  private final MediationInterstitialAdConfiguration interstitialAdConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
   private MediationInterstitialAdCallback interstitialAdCallback;
 
   public ChartboostInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback) {
-    this.interstitialAdConfiguration = mediationInterstitialAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
   }
 
-  public void loadAd() {
+  public void loadAd(MediationInterstitialAdConfiguration interstitialAdConfiguration) {
     final Context context = interstitialAdConfiguration.getContext();
     Bundle serverParameters = interstitialAdConfiguration.getServerParameters();
 

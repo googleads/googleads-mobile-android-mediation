@@ -49,13 +49,7 @@ class InMobiRtbRewardedAdTest {
     adMetaInfo = AdMetaInfo("fake", null)
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationRewardedAdCallback)
 
-    rtbRewardedAd =
-      InMobiRtbRewardedAd(
-        rewardedAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory,
-      )
+    rtbRewardedAd = InMobiRtbRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test
@@ -68,7 +62,7 @@ class InMobiRtbRewardedAdTest {
       bundleOf(KEY_PLACEMENT_ID to "67890")
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    rtbRewardedAd.loadAd()
+    rtbRewardedAd.loadAd(rewardedAdConfiguration)
     // mimic an ad load
     rtbRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     rtbRewardedAd.showAd(context)
@@ -89,7 +83,7 @@ class InMobiRtbRewardedAdTest {
       bundleOf(KEY_PLACEMENT_ID to "67890")
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    rtbRewardedAd.loadAd()
+    rtbRewardedAd.loadAd(rewardedAdConfiguration)
     rtbRewardedAd.showAd(context)
 
     verify(inMobiRewardedWrapper).show()

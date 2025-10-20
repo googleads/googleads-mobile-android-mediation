@@ -44,15 +44,19 @@ class MintegralInterstitialAdTest {
     mock {
       on { onSuccess(any()) } doReturn mockAdCallback
     }
+  private val adConfiguration =
+    createMediationInterstitialAdConfiguration(
+      context = activity,
+      serverParameters = serverParameters,
+    )
+  private val flagValueGetter: FlagValueGetter = mock {
+    on { shouldRestrictMultipleAdLoads() } doReturn false
+  }
 
   @Before
   fun setUp() {
-    val adConfiguration =
-      createMediationInterstitialAdConfiguration(
-        context = activity,
-        serverParameters = serverParameters
-      )
-    mintegralInterstitialAd = MintegralWaterfallInterstitialAd(adConfiguration, mockAdLoadCallback)
+    mintegralInterstitialAd =
+      MintegralWaterfallInterstitialAd(adConfiguration, mockAdLoadCallback, flagValueGetter)
   }
 
   @Test
@@ -91,7 +95,7 @@ class MintegralInterstitialAdTest {
     mintegralInterstitialAd.onShowFailWithCode(
       /* mBridgeIds= */ null,
       ERROR_MINTEGRAL_SDK,
-      TEST_ERROR_MESSAGE
+      TEST_ERROR_MESSAGE,
     )
 
     val expectedError = AdError(ERROR_MINTEGRAL_SDK, TEST_ERROR_MESSAGE, MINTEGRAL_SDK_ERROR_DOMAIN)
@@ -103,7 +107,7 @@ class MintegralInterstitialAdTest {
     Mockito.mockStatic(MintegralFactory::class.java).use {
       whenever(MintegralFactory.createInterstitialHandler()) doReturn
         mockMintegralNewInterstitialAdWrapper
-      mintegralInterstitialAd.loadAd()
+      mintegralInterstitialAd.loadAd(adConfiguration)
 
       mintegralInterstitialAd.showAd(activity)
 

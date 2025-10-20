@@ -59,7 +59,6 @@ import java.util.Map;
  */
 public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAdListener {
 
-  private final MediationNativeAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
   private MediationNativeAdCallback nativeAdCallback;
@@ -71,15 +70,13 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
   private final VungleFactory vungleFactory;
 
   public VungleRtbNativeAd(
-      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
       VungleFactory vungleFactory) {
-    this.adConfiguration = mediationNativeAdConfiguration;
     this.adLoadCallback = callback;
     this.vungleFactory = vungleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationNativeAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
     NativeAdOptions nativeAdOptions = adConfiguration.getNativeAdOptions();
     final Context context = adConfiguration.getContext();

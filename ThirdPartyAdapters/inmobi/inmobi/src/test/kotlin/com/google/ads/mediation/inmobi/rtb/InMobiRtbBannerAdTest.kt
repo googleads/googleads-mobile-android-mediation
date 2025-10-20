@@ -10,7 +10,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
@@ -26,7 +25,6 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbBannerAdTest {
 
-  private val bannerAdConfiguration = mock<MediationBannerAdConfiguration>()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
@@ -43,13 +41,7 @@ class InMobiRtbBannerAdTest {
     adMetaInfo = AdMetaInfo("fake", null)
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationBannerAdCallback)
 
-    rtbBannerAd =
-      InMobiRtbBannerAd(
-        bannerAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory
-      )
+    rtbBannerAd = InMobiRtbBannerAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test

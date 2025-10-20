@@ -33,7 +33,6 @@ import net.pubnative.lite.sdk.rewarded.HyBidRewardedAd
  */
 class VerveRewardedAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
@@ -41,7 +40,7 @@ private constructor(
   private var hyBidRewardedAd: HyBidRewardedAd? = null
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     hyBidRewardedAd = VerveSdkFactory.delegate.createHyBidRewardedAd(context, this)
     hyBidRewardedAd?.prepareAd(bidResponse)
   }
@@ -100,10 +99,8 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
     ): Result<VerveRewardedAd> {
-      val context = mediationRewardedAdConfiguration.context
       val bidResponse = mediationRewardedAdConfiguration.bidResponse
-
-      return Result.success(VerveRewardedAd(context, mediationAdLoadCallback, bidResponse))
+      return Result.success(VerveRewardedAd(mediationAdLoadCallback, bidResponse))
     }
   }
 }

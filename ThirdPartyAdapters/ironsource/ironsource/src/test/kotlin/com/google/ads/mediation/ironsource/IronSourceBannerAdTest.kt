@@ -225,11 +225,11 @@ class IronSourceBannerAdTest {
 
   private fun loadBannerAd(): IronSourceBannerAdListener {
     val mediationAdConfiguration = createMediationBannerAdConfiguration(activity)
-    ironSourceBannerAd = IronSourceBannerAd(mediationAdConfiguration, bannerAdLoadCallback)
+    ironSourceBannerAd = IronSourceBannerAd(bannerAdLoadCallback)
     val mockIronSourceBannerLayout = mock<ISDemandOnlyBannerLayout>()
     whenever(createBannerForDemandOnly(any(), any())) doReturn mockIronSourceBannerLayout
     val argumentCaptor = argumentCaptor<IronSourceBannerAdListener>()
-    ironSourceBannerAd.loadAd()
+    ironSourceBannerAd.loadAd(mediationAdConfiguration)
     verify(mockIronSourceBannerLayout).bannerDemandOnlyListener = argumentCaptor.capture()
     return argumentCaptor.firstValue
   }

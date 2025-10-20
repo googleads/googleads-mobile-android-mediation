@@ -61,17 +61,15 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
   private boolean enableMultipleAdLoading = false;
 
   protected AppLovinWaterfallRewardedRenderer(
-      @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory,
       @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
-    super(
-        adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
+    super(callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationRewardedAdConfiguration adConfiguration) {
     final Context context = adConfiguration.getContext();
     final Bundle serverParameters = adConfiguration.getServerParameters();
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
@@ -87,6 +85,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
+    networkExtras = adConfiguration.getMediationExtras();
 
     appLovinInitializer.initialize(
         context,
@@ -134,9 +133,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
 
   @Override
   public void showAd(@NonNull Context context) {
-    appLovinSdk
-        .getSettings()
-        .setMuted(AppLovinUtils.shouldMuteAudio(adConfiguration.getMediationExtras()));
+    appLovinSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     if (zoneId != null) {
       String logMessage = String.format("Showing rewarded video for zone '%s'", zoneId);
@@ -168,6 +165,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     incentivizedAdsMap.remove(zoneId);
     super.failedToReceiveAd(code);
   }
+
   // endregion
 
   // region AppLovinAdDisplayListener implementation.

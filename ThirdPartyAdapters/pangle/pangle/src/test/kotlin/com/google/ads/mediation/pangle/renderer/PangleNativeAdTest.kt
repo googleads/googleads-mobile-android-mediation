@@ -132,7 +132,7 @@ class PangleNativeAdTest {
     ) // ... without serverParameters send in the Bundle
     initializeNativeAd()
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
@@ -150,7 +150,7 @@ class PangleNativeAdTest {
     // serverParameters and a bidResponse.
     initializeNativeAd()
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
@@ -165,7 +165,7 @@ class PangleNativeAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeNativeAd(bidResponse = BID_RESPONSE)
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     verify(pagNativeRequest).setAdString(BID_RESPONSE)
     verify(pagNativeRequest).setExtraInfo(extraInfoCaptor.capture())
@@ -184,7 +184,7 @@ class PangleNativeAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeNativeAd(bidResponse = "", watermark = "")
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     verify(pagNativeRequest).setAdString("")
     // Verify that setExtraInfo is not called when watermark is empty.
@@ -198,7 +198,7 @@ class PangleNativeAdTest {
     stubPangleNativeAdLoadToSucceed()
     initializeNativeAd()
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     with(nativeAd) {
       assertThat(headline).isEqualTo(PANGLE_NATIVE_AD_TITLE)
@@ -229,7 +229,7 @@ class PangleNativeAdTest {
       .loadNativeAd(any(), any(), any())
     initializeNativeAd()
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -244,7 +244,7 @@ class PangleNativeAdTest {
     mockPangleSdkInitializationFailure(pangleInitializer)
     initializeNativeAd()
 
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -385,13 +385,7 @@ class PangleNativeAdTest {
       )
 
     nativeAd =
-      PangleNativeAd(
-        mediationNativeAdConfig,
-        mediationAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-        pangleFactory,
-      )
+      PangleNativeAd(mediationAdLoadCallback, pangleInitializer, pangleSdkWrapper, pangleFactory)
   }
 
   /** Mock a Pangle native ad load. */
@@ -399,7 +393,7 @@ class PangleNativeAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     stubPangleNativeAdLoadToSucceed()
     initializeNativeAd()
-    nativeAd.render()
+    nativeAd.render(mediationNativeAdConfig)
   }
 
   /** Stub pangleSdkWrapper.loadNativeAd() to succeed. */

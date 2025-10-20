@@ -1,7 +1,6 @@
 package com.google.ads.mediation.inmobi.rtb;
 
 import android.content.Context;
-import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
@@ -18,34 +17,33 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
 
   public InMobiRtbInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationInterstitialAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration) {
     final Context context = mediationInterstitialAdConfiguration.getContext();
-    final Bundle serverParameters = mediationInterstitialAdConfiguration.getServerParameters();
-
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-
-    createAndLoadInterstitialAd(context, placementId);
+    createAndLoadInterstitialAd(context, mediationInterstitialAdConfiguration);
   }
 
   @Override
-  protected void internalLoadAd(InMobiInterstitialWrapper inMobiInterstitialWrapper) {
+  protected void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiInterstitialWrapper,
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationInterstitialAdConfiguration.getContext(),
-            mediationInterstitialAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
+        InMobiExtrasBuilder.build(
+            mediationInterstitialAdConfiguration.getContext(),
+            mediationInterstitialAdConfiguration.getMediationExtras(),
+            InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
 

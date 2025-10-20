@@ -1,5 +1,9 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 16.9.91.2 (In progress)
+- Removed class-level references to `Context` objects to help with memory leak
+  issues.
+
 #### Version 16.9.91.1
 - Removed size check from the adapter for banner RTB ads.
 

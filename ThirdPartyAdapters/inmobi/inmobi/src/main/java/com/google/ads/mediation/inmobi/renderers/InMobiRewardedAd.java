@@ -20,6 +20,7 @@ import static com.google.ads.mediation.inmobi.InMobiConstants.WATERMARK_ALPHA;
 import static com.google.ads.mediation.inmobi.InMobiMediationAdapter.TAG;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -45,7 +46,6 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
 
   private InMobiInterstitialWrapper inMobiRewardedAdWrapper;
 
-  protected final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
   protected final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
   protected InMobiInitializer inMobiInitializer;
@@ -53,25 +53,26 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
   private InMobiAdFactory inMobiAdFactory;
 
   public InMobiRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd,
           MediationRewardedAdCallback> mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
-    this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.inMobiInitializer = inMobiInitializer;
     this.inMobiAdFactory = inMobiAdFactory;
   }
 
   /** Invokes the third-party method for loading the ad. */
-  protected abstract void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper);
+  protected abstract void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiRewardedAdWrapper,
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration);
 
-  public abstract void loadAd();
+  public abstract void loadAd(
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration);
 
   // region MediationRewardedAd implementation.
   @Override
-  public void showAd(Context context) {
+  public void showAd(@NonNull Context context) {
     if (!inMobiRewardedAdWrapper.isReady()) {
       AdError error = InMobiConstants.createAdapterError(ERROR_AD_NOT_READY,
           "InMobi rewarded ad is not yet ready to be shown.");
@@ -90,10 +91,10 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
 
   // region Rewarded adapter utility classes.
   protected void createAndLoadRewardAd(
-      Context context,
-      long placementId,
-      final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          mediationAdLoadCallback) {
+      @NonNull Context context,
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
+    final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
+    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
     inMobiRewardedAdWrapper = inMobiAdFactory.createInMobiInterstitialWrapper(context, placementId, InMobiRewardedAd.this);
 
     // Set the COPPA value in InMobi SDK.
@@ -107,7 +108,7 @@ public abstract class InMobiRewardedAd extends InterstitialAdEventListener
       inMobiRewardedAdWrapper.setWatermarkData(new WatermarkData(watermark, WATERMARK_ALPHA));
     }
 
-    internalLoadAd(inMobiRewardedAdWrapper);
+    internalLoadAd(inMobiRewardedAdWrapper, mediationRewardedAdConfiguration);
   }
   // endregion
 

@@ -52,28 +52,19 @@ public class IronSourceRtbInterstitialAd
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       mediationAdLoadCallback;
 
-  private final String instanceID;
-
-  private final String bidToken;
-
   private InterstitialAd ad = null;
 
-  private final String watermark;
-
   public IronSourceRtbInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration interstitialAdConfig,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationInterstitialAdLoadCallback) {
-    Bundle serverParameters = interstitialAdConfig.getServerParameters();
-    instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
-    bidToken = interstitialAdConfig.getBidResponse();
-    watermark = interstitialAdConfig.getWatermark();
     mediationAdLoadCallback = mediationInterstitialAdLoadCallback;
   }
 
   /** Attempts to load an ironSource @{link InterstitialAd} using a Bid token. */
-  public void loadRtbAd() {
+  public void loadRtbAd(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
+    Bundle serverParameters = adConfiguration.getServerParameters();
+    String instanceID = serverParameters.getString(KEY_INSTANCE_ID, "");
     if (TextUtils.isEmpty(instanceID)) {
       AdError loadError =
           IronSourceAdapterUtils.buildAdErrorAdapterDomain(
@@ -82,9 +73,11 @@ public class IronSourceRtbInterstitialAd
       return;
     }
 
+    String watermark = adConfiguration.getWatermark();
     Bundle watermarkBundle = new Bundle();
     watermarkBundle.putString(WATERMARK, watermark);
 
+    String bidToken = adConfiguration.getBidResponse();
     InterstitialAdRequest adRequest =
         new InterstitialAdRequest.Builder(instanceID, bidToken)
             .withExtraParams(watermarkBundle)
@@ -95,7 +88,6 @@ public class IronSourceRtbInterstitialAd
   /** Attempts to show the loaded @{link InterstitialAd} bidding ad. */
   @Override
   public void showAd(@NonNull Context context) {
-
     if (ad == null) {
       AdError contextError =
           IronSourceAdapterUtils.buildAdErrorAdapterDomain(
@@ -105,6 +97,7 @@ public class IronSourceRtbInterstitialAd
     }
 
     try {
+      Log.d(TAG, "Showing IronSource interstitial ad");
       Activity activity = (Activity) context;
       ad.setListener(this);
       ad.show(activity);

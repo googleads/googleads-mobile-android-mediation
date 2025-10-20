@@ -77,6 +77,8 @@ class PangleBannerAdTest {
     serverParameters.putString(PangleConstants.APP_ID, APP_ID_VALUE)
 
     whenever(mediationAdLoadCallback.onSuccess(any())) doReturn bannerAdCallback
+
+    initializeBannerAd()
   }
 
   @Test
@@ -88,7 +90,7 @@ class PangleBannerAdTest {
     initializeBannerAd()
 
     // When render() is called.
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALIS_SERVER_PARAMETERS code.
@@ -107,7 +109,7 @@ class PangleBannerAdTest {
     initializeBannerAd()
 
     // When render() is called.
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
@@ -123,7 +125,7 @@ class PangleBannerAdTest {
     // Initialize banner ad with BID_RESPONSE as bid response.
     initializeBannerAd()
 
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     verify(pagBannerRequest).setAdString(BID_RESPONSE)
     verify(pagBannerRequest).setExtraInfo(extraInfoCaptor.capture())
@@ -145,7 +147,7 @@ class PangleBannerAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeBannerAd(bidResponse = "", watermark = "")
 
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     verify(pagBannerRequest).setAdString("")
     // Verify that setExtraInfo is not called when watermark is empty.
@@ -168,7 +170,7 @@ class PangleBannerAdTest {
       .loadBannerAd(any(), any(), any())
     initializeBannerAd()
 
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     verify(pagBannerAd).setAdInteractionListener(any())
     assertThat(bannerAd.wrappedAdView.childCount).isEqualTo(1)
@@ -191,7 +193,7 @@ class PangleBannerAdTest {
       .loadBannerAd(any(), any(), any())
     initializeBannerAd()
 
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -206,7 +208,7 @@ class PangleBannerAdTest {
     mockPangleSdkInitializationFailure(pangleInitializer)
     initializeBannerAd()
 
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -258,7 +260,7 @@ class PangleBannerAdTest {
       .loadBannerAd(any(), any(), any())
     initializeBannerAd()
     // Load a Pangle banner ad.
-    bannerAd.render()
+    bannerAd.render(mediationBannerAdConfig)
   }
 
   private fun initializeBannerAd(
@@ -284,13 +286,7 @@ class PangleBannerAdTest {
         watermark,
       )
     bannerAd =
-      PangleBannerAd(
-        mediationBannerAdConfig,
-        mediationAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-        pangleFactory,
-      )
+      PangleBannerAd(mediationAdLoadCallback, pangleInitializer, pangleSdkWrapper, pangleFactory)
   }
 
   companion object {

@@ -328,8 +328,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     bannerAd =
         AppLovinBannerAd.newInstance(
-            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
-    bannerAd.loadAd();
+            callback, appLovinInitializer, appLovinAdFactory);
+    bannerAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -345,8 +345,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     waterfallInterstitialAd =
         new AppLovinWaterfallInterstitialAd(
-            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
-    waterfallInterstitialAd.loadAd();
+            callback, appLovinInitializer, appLovinAdFactory);
+    waterfallInterstitialAd.loadAd(adConfiguration);
   }
 
   @Override
@@ -362,8 +362,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     rtbInterstitialRenderer =
         new AppLovinRtbInterstitialRenderer(
-            adConfiguration, callback, appLovinInitializer, appLovinAdFactory);
-    rtbInterstitialRenderer.loadAd();
+            callback, appLovinInitializer, appLovinAdFactory);
+    rtbInterstitialRenderer.loadAd(adConfiguration);
   }
 
   @Override
@@ -375,8 +375,8 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     }
 
     rewardedRenderer =
-        new AppLovinWaterfallRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
-    rewardedRenderer.loadAd();
+        new AppLovinWaterfallRewardedRenderer(callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
+    rewardedRenderer.loadAd(adConfiguration);
   }
 
   @Override
@@ -388,7 +388,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     }
 
     rtbRewardedRenderer =
-        new AppLovinRtbRewardedRenderer(adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
-    rtbRewardedRenderer.loadAd();
+        new AppLovinRtbRewardedRenderer(callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
+    rtbRewardedRenderer.loadAd(adConfiguration);
   }
 }

@@ -41,7 +41,6 @@ import kotlin.math.roundToInt
  */
 class LineBannerAd
 private constructor(
-  private val context: Context,
   private val appId: String,
   private val slotId: String?,
   private val bidResponse: String,
@@ -55,7 +54,7 @@ private constructor(
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
   private lateinit var adView: FiveAdCustomLayout
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     if (slotId.isNullOrEmpty()) {
       val adError =
         AdError(
@@ -81,7 +80,7 @@ private constructor(
     adView.loadAdAsync()
   }
 
-  fun loadRtbAd() {
+  fun loadRtbAd(context: Context) {
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
     val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
@@ -114,14 +113,14 @@ private constructor(
     val loadedAd = ad as? FiveAdCustomLayout
     loadedAd?.let {
       // Transforming ad size from pixels to dips
-      val density = context.resources.displayMetrics.density
+      val density = it.context.resources.displayMetrics.density
       val returnedAdSize =
         AdSize((it.logicalWidth / density).roundToInt(), (it.logicalHeight / density).roundToInt())
       Log.d(
         TAG,
         "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}",
       )
-      val closestSize = MediationUtils.findClosestSize(context, adSize, listOf(returnedAdSize))
+      val closestSize = MediationUtils.findClosestSize(it.context, adSize, listOf(returnedAdSize))
       if (closestSize == null) {
         val logMessage =
           ERROR_MSG_MISMATCH_AD_SIZE.format(
@@ -216,7 +215,6 @@ private constructor(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
       mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
     ): Result<LineBannerAd> {
-      val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
       val adSize = mediationBannerAdConfiguration.adSize
 
@@ -238,7 +236,6 @@ private constructor(
 
       return Result.success(
         LineBannerAd(
-          context,
           appId,
           slotId,
           bidResponse,

@@ -1,7 +1,6 @@
 package com.google.ads.mediation.inmobi.rtb;
 
 import android.content.Context;
-import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
@@ -19,21 +18,19 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 public class InMobiRtbBannerAd extends InMobiBannerAd {
 
   public InMobiRtbBannerAd(
-      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationBannerAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     final Context context = mediationBannerAdConfiguration.getContext();
 
     // Try to find the closest banner size that is one of the standard banner sizes supported by
@@ -47,14 +44,13 @@ public class InMobiRtbBannerAd extends InMobiBannerAd {
       bannerSize = mediationBannerAdConfiguration.getAdSize();
     }
 
-    final Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-
-    createAndLoadBannerAd(context, placementId, bannerSize);
+    createAndLoadBannerAd(context, bannerSize, mediationBannerAdConfiguration);
   }
 
   @Override
-  public void internalLoadAd(InMobiBannerWrapper adView) {
+  public void internalLoadAd(
+      @NonNull InMobiBannerWrapper adView,
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     InMobiExtras inMobiExtras =
         InMobiExtrasBuilder.build(
             mediationBannerAdConfiguration.getContext(),

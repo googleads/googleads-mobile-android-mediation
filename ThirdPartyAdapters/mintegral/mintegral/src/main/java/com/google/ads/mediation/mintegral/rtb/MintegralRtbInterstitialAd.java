@@ -15,13 +15,16 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
 import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
 import com.google.ads.mediation.mintegral.MintegralBidNewInterstitialAdWrapper;
 import com.google.ads.mediation.mintegral.MintegralConstants;
 import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralInterstitialAd;
 import com.google.android.gms.ads.AdError;
@@ -30,6 +33,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
+import java.lang.ref.WeakReference;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,14 +41,17 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
   private MintegralBidNewInterstitialAdWrapper mbBidNewInterstitialAdWrapper;
 
-  public MintegralRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationInterstitialAd,
-          MediationInterstitialAdCallback> callback) {
-    super(adConfiguration, callback);
+  public MintegralRtbInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback,
+      FlagValueGetter flagValueGetter) {
+    super(adConfiguration, callback, flagValueGetter);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(MediationInterstitialAdConfiguration adConfiguration) {
     String adUnitId = adConfiguration.getServerParameters()
         .getString(MintegralConstants.AD_UNIT_ID);
     String placementId = adConfiguration.getServerParameters()
@@ -55,6 +62,12 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
       adLoadCallback.onFailure(error);
       return;
     }
+
+    if (flagValueGetter.shouldRestrictMultipleAdLoads()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
     mbBidNewInterstitialAdWrapper = MintegralFactory.createBidInterstitialHandler();
     mbBidNewInterstitialAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
     try {
@@ -71,7 +84,6 @@ public class MintegralRtbInterstitialAd extends MintegralInterstitialAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
     mbBidNewInterstitialAdWrapper.playVideoMute(
         muted
             ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE

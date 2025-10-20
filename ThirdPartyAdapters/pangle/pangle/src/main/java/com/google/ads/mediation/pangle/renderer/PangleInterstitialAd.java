@@ -41,7 +41,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 
 public class PangleInterstitialAd implements MediationInterstitialAd {
 
-  private final MediationInterstitialAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
@@ -51,21 +50,19 @@ public class PangleInterstitialAd implements MediationInterstitialAd {
   private PAGInterstitialAd pagInterstitialAd;
 
   public PangleInterstitialAd(
-      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper,
       PangleFactory pangleFactory) {
-    adConfiguration = mediationInterstitialAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

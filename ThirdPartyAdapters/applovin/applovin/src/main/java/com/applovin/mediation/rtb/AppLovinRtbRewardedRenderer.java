@@ -37,23 +37,23 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
   private AppLovinAd appLovinAd;
 
   public AppLovinRtbRewardedRenderer(
-      @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback,
       @NonNull AppLovinInitializer appLovinInitializer,
       @NonNull AppLovinAdFactory appLovinAdFactory,
       @NonNull AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
     super(
-        adConfiguration, callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
+        callback, appLovinInitializer, appLovinAdFactory, appLovinSdkUtilsWrapper);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationRewardedAdConfiguration adConfiguration) {
     Context context = adConfiguration.getContext();
     appLovinSdk = appLovinInitializer.retrieveSdk(context);
 
     // Create rewarded video object.
     incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
     incentivizedInterstitial.setExtraInfo(KEY_WATERMARK, adConfiguration.getWatermark());
+    networkExtras = adConfiguration.getMediationExtras();
 
     // Load ad.
     appLovinSdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
@@ -62,7 +62,7 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
   @Override
   public void showAd(@NonNull Context context) {
     appLovinSdk.getSettings()
-        .setMuted(AppLovinUtils.shouldMuteAudio(adConfiguration.getMediationExtras()));
+        .setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     incentivizedInterstitial.show(appLovinAd, context, this, this, this, this);
   }

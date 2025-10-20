@@ -52,12 +52,7 @@ class InMobiWaterfallRewardedAdTest {
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationRewardedAdCallback)
 
     waterfallRewardedAd =
-      InMobiWaterfallRewardedAd(
-        rewardedAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory,
-      )
+      InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test
@@ -71,7 +66,7 @@ class InMobiWaterfallRewardedAdTest {
       bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    waterfallRewardedAd.loadAd()
+    waterfallRewardedAd.loadAd(rewardedAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
     initializerListenerCaptor.firstValue.onInitializeSuccess()
@@ -96,7 +91,7 @@ class InMobiWaterfallRewardedAdTest {
       bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
-    waterfallRewardedAd.loadAd()
+    waterfallRewardedAd.loadAd(rewardedAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
     initializerListenerCaptor.firstValue.onInitializeSuccess()

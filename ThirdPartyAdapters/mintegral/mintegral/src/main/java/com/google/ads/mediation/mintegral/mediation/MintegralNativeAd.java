@@ -14,13 +14,13 @@
 
 package com.google.ads.mediation.mintegral.mediation;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.android.gms.ads.formats.NativeAd.Image;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -39,27 +39,26 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
     OnMBMediaViewListener {
 
   protected Campaign campaign;
-  protected final MediationNativeAdConfiguration adConfiguration;
   protected final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
       adLoadCallback;
+
+  MediationNativeAdCallback nativeCallback;
   protected static final double MINTEGRAL_SDK_IMAGE_SCALE = 1.0;
-  public MintegralNativeAdListener mintegralNativeAdListener;
+
+  private final boolean muted;
 
   public MintegralNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
           mediationAdLoadCallback) {
-    adConfiguration = mediationNativeAdConfiguration;
+    muted = MintegralUtils.shouldMuteAudio(mediationNativeAdConfiguration.getMediationExtras());
     adLoadCallback = mediationAdLoadCallback;
-    mintegralNativeAdListener = new MintegralNativeAdListener(this);
   }
 
-  /**
-   * Loads a Mintegral native ad.
-   */
-  public abstract void loadAd();
+  /** Loads a Mintegral native ad. */
+  public abstract void loadAd(MediationNativeAdConfiguration adConfiguration);
 
   @NonNull
-  protected void mapNativeAd(@NonNull Campaign ad) {
+  protected void mapNativeAd(@NonNull Campaign ad, Context context) {
     campaign = ad;
     if (campaign.getAppName() != null) {
       setHeadline(campaign.getAppName());
@@ -75,13 +74,12 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
       setIcon(new MBridgeNativeMappedImage(null, Uri.parse(campaign.getIconUrl()),
           MINTEGRAL_SDK_IMAGE_SCALE));
     }
-    MBMediaView mbMediaView = new MBMediaView(adConfiguration.getContext());
-    boolean muted = MintegralUtils.shouldMuteAudio(adConfiguration.getMediationExtras());
+    MBMediaView mbMediaView = new MBMediaView(context);
     mbMediaView.setVideoSoundOnOff(!muted);
     mbMediaView.setNativeAd(campaign);
     setMediaView(mbMediaView);
 
-    MBAdChoice mbAdChoice = new MBAdChoice(adConfiguration.getContext());
+    MBAdChoice mbAdChoice = new MBAdChoice(context);
     mbAdChoice.setCampaign(campaign);
     setAdChoicesContent(mbAdChoice);
     setOverrideClickHandling(true);
@@ -119,15 +117,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onEnterFullscreen() {
-    if (mintegralNativeAdListener.nativeCallback != null) {
-      mintegralNativeAdListener.nativeCallback.onAdOpened();
+    if (nativeCallback != null) {
+      nativeCallback.onAdOpened();
     }
   }
 
   @Override
   public void onExitFullscreen() {
-    if (mintegralNativeAdListener.nativeCallback != null) {
-      mintegralNativeAdListener.nativeCallback.onAdClosed();
+    if (nativeCallback != null) {
+      nativeCallback.onAdClosed();
     }
   }
 
@@ -148,15 +146,15 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
 
   @Override
   public void onVideoAdClicked(Campaign campaign) {
-    if (mintegralNativeAdListener.nativeCallback != null) {
-      mintegralNativeAdListener.nativeCallback.reportAdClicked();
+    if (nativeCallback != null) {
+      nativeCallback.reportAdClicked();
     }
   }
 
   @Override
   public void onVideoStart() {
-    if (mintegralNativeAdListener.nativeCallback != null) {
-      mintegralNativeAdListener.nativeCallback.onVideoPlay();
+    if (nativeCallback != null) {
+      nativeCallback.onVideoPlay();
     }
   }
 

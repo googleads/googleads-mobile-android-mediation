@@ -46,8 +46,6 @@ import com.vungle.ads.VungleError;
 
 public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListener {
 
-  @NonNull
-  private final MediationRewardedAdConfiguration mediationRewardedAdConfiguration;
 
   @NonNull
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
@@ -61,17 +59,15 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
   private final VungleFactory vungleFactory;
 
   public VungleRtbRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       VungleFactory vungleFactory) {
-    this.mediationRewardedAdConfiguration = mediationRewardedAdConfiguration;
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.vungleFactory = vungleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     Bundle mediationExtras = mediationRewardedAdConfiguration.getMediationExtras();
     Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
 

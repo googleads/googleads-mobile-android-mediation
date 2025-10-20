@@ -16,33 +16,17 @@
 
 package com.google.ads.mediation.snippets.kotlin
 
-import android.app.Activity
-import com.ironsource.mediationsdk.IronSource
+import com.unity3d.mediation.LevelPlay
 
 /**
  * Kotlin code snippets for https://developers.google.com/admob/android/mediation/ironsource and
  * https://developers.google.com/ad-manager/mobile-ads-sdk/android/mediation/ironsource
  */
-class IronSourceMediationSnippets : Activity() {
+class IronSourceMediationSnippets {
 
   private fun setUserConsent() {
     // [START set_user_consent]
-    IronSource.setMetaData("do_not_sell", "true")
+    LevelPlay.setMetaData("do_not_sell", "true")
     // [END set_user_consent]
   }
-
-  // [START on_resume]
-  override fun onResume() {
-    super.onResume()
-    IronSource.onResume(this)
-  }
-
-  // [END on_resume]
-
-  // [START on_pause]
-  override fun onPause() {
-    super.onPause()
-    IronSource.onPause(this)
-  }
-  // [END on_pause]
 }

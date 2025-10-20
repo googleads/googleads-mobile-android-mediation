@@ -58,22 +58,18 @@ class VungleRtbRewardedAdTest {
       on { createRewardedAd(any(), any(), any()) } doReturn vungleRewardedAd
       on { createAdConfig() } doReturn mock()
     }
+  private val mediationRewardedAdConfiguration =
+    createMediationRewardedAdConfiguration(
+      context = context,
+      serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+      bidResponse = TEST_BID_RESPONSE,
+      watermark = TEST_WATERMARK,
+      mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
+    )
 
   @Before
   fun setUp() {
-    adapterRtbRewardedAd =
-      VungleRtbRewardedAd(
-        createMediationRewardedAdConfiguration(
-          context = context,
-          serverParameters =
-            bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
-          bidResponse = TEST_BID_RESPONSE,
-          watermark = TEST_WATERMARK,
-          mediationExtras = bundleOf(KEY_ORIENTATION to LANDSCAPE),
-        ),
-        rewardedAdLoadCallback,
-        vungleFactory,
-      )
+    adapterRtbRewardedAd = VungleRtbRewardedAd(rewardedAdLoadCallback, vungleFactory)
 
     doAnswer { invocation ->
         val args: Array<Any> = invocation.arguments
@@ -109,7 +105,7 @@ class VungleRtbRewardedAdTest {
   fun showAd_playsLiftoffAd() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbRewardedAd.render()
+      adapterRtbRewardedAd.render(mediationRewardedAdConfiguration)
     }
 
     adapterRtbRewardedAd.showAd(context)
@@ -120,7 +116,7 @@ class VungleRtbRewardedAdTest {
   private fun renderAdAndMockLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbRewardedAd.render()
+      adapterRtbRewardedAd.render(mediationRewardedAdConfiguration)
     }
     adapterRtbRewardedAd.onAdLoaded(vungleRewardedAd)
   }

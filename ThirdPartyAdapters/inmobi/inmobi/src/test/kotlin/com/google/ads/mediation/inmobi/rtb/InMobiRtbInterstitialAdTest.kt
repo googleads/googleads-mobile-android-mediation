@@ -51,12 +51,7 @@ class InMobiRtbInterstitialAdTest {
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationInterstitialAdCallback)
 
     rtbInterstitialAd =
-      InMobiRtbInterstitialAd(
-        interstitialAdConfiguration,
-        mediationAdLoadCallback,
-        inMobiInitializer,
-        inMobiAdFactory,
-      )
+      InMobiRtbInterstitialAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
   @Test
@@ -69,7 +64,7 @@ class InMobiRtbInterstitialAdTest {
     whenever(interstitialAdConfiguration.serverParameters) doReturn
       bundleOf(KEY_PLACEMENT_ID to "67890")
 
-    rtbInterstitialAd.loadAd()
+    rtbInterstitialAd.loadAd(interstitialAdConfiguration)
     rtbInterstitialAd.showAd(context)
 
     verify(inMobiInterstitialWrapper).show()
@@ -83,7 +78,7 @@ class InMobiRtbInterstitialAdTest {
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(false)
     whenever(interstitialAdConfiguration.serverParameters) doReturn
       bundleOf(KEY_PLACEMENT_ID to "67890")
-    rtbInterstitialAd.loadAd()
+    rtbInterstitialAd.loadAd(interstitialAdConfiguration)
     // mimic an ad load.
     rtbInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
 

@@ -1,7 +1,6 @@
 package com.google.ads.mediation.inmobi.rtb;
 
 import android.content.Context;
-import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.InMobiAdFactory;
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
@@ -18,34 +17,32 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 public class InMobiRtbRewardedAd extends InMobiRewardedAd {
 
   public InMobiRtbRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
       @NonNull InMobiAdFactory inMobiAdFactory) {
     super(
-        mediationRewardedAdConfiguration,
         mediationAdLoadCallback,
         inMobiInitializer,
         inMobiAdFactory);
   }
 
   @Override
-  public void loadAd() {
+  public void loadAd(@NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     final Context context = mediationRewardedAdConfiguration.getContext();
-    final Bundle serverParameters = mediationRewardedAdConfiguration.getServerParameters();
-
-    final long placementId = InMobiAdapterUtils.getPlacementId(serverParameters);
-
-    createAndLoadRewardAd(context, placementId, mediationAdLoadCallback);
+    createAndLoadRewardAd(context, mediationRewardedAdConfiguration);
   }
 
   @Override
-  protected void internalLoadAd(InMobiInterstitialWrapper inMobiRewardedAdWrapper) {
+  protected void internalLoadAd(
+      @NonNull InMobiInterstitialWrapper inMobiRewardedAdWrapper,
+      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration) {
     InMobiExtras inMobiExtras =
-        InMobiExtrasBuilder.build(mediationRewardedAdConfiguration.getContext(),
-            mediationRewardedAdConfiguration.getMediationExtras(), InMobiAdapterUtils.PROTOCOL_RTB);
+        InMobiExtrasBuilder.build(
+            mediationRewardedAdConfiguration.getContext(),
+            mediationRewardedAdConfiguration.getMediationExtras(),
+            InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());
 
