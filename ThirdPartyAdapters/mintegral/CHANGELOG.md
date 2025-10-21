@@ -1,8 +1,12 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 16.9.91.2 (In progress)
+#### Version 16.9.91.2
 - Removed class-level references to `Context` objects to help with memory leak
   issues.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Mintegral SDK version 16.9.91.
 
 #### Version 16.9.91.1
 - Removed size check from the adapter for banner RTB ads.
