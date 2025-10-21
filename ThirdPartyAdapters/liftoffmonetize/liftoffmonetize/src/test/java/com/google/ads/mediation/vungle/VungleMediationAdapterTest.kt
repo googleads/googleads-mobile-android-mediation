@@ -57,6 +57,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_RIGHT
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
+import com.vungle.ads.BidTokenCallback
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.NativeAd
 import com.vungle.ads.NativeAd.Companion.BOTTOM_LEFT
@@ -76,6 +77,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -1849,7 +1851,10 @@ class VungleMediationAdapterTest {
   @Test
   fun collectSignals_onSuccessCalled() {
     val biddingToken = "token"
-    whenever(mockSdkWrapper.getBiddingToken(any())) doReturn biddingToken
+    whenever(mockSdkWrapper.getBiddingToken(any(), any())).doAnswer {
+      val callback = it.arguments[1] as BidTokenCallback
+      callback.onBidTokenCollected(biddingToken)
+    }
 
     adapter.collectSignals(mockRtbSignalData, mockSignalCallbacks)
 
@@ -1864,7 +1869,10 @@ class VungleMediationAdapterTest {
         "Liftoff Monetize returned an empty bid token.",
         VungleMediationAdapter.ERROR_DOMAIN,
       )
-    whenever(mockSdkWrapper.getBiddingToken(any())) doReturn ""
+    whenever(mockSdkWrapper.getBiddingToken(any(), any())).doAnswer {
+      val callback = it.arguments[1] as BidTokenCallback
+      callback.onBidTokenError("empty bid token")
+    }
 
     adapter.collectSignals(mockRtbSignalData, mockSignalCallbacks)
 
