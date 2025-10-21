@@ -1,5 +1,7 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Version 7.6.0.5.0 (In progress)
+
 #### Version 7.6.0.4.1 (In progress)
 - Removed class-level references to Context. Can help reduce memory leak issues.
 
