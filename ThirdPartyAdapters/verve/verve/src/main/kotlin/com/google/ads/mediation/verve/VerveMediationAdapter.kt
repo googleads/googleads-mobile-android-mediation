@@ -154,7 +154,7 @@ class VerveMediationAdapter : RtbAdapter() {
       callback.onFailure(adError)
       return
     }
-    val signals = HyBid.getCustomRequestSignalData(signalData.context, "Admob")
+    val signals = HyBid.getEncodedCustomRequestSignalData(signalData.context, "Admob")
     callback.onSuccess(signals)
   }
 

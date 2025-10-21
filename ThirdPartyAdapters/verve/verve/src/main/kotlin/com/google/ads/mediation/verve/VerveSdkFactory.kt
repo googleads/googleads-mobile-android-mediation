@@ -17,6 +17,9 @@ package com.google.ads.mediation.verve
 import android.content.Context
 import net.pubnative.lite.sdk.interstitial.HyBidInterstitialAd
 import net.pubnative.lite.sdk.rewarded.HyBidRewardedAd
+import net.pubnative.lite.sdk.views.HyBidBannerAdView
+import net.pubnative.lite.sdk.views.HyBidLeaderboardAdView
+import net.pubnative.lite.sdk.views.HyBidMRectAdView
 
 /**
  * Wrapper singleton to enable mocking of HyBid different ad formats for unit testing.
@@ -28,6 +31,12 @@ object VerveSdkFactory {
   /** Delegate used on unit tests to help mock calls to create [FiveAd] formats. */
   internal var delegate: SdkFactory =
     object : SdkFactory {
+      override fun createHyBidBannerAdView(context: Context) = HyBidBannerAdView(context)
+
+      override fun createHyBidMRectAdView(context: Context) = HyBidMRectAdView(context)
+
+      override fun createHyBidLeaderboardAdView(context: Context) = HyBidLeaderboardAdView(context)
+
       override fun createHyBidInterstitialAd(
         context: Context,
         listener: HyBidInterstitialAd.Listener,
@@ -48,6 +57,12 @@ object VerveSdkFactory {
 
 /** Declares the methods that will invoke the HyBid SDK */
 interface SdkFactory {
+  fun createHyBidBannerAdView(context: Context): HyBidBannerAdView
+
+  fun createHyBidMRectAdView(context: Context): HyBidMRectAdView
+
+  fun createHyBidLeaderboardAdView(context: Context): HyBidLeaderboardAdView
+
   fun createHyBidInterstitialAd(
     context: Context,
     listener: HyBidInterstitialAd.Listener,
