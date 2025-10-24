@@ -210,8 +210,7 @@ public class InMobiAdapterUtils {
    */
   public static boolean isValidNativeAd(InMobiNativeWrapper nativeAd) {
     return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
-        && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
-        && nativeAd.getAdTitle() != null;
+        && nativeAd.getAdIconUrl() != null && nativeAd.getAdTitle() != null;
   }
 
   /**

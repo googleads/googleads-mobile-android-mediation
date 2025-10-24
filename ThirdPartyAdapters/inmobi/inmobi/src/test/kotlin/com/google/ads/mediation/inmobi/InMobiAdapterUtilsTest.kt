@@ -214,13 +214,6 @@ class InMobiAdapterUtilsTest {
   }
 
   @Test
-  fun isValidNativeAd_nullAdLandingPageUrl_returnsFalse() {
-    whenever(inMobiNativeWrapper.adLandingPageUrl).thenReturn(/* value= */ null)
-
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isFalse()
-  }
-
-  @Test
   fun isValidNativeAd_nullAdTitle_returnsFalse() {
     whenever(inMobiNativeWrapper.adTitle).thenReturn(/* value= */ null)
 
@@ -289,8 +282,6 @@ class InMobiAdapterUtilsTest {
     whenever(inMobiNativeWrapper.adCtaText) doReturn ("SomeCtaText")
     whenever(inMobiNativeWrapper.adDescription) doReturn ("AdDescription")
     whenever(inMobiNativeWrapper.adIconUrl) doReturn ("http://www.example.com/docs/resource1.html")
-    whenever(inMobiNativeWrapper.adLandingPageUrl) doReturn
-      ("http://www.landing.com/docs/resource1.html")
     whenever(inMobiNativeWrapper.adTitle) doReturn ("adTitle")
   }
 }

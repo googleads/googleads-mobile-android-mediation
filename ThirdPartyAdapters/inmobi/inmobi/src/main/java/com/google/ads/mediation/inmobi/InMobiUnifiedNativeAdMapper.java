@@ -28,14 +28,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.inmobi.renderers.InMobiNativeAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.inmobi.media.ads.nativeAd.InMobiNativeViewData;
+import com.inmobi.media.ads.nativeAd.MediaView;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -87,9 +93,21 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       return;
     }
 
-    setHeadline(inMobiNativeWrapper.getAdTitle());
-    setBody(inMobiNativeWrapper.getAdDescription());
-    setCallToAction(inMobiNativeWrapper.getAdCtaText());
+    if (inMobiNativeWrapper.getAdTitle() != null) {
+      setHeadline(inMobiNativeWrapper.getAdTitle());
+    }
+
+    if (inMobiNativeWrapper.getAdDescription() != null) {
+      setBody(inMobiNativeWrapper.getAdDescription());
+    }
+
+    if (inMobiNativeWrapper.getAdCtaText() != null) {
+      setCallToAction(inMobiNativeWrapper.getAdCtaText());
+    }
+
+    if (inMobiNativeWrapper.getAdvertiserName() != null) {
+      setAdvertiser(inMobiNativeWrapper.getAdvertiserName());
+    }
 
     // App icon.
     final URL iconURL;
@@ -108,10 +126,6 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
 
     HashMap<String, URL> map = new HashMap<>();
-    String landingURL = inMobiNativeWrapper.getAdLandingPageUrl();
-    Bundle paramMap = new Bundle();
-    paramMap.putString(InMobiNetworkValues.LANDING_URL, landingURL);
-    setExtras(paramMap);
 
     if (!this.isOnlyURL) {
       map.put(ImageDownloaderAsyncTask.KEY_ICON, iconURL);
@@ -122,56 +136,12 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
       setImages(imagesList);
     }
 
-    // Optional assets.
-    if (inMobiNativeWrapper.getCustomAdContent() != null) {
-      JSONObject payLoad = inMobiNativeWrapper.getCustomAdContent();
-
-      try {
-        if (payLoad.has(InMobiNetworkValues.RATING)) {
-          setStarRating(Double.parseDouble(payLoad.getString(InMobiNetworkValues.RATING)));
-        }
-
-        if (payLoad.has(InMobiNetworkValues.PRICE)) {
-          setPrice(payLoad.getString(InMobiNetworkValues.PRICE));
-        }
-      } catch (JSONException jsonException) {
-        Log.w(TAG, "InMobi custom native ad content payload could not be parsed. "
-            + "The returned native ad will not have star rating or price values.");
-      }
-
-      if (payLoad.has(InMobiNetworkValues.PACKAGE_NAME)) {
-        setStore("Google Play");
-      } else {
-        setStore("Others");
-      }
-    }
+    setStarRating((double) inMobiNativeWrapper.getAdRating());
 
     // Add primary view as media view
-    final RelativeLayout placeHolderView = new ClickInterceptorRelativeLayout(context);
-    placeHolderView.setLayoutParams(
-        new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.MATCH_PARENT));
-    placeHolderView.setGravity(Gravity.CENTER);
-    placeHolderView.post(new Runnable() {
-      @Override
-      public void run() {
-        final View primaryView = inMobiNativeWrapper.getPrimaryViewOfWidth(context, null, placeHolderView,
-            placeHolderView.getWidth());
-        if (primaryView == null) {
-          return;
-        }
-
-        placeHolderView.addView(primaryView);
-        int viewHeight = primaryView.getLayoutParams().height;
-        if (viewHeight > 0) {
-          setMediaContentAspectRatio((float) primaryView.getLayoutParams().width / viewHeight);
-        }
-      }
-    });
-
-    setMediaView(placeHolderView);
-    boolean hasVideo = (inMobiNativeWrapper.isVideo() == null) ? false : inMobiNativeWrapper.isVideo();
-    setHasVideoContent(hasVideo);
+    final MediaView mediaView = inMobiNativeWrapper.getMediaView();
+    if (mediaView != null) setMediaView(mediaView);
+    setHasVideoContent(inMobiNativeWrapper.isVideo());
 
     // Download drawables.
     if (!this.isOnlyURL) {
@@ -213,20 +183,50 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
     }
   }
 
-  @Override
-  public void handleClick(View view) {
-    // Handle click.
-    inMobiNativeWrapper.reportAdClickAndOpenLandingPage();
-  }
 
   @Override
   public void untrackView(View view) {
-    inMobiNativeWrapper.destroy();
+    inMobiNativeWrapper.unTrackViews();
   }
 
   @Override
   public void trackViews(View containerView, Map<String, View> clickableAssetViews,
       Map<String, View> nonclickableAssetViews) {
-    inMobiNativeWrapper.resume();
+    setOverrideClickHandling(true);
+
+    View titleView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_HEADLINE);
+    View descriptionView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_BODY);
+    View iconView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ICON);
+    View ctaView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_CALL_TO_ACTION);
+    View advertiserView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_ADVERTISER);
+    View ratingView = clickableAssetViews.get(UnifiedNativeAdAssetNames.ASSET_STAR_RATING);
+
+    InMobiNativeViewData.Builder viewDataBuilder = new InMobiNativeViewData.Builder((ViewGroup) containerView);
+
+    if (titleView != null) {
+      viewDataBuilder.setTitleView(titleView);
+    }
+
+    if (descriptionView != null) {
+      viewDataBuilder.setDescriptionView(descriptionView);
+    }
+
+    if (iconView instanceof ImageView) {
+      viewDataBuilder.setIconView((ImageView) iconView);
+    }
+
+    if (ctaView != null) {
+      viewDataBuilder.setCTAView(ctaView);
+    }
+
+    if (advertiserView != null) {
+      viewDataBuilder.setAdvertiserView(advertiserView);
+    }
+
+    if (ratingView != null) {
+      viewDataBuilder.setRatingView(ratingView);
+    }
+
+    inMobiNativeWrapper.registerForTracking(viewDataBuilder.build());
   }
 }
