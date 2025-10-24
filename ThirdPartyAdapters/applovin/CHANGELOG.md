@@ -1,9 +1,13 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 13.4.0.1 (In progress)
+#### Version 13.4.0.1
 - Removed old interstitial API implementation. Note: New interstitial API
   implementation already exists in the adapter and GMA SDK will use that.
 - Removed class-level references to Context. Can help reduce memory leak issues.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- AppLovin SDK version 13.4.0.
 
 #### Version 13.4.0.0
 - Verified compatibility with AppLovin SDK 13.4.0.
