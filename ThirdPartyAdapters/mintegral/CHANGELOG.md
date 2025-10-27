@@ -1,5 +1,7 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 16.10.11.0 (In progress)
+
 #### Version 16.9.91.2
 - Removed class-level references to `Context` objects to help with memory leak
   issues.
