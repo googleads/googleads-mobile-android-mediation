@@ -1,5 +1,7 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Version 3.5.0.0 (In progress)
+
 #### Version 3.4.0.1
 - Removed class-level references to `Context` objects to help with memory leak issues.
 - Updated adapter to support banner ad requests that are close in size to its
