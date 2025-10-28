@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next version
+- Added Waterfall support for App Open ad format.
+
 #### Version 13.5.0.0 (In progress)
 
 #### Version 13.4.0.1

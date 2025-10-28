@@ -17,9 +17,9 @@ package com.google.ads.mediation.applovin;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_SDK_KEY;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_MISSING_SDK;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_PRESENTATON_AD_NOT_READY;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_PRESENTATION_AD_NOT_READY;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -75,8 +75,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
-          new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN);
+          new AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.toString());
       adLoadCallback.onFailure(error);
       return;
@@ -142,7 +141,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
 
     if (!incentivizedInterstitial.isAdReadyToDisplay()) {
       AdError error =
-          new AdError(ERROR_PRESENTATON_AD_NOT_READY, ERROR_MSG_AD_NOT_READY, ERROR_DOMAIN);
+          new AdError(ERROR_PRESENTATION_AD_NOT_READY, ERROR_MSG_AD_NOT_READY, ERROR_DOMAIN);
       Log.e(TAG, error.toString());
       rewardedAdCallback.onAdFailedToShow(error);
       return;

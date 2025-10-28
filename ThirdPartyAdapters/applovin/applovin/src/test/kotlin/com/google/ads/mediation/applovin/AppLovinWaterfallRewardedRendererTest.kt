@@ -14,7 +14,7 @@ import com.applovin.sdk.AppLovinSdkSettings
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_PRESENTATON_AD_NOT_READY
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_PRESENTATION_AD_NOT_READY
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer.ERROR_MSG_AD_NOT_READY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -173,7 +173,7 @@ class AppLovinWaterfallRewardedRendererTest {
 
     verify(rewardedAdCallback).onAdFailedToShow(errorCaptor.capture())
     val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_PRESENTATON_AD_NOT_READY)
+    assertThat(capturedError.code).isEqualTo(ERROR_PRESENTATION_AD_NOT_READY)
     assertThat(capturedError.message).isEqualTo(ERROR_MSG_AD_NOT_READY)
     assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
   }

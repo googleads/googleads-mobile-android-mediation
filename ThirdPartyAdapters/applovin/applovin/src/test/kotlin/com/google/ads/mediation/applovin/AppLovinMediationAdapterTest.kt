@@ -10,6 +10,7 @@ import com.applovin.adview.AppLovinInterstitialAdDialog
 import com.applovin.mediation.AppLovinExtras.Keys.KEY_WATERMARK
 import com.applovin.mediation.AppLovinUtils
 import com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER
+import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
@@ -19,7 +20,8 @@ import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREA
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_AD_UNIT_ID
+import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_SDK_KEY
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_MISSING_SDK
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer.ERROR_MSG_MULTIPLE_REWARDED_AD
@@ -35,6 +37,9 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONS
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationAppOpenAd
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -79,6 +84,9 @@ class AppLovinMediationAdapterTest {
 
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val initializationCompleteCallback: InitializationCompleteCallback = mock()
+  private val appOpenAdLoadCallback:
+    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
+    mock()
   private val mediationBannerAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
     mock()
@@ -97,13 +105,31 @@ class AppLovinMediationAdapterTest {
   private val appLovinSdkUtilsWrapper: AppLovinSdkUtilsWrapper = mock()
   private val appLovinInterstitialAdDialog: AppLovinInterstitialAdDialog = mock()
   private val appLovinIncentivizedInterstitial: AppLovinIncentivizedInterstitial = mock()
+  private val appLovinAppOpenAd: MaxAppOpenAd = mock()
   private val appLovinAdFactory: AppLovinAdFactory = mock {
     on { createAdView(any(), any(), any(), any()) } doReturn appLovinAdViewWrapper
     on { createInterstitialAdDialog(any(), any()) } doReturn appLovinInterstitialAdDialog
     on { createIncentivizedInterstitial(any(), any()) } doReturn appLovinIncentivizedInterstitial
     on { createIncentivizedInterstitial(any()) } doReturn appLovinIncentivizedInterstitial
+    on { createMaxAppOpenAd(TEST_AD_UNIT_ID) } doReturn appLovinAppOpenAd
   }
   private val signalCallbacks: SignalCallbacks = mock()
+  private val appOpenAdWaterfallConfig =
+    MediationAppOpenAdConfiguration(
+      context,
+      /*bidResponse=*/ "",
+      bundleOf(
+        AppLovinUtils.ServerParameterKeys.SDK_KEY to TEST_SDK_KEY,
+        AppLovinUtils.ServerParameterKeys.AD_UNIT_ID to TEST_AD_UNIT_ID,
+      ),
+      /*mediationExtras=*/ Bundle(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      /*watermark=*/ "",
+    )
 
   @Before
   fun setUp() {
@@ -310,6 +336,116 @@ class AppLovinMediationAdapterTest {
     assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
   }
 
+  // region loadAppOpenAd tests
+
+  @Test
+  fun loadAppOpenAd_ifUserIsTaggedAsChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
+    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadAppOpenAd_ifUserIsTaggedAsUnderAge_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    )
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
+    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadAppOpenAd_withoutSdkKey_failsWithCallback() {
+    val appOpenAdConfigWithoutSdkKey =
+      MediationAppOpenAdConfiguration(
+        context,
+        /*bidResponse=*/ "",
+        bundleOf(AppLovinUtils.ServerParameterKeys.AD_UNIT_ID to TEST_AD_UNIT_ID),
+        /*mediationExtras=*/ Bundle(),
+        /*isTesting=*/ true,
+        /*location=*/ null,
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+        RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+        /*maxAdContentRating=*/ "",
+        /*watermark=*/ "",
+      )
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdConfigWithoutSdkKey, appOpenAdLoadCallback)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val errorCaptured = adErrorCaptor.firstValue
+    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
+    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
+    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadAppOpenAd_ifAdUnitIsMissing_failsWithCallback() {
+    val appOpenAdConfigWithoutAdUnitId =
+      MediationAppOpenAdConfiguration(
+        context,
+        /*bidResponse=*/ "",
+        bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to TEST_SDK_KEY),
+        /*mediationExtras=*/ Bundle(),
+        /*isTesting=*/ true,
+        /*location=*/ null,
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+        RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+        /*maxAdContentRating=*/ "",
+        /*watermark=*/ "",
+      )
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdConfigWithoutAdUnitId, appOpenAdLoadCallback)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val errorCaptured = adErrorCaptor.firstValue
+    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_AD_UNIT_ID)
+    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadAppOpenAd_withCorrectParameters_invokesSdkInitialization() {
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
+
+    verify(appLovinSdk).initialize(any(), any())
+  }
+
+  @Test
+  fun loadAppOpenAd_withCorrectParametersAndInitSuccess_loadsAppLovinAd() {
+    doAnswer { invocation ->
+        val args = invocation.arguments
+        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
+      }
+      .whenever(appLovinInitializer)
+      .initialize(any(), any(), any())
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
+
+    verify(appLovinAppOpenAd).loadAd()
+  }
+
+  // endregion
+
   @Test
   fun loadBannerAd_ifUserIsTaggedAsChild_failsWithCallback() {
     MobileAds.setRequestConfiguration(
@@ -365,7 +501,7 @@ class AppLovinMediationAdapterTest {
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
     val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
+    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
     assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
     assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
   }
@@ -508,7 +644,7 @@ class AppLovinMediationAdapterTest {
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
     val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
+    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
     assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
     assertThat(errorCaptured.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
     verify(appLovinSdk, never()).initialize(any(), any())
@@ -691,7 +827,7 @@ class AppLovinMediationAdapterTest {
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
     val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
+    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
     assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
     assertThat(errorCaptured.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
     verify(appLovinSdk, never()).initialize(any(), any())
@@ -822,5 +958,6 @@ class AppLovinMediationAdapterTest {
     private const val TEST_ZONE_ID = "zoneId"
     private const val TEST_WATERMARK = "watermark"
     private const val TEST_BIDRESPONSE = "bidResponse"
+    private const val TEST_AD_UNIT_ID = "fake_ad_unit_id"
   }
 }

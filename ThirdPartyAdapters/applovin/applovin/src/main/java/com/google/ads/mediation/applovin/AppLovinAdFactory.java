@@ -18,6 +18,7 @@ import android.content.Context;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
+import com.applovin.mediation.ads.MaxAppOpenAd;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinSdk;
 import com.google.android.gms.ads.AdSize;
@@ -40,5 +41,9 @@ public class AppLovinAdFactory {
   public AppLovinIncentivizedInterstitial createIncentivizedInterstitial(
       String zoneId, AppLovinSdk sdk) {
     return AppLovinIncentivizedInterstitial.create(zoneId, sdk);
+  }
+
+  MaxAppOpenAd createMaxAppOpenAd(String adUnitId) {
+    return new MaxAppOpenAd(adUnitId);
   }
 }
