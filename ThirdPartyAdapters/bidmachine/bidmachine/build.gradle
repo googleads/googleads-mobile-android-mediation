@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "BidMachine"
     // String property to store version name.
-    stringVersion = "3.4.0.1"
+    stringVersion = "3.5.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -26,7 +26,7 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionCode 3040001
+        versionCode 3050000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -127,7 +127,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
-    implementation 'io.bidmachine:ads:3.4.0'
+    implementation 'io.bidmachine:ads:3.5.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'

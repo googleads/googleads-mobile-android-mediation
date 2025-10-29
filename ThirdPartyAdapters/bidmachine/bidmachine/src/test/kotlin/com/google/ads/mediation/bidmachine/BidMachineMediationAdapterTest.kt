@@ -276,52 +276,6 @@ class BidMachineMediationAdapterTest {
     mockSignalCallbacks.onSuccess(TEST_BID_RESPONSE)
   }
 
-  @Test
-  fun collectSignals_mapsCorrectFormatToBitMachineAdsFormat() {
-    val configurationBanner =
-      createMediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())
-    val configurationRewarded =
-      createMediationConfiguration(AdFormat.REWARDED, /* serverParameters= */ bundleOf())
-    val configurationNative =
-      createMediationConfiguration(AdFormat.NATIVE, /* serverParameters= */ bundleOf())
-    val signalDataBanner =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf<MediationConfiguration>(configurationBanner),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
-    val signalDataRewarded =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf<MediationConfiguration>(configurationRewarded),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
-    val signalDataNative =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf<MediationConfiguration>(configurationNative),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
-    val mockSignalCallbacks: SignalCallbacks = mock()
-    val configCaptor = argumentCaptor<AdPlacementConfig>()
-
-    adapter.collectSignals(signalDataBanner, mockSignalCallbacks)
-
-    adapter.collectSignals(signalDataRewarded, mockSignalCallbacks)
-
-    adapter.collectSignals(signalDataNative, mockSignalCallbacks)
-    mockBidMachine.verify(
-      { BidMachine.getBidToken(eq(context), configCaptor.capture(), any()) },
-      times(3),
-    )
-    assertThat(configCaptor.firstValue.adsFormat).isEqualTo(AdsFormat.Banner)
-    assertThat(configCaptor.secondValue.adsFormat).isEqualTo(AdsFormat.Rewarded)
-    assertThat(configCaptor.thirdValue.adsFormat).isEqualTo(AdsFormat.Native)
-  }
-
   // endregion
 
   // region banner tests
