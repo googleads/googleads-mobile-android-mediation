@@ -1,6 +1,11 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Version 3.5.0.0 (In progress)
+#### Version 3.5.0.0
+- Verified compatibility with BidMachine SDK version 3.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- BidMachine SDK version 3.5.0.
 
 #### Version 3.4.0.1
 - Removed class-level references to `Context` objects to help with memory leak issues.
