@@ -1,5 +1,7 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Version 2.9.20251028.0 (In progress)
+
 #### Version 2.9.20250924.1
 - Removed class-level references to Context. Can help reduce memory leak issues.
 
