@@ -1,5 +1,8 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next version
+- Added support for RTB app open ads.
+
 #### Version 6.20.0.2
 - Removed class-level references to `Context` objects to help with memory leak issues.
 
