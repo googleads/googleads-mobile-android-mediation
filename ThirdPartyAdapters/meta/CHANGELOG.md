@@ -1,6 +1,6 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 6.21.0.0 (In progress)
 - Added support for RTB app open ads.
 
 #### Version 6.20.0.2
