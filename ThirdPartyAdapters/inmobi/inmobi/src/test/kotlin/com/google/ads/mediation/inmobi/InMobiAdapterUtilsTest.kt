@@ -193,39 +193,6 @@ class InMobiAdapterUtilsTest {
   }
 
   @Test
-  fun isValidNativeAd_nullCtaText_returnsFalse() {
-    whenever(inMobiNativeWrapper.adCtaText).thenReturn(/* value= */ null)
-
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isFalse()
-  }
-
-  @Test
-  fun isValidNativeAd_nullAdDescription_returnsFalse() {
-    whenever(inMobiNativeWrapper.adDescription).thenReturn(/* value= */ null)
-
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isFalse()
-  }
-
-  @Test
-  fun isValidNativeAd_nullAdIconUrl_returnsFalse() {
-    whenever(inMobiNativeWrapper.adIconUrl).thenReturn(/* value= */ null)
-
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isFalse()
-  }
-
-  @Test
-  fun isValidNativeAd_nullAdTitle_returnsFalse() {
-    whenever(inMobiNativeWrapper.adTitle).thenReturn(/* value= */ null)
-
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isFalse()
-  }
-
-  @Test
-  fun isValidNativeAd_hasAllRequiredAssets_returnsTrue() {
-    assertThat(InMobiAdapterUtils.isValidNativeAd(inMobiNativeWrapper)).isTrue()
-  }
-
-  @Test
   fun validateInMobiAdLoadParams_emptyAccountID_returnsAdError() {
     val adError =
       InMobiAdapterUtils.validateInMobiAdLoadParams(/* accountID= */ "", /* placementID= */ 12345L)

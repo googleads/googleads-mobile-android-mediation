@@ -85,19 +85,6 @@ class InMobiRtbNativeAdTest {
     verify(mediationAdLoadCallback).onSuccess(any())
   }
 
-  // TODO(b/283150473) : Add a test case covering NativeAdOptions = null
-  @Test
-  fun onAdLoadSucceeded_whenNativeAdOptionsInvalid_invokesFailureCallback() {
-    whenever(wrappedNativeAd.adTitle).thenReturn(null)
-
-    rtbNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
-
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_MISSING_NATIVE_ASSETS)
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
-  }
-
   @Test
   fun onAdLoadFailed_invokesFailureCallback() {
     var inMobiAdRequestStatus =

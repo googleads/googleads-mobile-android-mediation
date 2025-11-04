@@ -24,7 +24,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 10080800
+        versionCode 11000000
         versionName stringVersion
         consumerProguardFiles 'proguard-rules.pro'
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
