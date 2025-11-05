@@ -71,11 +71,11 @@ class PangleMediationAdapterTest {
   private val nativeAd: PangleNativeAd = mock()
   private val rewardedAd: PangleRewardedAd = mock()
   private val pangleFactory: PangleFactory = mock {
-    on { createPangleAppOpenAd(any(), any(), any(), any()) } doReturn appOpenAd
-    on { createPangleBannerAd(any(), any(), any(), any()) } doReturn bannerAd
-    on { createPangleInterstitialAd(any(), any(), any(), any()) } doReturn interstitialAd
-    on { createPangleNativeAd(any(), any(), any(), any()) } doReturn nativeAd
-    on { createPangleRewardedAd(any(), any(), any(), any()) } doReturn rewardedAd
+    on { createPangleAppOpenAd(any(), any(), any()) } doReturn appOpenAd
+    on { createPangleBannerAd(any(), any(), any()) } doReturn bannerAd
+    on { createPangleInterstitialAd(any(), any(), any()) } doReturn interstitialAd
+    on { createPangleNativeAd(any(), any(), any()) } doReturn nativeAd
+    on { createPangleRewardedAd(any(), any(), any()) } doReturn rewardedAd
   }
   private val initializationCompleteCallback: InitializationCompleteCallback = mock()
   private val appOpenAdConfig: MediationAppOpenAdConfiguration = mock()
@@ -285,13 +285,8 @@ class PangleMediationAdapterTest {
     pangleMediationAdapter.loadAppOpenAd(appOpenAdConfig, appOpenAdLoadCallback)
 
     verify(pangleFactory)
-      .createPangleAppOpenAd(
-        appOpenAdConfig,
-        appOpenAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-      )
-    verify(appOpenAd).render()
+      .createPangleAppOpenAd(appOpenAdLoadCallback, pangleInitializer, pangleSdkWrapper)
+    verify(appOpenAd).render(appOpenAdConfig)
   }
 
   @Test
@@ -299,13 +294,8 @@ class PangleMediationAdapterTest {
     pangleMediationAdapter.loadBannerAd(bannerAdConfig, bannerAdLoadCallback)
 
     verify(pangleFactory)
-      .createPangleBannerAd(
-        bannerAdConfig,
-        bannerAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-      )
-    verify(bannerAd).render()
+      .createPangleBannerAd(bannerAdLoadCallback, pangleInitializer, pangleSdkWrapper)
+    verify(bannerAd).render(bannerAdConfig)
   }
 
   @Test
@@ -313,13 +303,8 @@ class PangleMediationAdapterTest {
     pangleMediationAdapter.loadInterstitialAd(interstitialAdConfig, interstitialAdLoadCallback)
 
     verify(pangleFactory)
-      .createPangleInterstitialAd(
-        interstitialAdConfig,
-        interstitialAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-      )
-    verify(interstitialAd).render()
+      .createPangleInterstitialAd(interstitialAdLoadCallback, pangleInitializer, pangleSdkWrapper)
+    verify(interstitialAd).render(interstitialAdConfig)
   }
 
   @Test
@@ -327,13 +312,8 @@ class PangleMediationAdapterTest {
     pangleMediationAdapter.loadNativeAd(nativeAdConfig, nativeAdLoadCallback)
 
     verify(pangleFactory)
-      .createPangleNativeAd(
-        nativeAdConfig,
-        nativeAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-      )
-    verify(nativeAd).render()
+      .createPangleNativeAd(nativeAdLoadCallback, pangleInitializer, pangleSdkWrapper)
+    verify(nativeAd).render(nativeAdConfig)
   }
 
   @Test
@@ -341,13 +321,8 @@ class PangleMediationAdapterTest {
     pangleMediationAdapter.loadRewardedAd(rewardedAdConfig, rewardedAdLoadCallback)
 
     verify(pangleFactory)
-      .createPangleRewardedAd(
-        rewardedAdConfig,
-        rewardedAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-      )
-    verify(rewardedAd).render()
+      .createPangleRewardedAd(rewardedAdLoadCallback, pangleInitializer, pangleSdkWrapper)
+    verify(rewardedAd).render(rewardedAdConfig)
   }
 
   /**

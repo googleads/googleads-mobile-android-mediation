@@ -114,7 +114,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.8.2'
 
     // Mobile Ads SDK
-    implementation 'com.google.android.gms:play-services-ads:24.6.0'
+    implementation 'com.google.android.gms:play-services-ads:24.7.0'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"

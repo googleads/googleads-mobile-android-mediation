@@ -71,8 +71,8 @@ public class ApplovinAdapter extends AppLovinMediationAdapter implements Mediati
 
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
-      AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid SDK Key.",
-          ERROR_DOMAIN);
+      AdError error =
+          new AdError(ERROR_MISSING_SDK_KEY, "Missing or invalid SDK Key.", ERROR_DOMAIN);
       log(ERROR, error.getMessage());
       mediationBannerListener.onAdFailedToLoad(ApplovinAdapter.this, error);
       return;

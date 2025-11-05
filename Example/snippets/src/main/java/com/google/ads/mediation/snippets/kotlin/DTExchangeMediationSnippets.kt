@@ -28,16 +28,9 @@ import com.google.android.gms.ads.AdRequest
  */
 class DTExchangeMediationSnippets {
 
-  private fun setGdprConsent() {
-    // [START set_gdpr_consent]
-    InneractiveAdManager.setGdprConsent(true)
-    InneractiveAdManager.setGdprConsentString("consentString")
-    // [END set_gdpr_consent]
-  }
-
   private fun setUSPrivacyString() {
     // [START set_us_privacy_string]
-    InneractiveAdManager.setUSPrivacyString("USPrivacyString")
+    InneractiveAdManager.setUSPrivacyString(US_PRIVACY_STRING)
     // [END set_us_privacy_string]
   }
 
@@ -50,5 +43,10 @@ class DTExchangeMediationSnippets {
     val request =
       AdRequest.Builder().addNetworkExtrasBundle(FyberMediationAdapter::class.java, extras).build()
     // [END set_network_specific_params]
+  }
+
+  private companion object {
+    // Placeholder value for a user's US privacy string.
+    const val US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP"
   }
 }

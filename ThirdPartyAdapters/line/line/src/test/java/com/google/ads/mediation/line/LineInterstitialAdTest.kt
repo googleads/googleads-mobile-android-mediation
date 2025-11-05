@@ -58,7 +58,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun showAd_invokesFiveAdShowAd() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.showAd(activity)
@@ -68,7 +68,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
 
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
@@ -92,7 +92,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.onClick(mockFiveAdInterstitial)
@@ -103,7 +103,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onFullScreenClose_invokesOnAdClosed() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.onFullScreenClose(mockFiveAdInterstitial)
@@ -113,7 +113,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.onImpression(mockFiveAdInterstitial)
@@ -123,7 +123,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onViewError_invokesOnAdFailedToShow() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
     val adErrorCaptor = argumentCaptor<AdError>()
@@ -140,7 +140,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onFullScreenOpen_invokesOnAdOpened() {
-    lineInterstitialAd.loadAd()
+    lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     lineInterstitialAd.onFullScreenOpen(mockFiveAdInterstitial)

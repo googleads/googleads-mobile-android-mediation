@@ -17,6 +17,7 @@ package com.google.ads.mediation.bigo
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -54,9 +55,15 @@ class BigoMediationAdapter : RtbAdapter() {
   private lateinit var bannerAd: BigoBannerAd
   private lateinit var interstitialAd: BigoInterstitialAd
   private lateinit var rewardedAd: BigoRewardedAd
-  private lateinit var rewardedInterstitialAd: BigoRewardedInterstitialAd
+  private lateinit var rewardedInterstitialAd: BigoRewardedAd
   private lateinit var nativeAd: BigoNativeAd
   private lateinit var appOpenAd: BigoAppOpenAd
+
+  val versionString: String
+
+  init {
+    versionString = "GMA_SDK_${MobileAds.getVersion()}_adapter_$versionInfo"
+  }
 
   override fun getSDKVersionInfo(): VersionInfo =
     bigoSdkVersionDelegate?.let { getSDKVersionInfo(it) }
@@ -157,7 +164,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      bannerAd.loadAd(versionString)
     }
   }
 
@@ -167,7 +174,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      interstitialAd.loadAd()
+      interstitialAd.loadAd(versionString)
     }
   }
 
@@ -177,7 +184,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd()
+      rewardedAd.loadAd(versionString)
     }
   }
 
@@ -185,9 +192,10 @@ class BigoMediationAdapter : RtbAdapter() {
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    BigoRewardedInterstitialAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    // Reuses Rewarded Ads
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedInterstitialAd = it
-      rewardedInterstitialAd.loadAd()
+      rewardedInterstitialAd.loadAd(versionString)
     }
   }
 
@@ -197,7 +205,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
-      nativeAd.loadAd()
+      nativeAd.loadAd(versionString)
     }
   }
 
@@ -207,7 +215,7 @@ class BigoMediationAdapter : RtbAdapter() {
   ) {
     BigoAppOpenAd.newInstance(mediationAppOpenAdConfiguration, callback).onSuccess {
       appOpenAd = it
-      appOpenAd.loadAd()
+      appOpenAd.loadAd(versionString)
     }
   }
 
@@ -225,8 +233,11 @@ class BigoMediationAdapter : RtbAdapter() {
     @VisibleForTesting var bigoSdkVersionDelegate: String? = null
     @VisibleForTesting var adapterVersionDelegate: String? = null
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bigo"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "sg.bigo.ads"
     const val APP_ID_KEY = "application_id"
+    const val SLOT_ID_KEY = "slot_id"
     const val ERROR_MSG_MISSING_APP_ID = "App Id to initialize Bigo SDK is empty or missing."
+    const val ERROR_CODE_MISSING_SLOT_ID = 101
+    const val ERROR_MSG_MISSING_SLOT_ID = "Missing or empty Bigo Slot Id"
   }
 }

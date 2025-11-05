@@ -26,12 +26,16 @@ import com.facebook.ads.BidderTokenProvider;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
+import com.google.ads.mediation.facebook.rtb.MetaRtbAppOpenAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -239,6 +243,14 @@ public class FacebookMediationAdapter extends RtbAdapter {
   public void collectSignals(RtbSignalData rtbSignalData, SignalCallbacks signalCallbacks) {
     String token = BidderTokenProvider.getBidderToken(rtbSignalData.getContext());
     signalCallbacks.onSuccess(token);
+  }
+
+  @Override
+  public void loadRtbAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    MetaRtbAppOpenAd rtbAppOpenAd = new MetaRtbAppOpenAd(callback, metaFactory);
+    rtbAppOpenAd.loadAd(adConfiguration);
   }
 
   @Override

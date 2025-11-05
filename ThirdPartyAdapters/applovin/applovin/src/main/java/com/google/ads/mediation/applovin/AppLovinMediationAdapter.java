@@ -36,6 +36,9 @@ import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAd;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
+import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -100,9 +103,9 @@ public class AppLovinMediationAdapter extends RtbAdapter {
         ERROR_BANNER_SIZE_MISMATCH,
         ERROR_EMPTY_BID_TOKEN,
         ERROR_AD_ALREADY_REQUESTED,
-        ERROR_PRESENTATON_AD_NOT_READY,
+        ERROR_PRESENTATION_AD_NOT_READY,
         ERROR_AD_FORMAT_UNSUPPORTED,
-        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_MISSING_SDK_KEY,
         ERROR_CHILD_USER
       })
   public @interface AdapterError {}
@@ -122,20 +125,16 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_AD_ALREADY_REQUESTED = 105;
 
-  /**
-   * Ad is not ready to display.
-   */
-  public static final int ERROR_PRESENTATON_AD_NOT_READY = 106;
+  /** Ad is not ready to display. */
+  public static final int ERROR_PRESENTATION_AD_NOT_READY = 106;
 
   /**
    * Adapter does not support the ad format being requested.
    */
   public static final int ERROR_AD_FORMAT_UNSUPPORTED = 108;
 
-  /**
-   * Invalid server parameters (e.g. SDK key is null).
-   */
-  public static final int ERROR_INVALID_SERVER_PARAMETERS = 110;
+  /** Error code for missing SDK key. */
+  public static final int ERROR_MISSING_SDK_KEY = 110;
 
   /**
    * User is a child.
@@ -152,7 +151,10 @@ public class AppLovinMediationAdapter extends RtbAdapter {
    */
   public static final int ERROR_CHILD_USER = 112;
 
-  @VisibleForTesting static final String ERROR_MSG_MISSING_SDK = "Missing or invalid SDK Key.";
+  /** Error code for missing ad unit ID. */
+  public static final int ERROR_MISSING_AD_UNIT_ID = 113;
+
+  static final String ERROR_MSG_MISSING_SDK = "Missing or invalid SDK Key.";
 
   @VisibleForTesting
   static final String ERROR_MSG_BANNER_SIZE_MISMATCH =
@@ -206,8 +208,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     }
 
     if (sdkKeys.isEmpty()) {
-      AdError error =
-          new AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
+      AdError error = new AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
       initializationCompleteCallback.onInitializationFailed(error.getMessage());
       return;
@@ -315,6 +316,20 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     Log.i(TAG, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
+  }
+
+  @Override
+  public void loadAppOpenAd(
+      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    if (isChildUser()) {
+      callback.onFailure(getChildUserError());
+      return;
+    }
+
+    AppLovinWaterfallAppOpenAd appOpenAd =
+        new AppLovinWaterfallAppOpenAd(callback, appLovinInitializer, appLovinAdFactory);
+    appOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
 
   @Override

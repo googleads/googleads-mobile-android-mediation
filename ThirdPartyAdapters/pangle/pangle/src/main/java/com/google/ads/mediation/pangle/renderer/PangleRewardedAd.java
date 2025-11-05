@@ -42,7 +42,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 
 public class PangleRewardedAd implements MediationRewardedAd {
 
-  private final MediationRewardedAdConfiguration adConfiguration;
   private final MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       adLoadCallback;
   private final PangleInitializer pangleInitializer;
@@ -52,21 +51,19 @@ public class PangleRewardedAd implements MediationRewardedAd {
   private PAGRewardedAd pagRewardedAd;
 
   public PangleRewardedAd(
-      @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull PangleInitializer pangleInitializer,
       PangleSdkWrapper pangleSdkWrapper,
       PangleFactory pangleFactory) {
-    adConfiguration = mediationRewardedAdConfiguration;
     adLoadCallback = mediationAdLoadCallback;
     this.pangleInitializer = pangleInitializer;
     this.pangleSdkWrapper = pangleSdkWrapper;
     this.pangleFactory = pangleFactory;
   }
 
-  public void render() {
+  public void render(@NonNull MediationRewardedAdConfiguration adConfiguration) {
 
     Bundle serverParameters = adConfiguration.getServerParameters();
     String placementId = serverParameters.getString(PangleConstants.PLACEMENT_ID);

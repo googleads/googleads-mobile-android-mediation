@@ -60,6 +60,8 @@ public class AppLovinUtils {
     public static final String SDK_KEY = "sdkKey";
     public static final String ZONE_ID = "zone_id";
 
+    public static final String AD_UNIT_ID = "ad_unit_id";
+
     // Private constructor
     private ServerParameterKeys() {
     }

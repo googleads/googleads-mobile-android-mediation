@@ -1,7 +1,13 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.21.0.0 (In progress)
+
+#### Version 6.20.0.2
 - Removed class-level references to `Context` objects to help with memory leak issues.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Meta Audience Network SDK version 6.20.0.
 
 #### Version 6.20.0.1
 - Removed the check that fails initialization if there are no placement IDs.

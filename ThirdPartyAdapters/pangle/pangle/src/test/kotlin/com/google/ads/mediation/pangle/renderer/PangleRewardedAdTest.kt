@@ -90,7 +90,7 @@ class PangleRewardedAdTest {
     serverParameters.remove(PangleConstants.PLACEMENT_ID)
     initializeRewardedAd() // ... without serverParameters send in the Bundle
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
@@ -108,7 +108,7 @@ class PangleRewardedAdTest {
     // serverParameters and a bidResponse.
     initializeRewardedAd()
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
@@ -124,7 +124,7 @@ class PangleRewardedAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeRewardedAd(bidResponse = BID_RESPONSE)
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     verify(pagRewardedRequest).setAdString(TestConstants.BID_RESPONSE)
     verify(pagRewardedRequest).setExtraInfo(extraInfoCaptor.capture())
@@ -144,7 +144,7 @@ class PangleRewardedAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeRewardedAd(bidResponse = "", watermark = "")
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     verify(pagRewardedRequest).setAdString("")
     // Verify that setExtraInfo is not called when watermark is empty.
@@ -159,7 +159,7 @@ class PangleRewardedAdTest {
     stubPangleRewardedAdLoadToSucceed()
     initializeRewardedAd()
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     verify(mediationAdLoadCallback).onSuccess(rewardedAd)
   }
@@ -179,7 +179,7 @@ class PangleRewardedAdTest {
       .loadRewardedAd(any(), any(), any())
     initializeRewardedAd()
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -194,7 +194,7 @@ class PangleRewardedAdTest {
     mockPangleSdkInitializationFailure(pangleInitializer)
     initializeRewardedAd()
 
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -309,13 +309,7 @@ class PangleRewardedAdTest {
       )
 
     rewardedAd =
-      PangleRewardedAd(
-        mediationRewardedAdConfig,
-        mediationAdLoadCallback,
-        pangleInitializer,
-        pangleSdkWrapper,
-        pangleFactory,
-      )
+      PangleRewardedAd(mediationAdLoadCallback, pangleInitializer, pangleSdkWrapper, pangleFactory)
   }
 
   /** Mock a Pangle rewarded ad load. */
@@ -323,7 +317,7 @@ class PangleRewardedAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     stubPangleRewardedAdLoadToSucceed()
     initializeRewardedAd()
-    rewardedAd.render()
+    rewardedAd.render(mediationRewardedAdConfig)
   }
 
   // Stub pangleSdkWrapper.loadRewardedAd() to succeed.

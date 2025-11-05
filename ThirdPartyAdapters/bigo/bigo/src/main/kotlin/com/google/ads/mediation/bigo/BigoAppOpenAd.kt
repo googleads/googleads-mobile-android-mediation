@@ -15,28 +15,84 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
+import java.lang.IllegalArgumentException
+import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdLoadListener
+import sg.bigo.ads.api.SplashAd
+import sg.bigo.ads.api.SplashAdInteractionListener
 
 /**
  * Used to load Bigo app open ads and mediate callbacks between Google Mobile Ads SDK and Bigo SDK.
  */
 class BigoAppOpenAd
 private constructor(
-  private val context: Context,
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationAppOpenAd {
+  private val bidResponse: String,
+  private val slotId: String,
+  private val watermark: String,
+) : MediationAppOpenAd, AdLoadListener<SplashAd>, SplashAdInteractionListener {
+  private var appOpenAdCallback: MediationAppOpenAdCallback? = null
+  private var splashAd: SplashAd? = null
 
-  fun loadAd() {
-    // TODO: Implement this method.
+  fun loadAd(versionString: String) {
+    val adRequest = BigoFactory.delegate.createSplashAdRequest(bidResponse, slotId, watermark)
+    val splashAdLoader = BigoFactory.delegate.createSplashAdLoader()
+    splashAdLoader.initializeAdLoader(loadListener = this, versionString)
+    splashAdLoader.loadAd(adRequest)
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    splashAd?.show()
+  }
+
+  override fun onError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    mediationAdLoadCallback.onFailure(gmaAdError)
+  }
+
+  override fun onAdLoaded(splashAd: SplashAd) {
+    splashAd.setAdInteractionListener(this)
+    this.splashAd = splashAd
+    appOpenAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdError(adError: AdError) {
+    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+    appOpenAdCallback?.onAdFailedToShow(gmaAdError)
+  }
+
+  override fun onAdImpression() {
+    appOpenAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked() {
+    appOpenAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdOpened() {
+    appOpenAdCallback?.onAdOpened()
+  }
+
+  override fun onAdClosed() {
+    appOpenAdCallback?.onAdClosed()
+  }
+
+  override fun onAdSkipped() {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdFinished() {
+    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   companion object {
@@ -45,12 +101,23 @@ private constructor(
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
     ): Result<BigoAppOpenAd> {
-      val context = mediationAppOpenAdConfiguration.context
       val serverParameters = mediationAppOpenAdConfiguration.serverParameters
+      val bidResponse = mediationAppOpenAdConfiguration.bidResponse
+      val slotId = serverParameters.getString(SLOT_ID_KEY)
+      val watermark = mediationAppOpenAdConfiguration.watermark
 
-      // TODO: Implement necessary initialization steps.
+      if (slotId.isNullOrEmpty()) {
+        val gmaAdError =
+          BigoUtils.getGmaAdError(
+            ERROR_CODE_MISSING_SLOT_ID,
+            ERROR_MSG_MISSING_SLOT_ID,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        mediationAdLoadCallback.onFailure(gmaAdError)
+        return Result.failure(IllegalArgumentException(gmaAdError.toString()))
+      }
 
-      return Result.success(BigoAppOpenAd(context, mediationAdLoadCallback))
+      return Result.success(BigoAppOpenAd(mediationAdLoadCallback, bidResponse, slotId, watermark))
     }
   }
 }

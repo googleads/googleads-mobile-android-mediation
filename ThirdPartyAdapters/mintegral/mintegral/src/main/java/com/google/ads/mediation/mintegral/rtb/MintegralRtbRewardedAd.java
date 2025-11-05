@@ -15,11 +15,16 @@
 package com.google.ads.mediation.mintegral.rtb;
 
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
+import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
 import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.mintegral.FlagValueGetter;
+import com.google.ads.mediation.mintegral.MintegralBidRewardedAdWrapper;
 import com.google.ads.mediation.mintegral.MintegralConstants;
+import com.google.ads.mediation.mintegral.MintegralFactory;
+import com.google.ads.mediation.mintegral.MintegralSlotIdentifier;
 import com.google.ads.mediation.mintegral.MintegralUtils;
 import com.google.ads.mediation.mintegral.mediation.MintegralRewardedAd;
 import com.google.android.gms.ads.AdError;
@@ -28,18 +33,20 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.mbridge.msdk.MBridgeConstans;
-import com.mbridge.msdk.out.MBBidRewardVideoHandler;
+import java.lang.ref.WeakReference;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MintegralRtbRewardedAd extends MintegralRewardedAd {
 
-  private MBBidRewardVideoHandler mbBidRewardVideoHandler;
+  private MintegralBidRewardedAdWrapper mintegralBidRewardedAdWrapper;
 
-  public MintegralRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
-      @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
-          adLoadCallback) {
-    super(adConfiguration, adLoadCallback);
+  public MintegralRtbRewardedAd(
+      @NonNull MediationRewardedAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> adLoadCallback,
+      FlagValueGetter flagValueGetter) {
+    super(adConfiguration, adLoadCallback, flagValueGetter);
   }
 
   @Override
@@ -54,24 +61,32 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
       adLoadCallback.onFailure(error);
       return;
     }
-    mbBidRewardVideoHandler = new MBBidRewardVideoHandler(adConfiguration.getContext(), placementId,
-        adUnitId);
+
+    if (flagValueGetter.shouldRestrictMultipleAdLoads()) {
+      mintegralSlotIdentifier = new MintegralSlotIdentifier(adUnitId, placementId);
+      loadedSlotIdentifiers.put(mintegralSlotIdentifier, new WeakReference<>(this));
+    }
+
+    mintegralBidRewardedAdWrapper = MintegralFactory.createMintegralBidRewardedAdWrapper();
+    mintegralBidRewardedAdWrapper.createAd(adConfiguration.getContext(), placementId, adUnitId);
     try {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(MBridgeConstans.EXTRA_KEY_WM, adConfiguration.getWatermark());
-      mbBidRewardVideoHandler.setExtraInfo(jsonObject);
+      mintegralBidRewardedAdWrapper.setExtraInfo(jsonObject);
     } catch (JSONException jsonException) {
       Log.w(TAG, "Failed to apply watermark to Mintegral bidding rewarded video ad.",
           jsonException);
     }
-    mbBidRewardVideoHandler.setRewardVideoListener(this);
-    mbBidRewardVideoHandler.loadFromBid(bidToken);
+    mintegralBidRewardedAdWrapper.setRewardVideoListener(this);
+    mintegralBidRewardedAdWrapper.loadFromBid(bidToken);
   }
 
   @Override
   public void showAd(@NonNull Context context) {
-    mbBidRewardVideoHandler.playVideoMute(muted ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
-        : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbBidRewardVideoHandler.showFromBid();
+    mintegralBidRewardedAdWrapper.playVideoMute(
+        muted
+            ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
+            : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+    mintegralBidRewardedAdWrapper.showFromBid();
   }
 }

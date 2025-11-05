@@ -1,10 +1,16 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
-- Removed class-level references to `Context` objects to help with memory leak issues.
-
 #### Version 11.0.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.0.0.
+- RewardedInterstitial support added.
+
+#### Version 10.8.8.1
+- Removed class-level references to `Context` objects to help with memory leak issues.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- InMobi Kotlin SDK version 10.8.8.
+
 
 #### Version 10.8.8.0
 - Verified compatibility with InMobi Kotlin SDK version 10.8.8.

@@ -81,6 +81,7 @@ class PangleInterstitialAdTest {
         PangleConstants.APP_ID to APP_ID_VALUE,
         PangleConstants.PLACEMENT_ID to PLACEMENT_ID_VALUE,
       )
+    initializeInterstitialAd()
   }
 
   @Test
@@ -89,7 +90,7 @@ class PangleInterstitialAdTest {
     serverParameters.remove(PangleConstants.PLACEMENT_ID)
     initializeInterstitialAd() // ... without serverParameters send in the Bundle
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
@@ -107,7 +108,7 @@ class PangleInterstitialAdTest {
     // serverParameters and a bidResponse.
     initializeInterstitialAd()
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     // No onFailure should be triggered.
     verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
@@ -123,7 +124,7 @@ class PangleInterstitialAdTest {
     // Initialize interstitial ad with BID_RESPONSE as bid response.
     initializeInterstitialAd()
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     verify(pagInterstitialRequest).setAdString(BID_RESPONSE)
     verify(pagInterstitialRequest).setExtraInfo(extraInfoCaptor.capture())
@@ -143,7 +144,7 @@ class PangleInterstitialAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     initializeInterstitialAd(bidResponse = "", watermark = "")
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     verify(pagInterstitialRequest).setAdString("")
     // Verify that setExtraInfo is not called when watermark is empty.
@@ -158,7 +159,7 @@ class PangleInterstitialAdTest {
     stubPangleInterstitialAdLoadToSucceed()
     initializeInterstitialAd()
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     verify(mediationAdLoadCallback).onSuccess(interstitialAd)
   }
@@ -178,7 +179,7 @@ class PangleInterstitialAdTest {
       .loadInterstitialAd(any(), any(), any())
     initializeInterstitialAd()
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -193,7 +194,7 @@ class PangleInterstitialAdTest {
     mockPangleSdkInitializationFailure(pangleInitializer)
     initializeInterstitialAd()
 
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
 
     val adErrorCaptor = argumentCaptor<AdError>()
     verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
@@ -295,7 +296,6 @@ class PangleInterstitialAdTest {
 
     interstitialAd =
       PangleInterstitialAd(
-        mediationInterstitialAdConfig,
         mediationAdLoadCallback,
         pangleInitializer,
         pangleSdkWrapper,
@@ -308,7 +308,7 @@ class PangleInterstitialAdTest {
     mockPangleSdkInitializationSuccess(pangleInitializer)
     stubPangleInterstitialAdLoadToSucceed()
     initializeInterstitialAd()
-    interstitialAd.render()
+    interstitialAd.render(mediationInterstitialAdConfig)
   }
 
   // Stub pangleSdkWrapper.loadInterstitialAd() to succeed.

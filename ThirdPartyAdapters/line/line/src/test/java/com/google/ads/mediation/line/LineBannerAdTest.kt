@@ -38,6 +38,7 @@ class LineBannerAdTest {
     mock<FiveAdCustomLayout> {
       on { logicalWidth } doReturn AdSize.BANNER.width
       on { logicalHeight } doReturn AdSize.BANNER.height
+      on { context } doReturn context
     }
   private val mockMediationAdCallback = mock<MediationBannerAdCallback>()
   private val sdkFactory =
@@ -64,7 +65,7 @@ class LineBannerAdTest {
 
   @Test
   fun getView_returnsCreatedBannerAd() {
-    lineBannerAd.loadAd()
+    lineBannerAd.loadAd(context)
 
     val createdAdView = lineBannerAd.view
 
@@ -78,6 +79,7 @@ class LineBannerAdTest {
       mock<FiveAdCustomLayout> {
         on { logicalWidth } doReturn AdSize.LARGE_BANNER.width
         on { logicalHeight } doReturn AdSize.LARGE_BANNER.height
+        on { context } doReturn context
       }
 
     lineBannerAd.onFiveAdLoad(differentBannerAd)
@@ -91,7 +93,7 @@ class LineBannerAdTest {
 
   @Test
   fun onFiveAdLoad_invokesOnSuccess() {
-    lineBannerAd.loadAd()
+    lineBannerAd.loadAd(context)
 
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
@@ -114,7 +116,7 @@ class LineBannerAdTest {
 
   @Test
   fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
-    lineBannerAd.loadAd()
+    lineBannerAd.loadAd(context)
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     lineBannerAd.onClick(mockFiveAdCustomLayout)
@@ -125,7 +127,7 @@ class LineBannerAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
-    lineBannerAd.loadAd()
+    lineBannerAd.loadAd(context)
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     lineBannerAd.onImpression(mockFiveAdCustomLayout)

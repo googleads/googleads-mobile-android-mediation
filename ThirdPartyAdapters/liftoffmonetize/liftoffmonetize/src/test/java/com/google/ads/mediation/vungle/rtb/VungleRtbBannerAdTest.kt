@@ -78,7 +78,7 @@ class VungleRtbBannerAdTest {
   fun onAdLoaded_addsLiftoffBannerViewToBannerLayoutAndCallsLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbBannerAd.render(mediationBannerAdConfiguration)
+      adapterRtbBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration)
     }
 
     adapterRtbBannerAd.onAdLoaded(baseAd)
@@ -104,7 +104,7 @@ class VungleRtbBannerAdTest {
   private fun renderAdAndMockLoadSuccess() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
-      adapterRtbBannerAd.render(mediationBannerAdConfiguration)
+      adapterRtbBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration)
     }
     adapterRtbBannerAd.onAdLoaded(baseAd)
   }

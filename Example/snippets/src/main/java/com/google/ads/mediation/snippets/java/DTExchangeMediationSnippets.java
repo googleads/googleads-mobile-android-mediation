@@ -28,16 +28,12 @@ import com.google.android.gms.ads.AdRequest;
  */
 public class DTExchangeMediationSnippets {
 
-  private void setGdprConsent() {
-    // [START set_gdpr_consent]
-    InneractiveAdManager.setGdprConsent(true);
-    InneractiveAdManager.setGdprConsentString("consentString");
-    // [END set_gdpr_consent]
-  }
+  // Placeholder value for a user's US privacy string.
+  private static final String US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP";
 
   private void setUSPrivacyString() {
     // [START set_us_privacy_string]
-    InneractiveAdManager.setUSPrivacyString("USPrivacyString");
+    InneractiveAdManager.setUSPrivacyString(US_PRIVACY_STRING);
     // [END set_us_privacy_string]
   }
 

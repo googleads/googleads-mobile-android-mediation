@@ -18,7 +18,7 @@ import static com.applovin.sdk.AppLovinAdSize.INTERSTITIAL;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
-import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_SDK_KEY;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_MISSING_SDK;
 
 import android.content.Context;
@@ -73,8 +73,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
     String sdkKey = serverParameters.getString(ServerParameterKeys.SDK_KEY);
     if (TextUtils.isEmpty(sdkKey)) {
       AdError error =
-          new AdError(
-              ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN);
+          new AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN);
       Log.e(TAG, error.getMessage());
       interstitialAdLoadCallback.onFailure(error);
       return;

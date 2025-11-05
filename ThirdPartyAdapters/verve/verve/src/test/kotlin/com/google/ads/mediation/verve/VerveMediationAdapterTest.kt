@@ -48,6 +48,7 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import net.pubnative.lite.sdk.HyBid
+import net.pubnative.lite.sdk.views.HyBidBannerAdView
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -69,10 +70,13 @@ class VerveMediationAdapterTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInitializationCallback: InitializationCompleteCallback = mock()
+  private val mockHyBidBannerAd: HyBidBannerAdView = mock()
 
   @Before
   fun setUp() {
     adapter = VerveMediationAdapter()
+    VerveSdkFactory.delegate =
+      org.mockito.kotlin.mock { on { createHyBidBannerAdView(context) } doReturn mockHyBidBannerAd }
   }
 
   @After
@@ -226,7 +230,7 @@ class VerveMediationAdapterTest {
   @Test
   fun collectSignals_invokesOnSuccess() {
     mockStatic(HyBid::class.java).use {
-      whenever(HyBid.getCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
+      whenever(HyBid.getEncodedCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
       val signalData =
         RtbSignalData(
           context,
@@ -245,7 +249,7 @@ class VerveMediationAdapterTest {
   @Test
   fun collectSignals_withValidAdSize_invokesOnSuccess() {
     mockStatic(HyBid::class.java).use {
-      whenever(HyBid.getCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
+      whenever(HyBid.getEncodedCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
       val signalData =
         RtbSignalData(
           context,
