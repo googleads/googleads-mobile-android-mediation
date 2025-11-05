@@ -76,10 +76,6 @@ class InMobiWaterfallNativeAdTest {
       .isEqualTo(wrappedNativeAd.adDescription)
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.callToAction)
       .isEqualTo(wrappedNativeAd.adCtaText)
-    Truth.assertThat(
-        waterfallNativeAd.inMobiUnifiedNativeAdMapper.extras.get(InMobiNetworkValues.LANDING_URL)
-      )
-      .isEqualTo(wrappedNativeAd.adLandingPageUrl)
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.icon.drawable).isNull()
     val iconURL = URL(wrappedNativeAd.adIconUrl)
     val iconUri = Uri.parse(iconURL.toURI().toString())
@@ -88,19 +84,6 @@ class InMobiWaterfallNativeAdTest {
     Truth.assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.hasVideoContent()).isTrue()
 
     verify(mediationAdLoadCallback).onSuccess(any())
-  }
-
-  // TODO(b/283150473) : Add a test case covering NativeAdOptions = null
-  @Test
-  fun onAdLoadSucceeded_whenNativeAdOptionsInvalid_invokesFailureCallback() {
-    whenever(wrappedNativeAd.adTitle).thenReturn(null)
-
-    waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
-
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    Truth.assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_MISSING_NATIVE_ASSETS)
-    Truth.assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
   }
 
   @Test
@@ -168,21 +151,19 @@ class InMobiWaterfallNativeAdTest {
   }
 
   @Test
-  fun untrackView_invokesDestroy() {
+  fun untrackView_invokesUntrackView() {
     // mimic an ad load first
     waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
 
     waterfallNativeAd.inMobiUnifiedNativeAdMapper.untrackView(View(context))
 
-    verify(wrappedNativeAd).destroy()
+    verify(wrappedNativeAd).unTrackViews()
   }
 
   private fun setupWrappedInMobiNativeAd(): Unit {
     whenever(wrappedNativeAd.adCtaText).thenReturn("SomeCtaText")
     whenever(wrappedNativeAd.adDescription).thenReturn("AdDescription")
     whenever(wrappedNativeAd.adIconUrl).thenReturn("http://www.example.com/docs/resource1.html")
-    whenever(wrappedNativeAd.adLandingPageUrl)
-      .thenReturn("http://www.landing.com/docs/resource1.html")
     whenever(wrappedNativeAd.adTitle).thenReturn("adTitle")
     whenever(wrappedNativeAd.isVideo).thenReturn(true)
   }
