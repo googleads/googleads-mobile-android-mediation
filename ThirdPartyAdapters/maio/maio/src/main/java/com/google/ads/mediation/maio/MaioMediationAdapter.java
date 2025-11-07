@@ -15,7 +15,6 @@
 package com.google.ads.mediation.maio;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -33,7 +32,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
 import java.util.List;
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager;
 
@@ -148,33 +146,7 @@ public class MaioMediationAdapter extends Adapter {
   public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
-
-    HashSet<String> mediaIDs = new HashSet<>();
-    for (MediationConfiguration configuration : mediationConfigurations) {
-      String mediaIDFromServer =
-          configuration.getServerParameters().getString(MaioAdsManager.KEY_MEDIA_ID);
-
-      if (!TextUtils.isEmpty(mediaIDFromServer)) {
-        mediaIDs.add(mediaIDFromServer);
-      }
-    }
-
-    int count = mediaIDs.size();
-    if (count <= 0) {
-      initializationCompleteCallback
-          .onInitializationFailed("Initialization Failed: Missing or Invalid Media ID.");
-      return;
-    }
-
-    String mediaID = mediaIDs.iterator().next();
-    if (count > 1) {
-      String logMessage =
-          String.format(
-              "Multiple '%s' entries found: %s. Using '%s' to initialize the Maio SDK.",
-              MaioAdsManager.KEY_MEDIA_ID, mediaIDs, mediaID);
-      Log.w(TAG, logMessage);
-    }
-
+    // maio does not have an initialization API.
     initializationCompleteCallback.onInitializationSucceeded();
   }
 

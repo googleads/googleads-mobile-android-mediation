@@ -10,17 +10,14 @@ import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
-import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.maio.MaioUtils.getVersionInfo
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -118,60 +115,13 @@ class MaioMediationAdapterTest {
 
   // region initialize tests
   @Test
-  fun initialize_withNoMediaIdKeyInServerParameters_invokesOnInitializationFailed() {
-    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER)
-
-    adapter.initialize(activity, mockInitializationCompleteCallback, listOf(mediationConfiguration))
-
-    verify(mockInitializationCompleteCallback)
-      .onInitializationFailed(MISSING_OR_INVALID_APP_KEY_MESSAGE)
-  }
-
-  @Test
-  fun initialize_withEmptyAppKey_invokesOnInitializationFailed() {
-    adapter.mediationAdapterInitializeVerifyFailure(
-      activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(KEY_MEDIA_ID to ""),
-      /* expectedError= */ MISSING_OR_INVALID_APP_KEY_MESSAGE,
-    )
-  }
-
-  @Test
   fun initialize_withMediationConfigurations_invokesOnInitializationSucceeded() {
     adapter.mediationAdapterInitializeVerifySuccess(
       activity,
       mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1),
+      /* serverParameters= */ bundleOf(),
     )
   }
-
-  @Test
-  fun initialize_withMultipleMediationConfigurations_invokesOnInitializationSucceededOnlyOnce() {
-    val mediationConfiguration1 =
-      createMediationConfiguration(
-        AdFormat.BANNER,
-        serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1),
-      )
-    val mediationConfiguration2 =
-      createMediationConfiguration(
-        AdFormat.BANNER,
-        serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_2),
-      )
-
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(mediationConfiguration1, mediationConfiguration2),
-    )
-
-    verify(mockInitializationCompleteCallback, times(1)).onInitializationSucceeded()
-  }
-
-  private fun createMediationConfiguration(
-    adFormat: AdFormat,
-    serverParameters: Bundle = bundleOf(),
-  ) = MediationConfiguration(adFormat, serverParameters)
 
   // endregion
 
