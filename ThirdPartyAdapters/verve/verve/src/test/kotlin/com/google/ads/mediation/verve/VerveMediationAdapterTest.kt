@@ -247,13 +247,13 @@ class VerveMediationAdapterTest {
   }
 
   @Test
-  fun collectSignals_withValidAdSize_invokesOnSuccess() {
+  fun collectSignals_withValidBannerAdSize_invokesOnSuccess() {
     mockStatic(HyBid::class.java).use {
       whenever(HyBid.getEncodedCustomRequestSignalData(context, "Admob")) doReturn TEST_BID_RESPONSE
       val signalData =
         RtbSignalData(
           context,
-          /* configurations = */ listOf<MediationConfiguration>(),
+          listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
           /* networkExtras = */ bundleOf(),
           AdSize.BANNER,
         )
@@ -266,12 +266,12 @@ class VerveMediationAdapterTest {
   }
 
   @Test
-  fun collectSignals_withInvalidAdSize_invokesOnFailure() {
+  fun collectSignals_withInvalidBannerAdSize_invokesOnFailure() {
     mockStatic(HyBid::class.java).use {
       val signalData =
         RtbSignalData(
           context,
-          /* configurations = */ listOf<MediationConfiguration>(),
+          listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
           /* networkExtras = */ bundleOf(),
           AdSize.FLUID,
         )
