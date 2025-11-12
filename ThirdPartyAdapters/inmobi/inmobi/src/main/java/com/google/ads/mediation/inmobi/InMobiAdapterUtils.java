@@ -29,7 +29,6 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
@@ -200,18 +199,6 @@ public class InMobiAdapterUtils {
       return LogLevel.ERROR;
     }
     return LogLevel.NONE;
-  }
-
-  /**
-   * Checks whether or not the InMobi native ad has all the required assets.
-   *
-   * @param nativeAd the InMobi native ad object.
-   * @return {@code true} if the native ad has all the required assets.
-   */
-  public static boolean isValidNativeAd(InMobiNativeWrapper nativeAd) {
-    return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
-        && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
-        && nativeAd.getAdTitle() != null;
   }
 
   /**
