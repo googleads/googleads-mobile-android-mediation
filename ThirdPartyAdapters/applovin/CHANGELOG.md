@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 13.5.0.1 (In progress)
 - Added Waterfall support for App Open ad format.
 - Replaced usage of deprecated RtbSignalData.getConfiguration() with
   RtbSignalData.getConfigurations().
