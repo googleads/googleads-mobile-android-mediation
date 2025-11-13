@@ -1,6 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 4.10.0.1 (In progress)
 - Added list of assets for waterfall native ads
 
 #### Version 4.10.0.0
