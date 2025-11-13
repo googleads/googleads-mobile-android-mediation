@@ -5,7 +5,12 @@
 - Replaced usage of deprecated RtbSignalData.getConfiguration() with
   RtbSignalData.getConfigurations().
 
-#### Version 13.5.0.0 (In progress)
+#### Version 13.5.0.0
+- Verified compatibility with AppLovin SDK 13.5.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- AppLovin SDK version 13.5.0.
 
 #### Version 13.4.0.1
 - Removed old interstitial API implementation. Note: New interstitial API
