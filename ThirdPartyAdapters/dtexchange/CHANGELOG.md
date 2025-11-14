@@ -1,5 +1,8 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- Added updated API calls for banner ad implementation.
+
 #### Version 8.4.0.0
 - Removed class-level references to Context. Can help reduce memory leak issues.
 - Verified compatibility with DT Exchange SDK 8.4.0.
