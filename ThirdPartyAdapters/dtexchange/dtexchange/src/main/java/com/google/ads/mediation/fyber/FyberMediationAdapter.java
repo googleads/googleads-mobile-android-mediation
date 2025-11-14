@@ -115,6 +115,9 @@ public class FyberMediationAdapter extends RtbAdapter
   /** DT Exchange's spot object for interstitial. */
   private InneractiveAdSpot interstitialSpot;
 
+  /** DT Exchange banner ad for waterfall. */
+  private DTExchangeWaterfallBannerAd bannerWaterfallAd;
+
   /** DT Exchange banner ad for sdk bidding. */
   private DTExchangeBannerAd bannerRtbAd;
 
@@ -672,6 +675,14 @@ public class FyberMediationAdapter extends RtbAdapter
         mediationInterstitialListener.onAdLeftApplication(FyberMediationAdapter.this);
       }
     };
+  }
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerWaterfallAd = new DTExchangeWaterfallBannerAd(callback);
+    bannerWaterfallAd.loadAd(adConfiguration);
   }
 
   @Override
