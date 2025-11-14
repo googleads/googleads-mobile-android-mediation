@@ -140,12 +140,13 @@ public class InMobiAdapterUtils {
 
   @VisibleForTesting
   static void setIsAgeRestricted(InMobiSdkWrapper inMobiSdkWrapper) {
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `false`.
+    // If the COPPA value is unspecified in GMA SDK, we don't default it to either one since the
+    // value could have been updated before.
     if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       inMobiSdkWrapper.setIsAgeRestricted(true);
-    } else {
+    } else if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
       inMobiSdkWrapper.setIsAgeRestricted(false);
     }
   }
