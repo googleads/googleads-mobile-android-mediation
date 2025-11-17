@@ -1,5 +1,7 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 17.0.31.0 (In progress)
+
 #### Version 17.0.21.0
 - Verified compatibility with Mintegral SDK 17.0.21.
 
