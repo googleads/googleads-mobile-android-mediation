@@ -1,8 +1,11 @@
 package com.google.ads.mediation.unity
 
 import android.content.Context
-import androidx.test.core.app.ApplicationProvider
+import android.content.SharedPreferences
+import android.content.res.Resources
+import android.util.DisplayMetrics
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.android.gms.ads.AdSize
 import com.google.common.truth.Truth.assertThat
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError
@@ -10,16 +13,33 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError
 import com.unity3d.ads.UnityAds.UnityAdsShowError
 import com.unity3d.services.banners.BannerErrorCode
 import com.unity3d.services.banners.BannerErrorInfo
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /** Unit tests for [UnityAdsAdapterUtils]. */
 @RunWith(AndroidJUnit4::class)
 class UnityAdsAdapterUtilsTest {
 
-  private val context: Context = ApplicationProvider.getApplicationContext()
+  private val context: Context = mock()
+  private val resources: Resources = mock()
   private var bannerErrorInfo: BannerErrorInfo = mock()
+  private var sharedPreferences: SharedPreferences = mock()
+
+  @Before
+  fun setUp() {
+    val displayMetrics = DisplayMetrics()
+    displayMetrics.density = 1.5f
+
+    whenever(context.getResources()).thenReturn(resources)
+    whenever(resources.getDisplayMetrics()).thenReturn(displayMetrics)
+
+    whenever(context.getSharedPreferences(any(), any())).thenReturn(sharedPreferences)
+  }
 
   @Test
   fun getMediationErrorCode_withBannerErrorInfo_returnsCorrectValueForUnknownEnum() {
@@ -237,4 +257,162 @@ class UnityAdsAdapterUtilsTest {
     assertThat(adError.getMessage()).isEqualTo("Description")
     assertThat(adError.getDomain()).isEqualTo(UnityMediationAdapter.SDK_ERROR_DOMAIN)
   }
+
+  // region hasACConsent() Tests
+  @Test
+  fun hasACConsent_withNegativeGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(-1)
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withZeroGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(0)
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withInvalidGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any()))
+      .thenThrow(ClassCastException::class.java)
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withInvalidAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenThrow(ClassCastException::class.java)
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withUnknownSpecVersion_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("0~3234.1~dv.2.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withInvalidSpecVersion_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("a~3234.1~dv.2.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withNoConsentedVendor_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withUnityIncludedInAdditionalConsent_returnsTrue() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~1.3234")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.TRUE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withUnityNotIncludedInAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~1.2")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withUnexpectedParts_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("1~3234.1~dv.2.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withInvalidDisclosedFormat_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~3234.1~ax.2.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withUnexpectedParts_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("2~3234.1")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withUnityIncludedInAdditionalConsent_returnsTrue() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.3234~dv.2.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.TRUE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withUnityDisclosedInAdditionalConsent_returnsFalse() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.2~dv.3234.3")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.FALSE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withUnityMissingInAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.2~dv.3.4")
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+  // endregion
 }

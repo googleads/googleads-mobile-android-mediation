@@ -62,6 +62,12 @@ public class UnityMediationAdapter extends RtbAdapter {
    */
   static final String TAG = UnityMediationAdapter.class.getSimpleName();
 
+  /**
+   * Unity Ads ad technology provider ID from
+   * https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   */
+  public static final int AD_TECHNOLOGY_PROVIDER_ID = 3234;
+
   // region Error Codes
   // Unity Ads adapter error domain.
   public static final String ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.unity";
