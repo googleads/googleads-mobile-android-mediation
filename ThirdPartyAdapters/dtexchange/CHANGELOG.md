@@ -1,5 +1,7 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Version 8.4.1.0 (In progress)
+
 #### Version 8.4.0.1 (In progress)
 - Added support for Native Ads
 
