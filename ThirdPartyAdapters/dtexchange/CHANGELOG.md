@@ -2,8 +2,13 @@
 
 #### Version 8.4.1.0 (In progress)
 
-#### Version 8.4.0.1 (In progress)
+#### Version 8.4.0.1
 - Added support for Native Ads
+- Verified compatibility with DT Exchange SDK 8.4.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- DT Exchange SDK version 8.4.0.
 
 #### Version 8.4.0.0
 - Removed class-level references to Context. Can help reduce memory leak issues.
