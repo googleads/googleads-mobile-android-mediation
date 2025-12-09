@@ -48,6 +48,7 @@ internal constructor(
   private var nativeAdCallback: MediationNativeAdCallback? = null
 
   fun loadAd() {
+    hyBidNativeAdRequest.setPreLoadMediaAssets(true)
     hyBidNativeAdRequest.prepareAd(bidResponse, this)
   }
 
@@ -98,6 +99,10 @@ internal constructor(
     hyBidNativeAd?.stopTracking()
   }
 
+  override fun handleClick(view: View) {
+    hyBidNativeAd?.onNativeClick(view)
+  }
+
   private fun mapNativeAd(nativeAd: NativeAd) {
     headline = nativeAd.title
     body = nativeAd.description
@@ -110,7 +115,7 @@ internal constructor(
     imageView.setImageBitmap(nativeAd.bannerBitmap)
     setMediaView(imageView)
 
-    overrideClickHandling = true
+    overrideClickHandling = false
     overrideImpressionRecording = true
   }
 
