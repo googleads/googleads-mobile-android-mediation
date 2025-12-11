@@ -1,5 +1,7 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Version 3.5.1.0 (In progress)
+
 #### Version 3.5.0.0
 - Verified compatibility with BidMachine SDK version 3.5.0.
 
