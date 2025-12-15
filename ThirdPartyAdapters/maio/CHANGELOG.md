@@ -1,6 +1,6 @@
 ## maio Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 2.0.8.0 (In progress)
 - Clean up media ID dependency in the adapter's initialize method.
 
 #### Version 2.0.7.0
