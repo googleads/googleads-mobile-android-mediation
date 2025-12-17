@@ -40,4 +40,5 @@ dependencies {
     implementation("com.unity3d.ads:unity-ads:+")
     implementation("com.google.ads.mediation:unity:+")
     implementation("com.google.ads.mediation:vungle:+")
+    implementation("com.google.ads.mediation:facebook:+")
 }
