@@ -3,8 +3,6 @@ package com.google.ads.mediation.pangle
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig
-import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -144,17 +142,6 @@ class PangleInitializerTest {
     pangleInitializer.initialize(context, APP_ID, initializerListener)
 
     verify(pagConfigBuilder).appId(APP_ID)
-  }
-
-  @Test
-  fun initialize_configuresPangleSdkWithCorrectGDPRConsent(
-    @TestParameter(valuesProvider = GDPRConsentTypesProvider::class) gdprConsent: Int
-  ) {
-    PangleMediationAdapter.setGDPRConsent(gdprConsent)
-
-    pangleInitializer.initialize(context, APP_ID, initializerListener)
-
-    verify(pagConfigBuilder).setGDPRConsent(gdprConsent)
   }
 
   companion object {

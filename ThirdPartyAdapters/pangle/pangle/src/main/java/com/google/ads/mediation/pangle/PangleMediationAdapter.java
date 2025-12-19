@@ -18,16 +18,18 @@ import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERV
 import static com.google.ads.mediation.pangle.PangleConstants.isChildUser;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant;
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.google.ads.mediation.pangle.PangleConstants.ConsentResult;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
@@ -57,12 +59,19 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 public class PangleMediationAdapter extends RtbAdapter {
 
   public static final String TAG = PangleMediationAdapter.class.getSimpleName();
+
+  /**
+   * Pangle ad technology provider ID from
+   * https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   */
+  public static final int AD_TECHNOLOGY_PROVIDER_ID = 3100;
 
   @VisibleForTesting
   static final String ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID = "Missing or invalid App ID.";
@@ -76,8 +85,6 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleInterstitialAd interstitialAd;
   private PangleNativeAd nativeAd;
   private PangleRewardedAd rewardedAd;
-
-  private static int gdpr = -1;
 
   public PangleMediationAdapter() {
     pangleInitializer = PangleInitializer.getInstance();
@@ -293,34 +300,136 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Set the GDPR setting in Pangle SDK.
+   * Checks whether the user provided consent to a Google Ad Tech Provider (ATP) in Google’s
+   * Additional Consent technical specification. For more details, see <a
+   * href="https://support.google.com/admob/answer/9681920">Google’s Additional Consent technical
+   * specification</a>.
    *
-   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *     personal data to serve ads under GDPR. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
+   * <p>Returns {@link ConsentResult#UNKNOWN} if GDPR does not apply or if positive or negative
+   * consent was not explicitly detected.
+   *
+   * @param context {@link Context} object of your application
+   * @param vendorId a Google Ad Tech Provider (ATP) ID from
+   *     https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   * @return A {@link ConsentResult} indicating consent for the given ATP.
    */
-  public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
-    setGDPRConsent(gdpr, new PangleSdkWrapper());
-  }
+  static @NonNull ConsentResult hasACConsent(@NonNull Context context, int vendorId) {
+    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
-  @VisibleForTesting
-  static void setGDPRConsent(@PAGGDPRConsentType int gdpr, PangleSdkWrapper pangleSdkWrapper) {
-    if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
-        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
-        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
-      // no-op
-      Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
-      return;
+    int gdprApplies = -1;
+    try {
+      gdprApplies = sharedPref.getInt("IABTCF_gdprApplies", -1);
+    } catch (ClassCastException exception) {
+      Log.w(
+          TAG,
+          "Could not parse IABTCF_gdprApplies as an integer. Did your CMP write it correctly?",
+          exception);
     }
-    if (pangleSdkWrapper.isInitSuccess() && !isChildUser()) {
-      pangleSdkWrapper.setGdprConsent(gdpr);
-    }
-    PangleMediationAdapter.gdpr = gdpr;
-  }
 
-  public static int getGDPRConsent() {
-    return gdpr;
+    if (gdprApplies != 1) {
+      return ConsentResult.UNKNOWN;
+    }
+
+    String additionalConsentString = "";
+    try {
+      additionalConsentString = sharedPref.getString("IABTCF_AddtlConsent", "");
+    } catch (ClassCastException exception) {
+      Log.w(
+          TAG,
+          "Could not parse IABTCF_AddtlConsent as a string. Did your CMP write it correctly?",
+          exception);
+    }
+
+    if (TextUtils.isEmpty(additionalConsentString)) {
+      return ConsentResult.UNKNOWN;
+    }
+
+    String vendorIdString = String.valueOf(vendorId);
+    String[] additionalConsentParts = additionalConsentString.split("~");
+
+    int version;
+    try {
+      version = Integer.parseInt(String.valueOf(additionalConsentString.charAt(0)));
+    } catch (Exception exception) {
+      Log.w(
+          TAG,
+          "Could not parse the IABTCF_AddtlConsent spec version. Did your CMP write it correctly?",
+          exception);
+      return ConsentResult.UNKNOWN;
+    }
+
+    if (version == 1) {
+      // Spec version 1
+      Log.w(
+          TAG,
+          "The IABTCF_AddtlConsent string uses version 1 of Google’s Additional Consent spec."
+              + " Version 1 does not report vendors to whom the user denied consent. To detect"
+              + " vendors that the user denied consent, upgrade to a CMP that supports version 2 of"
+              + " Google's Additional Consent technical specification.");
+
+      if (additionalConsentParts.length == 1) {
+        // The AC string had no consented vendor.
+        return ConsentResult.UNKNOWN;
+      } else if (additionalConsentParts.length == 2) {
+        String[] consentedIds = additionalConsentParts[1].split("\\.");
+        if (Arrays.asList(consentedIds).contains(vendorIdString)) {
+          return ConsentResult.TRUE;
+        }
+      } else {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". String had more parts than"
+                    + " expected. Did your CMP write IABTCF_AddtlConsent correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      return ConsentResult.UNKNOWN;
+    } else if (version >= 2) {
+      // Spec version 2
+      if (additionalConsentParts.length < 3) {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". String had less parts than"
+                    + " expected. Did your CMP write IABTCF_AddtlConsent correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      String[] disclosedIds = additionalConsentParts[2].split("\\.");
+      if (!disclosedIds[0].equals("dv")) {
+        String errorMessage =
+            String.format(
+                "Could not parse the IABTCF_AddtlConsent string: \"%s\". Expected disclosed vendors"
+                    + " part to have the string \"dv.\". Did your CMP write IABTCF_AddtlConsent"
+                    + " correctly?",
+                additionalConsentString);
+        Log.w(TAG, errorMessage);
+        return ConsentResult.UNKNOWN;
+      }
+
+      String[] consentedIds = additionalConsentParts[1].split("\\.");
+      if (Arrays.asList(consentedIds).contains(vendorIdString)) {
+        return ConsentResult.TRUE;
+      }
+
+      if (Arrays.asList(disclosedIds).contains(vendorIdString)) {
+        return ConsentResult.FALSE;
+      }
+
+      return ConsentResult.UNKNOWN;
+    } else {
+      // Unknown spec version
+      String errorMessage =
+          String.format(
+              "Could not parse the IABTCF_AddtlConsent string: \"%s\". Spec version was unexpected."
+                  + " Did your CMP write IABTCF_AddtlConsent correctly?",
+              additionalConsentString);
+      Log.w(TAG, errorMessage);
+      return ConsentResult.UNKNOWN;
+    }
   }
 
   /**

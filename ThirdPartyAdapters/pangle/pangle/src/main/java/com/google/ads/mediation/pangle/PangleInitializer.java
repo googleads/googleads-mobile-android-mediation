@@ -15,14 +15,17 @@
 package com.google.ads.mediation.pangle;
 
 import static com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS;
+import static com.google.ads.mediation.pangle.PangleMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.bytedance.sdk.openadsdk.api.init.PAGSdk.PAGInitCallback;
+import com.google.ads.mediation.pangle.PangleConstants.ConsentResult;
 import com.google.android.gms.ads.AdError;
 import java.util.ArrayList;
 
@@ -86,6 +89,15 @@ public class PangleInitializer implements PAGInitCallback {
       return;
     }
 
+    int gdprConsent = PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT;
+    ConsentResult consentResult =
+        PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ConsentResult.TRUE) {
+      gdprConsent = PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT;
+    } else if (consentResult == ConsentResult.FALSE) {
+      gdprConsent = PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT;
+    }
+
     isInitializing = true;
     initListeners.add(listener);
 
@@ -95,7 +107,7 @@ public class PangleInitializer implements PAGInitCallback {
             .createPAGConfigBuilder()
             .appId(appId)
             .setAdxId(PangleConstants.ADX_ID)
-            .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
+            .setGDPRConsent(gdprConsent)
             .setUserData(
                 String.format(
                     "[{\"name\":\"mediation\",\"value\":\"google\"},{\"name\":\"adapter_version\",\"value\":\"%s\"}]",
