@@ -30,6 +30,16 @@ public class PangleConstants {
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.pangle";
   public static final String PANGLE_SDK_ERROR_DOMAIN = "com.pangle.ads";
 
+  /** Represents the result of a consent check for advertising purposes. */
+  public enum ConsentResult {
+    /** The consent status could not be determined, or consent does not apply. */
+    UNKNOWN,
+    /** The user has given their consent. */
+    TRUE,
+    /** The user has explicitly declined consent. */
+    FALSE
+  }
+
   /**
    * Error message when the user is a child.
    *

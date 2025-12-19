@@ -1,19 +1,18 @@
 package com.google.ads.mediation.pangle
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.os.bundleOf
-import androidx.test.core.app.ApplicationProvider
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGPAConsentType
 import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback
 import com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS
+import com.google.ads.mediation.pangle.PangleMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.ads.mediation.pangle.PangleMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd
-import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_MESSAGE
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
@@ -41,7 +40,6 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,7 +60,8 @@ class PangleMediationAdapterTest {
   // Test subject.
   private lateinit var pangleMediationAdapter: PangleMediationAdapter
 
-  private val context: Context = ApplicationProvider.getApplicationContext()
+  private val context: Context = mock()
+  private var sharedPreferences: SharedPreferences = mock()
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val appOpenAd: PangleAppOpenAd = mock()
@@ -101,12 +100,13 @@ class PangleMediationAdapterTest {
 
   @Before
   fun setUp() {
-    // Resetting the GDPR and the PA Consent Information to their default value.
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
+    // Resetting the PA Consent Information to their default value.
     PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
 
     pangleMediationAdapter =
       PangleMediationAdapter(pangleInitializer, pangleSdkWrapper, pangleFactory)
+
+    whenever(context.getSharedPreferences(any(), any())).thenReturn(sharedPreferences)
   }
 
   @Test
@@ -192,46 +192,164 @@ class PangleMediationAdapterTest {
     verify(initializationCompleteCallback).onInitializationFailed(PANGLE_INIT_FAILURE_MESSAGE)
   }
 
+  // region hasACConsent() Tests
   @Test
-  fun getGDPRConsent_returnsTheUpdatedValueWhenCalled() {
-    // Given the initial PangleMediationAdapter state
-    // When the GDPRConsent is updated
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
+  fun hasACConsent_withNegativeGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(-1)
 
-    // Then getGDPRConsent() must return the updated value.
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
   }
 
   @Test
-  fun setGDPRConsent_ignoresValuesOutsideTheThreeAccepted() {
-    // Given the initial PangleMdiationAdapter state
-    // When the GDPRConsent is updated to a different range of values that are not allowed.
-    PangleMediationAdapter.setGDPRConsent(-2)
-    // Then the value is only updated when valid options are sent (-1, 0 or 1).
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(2)
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(-1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(-1)
-    PangleMediationAdapter.setGDPRConsent(0)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(0)
-    PangleMediationAdapter.setGDPRConsent(1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(1)
+  fun hasACConsent_withZeroGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(0)
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
   }
 
   @Test
-  fun setGDPRConsent_ifPangleSDKIsInitialized_setsGDPRConsentOnPangleSdk(
-    @TestParameter(valuesProvider = GDPRConsentTypesProvider::class) gdprConsent: Int
-  ) {
-    whenever(pangleSdkWrapper.isInitSuccess()).thenReturn(true)
+  fun hasACConsent_withInvalidGDPRApplies_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any()))
+      .thenThrow(ClassCastException::class.java)
 
-    PangleMediationAdapter.setGDPRConsent(gdprConsent, pangleSdkWrapper)
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
 
-    verify(pangleSdkWrapper).setGdprConsent(gdprConsent)
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
   }
+
+  @Test
+  fun hasACConsent_withInvalidAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenThrow(ClassCastException::class.java)
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withUnknownSpecVersion_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("0~3100.1~dv.2.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withInvalidSpecVersion_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("a~3100.1~dv.2.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withNoConsentedVendor_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withPangleIncludedInAdditionalConsent_returnsTrue() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~1.3100")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.TRUE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withPangleNotIncludedInAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("1~1.2")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionOneSpec_withUnexpectedParts_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("1~3100.1~dv.2.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withInvalidDisclosedFormat_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~3100.1~ax.2.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withUnexpectedParts_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any())).thenReturn("2~3100.1")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withPangleIncludedInAdditionalConsent_returnsTrue() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.3100~dv.2.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.TRUE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withPangleDisclosedInAdditionalConsent_returnsFalse() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.2~dv.3100.3")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.FALSE)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withPangleMissingInAdditionalConsent_returnsUnknown() {
+    whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
+    whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
+      .thenReturn("2~1.2~dv.3.4")
+
+    val consentResult = PangleMediationAdapter.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(PangleConstants.ConsentResult.UNKNOWN)
+  }
+
+  // endregion
 
   @Test
   fun getVersionInfo_ifAdapterVersionHasLessThanFourParts_returnsZeros() {

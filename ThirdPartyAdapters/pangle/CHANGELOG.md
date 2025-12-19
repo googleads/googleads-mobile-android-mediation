@@ -1,5 +1,9 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Pangle SDK if GDPR applies.
+  - The `setGDPRConsent()` and `getGDPRConsent()` methods have been removed from the `PangleMediationAdapter` class.
+
 #### Version 7.8.0.8.0
 - Verified compatibility with Pangle SDK version 7.8.0.8.
 
