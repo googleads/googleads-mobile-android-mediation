@@ -26,6 +26,22 @@ import java.lang.annotation.RetentionPolicy;
 
 public class ChartboostConstants {
 
+  /**
+   * Chartboost ad technology provider ID from
+   * https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   */
+  public static final int AD_TECHNOLOGY_PROVIDER_ID = 2898;
+
+  /** Represents the result of a consent check for advertising purposes. */
+  public enum ConsentResult {
+    /** The consent status could not be determined, or consent does not apply. */
+    UNKNOWN,
+    /** The user has given their consent. */
+    TRUE,
+    /** The user has explicitly declined consent. */
+    FALSE
+  }
+
   // Chartboost adapter error domain.
   static final String ERROR_DOMAIN = "com.google.ads.mediation.chartboost";
 
