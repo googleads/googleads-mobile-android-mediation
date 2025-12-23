@@ -163,14 +163,14 @@ class DTExchangeNativeAdMapper(
     nativeAdContent.bindMediaView(mediaView)
     adContent = nativeAdContent
 
-    headline = nativeAdContent.adTitle
-    body = nativeAdContent.adDescription
-    icon = NativeMappedImage(nativeAdContent.appIcon)
-    callToAction = nativeAdContent.adCallToAction
+    nativeAdContent.adTitle?.let { headline = it }
+    nativeAdContent.adDescription?.let { body = it }
+    nativeAdContent.appIcon?.let { icon = NativeMappedImage(it) }
+    nativeAdContent.adCallToAction?.let { callToAction = it }
 
-    setMediaView(nativeAdContent.mediaView)
-    starRating = nativeAdContent.rating.toDouble()
-    mediaContentAspectRatio = nativeAdContent.mediaAspectRatio ?: 0f
+    nativeAdContent.mediaView?.let { setMediaView(it) }
+    nativeAdContent.rating?.let { starRating = it.toDouble() }
+    nativeAdContent.mediaAspectRatio?.let { mediaContentAspectRatio = it }
 
     overrideClickHandling = true
     overrideImpressionRecording = true
