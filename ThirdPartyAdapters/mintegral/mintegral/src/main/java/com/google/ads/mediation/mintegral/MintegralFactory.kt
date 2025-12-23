@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.mintegral
 
+import android.app.Activity
 import android.content.Context
 import android.view.ViewGroup
 import com.mbridge.msdk.newinterstitial.out.MBBidNewInterstitialHandler
@@ -102,6 +103,9 @@ object MintegralFactory {
       override fun show() {
         instance?.show()
       }
+      override fun show(activity: Activity) {
+        instance?.show(activity)
+      }
     }
 
   @JvmStatic
@@ -132,6 +136,9 @@ object MintegralFactory {
       override fun showFromBid() {
         instance?.showFromBid()
       }
+      override fun showFromBid(activity: Activity) {
+        instance?.showFromBid(activity)
+      }
     }
 
   @JvmStatic fun createMBBannerView(context: Context) = MBBannerView(context)
@@ -160,6 +167,9 @@ object MintegralFactory {
 
       override fun show() {
         instance?.show()
+      }
+      override fun show(activity: Activity) {
+        instance?.show(activity)
       }
     }
 
@@ -191,6 +201,9 @@ object MintegralFactory {
 
       override fun showFromBid() {
         instance?.showFromBid()
+      }
+      override fun showFromBid(activity: Activity) {
+        instance?.showFromBid(activity)
       }
     }
 }
@@ -226,6 +239,7 @@ interface MintegralNewInterstitialAdWrapper {
   fun playVideoMute(muteConstant: Int)
 
   fun show()
+  fun show(activity: Activity)
 }
 
 interface MintegralBidNewInterstitialAdWrapper {
@@ -240,6 +254,7 @@ interface MintegralBidNewInterstitialAdWrapper {
   fun playVideoMute(muteConstant: Int)
 
   fun showFromBid()
+  fun showFromBid(activity: Activity)
 }
 
 interface MintegralRewardedAdWrapper {
@@ -253,6 +268,7 @@ interface MintegralRewardedAdWrapper {
   fun playVideoMute(muteConstant: Int)
 
   fun show()
+  fun show(activity: Activity)
 }
 
 interface MintegralBidRewardedAdWrapper {
@@ -268,4 +284,6 @@ interface MintegralBidRewardedAdWrapper {
   fun playVideoMute(muteConstant: Int)
 
   fun showFromBid()
+
+  fun showFromBid(activity: Activity)
 }

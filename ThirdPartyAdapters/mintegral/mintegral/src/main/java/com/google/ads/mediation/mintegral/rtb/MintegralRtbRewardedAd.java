@@ -17,6 +17,7 @@ package com.google.ads.mediation.mintegral.rtb;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.TAG;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -87,6 +88,10 @@ public class MintegralRtbRewardedAd extends MintegralRewardedAd {
         muted
             ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
             : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mintegralBidRewardedAdWrapper.showFromBid();
+    if (context instanceof Activity) {
+      mintegralBidRewardedAdWrapper.showFromBid((Activity)context);
+    }else {
+      mintegralBidRewardedAdWrapper.showFromBid();
+    }
   }
 }
