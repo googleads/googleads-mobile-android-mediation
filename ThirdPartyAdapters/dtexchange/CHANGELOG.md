@@ -2,6 +2,7 @@
 
 #### Next Version
 - Added null protection to Native Ad's fields
+- Maps GMA SDK Child flags to DT Exchange methods.
 
 #### Version 8.4.1.0
 - Verified compatibility with DT Exchange SDK 8.4.1.
