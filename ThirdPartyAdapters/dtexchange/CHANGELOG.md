@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.4.2.0 (In progress)
 - Added null protection to Native Ad's fields
 
 #### Version 8.4.1.0
