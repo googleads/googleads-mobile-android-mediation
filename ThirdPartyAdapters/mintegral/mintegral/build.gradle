@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "17.0.41.0"
+    stringVersion = "17.0.51.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 17004100
+        versionCode 17005100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -118,7 +118,7 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.google.android.gms:play-services-ads:24.9.0'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.0.41'
+    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.0.51'
 
     // Jacoco
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
