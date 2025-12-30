@@ -2,11 +2,12 @@
 <manifest package="com.google.ads.mediation.sample.sdk"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <application>
     <activity
         android:name=".activities.SampleSDKAdsActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
-        android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+        android:theme="@style/Theme.AppCompat.NoActionBar"/>
   </application>
 
 </manifest>
