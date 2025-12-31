@@ -1,5 +1,8 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK Child flags to DT Exchange methods.
+
 #### Version 8.4.2.0 (In progress)
 - Added null protection to Native Ad's fields
 
