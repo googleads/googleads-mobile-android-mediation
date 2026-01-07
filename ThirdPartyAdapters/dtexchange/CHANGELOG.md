@@ -1,7 +1,12 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.4.2.0 (In progress)
+#### Version 8.4.2.0
 - Added null protection to Native Ad's fields
+- Verified compatibility with DT Exchange SDK 8.4.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- DT Exchange SDK version 8.4.2.
 
 #### Version 8.4.1.0
 - Verified compatibility with DT Exchange SDK 8.4.1.
