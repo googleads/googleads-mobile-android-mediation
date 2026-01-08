@@ -1,5 +1,8 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK Child flags to ironSource SDK methods.
+
 #### Version 9.2.0.0
 - Verified compatibility with ironSource SDK version 9.2.0.
 
