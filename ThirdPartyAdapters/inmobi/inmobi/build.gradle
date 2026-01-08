@@ -116,11 +116,11 @@ dependencies {
     // Mobile Ads SDK
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
 
-    // Jacoco
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-
     // inMobi SDK
     implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.1.0'
+
+    // Jacoco
+    testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'

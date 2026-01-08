@@ -121,7 +121,7 @@ dependencies {
     implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.0.51'
 
     // Jacoco
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'
