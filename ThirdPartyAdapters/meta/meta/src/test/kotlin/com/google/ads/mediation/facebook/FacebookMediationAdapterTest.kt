@@ -220,6 +220,20 @@ class FacebookMediationAdapterTest {
   fun setMixedAudience_whenTfcdTrue_setsMixedAudienceTrue() {
     whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+
+    setMixedAudience(mediationAdConfiguration)
+
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+  }
+
+  @Test
+  fun setMixedAudience_whenTfuaTrue_setsMixedAudienceTrue() {
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 
     setMixedAudience(mediationAdConfiguration)
 
@@ -230,6 +244,20 @@ class FacebookMediationAdapterTest {
   fun setMixedAudience_whenTfcdFalse_setsMixedAudienceFalse() {
     whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+
+    setMixedAudience(mediationAdConfiguration)
+
+    assertThat(AdSettings.isMixedAudience()).isFalse()
+  }
+
+  @Test
+  fun setMixedAudience_whenTfuaFalse_setsMixedAudienceFalse() {
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
 
     setMixedAudience(mediationAdConfiguration)
 
