@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK Underage consent flags to UnityAds SDK methods.
+
 #### Version 4.16.5.0
 - Verified compatibility with Unity Ads SDK 4.16.5.
 
