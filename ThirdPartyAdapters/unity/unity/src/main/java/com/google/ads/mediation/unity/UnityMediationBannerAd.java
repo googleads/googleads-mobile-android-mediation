@@ -41,6 +41,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAdsLoadOptions;
+import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -215,8 +216,8 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
                     gameId, bannerPlacementId);
             Log.d(UnityMediationAdapter.TAG, logMessage);
 
-            UnityAdsAdapterUtils.setCoppa(
-                MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
+            UnityAdsAdapterUtils.setUnityAdsPrivacy(
+                MobileAds.getRequestConfiguration(), new MetaData(context));
 
             if (unityBannerViewWrapper == null) {
               unityBannerViewWrapper =
