@@ -19,6 +19,7 @@ import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN
 import static com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED;
 import static com.google.ads.mediation.mintegral.MintegralMediationAdapter.loadedSlotIdentifiers;
 
+import android.app.Activity;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import com.google.ads.mediation.mintegral.FlagValueGetter;
@@ -85,6 +86,10 @@ public class MintegralWaterfallInterstitialAd extends MintegralInterstitialAd {
         muted
             ? MBridgeConstans.REWARD_VIDEO_PLAY_MUTE
             : MBridgeConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-    mbNewInterstitialAdWrapper.show();
+    if (context instanceof Activity) {
+      mbNewInterstitialAdWrapper.show((Activity)context);
+    }else {
+      mbNewInterstitialAdWrapper.show();
+    }
   }
 }
