@@ -41,14 +41,27 @@ object LineInitializer {
   fun getFiveAdConfig(appId: String): FiveAdConfig {
     if (fiveAdConfig == null) {
       fiveAdConfig = LineSdkFactory.delegate.createFiveAdConfig(appId)
-      fiveAdConfig?.needChildDirectedTreatment =
-        when (MobileAds.getRequestConfiguration().tagForChildDirectedTreatment) {
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ->
-            NeedChildDirectedTreatment.TRUE
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ->
-            NeedChildDirectedTreatment.FALSE
-          else -> NeedChildDirectedTreatment.UNSPECIFIED
-        }
+
+      // If the COPPA or underage consent value is unspecified in GMA SDK, we don't default it to
+      // either one since the value could have been updated before.
+      val requestConfiguration = MobileAds.getRequestConfiguration()
+      if (
+        requestConfiguration.tagForChildDirectedTreatment ==
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+          requestConfiguration.tagForUnderAgeOfConsent ==
+            RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+      ) {
+        fiveAdConfig?.needChildDirectedTreatment = NeedChildDirectedTreatment.TRUE
+      } else if (
+        requestConfiguration.tagForChildDirectedTreatment ==
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+          requestConfiguration.tagForUnderAgeOfConsent ==
+            RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+      ) {
+        fiveAdConfig?.needChildDirectedTreatment = NeedChildDirectedTreatment.FALSE
+      } else {
+        fiveAdConfig?.needChildDirectedTreatment = NeedChildDirectedTreatment.UNSPECIFIED
+      }
 
       fiveAdConfig?.isTest = LineMediationAdapter.isTestMode
     }

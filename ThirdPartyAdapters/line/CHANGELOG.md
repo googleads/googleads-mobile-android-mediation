@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK underage flags to Line SDK child treatment methods.
+
 #### Version 2.9.20251028.0
 - Verified compatibility with FiveAd SDK version 2.9.20251028.
 
