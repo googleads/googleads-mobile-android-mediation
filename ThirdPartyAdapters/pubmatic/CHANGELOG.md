@@ -1,5 +1,19 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Version 4.11.0.0
+- Verified compatibility with Pubmatic SDK 4.11.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Pubmatic SDK version 4.11.0
+
+#### Version 4.10.0.1
+- Added list of assets for waterfall native ad format.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Pubmatic SDK version 4.10.0
+
 #### Version 4.10.0.0
 - Verified compatibility with Pubmatic SDK 4.10.0.
 

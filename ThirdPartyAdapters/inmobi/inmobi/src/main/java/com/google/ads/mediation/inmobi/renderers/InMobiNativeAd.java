@@ -131,11 +131,6 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
   }
 
   @Override
-  public void onAdFullScreenWillDisplay(@NonNull InMobiNative inMobiNative) {
-    // Google Mobile Ads SDK doesn't have a matching event.
-  }
-
-  @Override
   public void onAdFullScreenDisplayed(@NonNull InMobiNative inMobiNative) {
     Log.d(TAG, "InMobi native ad has been displayed.");
     if (mediationNativeAdCallback != null) {
@@ -165,10 +160,5 @@ public abstract class InMobiNativeAd extends NativeAdEventListener {
     if (mediationNativeAdCallback != null) {
       mediationNativeAdCallback.reportAdImpression();
     }
-  }
-
-  @Override
-  public void onAdStatusChanged(@NonNull InMobiNative inMobiNative) {
-    // Google Mobile Ads SDK doesn't have a matching event.
   }
 }

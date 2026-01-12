@@ -1,5 +1,14 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 11.1.0.0
+- Verified compatibility with InMobi Kotlin SDK version 11.1.0.
+- RewardedInterstitial support added.
+- Adapter does not modify InMobi isAgeRestricted if the publisher has not set the `tag_for_under_age_of_consent` flag.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- InMobi Kotlin SDK version 11.1.0.
+
 #### Version 10.8.8.1
 - Removed class-level references to `Context` objects to help with memory leak issues.
 

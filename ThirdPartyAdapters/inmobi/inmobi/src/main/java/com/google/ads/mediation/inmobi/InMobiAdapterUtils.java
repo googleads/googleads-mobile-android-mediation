@@ -29,7 +29,6 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.mediation.MediationAdConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.InMobiSdk.AgeGroup;
@@ -141,12 +140,13 @@ public class InMobiAdapterUtils {
 
   @VisibleForTesting
   static void setIsAgeRestricted(InMobiSdkWrapper inMobiSdkWrapper) {
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `false`.
+    // If the COPPA value is unspecified in GMA SDK, we don't default it to either one since the
+    // value could have been updated before.
     if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
         == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
       inMobiSdkWrapper.setIsAgeRestricted(true);
-    } else {
+    } else if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
+        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
       inMobiSdkWrapper.setIsAgeRestricted(false);
     }
   }
@@ -200,18 +200,6 @@ public class InMobiAdapterUtils {
       return LogLevel.ERROR;
     }
     return LogLevel.NONE;
-  }
-
-  /**
-   * Checks whether or not the InMobi native ad has all the required assets.
-   *
-   * @param nativeAd the InMobi native ad object.
-   * @return {@code true} if the native ad has all the required assets.
-   */
-  public static boolean isValidNativeAd(InMobiNativeWrapper nativeAd) {
-    return nativeAd.getAdCtaText() != null && nativeAd.getAdDescription() != null
-        && nativeAd.getAdIconUrl() != null && nativeAd.getAdLandingPageUrl() != null
-        && nativeAd.getAdTitle() != null;
   }
 
   /**

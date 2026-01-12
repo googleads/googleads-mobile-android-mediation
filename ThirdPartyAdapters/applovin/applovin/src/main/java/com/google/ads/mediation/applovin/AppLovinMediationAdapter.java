@@ -289,16 +289,21 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       return;
     }
 
-    final MediationConfiguration config = rtbSignalData.getConfiguration();
+    final List<MediationConfiguration> configs = rtbSignalData.getConfigurations();
 
-    // Check if supported ad format
-    if (config.getFormat() == AdFormat.NATIVE) {
-      AdError error = new AdError(ERROR_AD_FORMAT_UNSUPPORTED,
-          "Requested to collect signal for unsupported native ad format. Ignoring...",
-          ERROR_DOMAIN);
-      Log.e(TAG, error.getMessage());
-      signalCallbacks.onFailure(error);
-      return;
+    if (!configs.isEmpty()) {
+      // Check if supported ad format. Note: Even if there are multiple configs, they will all have
+      // the same format. So, just checking the first one works.
+      if (configs.get(0).getFormat() == AdFormat.NATIVE) {
+        AdError error =
+            new AdError(
+                ERROR_AD_FORMAT_UNSUPPORTED,
+                "Requested to collect signal for unsupported native ad format. Ignoring...",
+                ERROR_DOMAIN);
+        Log.e(TAG, error.getMessage());
+        signalCallbacks.onFailure(error);
+        return;
+      }
     }
 
     // Check if the publisher provided extra parameters

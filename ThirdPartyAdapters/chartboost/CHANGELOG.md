@@ -1,6 +1,25 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Version 9.10.1.0 (In progress)
+#### Version 9.11.0.0
+- Verified compatibility with Chartboost SDK version 9.11.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Chartboost SDK version 9.11.0.
+
+#### Version 9.10.2.0
+- Verified compatibility with Chartboost SDK version 9.10.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Chartboost SDK version 9.10.2.
+
+#### Version 9.10.1.0
+- Verified compatibility with Chartboost SDK version 9.10.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.7.0.
+- Chartboost SDK version 9.10.1.
 
 #### Version 9.10.0.1
 - Removed class-level references to Context. Can help reduce memory leak issues.

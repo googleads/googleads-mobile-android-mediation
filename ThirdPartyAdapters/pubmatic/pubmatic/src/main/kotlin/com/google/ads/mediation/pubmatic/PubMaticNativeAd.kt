@@ -47,7 +47,12 @@ import com.pubmatic.sdk.nativead.POBNativeAd
 import com.pubmatic.sdk.nativead.POBNativeAdListener
 import com.pubmatic.sdk.nativead.POBNativeAdLoader
 import com.pubmatic.sdk.nativead.POBNativeAdLoaderListener
+import com.pubmatic.sdk.nativead.request.POBNativeRequestDataAsset
+import com.pubmatic.sdk.nativead.request.POBNativeRequestImageAsset
+import com.pubmatic.sdk.nativead.request.POBNativeRequestTitleAsset
 import com.pubmatic.sdk.openwrap.core.POBConstants.KEY_POB_ADMOB_WATERMARK
+import com.pubmatic.sdk.openwrap.core.nativead.POBNativeDataAssetType
+import com.pubmatic.sdk.openwrap.core.nativead.POBNativeImageAssetType
 import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -84,6 +89,54 @@ private constructor(
       pobNativeAdLoader.loadAd(bidResponse, POBBiddingHost.ADMOB)
       return
     }
+
+    pobNativeAdLoader.setNativeCustomAssets(
+      listOf(
+        // Defined based on
+        // https://support.google.com/admanager/answer/7031536?hl=en#:~:text=The%20secondary%20body%20text%20(for,%E2%80%A0.
+        // the text length and the image dimensions were selected arbitraliry. Adjust them if
+        // needed.
+        POBNativeRequestTitleAsset(
+          /* id= */ (0..Int.MAX_VALUE).random(),
+          /* required= */ true,
+          /* length= */ 100,
+        ),
+        POBNativeRequestDataAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ true,
+          /* type = */ POBNativeDataAssetType.CTA_TEXT,
+        ),
+        POBNativeRequestImageAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ false,
+          /* type = */ POBNativeImageAssetType.ICON,
+          /* minimumWidth = */ 30,
+          /* minimumHeight = */ 30,
+        ),
+        POBNativeRequestImageAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ false,
+          /* type = */ POBNativeImageAssetType.MAIN,
+          /* minimumWidth = */ 100,
+          /* minimumHeight = */ 100,
+        ),
+        POBNativeRequestDataAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ false,
+          /* type = */ POBNativeDataAssetType.DESCRIPTION,
+        ),
+        POBNativeRequestDataAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ false,
+          /* type = */ POBNativeDataAssetType.PRICE,
+        ),
+        POBNativeRequestDataAsset(
+          /* id = */ (0..Int.MAX_VALUE).random(),
+          /* required = */ false,
+          /* type = */ POBNativeDataAssetType.RATING,
+        ),
+      )
+    )
     pobNativeAdLoader.loadAd()
   }
 

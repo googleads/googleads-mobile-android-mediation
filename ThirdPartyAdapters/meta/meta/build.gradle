@@ -118,7 +118,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
 
     // Jacoco
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'

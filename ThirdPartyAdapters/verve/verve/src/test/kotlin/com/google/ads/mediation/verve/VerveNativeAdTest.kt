@@ -63,6 +63,7 @@ class VerveNativeAdTest {
   fun loadAd_invokesHyBidLoadAd() {
     verveNativeAd.loadAd()
 
+    verify(mockHyBidNativeAdRequest).setPreLoadMediaAssets(eq(true))
     verify(mockHyBidNativeAdRequest).prepareAd(eq(TEST_BID_RESPONSE), eq(verveNativeAd))
   }
 
@@ -78,7 +79,7 @@ class VerveNativeAdTest {
     assertThat(verveNativeAd.starRating).isEqualTo(TEST_RATING.toDouble())
     assertThat(verveNativeAd.icon.drawable).isNotNull()
     assertThat(verveNativeAd.icon.uri.toString()).isEqualTo(TEST_ICON_URL)
-    assertThat(verveNativeAd.overrideClickHandling).isTrue()
+    assertThat(verveNativeAd.overrideClickHandling).isFalse()
   }
 
   @Test
@@ -137,6 +138,24 @@ class VerveNativeAdTest {
     )
 
     verify(mockHyBidNativeAd).startTracking(eq(testView), eq(verveNativeAd))
+  }
+
+  @Test
+  fun unTrackViews_invokesStopTracking() {
+    verveNativeAd.onRequestSuccess(mockHyBidNativeAd)
+
+    verveNativeAd.untrackView(testView)
+
+    verify(mockHyBidNativeAd).stopTracking()
+  }
+
+  @Test
+  fun handleClick_invokesOnNativeClick() {
+    verveNativeAd.onRequestSuccess(mockHyBidNativeAd)
+
+    verveNativeAd.handleClick(testView)
+
+    verify(mockHyBidNativeAd).onNativeClick(testView)
   }
 
   private companion object {

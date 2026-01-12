@@ -1,11 +1,12 @@
 package com.google.ads.mediation.inmobi;
 
-import android.content.Context;
 import android.view.View;
-import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import com.inmobi.ads.InMobiNative;
 import com.inmobi.ads.listeners.VideoEventListener;
+import com.inmobi.media.ads.nativeAd.InMobiNativeImage;
+import com.inmobi.media.ads.nativeAd.InMobiNativeViewData;
+import com.inmobi.media.ads.nativeAd.MediaView;
 import java.util.Map;
 import org.json.JSONObject;
 
@@ -48,7 +49,17 @@ public class InMobiNativeWrapper {
 
   @Nullable
   public String getAdCtaText() {
-    return inMobiNative.getAdCtaText();
+    return inMobiNative.getCtaText();
+  }
+
+  @Nullable
+  public String getAdvertiserName() {
+    return inMobiNative.getAdvertiserName();
+  }
+
+  @Nullable
+  public View getAdChoiceIcon() {
+    return inMobiNative.getAdChoiceIcon();
   }
 
   @Nullable
@@ -58,12 +69,8 @@ public class InMobiNativeWrapper {
 
   @Nullable
   public String getAdIconUrl() {
-    return inMobiNative.getAdIconUrl();
-  }
-
-  @Nullable
-  public String getAdLandingPageUrl() {
-    return inMobiNative.getAdLandingPageUrl();
+    InMobiNativeImage image = inMobiNative.getAdIcon();
+    return image == null ? null : image.getUrl();
   }
 
   @Nullable
@@ -73,26 +80,28 @@ public class InMobiNativeWrapper {
 
   @Nullable
   public JSONObject getCustomAdContent() {
-    return inMobiNative.getCustomAdContent();
+    return inMobiNative.getAdContent();
+  }
+
+  public float getAdRating() {
+    return inMobiNative.getAdRating();
   }
 
   @Nullable
-  public View getPrimaryViewOfWidth(
-      Context context, View contentView, ViewGroup parent, Integer viewWidthInPixels) {
-    return inMobiNative.getPrimaryViewOfWidth(context, contentView, parent, viewWidthInPixels);
+  public MediaView getMediaView() {
+    return inMobiNative.getMediaView();
   }
 
-  @Nullable
   public Boolean isVideo() {
     return inMobiNative.isVideo();
   }
 
-  public void reportAdClickAndOpenLandingPage() {
-    inMobiNative.reportAdClickAndOpenLandingPage();
+  public void registerForTracking(InMobiNativeViewData nativeViewData) {
+    inMobiNative.registerViewForTracking(nativeViewData);
   }
 
-  public void resume() {
-    inMobiNative.resume();
+  public void unTrackViews() {
+    inMobiNative.unTrackViews();
   }
 
   public void destroy() {

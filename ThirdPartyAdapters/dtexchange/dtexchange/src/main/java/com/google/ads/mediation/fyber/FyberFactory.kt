@@ -17,6 +17,8 @@ package com.google.ads.mediation.fyber
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
+import com.fyber.inneractive.sdk.external.NativeAdUnitController
+import com.fyber.inneractive.sdk.external.NativeAdVideoContentController
 
 object FyberFactory {
 
@@ -29,4 +31,8 @@ object FyberFactory {
   fun createInneractiveFullscreenUnitController(): InneractiveFullscreenUnitController {
     return InneractiveFullscreenUnitController()
   }
+
+  @JvmStatic fun createNativeAdUnitController() = NativeAdUnitController()
+
+  @JvmStatic fun createNativeAdVideoContentController() = NativeAdVideoContentController()
 }
