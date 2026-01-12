@@ -119,7 +119,8 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.vungle:vungle-ads:7.6.0'
+//    implementation 'com.vungle:vungle-ads:7.6.0'
+    implementation 'com.github.Vungle:vng-android-sdk:707ae0a9fd'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
 
