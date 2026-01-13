@@ -267,7 +267,7 @@ class VungleMediationAdapterTest {
       adapter.loadBannerAd(createMediationBannerAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -440,7 +440,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -561,7 +561,7 @@ class VungleMediationAdapterTest {
       adapter.loadNativeAd(createMediationNativeAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -738,7 +738,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -859,7 +859,7 @@ class VungleMediationAdapterTest {
       adapter.loadAppOpenAd(createMediationAppOpenAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -977,7 +977,7 @@ class VungleMediationAdapterTest {
       adapter.loadRtbRewardedAd(createMediationRewardedAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -1107,7 +1107,7 @@ class VungleMediationAdapterTest {
       adapter.loadRtbBannerAd(createMediationBannerAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -1288,7 +1288,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -1417,7 +1417,7 @@ class VungleMediationAdapterTest {
       adapter.loadRtbNativeAd(createMediationNativeAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -1599,7 +1599,7 @@ class VungleMediationAdapterTest {
       )
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test
@@ -1729,7 +1729,7 @@ class VungleMediationAdapterTest {
       adapter.loadRtbAppOpenAd(createMediationAppOpenAdConfiguration(context = context), mock())
     }
 
-    verify(mockVungleInitializer).updateCoppaStatus(any())
+    verify(mockVungleInitializer).updateCoppaAndUnderageConsentStatus(any())
   }
 
   @Test

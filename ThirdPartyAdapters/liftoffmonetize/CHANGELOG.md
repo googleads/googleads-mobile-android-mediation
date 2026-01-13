@@ -1,5 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK underage flags to Liftoff Monetize SDK COPPA method.
+
 #### Version 7.6.3.0 (In progress)
 
 #### Version 7.6.2.0
