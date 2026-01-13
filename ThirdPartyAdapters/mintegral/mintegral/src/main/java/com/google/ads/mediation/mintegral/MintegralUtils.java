@@ -106,9 +106,14 @@ public class MintegralUtils {
 
   protected static void configureMintegralPrivacy(Context context, MBridgeSDK mBridgeSDK) {
     int tagForChildDirected = getRequestConfiguration().getTagForChildDirectedTreatment();
-    boolean isTaggedForChildDirected =
-        tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
-    mBridgeSDK.setCoppaStatus(context, isTaggedForChildDirected);
+    int tagForUnderAgeConsent = getRequestConfiguration().getTagForUnderAgeOfConsent();
+    if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+      mBridgeSDK.setCoppaStatus(context, true);
+    } else if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
+      mBridgeSDK.setCoppaStatus(context, false);
+    }
   }
 
   /** Get the Mintegral slot identifiers in RtbSignalData. */
