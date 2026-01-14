@@ -144,8 +144,6 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
                   NativeVideoOptions vngVideoOptions = nativeAd.getVideoOptions();
                   boolean gStartMuted = googleVideoOptions.getStartMuted();
                   vngVideoOptions.setStartMuted(gStartMuted);
-                  boolean gCustomControl = googleVideoOptions.getCustomControlsRequested();
-                  vngVideoOptions.setCustomControlsEnabled(gCustomControl);
                 }
                 mediaView = new MediaView(context);
                 if (!TextUtils.isEmpty(watermark)) {
@@ -187,11 +185,6 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       nativeAdCallback.reportAdClicked();
       nativeAdCallback.onAdOpened();
     }
-  }
-
-  @Override
-  public void onAdSwipeGestureClicked(@NonNull BaseAd baseAd) {
-    // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   @Override
