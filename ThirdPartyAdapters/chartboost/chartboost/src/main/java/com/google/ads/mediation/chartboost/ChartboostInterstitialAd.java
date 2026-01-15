@@ -36,6 +36,7 @@ import com.chartboost.sdk.events.ImpressionEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -74,8 +75,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
     }
 
     final String location = chartboostParams.getLocation();
-    ChartboostAdapterUtils.updateCoppaStatus(
-        context, interstitialAdConfiguration.taggedForChildDirectedTreatment());
+    ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     ChartboostInitializer.getInstance()
         .initialize(
             context,
