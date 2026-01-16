@@ -36,6 +36,7 @@ import com.chartboost.sdk.events.RewardEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -74,8 +75,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     }
 
     final String location = chartboostParams.getLocation();
-    ChartboostAdapterUtils.updateCoppaStatus(
-        context, rewardedAdConfiguration.taggedForChildDirectedTreatment());
+    ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     ChartboostInitializer.getInstance()
         .initialize(
             context,

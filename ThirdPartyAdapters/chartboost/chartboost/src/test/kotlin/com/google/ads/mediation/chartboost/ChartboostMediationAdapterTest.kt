@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.chartboost.sdk.Chartboost
 import com.chartboost.sdk.Chartboost.getSDKVersion
+import com.chartboost.sdk.privacy.model.COPPA
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.createChartboostParams
@@ -15,6 +16,8 @@ import com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SER
 import com.google.ads.mediation.chartboost.ChartboostInitializer.getInstance
 import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESSAGE_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.common.truth.Truth.assertThat
@@ -44,6 +47,15 @@ class ChartboostMediationAdapterTest {
 
   @Before
   fun setUp() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+    ChartboostInitializer.clearInstance()
     adapter = ChartboostMediationAdapter()
   }
 
@@ -103,14 +115,19 @@ class ChartboostMediationAdapterTest {
 
   @Test
   fun initialize_invalidAppId_invokesOnInitializationFailedCallback() {
-    val invalidServerParameters = bundleOf(ChartboostAdapterUtils.KEY_APP_ID to "")
+    ChartboostMediationAdapter.setAppParams("", "")
+    val invalidServerParameters =
+      bundleOf(
+        ChartboostAdapterUtils.KEY_APP_ID to "",
+        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature_foo",
+      )
     whenever(mediationConfiguration.serverParameters).thenReturn(invalidServerParameters)
     // Create an AdError object so that it can be verified that this object's toString() matches the
     // error string that's passed to the initialization callback.
     val adError =
       ChartboostConstants.createAdapterError(
         ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
+        ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID,
       )
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
@@ -134,7 +151,7 @@ class ChartboostMediationAdapterTest {
       val adError =
         ChartboostConstants.createAdapterError(
           ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_MESSAGE_INVALID_SERVER_PARAMETERS
+          ERROR_MESSAGE_INVALID_SERVER_PARAMETERS,
         )
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
@@ -147,13 +164,14 @@ class ChartboostMediationAdapterTest {
 
   @Test
   fun initialize_emptyAppSignature_invokesOnInitializationFailedCallback() {
+    ChartboostMediationAdapter.setAppParams("", "")
     val serverParameters = bundleOf(ChartboostAdapterUtils.KEY_APP_ID to "app_id")
     whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
 
     val adError =
       ChartboostConstants.createAdapterError(
         ERROR_INVALID_SERVER_PARAMETERS,
-        ERROR_MESSAGE_INVALID_SERVER_PARAMETERS
+        ERROR_MESSAGE_INVALID_SERVER_PARAMETERS,
       )
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
@@ -168,7 +186,7 @@ class ChartboostMediationAdapterTest {
     val serverParameters =
       bundleOf(
         ChartboostAdapterUtils.KEY_APP_ID to "app_id",
-        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature"
+        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature",
       )
     whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
 
@@ -190,14 +208,14 @@ class ChartboostMediationAdapterTest {
     val serverParameters1 =
       bundleOf(
         ChartboostAdapterUtils.KEY_APP_ID to "app_id_foo",
-        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature_foo"
+        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature_foo",
       )
     whenever(mediationConfiguration1.serverParameters).thenReturn(serverParameters1)
 
     val serverParameters =
       bundleOf(
         ChartboostAdapterUtils.KEY_APP_ID to "app_id_bar",
-        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature_bar"
+        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature_bar",
       )
     whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
 
@@ -211,7 +229,7 @@ class ChartboostMediationAdapterTest {
       adapter.initialize(
         context,
         initializationCompleteCallback,
-        listOf(mediationConfiguration1, mediationConfiguration)
+        listOf(mediationConfiguration1, mediationConfiguration),
       )
 
       verify(initializationCompleteCallback).onInitializationSucceeded()
@@ -223,7 +241,7 @@ class ChartboostMediationAdapterTest {
     val serverParameters =
       bundleOf(
         ChartboostAdapterUtils.KEY_APP_ID to "app_id",
-        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature"
+        ChartboostAdapterUtils.KEY_APP_SIGNATURE to "app_signature",
       )
     val adError =
       ChartboostConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS, "error_message")
@@ -258,6 +276,84 @@ class ChartboostMediationAdapterTest {
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
       verify(initializationCompleteCallback).onInitializationSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withTFCDTrue_updatesCoppaTrue() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+    val coppaCaptor = argumentCaptor<COPPA>()
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(Chartboost::class.java).use {
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      it.verify { Chartboost.addDataUseConsent(any(), coppaCaptor.capture()) }
+      assertThat(coppaCaptor.firstValue.consent).isTrue()
+    }
+  }
+
+  @Test
+  fun initialize_withTFUATrue_updatesCoppaTrue() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    )
+    val coppaCaptor = argumentCaptor<COPPA>()
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(Chartboost::class.java).use {
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      it.verify { Chartboost.addDataUseConsent(any(), coppaCaptor.capture()) }
+      assertThat(coppaCaptor.firstValue.consent).isTrue()
+    }
+  }
+
+  @Test
+  fun initialize_withTFCDFalse_updatesCoppaFalse() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+    val coppaCaptor = argumentCaptor<COPPA>()
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(Chartboost::class.java).use {
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      it.verify { Chartboost.addDataUseConsent(any(), coppaCaptor.capture()) }
+      assertThat(coppaCaptor.firstValue.consent).isFalse()
+    }
+  }
+
+  @Test
+  fun initialize_withTFUAFalse_updatesCoppaFalse() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
+        .build()
+    )
+    val coppaCaptor = argumentCaptor<COPPA>()
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(Chartboost::class.java).use {
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      it.verify { Chartboost.addDataUseConsent(any(), coppaCaptor.capture()) }
+      assertThat(coppaCaptor.firstValue.consent).isFalse()
     }
   }
 }

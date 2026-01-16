@@ -20,6 +20,7 @@ import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.callbacks.StartCallback;
 import com.chartboost.sdk.events.StartError;
@@ -60,8 +61,7 @@ public class ChartboostInitializer {
     isInitializing = true;
     initListeners.add(listener);
 
-    ChartboostAdapterUtils.updateCoppaStatus(context,
-        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+    ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     Chartboost.startWithAppId(context, chartboostParams.getAppId(),
         chartboostParams.getAppSignature(),
         new StartCallback() {
@@ -99,5 +99,10 @@ public class ChartboostInitializer {
      * @param error the initialization error.
      */
     void onInitializationFailed(@NonNull AdError error);
+  }
+
+  @VisibleForTesting
+  protected static void clearInstance() {
+    instance = null;
   }
 }
