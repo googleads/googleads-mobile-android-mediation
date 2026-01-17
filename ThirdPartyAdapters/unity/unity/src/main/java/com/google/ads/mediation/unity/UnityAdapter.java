@@ -39,6 +39,7 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
+import com.unity3d.ads.metadata.MetaData;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
@@ -149,8 +150,8 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    UnityAdsAdapterUtils.setCoppa(
-        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(
+        MobileAds.getRequestConfiguration(), new MetaData(context));
 
     objectId = UUID.randomUUID().toString();
     UnityAdsLoadOptions unityAdsLoadOptions = new UnityAdsLoadOptions();
