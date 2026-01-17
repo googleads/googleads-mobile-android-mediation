@@ -24,6 +24,8 @@ import com.google.android.gms.ads.MediationUtils
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -113,9 +115,16 @@ class PubMaticMediationAdapter(
     // Set child-directed bit as part of initialization.
     val tagForChildDirectedTreatment =
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment
-    if (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+    val tagForUnderAgeOfConsent = MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent
+    if (
+      tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    ) {
       OpenWrapSDK.setCoppa(true)
-    } else if (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+    } else if (
+      tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+    ) {
       OpenWrapSDK.setCoppa(false)
     }
 
