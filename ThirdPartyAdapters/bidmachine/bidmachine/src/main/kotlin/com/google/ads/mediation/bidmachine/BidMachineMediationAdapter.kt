@@ -273,9 +273,18 @@ class BidMachineMediationAdapter : RtbAdapter() {
 
   private fun configureBidMachinePrivacy() {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
-    val isTaggedForChildDirected =
-      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-    BidMachine.setCoppa(isTaggedForChildDirected)
+    val tagForUnderAgeOfConsent = getRequestConfiguration().tagForUnderAgeOfConsent
+    if (
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    ) {
+      BidMachine.setCoppa(true)
+    } else if (
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+    ) {
+      BidMachine.setCoppa(false)
+    }
   }
 
   internal companion object {

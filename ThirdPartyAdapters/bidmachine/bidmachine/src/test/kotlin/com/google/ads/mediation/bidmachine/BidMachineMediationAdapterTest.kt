@@ -51,7 +51,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import io.bidmachine.AdPlacementConfig
-import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.BidTokenCallback
 import io.bidmachine.InitializationCallback
@@ -67,6 +66,7 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
@@ -154,6 +154,7 @@ class BidMachineMediationAdapterTest {
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .build()
     )
     val callbackCaptor = argumentCaptor<InitializationCallback>()
@@ -169,6 +170,46 @@ class BidMachineMediationAdapterTest {
   }
 
   @Test
+  fun initialize_tagForChildTrue_setBidMachineCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
+  }
+
+  @Test
+  fun initialize_tagForUnderAgeTrue_setBidMachineCoppaToTrue() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
+  }
+
+  @Test
   fun initialize_tagForChildFalse_setBidMachineCoppaToFalse() {
     val mediationConfiguration =
       MediationConfiguration(
@@ -180,6 +221,7 @@ class BidMachineMediationAdapterTest {
         .setTagForChildDirectedTreatment(
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
         )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .build()
     )
 
@@ -189,7 +231,7 @@ class BidMachineMediationAdapterTest {
   }
 
   @Test
-  fun initialize_tagForChildUnspecified_setBidMachineCoppaToFalse() {
+  fun initialize_tagForUnderAgeFalse_setBidMachineCoppaToFalse() {
     val mediationConfiguration =
       MediationConfiguration(
         AdFormat.BANNER,
@@ -200,12 +242,34 @@ class BidMachineMediationAdapterTest {
         .setTagForChildDirectedTreatment(
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
         .build()
     )
 
     adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
 
     mockBidMachine.verify { BidMachine.setCoppa(eq(false)) }
+  }
+
+  @Test
+  fun initialize_tagForChildAndUnderAgeUnspecified_neverSetsBidMachineCoppa() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBidMachine.verify({ BidMachine.setCoppa(any()) }, never())
   }
 
   // endregion
