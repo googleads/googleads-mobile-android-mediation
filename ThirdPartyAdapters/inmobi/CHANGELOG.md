@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK Underage consent flags to InMobi SDK age restricted method.
+
 #### Version 11.1.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.1.0.
 - RewardedInterstitial support added.
