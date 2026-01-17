@@ -1,6 +1,6 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.5.1.1 (In progress)
 - Maps GMA SDK underage flags to BidMachine SDK COPPA method.
 
 #### Version 3.5.1.0
