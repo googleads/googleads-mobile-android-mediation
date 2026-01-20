@@ -1,6 +1,6 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.0.1.0 (In progress)
 - Maps GMA SDK underage flags to Line SDK child treatment methods.
 
 #### Version 3.0.0.0
