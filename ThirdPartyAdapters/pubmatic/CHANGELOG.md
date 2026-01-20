@@ -1,6 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 4.11.0.1 (In progress)
 - Maps GMA SDK underage flags to OpenWrap SDK COPPA method.
 
 #### Version 4.11.0.0
