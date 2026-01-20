@@ -12,7 +12,7 @@ ext {
     // String property to store the artifact id.
     stringArtifactId = "vungle"
     // String property to store version name.
-    stringVersion = "7.6.3.0"
+    stringVersion = "7.6.3.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 7060300
+        versionCode 7060301
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
