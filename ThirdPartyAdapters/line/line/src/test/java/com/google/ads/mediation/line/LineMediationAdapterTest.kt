@@ -264,6 +264,29 @@ class LineMediationAdapterTest {
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration),
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment).isEqualTo(NeedChildDirectedTreatment.TRUE)
+  }
+
+  @Test
+  fun initialize_withTagForUnderageConsentTrue_configuresFiveAdSDKWithTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
@@ -285,6 +308,29 @@ class LineMediationAdapterTest {
         .setTagForChildDirectedTreatment(
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
         )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration),
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment).isEqualTo(NeedChildDirectedTreatment.FALSE)
+  }
+
+  @Test
+  fun initialize_withTagUnderageConsentFalse_configuresFiveAdSDKWithFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
@@ -306,6 +352,7 @@ class LineMediationAdapterTest {
         .setTagForChildDirectedTreatment(
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
