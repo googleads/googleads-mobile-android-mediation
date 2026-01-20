@@ -21,9 +21,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
 import com.vungle.ads.VungleAds;
-import com.vungle.ads.VungleWrapperFramework;
 import com.vungle.ads.VungleError;
 import com.vungle.ads.VunglePrivacySettings;
+import com.vungle.ads.VungleWrapperFramework;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,7 +60,7 @@ public class VungleInitializer implements InitializationListener {
       return;
     }
 
-    updateCoppaStatus(MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment());
+    updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
 
     VungleSdkWrapper.delegate.init(context, appId, VungleInitializer.this);
     initListeners.add(listener);
@@ -85,21 +85,21 @@ public class VungleInitializer implements InitializationListener {
     isInitializing.set(false);
   }
 
-  public void updateCoppaStatus(int configuration) {
-    switch (configuration) {
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
-        VunglePrivacySettings.setCOPPAStatus(true);
-        break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
-        VunglePrivacySettings.setCOPPAStatus(false);
-        break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
-      default:
-        // Vungle SDK only supports updating a user's COPPA status with true and false
-        // values. If you haven't specified how you would like your content treated with
-        // respect to COPPA in ad requests, you must indicate in the Liftoff Monetize Publisher
-        // Dashboard whether your app is directed toward children under age 13.
-        break;
+  public void updateCoppaAndUnderageConsentStatus(RequestConfiguration configuration) {
+    // Vungle SDK only supports updating a user's COPPA status with true and false
+    // values. If you haven't specified how you would like your content treated with
+    // respect to COPPA in ad requests, you must indicate in the Liftoff Monetize Publisher
+    // Dashboard whether your app is directed toward children under age 13.
+    if (configuration.getTagForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || configuration.getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+      VunglePrivacySettings.setCOPPAStatus(true);
+    } else if (configuration.getTagForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || configuration.getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
+      VunglePrivacySettings.setCOPPAStatus(false);
     }
   }
 

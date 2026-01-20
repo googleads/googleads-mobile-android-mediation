@@ -277,7 +277,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     VungleWaterfallBannerAd waterfallBannerAd =
         new VungleWaterfallBannerAd(callback, vungleFactory);
     waterfallBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration);
@@ -332,7 +332,7 @@ public class VungleMediationAdapter extends RtbAdapter
     }
 
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
 
     Context context = mediationRewardedAdConfiguration.getContext();
 
@@ -458,7 +458,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     Log.d(TAG, "loadNativeAd()...");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationNativeAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     // Vungle waterfall and bidding Native ads use the same API.
     rtbNativeAd = new VungleRtbNativeAd(callback, vungleFactory);
     rtbNativeAd.render(mediationNativeAdConfiguration);
@@ -483,7 +483,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationAppOpenAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     waterfallAppOpenAd = new VungleWaterfallAppOpenAd(callback, vungleFactory);
     waterfallAppOpenAd.render(mediationAppOpenAdConfiguration);
   }
@@ -495,7 +495,7 @@ public class VungleMediationAdapter extends RtbAdapter
               mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbRewardedAd()...");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationRewardedAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     rtbRewardedAd = new VungleRtbRewardedAd(mediationAdLoadCallback, vungleFactory);
     rtbRewardedAd.render(mediationRewardedAdConfiguration);
   }
@@ -508,7 +508,7 @@ public class VungleMediationAdapter extends RtbAdapter
               mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbBannerAd()...");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationBannerAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     rtbBannerAd = new VungleRtbBannerAd(mediationAdLoadCallback, vungleFactory);
     rtbBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration);
   }
@@ -521,7 +521,7 @@ public class VungleMediationAdapter extends RtbAdapter
               mediationAdLoadCallback) {
     Log.d(TAG, "loadRtbInterstitialAd()...");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationInterstitialAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     rtbInterstitialAd = new VungleRtbInterstitialAd(mediationAdLoadCallback, vungleFactory);
     rtbInterstitialAd.render(mediationInterstitialAdConfiguration);
   }
@@ -532,7 +532,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
     Log.d(TAG, "loadRtbNativeAd()...");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     rtbNativeAd = new VungleRtbNativeAd(callback, vungleFactory);
     rtbNativeAd.render(adConfiguration);
   }
@@ -548,7 +548,7 @@ public class VungleMediationAdapter extends RtbAdapter
             + "Using the rewarded ad request flow to load the ad to attempt to load a "
             + "rewarded interstitial ad from Liftoff Monetize.");
     VungleInitializer.getInstance()
-        .updateCoppaStatus(adConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     // Vungle Rewarded Interstitial ads use the same Rewarded Video API.
     rtbRewardedInterstitialAd = new VungleRtbRewardedAd(callback, vungleFactory);
     rtbRewardedInterstitialAd.render(adConfiguration);
@@ -559,7 +559,7 @@ public class VungleMediationAdapter extends RtbAdapter
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationAppOpenAdConfiguration.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
     rtbAppOpenAd = new VungleRtbAppOpenAd(callback, vungleFactory);
     rtbAppOpenAd.render(mediationAppOpenAdConfiguration);
   }

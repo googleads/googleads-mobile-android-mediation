@@ -113,9 +113,14 @@ class VungleInitializerTest {
   }
 
   @Test
-  fun updateCoppaStatus_whenChildDirectedIsTrue_setsCoppaStatusTrue() {
+  fun updateCoppaAndUnderageConsentStatus_whenChildDirectedIsTrue_setsCoppaStatusTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
     Mockito.mockStatic(VunglePrivacySettings::class.java).use {
-      initializer.updateCoppaStatus(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
 
       it.verify { VunglePrivacySettings.setCOPPAStatus(true) }
       it.verify({ VunglePrivacySettings.setCOPPAStatus(false) }, never())
@@ -123,9 +128,33 @@ class VungleInitializerTest {
   }
 
   @Test
-  fun updateCoppaStatus_whenChildDirectedIsFalse_setsCoppaStatusFalse() {
+  fun updateCoppaAndUnderageConsentStatus_whenUnderageConsentIsTrue_setsCoppaStatusTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
     Mockito.mockStatic(VunglePrivacySettings::class.java).use {
-      initializer.updateCoppaStatus(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE)
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
+
+      it.verify { VunglePrivacySettings.setCOPPAStatus(true) }
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(false) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaAndUnderageConsentStatus_whenChildDirectedIsFalse_setsCoppaStatusFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
 
       it.verify { VunglePrivacySettings.setCOPPAStatus(false) }
       it.verify({ VunglePrivacySettings.setCOPPAStatus(true) }, never())
@@ -133,11 +162,33 @@ class VungleInitializerTest {
   }
 
   @Test
-  fun updateCoppaStatus_whenChildDirectedTagIsUnspecified_doesntSetCoppaStatus() {
+  fun updateCoppaAndUnderageConsentStatus_whenUnderageConsentIsFalse_setsCoppaStatusFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
+        .build()
     Mockito.mockStatic(VunglePrivacySettings::class.java).use {
-      initializer.updateCoppaStatus(
-        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-      )
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
+
+      it.verify { VunglePrivacySettings.setCOPPAStatus(false) }
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(true) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaAndUnderageConsentStatus_whenChildDirectedTagIsUnspecified_doesntSetCoppaStatus() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
 
       it.verify({ VunglePrivacySettings.setCOPPAStatus(any()) }, never())
     }

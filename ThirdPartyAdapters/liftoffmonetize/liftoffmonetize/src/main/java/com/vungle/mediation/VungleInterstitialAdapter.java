@@ -30,6 +30,7 @@ import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
 import com.google.android.gms.ads.mediation.MediationBannerAdapter;
 import com.google.android.gms.ads.mediation.MediationBannerListener;
@@ -88,7 +89,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
     }
 
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
 
     AdConfig adConfig = new AdConfig();
     if (mediationExtras != null && mediationExtras.containsKey(KEY_ORIENTATION)) {
@@ -219,7 +220,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
     }
 
     VungleInitializer.getInstance()
-        .updateCoppaStatus(mediationAdRequest.taggedForChildDirectedTreatment());
+        .updateCoppaAndUnderageConsentStatus(MobileAds.getRequestConfiguration());
 
     String placement = serverParameters.getString(KEY_PLACEMENT_ID);
     if (TextUtils.isEmpty(placement)) {
