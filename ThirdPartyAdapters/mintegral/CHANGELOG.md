@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK underage flags to Mintegral SDK COPPA method.
+
 #### Version 17.0.61.0
 - Verified compatibility with Mintegral SDK 17.0.61.
 
