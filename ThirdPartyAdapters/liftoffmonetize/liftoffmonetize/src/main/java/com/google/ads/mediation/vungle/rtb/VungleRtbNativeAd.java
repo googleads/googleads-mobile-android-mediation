@@ -239,6 +239,9 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
 
       if (clickableAssets.getKey().equals(NativeAdAssetNames.ASSET_ICON)) {
         iconView = clickableAssets.getValue();
+      } else if (clickableAssets.getKey().equals(NativeAdAssetNames.ASSET_MEDIA_VIDEO)) {
+        // enable liftoff mediaView clickable if Google MediaView click is enabled.
+        assetViews.add(mediaView);
       }
     }
 
