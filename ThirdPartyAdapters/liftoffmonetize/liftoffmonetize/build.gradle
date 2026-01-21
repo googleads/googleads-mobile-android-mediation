@@ -135,6 +135,7 @@ dependencies {
     testImplementation 'androidx.test.ext:junit:1.1.5'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation project(':adaptertestkit')
+    testImplementation 'com.google.protobuf:protobuf-javalite:3.25.6'
 }
 
 /**
