@@ -50,7 +50,6 @@ import com.vungle.ads.NativeAdListener;
 import com.vungle.ads.VungleError;
 import com.vungle.ads.internal.ui.view.MediaView;
 import com.vungle.ads.nativead.NativeVideoListener;
-
 import com.vungle.ads.nativead.NativeVideoOptions;
 import java.util.ArrayList;
 import java.util.Map;
@@ -142,8 +141,8 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
                 if (googleVideoOptions != null) {
                   NativeVideoOptions vngVideoOptions = nativeAd.getVideoOptions();
-                  boolean gStartMuted = googleVideoOptions.getStartMuted();
-                  vngVideoOptions.setStartMuted(gStartMuted);
+                  boolean startMuted = googleVideoOptions.getStartMuted();
+                  vngVideoOptions.setStartMuted(startMuted);
                 }
                 mediaView = new MediaView(context);
                 if (!TextUtils.isEmpty(watermark)) {
@@ -222,7 +221,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
 
     ViewGroup adView = (ViewGroup) view;
 
-    if (nativeAd == null || !nativeAd.canPlayAd()) {
+    if (nativeAd == null) {
       return;
     }
 
