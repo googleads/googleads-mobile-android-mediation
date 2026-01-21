@@ -1,7 +1,12 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Version 4.11.0.1 (In progress)
-- Maps GMA SDK underage flags to OpenWrap SDK COPPA method.
+#### Version 4.11.0.1
+- Mapped Google Mobile Ads SDK underage flags to Pubmatic OpenWrap SDK COPPA
+method.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Pubmatic SDK version 4.11.0
 
 #### Version 4.11.0.0
 - Verified compatibility with Pubmatic SDK 4.11.0.
