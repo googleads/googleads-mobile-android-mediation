@@ -276,6 +276,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
       setStarRating(starRating);
     }
     setAdvertiser(nativeAd.getAdSponsoredText());
+    setHasVideoContent(nativeAd.hasVideoContent());
     setMediaView(mediaView);
     mediaView.setNativeVideoListener(new NativeVideoListener() {
       @Override
