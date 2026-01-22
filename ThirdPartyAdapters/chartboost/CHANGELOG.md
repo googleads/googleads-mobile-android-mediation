@@ -1,5 +1,8 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK underage flags to Chartboost SDK consent method.
+
 #### Version 9.11.0.0
 - Verified compatibility with Chartboost SDK version 9.11.0.
 

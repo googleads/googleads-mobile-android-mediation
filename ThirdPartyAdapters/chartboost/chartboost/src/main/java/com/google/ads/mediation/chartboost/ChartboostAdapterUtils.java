@@ -169,18 +169,17 @@ class ChartboostAdapterUtils {
     return chartboostMediation;
   }
 
-  static void updateCoppaStatus(Context context, int coppa) {
-    switch (coppa) {
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE:
+  static void updateCoppaStatus(
+      Context context, @NonNull RequestConfiguration requestConfiguration) {
+    // Chartboost's SDK only supports updating a user's COPPA status with true and false values.
+    int tagForChildDirected = requestConfiguration.getTagForChildDirectedTreatment();
+    int tagForUnderAgeConsent = requestConfiguration.getTagForUnderAgeOfConsent();
+    if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
         Chartboost.addDataUseConsent(context, new COPPA(true));
-        break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE:
+    } else if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
         Chartboost.addDataUseConsent(context, new COPPA(false));
-        break;
-      case RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED:
-      default:
-        // Chartboost's SDK only supports updating a user's COPPA status with true and false values.
-        break;
     }
   }
 
