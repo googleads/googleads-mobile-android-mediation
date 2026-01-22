@@ -140,13 +140,18 @@ public class InMobiAdapterUtils {
 
   @VisibleForTesting
   static void setIsAgeRestricted(InMobiSdkWrapper inMobiSdkWrapper) {
-    // If the COPPA value is unspecified in GMA SDK, we don't default it to either one since the
-    // value could have been updated before.
-    if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+    RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    // If the COPPA or underage consent value is unspecified in GMA SDK, we don't default it to
+    // either one since the value could have been updated before.
+    if (requestConfiguration.getTagForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || requestConfiguration.getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
       inMobiSdkWrapper.setIsAgeRestricted(true);
-    } else if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+    } else if (requestConfiguration.getTagForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || requestConfiguration.getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
       inMobiSdkWrapper.setIsAgeRestricted(false);
     }
   }

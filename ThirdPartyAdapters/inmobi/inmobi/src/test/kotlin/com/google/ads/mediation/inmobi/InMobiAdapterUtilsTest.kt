@@ -58,8 +58,22 @@ class InMobiAdapterUtilsTest {
   @Test
   fun setIsAgeRestricted_whenCOPPASet_setsAgeRestrictedTrueOnInMobiSDK() {
     val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
-    setCOPPAOnMobileAdsRequestConfiguration(
-      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(true)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenUnderAgeConsentSet_setsAgeRestrictedTrueOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE,
     )
 
     InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
@@ -70,8 +84,22 @@ class InMobiAdapterUtilsTest {
   @Test
   fun setIsAgeRestricted_whenCOPPANotSet_setsAgeRestrictedFalseOnInMobiSDK() {
     val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
-    setCOPPAOnMobileAdsRequestConfiguration(
-      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(false)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenUnderAgeConsentNotSet_setsAgeRestrictedFalseOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE,
     )
 
     InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
@@ -82,8 +110,9 @@ class InMobiAdapterUtilsTest {
   @Test
   fun setIsAgeRestricted_whenCOPPANotSpecified_setIsAgeRestrictedIsNeverInvoked() {
     val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
-    setCOPPAOnMobileAdsRequestConfiguration(
-      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
     )
 
     InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
@@ -241,9 +270,13 @@ class InMobiAdapterUtilsTest {
     assertThat(adError).isNull()
   }
 
-  private fun setCOPPAOnMobileAdsRequestConfiguration(value: Int) {
+  private fun setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(coppa: Int, underAgeConsent: Int) {
     val requestConfiguration =
-      MobileAds.getRequestConfiguration().toBuilder().setTagForChildDirectedTreatment(value).build()
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(coppa)
+        .setTagForUnderAgeOfConsent(underAgeConsent)
+        .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
   }
 
