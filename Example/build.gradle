@@ -20,6 +20,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+
+        // Include partner mediation repositories if property is set explicitly to true.
+        if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+            maven {
+                url = uri("https://verve.jfrog.io/artifactory/verve-gradle-release")
+            }
+        }
     }
 }
 
