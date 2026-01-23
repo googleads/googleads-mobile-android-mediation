@@ -221,11 +221,20 @@ class BigoMediationAdapter : RtbAdapter() {
 
   private fun configureBigoPrivacy(context: Context) {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
-    val isTaggedForChildDirected =
-      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-    // A value of "true" indicates that the user is not a child under 13 years old, and a value of
-    // "false" indicates that the user is a child under 13 years old.
-    BigoAdSdk.setUserConsent(context, ConsentOptions.COPPA, !isTaggedForChildDirected)
+    val tagForUnderAgeOfConsent = getRequestConfiguration().tagForUnderAgeOfConsent
+    if (
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    ) {
+      // A value of "true" indicates that the user is not a child under 13 years old, and a value of
+      // "false" indicates that the user is a child under 13 years old.
+      BigoAdSdk.setUserConsent(context, ConsentOptions.COPPA, false)
+    } else if (
+      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+    ) {
+      BigoAdSdk.setUserConsent(context, ConsentOptions.COPPA, true)
+    }
   }
 
   internal companion object {
