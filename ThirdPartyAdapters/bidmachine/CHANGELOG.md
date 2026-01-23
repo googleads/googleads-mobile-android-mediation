@@ -1,7 +1,12 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Version 3.5.1.1 (In progress)
-- Maps GMA SDK underage flags to BidMachine SDK COPPA method.
+#### Version 3.5.1.1
+- Mapped Google Mobile Ads SDK underage flags to BidMachine SDK COPPA
+method.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- BidMachine SDK version 3.5.1.
 
 #### Version 3.5.1.0
 - Verified compatibility with BidMachine SDK version 3.5.1.
