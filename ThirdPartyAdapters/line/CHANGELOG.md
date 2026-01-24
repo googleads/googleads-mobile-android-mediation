@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Native ads impressions are now overriden by FiveAd SDK
+
 #### Version 3.0.1.0
 - Mapped Google Mobile Ads SDK underage flags to Line SDK child treatment
 methods.
