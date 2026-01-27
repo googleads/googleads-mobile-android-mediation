@@ -1,7 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Next Version
-- Maps GMA SDK Underage consent flags to InMobi SDK age restricted method.
+#### Version 11.1.0.1 (In progress)
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the InMobi SDK.
 
 #### Version 11.1.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.1.0.
