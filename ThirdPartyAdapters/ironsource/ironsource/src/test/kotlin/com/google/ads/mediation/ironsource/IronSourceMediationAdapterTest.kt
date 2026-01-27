@@ -32,6 +32,8 @@ import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -50,6 +52,7 @@ import com.unity3d.ironsourceads.InitListener
 import com.unity3d.ironsourceads.InitRequest
 import com.unity3d.ironsourceads.IronSourceAds
 import com.unity3d.ironsourceads.IronSourceAds.getSdkVersion
+import com.unity3d.mediation.LevelPlay
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -61,6 +64,7 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
@@ -85,6 +89,14 @@ class IronSourceMediationAdapterTest {
 
   @Before
   fun setUp() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
     adapter = IronSourceMediationAdapter()
   }
 
@@ -163,7 +175,112 @@ class IronSourceMediationAdapterTest {
   }
 
   @Test
+  fun initialize_withTFCDTrue_setsLevelPlayMetaDataToTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "true") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
+  fun initialize_withTFUATrue_setsLevelPlayMetaDataToTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "true") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
+  fun initialize_withTFCDFalse_setsLevelPlayMetaDataToFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "false") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
+  fun initialize_withTFUAFalse_setsLevelPlayMetaDataToFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "false") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
   fun initialize_withMediationConfigurations_invokesOnInitializationSucceeded() {
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
     mockStatic(IronSourceAds::class.java).use { mockedStatic ->
       whenever(IronSourceAds.init(any(), any(), any())).thenAnswer { invocation ->
         val listener = invocation.getArgument<InitListener>(2)
@@ -176,7 +293,12 @@ class IronSourceMediationAdapterTest {
         mockInitializationCompleteCallback,
         /* serverParameters= */ bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
       )
+      mockStaticLevelPlay.verify(
+        { LevelPlay.setMetaData(eq("is_child_directed"), any<String>()) },
+        never(),
+      )
     }
+    mockStaticLevelPlay.close()
   }
 
   @Test

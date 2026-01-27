@@ -16,6 +16,10 @@ package com.google.ads.mediation.ironsource;
 
 import static com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY;
 import static com.google.ads.mediation.ironsource.IronSourceConstants.TAG;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,6 +30,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -47,6 +53,7 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.unity3d.ironsourceads.InitListener;
 import com.unity3d.ironsourceads.InitRequest;
 import com.unity3d.ironsourceads.IronSourceAds;
+import com.unity3d.mediation.LevelPlay;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -202,6 +209,8 @@ public class IronSourceMediationAdapter extends RtbAdapter {
     IronSource.setMediationType(IronSourceAdapterUtils.getMediationType());
     Log.d(TAG, "Initializing IronSource SDK with app key: " + appKey);
 
+    configureIronSourcePrivacy();
+
     List<IronSourceAds.AdFormat> adFormatsToInitialize =
         new ArrayList<>(
             Arrays.asList(
@@ -356,5 +365,19 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   @VisibleForTesting
   public void setIsInitialized(boolean isInitializedValue) {
     isInitialized.set(isInitializedValue);
+  }
+
+  private void configureIronSourcePrivacy() {
+    RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    if (requestConfiguration.getTagForChildDirectedTreatment()
+            == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+      LevelPlay.setMetaData("is_child_directed", "true");
+    } else if (requestConfiguration.getTagForChildDirectedTreatment()
+            == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || requestConfiguration.getTagForUnderAgeOfConsent()
+            == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
+      LevelPlay.setMetaData("is_child_directed", "false");
+    }
   }
 }
