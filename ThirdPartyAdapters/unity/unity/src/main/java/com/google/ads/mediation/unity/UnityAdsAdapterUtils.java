@@ -15,6 +15,10 @@
 package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -25,7 +29,6 @@ import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.unity3d.ads.UnityAds;
@@ -35,14 +38,10 @@ import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import java.util.ArrayList;
 
-/**
- * Utility class for the Unity adapter.
- */
+/** Utility class for the Unity adapter. */
 public class UnityAdsAdapterUtils {
 
-  /**
-   * Enumeration of ad events that get forwarded to AdMob
-   */
+  /** Enumeration of ad events that get forwarded to AdMob */
   public enum AdEvent {
     LOADED,
     OPENED,
@@ -55,23 +54,20 @@ public class UnityAdsAdapterUtils {
     VIDEO_COMPLETE
   }
 
-  /**
-   * Private constructor
-   */
-  private UnityAdsAdapterUtils() {
-  }
+  /** Private constructor */
+  private UnityAdsAdapterUtils() {}
 
   /**
-   * Creates an {@link AdError} object based on the specified
-   * {@link UnityAds.UnityAdsInitializationError}.
+   * Creates an {@link AdError} object based on the specified {@link
+   * UnityAds.UnityAdsInitializationError}.
    *
    * @param unityAdsError error object from Unity.
-   * @param description   the error message.
+   * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull UnityAds.UnityAdsInitializationError unityAdsError,
-      @NonNull String description) {
+  static AdError createSDKError(
+      @NonNull UnityAds.UnityAdsInitializationError unityAdsError, @NonNull String description) {
     return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
@@ -79,12 +75,12 @@ public class UnityAdsAdapterUtils {
    * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsLoadError}.
    *
    * @param unityAdsError error object from Unity.
-   * @param description   the error message.
+   * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull UnityAds.UnityAdsLoadError unityAdsError,
-      @NonNull String description) {
+  static AdError createSDKError(
+      @NonNull UnityAds.UnityAdsLoadError unityAdsError, @NonNull String description) {
     return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
@@ -92,19 +88,19 @@ public class UnityAdsAdapterUtils {
    * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsShowError}.
    *
    * @param unityAdsError error object from Unity.
-   * @param description   the error message.
+   * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(@NonNull UnityAds.UnityAdsShowError unityAdsError,
-      @NonNull String description) {
+  static AdError createSDKError(
+      @NonNull UnityAds.UnityAdsShowError unityAdsError, @NonNull String description) {
     return createAdError(getMediationErrorCode(unityAdsError), description);
   }
 
   /**
    * Creates an {@link AdError} object based on the specified error code and description
    *
-   * @param errorCode   the mediation error code.
+   * @param errorCode the mediation error code.
    * @param description the error message.
    * @return the error.
    */
@@ -139,8 +135,8 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Gets the mediation specific error code for the specified
-   * {@link UnityAds.UnityAdsInitializationError}.
+   * Gets the mediation specific error code for the specified {@link
+   * UnityAds.UnityAdsInitializationError}.
    *
    * @param unityAdsError error object from Unity.
    * @return mediation specific initialization error code.
@@ -153,8 +149,8 @@ public class UnityAdsAdapterUtils {
         return 302;
       case AD_BLOCKER_DETECTED:
         return 303;
-      // Excluding default to allow for compile warnings if UnityAdsInitializationError is expanded
-      // in the future.
+        // Excluding default to allow for compile warnings if UnityAdsInitializationError is
+        // expanded in the future.
     }
     return 300;
   }
@@ -177,8 +173,8 @@ public class UnityAdsAdapterUtils {
         return 404;
       case TIMEOUT:
         return 405;
-      // Excluding default to allow for compile warnings if UnityAdsLoadError is expanded
-      // in the future.
+        // Excluding default to allow for compile warnings if UnityAdsLoadError is expanded
+        // in the future.
     }
     return 400;
   }
@@ -207,8 +203,8 @@ public class UnityAdsAdapterUtils {
         return 507;
       case TIMEOUT:
         return 508;
-      // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
-      // in the future.
+        // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
+        // in the future.
     }
     return 500;
   }
@@ -235,20 +231,20 @@ public class UnityAdsAdapterUtils {
   /**
    * Set the COPPA setting in Unity Ads SDK.
    *
-   * @param coppa an {@code Integer} value that indicates whether the app should be treated as
-   *     child-directed for purposes of the COPPA. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE} means true. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE} means false. {@link
-   *     RequestConfiguration#TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED} means unspecified.
+   * @param requestConfiguration used to read the value that indicates whether the app should be
+   *     treated as child-directed for purposes of the COPPA or under age consent.
+   * @param userMetaData used to save changes on configuration values in the Unity3D SDK.
    */
-  public static void setCoppa(@TagForChildDirectedTreatment int coppa, @NonNull Context context) {
+  public static void setUnityAdsPrivacy(
+      RequestConfiguration requestConfiguration, MetaData userMetaData) {
 
-    MetaData userMetaData = new MetaData(context);
-    if (coppa == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+    if (shouldTreatAsAdult(requestConfiguration)) {
+      // If no signal is tagged as child and one signal indicates adult session is treated as an
+      // adult.
       userMetaData.set("user.nonbehavioral", false);
     } else {
-      // Unity Ads will default to treating users as children when a user-level COPPA designation is
-      // absent.
+      // Otherwise, if any signal is child or signals are conflicting or both are UNSPECIFIED,
+      // session is treated as a child.
       userMetaData.set("user.nonbehavioral", true);
     }
     userMetaData.commit();
@@ -272,5 +268,22 @@ public class UnityAdsAdapterUtils {
       return mediationConfiguration.getFormat();
     }
     return null;
+  }
+
+  /**
+   * Returns true if none TFCD nor TFUA are True and at least one of them is
+   *
+   * @param requestConfiguration used to read both signals tag for Child Treatment and tag for Under
+   *     Age Consent
+   * @return if session will be treat the user as adult by UnityAds.
+   */
+  private static boolean shouldTreatAsAdult(RequestConfiguration requestConfiguration) {
+    int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
+    int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
+
+    return tagForChildDirectedTreatment != TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        && tagForUnderAgeOfConsent != TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        && (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+            || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
   }
 }

@@ -17,6 +17,7 @@ package com.google.ads.mediation.unity;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.AdEvent;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createAdError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.setUnityAdsPrivacy;
 
 import android.app.Activity;
 import android.content.Context;
@@ -39,6 +40,7 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
+import com.unity3d.ads.metadata.MetaData;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
@@ -149,8 +151,7 @@ public class UnityAdapter extends UnityMediationAdapter implements MediationInte
           }
         });
 
-    UnityAdsAdapterUtils.setCoppa(
-        MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment(), context);
+    setUnityAdsPrivacy(MobileAds.getRequestConfiguration(), new MetaData(context));
 
     objectId = UUID.randomUUID().toString();
     UnityAdsLoadOptions unityAdsLoadOptions = new UnityAdsLoadOptions();
