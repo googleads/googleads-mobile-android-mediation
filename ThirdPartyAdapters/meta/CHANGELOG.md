@@ -1,5 +1,8 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps GMA SDK Underage flags to Meta Audience Network SDK mixed audience.
+
 #### Version 6.21.0.0
 - Verified compatibility with Meta Audience Network SDK v6.21.0.
 
