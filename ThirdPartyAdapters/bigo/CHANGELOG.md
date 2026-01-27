@@ -1,6 +1,6 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.7.0.0 (In progress)
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the Bigo SDK.
 
 #### Version 5.5.2.0
