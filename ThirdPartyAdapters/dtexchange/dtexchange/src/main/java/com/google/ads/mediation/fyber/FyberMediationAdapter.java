@@ -14,6 +14,9 @@
 
 package com.google.ads.mediation.fyber;
 
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -43,6 +46,7 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -211,6 +215,8 @@ public class FyberMediationAdapter extends RtbAdapter
               KEY_APP_ID, configuredAppIds, appIdForInitialization);
       Log.w(TAG, logMessage);
     }
+
+    configureDTExchangePrivacy();
 
     InneractiveAdManager.initialize(
         context,
@@ -722,5 +728,17 @@ public class FyberMediationAdapter extends RtbAdapter
     }
     nativeAdMapper = new DTExchangeNativeAdMapper(callback);
     nativeAdMapper.loadAd(adConfiguration);
+  }
+
+  private void configureDTExchangePrivacy() {
+    RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isChildUser =
+        (requestConfiguration.getTagForChildDirectedTreatment()
+                == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+            || requestConfiguration.getTagForUnderAgeOfConsent()
+                == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+    if (isChildUser) {
+      InneractiveAdManager.currentAudienceAppliesToCoppa();
+    }
   }
 }
