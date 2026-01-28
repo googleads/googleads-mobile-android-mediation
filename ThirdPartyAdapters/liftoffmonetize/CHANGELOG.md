@@ -1,8 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
 #### Version 7.6.3.1
-- Maps Google Mobile Ads SDK underage flags to Liftoff Monetize SDK COPPA
-method.
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
+parameter to the Liftoff Monetize SDK.
 
 Built and tested with:
 - Google Mobile Ads SDK version 24.9.0.
