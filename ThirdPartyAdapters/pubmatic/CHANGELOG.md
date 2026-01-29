@@ -1,8 +1,8 @@
 ## PubMatic Android Mediation Adapter Changelog
 
 #### Version 4.11.0.1
-- Mapped Google Mobile Ads SDK underage flags to Pubmatic OpenWrap SDK COPPA
-method.
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
+parameter to the PubMatic SDK.
 
 Built and tested with:
 - Google Mobile Ads SDK version 24.9.0.

@@ -1,8 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
 #### Version 3.0.1.0
-- Mapped Google Mobile Ads SDK underage flags to Line SDK child treatment
-methods.
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
+parameter to the FiveAd SDK.
 - Verified compatibility with FiveAd SDK version 3.0.1.0.
 
 Built and tested with:
