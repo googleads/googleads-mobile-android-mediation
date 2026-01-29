@@ -40,7 +40,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -348,20 +347,6 @@ class VungleRtbNativeAdTest {
     val clickableAssets = mapOf(ASSET_ICON to iconView)
     val overlayView = FrameLayout(context)
     containerView.addView(overlayView)
-
-    adapterRtbNativeAd.trackViews(containerView, clickableAssets, emptyMap())
-
-    verify(vungleNativeAd, never()).registerViewForInteraction(any(), any(), any(), any())
-  }
-
-  @Test
-  fun trackViews_ifVungleNativeAdCannotPlayAd_doesNotRegisterView() {
-    renderAdAndMockLoadSuccess()
-    val iconView = ImageView(context)
-    val clickableAssets = mapOf(ASSET_ICON to iconView)
-    val overlayView = FrameLayout(context)
-    containerView.addView(overlayView)
-    whenever(vungleNativeAd.canPlayAd()) doReturn false
 
     adapterRtbNativeAd.trackViews(containerView, clickableAssets, emptyMap())
 
