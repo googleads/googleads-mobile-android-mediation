@@ -3,7 +3,12 @@
 #### Next Version
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the ironSource SDK.
 
-#### Version 9.3.0.0 (In progress)
+#### Version 9.3.0.0
+- Verified compatibility with ironSource SDK version 9.3.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- IronSource SDK version 9.3.0.
 
 #### Version 9.2.0.0
 - Verified compatibility with ironSource SDK version 9.2.0.
