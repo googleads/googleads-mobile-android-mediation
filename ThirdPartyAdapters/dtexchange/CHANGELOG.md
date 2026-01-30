@@ -1,7 +1,14 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.4.2.1 (In progress)
-- Added support for forwarding the tagForChildDirectedTreatment and tagForUnderAgeOfConsent Google Mobile Ads SDK parameters to the DTExchange SDK.
+#### Version 8.4.2.1
+- Added support for forwarding the `tagForChildDirectedTreatment` and
+`tagForUnderAgeOfConsent` Google Mobile Ads SDK parameters to the DT Exchange
+SDK.
+- Verified compatibility with DT Exchange SDK 8.4.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- DT Exchange SDK version 8.4.2.
 
 #### Version 8.4.2.0
 - Added null protection to Native Ad's fields
