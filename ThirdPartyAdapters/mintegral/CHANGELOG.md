@@ -1,7 +1,12 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 17.0.61.1 (In progress)
-- Maps GMA SDK underage flags to Mintegral SDK COPPA method.
+#### Version 17.0.61.1
+- Added support for forwarding the `tagForUnderAgeOfConsent` Google Mobile Ads
+SDK parameter to the Mintegral SDK.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Mintegral SDK version 17.0.61.
 
 #### Version 17.0.61.0
 - Verified compatibility with Mintegral SDK 17.0.61.
