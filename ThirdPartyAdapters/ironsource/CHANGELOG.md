@@ -1,6 +1,6 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.3.0.1 (In progress)
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the ironSource SDK.
 
 #### Version 9.3.0.0
