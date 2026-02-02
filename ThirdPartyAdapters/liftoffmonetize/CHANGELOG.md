@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.0.0 (In progress)
+
 #### Version 7.6.3.1
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
 parameter to the Liftoff Monetize SDK.
