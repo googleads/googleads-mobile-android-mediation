@@ -1,5 +1,9 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
+parameter to the Meta Audience Network SDK.
+
 #### Version 6.21.0.0
 - Verified compatibility with Meta Audience Network SDK v6.21.0.
 
