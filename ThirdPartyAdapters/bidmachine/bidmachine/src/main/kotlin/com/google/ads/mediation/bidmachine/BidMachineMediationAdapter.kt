@@ -17,8 +17,10 @@ package com.google.ads.mediation.bidmachine
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.ads.mediation.bidmachine.BidMachineBannerAd.Companion.mapAdSizeToBidMachineBannerAdSize
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -41,7 +43,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import io.bidmachine.AdPlacementConfig
-import io.bidmachine.AdsFormat
 import io.bidmachine.BidMachine
 import io.bidmachine.banner.BannerView
 import io.bidmachine.interstitial.InterstitialAd
@@ -152,16 +153,15 @@ class BidMachineMediationAdapter : RtbAdapter() {
       callback.onFailure(adError)
       return
     }
-    val adsFormat = mapAdFormatToBidMachineAdsFormat(signalData.configurations[0].format)
-    if (adsFormat == null) {
+    val adPlacementConfigBuilder = createAdPlacementConfigBuilder(signalData.context, signalData.configurations[0].format, signalData.adSize)
+    if (adPlacementConfigBuilder == null) {
       val adError =
         AdError(ERROR_CODE_INVALID_AD_FORMAT, ERROR_MSG_INVALID_AD_FORMAT, ADAPTER_ERROR_DOMAIN)
       callback.onFailure(adError)
       return
     }
-    val placementId = signalData.configurations[0].serverParameters.getString(PLACEMENT_ID_KEY)
-    val adPlacementConfig = AdPlacementConfig(adsFormat, placementId, customParams = null)
-    BidMachine.getBidToken(signalData.context, adPlacementConfig) { bidToken ->
+    adPlacementConfigBuilder.withPlacementId(signalData.configurations[0].serverParameters.getString(PLACEMENT_ID_KEY))
+    BidMachine.getBidToken(signalData.context, adPlacementConfigBuilder.build()) { bidToken ->
       callback.onSuccess(bidToken)
     }
   }
@@ -262,14 +262,20 @@ class BidMachineMediationAdapter : RtbAdapter() {
     }
   }
 
-  private fun mapAdFormatToBidMachineAdsFormat(adFormat: AdFormat): AdsFormat? =
-    when (adFormat) {
-      AdFormat.BANNER -> AdsFormat.Banner
-      AdFormat.INTERSTITIAL -> AdsFormat.Interstitial
-      AdFormat.REWARDED -> AdsFormat.Rewarded
-      AdFormat.NATIVE -> AdsFormat.Native
+  private fun createAdPlacementConfigBuilder(context: Context, adFormat: AdFormat, adSize: AdSize?): AdPlacementConfig.Builder? {
+    return when (adFormat) {
+      AdFormat.BANNER -> {
+        adSize ?: return null
+        val bannerAdSize =
+          mapAdSizeToBidMachineBannerAdSize(context, adSize, true) ?: return null
+        AdPlacementConfig.bannerBuilder(bannerAdSize)
+      }
+      AdFormat.INTERSTITIAL -> AdPlacementConfig.interstitialBuilder()
+      AdFormat.REWARDED -> AdPlacementConfig.rewardedBuilder()
+      AdFormat.NATIVE -> AdPlacementConfig.nativeBuilder()
       else -> null
     }
+  }
 
   private fun configureBidMachinePrivacy() {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment

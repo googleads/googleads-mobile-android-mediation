@@ -33,6 +33,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import io.bidmachine.AdPlacementConfig
 import io.bidmachine.RendererConfiguration
 import io.bidmachine.models.AuctionResult
 import io.bidmachine.nativead.NativeAd
@@ -53,15 +54,15 @@ private constructor(
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  private val placementId: String?,
+  adPlacementConfig: AdPlacementConfig
 ) : NativeAdMapper(), NativeRequest.AdRequestListener, NativeListener {
   private var nativeAdCallback: MediationNativeAdCallback? = null
-  @VisibleForTesting internal var nativeRequestBuilder = NativeRequest.Builder()
+  @VisibleForTesting internal var nativeRequestBuilder = NativeRequest.Builder(adPlacementConfig)
   private lateinit var bidMachineNativeAd: NativeAd
   private var bidMachineMediaView: NativeMediaView? = null
 
   fun loadWaterfallAd(nativeAd: NativeAd) {
-    val nativeRequest = nativeRequestBuilder.setPlacementId(placementId).setListener(this).build()
+    val nativeRequest = nativeRequestBuilder.setListener(this).build()
     loadAd(nativeAd, nativeRequest)
   }
 
@@ -188,6 +189,8 @@ private constructor(
       val bidResponse = mediationNativeAdConfiguration.bidResponse
       val watermark = mediationNativeAdConfiguration.watermark
       val placementId = mediationNativeAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
+      val adPlacementConfig =
+        AdPlacementConfig.nativeBuilder().withPlacementId(placementId).build()
 
       return Result.success(
         BidMachineNativeAd(
@@ -195,7 +198,7 @@ private constructor(
           mediationNativeAdLoadCallback,
           bidResponse,
           watermark,
-          placementId,
+          adPlacementConfig,
         )
       )
     }

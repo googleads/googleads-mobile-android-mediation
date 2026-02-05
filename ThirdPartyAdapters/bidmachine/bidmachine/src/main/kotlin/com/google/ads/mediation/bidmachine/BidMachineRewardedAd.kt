@@ -29,6 +29,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import io.bidmachine.AdPlacementConfig
 import io.bidmachine.RendererConfiguration
 import io.bidmachine.models.AuctionResult
 import io.bidmachine.rewarded.RewardedAd
@@ -46,15 +47,15 @@ private constructor(
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  private val placementId: String?,
+  adPlacementConfig: AdPlacementConfig
 ) : MediationRewardedAd, RewardedRequest.AdRequestListener, RewardedListener {
-  @VisibleForTesting internal var rewardedRequestBuilder = RewardedRequest.Builder()
+  @VisibleForTesting internal var rewardedRequestBuilder = RewardedRequest.Builder(adPlacementConfig)
   private lateinit var bidMachineRewardedAd: RewardedAd
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
   fun loadWaterfallAd(rewardedAd: RewardedAd, context: Context) {
     val rewardedRequest =
-      rewardedRequestBuilder.setPlacementId(placementId).setListener(this).build()
+      rewardedRequestBuilder.setListener(this).build()
     loadAd(rewardedAd, rewardedRequest, context)
   }
 
@@ -158,9 +159,11 @@ private constructor(
       val watermark = mediationRewardedAdConfiguration.watermark
       val placementId =
         mediationRewardedAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
+      val adPlacementConfig =
+        AdPlacementConfig.rewardedBuilder().withPlacementId(placementId).build()
 
       return Result.success(
-        BidMachineRewardedAd(mediationAdLoadCallback, bidResponse, watermark, placementId)
+        BidMachineRewardedAd(mediationAdLoadCallback, bidResponse, watermark, adPlacementConfig)
       )
     }
   }

@@ -29,6 +29,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import io.bidmachine.AdPlacementConfig
 import io.bidmachine.RendererConfiguration
 import io.bidmachine.interstitial.InterstitialAd
 import io.bidmachine.interstitial.InterstitialListener
@@ -46,15 +47,15 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  private val placementId: String?,
+  adPlacementConfig: AdPlacementConfig
 ) : MediationInterstitialAd, InterstitialRequest.AdRequestListener, InterstitialListener {
-  @VisibleForTesting internal var interstitialRequestBuilder = InterstitialRequest.Builder()
+  @VisibleForTesting internal var interstitialRequestBuilder = InterstitialRequest.Builder(adPlacementConfig)
   private lateinit var bidMachineInterstitialAd: InterstitialAd
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadWaterfallAd(interstitialAd: InterstitialAd, context: Context) {
     val interstitialRequest =
-      interstitialRequestBuilder.setPlacementId(placementId).setListener(this).build()
+      interstitialRequestBuilder.setListener(this).build()
     loadAd(interstitialAd, interstitialRequest, context)
   }
 
@@ -161,9 +162,11 @@ private constructor(
       val watermark = mediationInterstitialAdConfiguration.watermark
       val placementId =
         mediationInterstitialAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
+      val adPlacementConfig =
+        AdPlacementConfig.interstitialBuilder().withPlacementId(placementId).build()
 
       return Result.success(
-        BidMachineInterstitialAd(mediationAdLoadCallback, bidResponse, watermark, placementId)
+        BidMachineInterstitialAd(mediationAdLoadCallback, bidResponse, watermark, adPlacementConfig)
       )
     }
   }
