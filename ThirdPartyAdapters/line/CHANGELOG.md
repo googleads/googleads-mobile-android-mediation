@@ -1,6 +1,6 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.0.1.1 (In progress)
 - Native ads impressions are now overriden by FiveAd SDK when using GMA SDK v24.4.0 or above.
 
 #### Version 3.0.1.0
