@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.mytarget;
 
+import static com.google.ads.mediation.mytarget.MyTargetAdapterUtils.configureMyTargetPrivacy;
 import static com.google.ads.mediation.mytarget.MyTargetTools.handleMediationExtras;
 
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -140,6 +142,7 @@ public class MyTargetMediationAdapter extends Adapter
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
+    configureMyTargetPrivacy(MobileAds.getRequestConfiguration());
     // MyTarget SDK does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
   }
