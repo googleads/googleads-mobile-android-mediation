@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Native ads impressions are now overriden by FiveAd SDK when using GMA SDK v24.4.0 or above.
+
 #### Version 3.0.1.0
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
 parameter to the FiveAd SDK.
