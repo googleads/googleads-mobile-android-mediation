@@ -1,5 +1,11 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next version
+
+- Added support for publishers to configure
+`com.vungle.ads.AdConfig.setBackButtonImmediatelyEnabled` for app open ads using
+mediation extras.
+
 #### Version 7.7.0.0
 - Verified compatibility with Vungle SDK 7.7.0.
 
