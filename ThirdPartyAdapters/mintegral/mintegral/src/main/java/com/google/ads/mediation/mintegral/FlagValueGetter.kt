@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.mintegral
 
+import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import java.lang.reflect.InvocationTargetException
 
 /** Gets the values of flags that modify the adapter's behavior. */
@@ -27,6 +29,13 @@ class FlagValueGetter {
    * loaded ad has been shown.
    */
   fun shouldRestrictMultipleAdLoads(): Boolean {
+    // do an OR of the client-side and server-side experiment values. Only one of either client-side
+    // or server-side experiment is expected to run at a time.
+    return getClientSideRestrictMultipleAdLoadsFlagValue() || flipMultipleAdLoadsBehavior
+  }
+
+  /** Gets the value of the client-side flag for whether to restrict multiple ad loading or not. */
+  fun getClientSideRestrictMultipleAdLoadsFlagValue(): Boolean {
     try {
       val adapterSettingsClass =
         Class.forName("com.google.android.gms.ads.internal.adaptersettings.AdapterSettings")
@@ -58,5 +67,33 @@ class FlagValueGetter {
     } catch (e: NullPointerException) {
       return false
     }
+  }
+
+  fun processMultipleAdLoadsServerParam(serverParams: Bundle) {
+    if (
+      serverParams.containsKey(KEY_FLIP_MULTIPLE_AD_LOADS_BEHAVIOR) &&
+        serverParams.getString(KEY_FLIP_MULTIPLE_AD_LOADS_BEHAVIOR) == "true"
+    ) {
+      flipMultipleAdLoadsBehavior = true
+    }
+  }
+
+  companion object {
+
+    // The Serving flag was originally named "enable_multiple_ads_per_unit". But, we are repurposing
+    // it to actually mean flip the adapter's default behavior of how it handles loading multiple
+    // ads per ad unit.
+    const val KEY_FLIP_MULTIPLE_AD_LOADS_BEHAVIOR = "enable_multiple_ads_per_unit"
+
+    /**
+     * Whether Serving has instructed the adapter to flip how it handles loading multiple ads for a
+     * single Mintegral slot.
+     *
+     * The default value is false.
+     *
+     * Since the default behavior of Mintegral adapter is to allow loading of multiple ads, if this
+     * flag is true, the adapter will restrict loading of multiple ads per ad slot.
+     */
+    @VisibleForTesting var flipMultipleAdLoadsBehavior = false
   }
 }

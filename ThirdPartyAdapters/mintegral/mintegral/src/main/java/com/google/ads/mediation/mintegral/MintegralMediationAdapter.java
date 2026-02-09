@@ -259,6 +259,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralRtbBannerAd = new MintegralRtbBannerAd(callback);
     mintegralRtbBannerAd.loadAd(adConfiguration);
   }
@@ -267,6 +269,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   public void loadRtbInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralRtbInterstitialAd =
         new MintegralRtbInterstitialAd(adConfiguration, callback, flagValueGetter);
     mintegralRtbInterstitialAd.loadAd(adConfiguration);
@@ -275,6 +279,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralRtbNativeAd = new MintegralRtbNativeAd(adConfiguration, callback);
     mintegralRtbNativeAd.loadAd(adConfiguration);
   }
@@ -282,6 +288,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadRtbRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralRtbRewardedAd = new MintegralRtbRewardedAd(adConfiguration, callback, flagValueGetter);
     mintegralRtbRewardedAd.loadAd(adConfiguration);
   }
@@ -290,6 +298,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
   public void loadRtbAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(
+        mediationAppOpenAdConfiguration.getServerParameters());
+
     mintegralRtbAppOpenAd = new MintegralRtbAppOpenAd(callback, flagValueGetter);
     mintegralRtbAppOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
@@ -297,6 +308,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralWaterfallBannerAd = new MintegralWaterfallBannerAd(callback);
     mintegralWaterfallBannerAd.loadAd(adConfiguration);
   }
@@ -305,6 +318,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   public void loadInterstitialAd(@NonNull MediationInterstitialAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralInterstitialAd =
         new MintegralWaterfallInterstitialAd(adConfiguration, callback, flagValueGetter);
     mintegralInterstitialAd.loadAd(adConfiguration);
@@ -313,6 +328,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadNativeAd(@NonNull MediationNativeAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralNativeAd = new MintegralWaterfallNativeAd(adConfiguration, callback);
     mintegralNativeAd.loadAd(adConfiguration);
   }
@@ -320,6 +337,8 @@ public class MintegralMediationAdapter extends RtbAdapter {
   @Override
   public void loadRewardedAd(@NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(adConfiguration.getServerParameters());
+
     mintegralRewardedAd =
         new MintegralWaterfallRewardedAd(adConfiguration, callback, flagValueGetter);
     mintegralRewardedAd.loadAd(adConfiguration);
@@ -329,6 +348,9 @@ public class MintegralMediationAdapter extends RtbAdapter {
   public void loadAppOpenAd(
       @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
+    flagValueGetter.processMultipleAdLoadsServerParam(
+        mediationAppOpenAdConfiguration.getServerParameters());
+
     mintegralWaterfallAppOpenAd = new MintegralWaterfallAppOpenAd(callback, flagValueGetter);
     mintegralWaterfallAppOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
