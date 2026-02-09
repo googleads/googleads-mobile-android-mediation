@@ -1,5 +1,7 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 17.0.81.0 (In progress)
+
 #### Version 17.0.61.1
 - Added support for forwarding the `tagForUnderAgeOfConsent` Google Mobile Ads
 SDK parameter to the Mintegral SDK.
