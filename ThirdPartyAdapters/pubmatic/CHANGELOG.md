@@ -1,5 +1,7 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Version 4.12.0.0 (In progress)
+
 #### Version 4.11.0.1
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
 parameter to the PubMatic SDK.
