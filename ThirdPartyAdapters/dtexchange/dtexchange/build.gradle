@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "DTExchange"
     // String property to store the version name.
-    stringVersion = "8.4.2.1"
+    stringVersion = "8.4.2.2"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.
@@ -27,7 +27,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdk 33
-        versionCode 8040201
+        versionCode 8040202
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         multiDexEnabled true
