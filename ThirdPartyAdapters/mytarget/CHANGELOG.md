@@ -1,6 +1,6 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.27.4.1 (In progress)
 - Added support for forwarding the tagForChildDirectedTreatment and tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the myTarget SDK.
 
 #### Version 5.27.4.0
