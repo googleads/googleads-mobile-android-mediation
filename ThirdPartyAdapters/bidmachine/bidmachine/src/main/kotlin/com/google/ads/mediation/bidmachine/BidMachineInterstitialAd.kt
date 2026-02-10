@@ -47,7 +47,7 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  adPlacementConfig: AdPlacementConfig
+  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig
 ) : MediationInterstitialAd, InterstitialRequest.AdRequestListener, InterstitialListener {
   @VisibleForTesting internal var interstitialRequestBuilder = InterstitialRequest.Builder(adPlacementConfig)
   private lateinit var bidMachineInterstitialAd: InterstitialAd

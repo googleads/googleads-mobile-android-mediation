@@ -51,7 +51,7 @@ internal constructor(
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  adPlacementConfig: AdPlacementConfig
+  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig
 ) : MediationBannerAd, BannerRequest.AdRequestListener, BannerListener {
   private var bannerAdCallback: MediationBannerAdCallback? = null
   @VisibleForTesting internal var bannerRequestBuilder = BannerRequest.Builder(adPlacementConfig)

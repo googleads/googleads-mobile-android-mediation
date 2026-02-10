@@ -54,7 +54,7 @@ private constructor(
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  adPlacementConfig: AdPlacementConfig
+  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig
 ) : NativeAdMapper(), NativeRequest.AdRequestListener, NativeListener {
   private var nativeAdCallback: MediationNativeAdCallback? = null
   @VisibleForTesting internal var nativeRequestBuilder = NativeRequest.Builder(adPlacementConfig)

@@ -47,7 +47,7 @@ private constructor(
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  adPlacementConfig: AdPlacementConfig
+  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig
 ) : MediationRewardedAd, RewardedRequest.AdRequestListener, RewardedListener {
   @VisibleForTesting internal var rewardedRequestBuilder = RewardedRequest.Builder(adPlacementConfig)
   private lateinit var bidMachineRewardedAd: RewardedAd

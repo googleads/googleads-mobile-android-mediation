@@ -82,10 +82,27 @@ class BidMachineInterstitialAdTest {
   }
 
   @Test
+  fun newInstance() {
+    val serverParams = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID)
+    val adConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = serverParams,
+        watermark = TEST_WATERMARK,
+      )
+    lateinit var bidMachineInterstitialAd: BidMachineInterstitialAd
+    BidMachineInterstitialAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+      bidMachineInterstitialAd = it
+    }
+
+    assertThat(bidMachineInterstitialAd.adPlacementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
   fun loadWaterfallAd_invokesBidMachineRequest() {
     val mockInterstitialRequestBuilder =
       mock<InterstitialRequest.Builder> {
-        on { setPlacementId(eq(TEST_PLACEMENT_ID)) } doReturn it
         on { setListener(any()) } doReturn it
         on { build() } doReturn mockInterstitialRequest
       }
@@ -93,7 +110,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.loadWaterfallAd(mockInterstitialAd, context)
 
-    verify(mockInterstitialRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
+    verify(mockInterstitialRequestBuilder, never()).setBidPayload(any())
     verify(mockInterstitialRequestBuilder).setListener(eq(bidMachineInterstitialAd))
     verify(mockInterstitialRequest).request(eq(context))
   }
