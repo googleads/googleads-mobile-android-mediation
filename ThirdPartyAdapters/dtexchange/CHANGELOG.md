@@ -1,5 +1,11 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next version
+
+- Updated to display banner ad within a wrapper view whose bounds are the
+publisher-requested width and height. This will prevent banner ads from
+unexpectedly covering app's content.
+
 #### Version 8.4.2.1
 - Added support for forwarding the `tagForChildDirectedTreatment` and
 `tagForUnderAgeOfConsent` Google Mobile Ads SDK parameters to the DT Exchange
