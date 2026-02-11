@@ -1,5 +1,8 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated BidMachine API use for AdPlacementConfig.
+
 #### Version 3.5.1.1
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
 parameter to the BidMachine SDK.

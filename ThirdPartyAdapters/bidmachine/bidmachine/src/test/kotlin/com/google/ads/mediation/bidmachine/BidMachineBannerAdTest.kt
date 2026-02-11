@@ -34,9 +34,9 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
+import io.bidmachine.BannerAdSize
 import io.bidmachine.RendererConfiguration
 import io.bidmachine.banner.BannerRequest
-import io.bidmachine.banner.BannerSize
 import io.bidmachine.banner.BannerView
 import io.bidmachine.utils.BMError
 import org.junit.Before
@@ -84,11 +84,19 @@ class BidMachineBannerAdTest {
   }
 
   @Test
+  fun newInstance_correctlyCreatesAdPlacementConfig() {
+    assertThat(
+        (bidMachineBannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner)
+          .bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Banner)
+    assertThat(bidMachineBannerAd.adPlacementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
   fun loadWaterfallAd_OnBannerView_invokesBidMachineRequest() {
     val mockBannerRequestBuilder =
       mock<BannerRequest.Builder> {
-        on { setSize(eq(BannerSize.Size_320x50)) } doReturn it
-        on { setPlacementId(eq(TEST_PLACEMENT_ID)) } doReturn it
         on { setListener(any()) } doReturn it
         on { build() } doReturn mockBannerRequest
       }
@@ -97,8 +105,7 @@ class BidMachineBannerAdTest {
     bidMachineBannerAd.loadWaterfallAd(mockBannerView, context)
 
     verify(mockBannerView).setListener(eq(bidMachineBannerAd))
-    verify(mockBannerRequestBuilder).setSize(eq(BannerSize.Size_320x50))
-    verify(mockBannerRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
+    verify(mockBannerRequestBuilder, never()).setBidPayload(any())
     verify(mockBannerRequestBuilder).setListener(eq(bidMachineBannerAd))
     verify(mockBannerRequest).request(eq(context))
   }
@@ -107,7 +114,6 @@ class BidMachineBannerAdTest {
   fun loadRtbAd_OnBannerView_invokesBidMachineRequest() {
     val mockBannerRequestBuilder =
       mock<BannerRequest.Builder> {
-        on { setSize(eq(BannerSize.Size_320x50)) } doReturn it
         on { setBidPayload(eq(TEST_BID_RESPONSE)) } doReturn it
         on { setListener(any()) } doReturn it
         on { build() } doReturn mockBannerRequest
@@ -117,7 +123,6 @@ class BidMachineBannerAdTest {
     bidMachineBannerAd.loadRtbAd(mockBannerView, context)
 
     verify(mockBannerView).setListener(eq(bidMachineBannerAd))
-    verify(mockBannerRequestBuilder).setSize(eq(BannerSize.Size_320x50))
     verify(mockBannerRequestBuilder).setBidPayload(eq(TEST_BID_RESPONSE))
     verify(mockBannerRequestBuilder).setListener(eq(bidMachineBannerAd))
     verify(mockBannerRequest).request(eq(context))

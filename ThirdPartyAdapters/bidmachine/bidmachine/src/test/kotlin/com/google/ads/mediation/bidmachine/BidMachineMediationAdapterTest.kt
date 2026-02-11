@@ -51,10 +51,10 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import io.bidmachine.AdPlacementConfig
+import io.bidmachine.BannerAdSize
 import io.bidmachine.BidMachine
 import io.bidmachine.BidTokenCallback
 import io.bidmachine.InitializationCallback
-import io.bidmachine.banner.BannerSize
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -352,7 +352,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Banner)
   }
 
   @Test
@@ -364,7 +367,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_300x250)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.MediumRectangle)
   }
 
   @Test
@@ -376,7 +382,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_728x90)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Leaderboard)
   }
 
   @Test
@@ -402,7 +411,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Banner)
   }
 
   @Test
@@ -414,7 +426,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_300x250)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.MediumRectangle)
   }
 
   @Test
@@ -426,7 +441,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_728x90)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Leaderboard)
   }
 
   @Test
@@ -440,7 +458,10 @@ class BidMachineMediationAdapterTest {
 
     // Check that the bannerAd object is initialized.
     assertThat(adapter.bannerAd).isNotNull()
-    assertThat(adapter.bannerAd.bannerSize).isEqualTo(BannerSize.Size_320x50)
+    assertThat(
+        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+      )
+      .isEqualTo(BannerAdSize.Banner)
   }
 
   // endregion
