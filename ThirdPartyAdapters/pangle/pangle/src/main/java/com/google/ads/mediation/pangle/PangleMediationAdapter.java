@@ -24,9 +24,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.bytedance.sdk.openadsdk.api.PAGConstant;
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType;
 import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
-import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback;
+import com.bytedance.sdk.openadsdk.api.init.PAGBidCallback;
+import com.bytedance.sdk.openadsdk.api.init.PAGBidError;
 import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
@@ -77,8 +77,6 @@ public class PangleMediationAdapter extends RtbAdapter {
   private PangleNativeAd nativeAd;
   private PangleRewardedAd rewardedAd;
 
-  private static int gdpr = -1;
-
   public PangleMediationAdapter() {
     pangleInitializer = PangleInitializer.getInstance();
     pangleSdkWrapper = new PangleSdkWrapper();
@@ -109,15 +107,19 @@ public class PangleMediationAdapter extends RtbAdapter {
     }
     PAGBiddingRequest biddingRequest = new PAGBiddingRequest();
     biddingRequest.setAdxId(PangleConstants.ADX_ID);
-    pangleSdkWrapper.getBiddingToken(
-        rtbSignalData.getContext(),
-        biddingRequest,
-        new BiddingTokenCallback() {
-          @Override
-          public void onBiddingTokenCollected(String biddingToken) {
-            signalCallbacks.onSuccess(biddingToken);
-          }
-        });
+    pangleSdkWrapper.getBiddingToken(rtbSignalData.getContext(),
+            biddingRequest,
+            new PAGBidCallback(){
+              @Override
+              public void onBiddingTokenCollected(String biddingToken) {
+                signalCallbacks.onSuccess(biddingToken);
+              }
+
+              @Override
+              public void onBiddingTokenFailed(PAGBidError pagBidError) {
+                signalCallbacks.onFailure(new AdError(pagBidError.getCode(),pagBidError.getMessage(),PangleConstants.ERROR_DOMAIN));
+              }
+            });
   }
 
   @Override
@@ -292,36 +294,6 @@ public class PangleMediationAdapter extends RtbAdapter {
     rewardedAd.render(adConfiguration);
   }
 
-  /**
-   * Set the GDPR setting in Pangle SDK.
-   *
-   * @param gdpr an {@code Integer} value that indicates whether the user consents the use of
-   *     personal data to serve ads under GDPR. See <a
-   *     href="https://www.pangleglobal.com/integration/android-initialize-pangle-sdk">Pangle's
-   *     documentation</a> for more information about what values may be provided.
-   */
-  public static void setGDPRConsent(@PAGGDPRConsentType int gdpr) {
-    setGDPRConsent(gdpr, new PangleSdkWrapper());
-  }
-
-  @VisibleForTesting
-  static void setGDPRConsent(@PAGGDPRConsentType int gdpr, PangleSdkWrapper pangleSdkWrapper) {
-    if (gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_CONSENT
-        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT
-        && gdpr != PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT) {
-      // no-op
-      Log.w(TAG, "Invalid GDPR value. Pangle SDK only accepts -1, 0 or 1.");
-      return;
-    }
-    if (pangleSdkWrapper.isInitSuccess() && !isChildUser()) {
-      pangleSdkWrapper.setGdprConsent(gdpr);
-    }
-    PangleMediationAdapter.gdpr = gdpr;
-  }
-
-  public static int getGDPRConsent() {
-    return gdpr;
-  }
 
   /**
    * Set the PA setting in Pangle SDK.

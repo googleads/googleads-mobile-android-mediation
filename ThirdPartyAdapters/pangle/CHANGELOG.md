@@ -1,5 +1,9 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Remove `PAGConfig.setGDPRConsent`,`PAGConfig.getGDPRConsent`,`PAGConfig.Builder.setGDPRConsent` api
+- Add `PAGSdk.getBiddingToken(Context context, PAGBiddingRequest biddingRequest, PAGBidCallback bidCallback)` api
+
 #### Version 7.8.5.9.0
 - Verified compatibility with Pangle SDK version 7.8.5.9.
 

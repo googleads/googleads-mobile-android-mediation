@@ -3,9 +3,8 @@ package com.google.ads.mediation.pangle
 import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGPAConsentType
-import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback
+import com.bytedance.sdk.openadsdk.api.init.PAGBidCallback
 import com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.pangle.PangleMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd
@@ -13,7 +12,6 @@ import com.google.ads.mediation.pangle.renderer.PangleBannerAd
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd
-import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_MESSAGE
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
@@ -101,8 +99,7 @@ class PangleMediationAdapterTest {
 
   @Before
   fun setUp() {
-    // Resetting the GDPR and the PA Consent Information to their default value.
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
+    // Resettingthe PA Consent Information to their default value.
     PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
 
     pangleMediationAdapter =
@@ -113,7 +110,7 @@ class PangleMediationAdapterTest {
   fun collectSignals_callsOnSuccessWithBiddingToken() {
     val signalCallbacks: SignalCallbacks = mock()
     val networkExtras = bundleOf(PangleExtras.Keys.USER_DATA to USER_DATA_VALUE)
-    val biddingTokenCallbackCaptor = argumentCaptor<BiddingTokenCallback>()
+    val biddingTokenCallbackCaptor = argumentCaptor<PAGBidCallback>()
 
     // When collectSignals is called
     pangleMediationAdapter.collectSignals(
@@ -192,46 +189,6 @@ class PangleMediationAdapterTest {
     verify(initializationCompleteCallback).onInitializationFailed(PANGLE_INIT_FAILURE_MESSAGE)
   }
 
-  @Test
-  fun getGDPRConsent_returnsTheUpdatedValueWhenCalled() {
-    // Given the initial PangleMediationAdapter state
-    // When the GDPRConsent is updated
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
-
-    // Then getGDPRConsent() must return the updated value.
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
-  }
-
-  @Test
-  fun setGDPRConsent_ignoresValuesOutsideTheThreeAccepted() {
-    // Given the initial PangleMdiationAdapter state
-    // When the GDPRConsent is updated to a different range of values that are not allowed.
-    PangleMediationAdapter.setGDPRConsent(-2)
-    // Then the value is only updated when valid options are sent (-1, 0 or 1).
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(2)
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(-1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(-1)
-    PangleMediationAdapter.setGDPRConsent(0)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(0)
-    PangleMediationAdapter.setGDPRConsent(1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(1)
-  }
-
-  @Test
-  fun setGDPRConsent_ifPangleSDKIsInitialized_setsGDPRConsentOnPangleSdk(
-    @TestParameter(valuesProvider = GDPRConsentTypesProvider::class) gdprConsent: Int
-  ) {
-    whenever(pangleSdkWrapper.isInitSuccess()).thenReturn(true)
-
-    PangleMediationAdapter.setGDPRConsent(gdprConsent, pangleSdkWrapper)
-
-    verify(pangleSdkWrapper).setGdprConsent(gdprConsent)
-  }
 
   @Test
   fun getVersionInfo_ifAdapterVersionHasLessThanFourParts_returnsZeros() {
