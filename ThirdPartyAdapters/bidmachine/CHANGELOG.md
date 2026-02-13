@@ -1,6 +1,6 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.5.1.2 (In progress)
 - Updated BidMachine API use for AdPlacementConfig.
 
 #### Version 3.5.1.1
