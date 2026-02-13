@@ -41,6 +41,7 @@ Built and tested with:
 
 #### Version 8.4.0.0
 - Removed class-level references to Context. Can help reduce memory leak issues.
+- Added watermark on bidding ads.
 - Verified compatibility with DT Exchange SDK 8.4.0.
 
 Built and tested with:

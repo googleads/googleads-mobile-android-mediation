@@ -26,6 +26,7 @@ import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
@@ -336,7 +337,11 @@ class FyberMediationAdapterTest {
   fun loadRtbBannerAd_invokesLoadAd() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val bannerAdConfiguration =
-        createMediationBannerAdConfiguration(context = activity, bidResponse = TEST_BID_RESPONSE)
+        createMediationBannerAdConfiguration(
+          context = activity,
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+        )
       val mockAdSpot = mock<InneractiveAdSpot>()
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
@@ -348,7 +353,7 @@ class FyberMediationAdapterTest {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
         InneractiveAdManager.setMediationVersion(eq(MobileAds.getVersion().toString()))
       }
-      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE))
+      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE), eq(TEST_WATERMARK))
     }
   }
 
@@ -362,6 +367,7 @@ class FyberMediationAdapterTest {
         createMediationInterstitialAdConfiguration(
           context = activity,
           bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
         )
       val mockAdSpot = mock<InneractiveAdSpot>()
       val mockInneractiveAdSpotManager =
@@ -374,7 +380,7 @@ class FyberMediationAdapterTest {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
         InneractiveAdManager.setMediationVersion(eq(MobileAds.getVersion().toString()))
       }
-      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE))
+      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE), eq(TEST_WATERMARK))
     }
   }
 
@@ -464,7 +470,11 @@ class FyberMediationAdapterTest {
   fun loadRtbRewardedAd_invokesLoadAd() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val rewardedAdParameters =
-        createMediationRewardedAdConfiguration(context = activity, bidResponse = TEST_BID_RESPONSE)
+        createMediationRewardedAdConfiguration(
+          context = activity,
+          bidResponse = TEST_BID_RESPONSE,
+          watermark = TEST_WATERMARK,
+        )
       val mockAdSpot = mock<InneractiveAdSpot>()
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
@@ -476,7 +486,7 @@ class FyberMediationAdapterTest {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
         InneractiveAdManager.setMediationVersion(eq(MobileAds.getVersion().toString()))
       }
-      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE))
+      verify(mockAdSpot).loadAd(eq(TEST_BID_RESPONSE), eq(TEST_WATERMARK))
     }
   }
 
