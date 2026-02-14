@@ -14,9 +14,21 @@
 
 package com.google.ads.mediation.maio
 
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import jp.maio.sdk.android.mediation.admob.adapter.BuildConfig
 
 /** A utility class to enable unit testing. */
 object MaioUtils {
   @JvmStatic fun getVersionInfo() = BuildConfig.ADAPTER_VERSION
+
+  @JvmStatic
+  fun getIsUserChild(): Boolean {
+    val requestConfiguration = MobileAds.getRequestConfiguration()
+    val tagForChildDirectedTreatment = requestConfiguration.tagForChildDirectedTreatment
+    val tagForUnderAgeOfConsent = requestConfiguration.tagForUnderAgeOfConsent
+    return tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+      tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+  }
 }

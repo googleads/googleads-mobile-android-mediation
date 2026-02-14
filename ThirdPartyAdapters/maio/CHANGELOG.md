@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next version
+- Filter age-restricted requests for maio SDK because it cannot receive age-restricted signals.
+
 #### Version 2.0.8.0
 - Verified compatibility with maio SDK version 2.0.8.
 

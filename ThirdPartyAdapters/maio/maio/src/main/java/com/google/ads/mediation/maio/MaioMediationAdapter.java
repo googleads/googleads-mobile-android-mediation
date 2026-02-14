@@ -52,6 +52,10 @@ public class MaioMediationAdapter extends Adapter {
    */
   public static final String MAIO_SDK_ERROR_DOMAIN = "jp.maio.sdk.android";
 
+  public static final String MAIO_IS_AGE_RESTRICTED_ERROR =
+      "The request had age-restricted treatment, but maio SDK cannot receive age-restricted"
+          + " signals";
+
   @IntDef(value = {ERROR_AD_NOT_AVAILABLE,
       ERROR_INVALID_SERVER_PARAMETERS,
   })
@@ -92,12 +96,13 @@ public class MaioMediationAdapter extends Adapter {
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
 
-  /**
-   * Activity context is required.
-   */
+  // Activity context is required.
   // Commented out since adapter no longer reports this error code. But, leaving it as comment for
   // reference.
   // public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+
+  /** MobileAds identifies user as age restricted */
+  public static final int ERROR_USER_IS_AGE_RESTRICTED = 104;
 
   /**
    * {@link Adapter} implementation
@@ -146,6 +151,9 @@ public class MaioMediationAdapter extends Adapter {
   public void initialize(@NonNull Context context,
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
+    if (MaioUtils.getIsUserChild()) {
+      initializationCompleteCallback.onInitializationFailed(MAIO_IS_AGE_RESTRICTED_ERROR);
+    }
     // maio does not have an initialization API.
     initializationCompleteCallback.onInitializationSucceeded();
   }
@@ -156,6 +164,11 @@ public class MaioMediationAdapter extends Adapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
+    if (MaioUtils.getIsUserChild()) {
+      AdError adError =
+          new AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN);
+      callback.onFailure(adError);
+    }
     interstitialAd = new MaioInterstitialAd(callback);
     interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
@@ -165,6 +178,11 @@ public class MaioMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
+    if (MaioUtils.getIsUserChild()) {
+      AdError adError =
+          new AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN);
+      mediationAdLoadCallback.onFailure(adError);
+    }
     rewardedAd = new MaioRewardedAd(mediationAdLoadCallback);
     rewardedAd.loadAd(mediationRewardedAdConfiguration);
   }
