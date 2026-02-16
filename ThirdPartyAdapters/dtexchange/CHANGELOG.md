@@ -1,5 +1,7 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Version 8.4.3.0 (In progress)
+
 #### Version 8.4.2.2 (In progress)
 
 - Updated to display banner ad within a wrapper view whose bounds are the
