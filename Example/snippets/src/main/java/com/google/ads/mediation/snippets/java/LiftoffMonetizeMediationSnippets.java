@@ -18,6 +18,7 @@ package com.google.ads.mediation.snippets.java;
 
 import android.os.Bundle;
 import com.google.ads.mediation.vungle.VungleConstants;
+import com.google.ads.mediation.vungle.VungleMediationAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.vungle.ads.VunglePrivacySettings;
 import com.vungle.mediation.VungleAdapter;
@@ -40,11 +41,15 @@ public class LiftoffMonetizeMediationSnippets {
     Bundle extras = new Bundle();
     extras.putString(VungleConstants.KEY_USER_ID, "myUserID");
     extras.putInt(VungleConstants.KEY_ORIENTATION, 1);
+    // Optional: Enables the back button on App Open ads immediately.
+    extras.putBoolean(VungleConstants.KEY_BACK_BUTTON_IMMEDIATELY_ENABLED, true);
 
     AdRequest request =
         new AdRequest.Builder()
             .addNetworkExtrasBundle(VungleAdapter.class, extras) // Rewarded.
             .addNetworkExtrasBundle(VungleInterstitialAdapter.class, extras) // Interstitial.
+            // App Open ads use VungleMediationAdapter
+            .addNetworkExtrasBundle(VungleMediationAdapter.class, extras)
             .build();
     // [END set_network_specific_params]
   }
