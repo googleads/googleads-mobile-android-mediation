@@ -95,7 +95,6 @@ public class PangleInitializer implements PAGInitCallback {
             .createPAGConfigBuilder()
             .appId(appId)
             .setAdxId(PangleConstants.ADX_ID)
-            .setGDPRConsent(PangleMediationAdapter.getGDPRConsent())
             .setUserData(
                 String.format(
                     "[{\"name\":\"mediation\",\"value\":\"google\"},{\"name\":\"adapter_version\",\"value\":\"%s\"}]",
