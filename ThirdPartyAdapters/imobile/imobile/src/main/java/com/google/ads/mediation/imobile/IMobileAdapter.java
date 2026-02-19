@@ -17,6 +17,8 @@ package com.google.ads.mediation.imobile;
 import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_BANNER_SIZE_MISMATCH;
 import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT;
+import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_USER_IS_AGE_RESTRICTED;
+import static com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_USER_IS_AGE_RESTRICTED_MSG;
 
 import android.app.Activity;
 import android.content.Context;
@@ -84,6 +86,11 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
   public void requestBannerAd(@NonNull Context context, @NonNull MediationBannerListener listener,
       @NonNull Bundle serverParameters, @NonNull AdSize adSize,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
+    if (AdapterHelper.getIsUserChild()) {
+      AdError adError =
+          new AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN);
+      listener.onAdFailedToLoad(this, adError);
+    }
 
     // Validate Context.
     if (!(context instanceof Activity)) {
@@ -207,6 +214,11 @@ public final class IMobileAdapter implements MediationBannerAdapter, MediationIn
   public void requestInterstitialAd(@NonNull Context context,
       @NonNull MediationInterstitialListener listener, @NonNull Bundle serverParameters,
       @NonNull MediationAdRequest mediationAdRequest, @Nullable Bundle mediationExtras) {
+    if (AdapterHelper.getIsUserChild()) {
+      AdError adError =
+          new AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN);
+      listener.onAdFailedToLoad(this, adError);
+    }
 
     // Validate Context.
     if (!(context instanceof Activity)) {
