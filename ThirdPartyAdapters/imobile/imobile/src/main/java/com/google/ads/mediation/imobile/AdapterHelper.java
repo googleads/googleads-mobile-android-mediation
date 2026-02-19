@@ -15,9 +15,13 @@
 package com.google.ads.mediation.imobile;
 
 import static com.google.ads.mediation.imobile.IMobileMediationAdapter.IMOBILE_SDK_ERROR_DOMAIN;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
 
 /**
@@ -73,5 +77,13 @@ public final class AdapterHelper {
 
   static String getAdapterVersion() {
     return BuildConfig.ADAPTER_VERSION;
+  }
+
+  static boolean getIsUserChild() {
+    RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
+    int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
+    return tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
   }
 }
