@@ -1,7 +1,9 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.4.2.2 (In progress)
+#### Next Version
+- Added updated API calls for banner ad implementation.
 
+#### Version 8.4.2.2 (In progress)
 - Updated to display banner ad within a wrapper view whose bounds are the
 publisher-requested width and height. This will prevent banner ads from
 unexpectedly covering app's content.
