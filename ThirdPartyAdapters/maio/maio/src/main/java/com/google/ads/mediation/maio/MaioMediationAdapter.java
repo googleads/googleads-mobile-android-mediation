@@ -23,6 +23,9 @@ import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
@@ -41,6 +44,7 @@ public class MaioMediationAdapter extends Adapter {
 
   private MaioInterstitialAd interstitialAd;
   private MaioRewardedAd rewardedAd;
+  private MaioBannerAd bannerAd;
 
   /**
    * Maio adapter error domain.
@@ -167,5 +171,13 @@ public class MaioMediationAdapter extends Adapter {
           mediationAdLoadCallback) {
     rewardedAd = new MaioRewardedAd(mediationAdLoadCallback);
     rewardedAd.loadAd(mediationRewardedAdConfiguration);
+  }
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    bannerAd = new MaioBannerAd(callback);
+    bannerAd.loadAd(adConfiguration);
   }
 }

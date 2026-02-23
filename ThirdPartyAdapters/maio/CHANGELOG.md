@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next Version
+- Added Banner ad format support
+
 #### Version 2.0.8.0
 - Verified compatibility with maio SDK version 2.0.8.
 
