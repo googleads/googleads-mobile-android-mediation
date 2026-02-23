@@ -3,21 +3,22 @@ package com.google.ads.mediation.pangle
 import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGGDPRConsentType
 import com.bytedance.sdk.openadsdk.api.PAGConstant.PAGPAConsentType
-import com.bytedance.sdk.openadsdk.api.init.BiddingTokenCallback
+import com.bytedance.sdk.openadsdk.api.init.PAGBidCallback
+import com.bytedance.sdk.openadsdk.api.init.PAGBidError
 import com.google.ads.mediation.pangle.PangleConstants.ERROR_INVALID_SERVER_PARAMETERS
+import com.google.ads.mediation.pangle.PangleConstants.PANGLE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.pangle.PangleMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd
 import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd
-import com.google.ads.mediation.pangle.utils.GDPRConsentTypesProvider
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_MESSAGE
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -41,7 +42,6 @@ import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.junit.testparameterinjector.TestParameter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -101,8 +101,7 @@ class PangleMediationAdapterTest {
 
   @Before
   fun setUp() {
-    // Resetting the GDPR and the PA Consent Information to their default value.
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
+    // Resetting the PA Consent Information to their default value.
     PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
 
     pangleMediationAdapter =
@@ -113,7 +112,7 @@ class PangleMediationAdapterTest {
   fun collectSignals_callsOnSuccessWithBiddingToken() {
     val signalCallbacks: SignalCallbacks = mock()
     val networkExtras = bundleOf(PangleExtras.Keys.USER_DATA to USER_DATA_VALUE)
-    val biddingTokenCallbackCaptor = argumentCaptor<BiddingTokenCallback>()
+    val biddingTokenCallbackCaptor = argumentCaptor<PAGBidCallback>()
 
     // When collectSignals is called
     pangleMediationAdapter.collectSignals(
@@ -131,6 +130,35 @@ class PangleMediationAdapterTest {
     biddingTokenCallback.onBiddingTokenCollected(BIDDING_TOKEN)
     // Then signalCallbacks onSuccess is called with the PAGSdk biddingToken.
     verify(signalCallbacks).onSuccess(BIDDING_TOKEN)
+  }
+
+  @Test
+  fun collectSignals_ifBiddingTokenCallFails_callsOnFailure() {
+    val signalCallbacks: SignalCallbacks = mock()
+    val networkExtras = bundleOf(PangleExtras.Keys.USER_DATA to USER_DATA_VALUE)
+    val biddingTokenCallbackCaptor = argumentCaptor<PAGBidCallback>()
+
+    // When collectSignals is called
+    pangleMediationAdapter.collectSignals(
+      RtbSignalData(context, emptyList(), networkExtras, AdSize(1, 1)),
+      signalCallbacks,
+    )
+
+    // Verify that user data is set on the Pangle SDK *before* getting the bidding token from the
+    // Pangle SDK.
+    inOrder(pangleSdkWrapper) {
+      verify(pangleSdkWrapper).setUserData(USER_DATA_VALUE)
+      verify(pangleSdkWrapper).getBiddingToken(any(), any(), biddingTokenCallbackCaptor.capture())
+    }
+    val biddingTokenCallback = biddingTokenCallbackCaptor.firstValue
+    val pagBidError =
+      PAGBidError(ERROR_CODE_BIDDING_TOKEN_FAILURE, "Bidding token collection failed")
+    biddingTokenCallback.onBiddingTokenFailed(pagBidError)
+    val errorCaptor = argumentCaptor<AdError>()
+    verify(signalCallbacks).onFailure(errorCaptor.capture())
+    val error = errorCaptor.firstValue
+    assertThat(error.code).isEqualTo(ERROR_CODE_BIDDING_TOKEN_FAILURE)
+    assertThat(error.domain).isEqualTo(PANGLE_SDK_ERROR_DOMAIN)
   }
 
   @Test
@@ -190,47 +218,6 @@ class PangleMediationAdapterTest {
     )
 
     verify(initializationCompleteCallback).onInitializationFailed(PANGLE_INIT_FAILURE_MESSAGE)
-  }
-
-  @Test
-  fun getGDPRConsent_returnsTheUpdatedValueWhenCalled() {
-    // Given the initial PangleMediationAdapter state
-    // When the GDPRConsent is updated
-    PangleMediationAdapter.setGDPRConsent(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
-
-    // Then getGDPRConsent() must return the updated value.
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_NO_CONSENT)
-  }
-
-  @Test
-  fun setGDPRConsent_ignoresValuesOutsideTheThreeAccepted() {
-    // Given the initial PangleMdiationAdapter state
-    // When the GDPRConsent is updated to a different range of values that are not allowed.
-    PangleMediationAdapter.setGDPRConsent(-2)
-    // Then the value is only updated when valid options are sent (-1, 0 or 1).
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(2)
-    assertThat(PangleMediationAdapter.getGDPRConsent())
-      .isEqualTo(PAGGDPRConsentType.PAG_GDPR_CONSENT_TYPE_DEFAULT)
-    PangleMediationAdapter.setGDPRConsent(-1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(-1)
-    PangleMediationAdapter.setGDPRConsent(0)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(0)
-    PangleMediationAdapter.setGDPRConsent(1)
-    assertThat(PangleMediationAdapter.getGDPRConsent()).isEqualTo(1)
-  }
-
-  @Test
-  fun setGDPRConsent_ifPangleSDKIsInitialized_setsGDPRConsentOnPangleSdk(
-    @TestParameter(valuesProvider = GDPRConsentTypesProvider::class) gdprConsent: Int
-  ) {
-    whenever(pangleSdkWrapper.isInitSuccess()).thenReturn(true)
-
-    PangleMediationAdapter.setGDPRConsent(gdprConsent, pangleSdkWrapper)
-
-    verify(pangleSdkWrapper).setGdprConsent(gdprConsent)
   }
 
   @Test
@@ -335,5 +322,7 @@ class PangleMediationAdapterTest {
   companion object {
     private const val USER_DATA_VALUE = "example_user_data"
     private const val BIDDING_TOKEN = "example_bidding_token"
+    // A fake error code for Pangle's bidding token collection failure.
+    private const val ERROR_CODE_BIDDING_TOKEN_FAILURE = 1005
   }
 }
