@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.4.3.0 (In progress)
 - Added updated API calls for banner ad implementation.
 
 #### Version 8.4.2.2
