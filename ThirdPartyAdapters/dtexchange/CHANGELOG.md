@@ -3,10 +3,14 @@
 #### Next Version
 - Added updated API calls for banner ad implementation.
 
-#### Version 8.4.2.2 (In progress)
-- Updated to display banner ad within a wrapper view whose bounds are the
-publisher-requested width and height. This will prevent banner ads from
-unexpectedly covering app's content.
+#### Version 8.4.2.2
+- Added support to display banner ads within a wrapper view, bounded by a
+specified width and height. This change prevents banner ads from covering app
+content.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- DT Exchange SDK version 8.4.2.
 
 #### Version 8.4.2.1
 - Added support for forwarding the `tagForChildDirectedTreatment` and
