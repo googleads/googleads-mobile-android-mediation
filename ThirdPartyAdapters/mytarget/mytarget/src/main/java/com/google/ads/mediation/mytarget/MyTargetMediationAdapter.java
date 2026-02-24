@@ -43,6 +43,22 @@ public class MyTargetMediationAdapter extends Adapter
 
   static final String TAG = MyTargetMediationAdapter.class.getSimpleName();
 
+  /**
+   * myTarget ad technology provider ID from
+   * https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   */
+  public static final int AD_TECHNOLOGY_PROVIDER_ID = 1067;
+
+  /** Represents the result of a consent check for advertising purposes. */
+  public enum ConsentResult {
+    /** The consent status could not be determined, or consent does not apply. */
+    UNKNOWN,
+    /** The user has given their consent. */
+    TRUE,
+    /** The user has explicitly declined consent. */
+    FALSE
+  }
+
   // region Error codes
   // MyTarget adapter error domain.
   public static final String ERROR_DOMAIN = "com.google.ads.mediation.mytarget";
@@ -142,7 +158,7 @@ public class MyTargetMediationAdapter extends Adapter
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
 
-    configureMyTargetPrivacy(MobileAds.getRequestConfiguration());
+    configureMyTargetPrivacy(context, MobileAds.getRequestConfiguration());
     // MyTarget SDK does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
   }
