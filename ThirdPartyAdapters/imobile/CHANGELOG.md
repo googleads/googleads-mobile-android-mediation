@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Filter age-restricted requests for i-mobile SDK because it cannot receive age-restricted signals.
+
 #### Version 2.3.2.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.

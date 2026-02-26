@@ -95,6 +95,13 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
    */
   public static final int ERROR_EMPTY_NATIVE_ADS_LIST = 104;
 
+  /** MobileAds identifies user as age restricted */
+  public static final int ERROR_USER_IS_AGE_RESTRICTED = 105;
+
+  public static final String ERROR_USER_IS_AGE_RESTRICTED_MSG =
+      "The request had age-restricted treatment, but i-mobile SDK cannot receive age-restricted"
+          + " signals";
+
   // region - Adapter interface
   @NonNull
   @Override
@@ -128,6 +135,9 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   public void initialize(@NonNull Context context,
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> list) {
+    if (AdapterHelper.getIsUserChild()) {
+      initializationCompleteCallback.onInitializationFailed(ERROR_USER_IS_AGE_RESTRICTED_MSG);
+    }
 
     // i-mobile does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
@@ -146,6 +156,11 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
   public void requestNativeAd(@NonNull Context context, @NonNull MediationNativeListener listener,
       @NonNull Bundle serverParameters, @NonNull NativeMediationAdRequest mediationAdRequest,
       @Nullable Bundle mediationExtras) {
+    if (AdapterHelper.getIsUserChild()) {
+      AdError adError =
+          new AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN);
+      listener.onAdFailedToLoad(this, adError);
+    }
 
     // Validate Context.
     if (!(context instanceof Activity)) {
