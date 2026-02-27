@@ -1,7 +1,12 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.4.3.0 (In progress)
+#### Version 8.4.3.0
 - Added updated API calls for banner ad implementation.
+- Verified compatibility with DT Exchange SDK 8.4.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- DT Exchange SDK version 8.4.3.
 
 #### Version 8.4.2.2
 - Added support to display banner ads within a wrapper view, bounded by a
