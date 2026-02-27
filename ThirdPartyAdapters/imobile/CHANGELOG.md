@@ -1,5 +1,9 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+
+- Migrated the banner ad implementation from old API to new API.
+
 #### Version 2.3.2.1
 - Updated the minimum required Android API level to 23.
 - Updated the minimum required Google Mobile Ads SDK version to 24.0.0.
