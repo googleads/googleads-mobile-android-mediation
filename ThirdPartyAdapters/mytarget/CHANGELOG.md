@@ -1,5 +1,8 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Next Version
+- Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the myTarget SDK if GDPR applies.
+
 #### Version 5.27.4.1
 - Added support for forwarding the tagForChildDirectedTreatment and tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the myTarget SDK.
 
