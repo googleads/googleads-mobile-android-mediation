@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.1.0 (In progress)
+
 #### Version 7.7.0.1
 - Added support for publishers to configure
 `com.vungle.ads.AdConfig.setBackButtonImmediatelyEnabled` for app open ads using
