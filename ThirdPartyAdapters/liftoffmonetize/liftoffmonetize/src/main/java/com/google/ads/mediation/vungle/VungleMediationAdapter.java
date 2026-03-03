@@ -349,7 +349,7 @@ public class VungleMediationAdapter extends RtbAdapter
                   rewardedAd.setUserId(userId);
                 }
 
-                rewardedAd.load(null);
+                rewardedAd.load((String) null);
               }
 
               @Override
