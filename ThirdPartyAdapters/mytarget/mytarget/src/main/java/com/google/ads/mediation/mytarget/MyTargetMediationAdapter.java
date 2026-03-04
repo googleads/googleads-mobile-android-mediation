@@ -184,7 +184,8 @@ public class MyTargetMediationAdapter extends Adapter
     if (mRewardedAd != null) {
       mRewardedAd.show();
     } else if (mRewardedAdCallback != null) {
-      mRewardedAdCallback.onAdFailedToShow("Rewarded Video is null.");
+      mRewardedAdCallback.onAdFailedToShow(
+          new AdError(ERROR_AD_FAILED_TO_SHOW, "Rewarded Video is null.", ERROR_DOMAIN));
     }
   }
 
