@@ -121,6 +121,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
               public void onInitializeSuccess() {
                 rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleRtbRewardedAd.this);
+                rewardedAd.setAdapterAdFormat("VungleRtbRewardedAd");
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);
                 }

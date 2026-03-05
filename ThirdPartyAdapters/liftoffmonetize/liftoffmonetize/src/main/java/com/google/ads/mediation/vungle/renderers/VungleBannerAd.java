@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.vungle.VungleFactory;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
+import com.google.ads.mediation.vungle.VungleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -38,6 +39,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.vungle.ads.BannerAdListener;
 import com.vungle.ads.BaseAd;
 import com.vungle.ads.VungleAdSize;
+import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleBannerView;
 import com.vungle.ads.VungleError;
 import com.vungle.mediation.VungleInterstitialAdapter;
@@ -123,6 +125,9 @@ public abstract class VungleBannerAd implements MediationBannerAd, BannerAdListe
       MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     bannerAdView = vungleFactory.createBannerAd(context, placementId, bannerAdSize);
     bannerAdView.setAdListener(this);
+    bannerAdView.setAdapterAdFormat("VungleBannerAd");
+    AdSize adSize = mediationBannerAdConfiguration.getAdSize();
+    VungleSdkWrapper.logCustomSizeForBannerPlacement(bannerAdView, "VungleBannerAd-custom", placementId, adSize);
     loadAd(bannerAdView, mediationBannerAdConfiguration);
   }
 

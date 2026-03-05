@@ -139,6 +139,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
                 nativeAd = vungleFactory.createNativeAd(context, placementId);
                 nativeAd.setAdOptionsPosition(adOptionsPosition);
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
+                nativeAd.setAdapterAdFormat("VungleRtbNativeAd");
                 if (googleVideoOptions != null) {
                   NativeVideoOptions vngVideoOptions = nativeAd.getVideoOptions();
                   boolean startMuted = googleVideoOptions.getStartMuted();

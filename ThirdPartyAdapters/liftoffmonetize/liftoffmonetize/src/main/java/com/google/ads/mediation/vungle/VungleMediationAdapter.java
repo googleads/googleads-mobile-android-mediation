@@ -345,11 +345,12 @@ public class VungleMediationAdapter extends RtbAdapter
               public void onInitializeSuccess() {
                 rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleMediationAdapter.this);
+                rewardedAd.setAdapterAdFormat("VungleMediationAdapter-rewarded");
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);
                 }
 
-                rewardedAd.load(null);
+                rewardedAd.load((String) null);
               }
 
               @Override
