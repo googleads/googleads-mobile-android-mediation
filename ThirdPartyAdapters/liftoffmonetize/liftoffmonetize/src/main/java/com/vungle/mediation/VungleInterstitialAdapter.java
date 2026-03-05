@@ -101,7 +101,8 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
 
     VungleInitializer.getInstance()
         .initialize(
-            appID, context,
+            appID,
+            context,
             new VungleInitializer.VungleInitializationListener() {
               @Override
               public void onInitializeSuccess() {
@@ -113,8 +114,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
 
               @Override
               public void onInitializeError(AdError error) {
-                interstitialListener
-                    .onAdFailedToLoad(VungleInterstitialAdapter.this, error);
+                interstitialListener.onAdFailedToLoad(VungleInterstitialAdapter.this, error);
                 Log.w(TAG, error.toString());
               }
             });
@@ -253,6 +253,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
                 bannerAdView.setAdListener(new VungleBannerListener());
                 bannerAdView.setAdapterAdFormat("VungleInterstitialAdapter-banner");
                 VungleSdkWrapper.logCustomSizeForBannerPlacement(bannerAdView, "VungleInterstitialAdapter-banner-custom", placement, adSize);
+
                 bannerAdView.load((String) null);
               }
 

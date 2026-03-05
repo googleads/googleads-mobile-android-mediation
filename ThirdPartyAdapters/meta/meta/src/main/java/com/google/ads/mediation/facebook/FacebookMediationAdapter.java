@@ -313,14 +313,19 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   /**
-   * Sets the Meta Audience Network mixed audience settings.
+   * Sets the Meta Audience Network mixed audience settings mapped to GMA's tagged for child
+   * directed treatment and tagged for under age of consent treatment.
    */
   public static void setMixedAudience(@NonNull MediationAdConfiguration mediationAdConfiguration) {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || mediationAdConfiguration.taggedForUnderAgeTreatment()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
       AdSettings.setMixedAudience(true);
     } else if (mediationAdConfiguration.taggedForChildDirectedTreatment()
-        == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE) {
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || mediationAdConfiguration.taggedForUnderAgeTreatment()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
       AdSettings.setMixedAudience(false);
     }
   }

@@ -24,10 +24,15 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
@@ -40,10 +45,8 @@ import jp.co.imobile.sdkads.android.ImobileSdkAd;
 import jp.co.imobile.sdkads.android.ImobileSdkAdListener;
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/**
- * i-mobile mediation adapter for AdMob native ads.
- */
-public final class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
+/** i-mobile mediation adapter for AdMob native ads. */
+public class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
 
   // region - Fields for log.
   /**
@@ -95,6 +98,17 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
    */
   public static final int ERROR_EMPTY_NATIVE_ADS_LIST = 104;
 
+  private final IMobileSdkWrapper iMobileSdkWrapper;
+
+  IMobileMediationAdapter() {
+    iMobileSdkWrapper = new IMobileSdkWrapper();
+  }
+
+  @VisibleForTesting
+  IMobileMediationAdapter(IMobileSdkWrapper iMobileSdkWrapper) {
+    this.iMobileSdkWrapper = iMobileSdkWrapper;
+  }
+
   // region - Adapter interface
   @NonNull
   @Override
@@ -139,7 +153,16 @@ public final class IMobileMediationAdapter extends Adapter implements MediationN
    * Listener for native ads.
    */
   private MediationNativeListener mediationNativeListener;
+
   // endregion
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    IMobileBannerAd bannerAd = new IMobileBannerAd(callback);
+    bannerAd.loadAd(mediationBannerAdConfiguration, iMobileSdkWrapper);
+  }
 
   // region - Methods for native ads.
   @Override

@@ -90,6 +90,11 @@ class BidMachineNativeAdTest {
   }
 
   @Test
+  fun newInstance_correctlyCreatesAdPlacementConfig() {
+    assertThat(bidMachineNativeAd.adPlacementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
   fun loadWaterfallAd_invokesBidMachineRequest() {
     val mockNativeRequestBuilder = configureNativeRequestBuilder()
 
@@ -97,7 +102,6 @@ class BidMachineNativeAdTest {
 
     verify(mockNativeAd).setListener(eq(bidMachineNativeAd))
     verify(mockNativeRequestBuilder, never()).setBidPayload(any())
-    verify(mockNativeRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
     verify(mockNativeRequestBuilder).setListener(eq(bidMachineNativeAd))
     verify(mockNativeRequest).request(eq(context))
   }
@@ -221,7 +225,6 @@ class BidMachineNativeAdTest {
   private fun configureNativeRequestBuilder(): NativeRequest.Builder {
     val mockNativeRequestBuilder =
       mock<NativeRequest.Builder> {
-        on { setPlacementId(TEST_PLACEMENT_ID) } doReturn it
         on { setBidPayload(eq(TEST_BID_RESPONSE)) } doReturn it
         on { setListener(any()) } doReturn it
         on { build() } doReturn mockNativeRequest

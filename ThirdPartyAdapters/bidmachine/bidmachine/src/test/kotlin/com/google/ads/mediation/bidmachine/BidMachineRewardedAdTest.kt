@@ -81,10 +81,14 @@ class BidMachineRewardedAdTest {
   }
 
   @Test
+  fun newInstance_correctlyCreatesAdPlacementConfig() {
+    assertThat(bidMachineRewardedAd.adPlacementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
   fun loadWaterfallAd_invokesBidMachineRequest() {
     val mockRewardedRequestBuilder =
       mock<RewardedRequest.Builder> {
-        on { setPlacementId(eq(TEST_PLACEMENT_ID)) } doReturn it
         on { setListener(any()) } doReturn it
         on { build() } doReturn mockRewardedRequest
       }
@@ -92,7 +96,7 @@ class BidMachineRewardedAdTest {
 
     bidMachineRewardedAd.loadWaterfallAd(mockRewardedAd, context)
 
-    verify(mockRewardedRequestBuilder).setPlacementId(eq(TEST_PLACEMENT_ID))
+    verify(mockRewardedRequestBuilder, never()).setBidPayload(any())
     verify(mockRewardedRequestBuilder).setListener(eq(bidMachineRewardedAd))
     verify(mockRewardedRequest).request(eq(context))
   }

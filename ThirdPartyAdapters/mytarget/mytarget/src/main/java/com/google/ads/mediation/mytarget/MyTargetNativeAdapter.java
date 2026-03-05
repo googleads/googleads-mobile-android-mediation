@@ -314,6 +314,19 @@ public class MyTargetNativeAdapter implements MediationNativeAdapter {
     }
 
     @Override
+    public void onClick(@Nullable View view, @NonNull NativeAd nativeAd) {
+      Log.d(TAG, "Ad clicked.");
+      if (nativeListener != null) {
+        nativeListener.onAdClicked(MyTargetNativeAdapter.this);
+        nativeListener.onAdOpened(MyTargetNativeAdapter.this);
+        nativeListener.onAdLeftApplication(MyTargetNativeAdapter.this);
+      }
+    }
+
+    // Note: MyTarget has deprecated onClick(NativeAd) in favor of onClick(View, NativeAd). So, only
+    // onClick(View, NativeAd) is expected to be called by the MyTarget SDK. But, we still have to
+    // implement onClick(NativeAd) for the code to build.
+    @Override
     public void onClick(@NonNull final NativeAd nativeAd) {
       Log.d(TAG, "Ad clicked.");
       if (nativeListener != null) {

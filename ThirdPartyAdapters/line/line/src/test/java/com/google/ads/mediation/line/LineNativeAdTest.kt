@@ -15,7 +15,9 @@ import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdNative
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
@@ -37,6 +39,7 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -104,6 +107,7 @@ class LineNativeAdTest {
 
       with(spiedLineNativeAd) {
         verify(this).overrideClickHandling = true
+        verify(this).overrideImpressionRecording = true
         assertThat(headline).isEqualTo("FunnyTitle")
         assertThat(body).isEqualTo("DescriptionText")
         assertThat(callToAction).isEqualTo("ButtonText")
@@ -116,6 +120,44 @@ class LineNativeAdTest {
         assertThat(adChoicesContent).isInstanceOf(ImageView::class.java)
         verify(mediationAdLoadCallback).onSuccess(this)
       }
+    }
+  }
+
+  @Test
+  fun onFiveAdLoad_inLowerGMASdkVersions_doesNotInvokeOverrideImpressionRecording() {
+    testCoroutineScope.runTest {
+      // Required to verify mediaView assignment
+      val spiedLineNativeAd = spy(lineNativeAd)
+      initiateImageLoadCallbacks()
+      spiedLineNativeAd.loadAd()
+
+      Mockito.mockStatic(MobileAds::class.java).use {
+        // Return a version of GMA SDK that doesn't listen to adapter-reported impressions.
+        whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 0, 0)
+        spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+        advanceUntilIdle()
+      }
+
+      verify(spiedLineNativeAd, never()).overrideImpressionRecording = true
+    }
+  }
+
+  @Test
+  fun onFiveAdLoad_ifGmaSdkVersionBetween018And650_setsOverrideImpressionRecordingAsTrue() {
+    testCoroutineScope.runTest {
+      // Required to verify mediaView assignment
+      val spiedLineNativeAd = spy(lineNativeAd)
+      initiateImageLoadCallbacks()
+      spiedLineNativeAd.loadAd()
+
+      Mockito.mockStatic(MobileAds::class.java).use {
+        // Return a version of GMA SDK that does listens to adapter-reported impressions.
+        whenever(MobileAds.getVersion()) doReturn VersionInfo(4, 0, 0)
+        spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+        advanceUntilIdle()
+      }
+
+      verify(spiedLineNativeAd).overrideImpressionRecording = true
     }
   }
 

@@ -1,8 +1,26 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.1.0 (In progress)
+
+#### Version 7.7.0.1
+- Added support for publishers to configure
+`com.vungle.ads.AdConfig.setBackButtonImmediatelyEnabled` for app open ads using
+mediation extras.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Vungle SDK version 7.7.0.
+
+#### Version 7.7.0.0
+- Verified compatibility with Vungle SDK 7.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Vungle SDK version 7.7.0.
+
 #### Version 7.6.3.1
-- Maps Google Mobile Ads SDK underage flags to Liftoff Monetize SDK COPPA
-method.
+- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK
+parameter to the Liftoff Monetize SDK.
 
 Built and tested with:
 - Google Mobile Ads SDK version 24.9.0.

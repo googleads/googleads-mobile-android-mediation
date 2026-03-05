@@ -1,7 +1,19 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Version 9.11.0.1 (In progress)
-- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the Chartboost SDK.
+#### Version 9.11.1.0
+- Verified compatibility with Chartboost SDK version 9.11.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Chartboost SDK version 9.11.1.
+
+#### Version 9.11.0.1
+- Added support for forwarding the `tagForUnderAgeOfConsent` Google Mobile Ads
+SDK parameter to the Chartboost SDK.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- Chartboost SDK version 9.11.0.
 
 #### Version 9.11.0.0
 - Verified compatibility with Chartboost SDK version 9.11.0.

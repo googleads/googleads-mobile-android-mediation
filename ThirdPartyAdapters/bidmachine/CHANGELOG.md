@@ -1,8 +1,15 @@
 ## BidMachine Android Mediation Adapter Changelog
 
+#### Version 3.5.1.2
+- Updated BidMachine Adapter to use AdPlacementConfig.
+
+Built and tested with:
+- Google Mobile Ads SDK version 24.9.0.
+- BidMachine SDK version 3.5.1.
+
 #### Version 3.5.1.1
-- Mapped Google Mobile Ads SDK underage flags to BidMachine SDK COPPA
-method.
+- Added support for forwarding the `tagForUnderAgeOfConsent` Google Mobile Ads SDK
+parameter to the BidMachine SDK.
 
 Built and tested with:
 - Google Mobile Ads SDK version 24.9.0.

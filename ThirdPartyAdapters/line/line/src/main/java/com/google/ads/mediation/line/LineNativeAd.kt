@@ -30,6 +30,8 @@ import com.five_corp.ad.FiveAdNative
 import com.five_corp.ad.FiveAdNativeEventListener
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
@@ -130,6 +132,20 @@ private constructor(
     advertiser = nativeAd.advertiserName
 
     overrideClickHandling = true
+    val gmaSdkVersion = MobileAds.getVersion()
+    // Extensive version checking is required to include NextGen versions of GMA SDK.
+    if (
+      isVersionLowerThan(
+        gmaSdkVersion,
+        VersionInfo(/* majorVersion= */ 6, /* minorVersion= */ 5, /* microVersion= */ 0),
+      ) &&
+        isVersionGreaterThanOrEqualTo(
+          gmaSdkVersion,
+          VersionInfo(/* majorVersion= */ 0, /* minorVersion= */ 18, /* microVersion= */ 0),
+        ) || (isVersionGreaterThanOrEqualTo(MobileAds.getVersion(), VersionInfo(24, 4, 0)))
+    ) {
+      overrideImpressionRecording = true
+    }
 
     val requiredImagesLoaded = loadImages()
     if (!requiredImagesLoaded) {
@@ -232,6 +248,32 @@ private constructor(
   override fun onImpression(fiveAdNative: FiveAdNative) {
     Log.d(TAG, "Line native ad recorded an impression.")
     mediationNativeAdCallback?.reportAdImpression()
+  }
+
+  private fun isVersionGreaterThanOrEqualTo(version1: VersionInfo, version2: VersionInfo): Boolean {
+    if (version1.majorVersion > version2.majorVersion) {
+      return true
+    } else if (version1.majorVersion == version2.majorVersion) {
+      if (version1.minorVersion > version2.minorVersion) {
+        return true
+      } else if (version1.minorVersion == version2.minorVersion) {
+        return version1.microVersion >= version2.microVersion
+      }
+    }
+    return false
+  }
+
+  private fun isVersionLowerThan(version1: VersionInfo, version2: VersionInfo): Boolean {
+    if (version1.majorVersion < version2.majorVersion) {
+      return true
+    } else if (version1.majorVersion == version2.majorVersion) {
+      if (version1.minorVersion < version2.minorVersion) {
+        return true
+      } else if (version1.minorVersion == version2.minorVersion) {
+        return version1.microVersion < version2.microVersion
+      }
+    }
+    return false
   }
 
   internal class LineNativeImage(private val drawable: Drawable) : NativeAd.Image() {

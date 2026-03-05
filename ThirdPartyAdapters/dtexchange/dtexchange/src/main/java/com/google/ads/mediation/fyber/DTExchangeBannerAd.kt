@@ -37,7 +37,15 @@ class DTExchangeBannerAd(
     adSpot = InneractiveAdSpotManager.get().createSpot()
     val controller = InneractiveAdViewUnitController()
     adSpot.addUnitController(controller)
-    wrapperView = RelativeLayout(mediationBannerAdConfiguration.context)
+    val pubRequestedSize = mediationBannerAdConfiguration.adSize
+    val context = mediationBannerAdConfiguration.context
+    val wrapperViewLayoutParams =
+      RelativeLayout.LayoutParams(
+        pubRequestedSize.getWidthInPixels(context),
+        pubRequestedSize.getHeightInPixels(context),
+      )
+    wrapperView = RelativeLayout(context)
+    wrapperView.layoutParams = wrapperViewLayoutParams
     adSpot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationBannerAdConfiguration.mediationExtras)

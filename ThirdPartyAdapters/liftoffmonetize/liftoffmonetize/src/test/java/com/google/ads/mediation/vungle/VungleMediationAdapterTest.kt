@@ -19,6 +19,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfigur
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
+import com.google.ads.mediation.vungle.VungleConstants.KEY_BACK_BUTTON_IMMEDIATELY_ENABLED
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
@@ -970,6 +971,72 @@ class VungleMediationAdapterTest {
   }
 
   @Test
+  fun loadAppOpenAd_ifBackButtonImmediatelyIsSetToTrueInMediationExtras_setsItTrueInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_BACK_BUTTON_IMMEDIATELY_ENABLED to true),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig).setBackButtonImmediatelyEnabled(true)
+  }
+
+  @Test
+  fun loadAppOpenAd_ifBackButtonImmediatelyIsSetToFalseInMediationExtras_setsItFalseInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_BACK_BUTTON_IMMEDIATELY_ENABLED to false),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig).setBackButtonImmediatelyEnabled(false)
+  }
+
+  @Test
+  fun loadAppOpenAd_ifBackButtonImmediatelyIsNotSetInMediationExtras_doesNotSetItInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig, times(0)).setBackButtonImmediatelyEnabled(any())
+  }
+
+  @Test
   fun loadRtbRewardedAd_updatesCoppaStatus() {
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
@@ -1846,6 +1913,72 @@ class VungleMediationAdapterTest {
     }
 
     verify(appOpenAdLoadCallback).onFailure(liftoffSdkInitError)
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_ifBackButtonImmediatelyIsSetToTrueInMediationExtras_setsItTrueInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_BACK_BUTTON_IMMEDIATELY_ENABLED to true),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig).setBackButtonImmediatelyEnabled(true)
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_ifBackButtonImmediatelyIsSetToFalseInMediationExtras_setsItFalseInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(KEY_BACK_BUTTON_IMMEDIATELY_ENABLED to false),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig).setBackButtonImmediatelyEnabled(false)
+  }
+
+  @Test
+  fun loadRtbAppOpenAd_ifBackButtonImmediatelyIsNotSetInMediationExtras_doesNotSetItInLiftoffAdConfig() {
+    val vungleAppOpenAd = mock<InterstitialAd>()
+    whenever(vungleFactory.createInterstitialAd(any(), any(), any())) doReturn vungleAppOpenAd
+    stubVungleInitializerToSucceed()
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(getInstance()) doReturn mockVungleInitializer
+
+      adapter.loadRtbAppOpenAd(
+        createMediationAppOpenAdConfiguration(
+          context = context,
+          serverParameters =
+            bundleOf(KEY_APP_ID to TEST_APP_ID_1, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+          mediationExtras = bundleOf(),
+        ),
+        mock(),
+      )
+    }
+
+    verify(vungleAdConfig, times(0)).setBackButtonImmediatelyEnabled(any())
   }
 
   @Test

@@ -13,8 +13,29 @@
 
 package com.google.ads.mediation.mytarget
 
+import com.google.android.gms.ads.RequestConfiguration
+import com.my.target.common.MyTargetPrivacy
+
 object MyTargetAdapterUtils {
   @JvmStatic
   val adapterVersion: String
     get() = BuildConfig.ADAPTER_VERSION
+
+  @JvmStatic
+  fun configureMyTargetPrivacy(requestConfiguration: RequestConfiguration) {
+    val isChildDirected = requestConfiguration.tagForChildDirectedTreatment
+    val isUnderAgeOfConsent = requestConfiguration.tagForUnderAgeOfConsent
+
+    if (
+      isChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        isUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    ) {
+      MyTargetPrivacy.setUserAgeRestricted(true)
+    } else if (
+      isChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        isUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+    ) {
+      MyTargetPrivacy.setUserAgeRestricted(false)
+    }
+  }
 }
