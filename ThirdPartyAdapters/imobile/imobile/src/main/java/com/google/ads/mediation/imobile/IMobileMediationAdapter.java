@@ -34,6 +34,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeAdapter;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
 import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
@@ -49,10 +52,9 @@ import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 public class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
 
   // region - Fields for log.
-  /**
-   * Tag for log.
-   */
-  private static final String TAG = IMobileMediationAdapter.class.getSimpleName();
+  /** Tag for log. */
+  static final String TAG = IMobileMediationAdapter.class.getSimpleName();
+
   // end region
 
   @Retention(RetentionPolicy.SOURCE)
@@ -162,6 +164,16 @@ public class IMobileMediationAdapter extends Adapter implements MediationNativeA
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     IMobileBannerAd bannerAd = new IMobileBannerAd(callback);
     bannerAd.loadAd(mediationBannerAdConfiguration, iMobileSdkWrapper);
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    IMobileInterstitialAd interstitialAd = new IMobileInterstitialAd(callback, iMobileSdkWrapper);
+    interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
 
   // region - Methods for native ads.

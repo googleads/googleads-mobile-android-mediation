@@ -20,7 +20,7 @@ import jp.co.imobile.sdkads.android.ImobileSdkAd
 import jp.co.imobile.sdkads.android.ImobileSdkAdListener
 
 /**
- * A wrapper to wrap static method calls to [ImobileSdkAd] so that the static methods calls can be
+ * A wrapper to wrap static method calls to [ImobileSdkAd] so that the static method calls can be
  * mocked/verified by unit tests.
  */
 class IMobileSdkWrapper {
@@ -49,5 +49,25 @@ class IMobileSdkWrapper {
     adaptiveRatio: Float,
   ) {
     ImobileSdkAd.showAdForAdMobMediation(activity, spotId, targetViewGroup, adaptiveRatio)
+  }
+
+  fun isShowAd(interstitialSpotId: String?) = ImobileSdkAd.isShowAd(interstitialSpotId)
+
+  fun registerSpotFullScreen(
+    interstitialActivity: Activity,
+    publisherId: String?,
+    mediaId: String?,
+    interstitialSpotId: String?,
+  ) {
+    ImobileSdkAd.registerSpotFullScreen(
+      interstitialActivity,
+      publisherId,
+      mediaId,
+      interstitialSpotId,
+    )
+  }
+
+  fun showAdforce(activity: Activity, interstitialSpotId: String?) {
+    ImobileSdkAd.showAdforce(activity, interstitialSpotId)
   }
 }

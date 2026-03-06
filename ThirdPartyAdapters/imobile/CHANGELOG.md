@@ -2,7 +2,7 @@
 
 #### Next Version
 
-- Migrated the banner ad implementation from old API to new API.
+- Migrated banner and interstitial ad implementations from old API to new API.
 
 #### Version 2.3.2.1
 - Updated the minimum required Android API level to 23.

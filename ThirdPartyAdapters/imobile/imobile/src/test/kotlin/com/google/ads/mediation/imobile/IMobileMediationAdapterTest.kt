@@ -22,6 +22,9 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -33,6 +36,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
@@ -50,6 +54,10 @@ class IMobileMediationAdapterTest {
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
     mock()
   private val mockBannerAdConfiguration: MediationBannerAdConfiguration = mock()
+  private val mockInterstitialAdLoadCallback:
+    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
+    mock()
+  private val mockInterstitialAdConfiguration: MediationInterstitialAdConfiguration = mock()
   private val iMobileSdkWrapper: IMobileSdkWrapper = mock()
 
   @Before
@@ -150,6 +158,49 @@ class IMobileMediationAdapterTest {
     verify(iMobileSdkWrapper).start(SPOT_ID)
     verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
     verify(iMobileSdkWrapper).showAdForAdMobMediation(eq(activity), eq(SPOT_ID), any(), any())
+  }
+
+  @Test
+  fun loadInterstitialAd_ifContextIsNotActivity_fails() {
+    whenever(mockInterstitialAdConfiguration.context) doReturn context
+    val adErrorCaptor = argumentCaptor<AdError>()
+
+    adapter.loadInterstitialAd(mockInterstitialAdConfiguration, mockInterstitialAdLoadCallback)
+
+    verify(mockInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_REQUIRES_ACTIVITY_CONTEXT)
+    assertThat(adError.domain).isEqualTo(IMobileMediationAdapter.ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadInterstitialAd_loadsIMobileInterstitialAd() {
+    whenever(mockInterstitialAdConfiguration.context) doReturn activity
+    val serverParams =
+      bundleOf(KEY_PUBLISHER_ID to PUBLISHER_ID, KEY_MEDIA_ID to MEDIA_ID, KEY_SPOT_ID to SPOT_ID)
+    whenever(mockInterstitialAdConfiguration.serverParameters) doReturn serverParams
+
+    adapter.loadInterstitialAd(mockInterstitialAdConfiguration, mockInterstitialAdLoadCallback)
+
+    verify(iMobileSdkWrapper).registerSpotFullScreen(activity, PUBLISHER_ID, MEDIA_ID, SPOT_ID)
+    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
+    verify(iMobileSdkWrapper).start(SPOT_ID)
+  }
+
+  @Test
+  fun loadInterstitialAd_ifAdIsAlreadyReadyForShow_callsLoadSuccessCallback() {
+    whenever(mockInterstitialAdConfiguration.context) doReturn activity
+    val serverParams =
+      bundleOf(KEY_PUBLISHER_ID to PUBLISHER_ID, KEY_MEDIA_ID to MEDIA_ID, KEY_SPOT_ID to SPOT_ID)
+    whenever(mockInterstitialAdConfiguration.serverParameters) doReturn serverParams
+    whenever(iMobileSdkWrapper.isShowAd(SPOT_ID)) doReturn true
+
+    adapter.loadInterstitialAd(mockInterstitialAdConfiguration, mockInterstitialAdLoadCallback)
+
+    verify(iMobileSdkWrapper).registerSpotFullScreen(activity, PUBLISHER_ID, MEDIA_ID, SPOT_ID)
+    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
+    verify(iMobileSdkWrapper, never()).start(any())
+    verify(mockInterstitialAdLoadCallback).onSuccess(any())
   }
 
   private companion object {
