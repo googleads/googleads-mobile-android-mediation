@@ -1,5 +1,7 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Version 13.6.0.0 (In progress)
+
 #### Version 13.5.1.0
 - Verified compatibility with AppLovin SDK 13.5.1.
 
