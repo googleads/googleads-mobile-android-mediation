@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.ads.mediation.vungle.VungleInitializer;
 import com.google.ads.mediation.vungle.VungleMediationAdapter;
+import com.google.ads.mediation.vungle.VungleSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MobileAds;
@@ -42,6 +43,7 @@ import com.vungle.ads.BaseAd;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleAdSize;
+import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleBannerView;
 import com.vungle.ads.VungleError;
 
@@ -106,6 +108,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
               public void onInitializeSuccess() {
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(new VungleInterstitialListener());
+                interstitialAd.setAdapterAdFormat("VungleInterstitialAdapter-interstitial");
                 interstitialAd.load((String) null);
               }
 
@@ -248,6 +251,8 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
               public void onInitializeSuccess() {
                 bannerAdView = new VungleBannerView(context, placement, bannerAdSize);
                 bannerAdView.setAdListener(new VungleBannerListener());
+                bannerAdView.setAdapterAdFormat("VungleInterstitialAdapter-banner");
+                VungleSdkWrapper.logCustomSizeForBannerPlacement(bannerAdView, "VungleInterstitialAdapter-banner-custom", placement, adSize);
 
                 bannerAdView.load((String) null);
               }

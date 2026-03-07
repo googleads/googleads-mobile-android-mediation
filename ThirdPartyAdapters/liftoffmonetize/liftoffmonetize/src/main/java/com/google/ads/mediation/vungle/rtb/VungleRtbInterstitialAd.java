@@ -117,6 +117,7 @@ public class VungleRtbInterstitialAd implements MediationInterstitialAd, Interst
               public void onInitializeSuccess() {
                 interstitialAd = vungleFactory.createInterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(VungleRtbInterstitialAd.this);
+                interstitialAd.setAdapterAdFormat("VungleRtbInterstitialAd");
                 interstitialAd.load(adMarkup);
               }
 
