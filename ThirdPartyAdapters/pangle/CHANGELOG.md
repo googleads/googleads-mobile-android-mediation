@@ -1,5 +1,7 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Version 7.9.1.1.0 (In progress)
+
 #### Version 7.9.1.0.0 (In progress)
 
 #### Version 7.9.0.9.0
