@@ -1,5 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 4.17.0.0 (In progress)
+
 #### Version 4.16.6.0
 - Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the Unity Ads SDK.
 - Verified compatibility with Unity Ads SDK 4.16.6.
