@@ -18,10 +18,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_UNSUPPORTED_AD_SIZE
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_UNSUPPORTED_AD_SIZE
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -84,12 +81,13 @@ internal constructor(
   override fun getView(): View = adView
 
   companion object {
-    internal fun mapAdSize(adSize: AdSize, context: Context): HyBidAdView? {
+    internal fun mapAdSize(adSize: AdSize, context: Context): HyBidAdView {
       return when (adSize) {
         AdSize.BANNER -> VerveSdkFactory.delegate.createHyBidBannerAdView(context)
         AdSize.MEDIUM_RECTANGLE -> VerveSdkFactory.delegate.createHyBidMRectAdView(context)
         AdSize.LEADERBOARD -> VerveSdkFactory.delegate.createHyBidLeaderboardAdView(context)
-        else -> null
+        // Default to banner view if size is not one of the above.
+        else -> VerveSdkFactory.delegate.createHyBidBannerAdView(context)
       }
     }
 
@@ -102,17 +100,6 @@ internal constructor(
 
       val bidResponse = mediationBannerAdConfiguration.bidResponse
       val verveBannerView = mapAdSize(adSize, context)
-      if (verveBannerView == null) {
-        val adError =
-          AdError(
-            ERROR_CODE_UNSUPPORTED_AD_SIZE,
-            ERROR_MSG_UNSUPPORTED_AD_SIZE,
-            ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
-
       return Result.success(
         VerveBannerAd(mediationAdLoadCallback, bidResponse, verveBannerView, adSize)
       )

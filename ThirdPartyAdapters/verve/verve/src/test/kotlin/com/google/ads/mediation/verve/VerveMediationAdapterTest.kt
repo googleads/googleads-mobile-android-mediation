@@ -18,20 +18,13 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
-import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
-import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_UNSUPPORTED_AD_SIZE
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_CHILD_USER
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_MISSING_APP_TOKEN
-import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_UNSUPPORTED_AD_SIZE
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
@@ -41,9 +34,6 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
-import com.google.android.gms.ads.mediation.MediationBannerAd
-import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
@@ -56,7 +46,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -263,44 +252,6 @@ class VerveMediationAdapterTest {
 
       verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
     }
-  }
-
-  @Test
-  fun collectSignals_withInvalidBannerAdSize_invokesOnFailure() {
-    mockStatic(HyBid::class.java).use {
-      val signalData =
-        RtbSignalData(
-          context,
-          listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
-          /* networkExtras = */ bundleOf(),
-          AdSize.FLUID,
-        )
-      val expectedAdError =
-        AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
-      val mockSignalCallbacks = mock<SignalCallbacks>()
-
-      adapter.collectSignals(signalData, mockSignalCallbacks)
-
-      verify(mockSignalCallbacks).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-    }
-  }
-
-  // endregion
-
-  // region Banner tests
-  @Test
-  fun loadRtbBannerAd_withUnsupportedAdSize_invokesOnFailure() {
-    val bannerAdConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.FLUID)
-    val mockBannerAdLoadCallback =
-      mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
-    val expectedAdError =
-      AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
-
-    adapter.loadRtbBannerAdWithFailure(
-      bannerAdConfiguration,
-      mockBannerAdLoadCallback,
-      expectedAdError,
-    )
   }
 
   // endregion

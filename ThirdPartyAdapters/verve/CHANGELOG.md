@@ -1,5 +1,10 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Next version
+
+- Removed banner size check from the adapter to resolve signal collection
+  failures.
+
 #### Version 3.7.1.0
 - Initial release.
 - Verified compatibility with Verve HyBid SDK version 3.7.1.

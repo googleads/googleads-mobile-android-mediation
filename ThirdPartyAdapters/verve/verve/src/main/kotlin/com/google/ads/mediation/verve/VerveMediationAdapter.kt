@@ -18,8 +18,6 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -148,18 +146,6 @@ class VerveMediationAdapter : RtbAdapter() {
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    val adSize = signalData.adSize
-    if (
-      signalData.configurations.isNotEmpty() &&
-        signalData.configurations.first().format == AdFormat.BANNER &&
-        adSize != null &&
-        VerveBannerAd.mapAdSize(adSize, signalData.context) == null
-    ) {
-      val adError =
-        AdError(ERROR_CODE_UNSUPPORTED_AD_SIZE, ERROR_MSG_UNSUPPORTED_AD_SIZE, ADAPTER_ERROR_DOMAIN)
-      callback.onFailure(adError)
-      return
-    }
     val signals = HyBid.getEncodedCustomRequestSignalData(signalData.context, "Admob")
     callback.onSuccess(signals)
   }
@@ -220,8 +206,8 @@ class VerveMediationAdapter : RtbAdapter() {
     const val APP_TOKEN_KEY = "AppToken"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
     const val SDK_ERROR_DOMAIN = "net.pubnative.lite.sdk"
-    const val ERROR_CODE_UNSUPPORTED_AD_SIZE = 101
-    const val ERROR_MSG_UNSUPPORTED_AD_SIZE = "HyBid: Unsupported Ad Size requested"
+    // Older versions of the adapter logged error code 101 for UNSUPPORTED_AD_SIZE. Please don't use
+    // 101 for a new error code.
     const val ERROR_CODE_AD_LOAD_FAILED_TO_LOAD = 102
     const val ERROR_MSG_MISSING_APP_TOKEN = "AppToken is missing or empty"
     const val ERROR_CODE_FULLSCREEN_AD_IS_NULL = 103
