@@ -27,9 +27,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.google.ads.mediation.applovin.MediationUtilsWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import java.util.ArrayList;
@@ -163,17 +163,15 @@ public class AppLovinUtils {
         applovinErrorCode, ERROR_MSG_REASON_PREFIX + reason, APPLOVIN_SDK_ERROR_DOMAIN);
   }
 
-  /**
-   * Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob.
-   */
+  /** Get the {@link AppLovinAdSize} from a given {@link AdSize} from AdMob. */
   @Nullable
-  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(@NonNull Context context,
-      @NonNull AdSize adSize) {
+  public static AppLovinAdSize appLovinAdSizeFromAdMobAdSize(
+      @NonNull Context context, @NonNull AdSize adSize, MediationUtilsWrapper mediationUtils) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
 
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    AdSize closestSize = mediationUtils.findClosestSize(context, adSize, potentials);
     if (AdSize.BANNER.equals(closestSize)) {
       return AppLovinAdSize.BANNER;
     } else if (AdSize.LEADERBOARD.equals(closestSize)) {

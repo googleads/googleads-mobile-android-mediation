@@ -27,6 +27,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -62,6 +63,7 @@ class AppLovinBannerAdTest {
   private val appLovinAdFactory: AppLovinAdFactory = mock {
     on { createAdView(any(), any(), any(), any()) } doReturn appLovinAdViewWrapper
   }
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
@@ -72,6 +74,7 @@ class AppLovinBannerAdTest {
     val serverParameters = bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to SDK_KEY)
     whenever(bannerAdConfiguration.serverParameters) doReturn serverParameters
     whenever(bannerAdConfiguration.adSize) doReturn AdSize.BANNER
+    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.BANNER), any())) doReturn AdSize.BANNER
     whenever(bannerAdLoadCallback.onSuccess(appLovinBannerAd)) doReturn bannerAdCallback
   }
 
@@ -83,7 +86,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
 
     appLovinBannerAd.adReceived(appLovinAd)
 
@@ -112,7 +115,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
     appLovinBannerAd.adReceived(appLovinAd)
 
     appLovinBannerAd.adDisplayed(appLovinAd)
@@ -128,7 +131,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
     appLovinBannerAd.adReceived(appLovinAd)
 
     appLovinBannerAd.adClicked(appLovinAd)
@@ -144,7 +147,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
     appLovinBannerAd.adReceived(appLovinAd)
 
     appLovinBannerAd.adOpenedFullscreen(appLovinAd, appLovinAdView)
@@ -160,7 +163,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
     appLovinBannerAd.adReceived(appLovinAd)
 
     appLovinBannerAd.adClosedFullscreen(appLovinAd, appLovinAdView)
@@ -176,7 +179,7 @@ class AppLovinBannerAdTest {
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration)
+    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
     appLovinBannerAd.adReceived(appLovinAd)
 
     appLovinBannerAd.adLeftApplication(appLovinAd, appLovinAdView)

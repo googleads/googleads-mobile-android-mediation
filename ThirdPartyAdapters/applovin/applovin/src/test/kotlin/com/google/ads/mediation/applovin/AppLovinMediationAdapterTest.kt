@@ -130,6 +130,7 @@ class AppLovinMediationAdapterTest {
       /*maxAdContentRating=*/ "",
       /*watermark=*/ "",
     )
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
@@ -147,6 +148,7 @@ class AppLovinMediationAdapterTest {
         appLovinAdFactory,
         appLovinSdkWrapper,
         appLovinSdkUtilsWrapper,
+        mediationUtils,
       )
   }
 
@@ -510,6 +512,7 @@ class AppLovinMediationAdapterTest {
   fun loadBannerAd_withUnsupportedAdSize_invokesOnFailure() {
     adSize = AdSize.WIDE_SKYSCRAPER
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.WIDE_SKYSCRAPER), any())) doReturn null
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
@@ -527,6 +530,7 @@ class AppLovinMediationAdapterTest {
   @Test
   fun loadBannerAd_withCorrectArguments_invokesSdkInitializationMethods() {
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.BANNER), any())) doReturn AdSize.BANNER
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
@@ -545,6 +549,7 @@ class AppLovinMediationAdapterTest {
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.BANNER), any())) doReturn AdSize.BANNER
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
@@ -564,6 +569,7 @@ class AppLovinMediationAdapterTest {
       .initialize(any(), any(), any())
     serverParameters.remove(AppLovinUtils.ServerParameterKeys.ZONE_ID)
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.BANNER), any())) doReturn AdSize.BANNER
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,

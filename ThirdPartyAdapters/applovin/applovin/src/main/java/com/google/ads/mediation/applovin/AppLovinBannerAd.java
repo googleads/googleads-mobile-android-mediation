@@ -100,7 +100,9 @@ public class AppLovinBannerAd
    * communicates the response through the {@link MediationAdLoadCallback} declared when
    * instanciating the Banner class
    */
-  public void loadAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration) {
+  public void loadAd(
+      @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      MediationUtilsWrapper mediationUtils) {
     Context context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
     final AdSize adSize = mediationBannerAdConfiguration.getAdSize();
@@ -114,7 +116,7 @@ public class AppLovinBannerAd
 
     // Convert requested size to AppLovin Ad Size.
     final AppLovinAdSize appLovinAdSize =
-        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize, mediationUtils);
     if (appLovinAdSize == null) {
       AdError error =
           new AdError(ERROR_BANNER_SIZE_MISMATCH, ERROR_MSG_BANNER_SIZE_MISMATCH, ERROR_DOMAIN);

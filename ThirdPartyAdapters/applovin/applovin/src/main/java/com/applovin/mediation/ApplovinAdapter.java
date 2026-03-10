@@ -34,6 +34,7 @@ import com.applovin.sdk.AppLovinSdk;
 import com.google.ads.mediation.applovin.AppLovinInitializer;
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener;
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter;
+import com.google.ads.mediation.applovin.MediationUtilsWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -80,7 +81,7 @@ public class ApplovinAdapter extends AppLovinMediationAdapter implements Mediati
 
     // Convert requested size to AppLovin Ad Size.
     final AppLovinAdSize appLovinAdSize =
-        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize);
+        AppLovinUtils.appLovinAdSizeFromAdMobAdSize(context, adSize, new MediationUtilsWrapper());
     if (appLovinAdSize == null) {
       AdError error = new AdError(ERROR_BANNER_SIZE_MISMATCH,
           "Failed to request banner with unsupported size.", ERROR_DOMAIN);

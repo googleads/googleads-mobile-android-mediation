@@ -160,11 +160,14 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   static final String ERROR_MSG_BANNER_SIZE_MISMATCH =
       "Failed to request banner with unsupported size.";
 
+  private final MediationUtilsWrapper mediationUtils;
+
   public AppLovinMediationAdapter() {
     appLovinInitializer = AppLovinInitializer.getInstance();
     appLovinAdFactory = new AppLovinAdFactory();
     appLovinSdkWrapper = new AppLovinSdkWrapper();
     appLovinSdkUtilsWrapper = new AppLovinSdkUtilsWrapper();
+    mediationUtils = new MediationUtilsWrapper();
   }
 
   @VisibleForTesting
@@ -172,11 +175,13 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       AppLovinInitializer appLovinInitializer,
       AppLovinAdFactory appLovinAdFactory,
       AppLovinSdkWrapper appLovinSdkWrapper,
-      AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper) {
+      AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper,
+      MediationUtilsWrapper mediationUtilsWrapper) {
     this.appLovinInitializer = appLovinInitializer;
     this.appLovinAdFactory = appLovinAdFactory;
     this.appLovinSdkWrapper = appLovinSdkWrapper;
     this.appLovinSdkUtilsWrapper = appLovinSdkUtilsWrapper;
+    mediationUtils = mediationUtilsWrapper;
   }
 
   /**
@@ -349,7 +354,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     bannerAd =
         AppLovinBannerAd.newInstance(
             callback, appLovinInitializer, appLovinAdFactory);
-    bannerAd.loadAd(adConfiguration);
+    bannerAd.loadAd(adConfiguration, mediationUtils);
   }
 
   @Override
