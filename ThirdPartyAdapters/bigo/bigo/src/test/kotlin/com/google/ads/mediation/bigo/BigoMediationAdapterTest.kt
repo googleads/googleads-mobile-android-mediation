@@ -80,10 +80,11 @@ class BigoMediationAdapterTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInitializationCallback: InitializationCompleteCallback = mock()
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
-    adapter = BigoMediationAdapter()
+    adapter = BigoMediationAdapter(mediationUtils)
     mockBigoSdk = mockStatic(BigoAdSdk::class.java)
   }
 
@@ -303,6 +304,8 @@ class BigoMediationAdapterTest {
   @Test
   fun loadRtbBannerAd_withEmptySlotId_invokesOnFailure() {
     val adConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.BANNER)
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val mockBannerAdLoadCallback =
       mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
     val expectedAdError =

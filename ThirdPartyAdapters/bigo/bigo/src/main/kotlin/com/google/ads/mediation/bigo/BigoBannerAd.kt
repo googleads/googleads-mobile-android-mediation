@@ -93,12 +93,18 @@ private constructor(
   companion object {
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
-      mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      mediationAdLoadCallback:
+        MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+      mediationUtils: MediationUtilsWrapper,
     ): Result<BigoBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
       val adSize =
-        BigoUtils.mapAdSizeToBigoBannerSize(context, mediationBannerAdConfiguration.adSize)
+        BigoUtils.mapAdSizeToBigoBannerSize(
+          context,
+          mediationBannerAdConfiguration.adSize,
+          mediationUtils,
+        )
       val bidResponse = mediationBannerAdConfiguration.bidResponse
       val slotId = serverParameters.getString(SLOT_ID_KEY)
       val watermark = mediationBannerAdConfiguration.watermark

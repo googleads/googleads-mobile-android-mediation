@@ -37,6 +37,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import sg.bigo.ads.ad.banner.BigoAdView
 import sg.bigo.ads.api.AdError
 import sg.bigo.ads.api.AdSize
@@ -68,6 +69,7 @@ class BigoBannerAdTest {
       } doReturn mockBannerAdRequest
       on { createBigoAdView(context) } doReturn mockBigoAdView
     }
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
@@ -80,8 +82,17 @@ class BigoBannerAdTest {
         watermark = TEST_WATERMARK,
         adSize = com.google.android.gms.ads.AdSize.BANNER,
       )
+    whenever(
+      mediationUtils.findClosestSize(
+        eq(context),
+        eq(com.google.android.gms.ads.AdSize.BANNER),
+        any(),
+      )
+    ) doReturn com.google.android.gms.ads.AdSize.BANNER
     BigoFactory.delegate = mockBigoFactory
-    BigoBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { bigoBannerAd = it }
+    BigoBannerAd.newInstance(adConfiguration, mockAdLoadCallback, mediationUtils).onSuccess {
+      bigoBannerAd = it
+    }
   }
 
   @Test

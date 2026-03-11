@@ -50,7 +50,9 @@ import sg.bigo.ads.api.AdConfig
  * Bigo Adapter for GMA SDK used to initialize and load ads from the Bigo SDK. This class should not
  * be used directly by publishers.
  */
-class BigoMediationAdapter : RtbAdapter() {
+class BigoMediationAdapter
+@JvmOverloads
+constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper()) : RtbAdapter() {
 
   private lateinit var bannerAd: BigoBannerAd
   private lateinit var interstitialAd: BigoInterstitialAd
@@ -162,7 +164,7 @@ class BigoMediationAdapter : RtbAdapter() {
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
+    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback, mediationUtils).onSuccess {
       bannerAd = it
       bannerAd.loadAd(versionString)
     }

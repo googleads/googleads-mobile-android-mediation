@@ -16,7 +16,6 @@ package com.google.ads.mediation.bigo
 
 import android.content.Context
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.MediationUtils
 import sg.bigo.ads.api.AdSize
 
 object BigoUtils {
@@ -25,6 +24,7 @@ object BigoUtils {
   fun mapAdSizeToBigoBannerSize(
     context: Context,
     adSize: com.google.android.gms.ads.AdSize,
+    mediationUtils: MediationUtilsWrapper,
   ): AdSize {
     // List of banner ad sizes supported by BidMachine.
     val supportedSizes =
@@ -35,7 +35,7 @@ object BigoUtils {
         com.google.android.gms.ads.AdSize.LEADERBOARD,
       )
     // Find the supported size that is closest to the publisher-requested size.
-    val closestSupportedSize = MediationUtils.findClosestSize(context, adSize, supportedSizes)
+    val closestSupportedSize = mediationUtils.findClosestSize(context, adSize, supportedSizes)
     return when (closestSupportedSize) {
       com.google.android.gms.ads.AdSize.BANNER -> AdSize.BANNER
       com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE -> AdSize.MEDIUM_RECTANGLE
