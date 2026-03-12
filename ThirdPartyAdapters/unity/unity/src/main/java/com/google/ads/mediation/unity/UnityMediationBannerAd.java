@@ -155,7 +155,9 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     }
   }
 
-  public void loadAd(MediationBannerAdConfiguration mediationBannerAdConfiguration) {
+  public void loadAd(
+      MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      MediationUtilsWrapper mediationUtils) {
     Context context = mediationBannerAdConfiguration.getContext();
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();
@@ -192,7 +194,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
     boolean isRtb = !TextUtils.isEmpty(adMarkup);
 
     final UnityBannerSize unityBannerSize =
-        UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, isRtb);
+        UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, isRtb, mediationUtils);
     if (unityBannerSize == null) {
       String errorMessage = ERROR_MSG_NO_MATCHING_AD_SIZE + adSize;
       AdError adError =

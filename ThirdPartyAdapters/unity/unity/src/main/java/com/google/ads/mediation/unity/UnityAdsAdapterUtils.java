@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
@@ -211,12 +210,15 @@ public class UnityAdsAdapterUtils {
 
   @Nullable
   public static UnityBannerSize getUnityBannerSize(
-      @NonNull Context context, @NonNull AdSize adSize, boolean isRtb) {
+      @NonNull Context context,
+      @NonNull AdSize adSize,
+      boolean isRtb,
+      MediationUtilsWrapper mediationUtils) {
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(AdSize.BANNER);
     potentials.add(AdSize.LEADERBOARD);
 
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, potentials);
+    AdSize closestSize = mediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize != null) {
       return new UnityBannerSize(closestSize.getWidth(), closestSize.getHeight());
     }

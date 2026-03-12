@@ -186,11 +186,14 @@ public class UnityMediationAdapter extends RtbAdapter {
   /** UnityRewardedAd instance used for RTB. */
   private UnityRewardedAd rewardedRtbAd;
 
+  private MediationUtilsWrapper mediationUtils;
+
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
     unityAdsWrapper = new UnityAdsWrapper();
     unityBannerViewFactory = new UnityBannerViewFactory();
     this.unityAdsLoader = new UnityAdsLoader();
+    mediationUtils = new MediationUtilsWrapper();
   }
 
   @Override
@@ -247,11 +250,13 @@ public class UnityMediationAdapter extends RtbAdapter {
       UnityInitializer unityInitializer,
       UnityAdsWrapper unityAdsWrapper,
       UnityBannerViewFactory unityBannerViewFactory,
-      UnityAdsLoader unityAdsLoader) {
+      UnityAdsLoader unityAdsLoader,
+      MediationUtilsWrapper mediationUtilsWrapper) {
     this.unityInitializer = unityInitializer;
     this.unityAdsWrapper = unityAdsWrapper;
     this.unityBannerViewFactory = unityBannerViewFactory;
     this.unityAdsLoader = unityAdsLoader;
+    mediationUtils = mediationUtilsWrapper;
   }
 
   /** {@link RtbAdapter} implementation */
@@ -377,7 +382,7 @@ public class UnityMediationAdapter extends RtbAdapter {
     bannerAd =
         new UnityMediationBannerAd(
             callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
-    bannerAd.loadAd(mediationBannerAdConfiguration);
+    bannerAd.loadAd(mediationBannerAdConfiguration, mediationUtils);
   }
 
   @Override
@@ -386,7 +391,7 @@ public class UnityMediationAdapter extends RtbAdapter {
     bannerRtbAd =
         new UnityMediationBannerAd(
             callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
-    bannerRtbAd.loadAd(adConfiguration);
+    bannerRtbAd.loadAd(adConfiguration, mediationUtils);
   }
 
   @Override

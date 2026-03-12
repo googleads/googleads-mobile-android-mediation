@@ -24,6 +24,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -47,11 +48,14 @@ class UnityMediationBannerAdTest {
   private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
   private val unityAdsLoader: UnityAdsLoader = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer.getInstance())
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
+    whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val unityBannerSize: UnityBannerSize? =
-      UnityAdsAdapterUtils.getUnityBannerSize(activity, adSize, /* isRtb= */ false)
+      UnityAdsAdapterUtils.getUnityBannerSize(activity, adSize, /* isRtb= */ false, mediationUtils)
     bannerView = BannerView(activity, TEST_PLACEMENT_ID, unityBannerSize)
     unityMediationBannerAd =
       UnityMediationBannerAd(
@@ -83,7 +87,7 @@ class UnityMediationBannerAdTest {
       )
     whenever(bannerAdConfiguration.context) doReturn activity
     whenever(bannerAdConfiguration.adSize) doReturn adSize
-    unityMediationBannerAd.loadAd(bannerAdConfiguration)
+    unityMediationBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
 
     val actualBannerView = unityMediationBannerAd.getView()
 

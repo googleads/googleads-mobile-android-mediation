@@ -16,8 +16,12 @@ import com.unity3d.services.banners.BannerErrorInfo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /** Unit tests for [UnityAdsAdapterUtils]. */
 @RunWith(AndroidJUnit4::class)
@@ -25,6 +29,7 @@ class UnityAdsAdapterUtilsTest {
 
   private val context: Context = ApplicationProvider.getApplicationContext()
   private var bannerErrorInfo: BannerErrorInfo = mock()
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
@@ -217,7 +222,7 @@ class UnityAdsAdapterUtilsTest {
     val adSize = AdSize.WIDE_SKYSCRAPER
 
     val unityBannerAdSize =
-      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false, mediationUtils)
 
     assertThat(unityBannerAdSize).isNull()
   }
@@ -225,9 +230,11 @@ class UnityAdsAdapterUtilsTest {
   @Test
   fun getUnityBannerSize_returnsCorrectBannerSize() {
     val adSize = AdSize.BANNER
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
 
     val unityBannerAdSize =
-      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false, mediationUtils)
 
     assertThat(unityBannerAdSize).isNotNull()
     assertThat(unityBannerAdSize?.width).isEqualTo(320)
@@ -237,9 +244,11 @@ class UnityAdsAdapterUtilsTest {
   @Test
   fun getUnityBannerSize_returnsCorrectLeaderboardSize() {
     val adSize = AdSize.LEADERBOARD
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.LEADERBOARD), any())) doReturn
+      AdSize.LEADERBOARD
 
     val unityBannerAdSize =
-      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false)
+      UnityAdsAdapterUtils.getUnityBannerSize(context, adSize, /* isRtb= */ false, mediationUtils)
 
     assertThat(unityBannerAdSize).isNotNull()
     assertThat(unityBannerAdSize?.width).isEqualTo(728)

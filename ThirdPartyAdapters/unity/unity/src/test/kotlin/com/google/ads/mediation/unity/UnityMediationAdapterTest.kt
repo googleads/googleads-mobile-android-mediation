@@ -98,6 +98,7 @@ class UnityMediationAdapterTest {
   private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
   private val unityBannerViewFactory: UnityBannerViewFactory = mock()
   private val signalCallbacks: SignalCallbacks = mock()
+  private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
   fun setUp() {
@@ -107,6 +108,7 @@ class UnityMediationAdapterTest {
         unityAdsWrapper,
         unityBannerViewFactory,
         unityAdsLoader,
+        mediationUtils,
       )
     mediationConfigurations = emptyList()
 
@@ -468,6 +470,8 @@ class UnityMediationAdapterTest {
   @Test
   fun loadBannerAd_withCorrectParameters_callsInitializeUnityAds() {
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
 
     unityMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
@@ -489,6 +493,8 @@ class UnityMediationAdapterTest {
       .whenever(unityInitializer)
       .initializeUnityAds(any(), any(), any())
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val errorCaptor = argumentCaptor<AdError>()
     val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
 
@@ -516,6 +522,8 @@ class UnityMediationAdapterTest {
       .whenever(unityInitializer)
       .initializeUnityAds(any(), any(), any())
     mediationBannerAdConfiguration = initializeBannerAd()
+    whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
     whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
 
