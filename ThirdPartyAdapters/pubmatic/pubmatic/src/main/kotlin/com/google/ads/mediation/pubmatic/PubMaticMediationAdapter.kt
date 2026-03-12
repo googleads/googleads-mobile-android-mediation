@@ -20,7 +20,6 @@ import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.MediationUtils
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -59,9 +58,12 @@ import java.lang.NumberFormatException
  * PubMatic Adapter for GMA SDK used to initialize and load ads from the PubMatic SDK. This class
  * should not be used directly by publishers.
  */
-class PubMaticMediationAdapter(
+class PubMaticMediationAdapter
+@JvmOverloads
+constructor(
   private val pubMaticSignalGenerator: PubMaticSignalGenerator = PubMaticSignalGeneratorImpl(),
   private val pubMaticAdFactory: PubMaticAdFactory = PubMaticAdFactoryImpl(),
+  private val mediationUtils: MediationUtilsWrapper,
 ) : RtbAdapter() {
 
   private lateinit var bannerAd: PubMaticBannerAd
@@ -196,6 +198,7 @@ class PubMaticMediationAdapter(
         callback,
         pubMaticAdFactory,
         isRTB = false,
+        mediationUtils,
       )
       .onSuccess {
         bannerAd = it
@@ -260,6 +263,7 @@ class PubMaticMediationAdapter(
         callback,
         pubMaticAdFactory,
         isRTB = true,
+        mediationUtils,
       )
       .onSuccess {
         bannerAd = it
@@ -419,10 +423,14 @@ class PubMaticMediationAdapter(
      *
      * Returns null if the banner size is not supported by PubMatic.
      */
-    fun getPubMaticBannerAdSize(context: Context, adSize: AdSize): POBAdSize? {
+    fun getPubMaticBannerAdSize(
+      context: Context,
+      adSize: AdSize,
+      mediationUtils: MediationUtilsWrapper,
+    ): POBAdSize? {
       val potentials = listOf(AdSize.BANNER, AdSize.MEDIUM_RECTANGLE)
 
-      val closestSize = MediationUtils.findClosestSize(context, adSize, potentials)
+      val closestSize = mediationUtils.findClosestSize(context, adSize, potentials)
       return when (closestSize) {
         AdSize.BANNER -> POBAdSize.BANNER_SIZE_320x50
         AdSize.MEDIUM_RECTANGLE -> POBAdSize.BANNER_SIZE_300x250

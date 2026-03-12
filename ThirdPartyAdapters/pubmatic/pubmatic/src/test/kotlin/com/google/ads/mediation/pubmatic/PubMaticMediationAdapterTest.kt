@@ -157,9 +157,11 @@ class PubMaticMediationAdapterTest {
       } doReturn pobNativeAdLoader
     }
 
+  private val mediationUtils: MediationUtilsWrapper = mock()
+
   @Before
   fun setUp() {
-    adapter = PubMaticMediationAdapter(pubMaticSignalGenerator, pubMaticAdFactory)
+    adapter = PubMaticMediationAdapter(pubMaticSignalGenerator, pubMaticAdFactory, mediationUtils)
   }
 
   // region Version tests
@@ -754,6 +756,8 @@ class PubMaticMediationAdapterTest {
           ),
         adSize = AdSize.BANNER,
       )
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
 
     adapter.loadBannerAd(mediationBannerAdConfiguration, mock())
 
@@ -772,6 +776,8 @@ class PubMaticMediationAdapterTest {
           bundleOf(KEY_PROFILE_ID to TEST_PROFILE_ID_1, KEY_AD_UNIT to TEST_AD_UNIT),
         adSize = AdSize.BANNER,
       )
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val mockCallback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
     val expectedAdError =
       AdError(ERROR_MISSING_PUBLISHER_ID, ERROR_MISSING_PUBLISHER_ID_MSG, ADAPTER_ERROR_DOMAIN)
@@ -793,6 +799,8 @@ class PubMaticMediationAdapterTest {
             KEY_AD_UNIT to TEST_AD_UNIT,
           ),
       )
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val mockCallback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
     val extectedAdError =
       AdError(
@@ -814,6 +822,8 @@ class PubMaticMediationAdapterTest {
         serverParameters =
           bundleOf(KEY_PUBLISHER_ID to TEST_PUBLISHER_ID, KEY_PROFILE_ID to TEST_PROFILE_ID_1),
       )
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     val mockCallback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
     val expectedAdError =
       AdError(ERROR_MISSING_AD_UNIT_ID, ERROR_MISSING_AD_UNIT_ID_MSG, ADAPTER_ERROR_DOMAIN)
@@ -994,6 +1004,8 @@ class PubMaticMediationAdapterTest {
         AdSize.BANNER,
         WATERMARK,
       )
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
 
     adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mock())
 

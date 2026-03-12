@@ -107,6 +107,7 @@ private constructor(
         MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
       pubMaticAdFactory: PubMaticAdFactory,
       isRTB: Boolean,
+      mediationUtils: MediationUtilsWrapper,
     ): Result<PubMaticBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val pobBannerAd =
@@ -114,7 +115,7 @@ private constructor(
           pubMaticAdFactory.createPOBBannerView(context)
         } else {
           val adSize = mediationBannerAdConfiguration.adSize
-          val pobAdSize = getPubMaticBannerAdSize(context, adSize)
+          val pobAdSize = getPubMaticBannerAdSize(context, adSize, mediationUtils)
           if (pobAdSize == null) {
             val adError =
               AdError(

@@ -96,45 +96,29 @@ private constructor(
         // https://support.google.com/admanager/answer/7031536?hl=en#:~:text=The%20secondary%20body%20text%20(for,%E2%80%A0.
         // the text length and the image dimensions were selected arbitraliry. Adjust them if
         // needed.
-        POBNativeRequestTitleAsset(
-          /* id= */ (0..Int.MAX_VALUE).random(),
-          /* required= */ true,
-          /* length= */ 100,
-        ),
+        POBNativeRequestTitleAsset(/* length= */ 100, /* required= */ true),
         POBNativeRequestDataAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
-          /* required = */ true,
           /* type = */ POBNativeDataAssetType.CTA_TEXT,
+          /* required = */ true,
         ),
         POBNativeRequestImageAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
-          /* required = */ false,
           /* type = */ POBNativeImageAssetType.ICON,
+          /* required = */ false,
           /* minimumWidth = */ 30,
           /* minimumHeight = */ 30,
         ),
         POBNativeRequestImageAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
-          /* required = */ false,
           /* type = */ POBNativeImageAssetType.MAIN,
+          /* required = */ false,
           /* minimumWidth = */ 100,
           /* minimumHeight = */ 100,
         ),
         POBNativeRequestDataAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
-          /* required = */ false,
           /* type = */ POBNativeDataAssetType.DESCRIPTION,
-        ),
-        POBNativeRequestDataAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
           /* required = */ false,
-          /* type = */ POBNativeDataAssetType.PRICE,
         ),
-        POBNativeRequestDataAsset(
-          /* id = */ (0..Int.MAX_VALUE).random(),
-          /* required = */ false,
-          /* type = */ POBNativeDataAssetType.RATING,
-        ),
+        POBNativeRequestDataAsset(/* type= */ POBNativeDataAssetType.PRICE, /* required= */ false),
+        POBNativeRequestDataAsset(/* type= */ POBNativeDataAssetType.RATING, /* required= */ false),
       )
     )
     pobNativeAdLoader.loadAd()

@@ -77,6 +77,8 @@ class PubMaticBannerAdTests {
       /*watermark=*/ "",
     )
 
+  private val mediationUtils: MediationUtilsWrapper = mock()
+
   @Before
   fun setUp() {
     PubMaticBannerAd.newInstance(
@@ -84,6 +86,7 @@ class PubMaticBannerAdTests {
         mediationAdLoadCallback,
         pubMaticAdFactory,
         isRTB = true,
+        mediationUtils,
       )
       .onSuccess { pubMaticBannerAd = it }
   }
