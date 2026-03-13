@@ -1,7 +1,11 @@
 ## maio Android Mediation Adapter Changelog
 
-#### Version 2.0.8.1 (In progress)
+#### Version 2.0.8.1
 - Added Banner ad format support
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.0.0.
+- Maio SDK version 2.0.8.1.
 
 #### Version 2.0.8.0
 - Verified compatibility with maio SDK version 2.0.8.
