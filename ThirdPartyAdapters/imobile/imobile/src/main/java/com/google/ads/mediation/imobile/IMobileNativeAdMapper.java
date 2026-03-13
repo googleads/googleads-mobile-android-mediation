@@ -20,23 +20,21 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.View;
 import androidx.annotation.NonNull;
-import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
+import com.google.android.gms.ads.nativead.NativeAd;
 import java.util.ArrayList;
 import java.util.List;
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/**
- * Mapper for UnifiedNativeAd.
- */
-public final class IMobileUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
+/** Mapper for UnifiedNativeAd. */
+public final class IMobileNativeAdMapper extends NativeAdMapper {
 
   /**
    * Called when clicked.
    */
   private final Runnable clickEvent;
 
-  public IMobileUnifiedNativeAdMapper(
+  public IMobileNativeAdMapper(
       @NonNull ImobileSdkAdsNativeAdData adData, @NonNull Drawable adImage) {
     // Initialize fields.
     this.clickEvent = adData.getClickEvent();

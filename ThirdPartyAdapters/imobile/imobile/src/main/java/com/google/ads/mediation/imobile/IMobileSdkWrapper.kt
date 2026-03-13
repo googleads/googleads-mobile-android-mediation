@@ -70,4 +70,12 @@ class IMobileSdkWrapper {
   fun showAdforce(activity: Activity, interstitialSpotId: String?) {
     ImobileSdkAd.showAdforce(activity, interstitialSpotId)
   }
+
+  fun getNativeAdData(
+    activity: Activity,
+    spotId: String?,
+    nativeAdDataListener: NativeAdDataListener,
+  ) {
+    ImobileSdkAd.getNativeAdData(activity, spotId, nativeAdDataListener)
+  }
 }

@@ -12,6 +12,7 @@ import com.google.ads.mediation.imobile.Constants.KEY_MEDIA_ID
 import com.google.ads.mediation.imobile.Constants.KEY_PUBLISHER_ID
 import com.google.ads.mediation.imobile.Constants.KEY_SPOT_ID
 import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
+import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -25,6 +26,9 @@ import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -58,6 +62,10 @@ class IMobileMediationAdapterTest {
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
   private val mockInterstitialAdConfiguration: MediationInterstitialAdConfiguration = mock()
+  private val mediationNativeAdConfig: MediationNativeAdConfiguration = mock()
+  private val nativeAdLoadCallback:
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
+    mock()
   private val iMobileSdkWrapper: IMobileSdkWrapper = mock()
 
   @Before
@@ -201,6 +209,33 @@ class IMobileMediationAdapterTest {
     verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
     verify(iMobileSdkWrapper, never()).start(any())
     verify(mockInterstitialAdLoadCallback).onSuccess(any())
+  }
+
+  @Test
+  fun loadNativeAdMapper_ifContextIsNotActivity_fails() {
+    whenever(mediationNativeAdConfig.context) doReturn context
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfig, nativeAdLoadCallback)
+
+    val adErrorCaptor = argumentCaptor<AdError>()
+    verify(nativeAdLoadCallback).onFailure(adErrorCaptor.capture())
+    val adError = adErrorCaptor.firstValue
+    assertThat(adError.code).isEqualTo(ERROR_REQUIRES_ACTIVITY_CONTEXT)
+    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+  }
+
+  @Test
+  fun loadNativeAdMapper_loadsIMobileNativeAdData() {
+    whenever(mediationNativeAdConfig.context) doReturn activity
+    val serverParams =
+      bundleOf(KEY_PUBLISHER_ID to PUBLISHER_ID, KEY_MEDIA_ID to MEDIA_ID, KEY_SPOT_ID to SPOT_ID)
+    whenever(mediationNativeAdConfig.serverParameters) doReturn serverParams
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfig, nativeAdLoadCallback)
+
+    verify(iMobileSdkWrapper).registerSpotInline(activity, PUBLISHER_ID, MEDIA_ID, SPOT_ID)
+    verify(iMobileSdkWrapper).start(SPOT_ID)
+    verify(iMobileSdkWrapper).getNativeAdData(eq(activity), eq(SPOT_ID), any())
   }
 
   private companion object {

@@ -14,18 +14,12 @@
 
 package com.google.ads.mediation.imobile;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -37,19 +31,16 @@ import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.google.android.gms.ads.mediation.MediationNativeAdapter;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationNativeListener;
-import com.google.android.gms.ads.mediation.NativeMediationAdRequest;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-import jp.co.imobile.sdkads.android.FailNotificationReason;
-import jp.co.imobile.sdkads.android.ImobileSdkAd;
-import jp.co.imobile.sdkads.android.ImobileSdkAdListener;
-import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData;
 
-/** i-mobile mediation adapter for AdMob native ads. */
-public class IMobileMediationAdapter extends Adapter implements MediationNativeAdapter {
+/** i-mobile mediation adapter. */
+public class IMobileMediationAdapter extends Adapter {
 
   // region - Fields for log.
   /** Tag for log. */
@@ -176,92 +167,16 @@ public class IMobileMediationAdapter extends Adapter implements MediationNativeA
     interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
 
-  // region - Methods for native ads.
   @Override
-  public void requestNativeAd(@NonNull Context context, @NonNull MediationNativeListener listener,
-      @NonNull Bundle serverParameters, @NonNull NativeMediationAdRequest mediationAdRequest,
-      @Nullable Bundle mediationExtras) {
-
-    // Validate Context.
-    if (!(context instanceof Activity)) {
-      AdError error = new AdError(ERROR_REQUIRES_ACTIVITY_CONTEXT,
-          "Context is not an Activity. ", ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      listener.onAdFailedToLoad(this, error);
-      return;
-    }
-    final Activity activity = (Activity) context;
-
-    // Initialize fields.
-    this.mediationNativeListener = listener;
-
-    // Get parameters for i-mobile SDK.
-    String publisherId = serverParameters.getString(Constants.KEY_PUBLISHER_ID);
-    String mediaId = serverParameters.getString(Constants.KEY_MEDIA_ID);
-    String spotId = serverParameters.getString(Constants.KEY_SPOT_ID);
-
-    // Call i-mobile SDK.
-    ImobileSdkAd.registerSpotInline(activity, publisherId, mediaId, spotId);
-    ImobileSdkAd.start(spotId);
-    ImobileSdkAd.getNativeAdData(
-        activity,
-        spotId,
-        new ImobileSdkAdListener() {
-          @Override
-          public void onNativeAdDataReciveCompleted(List<ImobileSdkAdsNativeAdData> adDataList) {
-            if (mediationNativeListener == null) {
-              return;
-            }
-
-            if (adDataList == null || adDataList.isEmpty()) {
-              AdError error = new AdError(ERROR_EMPTY_NATIVE_ADS_LIST,
-                  "i-mobile's native ad load success callback returned an empty native ads list.",
-                  ERROR_DOMAIN);
-              Log.w(TAG, error.getMessage());
-              mediationNativeListener.onAdFailedToLoad(IMobileMediationAdapter.this, error);
-              return;
-            }
-
-            final ImobileSdkAdsNativeAdData adData = adDataList.get(0);
-            adData.getAdImage(
-                activity,
-                new ImobileSdkAdListener() {
-                  @Override
-                  public void onNativeAdImageReciveCompleted(Bitmap image) {
-                    Drawable drawable = new BitmapDrawable(activity.getResources(), image);
-                    mediationNativeListener.onAdLoaded(
-                        IMobileMediationAdapter.this,
-                        new IMobileUnifiedNativeAdMapper(adData, drawable));
-                  }
-                });
-          }
-
-          @Override
-          public void onFailed(FailNotificationReason reason) {
-            AdError error = AdapterHelper.getAdError(reason);
-            Log.w(TAG, error.getMessage());
-            if (mediationNativeListener != null) {
-              mediationNativeListener.onAdFailedToLoad(IMobileMediationAdapter.this, error);
-            }
-          }
-        });
+  public void loadNativeAdMapper(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
+              mediationAdLoadCallback)
+      throws RemoteException {
+    IMobileNativeAdLoader nativeAdLoader = new IMobileNativeAdLoader();
+    nativeAdLoader.loadAd(
+        mediationNativeAdConfiguration, mediationAdLoadCallback, iMobileSdkWrapper);
   }
-  // endregion
-
-  // region - Methods of life cycle.
-  @Override
-  public void onDestroy() {
-    // Release objects.
-    mediationNativeListener = null;
-  }
-
-  @Override
-  public void onPause() {
-  }
-
-  @Override
-  public void onResume() {
-  }
-  // endregion
 
 }
