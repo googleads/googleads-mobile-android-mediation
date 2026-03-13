@@ -1,6 +1,6 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 3.7.1.1 (In progress)
 
 - Removed banner size check from the adapter to resolve signal collection
   failures.
