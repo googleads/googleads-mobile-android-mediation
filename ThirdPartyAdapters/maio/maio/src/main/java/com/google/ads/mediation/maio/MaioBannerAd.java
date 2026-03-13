@@ -27,7 +27,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -50,7 +49,9 @@ public class MaioBannerAd implements MediationBannerAd {
     this.adLoadCallback = adLoadCallback;
   }
 
-  public void loadAd(MediationBannerAdConfiguration mediationBannerAdConfiguration) {
+  public void loadAd(
+      MediationBannerAdConfiguration mediationBannerAdConfiguration,
+      MediationUtilsWrapper mediationUtils) {
     Context context = mediationBannerAdConfiguration.getContext();
 
     Bundle serverParameters = mediationBannerAdConfiguration.getServerParameters();
@@ -74,7 +75,7 @@ public class MaioBannerAd implements MediationBannerAd {
     }
 
     MaioBannerSize bannerSize =
-        toMaioBannerSize(context, mediationBannerAdConfiguration.getAdSize());
+        toMaioBannerSize(context, mediationBannerAdConfiguration.getAdSize(), mediationUtils);
     if (bannerSize == null) {
       AdError error =
           new AdError(
@@ -142,12 +143,13 @@ public class MaioBannerAd implements MediationBannerAd {
     return bannerView;
   }
 
-  private MaioBannerSize toMaioBannerSize(Context context, AdSize adSize) {
+  private MaioBannerSize toMaioBannerSize(
+      Context context, AdSize adSize, MediationUtilsWrapper mediationUtils) {
     List<AdSize> supportedSizes = new ArrayList<>();
     supportedSizes.add(new AdSize(320, 50));
     supportedSizes.add(new AdSize(320, 100));
     supportedSizes.add(new AdSize(300, 250));
-    AdSize closestSize = MediationUtils.findClosestSize(context, adSize, supportedSizes);
+    AdSize closestSize = mediationUtils.findClosestSize(context, adSize, supportedSizes);
 
     if (closestSize != null) {
       return new MaioBannerSize(closestSize.getWidth(), closestSize.getHeight());

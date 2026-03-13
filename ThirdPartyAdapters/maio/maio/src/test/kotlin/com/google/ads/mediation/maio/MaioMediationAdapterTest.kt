@@ -36,6 +36,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -45,7 +46,9 @@ import org.robolectric.Robolectric
 @RunWith(AndroidJUnit4::class)
 class MaioMediationAdapterTest {
 
-  private var adapter: MaioMediationAdapter = MaioMediationAdapter()
+  private val mediationUtils: MediationUtilsWrapper = mock()
+
+  private var adapter: MaioMediationAdapter = MaioMediationAdapter(mediationUtils)
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val context = ApplicationProvider.getApplicationContext<Context>()
@@ -254,6 +257,7 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
     val bannerAdConfiguration =
       createBannerAdConfiguration(serverParameters = serverParameters, adSize = AdSize(300, 50))
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(300, 50)), any())) doReturn null
 
     adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
 

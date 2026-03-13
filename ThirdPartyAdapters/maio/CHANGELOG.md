@@ -1,6 +1,6 @@
 ## maio Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 2.0.8.1 (In progress)
 - Added Banner ad format support
 
 #### Version 2.0.8.0

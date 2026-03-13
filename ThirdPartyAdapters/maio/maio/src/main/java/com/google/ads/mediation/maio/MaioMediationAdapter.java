@@ -18,6 +18,7 @@ import android.content.Context;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
@@ -96,12 +97,21 @@ public class MaioMediationAdapter extends Adapter {
    */
   public static final int ERROR_INVALID_SERVER_PARAMETERS = 102;
 
-  /**
-   * Activity context is required.
-   */
+  /** Activity context is required. */
   // Commented out since adapter no longer reports this error code. But, leaving it as comment for
   // reference.
   // public static final int ERROR_REQUIRES_ACTIVITY_CONTEXT = 103;
+
+  private final MediationUtilsWrapper mediationUtils;
+
+  public MaioMediationAdapter() {
+    mediationUtils = new MediationUtilsWrapper();
+  }
+
+  @VisibleForTesting
+  MaioMediationAdapter(MediationUtilsWrapper mediationUtilsWrapper) {
+    mediationUtils = mediationUtilsWrapper;
+  }
 
   /**
    * {@link Adapter} implementation
@@ -178,6 +188,6 @@ public class MaioMediationAdapter extends Adapter {
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
     bannerAd = new MaioBannerAd(callback);
-    bannerAd.loadAd(adConfiguration);
+    bannerAd.loadAd(adConfiguration, mediationUtils);
   }
 }
