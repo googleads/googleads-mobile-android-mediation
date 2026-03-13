@@ -1,6 +1,11 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Version 5.0.0.0 (In progress)
+#### Version 5.0.0.0
+- Verified compatibility with Pubmatic SDK 5.0.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.0.0.
+- Pubmatic SDK version 5.0.0
 
 #### Version 4.12.0.0
 - Verified compatibility with Pubmatic SDK 4.12.0.
