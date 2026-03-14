@@ -1,5 +1,8 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Added property to build the adapter with NextGen GMA SDK dependency.
+
 #### Version 7.9.1.1.0
 - Verified compatibility with Pangle SDK version 7.9.1.1.
 
