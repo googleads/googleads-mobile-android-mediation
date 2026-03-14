@@ -23,7 +23,11 @@ android {
     namespace 'com.google.ads.mediation.chartboost'
     compileSdk 34
     defaultConfig {
-        minSdkVersion 23
+        if (project.hasProperty('useNextGenGma')) {
+            minSdk 24
+        } else {
+            minSdk 23
+        }
         targetSdk 33
         versionCode 9110100
         versionName stringVersion
@@ -117,7 +121,12 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.chartboost:chartboost-sdk:9.11.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:24.9.0'
+    // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
+    if (project.hasProperty('useNextGenGma')) {
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.24.0-beta03'
+    } else {
+        implementation 'com.google.android.gms:play-services-ads:24.9.0'
+    }
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'junit:junit:4.13.2'

@@ -1,5 +1,8 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Next Version
+- Added property to build the adapter with NextGen GMA SDK dependency.
+
 #### Version 5.45.3.0 (In progress)
 
 #### Version 5.27.4.1

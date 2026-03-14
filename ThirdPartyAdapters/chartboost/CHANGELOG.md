@@ -1,5 +1,8 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next Version
+- Added property to build the adapter with NextGen GMA SDK dependency.
+
 #### Version 9.11.1.0
 - Verified compatibility with Chartboost SDK version 9.11.1.
 

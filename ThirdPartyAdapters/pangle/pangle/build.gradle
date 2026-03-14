@@ -21,7 +21,11 @@ android {
     namespace 'com.google.ads.mediation.pangle'
     compileSdk 34
     defaultConfig {
-        minSdkVersion 23
+        if (project.hasProperty('useNextGenGma')) {
+            minSdk 24
+        } else {
+            minSdk 23
+        }
         targetSdk 33
         versionCode 709010100
         versionName stringVersion
@@ -116,7 +120,12 @@ task jacocoTestReport(type: JacocoReport,
 dependencies {
     implementation 'com.pangle.global:pag-sdk:7.9.1.1'
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.android.gms:play-services-ads:25.0.0'
+    // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
+    if (project.hasProperty('useNextGenGma')) {
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.24.0-beta03'
+    } else {
+        implementation 'com.google.android.gms:play-services-ads:25.0.0'
+    }
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'
