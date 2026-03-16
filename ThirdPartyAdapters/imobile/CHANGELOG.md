@@ -1,6 +1,6 @@
 ## i-mobile Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 2.3.2.2 (In progress)
 - Added property to build the adapter with NextGen GMA SDK dependency.
 - Migrated banner, interstitial and native ad implementations from old API to
   new API.
