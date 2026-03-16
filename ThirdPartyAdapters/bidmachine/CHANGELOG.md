@@ -1,6 +1,6 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.6.0.0 (In progress)
 - Added property to build the adapter with NextGen GMA SDK dependency.
 
 #### Version 3.5.1.2

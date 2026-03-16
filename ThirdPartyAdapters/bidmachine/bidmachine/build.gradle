@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "BidMachine"
     // String property to store version name.
-    stringVersion = "3.5.1.2"
+    stringVersion = "3.6.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -30,7 +30,7 @@ android {
             minSdk 23
         }
         targetSdk 33
-        versionCode 3050102
+        versionCode 3060000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -134,9 +134,9 @@ dependencies {
     if (project.hasProperty('useNextGenGma')) {
         implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.24.0-beta03'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:24.9.0'
+        implementation 'com.google.android.gms:play-services-ads:25.0.0'
     }
-    implementation 'io.bidmachine:ads:3.5.1'
+    implementation 'io.bidmachine:ads:3.6.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
