@@ -1,6 +1,6 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.3.0.2 (In progress)
 - Added property to build the adapter with NextGen GMA SDK dependency.
 
 #### Version 9.3.0.1
