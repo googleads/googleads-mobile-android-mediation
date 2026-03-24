@@ -43,4 +43,5 @@ dependencies {
     implementation("com.google.ads.mediation:unity:+")
     implementation("com.google.ads.mediation:verve:+")
     implementation("com.google.ads.mediation:vungle:+")
+    implementation("com.google.ads.mediation:mytarget:+")
 }
