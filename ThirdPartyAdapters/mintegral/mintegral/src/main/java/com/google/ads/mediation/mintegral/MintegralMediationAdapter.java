@@ -193,6 +193,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
       @NonNull List<MediationConfiguration> list) {
     HashSet<String> appIds = new HashSet<>();
     HashSet<String> appKeys = new HashSet<>();
+
     for (MediationConfiguration mediationConfiguration : list) {
       Bundle serverParameters = mediationConfiguration.getServerParameters();
       String appId = serverParameters.getString(MintegralConstants.APP_ID);
@@ -204,6 +205,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
         appKeys.add(appKey);
       }
     }
+
     int appIdCount = appIds.size();
     int appKeyCount = appKeys.size();
     if (appIdCount <= 0 || appKeyCount <= 0) {
@@ -214,18 +216,21 @@ public class MintegralMediationAdapter extends RtbAdapter {
       initializationCompleteCallback.onInitializationFailed(error.toString());
       return;
     }
+
     String appId = appIds.iterator().next();
-    String appKey = appKeys.iterator().next();
     if (appIdCount > 1) {
       String message = String.format(
           "Found multiple app IDs in %s. Using %s to initialize Mintegral SDK.", appIds, appId);
       Log.w(TAG, message);
     }
+
+    String appKey = appKeys.iterator().next();
     if (appKeyCount > 1) {
       String message = String.format(
           "Found multiple App Keys in %s. Using %s to initialize Mintegral SDK.", appKeys, appKey);
       Log.w(TAG, message);
     }
+
     mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
     Map<String, String> configurationMap = mBridgeSDK.getMBConfigurationMap(appId, appKey);
     // Mintegral sdk modified the channel acquisition plan and needs to adjust the setting time to
@@ -240,6 +245,10 @@ public class MintegralMediationAdapter extends RtbAdapter {
     } catch (Throwable e) {
       e.printStackTrace();
     }
+
+    // Trigger Mintegral SDK to read the IAB TCF string.
+    mBridgeSDK.setConsentStatus(context);
+
     // Initialize the Mintegral SDK in a separate thread to avoid blocking the main thread.
     executorService.submit(
         () ->

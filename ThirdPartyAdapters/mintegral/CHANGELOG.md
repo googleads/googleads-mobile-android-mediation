@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Added support for automatically triggering Mintegral SDK to read GDPR consent during adapter initialization.
+
 #### Version 17.1.31.0 (In progress)
 
 #### Version 17.1.11.0 (In progress)
