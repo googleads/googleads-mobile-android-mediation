@@ -35,7 +35,7 @@ allprojects {
 
 ext {
     minSdkVersion = 23
-    compileSdkVersion = 34
+    compileSdkVersion = 36
     targetSdkVersion = 34
 
     appcompat = "androidx.appcompat:appcompat:1.6.1"

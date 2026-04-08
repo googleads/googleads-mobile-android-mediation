@@ -49,6 +49,8 @@ import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
+import com.google.ads.mediation.sample.customevent.SampleNativeAdMapper;
+import com.google.ads.mediation.sample.customevent.SampleNativeCustomEventLoader;
 import java.util.Locale;
 
 /**
@@ -282,6 +284,19 @@ public class MainActivity extends AppCompatActivity {
     nativeLoadButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+        SampleNativeCustomEventLoader.setAdChoicesClickListener(
+            new SampleNativeAdMapper.OnAdChoicesClickListener() {
+              @Override
+              public void onAdChoicesClick() {
+                Log.i(LOG_TAG, "Publisher received AdChoices click event!");
+                Toast.makeText(
+                        MainActivity.this,
+                        "AdChoices clicked (Publisher handled)",
+                        Toast.LENGTH_SHORT)
+                    .show();
+              }
+            });
+
         adLoader = new AdLoader.Builder(view.getContext(), getNativeAdUnitId())
             .forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
               @Override
