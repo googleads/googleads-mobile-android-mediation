@@ -29,6 +29,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -64,8 +65,10 @@ class InMobiWaterfallInterstitialAdTest {
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(true)
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationInterstitialAdCallback)
     val placementId = 67890L
-    whenever(interstitialAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    interstitialAdConfiguration.stub {
+      on { getServerParameters() } doReturn
+        bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    }
     waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
@@ -83,8 +86,10 @@ class InMobiWaterfallInterstitialAdTest {
       .thenReturn(inMobiInterstitialWrapper)
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(false)
     val placementId = 67890L
-    whenever(interstitialAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    interstitialAdConfiguration.stub {
+      on { getServerParameters() } doReturn
+        bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    }
     waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
     verify(inMobiInitializer)
       .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
