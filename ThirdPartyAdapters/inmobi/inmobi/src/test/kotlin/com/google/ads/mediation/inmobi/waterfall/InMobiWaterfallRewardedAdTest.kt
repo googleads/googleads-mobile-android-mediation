@@ -28,6 +28,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -62,8 +63,10 @@ class InMobiWaterfallRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(false)
     val placementId = 67890L
-    whenever(rewardedAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    rewardedAdConfiguration.stub {
+      on { getServerParameters() } doReturn
+        bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    }
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
     waterfallRewardedAd.loadAd(rewardedAdConfiguration)
@@ -87,8 +90,10 @@ class InMobiWaterfallRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(true)
     val placementId = 67890L
-    whenever(rewardedAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    rewardedAdConfiguration.stub {
+      on { getServerParameters() } doReturn
+        bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    }
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
     waterfallRewardedAd.loadAd(rewardedAdConfiguration)

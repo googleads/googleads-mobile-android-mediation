@@ -26,6 +26,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -58,8 +59,9 @@ class InMobiRtbRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(false)
     whenever(rewardedAdConfiguration.bidResponse).thenReturn("BiddingToken")
-    whenever(rewardedAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_PLACEMENT_ID to "67890")
+    rewardedAdConfiguration.stub {
+      on { getServerParameters() } doReturn bundleOf(KEY_PLACEMENT_ID to "67890")
+    }
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
     rtbRewardedAd.loadAd(rewardedAdConfiguration)
@@ -79,8 +81,9 @@ class InMobiRtbRewardedAdTest {
       .thenReturn(inMobiRewardedWrapper)
     whenever(inMobiRewardedWrapper.isReady).thenReturn(true)
     whenever(rewardedAdConfiguration.bidResponse).thenReturn("BiddingToken")
-    whenever(rewardedAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_PLACEMENT_ID to "67890")
+    rewardedAdConfiguration.stub {
+      on { getServerParameters() } doReturn bundleOf(KEY_PLACEMENT_ID to "67890")
+    }
 
     // invoke the create rewardedAd method to get an instance of InMobiRewardedWrapper
     rtbRewardedAd.loadAd(rewardedAdConfiguration)

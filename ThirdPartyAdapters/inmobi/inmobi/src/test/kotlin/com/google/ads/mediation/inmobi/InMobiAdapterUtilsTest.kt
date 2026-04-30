@@ -13,8 +13,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class InMobiAdapterUtilsTest {
@@ -281,9 +281,11 @@ class InMobiAdapterUtilsTest {
   }
 
   private fun setupMobiNativeAdWrapper(): Unit {
-    whenever(inMobiNativeWrapper.adCtaText) doReturn ("SomeCtaText")
-    whenever(inMobiNativeWrapper.adDescription) doReturn ("AdDescription")
-    whenever(inMobiNativeWrapper.adIconUrl) doReturn ("http://www.example.com/docs/resource1.html")
-    whenever(inMobiNativeWrapper.adTitle) doReturn ("adTitle")
+    inMobiNativeWrapper.stub {
+      on { adCtaText } doReturn ("SomeCtaText")
+      on { adDescription } doReturn ("AdDescription")
+      on { adIconUrl } doReturn ("http://www.example.com/docs/resource1.html")
+      on { adTitle } doReturn ("adTitle")
+    }
   }
 }

@@ -27,6 +27,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -61,8 +62,9 @@ class InMobiRtbInterstitialAdTest {
     whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(true)
     whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationInterstitialAdCallback)
-    whenever(interstitialAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_PLACEMENT_ID to "67890")
+    interstitialAdConfiguration.stub {
+      on { getServerParameters() } doReturn bundleOf(KEY_PLACEMENT_ID to "67890")
+    }
 
     rtbInterstitialAd.loadAd(interstitialAdConfiguration)
     rtbInterstitialAd.showAd(context)
@@ -76,8 +78,9 @@ class InMobiRtbInterstitialAdTest {
       .thenReturn(inMobiInterstitialWrapper)
     whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
     whenever(inMobiInterstitialWrapper.isReady).thenReturn(false)
-    whenever(interstitialAdConfiguration.serverParameters) doReturn
-      bundleOf(KEY_PLACEMENT_ID to "67890")
+    interstitialAdConfiguration.stub {
+      on { getServerParameters() } doReturn bundleOf(KEY_PLACEMENT_ID to "67890")
+    }
     rtbInterstitialAd.loadAd(interstitialAdConfiguration)
     // mimic an ad load.
     rtbInterstitialAd.onAdLoadSucceeded(inMobiInterstitialWrapper.inMobiInterstitial, adMetaInfo)
