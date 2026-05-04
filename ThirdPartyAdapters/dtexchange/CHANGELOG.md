@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.4.5.0 (In progress)
 - Added watermark on bidding ads.
 
 #### Version 8.4.4.0
