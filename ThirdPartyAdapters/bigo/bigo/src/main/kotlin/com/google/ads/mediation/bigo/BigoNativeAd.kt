@@ -61,7 +61,6 @@ private constructor(
 
   private var nativeAdCallback: MediationNativeAdCallback? = null
   private var nativeAd: NativeAd? = null
-  private var videoController: VideoController? = null
 
   fun loadAd(versionString: String) {
     val adRequest = BigoFactory.delegate.createNativeAdRequest(bidResponse, slotId, watermark)
@@ -128,8 +127,8 @@ private constructor(
 
   override fun trackViews(
     container: View,
-    clickableAssetViews: Map<String?, View?>,
-    nonClickableAssetViews: Map<String?, View?>,
+    clickableAssetViews: Map<String, View>,
+    nonClickableAssetViews: Map<String, View>,
   ) {
     container.tag = AdTag.NATIVE_AD_VIEW
     iconView.tag = AdTag.ICON_VIEW
@@ -162,8 +161,7 @@ private constructor(
     advertiser = nativeAd.advertiser
     if (nativeAd.creativeType == NativeAd.CreativeType.VIDEO) {
       setHasVideoContent(true)
-      videoController = nativeAd.videoController
-      videoController?.videoLifeCallback = this
+      nativeAd.videoController?.videoLifeCallback = this
     }
     mediaContentAspectRatio = nativeAd.mediaContentAspectRatio
     adChoicesContent = adOptionsView
