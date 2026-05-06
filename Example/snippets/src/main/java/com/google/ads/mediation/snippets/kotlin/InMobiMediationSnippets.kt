@@ -34,20 +34,6 @@ import org.json.JSONObject
  */
 class InMobiMediationSnippets {
 
-  private fun updateGDPRConsent() {
-    // [START update_gdpr_consent]
-    val consentObject = JSONObject()
-    try {
-      consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, true)
-      consentObject.put("gdpr", "1")
-    } catch (exception: JSONException) {
-      Log.e(TAG, "Error creating GDPR consent JSON.", exception)
-    }
-
-    InMobiConsent.updateGDPRConsent(consentObject)
-    // [END update_gdpr_consent]
-  }
-
   private fun setAdRequestWithParameters(): AdRequest {
     // [START set_ad_request_parameters]
     val extras = Bundle()

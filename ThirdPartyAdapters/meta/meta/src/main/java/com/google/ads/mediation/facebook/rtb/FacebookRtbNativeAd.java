@@ -53,15 +53,16 @@ import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
+import com.google.android.gms.ads.nativead.NativeAd.Image;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
+public class FacebookRtbNativeAd extends NativeAdMapper {
 
-  private final MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback;
+  private final MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback;
   private NativeAdBase nativeAdBase;
   private MediationNativeAdCallback nativeAdCallback;
   private MediaView mediaView;
@@ -69,7 +70,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   private final MetaFactory metaFactory;
 
   public FacebookRtbNativeAd(
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> callback,
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback,
       MetaFactory metaFactory) {
     this.callback = callback;
     this.metaFactory = metaFactory;
@@ -77,7 +78,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
 
   public void render(@NonNull MediationNativeAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
-    String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
+    String placementID = FacebookMediationAdapter.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad. PlacementID is null or empty.",
@@ -198,7 +199,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
    *
    * @param mapperListener used to send success/failure callbacks when mapping is done.
    */
-  public void mapNativeAd(
+  private void mapNativeAd(
       @NonNull Context context, @NonNull NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(nativeAdBase)) {
       AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
@@ -212,7 +213,7 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     // action).
     setHeadline(nativeAdBase.getAdHeadline());
     if (nativeAdBase.getAdCoverImage() != null) {
-      List<com.google.android.gms.ads.formats.NativeAd.Image> images = new ArrayList<>();
+      List<Image> images = new ArrayList<>();
       images.add(
           new FacebookAdapterNativeAdImage(Uri.parse(nativeAdBase.getAdCoverImage().getUrl())));
       setImages(images);
@@ -314,7 +315,9 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
   }
 
   @Override
-  public void trackViews(@NonNull View view, @NonNull Map<String, View> clickableAssetViews,
+  public void trackViews(
+      @NonNull View view,
+      @NonNull Map<String, View> clickableAssetViews,
       @NonNull Map<String, View> nonClickableAssetViews) {
 
     // Meta Audience Network does its own click handling.
@@ -358,22 +361,26 @@ public class FacebookRtbNativeAd extends UnifiedNativeAdMapper {
     }
   }
 
-
   @Override
   public void untrackView(@NonNull View view) {
     if (nativeAdBase != null) {
       nativeAdBase.unregisterView();
+      nativeAdBase.destroy();
+      nativeAdBase = null;
+    }
+    if (mediaView != null) {
+      mediaView.destroy();
+      mediaView = null;
     }
     super.untrackView(view);
   }
 
-  private class FacebookAdapterNativeAdImage extends
-      com.google.android.gms.ads.formats.NativeAd.Image {
+  private static class FacebookAdapterNativeAdImage extends Image {
 
     /** A drawable for the Image. */
     private Drawable drawable;
 
-    /** An Uri from which the image can be obtained. */
+    /** A Uri from which the image can be obtained. */
     private Uri uri;
 
     /**

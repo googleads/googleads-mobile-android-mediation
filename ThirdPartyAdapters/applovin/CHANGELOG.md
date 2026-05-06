@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
 - AppLovin SDK version 13.6.2.
 
 #### Version 13.6.1.0

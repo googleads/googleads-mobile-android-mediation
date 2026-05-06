@@ -1,5 +1,7 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Version 5.1.0.0 (In progress)
+
 #### Version 5.0.0.1
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 - Fixed a bug where the `mediationUtils` object wasn't being initialized.

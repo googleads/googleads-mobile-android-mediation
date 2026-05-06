@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Pangle"
     // String property to store version name.
-    stringVersion = "7.9.1.3.0"
+    stringVersion = "8.0.0.4.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -27,7 +27,7 @@ android {
             minSdk 23
         }
         targetSdk 33
-        versionCode 709010300
+        versionCode 800000400
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
     }
@@ -118,13 +118,13 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.pangle.global:pag-sdk:7.9.1.3'
+    implementation 'com.pangle.global:pag-sdk:8.0.0.4'
     implementation 'androidx.annotation:annotation:1.5.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
     if (project.hasProperty('useNextGenGma')) {
-        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:0.24.0-beta03'
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.0.1'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.1.0'
+        implementation 'com.google.android.gms:play-services-ads:25.2.0'
     }
 
     testImplementation 'androidx.core:core-ktx:1.8.0'

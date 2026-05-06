@@ -6,6 +6,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
 - FiveAd SDK version 3.1.0.0.
 
 #### Version 3.0.1.2

@@ -48,6 +48,7 @@ class DTExchangeNativeAdMapper(
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString())
 
     val bidResponse = mediationNativeAdConfiguration.bidResponse
+    val watermark = mediationNativeAdConfiguration.watermark
 
     nativeAdSpot =
       InneractiveAdSpotManager.get().createSpot().apply {
@@ -113,7 +114,7 @@ class DTExchangeNativeAdMapper(
           }
         )
         FyberAdapterUtils.updateFyberExtraParams(mediationNativeAdConfiguration.mediationExtras)
-        loadAd(bidResponse)
+        loadAd(bidResponse, watermark)
       }
   }
 

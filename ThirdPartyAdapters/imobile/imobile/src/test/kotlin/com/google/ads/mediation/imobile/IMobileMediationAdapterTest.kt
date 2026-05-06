@@ -43,6 +43,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -96,7 +97,7 @@ class IMobileMediationAdapterTest {
 
   @Test
   fun instanceOfIMobileMediationAdapter_returnsAnInstanceOfAdapter() {
-    assertThat(adapter is Adapter).isTrue()
+    assertIs<Adapter>(adapter)
   }
 
   @Test

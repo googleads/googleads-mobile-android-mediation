@@ -91,7 +91,8 @@ public class FyberRewardedVideoRenderer
   void loadRtbAd(MediationRewardedAdConfiguration adConfiguration) {
     String bidResponse = adConfiguration.getBidResponse();
     initializeFyberClasses(adConfiguration);
-    rewardedSpot.loadAd(bidResponse);
+    String watermark = adConfiguration.getWatermark();
+    rewardedSpot.loadAd(bidResponse, watermark);
   }
 
   private void initializeFyberClasses(MediationRewardedAdConfiguration adConfiguration) {

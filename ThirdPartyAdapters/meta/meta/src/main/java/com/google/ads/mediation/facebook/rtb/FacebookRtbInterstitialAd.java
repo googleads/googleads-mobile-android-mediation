@@ -60,7 +60,7 @@ public class FacebookRtbInterstitialAd
 
   public void render(@NonNull MediationInterstitialAdConfiguration adConfiguration) {
     Bundle serverParameters = adConfiguration.getServerParameters();
-    String placementID = FacebookMediationAdapter.getPlacementID(serverParameters);
+    String placementID = FacebookMediationAdapter.getPlacementId(serverParameters);
     if (TextUtils.isEmpty(placementID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Failed to request ad. PlacementID is null or empty. ", ERROR_DOMAIN);

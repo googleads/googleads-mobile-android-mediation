@@ -37,20 +37,6 @@ public final class InMobiMediationSnippets {
   private static final String AREA_CODE_VALUE = "12345";
   private static final String TAG = "InMobiMediationSnippets";
 
-  private void updateGDPRConsent() {
-    // [START update_gdpr_consent]
-    JSONObject consentObject = new JSONObject();
-    try {
-      consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, true);
-      consentObject.put("gdpr", "1");
-    } catch (JSONException exception) {
-        Log.e(TAG, "Error creating GDPR consent JSON.", exception);
-    }
-
-    InMobiConsent.updateGDPRConsent(consentObject);
-    // [END update_gdpr_consent]
-  }
-
   private AdRequest setAdRequestWithParameters() {
     // [START set_ad_request_parameters]
     Bundle extras = new Bundle();

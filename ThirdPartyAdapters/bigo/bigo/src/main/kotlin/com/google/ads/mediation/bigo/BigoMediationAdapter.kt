@@ -64,7 +64,7 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
   val versionString: String
 
   init {
-    versionString = "GMA_SDK_${MobileAds.getVersion()}_adapter_$versionInfo"
+    versionString = "GMA_SDK_${MobileAds.getVersion()}_adapter_${getVersionInfo()}"
   }
 
   override fun getSDKVersionInfo(): VersionInfo =
@@ -122,15 +122,14 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
       return
     }
 
-    val applicationIds =
-      mediationConfigurations.mapNotNull {
-        val appId = it.serverParameters.getString(APP_ID_KEY)
-        if (appId.isNullOrEmpty()) {
-          null
-        } else {
-          appId
-        }
+    val applicationIds = mediationConfigurations.mapNotNull {
+      val appId = it.serverParameters.getString(APP_ID_KEY)
+      if (appId.isNullOrEmpty()) {
+        null
+      } else {
+        appId
       }
+    }
     if (applicationIds.isEmpty()) {
       initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
       return

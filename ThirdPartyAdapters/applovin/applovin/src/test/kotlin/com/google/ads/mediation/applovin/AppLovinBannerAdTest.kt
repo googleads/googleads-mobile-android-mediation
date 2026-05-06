@@ -103,7 +103,7 @@ class AppLovinBannerAdTest {
     verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
     val capturedError = adErrorCaptor.firstValue
     assertThat(capturedError.code).isEqualTo(AppLovinErrorCodes.NO_FILL)
-    assertThat(capturedError.message.startsWith(ERROR_MSG_REASON_PREFIX)).isTrue()
+    assertThat(capturedError.message).startsWith(ERROR_MSG_REASON_PREFIX)
     assertThat(capturedError.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
   }
 

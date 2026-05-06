@@ -1,6 +1,6 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 3.8.1.0 (In progress)
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 
 #### Version 3.7.1.1

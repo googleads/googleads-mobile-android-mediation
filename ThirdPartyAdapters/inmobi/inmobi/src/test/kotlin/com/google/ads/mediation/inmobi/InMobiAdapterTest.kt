@@ -1,6 +1,6 @@
 package com.google.ads.mediation.inmobi
 
-import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Test
 import org.mockito.kotlin.mock
 
@@ -16,6 +16,6 @@ class InMobiAdapterTest {
   fun instanceOfInMobiAdapter_returnsAnInstanceOfInMobiMediationAdapter() {
     adapter = InMobiAdapter()
 
-    assertThat(adapter is InMobiMediationAdapter)
+    assertIs<InMobiMediationAdapter>(adapter)
   }
 }

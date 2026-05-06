@@ -129,7 +129,7 @@ class PangleRewardedAdTest {
     verify(pagRewardedRequest).setAdString(TestConstants.BID_RESPONSE)
     verify(pagRewardedRequest).setExtraInfo(extraInfoCaptor.capture())
     val extraInfo = extraInfoCaptor.firstValue
-    assertThat(extraInfo.containsKey(ADMOB_WATERMARK_KEY)).isTrue()
+    assertThat(extraInfo).containsKey(ADMOB_WATERMARK_KEY)
     assertThat(extraInfo[ADMOB_WATERMARK_KEY]).isEqualTo(WATERMARK)
     verify(pangleSdkWrapper)
       .loadRewardedAd(eq(TestConstants.PLACEMENT_ID_VALUE), eq(pagRewardedRequest), any())

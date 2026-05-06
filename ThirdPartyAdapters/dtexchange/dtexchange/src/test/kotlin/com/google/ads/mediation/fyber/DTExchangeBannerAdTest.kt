@@ -10,6 +10,7 @@ import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -41,7 +42,11 @@ class DTExchangeBannerAdTest {
       on { onSuccess(any()) } doReturn mockBannerAdCallback
     }
   private val adConfiguration =
-    createMediationBannerAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
+    createMediationBannerAdConfiguration(
+      context = context,
+      bidResponse = TEST_BID_RESPONSE,
+      watermark = TEST_WATERMARK,
+    )
 
   @Before
   fun setUp() {

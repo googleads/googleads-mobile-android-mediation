@@ -28,7 +28,7 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_T
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError
-import com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID
+import com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementId
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -50,7 +50,7 @@ class MetaRtbAppOpenAd(
 
   fun loadAd(adConfiguration: MediationAppOpenAdConfiguration) {
     val serverParameters: Bundle = adConfiguration.serverParameters
-    val placementID = getPlacementID(serverParameters)
+    val placementID = getPlacementId(serverParameters)
     if (TextUtils.isEmpty(placementID)) {
       val error =
         com.google.android.gms.ads.AdError(

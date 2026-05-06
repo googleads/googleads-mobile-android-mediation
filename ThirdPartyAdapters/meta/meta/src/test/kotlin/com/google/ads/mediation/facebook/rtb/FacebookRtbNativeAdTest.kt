@@ -7,6 +7,7 @@ import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.ext.truth.os.BundleSubject.assertThat
 import com.facebook.ads.MediaView
 import com.facebook.ads.MediaViewListener
 import com.facebook.ads.NativeAd
@@ -26,7 +27,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -66,7 +67,7 @@ class FacebookRtbNativeAdTest {
     )
   private val nativeAdCallback = mock<MediationNativeAdCallback>()
   private val nativeAdLoadCallback:
-    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
     mock {
       on { onSuccess(any()) } doReturn nativeAdCallback
     }
@@ -303,11 +304,11 @@ class FacebookRtbNativeAdTest {
     verify(metaMediaView).setListener(any())
     assertThat(facebookRtbNativeAd.hasVideoContent()).isTrue()
     val extras = facebookRtbNativeAd.extras
-    assertThat(extras.size()).isEqualTo(2)
-    assertThat(extras.containsKey(KEY_ID)).isTrue()
-    assertThat(extras.getString(KEY_ID)).isEqualTo(META_AD_ID)
-    assertThat(extras.containsKey(KEY_SOCIAL_CONTEXT_ASSET)).isTrue()
-    assertThat(extras.getString(KEY_SOCIAL_CONTEXT_ASSET)).isEqualTo(META_AD_SOCIAL_CONTEXT)
+    assertThat(extras).hasSize(2)
+    assertThat(extras).containsKey(KEY_ID)
+    assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
+    assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
+    assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
     assertThat(facebookRtbNativeAd.adChoicesContent).isNotNull()
     verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
   }
@@ -349,11 +350,11 @@ class FacebookRtbNativeAdTest {
     assertThat(facebookRtbNativeAd.advertiser).isEqualTo(META_ADVERTISER_NAME)
     assertThat(facebookRtbNativeAd.hasVideoContent()).isTrue()
     val extras = facebookRtbNativeAd.extras
-    assertThat(extras.size()).isEqualTo(2)
-    assertThat(extras.containsKey(KEY_ID)).isTrue()
-    assertThat(extras.getString(KEY_ID)).isEqualTo(META_AD_ID)
-    assertThat(extras.containsKey(KEY_SOCIAL_CONTEXT_ASSET)).isTrue()
-    assertThat(extras.getString(KEY_SOCIAL_CONTEXT_ASSET)).isEqualTo(META_AD_SOCIAL_CONTEXT)
+    assertThat(extras).hasSize(2)
+    assertThat(extras).containsKey(KEY_ID)
+    assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
+    assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
+    assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
     assertThat(facebookRtbNativeAd.adChoicesContent).isNotNull()
     verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
   }
@@ -557,6 +558,29 @@ class FacebookRtbNativeAdTest {
     facebookRtbNativeAd.untrackView(gmaContainerView)
 
     verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun untrackView_withoutRender_doesNotCrash() {
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+    // No crash indicates success.
+  }
+
+  @Test
+  fun untrackView_multipleTimes_destroysMetaAdAssetsOnce() {
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
   }
 
   private companion object {

@@ -30,7 +30,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfigur
 import com.google.ads.mediation.adaptertestkit.loadRtbAppOpenAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbBannerAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
-import com.google.ads.mediation.adaptertestkit.loadRtbNativeAdWithFailure
+import com.google.ads.mediation.adaptertestkit.loadRtbNativeAdMapperWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbRewardedAdWithFailure
 import com.google.ads.mediation.adaptertestkit.loadRtbRewardedInterstitialAdWithFailure
 import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
@@ -57,7 +57,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
@@ -139,7 +139,7 @@ class FacebookMediationAdapterTest {
     on { buildLoadAdConfig() } doReturn metaRewardedAdLoadConfigBuilder
   }
   private val mockNativeAdLoadCallback:
-    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
+    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
     mock()
   private val metaNativeAdLoadConfig: NativeAdBase.NativeLoadAdConfig = mock()
   private val metaNativeAdLoadConfigBuilder: NativeAdBase.NativeAdLoadConfigBuilder = mock {
@@ -523,7 +523,7 @@ class FacebookMediationAdapterTest {
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
     verify(metaBannerAd).setExtraHints(extraHintsCaptor.capture())
-    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(metaBannerAd, times(2)).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
@@ -664,7 +664,7 @@ class FacebookMediationAdapterTest {
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
     verify(metaRewardedAd).setExtraHints(extraHintsCaptor.capture())
-    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
     assertThat(AdSettings.isMixedAudience()).isTrue()
     verify(metaRewardedAdLoadConfigBuilder).apply {
       withAdListener(any(FacebookRewardedAd::class.java))
@@ -679,7 +679,7 @@ class FacebookMediationAdapterTest {
   // region Native Ad load tests
 
   @Test
-  fun loadRtbNativeAd_withoutPlacementId_invokesOnFailureCallback() {
+  fun loadRtbNativeAdMapper_withoutPlacementId_invokesOnFailureCallback() {
     val mediationNativeAdConfiguration = createMediationNativeAdConfiguration(context = context)
     val expectedError =
       AdError(
@@ -688,7 +688,7 @@ class FacebookMediationAdapterTest {
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
-    facebookMediationAdapter.loadRtbNativeAdWithFailure(
+    facebookMediationAdapter.loadRtbNativeAdMapperWithFailure(
       mediationNativeAdConfiguration,
       mockNativeAdLoadCallback,
       expectedError,
@@ -696,7 +696,7 @@ class FacebookMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbNativeAd_emptyPlacementId_invokesOnFailureCallback() {
+  fun loadRtbNativeAdMapper_emptyPlacementId_invokesOnFailureCallback() {
     val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to "")
     val mediationNativeAdConfiguration =
       createMediationNativeAdConfiguration(context = context, serverParameters = serverParameters)
@@ -707,7 +707,7 @@ class FacebookMediationAdapterTest {
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
 
-    facebookMediationAdapter.loadRtbNativeAdWithFailure(
+    facebookMediationAdapter.loadRtbNativeAdMapperWithFailure(
       mediationNativeAdConfiguration,
       mockNativeAdLoadCallback,
       expectedError,
@@ -715,7 +715,7 @@ class FacebookMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbNativeAd_errorCreatingNativeAdBase_invokesOnFailureCallback() {
+  fun loadRtbNativeAdMapper_errorCreatingNativeAdBase_invokesOnFailureCallback() {
     val serverParameters =
       bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
     val mediationNativeAdConfiguration =
@@ -730,7 +730,7 @@ class FacebookMediationAdapterTest {
     mockStatic(NativeAdBase::class.java).use {
       whenever(fromBidPayload(any(), any(), any())) doThrow exception
 
-      facebookMediationAdapter.loadRtbNativeAdWithFailure(
+      facebookMediationAdapter.loadRtbNativeAdMapperWithFailure(
         mediationNativeAdConfiguration,
         mockNativeAdLoadCallback,
         expectedAdError,
@@ -739,7 +739,7 @@ class FacebookMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbNativeAd_loadsAd() {
+  fun loadRtbNativeAdMapper_loadsAd() {
     AdSettings.setMixedAudience(false)
     val serverParameters =
       bundleOf(RTB_PLACEMENT_PARAMETER to AdapterTestKitConstants.TEST_PLACEMENT_ID)
@@ -754,14 +754,14 @@ class FacebookMediationAdapterTest {
     mockStatic(NativeAdBase::class.java).use {
       whenever(fromBidPayload(any(), any(), any())) doReturn metaNativeAd
 
-      facebookMediationAdapter.loadRtbNativeAd(
+      facebookMediationAdapter.loadRtbNativeAdMapper(
         mediationNativeAdConfiguration,
         mockNativeAdLoadCallback,
       )
 
       val extraHintsCaptor = argumentCaptor<ExtraHints>()
       verify(metaNativeAd).setExtraHints(extraHintsCaptor.capture())
-      extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+      assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
       assertThat(AdSettings.isMixedAudience()).isTrue()
       verify(metaNativeAdLoadConfigBuilder).apply {
         withAdListener(any(NativeAdListener::class.java))
@@ -841,7 +841,7 @@ class FacebookMediationAdapterTest {
 
     val extraHintsCaptor = argumentCaptor<ExtraHints>()
     verify(metaRewardedAd).setExtraHints(extraHintsCaptor.capture())
-    extraHintsCaptor.firstValue.mediationData.equals(WATERMARK)
+    assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
     assertThat(AdSettings.isMixedAudience()).isTrue()
     verify(metaRewardedAdLoadConfigBuilder)
       .withAdListener(any(FacebookRewardedInterstitialAd::class.java))
