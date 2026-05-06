@@ -116,7 +116,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(new VungleInterstitialListener());
                 interstitialAd.setAdapterAdFormat("VungleInterstitialAdapter-interstitial");
-                interstitialAd.load((String) null);
+                interstitialAd.load();
               }
 
               @Override
@@ -274,7 +274,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
                 VungleSdkWrapper.logCustomSizeForBannerPlacement(
                     bannerAdView, "VungleInterstitialAdapter-banner-custom", placement, adSize);
 
-                bannerAdView.load((String) null);
+                bannerAdView.load();
               }
 
               @Override
