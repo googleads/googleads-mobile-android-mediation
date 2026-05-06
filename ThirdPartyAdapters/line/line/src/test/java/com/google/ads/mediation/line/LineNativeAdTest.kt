@@ -23,6 +23,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -114,10 +115,10 @@ class LineNativeAdTest {
         verify(this).setMediaView(mockFiveAdNative.adMainView)
         assertThat(advertiser).isEqualTo(mockFiveAdNative.advertiserName)
         verify(mockFiveAdNative).loadIconImageAsync(any())
-        assertThat(icon).isInstanceOf(LineNativeAd.LineNativeImage::class.java)
+        assertIs<LineNativeAd.LineNativeImage>(icon)
         verify(mockFiveAdNative).setEventListener(this)
         verify(mockFiveAdNative).loadInformationIconImageAsync(any())
-        assertThat(adChoicesContent).isInstanceOf(ImageView::class.java)
+        assertIs<ImageView>(adChoicesContent)
         verify(mediationAdLoadCallback).onSuccess(this)
       }
     }

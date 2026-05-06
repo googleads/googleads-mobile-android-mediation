@@ -16,7 +16,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -120,7 +120,7 @@ class DTExchangeBannerAdTest {
 
       verify(mockAdViewController).bindView(any<RelativeLayout>())
       verify(mockAdLoadCallback).onSuccess(eq(dtExchangeBannerAd))
-      assertThat(bannerView).isInstanceOf(RelativeLayout::class.java)
+      assertIs<RelativeLayout>(bannerView)
     }
   }
 
