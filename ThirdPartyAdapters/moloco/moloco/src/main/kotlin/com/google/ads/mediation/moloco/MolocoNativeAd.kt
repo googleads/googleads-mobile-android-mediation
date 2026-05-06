@@ -130,8 +130,8 @@ private constructor(
 
   override fun trackViews(
     containerView: View,
-    clickableAssetViews: MutableMap<String, View>,
-    nonClickableAssetViews: MutableMap<String, View>,
+    clickableAssetViews: Map<String, View>,
+    nonclickableAssetViews: Map<String, View>,
   ) {
     containerView.setOnClickListener { nativeAd?.handleGeneralAdClick() }
     clickableAssetViews.values.iterator().forEach {
