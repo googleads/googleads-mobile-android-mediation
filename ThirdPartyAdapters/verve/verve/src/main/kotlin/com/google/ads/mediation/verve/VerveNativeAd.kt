@@ -93,6 +93,16 @@ internal constructor(
     nonClickableAssetViews: Map<String?, View?>,
   ) {
     hyBidNativeAd?.startTracking(containerView, this)
+
+    clickableAssetViews.values.filterNotNull().forEach { clickableView ->
+      clickableView.setOnClickListener { v ->
+        hyBidNativeAd?.onNativeClick(v)
+        nativeAdCallback?.apply {
+          reportAdClicked()
+          onAdOpened()
+        }
+      }
+    }
   }
 
   override fun untrackView(view: View) {
@@ -101,6 +111,10 @@ internal constructor(
 
   override fun handleClick(view: View) {
     hyBidNativeAd?.onNativeClick(view)
+    nativeAdCallback?.apply {
+      reportAdClicked()
+      onAdOpened()
+    }
   }
 
   private fun mapNativeAd(nativeAd: NativeAd) {
@@ -115,7 +129,7 @@ internal constructor(
     imageView.setImageBitmap(nativeAd.bannerBitmap)
     setMediaView(imageView)
 
-    overrideClickHandling = false
+    overrideClickHandling = true
     overrideImpressionRecording = true
   }
 
