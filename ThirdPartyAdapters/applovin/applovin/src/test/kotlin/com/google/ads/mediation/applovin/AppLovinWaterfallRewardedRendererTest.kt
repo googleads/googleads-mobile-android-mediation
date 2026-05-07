@@ -22,6 +22,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -218,7 +219,7 @@ class AppLovinWaterfallRewardedRendererTest {
 
   @Test
   fun appLovinWaterfallRewardedAd_isASubclassOfAppLovinRewardedRenderer() {
-    assertThat(appLovinRewardedAd).isInstanceOf(AppLovinRewardedRenderer::class.java)
+    assertIs<AppLovinRewardedRenderer>(appLovinRewardedAd)
   }
 
   companion object {

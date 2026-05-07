@@ -60,6 +60,7 @@ dependencies {
     testImplementation "com.google.truth:truth:1.2.0"
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
 /**
