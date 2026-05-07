@@ -89,8 +89,8 @@ internal constructor(
 
   override fun trackViews(
     containerView: View,
-    clickableAssetViews: Map<String?, View?>,
-    nonClickableAssetViews: Map<String?, View?>,
+    clickableAssetViews: Map<String, View>,
+    nonclickableAssetViews: Map<String, View>,
   ) {
     hyBidNativeAd?.startTracking(containerView, this)
   }
