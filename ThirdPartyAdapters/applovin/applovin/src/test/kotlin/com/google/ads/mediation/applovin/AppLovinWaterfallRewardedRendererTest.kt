@@ -197,8 +197,7 @@ class AppLovinWaterfallRewardedRendererTest {
 
     appLovinRewardedAd.adReceived(appLovinAd)
 
-    assertThat(AppLovinWaterfallRewardedRenderer.incentivizedAdsMap.containsKey(TEST_ZONE_ID))
-      .isFalse()
+    assertThat(AppLovinWaterfallRewardedRenderer.incentivizedAdsMap).doesNotContainKey(TEST_ZONE_ID)
   }
 
   @Test

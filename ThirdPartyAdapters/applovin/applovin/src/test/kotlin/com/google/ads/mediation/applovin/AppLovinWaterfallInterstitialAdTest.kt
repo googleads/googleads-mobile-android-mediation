@@ -199,10 +199,8 @@ class AppLovinWaterfallInterstitialAdTest {
 
     appLovinMediationInterstitialAd.adReceived(appLovinAd)
 
-    assertThat(
-        AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds.containsKey(TEST_ZONE_ID)
-      )
-      .isFalse()
+    assertThat(AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds)
+      .doesNotContainKey(TEST_ZONE_ID)
   }
 
   @Test
