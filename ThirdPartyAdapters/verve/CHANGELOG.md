@@ -1,5 +1,8 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Next Version
+- Filter clickable views to differentiate content info click from regular ad click for VerveNativeAd.
+
 #### Version 3.8.1.0 (In progress)
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 
