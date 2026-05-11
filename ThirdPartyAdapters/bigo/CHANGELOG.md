@@ -1,5 +1,7 @@
 ## Bigo Android Mediation Adapter Changelog
 
+#### Version 5.9.0.0 (In progress)
+
 #### Version 5.8.2.0 (In progress)
 
 #### Version 5.8.0.0
