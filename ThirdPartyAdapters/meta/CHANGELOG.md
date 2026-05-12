@@ -10,6 +10,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
 - Meta Audience Network SDK version 6.21.0.
 
 #### Version 6.21.0.1
