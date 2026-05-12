@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.4.0 (In progress)
+
 #### Version 7.7.3.0 (In progress)
 - Added `MediationInterstitialAd` implementation to the interstitial ad format.
 
