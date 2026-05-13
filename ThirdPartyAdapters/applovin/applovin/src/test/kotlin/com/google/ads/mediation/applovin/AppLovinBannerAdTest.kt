@@ -43,6 +43,8 @@ class AppLovinBannerAdTest {
   private val appLovinAd: AppLovinAd = mock()
   private val bannerAdConfiguration: MediationBannerAdConfiguration = mock {
     on { context } doReturn ApplicationProvider.getApplicationContext()
+    on { serverParameters } doReturn bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to SDK_KEY)
+    on { adSize } doReturn AdSize.BANNER
   }
   private val bannerAdCallback: MediationBannerAdCallback = mock()
   private val bannerAdLoadCallback:
@@ -63,7 +65,9 @@ class AppLovinBannerAdTest {
   private val appLovinAdFactory: AppLovinAdFactory = mock {
     on { createAdView(any(), any(), any(), any()) } doReturn appLovinAdViewWrapper
   }
-  private val mediationUtils: MediationUtilsWrapper = mock()
+  private val mediationUtils: MediationUtilsWrapper = mock {
+    on { findClosestSize(any(), eq(AdSize.BANNER), any()) } doReturn AdSize.BANNER
+  }
 
   @Before
   fun setUp() {
@@ -71,15 +75,10 @@ class AppLovinBannerAdTest {
     appLovinBannerAd =
       AppLovinBannerAd.newInstance(bannerAdLoadCallback, appLovinInitializer, appLovinAdFactory)
 
-    val serverParameters = bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to SDK_KEY)
-    whenever(bannerAdConfiguration.serverParameters) doReturn serverParameters
-    whenever(bannerAdConfiguration.adSize) doReturn AdSize.BANNER
-    whenever(mediationUtils.findClosestSize(any(), eq(AdSize.BANNER), any())) doReturn AdSize.BANNER
     whenever(bannerAdLoadCallback.onSuccess(appLovinBannerAd)) doReturn bannerAdCallback
   }
 
-  @Test
-  fun adReceived_invokesOnSuccessAndRenderAd() {
+  private fun loadAndReceiveAd() {
     doAnswer { invocation ->
         val args = invocation.arguments
         (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
@@ -87,8 +86,12 @@ class AppLovinBannerAdTest {
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
     appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-
     appLovinBannerAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun adReceived_invokesOnSuccessAndRenderAd() {
+    loadAndReceiveAd()
 
     verify(appLovinAdViewWrapper).renderAd(appLovinAd)
     verify(bannerAdLoadCallback).onSuccess(appLovinBannerAd)
@@ -109,14 +112,7 @@ class AppLovinBannerAdTest {
 
   @Test
   fun adDisplayed_invokesOnAdOpened() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-    appLovinBannerAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinBannerAd.adDisplayed(appLovinAd)
 
@@ -125,14 +121,7 @@ class AppLovinBannerAdTest {
 
   @Test
   fun adClicked_invokesReportAdClicked() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-    appLovinBannerAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinBannerAd.adClicked(appLovinAd)
 
@@ -141,14 +130,7 @@ class AppLovinBannerAdTest {
 
   @Test
   fun adOpenedFullscreen_invokesOnAdOpened() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-    appLovinBannerAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinBannerAd.adOpenedFullscreen(appLovinAd, appLovinAdView)
 
@@ -157,14 +139,7 @@ class AppLovinBannerAdTest {
 
   @Test
   fun adClosedFullscreen_invokesOnAdClosed() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-    appLovinBannerAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinBannerAd.adClosedFullscreen(appLovinAd, appLovinAdView)
 
@@ -173,14 +148,7 @@ class AppLovinBannerAdTest {
 
   @Test
   fun adLeftApplication_invokesOnAdLeftApplication() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinBannerAd.loadAd(bannerAdConfiguration, mediationUtils)
-    appLovinBannerAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinBannerAd.adLeftApplication(appLovinAd, appLovinAdView)
 

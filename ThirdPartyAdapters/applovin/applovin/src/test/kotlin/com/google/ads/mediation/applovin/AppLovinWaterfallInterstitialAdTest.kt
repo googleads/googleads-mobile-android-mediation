@@ -90,14 +90,24 @@ class AppLovinWaterfallInterstitialAdTest {
     AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds.clear()
   }
 
-  @Test
-  fun failedToReceiveAd_invokesUnregisterToLetAnotherAdLoadWithSameZoneId() {
+  private fun mockInitializeSuccess() {
     doAnswer { invocation ->
         val args = invocation.arguments
         (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
+  }
+
+  private fun loadAndReceiveAd() {
+    mockInitializeSuccess()
+    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
+    appLovinMediationInterstitialAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun failedToReceiveAd_invokesUnregisterToLetAnotherAdLoadWithSameZoneId() {
+    mockInitializeSuccess()
     val errorCaptor = argumentCaptor<AdError>()
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
@@ -112,14 +122,7 @@ class AppLovinWaterfallInterstitialAdTest {
 
   @Test
   fun adHidden_invokesUnregisterToLetAnotherAdLoadWithSameZoneId() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
-    appLovinMediationInterstitialAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinMediationInterstitialAd.adHidden(appLovinAd)
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
@@ -130,14 +133,7 @@ class AppLovinWaterfallInterstitialAdTest {
 
   @Test
   fun showAd_withLoadedAd_invokesShowAndRender() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
-    appLovinMediationInterstitialAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinMediationInterstitialAd.showAd(context)
 
@@ -149,12 +145,7 @@ class AppLovinWaterfallInterstitialAdTest {
 
   @Test
   fun showAd_withoutLoadedAd_doesNotInvokeShowAndRender() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
+    mockInitializeSuccess()
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
     appLovinMediationInterstitialAd.showAd(context)
@@ -168,12 +159,7 @@ class AppLovinWaterfallInterstitialAdTest {
     // Reinitializing serverParameters to remove the ZoneId
     val serverParameters = bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to TEST_SDK_KEY)
     whenever(interstitialAdConfiguration.serverParameters) doReturn serverParameters
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
+    mockInitializeSuccess()
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
     appLovinMediationInterstitialAd.showAd(context)
@@ -183,21 +169,7 @@ class AppLovinWaterfallInterstitialAdTest {
 
   @Test
   fun loadAd_removesAdFromMap() {
-    val serverParameters =
-      bundleOf(
-        AppLovinUtils.ServerParameterKeys.SDK_KEY to TEST_SDK_KEY,
-        AppLovinUtils.ServerParameterKeys.ZONE_ID to TEST_ZONE_ID,
-      )
-    whenever(interstitialAdConfiguration.serverParameters) doReturn serverParameters
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
-
-    appLovinMediationInterstitialAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     assertThat(AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds)
       .doesNotContainKey(TEST_ZONE_ID)
@@ -207,12 +179,7 @@ class AppLovinWaterfallInterstitialAdTest {
   fun loadInterstitialAd_withCorrectParametersAndInitSuccess_invokesLoadNextAdForZoneId() {
     // Putting this test here instead of AppLovinMedaitionAdapterTest because it is essential to
     // have the unregister method remove the zoneID from the class' Map in between tests.
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
+    mockInitializeSuccess()
 
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 

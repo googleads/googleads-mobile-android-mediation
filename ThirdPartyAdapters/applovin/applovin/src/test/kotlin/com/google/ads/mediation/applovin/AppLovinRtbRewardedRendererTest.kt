@@ -75,10 +75,14 @@ class AppLovinRtbRewardedRendererTest {
       )
   }
 
-  @Test
-  fun showAd_invokesShow() {
+  private fun loadAndReceiveAd() {
     appLovinMediationRewardedAd.loadAd(rewardedAdConfiguration)
     appLovinMediationRewardedAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun showAd_invokesShow() {
+    loadAndReceiveAd()
 
     appLovinMediationRewardedAd.showAd(context)
 
@@ -95,8 +99,7 @@ class AppLovinRtbRewardedRendererTest {
 
   @Test
   fun showAd_setsSdkMuteSettings() {
-    appLovinMediationRewardedAd.loadAd(rewardedAdConfiguration)
-    appLovinMediationRewardedAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinMediationRewardedAd.showAd(context)
 
