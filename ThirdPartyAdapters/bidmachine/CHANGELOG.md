@@ -1,6 +1,11 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Version 3.7.0.0 (In progress)
+#### Version 3.7.0.0
+- Verified compatibility with BidMachine SDK version 3.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.1.0.
+- BidMachine SDK version 3.7.0.
 
 #### Version 3.6.1.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
