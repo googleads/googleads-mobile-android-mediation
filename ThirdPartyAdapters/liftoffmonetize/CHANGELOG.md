@@ -1,5 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.4.1 (In progress)
+- Added MediationLogging for the case multiple app ids are detected
+
 #### Version 7.7.4.0 (In progress)
 
 #### Version 7.7.3.0 (In progress)
