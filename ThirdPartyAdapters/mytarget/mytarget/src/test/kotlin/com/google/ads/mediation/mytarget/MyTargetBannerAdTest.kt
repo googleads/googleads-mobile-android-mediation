@@ -165,7 +165,7 @@ class MyTargetBannerAdTest {
   }
 
   @Test
-  fun onShow_invokesNoCallback() {
+  fun onShow_invokesAdImpression() {
     myTargetBannerAd.onLoad(mockMyTargetView)
     myTargetBannerAd.onShow(mockMyTargetView)
 
